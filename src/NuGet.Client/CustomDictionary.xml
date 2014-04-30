@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Dictionary>
+    <Words>
+        <Recognized>
+            <Word>NuGet</Word>
+        </Recognized>
+        <Compound>
+            <Term CompoundAlternate="NuGet">nuget</Term>
+        </Compound>
+    </Words>
+    <Acronyms>
+        <CasingExceptions>
+            <Acronym>Nu</Acronym>
+        </CasingExceptions>
+    </Acronyms>
+</Dictionary>
