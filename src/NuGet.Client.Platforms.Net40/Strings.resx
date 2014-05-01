@@ -117,23 +117,32 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ColoredConsoleTraceSink_End" xml:space="preserve">
+    <value>Invocation {0} at {1} ({2}:{3})</value>
+  </data>
   <data name="ColoredConsoleTraceSink_Enter" xml:space="preserve">
     <value>{0} ({1}:{2})</value>
+  </data>
+  <data name="ColoredConsoleTraceSink_Error" xml:space="preserve">
+    <value>{3}</value>
   </data>
   <data name="ColoredConsoleTraceSink_Exit" xml:space="preserve">
     <value>{0} ({1}:{2})</value>
   </data>
-  <data name="ColoredConsoleTraceTraceSink_Error" xml:space="preserve">
-    <value>{3}</value>
-  </data>
-  <data name="ColoredConsoleTraceTraceSink_JsonParseWarning" xml:space="preserve">
+  <data name="ColoredConsoleTraceSink_JsonParseWarning" xml:space="preserve">
     <value>JSON warning at {3}: {4}</value>
   </data>
-  <data name="ColoredConsoleTraceTraceSink_ReceiveResponse" xml:space="preserve">
+  <data name="ColoredConsoleTraceSink_ReceiveResponse" xml:space="preserve">
     <value>{3} {4}</value>
   </data>
-  <data name="ColoredConsoleTraceTraceSink_SendRequest" xml:space="preserve">
+  <data name="ColoredConsoleTraceSink_SendRequest" xml:space="preserve">
     <value>{3} {4}</value>
+  </data>
+  <data name="ColoredConsoleTraceSink_Start" xml:space="preserve">
+    <value>Invocation {0} at {1} ({2}:{3})</value>
+  </data>
+  <data name="SystemTraceSink_End" xml:space="preserve">
+    <value>[Invocation:{0}](in {1} {2}:{3}) Completed Invocation</value>
   </data>
   <data name="SystemTraceSink_Enter" xml:space="preserve">
     <value>[Invocation:{0}](in {1} {2}:{3}) Entered</value>
@@ -155,5 +164,8 @@
   </data>
   <data name="SystemTraceSink_SendRequest" xml:space="preserve">
     <value>[Invocation:{0}](in {1} {2}:{3}) HTTP {4} {5}</value>
+  </data>
+  <data name="SystemTraceSink_Start" xml:space="preserve">
+    <value>[Invocation:{0}](in {1} {2}:{3}) Started Invocation</value>
   </data>
 </root>

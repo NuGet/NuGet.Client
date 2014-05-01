@@ -21,19 +21,19 @@ namespace NuGet.Client.Diagnostics
         public void SendRequest(string invocationId, HttpRequestMessage request, string methodName, string filePath, int line)
         {
             WritePrefix("http", ConsoleColor.Magenta);
-            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceTraceSink_SendRequest, methodName, filePath, line, request.Method.ToString().ToUpperInvariant(), request.RequestUri));
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceSink_SendRequest, methodName, filePath, line, request.Method.ToString().ToUpperInvariant(), request.RequestUri));
         }
 
         public void ReceiveResponse(string invocationId, HttpResponseMessage response, string methodName, string filePath, int line)
         {
             WritePrefix("http", ConsoleColor.Magenta);
-            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceTraceSink_ReceiveResponse, methodName, filePath, line, (int)response.StatusCode, response.RequestMessage.RequestUri));
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceSink_ReceiveResponse, methodName, filePath, line, (int)response.StatusCode, response.RequestMessage.RequestUri));
         }
 
         public void Error(string invocationId, Exception exception, string methodName, string filePath, int line)
         {
             WritePrefix("error", ConsoleColor.Red);
-            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceTraceSink_Error, methodName, filePath, line, exception.ToString()));
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceSink_Error, methodName, filePath, line, exception.ToString()));
         }
 
         public void Exit(string invocationId, string methodName, string filePath, int line)
@@ -45,7 +45,19 @@ namespace NuGet.Client.Diagnostics
         public void JsonParseWarning(string invocationId, Newtonsoft.Json.Linq.JToken token, string warning, string methodName, string filePath, int line)
         {
             WritePrefix("warn", ConsoleColor.Yellow);
-            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceTraceSink_JsonParseWarning, methodName, filePath, line, SystemTraceSink.GetFileInfo(token), warning));
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceSink_JsonParseWarning, methodName, filePath, line, SystemTraceSink.GetFileInfo(token), warning));
+        }
+
+        public void Start(string invocationId, string methodName, string filePath, int line)
+        {
+            WritePrefix("start", ConsoleColor.Gray);
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceSink_Start, invocationId, methodName, filePath, line));
+        }
+
+        public void End(string invocationId, string methodName, string filePath, int line)
+        {
+            WritePrefix("end", ConsoleColor.Gray);
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.ColoredConsoleTraceSink_End, invocationId, methodName, filePath, line));
         }
 
         private void WritePrefix(string prefix, ConsoleColor consoleColor)

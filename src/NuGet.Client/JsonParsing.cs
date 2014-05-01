@@ -10,7 +10,7 @@ namespace NuGet.Client
 {
     internal static class JsonParsing
     {
-        public static IEnumerable<Uri> ParseUrlArray(IEnumerable<JToken> array, Tracer trace, Uri documentRoot, string invalidUrlErrorFormat)
+        public static IEnumerable<Uri> ParseUrlArray(IEnumerable<JToken> array, TraceContext trace, Uri documentRoot, string invalidUrlErrorFormat)
         {
             Guard.NotNull(trace, "trace");
 
@@ -30,7 +30,7 @@ namespace NuGet.Client
             }
         }
 
-        public static IEnumerable<KeyValuePair<string, Uri>> ParseUrlDictionary(JObject obj, Tracer trace, Uri documentRoot, string invalidUrlErrorFormat)
+        public static IEnumerable<KeyValuePair<string, Uri>> ParseUrlDictionary(JObject obj, TraceContext trace, Uri documentRoot, string invalidUrlErrorFormat)
         {
             Guard.NotNull(trace, "trace");
 
@@ -53,7 +53,7 @@ namespace NuGet.Client
             }
         }
 
-        public static Uri TryParseUrl(Tracer trace, Uri documentRoot, JToken token)
+        public static Uri TryParseUrl(TraceContext trace, Uri documentRoot, JToken token)
         {
             Guard.NotNull(trace, "trace");
             using (trace.EnterExit())

@@ -92,7 +92,7 @@ namespace NuGet.Client.Models
             return "{version:" + Version.Major + ",services:{" + String.Join(",", Services.Select(s => "\"" + s.Name + "\": \"" + s.RootUrl.ToString() + "\"")) + "},mirrors:[" + String.Join(",", Mirrors.Select(u => "\"" + u.ToString() + "\"")) + "]}";
         }
 
-        internal static RepositoryDescription FromJson(JObject json, Tracer trace, Uri documentRoot)
+        internal static RepositoryDescription FromJson(JObject json, TraceContext trace, Uri documentRoot)
         {
             Guard.NotNull(json, "json");
             Guard.NotNull(trace, "trace");

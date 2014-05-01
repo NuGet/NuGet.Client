@@ -75,6 +75,31 @@ namespace NuGet.Client.Diagnostics
         /// <param name="filePath">The path to the file containing the code invoking this. May be null. Automatically provided by compatible compilers</param>
         /// <param name="line">The line number in the file that contains the code invoking this. May be 0. Automatically provided by compatible compilers</param>
         void JsonParseWarning(string invocationId, JToken token, string warning, string methodName, string filePath, int line);
+        
+        /// <summary>
+        /// Called when a NuGet Client invocation begins.
+        /// </summary>
+        /// <remarks>
+        /// An invocation is a single client-instigated operation. Multiple calls to <see cref="Enter"/> and <see cref="Exit"/> may be contained in a single invocation.
+        /// </remarks>
+        /// <param name="invocationId">The root invocation Id assigned to the request</param>
+        /// <param name="methodName">The name of the method that invoked this. May be null. Automatically provided by compatible compilers</param>
+        /// <param name="filePath">The path to the file containing the code invoking this. May be null. Automatically provided by compatible compilers</param>
+        /// <param name="line">The line number in the file that contains the code invoking this. May be 0. Automatically provided by compatible compilers</param>
+        void Start(string invocationId, string methodName, string filePath, int line);
+
+        /// <summary>
+        /// Called when a NuGet Client invocation ends.
+        /// </summary>
+        /// <remarks>
+        /// An invocation is a single client-instigated operation. Multiple calls to <see cref="Enter"/> and <see cref="Exit"/> may be contained in a single invocation.
+        /// </remarks>
+        /// <param name="invocationId">The root invocation Id assigned to the request</param>
+        /// <param name="methodName">The name of the method that invoked this. May be null. Automatically provided by compatible compilers</param>
+        /// <param name="filePath">The path to the file containing the code invoking this. May be null. Automatically provided by compatible compilers</param>
+        /// <param name="line">The line number in the file that contains the code invoking this. May be 0. Automatically provided by compatible compilers</param>
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "End", Justification = "End is the most appropriate name for this and conflict is unlikely")]
+        void End(string invocationId, string methodName, string filePath, int line);
     }
 
     /// <summary>
@@ -115,6 +140,15 @@ namespace NuGet.Client.Diagnostics
             }
 
             public void JsonParseWarning(string invocationId, JToken token, string warning, string methodName, string filePath, int line)
+            {
+            }
+
+
+            public void Start(string invocationId, string methodName, string filePath, int line)
+            {
+            }
+
+            public void End(string invocationId, string methodName, string filePath, int line)
             {
             }
         }

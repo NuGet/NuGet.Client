@@ -61,11 +61,29 @@ namespace NuGet.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invocation {0} at {1} ({2}:{3}).
+        /// </summary>
+        internal static string ColoredConsoleTraceSink_End {
+            get {
+                return ResourceManager.GetString("ColoredConsoleTraceSink_End", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} ({1}:{2}).
         /// </summary>
         internal static string ColoredConsoleTraceSink_Enter {
             get {
                 return ResourceManager.GetString("ColoredConsoleTraceSink_Enter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {3}.
+        /// </summary>
+        internal static string ColoredConsoleTraceSink_Error {
+            get {
+                return ResourceManager.GetString("ColoredConsoleTraceSink_Error", resourceCulture);
             }
         }
         
@@ -79,38 +97,47 @@ namespace NuGet.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {3}.
-        /// </summary>
-        internal static string ColoredConsoleTraceTraceSink_Error {
-            get {
-                return ResourceManager.GetString("ColoredConsoleTraceTraceSink_Error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to JSON warning at {3}: {4}.
         /// </summary>
-        internal static string ColoredConsoleTraceTraceSink_JsonParseWarning {
+        internal static string ColoredConsoleTraceSink_JsonParseWarning {
             get {
-                return ResourceManager.GetString("ColoredConsoleTraceTraceSink_JsonParseWarning", resourceCulture);
+                return ResourceManager.GetString("ColoredConsoleTraceSink_JsonParseWarning", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {3} {4}.
         /// </summary>
-        internal static string ColoredConsoleTraceTraceSink_ReceiveResponse {
+        internal static string ColoredConsoleTraceSink_ReceiveResponse {
             get {
-                return ResourceManager.GetString("ColoredConsoleTraceTraceSink_ReceiveResponse", resourceCulture);
+                return ResourceManager.GetString("ColoredConsoleTraceSink_ReceiveResponse", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {3} {4}.
         /// </summary>
-        internal static string ColoredConsoleTraceTraceSink_SendRequest {
+        internal static string ColoredConsoleTraceSink_SendRequest {
             get {
-                return ResourceManager.GetString("ColoredConsoleTraceTraceSink_SendRequest", resourceCulture);
+                return ResourceManager.GetString("ColoredConsoleTraceSink_SendRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invocation {0} at {1} ({2}:{3}).
+        /// </summary>
+        internal static string ColoredConsoleTraceSink_Start {
+            get {
+                return ResourceManager.GetString("ColoredConsoleTraceSink_Start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [Invocation:{0}](in {1} {2}:{3}) Completed Invocation.
+        /// </summary>
+        internal static string SystemTraceSink_End {
+            get {
+                return ResourceManager.GetString("SystemTraceSink_End", resourceCulture);
             }
         }
         
@@ -174,6 +201,15 @@ namespace NuGet.Client {
         internal static string SystemTraceSink_SendRequest {
             get {
                 return ResourceManager.GetString("SystemTraceSink_SendRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [Invocation:{0}](in {1} {2}:{3}) Started Invocation.
+        /// </summary>
+        internal static string SystemTraceSink_Start {
+            get {
+                return ResourceManager.GetString("SystemTraceSink_Start", resourceCulture);
             }
         }
     }

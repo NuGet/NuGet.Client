@@ -32,6 +32,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Web.XmlTransform">
+      <HintPath>..\..\packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Core, Version=2.8.50320.36, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Core.2.8.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,6 +46,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -46,11 +54,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Client.Platforms.Net40\NuGet.Client.Platforms.Net40.csproj">
       <Project>{2fb8e4a0-165d-4155-aec6-789245873aba}</Project>
       <Name>NuGet.Client.Platforms.Net40</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.Client.V2Feed\NuGet.Client.V2Feed.csproj">
+      <Project>{507dc43a-956e-477f-8abe-2f72824a57bb}</Project>
+      <Name>NuGet.Client.V2Feed</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Client\NuGet.Client.csproj">
       <Project>{563bdac3-8fa5-414b-a57b-9a6870f1cc67}</Project>

@@ -92,6 +92,28 @@ namespace NuGet.Client
             });
         }
 
+        public void Start(string invocationId, string methodName, string filePath, int line)
+        {
+            Capture(new
+            {
+                invocationId,
+                methodName,
+                filePath,
+                line
+            });
+        }
+
+        public void End(string invocationId, string methodName, string filePath, int line)
+        {
+            Capture(new
+            {
+                invocationId,
+                methodName,
+                filePath,
+                line
+            });
+        }
+
         private void Capture(object payload, [CallerMemberName] string methodName = null)
         {
             _events.Add(new TraceSinkEvent(methodName, Utils.ObjectToDictionary(payload)));

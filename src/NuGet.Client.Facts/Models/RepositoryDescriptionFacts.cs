@@ -40,7 +40,7 @@ namespace NuGet.Client.Models
             [Fact]
             public void GivenANullJObject_ItThrows()
             {
-                Assert.Throws<ArgumentNullException>("json", () => RepositoryDescription.FromJson(null, new Tracer("foo", TraceSinks.Null), new Uri("http://api.nuget.org")));
+                Assert.Throws<ArgumentNullException>("json", () => RepositoryDescription.FromJson(null, new TraceContext("foo", TraceSinks.Null), new Uri("http://api.nuget.org")));
             }
 
             [Fact]
@@ -204,7 +204,7 @@ namespace NuGet.Client.Models
                 var sink = new CapturingTraceSink();
                 var result = RepositoryDescription.FromJson(
                     JObject.Parse(json),
-                    new Tracer("test", sink),
+                    new TraceContext("test", sink),
                     documentRoot);
                 var ret = new ParseTestResult<RepositoryDescription>(sink.Events, result);
                 if (!expectWarnings)

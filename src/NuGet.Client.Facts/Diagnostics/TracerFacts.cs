@@ -17,13 +17,13 @@ namespace NuGet.Client.Diagnostics
             [Fact]
             public void GivenANullInvocationId_ItThrowsArgNull()
             {
-                Assert.Throws<ArgumentNullException>("invocationId", () => new Tracer(null, TraceSinks.Null));
+                Assert.Throws<ArgumentNullException>("invocationId", () => new TraceContext(null, TraceSinks.Null));
             }
 
             [Fact]
             public void GivenANullTraceSink_ItThrowsArgNull()
             {
-                Assert.Throws<ArgumentNullException>("sink", () => new Tracer("foo", null));
+                Assert.Throws<ArgumentNullException>("sink", () => new TraceContext("foo", null));
             }
         }
 
@@ -81,11 +81,11 @@ namespace NuGet.Client.Diagnostics
                     (id, m) => m.Verify(s => s.JsonParseWarning(id, jobj, "warning", "method", "file", 42)));
             }
 
-            private void PassThroughTest(Action<Tracer> tracerAction, Action<string, Mock<ITraceSink>> sinkVerifier)
+            private void PassThroughTest(Action<TraceContext> tracerAction, Action<string, Mock<ITraceSink>> sinkVerifier)
             {
                 // Arrange
                 var sink = new Mock<ITraceSink>();
-                var tracer = new Tracer("foo", sink.Object);
+                var tracer = new TraceContext("foo", sink.Object);
 
                 // Act
                 tracerAction(tracer);

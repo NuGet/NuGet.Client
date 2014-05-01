@@ -77,20 +77,27 @@ namespace NuGet.Client
         /// <returns>A <see cref="NuGet.Client.Models.RepositoryDescription"/> which describes the services available in this Repository.</returns>
         public async Task<RepositoryDescription> GetRepositoryDescription(CancellationToken cancellationToken)
         {
+            // Create a call context and invoke the core method
+            using (var context = CreateContext(cancellationToken))
+            {
+                return await GetRepositoryDescription(context);
+            }
+        }
+
+        private async Task<RepositoryDescription> GetRepositoryDescription(ServiceInvocationContext context)
+        {
             // We use ConfigureAwait(false) to prevent .NET from trying to synchronize back to our current Sync Context (UI Thread/HttpContext/etc)
             // when continuing from await. We don't care about Sync Context, so this saves the perf hit of syncing back. Our caller will still 
             // sync back to their current Sync Context when they await us, so this doesn't affect them.
-
-            // Create a call context
-            var context = CreateContext();
             using (context.Trace.EnterExit())
             {
                 try
                 {
                     // Invoke the request
-                    var response = await context.GetAsync("/", cancellationToken)
+                    var url = new Uri("/", UriKind.Relative);
+                    var response = await context.GetAsync(url, context.CancellationToken)
                         .ConfigureAwait(continueOnCapturedContext: false);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    context.CancellationToken.ThrowIfCancellationRequested();
                     response.EnsureSuccessStatusCode();
 
                     // Parse the response as JSON
@@ -98,13 +105,84 @@ namespace NuGet.Client
                         .ConfigureAwait(continueOnCapturedContext: false));
 
                     // Load the json in to a result
-                    return RepositoryDescription.FromJson(json, context.Trace, context.ResolveUrl("/"));
+                    return RepositoryDescription.FromJson(json, context.Trace, context.ResolveUrl(url));
                 }
                 catch (Exception ex)
                 {
                     context.Trace.Error(ex);
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the description of a specific service, if it exists.
+        /// </summary>
+        /// <param name="serviceName">The name of the service to get</param>
+        /// <returns>A <see cref="ServiceDescription"/> that describes the service, or null if no such service exists in this repository.</returns>
+        public Task<ServiceDescription> GetService(string serviceName)
+        {
+            return GetService(serviceName, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets the description of a specific service, if it exists.
+        /// </summary>
+        /// <param name="serviceName">The name of the service to get</param>
+        /// <param name="cancellationToken">A <see cref="System.Threading.CancellationToken"/> that can be used to cancel the request</param>
+        /// <returns>A <see cref="ServiceDescription"/> that describes the service, or null if no such service exists in this repository.</returns>
+        public async Task<ServiceDescription> GetService(string serviceName, CancellationToken cancellationToken)
+        {
+            // Create a call context
+            using (var context = CreateContext(cancellationToken))
+            {
+                return await GetService(serviceName, context);
+            }
+        }
+
+        private async Task<ServiceDescription> GetService(string serviceName, ServiceInvocationContext context)
+        {
+            using (context.Trace.EnterExit())
+            {
+                // TODO: Caching!
+                var repoDesc = await GetRepositoryDescription(context);
+                context.CancellationToken.ThrowIfCancellationRequested();
+                return repoDesc.Services.FirstOrDefault(svc => String.Equals(svc.Name, serviceName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+
+        /// <summary>
+        /// Creates a raw HTTP client for communicating with a specific service
+        /// </summary>
+        /// <param name="serviceName">The name of the service to create a client for</param>
+        /// <returns></returns>
+        public Task<ServiceClient> 
+            CreateClient(string serviceName)
+        {
+            return CreateClient(serviceName, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Creates a raw HTTP client for communicating with a specific service
+        /// </summary>
+        /// <param name="serviceName">The name of the service to create a client for</param>
+        /// <param name="cancellationToken">A <see cref="System.Threading.CancellationToken"/> that can be used to cancel the request</param>
+        /// <returns></returns>
+        public async Task<ServiceClient> CreateClient(string serviceName, CancellationToken cancellationToken)
+        {
+            using (var context = CreateContext(cancellationToken))
+            {
+                return await CreateClient(serviceName, context);
+            }
+        }
+
+        private async Task<ServiceClient> CreateClient(string serviceName, ServiceInvocationContext context)
+        {
+            using (context.Trace.EnterExit())
+            {
+                var service = await GetService(serviceName, context);
+                return new ServiceClient(service, this);
             }
         }
 
@@ -120,9 +198,9 @@ namespace NuGet.Client
             }
         }
 
-        private ClientCallContext CreateContext()
+        internal ServiceInvocationContext CreateContext(CancellationToken cancellationToken)
         {
-            return new ClientCallContext(_rootClient, _trace, Url);
+            return new ServiceInvocationContext(_rootClient, _trace, Url, cancellationToken);
         }
     }
 }

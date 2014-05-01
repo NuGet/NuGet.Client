@@ -54,6 +54,16 @@ namespace NuGet.Client.Diagnostics
             _traceSource.TraceEvent(TraceEventType.Warning, 5, Strings.SystemTraceSink_JsonParseWarning, invocationId, methodName, filePath, line, GetFileInfo(token), warning);
         }
 
+        public void Start(string invocationId, string methodName, string filePath, int line)
+        {
+            _traceSource.TraceEvent(TraceEventType.Start, 6, Strings.ColoredConsoleTraceSink_Start, invocationId, methodName, filePath, line);
+        }
+
+        public void End(string invocationId, string methodName, string filePath, int line)
+        {
+            _traceSource.TraceEvent(TraceEventType.Stop, 7, Strings.ColoredConsoleTraceSink_Start, invocationId, methodName, filePath, line);
+        }
+
         internal static string GetFileInfo(JToken token)
         {
             string message = token.Path;
