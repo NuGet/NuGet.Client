@@ -115,6 +115,7 @@
     <Compile Include="Diagnostics\ITraceSink.cs" />
     <Compile Include="Diagnostics\TraceContext.cs" />
     <Compile Include="Diagnostics\Tracing.cs" />
+    <Compile Include="Portability\ContractArgumentValidatorAttribute.cs" />
     <Compile Include="ServiceInvocationContext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guard.cs" />

@@ -8,17 +8,25 @@ using System.Text;
 // Why no Namespace? This is an internal type and we want it EVERYWHERE, so that's what we do.
 internal static class Guard
 {
-    [ContractAbbreviator]
+    [ContractArgumentValidator]
     [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", Justification="Code Contracts is tricking FxCop a little here :)")]
     internal static void NotNull(object value, string paramName) 
     {
-        Contract.Requires<ArgumentNullException>(value != null, paramName);
+        if (value == null)
+        {
+            throw new ArgumentNullException(paramName);
+        }
+        Contract.EndContractBlock();
     }
 
-    [ContractAbbreviator]
+    [ContractArgumentValidator]
     [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", Justification = "Code Contracts is tricking FxCop a little here :)")]
     internal static void NotNullOrEmpty(string value, string paramName)
     {
-        Contract.Requires<ArgumentNullException>(!String.IsNullOrEmpty(value), paramName);
+        if (String.IsNullOrEmpty(value))
+        {
+            throw new ArgumentNullException(paramName);
+        }
+        Contract.EndContractBlock();
     }
 }

@@ -59,6 +59,54 @@ namespace NuGet.Client.Models
                     FromJson("{version:4, services:{}, mirrors: []}").Result);
             }
 
+            [Fact]
+            public void GivenRelativeUrlsAndNoDocumentRoot_ItLeavesTheUrlsRelative()
+            {
+                Assert.Equal(
+                    new RepositoryDescription(
+                        new Version(3, 0),
+                        new[] {
+                            new Uri("https://static-api.nuget.org"),
+                            new Uri("/mirror", UriKind.Relative)
+                        },
+                        new[] {
+                            new ServiceDescription("search", new Uri("https://search-api-0.nuget.org/search")),
+                            new ServiceDescription("v2feed", new Uri("/v2feed", UriKind.Relative)),
+                        }),
+                    FromJson(@"{
+                        version: 3,
+                        mirrors: [""https://static-api.nuget.org"", ""/mirror""],
+                        services: {
+                            ""search"": ""https://search-api-0.nuget.org/search"",
+                            ""v2feed"": ""/v2feed""
+                        }
+                    }").Result);
+            }
+
+            [Fact]
+            public void GivenRelativeUrlsAndADocumentRoot_ItResolvesAllUrlsToAbsolute()
+            {
+                Assert.Equal(
+                    new RepositoryDescription(
+                        new Version(3, 0),
+                        new[] {
+                            new Uri("https://static-api.nuget.org"),
+                            new Uri("https://api.nuget.org/mirror")
+                        },
+                        new[] {
+                            new ServiceDescription("search", new Uri("https://search-api-0.nuget.org/search")),
+                            new ServiceDescription("v2feed", new Uri("https://api.nuget.org/v2feed")),
+                        }),
+                    FromJson(@"{
+                        version: 3,
+                        mirrors: [""https://static-api.nuget.org"", ""/mirror""],
+                        services: {
+                            ""search"": ""https://search-api-0.nuget.org/search"",
+                            ""v2feed"": ""/v2feed""
+                        }
+                    }", new Uri("https://api.nuget.org/")).Result);
+            }
+
             // Invalid JSON
 
             [Fact]

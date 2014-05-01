@@ -34,9 +34,11 @@ namespace TestApp
             var repo = new NuGetRepository(new Uri(url), new ColoredConsoleTraceSink());
 
             // 1. Connecting and getting the repository description
-            //await Test1_ApiV3ServiceDisco(repo);
+            Console.WriteLine("*** TEST ONE ***");
+            await Test1_ApiV3ServiceDisco(repo);
 
             // 2. Using the V2 Feed through the V3 Client
+            Console.WriteLine("*** TEST TWO ***");
             await Test2_ApiV2FeedAdaptor(repo);
         }
 
