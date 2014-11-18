@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.Versioning</id>
+    <version>1.0.0-overrideme</version>
+    <title>NuGet.Versioning</title>
+    <authors>NuGet</authors>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.Versioning/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NuGet.Versioning is the NuGet implementation of Semantic Versioning.</description>
+    <tags>semver semantic versioning</tags>
+    <dependencies />
+  </metadata>
+</package>
