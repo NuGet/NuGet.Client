@@ -1,5 +1,7 @@
 # assembly containing the release file version to use for the package
-$primaryDll = "src\Versioning\bin\Debug\NuGet.Versioning.dll"
+$primaryDll = Join-Path (Get-Item -Path ".\" -Verbose).FullName "\src\Versioning\bin\Debug\NuGet.Versioning.dll"
+
+Write-Host "Target: $primaryDll"
 
 $gitBranch = "ci"
 
@@ -16,6 +18,11 @@ if ($gitBranch.Length -gt 8) {
 Write-Host "Git branch: $gitBranch" 
 
 $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryDll).FileVersion
+
+if (!$version) {
+    Write-Error "Unable to find the file version!"
+    exit 1
+}
 
 $now = [System.DateTime]::UtcNow
 
