@@ -1,4 +1,4 @@
-NuGet.Versioning
+NuGet.Packaging
 ================
 
-NuGet's implementation of package versioning
+Readers for nupkgs, nuspecs, packages.config and various other NuGet packaging files.
