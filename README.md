@@ -1,4 +1,4 @@
-NuGet.Packaging
-===============
+NuGet.Versioning
+================
 
-Fundamental NuGet packaging (reading/writing packages)
+NuGet's implementation of package versioning

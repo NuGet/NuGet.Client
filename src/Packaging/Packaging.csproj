@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5F301D48-5ACB-44FE-A80B-7DD878ED1750}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NuGet.Packaging</RootNamespace>
+    <AssemblyName>NuGet.Packaging</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <NuGetPackageImportStamp>4ac66525</NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="def\ILegacyPackageReader.cs" />
+    <Compile Include="LegacyPackages\LegacyPackageReader.cs" />
+    <Compile Include="tree\ComponentTree.cs" />
+    <Compile Include="ConfigReader.cs" />
+    <Compile Include="def\IFileSystem.cs" />
+    <Compile Include="FrameworkSpecificGroup.cs" />
+    <Compile Include="def\INuspecReader.cs" />
+    <Compile Include="def\IPackageReader.cs" />
+    <Compile Include="PackageDependency.cs" />
+    <Compile Include="PackageReader.cs" />
+    <Compile Include="NuspecReader.cs" />
+    <Compile Include="PackageIdentity.cs" />
+    <Compile Include="PackagingConstants.cs" />
+    <Compile Include="PackageDependencyGroup.cs" />
+    <Compile Include="PackedManifest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="tree\KeyValueTreeProperty.cs" />
+    <Compile Include="tree\NuGetTreeItem.cs" />
+    <Compile Include="tree\TreeItem.cs" />
+    <Compile Include="tree\TreeNode.cs" />
+    <Compile Include="tree\TreePath.cs" />
+    <Compile Include="tree\TreeProperty.cs" />
+    <Compile Include="ZipFileSystem.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <Compile Include="tree\TreeBuilder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NuGet.Versioning">
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.3-master-43232045\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+  </Target>
+  <Import Project="..\..\build\sign.targets" />
+</Project>
