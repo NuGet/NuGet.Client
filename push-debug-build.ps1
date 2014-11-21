@@ -27,7 +27,7 @@ if (!$version) {
 $now = [System.DateTime]::UtcNow
 
 # (git branch)-(last digit of the year)(day of year)(hour)(minute)
-$version = $version.TrimEnd('0').TrimEnd('.') + "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear + $now.ToString("HHmm")
+$version = $version.TrimEnd('0').TrimEnd('.') + "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
 
 Write-Host "Package version: $version" 
 
