@@ -3,7 +3,7 @@
   <metadata>
     <id>NuGet.Frameworks</id>
     <version>1.0.0-overrideme</version>
-    <title>NuGet.Packaging</title>
+    <title>NuGet.Frameworks</title>
     <authors>NuGet</authors>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.Packaging/</projectUrl>

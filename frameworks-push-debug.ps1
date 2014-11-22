@@ -37,7 +37,7 @@ if ((Test-Path nupkgs) -eq 0) {
 
 .\.nuget\nuget.exe pack .\src\Frameworks\Frameworks.csproj -Properties configuration=debug -symbols -build -OutputDirectory nupkgs -version $version
 
-$nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
+$nupkgPath = Get-ChildItem .\nupkgs -filter "NuGet.Frameworks.$version.nupkg" | % { $_.FullName }
 
 Write-Host "Pushing: $nupkgPath"
 
