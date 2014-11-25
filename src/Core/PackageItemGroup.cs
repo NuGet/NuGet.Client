@@ -4,24 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.Packaging
+namespace NuGet.PackagingCore
 {
     /// <summary>
     /// A group of artifacts, dependencies, or other data with properties attached. This represents a single 
     /// path through the tree.
     /// </summary>
-    public class TreePath
+    public class PackageItemGroup
     {
-        private readonly List<TreeProperty> _properties;
-        private readonly List<TreeItem> _items;
+        private readonly List<PackageProperty> _properties;
+        private readonly List<PackageItem> _items;
 
-        public TreePath(IEnumerable<TreeProperty> properties, IEnumerable<TreeItem> items)
+        public PackageItemGroup(IEnumerable<PackageProperty> properties, IEnumerable<PackageItem> items)
         {
-            _properties = new List<TreeProperty>(properties);
-            _items = new List<TreeItem>(items);
+            _properties = new List<PackageProperty>(properties);
+            _items = new List<PackageItem>(items);
         }
 
-        public IEnumerable<TreeProperty> Properties
+        public IEnumerable<PackageProperty> Properties
         {
             get
             {
@@ -29,7 +29,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public IEnumerable<TreeItem> Items
+        public IEnumerable<PackageItem> Items
         {
             get
             {
@@ -37,9 +37,9 @@ namespace NuGet.Packaging
             }
         }
 
-        public TreePath Clone()
+        public PackageItemGroup Clone()
         {
-            return new TreePath(this.Properties, this.Items);
+            return new PackageItemGroup(this.Properties, this.Items);
         }
 
         public void Add(TreeNode node)

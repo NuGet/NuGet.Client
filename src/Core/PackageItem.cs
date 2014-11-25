@@ -5,28 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace NuGet.Packaging
+namespace NuGet.PackagingCore
 {
     /// <summary>
     /// The actual artifact, dependency, or deliverable in the tree.
     /// </summary>
-    public abstract class TreeItem
+    public abstract class PackageItem
     {
         private readonly bool _required;
 
-        public TreeItem(bool required)
+        public PackageItem(bool required)
         {
             _required = required;
-        }
-
-        public TreeItem(XElement xml)
-        {
-            var att = xml.Attribute(XName.Get("required", PackagingConstants.PackageCoreNamespace));
-
-            if (att != null && att.Value == "true")
-            {
-                _required = true;
-            }
         }
 
         /// <summary>
@@ -39,7 +29,5 @@ namespace NuGet.Packaging
                 return _required;
             }
         }
-
-        public abstract XElement ToXml();
     }
 }

@@ -9,7 +9,8 @@ namespace NuGet.Frameworks
     public sealed class DefaultFrameworkNameProvider : FrameworkNameProvider
     {
         public DefaultFrameworkNameProvider()
-            : base(new IFrameworkMappings[] { DefaultFrameworkMappings.Instance })
+            : base(new IFrameworkMappings[] { DefaultFrameworkMappings.Instance },
+                new IPortableFrameworkMappings[] { DefaultPortableFrameworkMappings.Instance })
         {
 
         }

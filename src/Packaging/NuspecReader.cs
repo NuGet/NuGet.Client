@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.PackagingCore;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,6 +46,62 @@ namespace NuGet.Packaging
 
             var node = _xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("minClientVersion", ns)).FirstOrDefault();
             return node == null ? null : node.Value;
+        }
+
+        public bool HasComponentGroupsNode
+        {
+            get
+            {
+                string ns = _xml.Root.GetDefaultNamespace().NamespaceName;
+                return _xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("componentGroups", ns)).Any();
+            }
+        }
+
+        public IEnumerable<PackageItemGroup> GetComponentGroups()
+        {
+            string ns = _xml.Root.GetDefaultNamespace().NamespaceName;
+
+            var node = _xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("componentGroups", ns)).SingleOrDefault();
+
+            if (node != null)
+            {
+                foreach (var group in node.Elements(XName.Get("group", ns)))
+                {
+                    var props = group.Attributes().Select(a => new KeyValueTreeProperty(a.Name.LocalName, a.Value, false, false));
+                    var items = group.Elements().Select(e => GetGroupItem(e));
+
+                    yield return new PackageItemGroup(props, items);
+                }
+            }
+
+            yield break;
+        }
+
+        private static PackageItem GetGroupItem(XElement item)
+        {
+            string ns = item.GetDefaultNamespace().NamespaceName;
+
+            switch (item.Name.LocalName)
+            {
+                case "reference":
+                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
+                case "frameworkAssembly":
+                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("assemblyName", ns)).Value));
+                case "content":
+                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
+                case "build":
+                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
+                case "tool":
+                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
+            }
+
+            return null;
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> GetPath(string path)
+        {
+            yield return new KeyValuePair<string, string>("path", path);
+            yield break;
         }
 
         public IEnumerable<KeyValuePair<string, string>> GetMetadata()

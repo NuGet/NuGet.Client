@@ -1,4 +1,5 @@
-﻿using NuGet.Versioning;
+﻿using NuGet.PackagingCore;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,11 +13,11 @@ namespace NuGet.Packaging
     /// <summary>
     /// Reads packages.config
     /// </summary>
-    public class ConfigReader
+    public class PackagesConfigReader
     {
         private readonly Stream _stream;
 
-        public ConfigReader(Stream stream)
+        public PackagesConfigReader(Stream stream)
         {
             if (stream == null)
             {

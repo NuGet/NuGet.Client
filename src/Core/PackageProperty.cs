@@ -5,29 +5,40 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace NuGet.Packaging
+namespace NuGet.PackagingCore
 {
-    public abstract class TreeProperty : IEqualityComparer<TreeProperty>
+    public abstract class PackageProperty : IEqualityComparer<PackageProperty>
     {
         protected readonly bool _isDefault;
+        protected readonly bool _isRootLevel;
 
-        public TreeProperty(bool isDefault)
+        public PackageProperty()
+            : this(false, false)
+        {
+
+        }
+
+        public PackageProperty(bool isDefault, bool isRootLevel)
         {
             _isDefault = isDefault;
+            _isRootLevel = isRootLevel;
         }
 
-        public TreeProperty(XElement xml)
-        {
-
-        }
-
-        public abstract bool Satisfies(TreeProperty other);
+        public abstract bool Satisfies(PackageProperty other);
 
         public bool IsDefault
         {
             get
             {
                 return _isDefault;
+            }
+        }
+
+        public bool IsRootLevel
+        {
+            get
+            {
+                return _isRootLevel;
             }
         }
 
@@ -38,12 +49,12 @@ namespace NuGet.Packaging
         /// </summary>
         public abstract string PivotKey { get; }
 
-        public virtual bool Equals(TreeProperty x, TreeProperty y)
+        public virtual bool Equals(PackageProperty x, PackageProperty y)
         {
             return StringComparer.Ordinal.Equals(x.ToNormalizedString(), y.ToNormalizedString());
         }
 
-        public virtual int GetHashCode(TreeProperty obj)
+        public virtual int GetHashCode(PackageProperty obj)
         {
             return ToNormalizedString().GetHashCode();
         }
@@ -52,9 +63,5 @@ namespace NuGet.Packaging
         {
             return ToNormalizedString();
         }
-
-        public abstract string ToJson();
-
-        public abstract XElement ToXml();
     }
 }

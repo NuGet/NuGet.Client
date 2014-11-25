@@ -1,62 +1,214 @@
-﻿using NuGet.Versioning;
+﻿using NuGet.Frameworks;
+using NuGet.PackagingCore;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace NuGet.Packaging
 {
     /// <summary>
-    /// Reads a NuGet v3.0.0 nupkg.
+    /// Reads a development nupkg
     /// </summary>
     public class PackageReader : IPackageReader
     {
         private readonly IFileSystem _fileSystem;
-
-        public PackageReader(Stream packageStream)
-            : this(packageStream, false)
-        {
-
-        }
-
-        public PackageReader(Stream packageStream, bool leaveStreamOpen)
-            : this(new ZipFileSystem(packageStream, leaveStreamOpen))
-        {
-
-        }
+        private NuspecReader _nuspec;
 
         public PackageReader(IFileSystem fileSystem)
         {
-            if (fileSystem == null)
-            {
-                throw new ArgumentNullException("fileSystem");
-            }
-
             _fileSystem = fileSystem;
-        }
-
-        public Stream GetPackedManifest()
-        {
-            string path = FileSystem.GetFiles().Where(f => f.Equals("/" + PackagingConstants.PackedManifestFileName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-
-            return GetStream(path);
         }
 
         public PackageIdentity GetIdentity()
         {
-            var nuspec = new NuspecReader(GetNuspec());
-
-            return new PackageIdentity(nuspec.GetId(), NuGetVersion.Parse(nuspec.GetVersion()));
+            return new PackageIdentity(Nuspec.GetId(), NuGetVersion.Parse(Nuspec.GetVersion()));
         }
 
-        public Stream GetNuspec()
+        public ComponentTree GetComponentTree()
         {
-            string path = FileSystem.GetFiles().Where(f => f.EndsWith(PackagingConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            TreeBuilder builder = new TreeBuilder();
 
-            return GetStream(path);
+            if (Nuspec.HasComponentGroupsNode)
+            {
+                builder.Add(Nuspec.GetComponentGroups());
+            }
+            else
+            {
+                // build items
+                foreach (var group in GetBuildItems())
+                {
+                    var prop = new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, group.TargetFramework, false);
+
+                    foreach (var item in group.Items)
+                    {
+                        List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
+                        data.Add(new KeyValuePair<string, string>("path", item));
+
+                        PackageItem treeItem = new DevTreeItem(PackagingConstants.Schema.TreeItemTypes.Build, true, data);
+
+                        builder.Add(treeItem, new PackageProperty[] { prop });
+                    }
+                }
+
+                // lib items
+                foreach (var group in GetLibItems())
+                {
+                    var prop = new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, group.TargetFramework, false);
+
+                    foreach (var item in group.Items)
+                    {
+                        List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
+                        data.Add(new KeyValuePair<string, string>("path", item));
+
+                        PackageItem treeItem = new DevTreeItem(PackagingConstants.Schema.TreeItemTypes.Reference, true, data);
+
+                        builder.Add(treeItem, new PackageProperty[] { prop });
+                    }
+                }
+
+                // tool items
+                foreach (var group in GetToolItems())
+                {
+                    var prop = new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, group.TargetFramework, false);
+
+                    foreach (var item in group.Items)
+                    {
+                        List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
+                        data.Add(new KeyValuePair<string, string>("path", item));
+
+                        PackageItem treeItem = new DevTreeItem(PackagingConstants.Schema.TreeItemTypes.Tool, true, data);
+
+                        builder.Add(treeItem, new PackageProperty[] { prop });
+                    }
+                }
+
+                // framework items
+                foreach (var group in GetFrameworkItems())
+                {
+                    var prop = new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, group.TargetFramework, false);
+
+                    foreach (var item in group.Items)
+                    {
+                        List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
+                        data.Add(new KeyValuePair<string, string>("path", item));
+
+
+                        PackageItem treeItem = new DevTreeItem(PackagingConstants.Schema.TreeItemTypes.FrameworkReference, true, data);
+
+                        builder.Add(treeItem, new PackageProperty[] { prop });
+                    }
+                }
+
+                // package dependency items
+                foreach (var group in GetPackageDependencies())
+                {
+                    var prop = new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, group.TargetFramework, false);
+
+                    foreach (var package in group.Packages)
+                    {
+                        List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
+                        data.Add(new KeyValuePair<string, string>("id", package.Id));
+
+                        VersionRange range = VersionRange.Parse(package.VersionRange);
+
+                        data.Add(new KeyValuePair<string, string>("versionRange", range.ToString()));
+
+                        PackageItem treeItem = new DevTreeItem(PackagingConstants.Schema.TreeItemTypes.FrameworkReference, true, data);
+
+                        builder.Add(treeItem, new PackageProperty[] { prop });
+                    }
+                }
+            }
+
+            return builder.GetTree();
+        }
+
+        public IEnumerable<FrameworkSpecificGroup> GetFrameworkItems()
+        {
+            return Nuspec.GetFrameworkReferenceGroups();
+        }
+
+        public IEnumerable<FrameworkSpecificGroup> GetBuildItems()
+        {
+            return GetFiles("build");
+        }
+
+        public IEnumerable<FrameworkSpecificGroup> GetToolItems()
+        {
+            return GetFiles("tools");
+        }
+
+        public IEnumerable<FrameworkSpecificGroup> GetContentItems()
+        {
+            return GetFiles("content");
+        }
+
+        public IEnumerable<PackageDependencyGroup> GetPackageDependencies()
+        {
+            var nuspec = new NuspecReader(GetNuspec());
+            return nuspec.GetDependencyGroups();
+        }
+
+        public IEnumerable<FrameworkSpecificGroup> GetLibItems()
+        {
+            var referenceGroups = Nuspec.GetReferenceGroups();
+            var fileGroups = GetFiles("lib").ToArray();
+
+            List<FrameworkSpecificGroup> libItems = new List<FrameworkSpecificGroup>();
+
+            if (referenceGroups.Count() > 0)
+            {
+                foreach (var group in referenceGroups)
+                {
+                    var frameworkGroup = new FrameworkSpecificGroup(group.TargetFramework, 
+                        group.Items.Select(s => 
+                            s.IndexOf('/') != -1 ? s :
+                            String.Format(CultureInfo.InvariantCulture, "/lib/{0}/{1}", group.TargetFramework, s)));
+
+                    libItems.Add(frameworkGroup);
+                }
+            }
+            else
+            {
+                libItems.AddRange(fileGroups);
+            }
+
+            return libItems;
+        }
+
+        private static string GetFileName(string path)
+        {
+            return path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+        }
+
+        private static string GetFrameworkFromPath(string path)
+        {
+            string framework = PackagingConstants.AnyFramework;
+
+            string[] parts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // ignore paths that are too short, and ones that have additional sub directories
+            if (parts.Length == 3)
+            {
+                framework = parts[1].ToLowerInvariant();
+
+                // TODO: add support for digit only frameworks
+                Match match = PackagingConstants.FrameworkRegex.Match(framework);
+
+                if (!match.Success)
+                {
+                    // this is not a framework and should be ignored
+                    framework = PackagingConstants.AnyFramework;
+                }
+            }
+
+            return framework;
         }
 
         public IFileSystem FileSystem
@@ -67,11 +219,71 @@ namespace NuGet.Packaging
             }
         }
 
-        public ComponentTree GetComponentTree()
+        private NuspecReader Nuspec
         {
-            XDocument doc = XDocument.Load(GetPackedManifest());
+            get
+            {
+                if (_nuspec == null)
+                {
+                    _nuspec = new NuspecReader(GetNuspec());
+                }
 
-            return new ComponentTree(doc.Root);
+                return _nuspec;
+            }
+        }
+
+        private IEnumerable<FrameworkSpecificGroup> GetFiles(string folder)
+        {
+            Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
+
+            foreach (string path in FileSystem.GetFiles()
+                .Where(s => s.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase)))
+            {
+                string framework = GetFrameworkFromPath(path);
+
+                List<string> items = null;
+                if (!groups.TryGetValue(framework, out items))
+                {
+                    items = new List<string>();
+                    groups.Add(framework, items);
+                }
+
+                items.Add(path);
+            }
+
+            foreach (string framework in groups.Keys)
+            {
+                yield return new FrameworkSpecificGroup(framework, groups[framework]);
+            }
+
+            yield break;
+        }
+
+        public Stream GetNuspec()
+        {
+            string path = _fileSystem.GetFiles().Where(f => f.EndsWith(PackagingConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            return GetStream(path);
+        }
+
+        /// <summary>
+        /// Return property values for the given key. Case-sensitive.
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static IEnumerable<string> GetPropertyValues(IEnumerable<KeyValuePair<string, string>> properties, string key)
+        {
+            if (properties == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            if (!String.IsNullOrEmpty(key))
+            {
+                return properties.Select(p => p.Value);
+            }
+
+            return properties.Where(p => StringComparer.Ordinal.Equals(p.Key, key)).Select(p => p.Value);
         }
 
         private Stream GetStream(string path)
@@ -90,5 +302,6 @@ namespace NuGet.Packaging
         {
 
         }
+
     }
 }

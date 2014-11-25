@@ -33,7 +33,7 @@ namespace NuGet.Frameworks
         {
             _frameworkName = framework;
             _version = version;
-            _profile = profile;
+            _profile = profile ?? string.Empty;
         }
 
         public string Framework
@@ -75,7 +75,7 @@ namespace NuGet.Frameworks
                     parts.Add(String.Format(CultureInfo.InvariantCulture, "Version=0.0", Version.ToString()));
                 }
 
-                if (Profile != null)
+                if (!String.IsNullOrEmpty(Profile))
                 {
                     parts.Add(String.Format(CultureInfo.InvariantCulture, "Profile={0}", Profile));
                 }
@@ -99,7 +99,9 @@ namespace NuGet.Frameworks
 
         public bool Equals(NuGetFramework other)
         {
-            throw new NotImplementedException();
+            return StringComparer.OrdinalIgnoreCase.Equals(other.Framework, Framework)
+                && StringComparer.OrdinalIgnoreCase.Equals(other.Profile, Profile)
+                && Version == other.Version;
         }
 
         public static readonly NuGetFramework UnsupportedFramework = new NuGetFramework("Unsupported");
@@ -165,12 +167,16 @@ namespace NuGet.Frameworks
                     // make sure we have a valid version or none at all
                     if (version != null)
                     {
-                        string profile = match.Groups["Profile"].Value.TrimStart('-');
+                        string profileShort = match.Groups["Profile"].Value.TrimStart('-');
+                        string profile = mappings.GetProfile(profileShort);
 
-                        if (StringComparer.OrdinalIgnoreCase.Equals(".NETPortable", framework))
+                        if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
                         {
-                            // TODO: Find the Profile number
-                            result = new NuGetFramework(framework, version, null);
+                            IEnumerable<NuGetFramework> clientFrameworks = mappings.GetPortableFrameworks(profileShort);
+
+                            string portableProfileNumber = mappings.GetPortableProfile(clientFrameworks) + string.Empty;
+
+                            result = new NuGetFramework(framework, version, portableProfileNumber);
                         }
                         else
                         {
@@ -181,6 +187,30 @@ namespace NuGet.Frameworks
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Full framework name comparison.
+        /// </summary>
+        public static IEqualityComparer<NuGetFramework> Comparer
+        {
+            get
+            {
+                return new NuGetFrameworkComparer();
+            }
+        }
+
+        private class NuGetFrameworkComparer : IEqualityComparer<NuGetFramework>
+        {
+            public bool Equals(NuGetFramework x, NuGetFramework y)
+            {
+                return x.Equals(y);
+            }
+
+            public int GetHashCode(NuGetFramework obj)
+            {
+                return obj.FullFrameworkName.ToLowerInvariant().GetHashCode();
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace NuGet.Packaging
+namespace NuGet.PackagingCore
 {
     /// <summary>
     /// A basic tree
@@ -24,24 +24,19 @@ namespace NuGet.Packaging
             _root = root;
         }
 
-        public ComponentTree(XElement xml)
-        {
-            _root = new TreeNode(xml.Element(XName.Get("node", PackagingConstants.PackageCoreNamespace)));
-        }
-
-        public IEnumerable<TreePath> GetPaths()
+        public IEnumerable<PackageItemGroup> GetPaths()
         {
             return GetPaths(_root);
         }
 
-        private static IEnumerable<TreePath> GetPaths(TreeNode node)
+        private static IEnumerable<PackageItemGroup> GetPaths(TreeNode node)
         {
             var children = node.Children.ToArray();
 
             if (children.Length == 0)
             {
                 // this is a leaf node, create a new path
-                yield return new TreePath(node.Properties, node.Items);
+                yield return new PackageItemGroup(node.Properties, node.Items);
             }
             else
             {
@@ -62,12 +57,7 @@ namespace NuGet.Packaging
 
         public override string ToString()
         {
-            return ToXml().ToString();
-        }
-
-        public virtual XElement ToXml()
-        {
-            return new XElement(XName.Get("componentTree", PackagingConstants.PackageCoreNamespace), _root.ToXml());
+            throw new NotImplementedException();
         }
     }
 }

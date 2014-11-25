@@ -4,36 +4,52 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.Packaging
+namespace NuGet.PackagingCore
 {
     public class TreeBuilder
     {
-        private readonly List<Tuple<TreeItem, List<TreeProperty>>> _items;
+        private readonly List<Tuple<PackageItem, List<PackageProperty>>> _items;
 
         public TreeBuilder()
         {
-            _items = new List<Tuple<TreeItem, List<TreeProperty>>>();
+            _items = new List<Tuple<PackageItem, List<PackageProperty>>>();
         }
 
-        public void Add(TreeItem item, IEnumerable<TreeProperty> properties)
+        public void Add(PackageItem item, IEnumerable<PackageProperty> properties)
         {
-            _items.Add(new Tuple<TreeItem, List<TreeProperty>>(item, properties.ToList()));
+            _items.Add(new Tuple<PackageItem, List<PackageProperty>>(item, properties.ToList()));
+        }
+
+        public void Add(PackageItemGroup group)
+        {
+            foreach (var item in group.Items)
+            {
+                Add(item, group.Properties);
+            }
+        }
+
+        public void Add(IEnumerable<PackageItemGroup> groups)
+        {
+            foreach (var group in groups)
+            {
+                Add(group);
+            }
         }
 
         public ComponentTree GetTree()
         {
-            var workingItems = new List<Tuple<TreeItem, List<TreeProperty>>>(_items);
+            var workingItems = new List<Tuple<PackageItem, List<PackageProperty>>>(_items);
 
             var rootItems = GetRootItems(workingItems).ToArray();
 
             workingItems.RemoveAll(t => rootItems.Contains(t));
 
-            TreeNode root = new TreeNode(rootItems.Select(t => t.Item1), Enumerable.Empty<TreeProperty>(), BuildChildren(workingItems));
+            TreeNode root = new TreeNode(rootItems.Select(t => t.Item1), Enumerable.Empty<PackageProperty>(), BuildChildren(workingItems));
 
             return new ComponentTree(root);
         }
 
-        private static IEnumerable<TreeNode> BuildChildren(IEnumerable<Tuple<TreeItem, List<TreeProperty>>> remainingItems)
+        private static IEnumerable<TreeNode> BuildChildren(IEnumerable<Tuple<PackageItem, List<PackageProperty>>> remainingItems)
         {
             string pivotKey = GetBestPivot(remainingItems);
 
@@ -45,18 +61,18 @@ namespace NuGet.Packaging
                 throw new NotImplementedException("unable to handle this type of tree");
             }
 
-            var grouped = new Dictionary<TreeProperty, List<Tuple<TreeItem, List<TreeProperty>>>>();
+            var grouped = new Dictionary<PackageProperty, List<Tuple<PackageItem, List<PackageProperty>>>>();
 
             foreach (var item in levelItems)
             {
                 // TODO: handle when items have multiple properties of the same key type
                 var pivotProp = item.Item2.Where(p => StringComparer.Ordinal.Equals(pivotKey, p.PivotKey)).Single();
 
-                List<Tuple<TreeItem, List<TreeProperty>>> val = null;
+                List<Tuple<PackageItem, List<PackageProperty>>> val = null;
 
                 if (!grouped.TryGetValue(pivotProp, out val))
                 {
-                    val = new List<Tuple<TreeItem, List<TreeProperty>>>();
+                    val = new List<Tuple<PackageItem, List<PackageProperty>>>();
                     grouped.Add(pivotProp, val);
                 }
 
@@ -69,7 +85,7 @@ namespace NuGet.Packaging
             {
                 // items with no properties go in this node
                 var nodeItems = grouped[pivotProp].Where(t => !t.Item2.Any()).Select(t => t.Item1);
-                var nodeProps = new TreeProperty[] { pivotProp };
+                var nodeProps = new PackageProperty[] { pivotProp };
 
                 // items that still have properties go into children
                 var nextLevel = grouped[pivotProp].Where(t => t.Item2.Any()).ToArray();
@@ -83,19 +99,13 @@ namespace NuGet.Packaging
         }
 
         // special case - root items
-        private static IEnumerable<Tuple<TreeItem, List<TreeProperty>>> GetRootItems(IEnumerable<Tuple<TreeItem, List<TreeProperty>>> items)
+        private static IEnumerable<Tuple<PackageItem, List<PackageProperty>>> GetRootItems(IEnumerable<Tuple<PackageItem, List<PackageProperty>>> items)
         {
             foreach (var item in items)
             {
-                if (item.Item2.Count == 1)
+                if (item.Item2.All(p => p.IsRootLevel))
                 {
-                    KeyValueTreeProperty kvProp = item.Item2[0] as KeyValueTreeProperty;
-
-                    if (kvProp != null && StringComparer.Ordinal.Equals(kvProp.Key, PackagingConstants.TargetFrameworkPropertyKey)
-                        && StringComparer.Ordinal.Equals(kvProp.Value, PackagingConstants.AnyFramework))
-                    {
-                        yield return item;
-                    }
+                    yield return item;
                 }
             }
 
@@ -103,7 +113,7 @@ namespace NuGet.Packaging
         }
 
         // larget group of pivots
-        private static string GetBestPivot(IEnumerable<Tuple<TreeItem, List<TreeProperty>>> items)
+        private static string GetBestPivot(IEnumerable<Tuple<PackageItem, List<PackageProperty>>> items)
         {
             var pivotGroups = items.SelectMany(t => t.Item2).GroupBy(p => p.PivotKey)
                 .OrderByDescending(g => g.Count())

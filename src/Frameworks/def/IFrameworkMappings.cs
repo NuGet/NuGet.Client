@@ -23,5 +23,12 @@ namespace NuGet.Frameworks
         /// Ex: WindowsPhone -> wp
         /// </summary>
         IEnumerable<KeyValuePair<string, string>> ProfileShortNames { get; }
+
+
+        /// <summary>
+        /// Ex: Windows 8.0 <-> NetCore 4.5
+        /// Ex: Windows 8.1 <-> NetCore 4.5.1
+        /// </summary>
+        IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> EquivalentFrameworks { get; }
     }
 }
