@@ -29,6 +29,9 @@ namespace NuGet.Frameworks
         // equivalent frameworks
         private Dictionary<NuGetFramework, HashSet<NuGetFramework>> _equivalentFrameworks;
 
+        // equivalent profiles
+        private Dictionary<string, Dictionary<string, HashSet<string>>> _equivalentProfiles;
+
         public FrameworkNameProvider(IEnumerable<IFrameworkMappings> mappings, IEnumerable<IPortableFrameworkMappings> portableMappings)
         {
             _identifierSynonyms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -39,14 +42,50 @@ namespace NuGet.Frameworks
             _portableFrameworks = new Dictionary<int, HashSet<NuGetFramework>>();
             _portableOptionalFrameworks = new Dictionary<int, HashSet<NuGetFramework>>();
             _equivalentFrameworks = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
+            _equivalentProfiles = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
 
             InitMappings(mappings, portableMappings);
         }
 
+        // TODO: split this method up and make sure everything checks for duplicates
         private void InitMappings(IEnumerable<IFrameworkMappings> mappings, IEnumerable<IPortableFrameworkMappings> portableMappings)
         {
             foreach(IFrameworkMappings mapping in mappings)
             {
+                // eq profiles
+                foreach (var tuple in mapping.EquivalentProfiles)
+                {
+                    string frameworkIdentifier = tuple.Item1;
+                    string profile1 = tuple.Item2;
+                    string profile2 = tuple.Item3;
+
+                    Dictionary<string, HashSet<string>> profileMappings = null;
+
+                    if (!_equivalentProfiles.TryGetValue(frameworkIdentifier, out profileMappings))
+                    {
+                        profileMappings = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+                        _equivalentProfiles.Add(frameworkIdentifier, profileMappings);
+                    }
+
+                    HashSet<string> innerMappings1 = null;
+                    HashSet<string> innerMappings2 = null;
+
+                    if (!profileMappings.TryGetValue(profile1, out innerMappings1))
+                    {
+                        innerMappings1 = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        profileMappings.Add(profile1, innerMappings1);
+                    }
+
+                    if (!profileMappings.TryGetValue(profile2, out innerMappings2))
+                    {
+                        innerMappings2 = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        profileMappings.Add(profile2, innerMappings2);
+                    }
+
+                    innerMappings1.Add(profile2);
+                    innerMappings2.Add(profile1);
+                }
+
                 // equivalent frameworks
                 foreach (var pair in mapping.EquivalentFrameworks)
                 {
@@ -375,5 +414,40 @@ namespace NuGet.Frameworks
             yield break;
         }
 
+        public IEnumerable<NuGetFramework> GetEquivalentFrameworks(NuGetFramework framework)
+        {
+            HashSet<NuGetFramework> frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+
+            frameworks.Add(framework);
+
+            HashSet<NuGetFramework> eqFrameworks = null;
+            if (_equivalentFrameworks.TryGetValue(framework, out eqFrameworks))
+            {
+                foreach (var eqFw in eqFrameworks)
+                {
+                    frameworks.Add(eqFw);
+                }
+            }
+
+            var baseFrameworks = frameworks.ToArray();
+
+            foreach (var fw in baseFrameworks)
+            {
+                Dictionary<string, HashSet<string>> eqProfiles = null;
+                if (_equivalentProfiles.TryGetValue(fw.Framework, out eqProfiles))
+                {
+                    HashSet<string> matchingProfiles = null;
+                    if (eqProfiles.TryGetValue(fw.Profile, out matchingProfiles))
+                    {
+                        foreach (var eqProfile in matchingProfiles)
+                        {
+                            frameworks.Add(new NuGetFramework(fw.Framework, fw.Version, eqProfile));
+                        }
+                    }
+                }
+            }
+
+            return frameworks;
+        }
     }
 }

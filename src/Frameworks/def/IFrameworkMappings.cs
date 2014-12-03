@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
+    /// <summary>
+    /// A raw list of framework mappings. These are indexed by the framework name provider and in most cases all mappings are
+    /// mirrored so that the IFrameworkMappings implementation only needs to provide the minimum amount of mappings.
+    /// </summary>
     public interface IFrameworkMappings
     {
         /// <summary>
@@ -30,5 +34,12 @@ namespace NuGet.Frameworks
         /// Ex: Windows 8.1 <-> NetCore 4.5.1
         /// </summary>
         IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> EquivalentFrameworks { get; }
+
+
+        /// <summary>
+        /// Framework, EquivalentProfile1, EquivalentProfile2
+        /// Ex: Silverlight, WindowsPhone71, WindowsPhone
+        /// </summary>
+        IEnumerable<Tuple<string, string, string>> EquivalentProfiles { get; }
     }
 }

@@ -74,11 +74,35 @@ namespace NuGet.Frameworks
 
         private static readonly KeyValuePair<NuGetFramework, NuGetFramework>[] _equivalentFrameworks = new KeyValuePair<NuGetFramework, NuGetFramework>[]
         {
+            new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(0,0)),
+                                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5))),
+
             new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8,0)),
                                         new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5))),
 
             new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8,1)),
                                         new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 1))),
+
+            new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(0,0)),
+                                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(3,0), "WindowsPhone")),
+
+            new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7,0)),
+                                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(3,0), "WindowsPhone")),
+
+            new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7,1)),
+                                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(4,0), "WindowsPhone71")),
+
+            new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8,0)),
+                                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(8,0), "WindowsPhone")),
+
+            new KeyValuePair<NuGetFramework, NuGetFramework>(new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8,1)),
+                                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(8,1), "WindowsPhone")),
+        };
+
+        private static readonly Tuple<string, string, string>[] _equivalentProfiles = new Tuple<string, string, string>[]
+        {
+            new Tuple<string, string, string>(FrameworkConstants.FrameworkIdentifiers.Net, "Client", string.Empty),
+            new Tuple<string, string, string>(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, "WindowsPhone71", "WindowsPhone"),
         };
 
         public IEnumerable<KeyValuePair<string, string>> IdentifierSynonyms
@@ -99,6 +123,11 @@ namespace NuGet.Frameworks
         public IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> EquivalentFrameworks
         {
             get { return _equivalentFrameworks; }
+        }
+
+        public IEnumerable<Tuple<string, string, string>> EquivalentProfiles
+        {
+            get { return _equivalentProfiles; }
         }
 
         private static IFrameworkMappings _instance;

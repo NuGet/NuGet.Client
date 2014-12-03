@@ -5,10 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.Frameworks.FrameworkMappings
+namespace NuGet.Frameworks
 {
     public static class FrameworkNameHelpers
     {
+
+        public static string GetPortableProfileNumberString(int profileNumber)
+        {
+            return String.Format(CultureInfo.InvariantCulture, "Profile{0}", profileNumber);
+        }
 
         public static string GetFolderName(string identifierShortName, string versionString, string profileShortName)
         {

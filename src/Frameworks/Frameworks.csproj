@@ -33,8 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="comparers\NuGetFrameworkNameComparer.cs" />
+    <Compile Include="comparers\NuGetFrameworkFullComparer.cs" />
+    <Compile Include="comparers\NuGetFrameworkProfileComparer.cs" />
+    <Compile Include="CompatibilityProvider.cs" />
+    <Compile Include="DefaultCompatibilityProvider.cs" />
     <Compile Include="DefaultFrameworkNameProvider.cs" />
     <Compile Include="DefaultPortableFrameworkMappings.cs" />
+    <Compile Include="def\IFrameworkCompatibilityProvider.cs" />
     <Compile Include="def\IPortableFrameworkMappings.cs" />
     <Compile Include="FrameworkConstants.cs" />
     <Compile Include="CustomFrameworkMappings.cs" />

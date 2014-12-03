@@ -41,5 +41,8 @@ namespace NuGet.Frameworks
 
         public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
         public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*)*)?$", RegexFlags);
+
+        // versioned profile string
+        public static readonly Regex ProfileRegex = new Regex(@"^(?<Profile>[A-Za-z]+)(?<Version>([0-9]+)(\.([0-9]+))*)?$", RegexFlags);
     }
 }

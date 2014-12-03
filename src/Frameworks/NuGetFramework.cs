@@ -32,7 +32,7 @@ namespace NuGet.Frameworks
         public NuGetFramework(string framework, Version version, string profile)
         {
             _frameworkName = framework;
-            _version = version;
+            _version = NormalizeVersion(version);
             _profile = profile ?? string.Empty;
         }
 
@@ -66,14 +66,19 @@ namespace NuGet.Frameworks
             {
                 List<string> parts = new List<string>(3) { Framework };
 
-                if (Version != _emptyVersion)
+                StringBuilder sb = new StringBuilder(String.Format(CultureInfo.InvariantCulture, "Version=v{0}.{1}", Version.Major, Version.Minor));
+
+                if (Version.Build > 0 || Version.Revision > 0)
                 {
-                    parts.Add(String.Format(CultureInfo.InvariantCulture, "Version={0}", Version.ToString()));
+                    sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", Version.Build);
+
+                    if (Version.Revision > 0)
+                    {
+                        sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", Version.Revision);
+                    }
                 }
-                else
-                {
-                    parts.Add(String.Format(CultureInfo.InvariantCulture, "Version=0.0", Version.ToString()));
-                }
+
+                parts.Add(sb.ToString());
 
                 if (!String.IsNullOrEmpty(Profile))
                 {
@@ -84,29 +89,39 @@ namespace NuGet.Frameworks
             }
         }
 
+        public bool IsPCL
+        {
+            get
+            {
+                return Version.Major == 0 && StringComparer.OrdinalIgnoreCase.Equals(Framework, FrameworkConstants.FrameworkIdentifiers.Portable);
+            }
+        }
+
         public override string ToString()
         {
             return FullFrameworkName;
         }
 
-        public IEnumerable<NuGetFramework> CompatibleFrameworks
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public bool Equals(NuGetFramework other)
         {
-            return StringComparer.OrdinalIgnoreCase.Equals(other.Framework, Framework)
-                && StringComparer.OrdinalIgnoreCase.Equals(other.Profile, Profile)
-                && Version == other.Version;
+            return Comparer.Equals(this, other);
         }
 
         public static readonly NuGetFramework UnsupportedFramework = new NuGetFramework("Unsupported");
         public static readonly NuGetFramework EmptyFramework = new NuGetFramework(string.Empty);
         public static readonly NuGetFramework AnyFramework = new NuGetFramework("Any");
+
+        /// <summary>
+        /// True if this framework matches for all versions. 
+        /// Ex: net
+        /// </summary>
+        public bool AllVersions
+        {
+            get
+            {
+                return Version.Major == 0 && Version.Minor == 0 && Version.Build == 0 && Version.Revision == 0;
+            }
+        }
 
         public bool IsUnsupported
         {
@@ -116,6 +131,9 @@ namespace NuGet.Frameworks
             }
         }
 
+        /// <summary>
+        /// True if this is the EMPTY framework
+        /// </summary>
         public bool IsEmpty
         {
             get
@@ -124,6 +142,9 @@ namespace NuGet.Frameworks
             }
         }
 
+        /// <summary>
+        /// True if this is the ANY framework
+        /// </summary>
         public bool IsAny
         {
             get
@@ -140,11 +161,17 @@ namespace NuGet.Frameworks
             }
         }
 
+        /// <summary>
+        /// Creates a NuGetFramework from a folder name using the default mappings.
+        /// </summary>
         public static NuGetFramework Parse(string folderName)
         {
             return Parse(folderName, DefaultFrameworkNameProvider.Instance);
         }
 
+        /// <summary>
+        /// Creates a NuGetFramework from a folder name using the given mappings.
+        /// </summary>
         public static NuGetFramework Parse(string folderName, IFrameworkNameProvider mappings)
         {
             if (folderName == null)
@@ -160,6 +187,7 @@ namespace NuGet.Frameworks
             {
                 string framework = mappings.GetIdentifier(match.Groups["Framework"].Value);
 
+                // TODO: support number only folder names like 45
                 if (!String.IsNullOrEmpty(framework))
                 {
                     Version version = mappings.GetVersion(match.Groups["Version"].Value);
@@ -174,7 +202,7 @@ namespace NuGet.Frameworks
                         {
                             IEnumerable<NuGetFramework> clientFrameworks = mappings.GetPortableFrameworks(profileShort);
 
-                            string portableProfileNumber = mappings.GetPortableProfile(clientFrameworks) + string.Empty;
+                            string portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(mappings.GetPortableProfile(clientFrameworks));
 
                             result = new NuGetFramework(framework, version, portableProfileNumber);
                         }
@@ -196,21 +224,38 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return new NuGetFrameworkComparer();
+                return new NuGetFrameworkFullComparer();
             }
         }
 
-        private class NuGetFrameworkComparer : IEqualityComparer<NuGetFramework>
+        /// <summary>
+        /// Framework name only comparison.
+        /// </summary>
+        public static IEqualityComparer<NuGetFramework> FrameworkNameComparer
         {
-            public bool Equals(NuGetFramework x, NuGetFramework y)
+            get
             {
-                return x.Equals(y);
+                return new NuGetFrameworkNameComparer();
             }
+        }
 
-            public int GetHashCode(NuGetFramework obj)
+        /// <summary>
+        /// Framework name only comparison.
+        /// </summary>
+        public static IEqualityComparer<NuGetFramework> FrameworkProfileComparer
+        {
+            get
             {
-                return obj.FullFrameworkName.ToLowerInvariant().GetHashCode();
+                return new NuGetFrameworkProfileComparer();
             }
+        }
+
+        private static Version NormalizeVersion(Version version)
+        {
+            return new Version(Math.Max(version.Major, 0),
+                               Math.Max(version.Minor, 0),
+                               Math.Max(version.Build, 0),
+                               Math.Max(version.Revision, 0));
         }
     }
 }

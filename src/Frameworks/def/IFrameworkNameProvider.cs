@@ -59,5 +59,12 @@ namespace NuGet.Frameworks
         /// Ex: net45+win8
         /// </summary>
         IEnumerable<NuGetFramework> GetPortableFrameworks(string shortPortableProfiles);
+
+        /// <summary>
+        /// Returns a list of all possible substituations where the framework name or profile name
+        /// have equivalents.
+        /// Ex: sl3 -> wp8
+        /// </summary>
+        IEnumerable<NuGetFramework> GetEquivalentFrameworks(NuGetFramework framework);
     }
 }

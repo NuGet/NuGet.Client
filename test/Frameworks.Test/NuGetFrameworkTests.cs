@@ -13,9 +13,9 @@ namespace NuGet.Test
     {
 
         [Theory]
-        [InlineData("portable-net45+win8", ".NETPortable, Version=0.0, Profile=7")]
-        [InlineData("portable-win8+net45", ".NETPortable, Version=0.0, Profile=7")]
-        [InlineData("portable-win8+net45+monoandroid1+monotouch1", ".NETPortable, Version=0.0, Profile=7")]
+        [InlineData("portable-net45+win8", ".NETPortable, Version=v0.0, Profile=Profile7")]
+        [InlineData("portable-win8+net45", ".NETPortable, Version=v0.0, Profile=Profile7")]
+        [InlineData("portable-win8+net45+monoandroid1+monotouch1", ".NETPortable, Version=v0.0, Profile=Profile7")]
         public void NuGetFramework_Portable(string folder, string expected)
         {
             string actual = NuGetFramework.Parse(folder).FullFrameworkName;
@@ -38,11 +38,11 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("net45", ".NETFramework, Version=4.5")]
-        [InlineData("net20", ".NETFramework, Version=2.0")]
-        [InlineData("net", ".NETFramework, Version=0.0")]
-        [InlineData("net10.1.2.3", ".NETFramework, Version=10.1.2.3")]
-        [InlineData("net45-cf", ".NETFramework, Version=4.5, Profile=CompactFramework")]
+        [InlineData("net45", ".NETFramework, Version=v4.5")]
+        [InlineData("net20", ".NETFramework, Version=v2.0")]
+        [InlineData("net", ".NETFramework, Version=v0.0")]
+        [InlineData("net10.1.2.3", ".NETFramework, Version=v10.1.2.3")]
+        [InlineData("net45-cf", ".NETFramework, Version=v4.5, Profile=CompactFramework")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
             string output = NuGetFramework.Parse(folderName).FullFrameworkName;
@@ -60,7 +60,7 @@ namespace NuGet.Test
         [InlineData("")]
         public void NuGetFramework_Unsupported(string folderName)
         {
-            Assert.Equal("Unsupported, Version=0.0", NuGetFramework.Parse(folderName).FullFrameworkName);
+            Assert.Equal("Unsupported, Version=v0.0", NuGetFramework.Parse(folderName).FullFrameworkName);
         }
     }
 }
