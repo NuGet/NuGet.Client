@@ -37,6 +37,7 @@
     <Compile Include="comparers\NuGetFrameworkFullComparer.cs" />
     <Compile Include="comparers\NuGetFrameworkProfileComparer.cs" />
     <Compile Include="CompatibilityProvider.cs" />
+    <Compile Include="CompatibilityTable.cs" />
     <Compile Include="DefaultCompatibilityProvider.cs" />
     <Compile Include="DefaultFrameworkNameProvider.cs" />
     <Compile Include="DefaultPortableFrameworkMappings.cs" />
@@ -49,7 +50,9 @@
     <Compile Include="FrameworkNameProvider.cs" />
     <Compile Include="def\IFrameworkMappings.cs" />
     <Compile Include="def\IFrameworkNameProvider.cs" />
+    <Compile Include="FrameworkReducer.cs" />
     <Compile Include="NuGetFramework.cs" />
+    <Compile Include="NuGetFrameworkFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

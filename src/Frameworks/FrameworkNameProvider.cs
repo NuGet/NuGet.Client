@@ -132,10 +132,7 @@ namespace NuGet.Frameworks
 
                     _identifierShortToLong.Add(shortName, longName);
 
-                    foreach (var syn in _identifierSynonyms.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Key, longName)))
-                    {
-                        _identifierToShortName.Add(syn.Value, shortName);
-                    }
+                    _identifierToShortName.Add(longName, shortName);
                 }
 
                 // populate profile names
@@ -191,7 +188,14 @@ namespace NuGet.Frameworks
         {
             string identifier = null;
 
-            _identifierSynonyms.TryGetValue(framework, out identifier);
+            if (!_identifierSynonyms.TryGetValue(framework, out identifier))
+            {
+                // check if the exact identifier was passed in
+                if (_identifierToShortName.ContainsKey(framework))
+                {
+                    identifier = _identifierToShortName.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Key, framework)).Select(f => f.Key).Single();
+                }
+            }
 
             return identifier;
         }
@@ -420,6 +424,7 @@ namespace NuGet.Frameworks
 
             frameworks.Add(framework);
 
+            // add in all framework aliases
             HashSet<NuGetFramework> eqFrameworks = null;
             if (_equivalentFrameworks.TryGetValue(framework, out eqFrameworks))
             {
@@ -431,6 +436,7 @@ namespace NuGet.Frameworks
 
             var baseFrameworks = frameworks.ToArray();
 
+            // add in all profile aliases
             foreach (var fw in baseFrameworks)
             {
                 Dictionary<string, HashSet<string>> eqProfiles = null;

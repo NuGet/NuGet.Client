@@ -52,7 +52,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompatibilityTableTests.cs" />
     <Compile Include="CompatibilityTests.cs" />
+    <Compile Include="FrameworkReducerTests.cs" />
+    <Compile Include="NuGetFrameworkParseTests.cs" />
     <Compile Include="NuGetFrameworkTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,15 +1,16 @@
-﻿using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
-    public class NuGetFramework : IEquatable<NuGetFramework>
+    /// <summary>
+    /// A portable implementation of the .NET FrameworkName type with added support for NuGet folder names.
+    /// </summary>
+    public partial class NuGetFramework : IEquatable<NuGetFramework>
     {
         private readonly string _frameworkName;
         private readonly Version _version;
@@ -159,62 +160,6 @@ namespace NuGet.Frameworks
             {
                 return !IsEmpty && !IsAny && !IsUnsupported;
             }
-        }
-
-        /// <summary>
-        /// Creates a NuGetFramework from a folder name using the default mappings.
-        /// </summary>
-        public static NuGetFramework Parse(string folderName)
-        {
-            return Parse(folderName, DefaultFrameworkNameProvider.Instance);
-        }
-
-        /// <summary>
-        /// Creates a NuGetFramework from a folder name using the given mappings.
-        /// </summary>
-        public static NuGetFramework Parse(string folderName, IFrameworkNameProvider mappings)
-        {
-            if (folderName == null)
-            {
-                throw new ArgumentNullException("folderName");
-            }
-
-            NuGetFramework result = UnsupportedFramework;
-
-            Match match = FrameworkConstants.FrameworkRegex.Match(folderName);
-
-            if (match.Success)
-            {
-                string framework = mappings.GetIdentifier(match.Groups["Framework"].Value);
-
-                // TODO: support number only folder names like 45
-                if (!String.IsNullOrEmpty(framework))
-                {
-                    Version version = mappings.GetVersion(match.Groups["Version"].Value);
-
-                    // make sure we have a valid version or none at all
-                    if (version != null)
-                    {
-                        string profileShort = match.Groups["Profile"].Value.TrimStart('-');
-                        string profile = mappings.GetProfile(profileShort);
-
-                        if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
-                        {
-                            IEnumerable<NuGetFramework> clientFrameworks = mappings.GetPortableFrameworks(profileShort);
-
-                            string portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(mappings.GetPortableProfile(clientFrameworks));
-
-                            result = new NuGetFramework(framework, version, portableProfileNumber);
-                        }
-                        else
-                        {
-                            result = new NuGetFramework(framework, version, profile);
-                        }
-                    }
-                }
-            }
-
-            return result;
         }
 
         /// <summary>

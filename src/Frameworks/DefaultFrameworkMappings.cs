@@ -17,25 +17,25 @@ namespace NuGet.Frameworks
         private static readonly KeyValuePair<string, string>[] _identifierSynonyms = new KeyValuePair<string, string>[]
         {
             // .NET
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, "NETFramework"),
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, ".NET"),
+            new KeyValuePair<string, string>("NETFramework", FrameworkConstants.FrameworkIdentifiers.Net),
+            new KeyValuePair<string, string>(".NET", FrameworkConstants.FrameworkIdentifiers.Net),
 
             // .NET Core
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "NETCore"),
+            new KeyValuePair<string, string>("NETCore", FrameworkConstants.FrameworkIdentifiers.NetCore),
 
             // Portable
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Portable, "NETPortable"),
+            new KeyValuePair<string, string>("NETPortable", FrameworkConstants.FrameworkIdentifiers.Portable),
 
             // ASP
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.AspNet, "asp.net"),
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.AspNetCore, "asp.netcore"),
+            new KeyValuePair<string, string>("asp.net", FrameworkConstants.FrameworkIdentifiers.AspNet),
+            new KeyValuePair<string, string>("asp.netcore", FrameworkConstants.FrameworkIdentifiers.AspNetCore),
 
             // Mono/Xamarin
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3, "Xamarin.PlayStationThree"),
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3, "XamarinPlayStationThree"),
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4, "Xamarin.PlayStationFour"),
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4, "XamarinPlayStationFour"),
-            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStationVita, "XamarinPlayStationVita"),
+            new KeyValuePair<string, string>("Xamarin.PlayStationThree", FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3),
+            new KeyValuePair<string, string>("XamarinPlayStationThree", FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3),
+            new KeyValuePair<string, string>("Xamarin.PlayStationFour", FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4),
+            new KeyValuePair<string, string>("XamarinPlayStationFour", FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4),
+            new KeyValuePair<string, string>("XamarinPlayStationVita", FrameworkConstants.FrameworkIdentifiers.XamarinPlayStationVita),
         };
 
         private static readonly KeyValuePair<string, string>[] _identifierShortNames = new KeyValuePair<string, string>[]
@@ -63,6 +63,7 @@ namespace NuGet.Frameworks
             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinXboxOne, "xamarinxboxone")
         };
 
+        // TODO: add the framework into this
         private static readonly KeyValuePair<string, string>[] _profileShortNames = new KeyValuePair<string, string>[]
         {
             new KeyValuePair<string, string>("Client", "Client"),

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.Versioning;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,5 +42,19 @@ namespace NuGet.Frameworks
         /// Ex: Silverlight, WindowsPhone71, WindowsPhone
         /// </summary>
         IEnumerable<Tuple<string, string, string>> EquivalentProfiles { get; }
+
+
+        /// <summary>
+        /// Frameworks which are subsets of others.
+        /// Ex: .NETCore -> .NET
+        /// Everything in .NETCore maps to .NET and is one way compatible. Version numbers follow the same format.
+        /// </summary>
+        //IEnumerable<KeyValuePair<string, string>> SubSetFrameworks { get; }
+
+
+        /// <summary>
+        /// Maps frameworks which support all versions of another framework
+        /// </summary>
+        //IEnumerable<Tuple<KeyValuePair<string, VersionRange>, KeyValuePair<string, VersionRange>>> OneWayCompatibility { get; }
     }
 }
