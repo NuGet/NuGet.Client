@@ -1,7 +1,8 @@
-Start-Process "cmd.exe" "/c build.cmd /p:Configuration=Debug" -Wait -NoNewWindow
+Start-Process "cmd.exe" "/c build.cmd /p:Configuration=Release" -Wait -NoNewWindow
+
 
 # assembly containing the release file version to use for the package
-$primaryDll = Join-Path (Get-Item -Path ".\" -Verbose).FullName "\src\Versioning\bin\Debug\NuGet.Versioning.dll"
+$primaryDll = Join-Path (Get-Item -Path ".\" -Verbose).FullName "\src\Versioning\bin\Release\NuGet.Versioning.dll"
 
 Write-Host "Target: $primaryDll"
 
@@ -29,7 +30,7 @@ if (!$version) {
 $now = [System.DateTime]::UtcNow
 
 # (git branch)-(last digit of the year)(day of year)(hour)(minute)
-$version = $version.TrimEnd('0').TrimEnd('.') + "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
+$version = $version.TrimEnd('0').TrimEnd('.')
 
 Write-Host "Package version: $version" 
 
@@ -37,7 +38,7 @@ if ((Test-Path nupkgs) -eq 0) {
     New-Item -ItemType directory -Path nupkgs | Out-Null
 }
 
-.\.nuget\nuget.exe pack .\src\Versioning\Versioning.csproj -Properties configuration=debug -symbols -build -OutputDirectory nupkgs -version $version
+.\.nuget\nuget.exe pack .\src\Versioning\Versioning.csproj -Properties configuration=release -symbols -build -OutputDirectory nupkgs -version $version
 
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
 
