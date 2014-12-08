@@ -62,7 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.2\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.3\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

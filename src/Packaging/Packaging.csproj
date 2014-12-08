@@ -49,14 +49,6 @@
     <Compile Include="tree\DevTreeItem.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.2\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{77be39da-13e0-41a2-8eec-7d207b4564a4}</Project>
       <Name>Core</Name>
@@ -65,6 +57,14 @@
       <Project>{5b5484a1-ec50-41e2-ac5f-51602e8bb6ff}</Project>
       <Name>Frameworks</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NuGet.Versioning">
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.3\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\build\sign.targets" />
