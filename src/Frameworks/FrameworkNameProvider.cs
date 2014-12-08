@@ -157,6 +157,8 @@ namespace NuGet.Frameworks
 
             profileNumber = -1;
 
+            var frameworkComparer = new NuGetFrameworkNameComparer();
+            var profileComparer = new NuGetFrameworkProfileComparer();
             HashSet<NuGetFramework> input = new HashSet<NuGetFramework>(supportedFrameworks, NuGetFramework.Comparer);
 
             foreach (var pair in _portableFrameworks)
@@ -165,7 +167,27 @@ namespace NuGet.Frameworks
                 // if we knew which frameworks were optional in the input we could rule out the lesser ones also
                 if (pair.Value.Count <= input.Count)
                 {
-                    IEnumerable<NuGetFramework> reduced = supportedFrameworks.Except(GetOptionalFrameworks(pair.Key), NuGetFramework.Comparer);
+                    List<NuGetFramework> reduced = new List<NuGetFramework>();
+                    foreach (var curFw in supportedFrameworks)
+                    {
+                        bool isOptional = false;
+
+                        foreach (var optional in GetOptionalFrameworks(pair.Key))
+                        {
+                            // TODO: profile check? Is the version check correct here?
+                            if (frameworkComparer.Equals(optional, curFw) 
+                                && profileComparer.Equals(optional, curFw)
+                                && curFw.Version >= optional.Version)
+                            {
+                                isOptional = true;
+                            }
+                        }
+
+                        if (!isOptional)
+                        {
+                            reduced.Add(curFw);
+                        }
+                    }
 
                     // check all frameworks while taking into account equivalent variations
                     var premutations = GetEquivalentPermutations(pair.Value).Select(p => new HashSet<NuGetFramework>(p, NuGetFramework.Comparer));

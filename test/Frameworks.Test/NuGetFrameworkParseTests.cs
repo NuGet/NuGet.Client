@@ -12,6 +12,14 @@ namespace NuGet.Test
     public class NuGetFrameworkParseTests
     {
         [Fact]
+        public void NuGetFramework_PortableWithOptional()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable-net4%2Bsl5%2Bwp8%2Bwin8%2Bwpa81%2Bmonotouch%2Bmonoandroid");
+
+            Assert.Equal(".NETPortable, Version=v0.0, Profile=Profile328", framework.DotNetFrameworkName);
+        }
+
+        [Fact]
         public void NuGetFramework_PortableWithAny()
         {
             NuGetFramework framework = NuGetFramework.Parse("portable-win%2Bnet45%2Bwp8");

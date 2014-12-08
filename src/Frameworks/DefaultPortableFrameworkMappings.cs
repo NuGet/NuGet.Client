@@ -113,8 +113,8 @@ namespace NuGet.Frameworks
             {
                 if (_profileOptionalFrameworks == null)
                 {
-                    NuGetFramework monoandroid = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, new Version(1, 0));
-                    NuGetFramework monotouch = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoTouch, new Version(1, 0));
+                    NuGetFramework monoandroid = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, new Version(0, 0));
+                    NuGetFramework monotouch = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoTouch, new Version(0, 0));
                     NuGetFramework[] monoFrameworks = new NuGetFramework[] { monoandroid, monotouch };
 
                     _profileOptionalFrameworks = new List<KeyValuePair<int, NuGetFramework[]>>();
