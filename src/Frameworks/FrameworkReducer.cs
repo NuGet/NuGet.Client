@@ -32,7 +32,7 @@ namespace NuGet.Frameworks
         public IEnumerable<NuGetFramework> Reduce(IEnumerable<NuGetFramework> frameworks)
         {
             // order first so we get consistent results for equivalent frameworks
-            NuGetFramework[] input = frameworks.OrderBy(f => f.FullFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
+            NuGetFramework[] input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
 
             var comparer = new NuGetFrameworkFullComparer();
 
@@ -40,7 +40,11 @@ namespace NuGet.Frameworks
             {
                 bool dupe = false;
 
-                var eqFrameworks = _mappings.GetEquivalentFrameworks(input[i]);
+                IEnumerable<NuGetFramework> eqFrameworks = null;
+                if (!_mappings.TryGetEquivalentFrameworks(input[i], out eqFrameworks))
+                {
+                    eqFrameworks = new List<NuGetFramework>() { input[i] };
+                }
 
                 for (int j = i + 1; !dupe && j < input.Length; j++)
                 {
@@ -79,7 +83,7 @@ namespace NuGet.Frameworks
         private IEnumerable<NuGetFramework> ReduceCore(IEnumerable<NuGetFramework> frameworks, Func<NuGetFramework, NuGetFramework, bool> isCompat)
         {
             // order first so we get consistent results for equivalent frameworks
-            NuGetFramework[] input = frameworks.OrderBy(f => f.FullFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
+            NuGetFramework[] input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
 
             for (int i = 0; i < input.Length; i++)
             {

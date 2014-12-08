@@ -9,10 +9,13 @@ namespace NuGet.Frameworks
     public class CompatibilityProvider : IFrameworkCompatibilityProvider
     {
         private readonly IFrameworkNameProvider _mappings;
+        private readonly FrameworkExpander _expander;
+        private static readonly Version _emptyVersion = new Version(0, 0, 0, 0);
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
             _mappings = mappings;
+            _expander = new FrameworkExpander(mappings);
         }
 
         public bool IsCompatible(NuGetFramework framework, NuGetFramework other)
@@ -42,19 +45,43 @@ namespace NuGet.Frameworks
                 throw new NotImplementedException();
             }
 
+            var fullComparer = new NuGetFrameworkFullComparer();
+
+            // check if they are the exact same
+            if (fullComparer.Equals(framework, other))
+            {
+                return true;
+            }
+
+            // find all possible substitutions
+            HashSet<NuGetFramework> frameworkSet = new HashSet<NuGetFramework>(NuGetFramework.Comparer) { framework };
+
+            foreach (var fw in _expander.Expand(framework))
+            {
+                frameworkSet.Add(fw);
+            }
+
             var frameworkComparer = new NuGetFrameworkNameComparer();
             var profileComparer = new NuGetFrameworkProfileComparer();
 
-            var eqFramework = _mappings.GetEquivalentFrameworks(framework);
-            var eqOther = _mappings.GetEquivalentFrameworks(other);
-
-            foreach (var fw in eqFramework)
+            // check all possible substitutions
+            foreach (var curFramework in frameworkSet)
             {
-                foreach (var otherFw in eqOther)
+                // compare the frameworks
+                if (frameworkComparer.Equals(curFramework, other)
+                    && profileComparer.Equals(curFramework, other)
+                    && IsVersionCompatible(curFramework, other))
                 {
-                    if (frameworkComparer.Equals(fw, otherFw) && profileComparer.Equals(fw, otherFw))
+                    // allow the other if it doesn't have a platform
+                    if (other.AnyPlatform)
                     {
-                        return IsVersionCompatible(framework, other);
+                        return true;
+                    }
+
+                    // compare platforms
+                    if (StringComparer.OrdinalIgnoreCase.Equals(curFramework.Platform, other.Platform))
+                    {
+                        return IsVersionCompatible(curFramework.PlatformVersion, other.PlatformVersion);
                     }
                 }
             }
@@ -64,7 +91,12 @@ namespace NuGet.Frameworks
 
         private bool IsVersionCompatible(NuGetFramework framework, NuGetFramework other)
         {
-            return other.AllVersions || other.Version <= framework.Version;
+            return IsVersionCompatible(framework.Version, other.Version);
+        }
+
+        private bool IsVersionCompatible(Version framework, Version other)
+        {
+            return other == _emptyVersion || other <= framework;
         }
     }
 }

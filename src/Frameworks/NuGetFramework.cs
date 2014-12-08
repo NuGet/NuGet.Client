@@ -12,11 +12,17 @@ namespace NuGet.Frameworks
     /// </summary>
     public partial class NuGetFramework : IEquatable<NuGetFramework>
     {
-        private readonly string _frameworkName;
-        private readonly Version _version;
-        private readonly string _profile;
+        private readonly string _frameworkIdentifier;
+        private readonly Version _frameworkVersion;
+        private readonly string _frameworkProfile;
         private const string _portable = "portable";
-        private readonly static Version _emptyVersion = new Version(0, 0);
+        private readonly string _platformIdentifier;
+        private readonly Version _platformVersion;
+
+        private readonly static Version _emptyVersion = new Version(0, 0, 0, 0);
+        public static readonly NuGetFramework UnsupportedFramework = new NuGetFramework("Unsupported");
+        public static readonly NuGetFramework EmptyFramework = new NuGetFramework(string.Empty);
+        public static readonly NuGetFramework AnyFramework = new NuGetFramework("Any");
 
         public NuGetFramework(string framework)
             : this(framework, _emptyVersion)
@@ -31,17 +37,31 @@ namespace NuGet.Frameworks
         }
 
         public NuGetFramework(string framework, Version version, string profile)
+            : this(framework, version, profile, null, null)
         {
-            _frameworkName = framework;
-            _version = NormalizeVersion(version);
-            _profile = profile ?? string.Empty;
+
+        }
+
+        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string platformIdentifier, Version platformVersion)
+            : this(frameworkIdentifier, frameworkVersion, null, platformIdentifier, platformVersion)
+        {
+
+        }
+
+        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile, string platformIdentifier, Version platformVersion)
+        {
+            _frameworkIdentifier = frameworkIdentifier;
+            _frameworkVersion = NormalizeVersion(frameworkVersion);
+            _frameworkProfile = frameworkProfile ?? string.Empty;
+            _platformIdentifier = platformIdentifier ?? string.Empty;
+            _platformVersion = platformVersion ?? _emptyVersion;
         }
 
         public string Framework
         {
             get
             {
-                return _frameworkName;
+                return _frameworkIdentifier;
             }
         }
 
@@ -49,7 +69,15 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return _version;
+                return _frameworkVersion;
+            }
+        }
+
+        public bool HasProfile
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(Profile);
             }
         }
 
@@ -57,29 +85,33 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return _profile;
+                return _frameworkProfile;
             }
         }
 
-        public string FullFrameworkName
+        public string Platform
+        {
+            get
+            {
+                return _platformIdentifier;
+            }
+        }
+
+        public Version PlatformVersion
+        {
+            get
+            {
+                return _platformVersion;
+            }
+        }
+
+        public string DotNetFrameworkName
         {
             get
             {
                 List<string> parts = new List<string>(3) { Framework };
 
-                StringBuilder sb = new StringBuilder(String.Format(CultureInfo.InvariantCulture, "Version=v{0}.{1}", Version.Major, Version.Minor));
-
-                if (Version.Build > 0 || Version.Revision > 0)
-                {
-                    sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", Version.Build);
-
-                    if (Version.Revision > 0)
-                    {
-                        sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", Version.Revision);
-                    }
-                }
-
-                parts.Add(sb.ToString());
+                parts.Add(String.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(Version)));
 
                 if (!String.IsNullOrEmpty(Profile))
                 {
@@ -90,17 +122,41 @@ namespace NuGet.Frameworks
             }
         }
 
+        private static string GetDisplayVersion(Version version)
+        {
+            StringBuilder sb = new StringBuilder(String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
+
+            if (version.Build > 0 || version.Revision > 0)
+            {
+                sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Build);
+
+                if (version.Revision > 0)
+                {
+                    sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Revision);
+                }
+            }
+
+            return sb.ToString();
+        }
+
         public bool IsPCL
         {
             get
             {
-                return Version.Major == 0 && StringComparer.OrdinalIgnoreCase.Equals(Framework, FrameworkConstants.FrameworkIdentifiers.Portable);
+                return StringComparer.OrdinalIgnoreCase.Equals(Framework, FrameworkConstants.FrameworkIdentifiers.Portable) && Version.Major < 5;
             }
         }
 
         public override string ToString()
         {
-            return FullFrameworkName;
+            StringBuilder sb = new StringBuilder(DotNetFrameworkName);
+
+            if (!String.IsNullOrEmpty(Platform))
+            {
+                sb.Append(String.Format(CultureInfo.InvariantCulture, ", Platform={0}, PlatformVersion=v{1}", Platform, GetDisplayVersion(PlatformVersion)));
+            }
+
+            return sb.ToString();
         }
 
         public bool Equals(NuGetFramework other)
@@ -108,15 +164,19 @@ namespace NuGet.Frameworks
             return Comparer.Equals(this, other);
         }
 
-        public static readonly NuGetFramework UnsupportedFramework = new NuGetFramework("Unsupported");
-        public static readonly NuGetFramework EmptyFramework = new NuGetFramework(string.Empty);
-        public static readonly NuGetFramework AnyFramework = new NuGetFramework("Any");
+        public bool AnyPlatform
+        {
+            get
+            {
+                return String.IsNullOrEmpty(Platform);
+            }
+        }
 
         /// <summary>
         /// True if this framework matches for all versions. 
         /// Ex: net
         /// </summary>
-        public bool AllVersions
+        public bool AllFrameworkVersions
         {
             get
             {

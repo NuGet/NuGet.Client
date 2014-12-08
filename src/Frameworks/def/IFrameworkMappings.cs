@@ -26,35 +26,32 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// Ex: WindowsPhone -> wp
-        /// </summary>
-        IEnumerable<KeyValuePair<string, string>> ProfileShortNames { get; }
-
+        /// </summary>;
+        IEnumerable<FrameworkSpecificMapping> ProfileShortNames { get; }
 
         /// <summary>
-        /// Ex: Windows 8.0 <-> NetCore 4.5
-        /// Ex: Windows 8.1 <-> NetCore 4.5.1
+        /// Equal frameworks. Used for legacy conversions.
+        /// ex: Framework: Win8 <-> Framework: NetCore45 Platform: Win8
         /// </summary>
         IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> EquivalentFrameworks { get; }
-
 
         /// <summary>
         /// Framework, EquivalentProfile1, EquivalentProfile2
         /// Ex: Silverlight, WindowsPhone71, WindowsPhone
         /// </summary>
-        IEnumerable<Tuple<string, string, string>> EquivalentProfiles { get; }
-
+        IEnumerable<FrameworkSpecificMapping> EquivalentProfiles { get; }
 
         /// <summary>
         /// Frameworks which are subsets of others.
         /// Ex: .NETCore -> .NET
         /// Everything in .NETCore maps to .NET and is one way compatible. Version numbers follow the same format.
         /// </summary>
-        //IEnumerable<KeyValuePair<string, string>> SubSetFrameworks { get; }
-
+        IEnumerable<KeyValuePair<string, string>> SubSetFrameworks { get; }
 
         /// <summary>
-        /// Maps frameworks which support all versions of another framework
+        /// Additional framework compatibility rules beyond name and version matching.
+        /// Ex: .NETFramework -supports-> Native
         /// </summary>
-        //IEnumerable<Tuple<KeyValuePair<string, VersionRange>, KeyValuePair<string, VersionRange>>> OneWayCompatibility { get; }
+        IEnumerable<OneWayCompatibilityMappingEntry> CompatibilityMappings { get; }
     }
 }

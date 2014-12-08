@@ -16,16 +16,16 @@ namespace NuGet.Test
         {
             FrameworkReducer reducer = new FrameworkReducer();
 
-            var netcore45 = NuGetFramework.Parse("netcore45");
-            var win8 = NuGetFramework.Parse("win8");
+            var sl3wp = NuGetFramework.Parse("sl3-wp");
+            var wp7 = NuGetFramework.Parse("wp7");
             var win81 = NuGetFramework.Parse("win81");
 
-            var all = new NuGetFramework[] { netcore45, win8, win81 };
+            var all = new NuGetFramework[] { sl3wp, wp7, win81 };
 
             var result = reducer.Reduce(all);
 
-            Assert.Equal(win8, result.First());
-            Assert.Equal(win81, result.Skip(1).First());
+            Assert.Equal(win81, result.First());
+            Assert.Equal(wp7, result.Skip(1).First());
         }
 
         [Fact]
@@ -33,14 +33,14 @@ namespace NuGet.Test
         {
             FrameworkReducer reducer = new FrameworkReducer();
 
-            var netcore45 = NuGetFramework.Parse("netcore45");
-            var win8 = NuGetFramework.Parse("win8");
+            var sl3wp = NuGetFramework.Parse("sl3-wp");
+            var wp7 = NuGetFramework.Parse("wp7");
 
-            var all = new NuGetFramework[] { netcore45, win8 };
+            var all = new NuGetFramework[] { sl3wp, wp7 };
 
             var result = reducer.Reduce(all);
 
-            Assert.Equal(win8, result.Single());
+            Assert.Equal(wp7, result.Single());
         }
 
 

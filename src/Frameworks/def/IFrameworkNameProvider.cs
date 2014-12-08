@@ -9,29 +9,29 @@ namespace NuGet.Frameworks
     public interface IFrameworkNameProvider
     {
         /// <summary>
-        /// Returns the official framework identifier.
+        /// Returns the official framework identifier for an alias or short name.
         /// </summary>
-        string GetIdentifier(string identifierShortName);
+        bool TryGetIdentifier(string identifierShortName, out string identifier);
 
         /// <summary>
         /// Gives the short name used for folders in NuGet
         /// </summary>
-        string GetShortIdentifier(string identifier);
+        bool TryGetShortIdentifier(string identifier, out string identifierShortName);
 
         /// <summary>
-        /// Get the profile string from the folder name.
+        /// Get the official profile name from the short name.
         /// </summary>
-        string GetProfile(string profileShortName);
+        bool TryGetProfile(string frameworkIdentifier, string profileShortName, out string profile);
 
         /// <summary>
         /// Returns the shortened version of the profile name.
         /// </summary>
-        string GetShortProfile(string profile);
+        bool TryGetShortProfile(string frameworkIdentifier, string profile, out string profileShortName);
 
         /// <summary>
         /// Parses a version string using single digit rules if no dots exist
         /// </summary>
-        Version GetVersion(string versionString);
+        bool TryGetVersion(string versionString, out Version version);
 
         /// <summary>
         /// Returns a shortened version. If all digits are single digits no dots will be used.
@@ -41,30 +41,47 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Looks up the portable profile number based on the framework list.
         /// </summary>
-        /// <remarks>Returns -1 if the profile was not found.</remarks>
-        int GetPortableProfile(IEnumerable<NuGetFramework> supportedFrameworks);
+        bool TryGetPortableProfile(IEnumerable<NuGetFramework> supportedFrameworks, out int profileNumber);
 
         /// <summary>
         /// Returns the frameworks based on a portable profile number.
         /// </summary>
-        IEnumerable<NuGetFramework> GetPortableFrameworks(int profile);
+        bool TryGetPortableFrameworks(int profile, out IEnumerable<NuGetFramework> frameworks);
 
         /// <summary>
         /// Returns the frameworks based on a portable profile number.
         /// </summary>
-        IEnumerable<NuGetFramework> GetPortableFrameworks(int profile, bool includeOptional);
+        bool TryGetPortableFrameworks(int profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks);
 
         /// <summary>
         /// Parses a shortened portable framework profile list.
         /// Ex: net45+win8
         /// </summary>
-        IEnumerable<NuGetFramework> GetPortableFrameworks(string shortPortableProfiles);
+        bool TryGetPortableFrameworks(string shortPortableProfiles, out IEnumerable<NuGetFramework> frameworks);
 
         /// <summary>
-        /// Returns a list of all possible substituations where the framework name or profile name
+        /// Returns a list of all possible substitutions where the framework name
         /// have equivalents.
         /// Ex: sl3 -> wp8
         /// </summary>
-        IEnumerable<NuGetFramework> GetEquivalentFrameworks(NuGetFramework framework);
+        bool TryGetEquivalentFrameworks(NuGetFramework framework, out IEnumerable<NuGetFramework> frameworks);
+
+        /// <summary>
+        /// Gives all substitutions for a framework range.
+        /// </summary>
+        bool TryGetEquivalentFrameworks(FrameworkRange range, out IEnumerable<NuGetFramework> frameworks);
+
+        /// <summary>
+        /// Returns ranges of frameworks that are known to be supported by the given framework.
+        /// Ex: net45 -> native
+        /// </summary>
+        bool TryGetCompatibilityMappings(NuGetFramework framework, out IEnumerable<FrameworkRange> supportedFrameworkRanges);
+
+        /// <summary>
+        /// Returns all sub sets of the given framework.
+        /// Ex: .NETFramework -> .NETCore
+        /// These will have the same version, but a different framework
+        /// </summary>
+        bool TryGetSubSetFrameworks(string frameworkIdentifier, out IEnumerable<string> subSetFrameworkIdentifiers);
     }
 }

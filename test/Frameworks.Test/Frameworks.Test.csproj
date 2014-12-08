@@ -54,6 +54,8 @@
   <ItemGroup>
     <Compile Include="CompatibilityTableTests.cs" />
     <Compile Include="CompatibilityTests.cs" />
+    <Compile Include="FrameworkExpanderTests.cs" />
+    <Compile Include="FrameworkNameProviderTests.cs" />
     <Compile Include="FrameworkReducerTests.cs" />
     <Compile Include="NuGetFrameworkParseTests.cs" />
     <Compile Include="NuGetFrameworkTests.cs" />

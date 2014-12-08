@@ -11,12 +11,39 @@ namespace NuGet.Test
 {
     public class NuGetFrameworkParseTests
     {
+        [Fact]
+        public void NuGetFramework_PortableWithAny()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable-win%2Bnet45%2Bwp8");
+
+            Assert.Equal(".NETPortable, Version=v0.0, Profile=Profile78", framework.DotNetFrameworkName);
+        }
+
+        [Fact]
+        public void NuGetFramework_IncludeUnknownProfile()
+        {
+            string actual = NuGetFramework.Parse("net45-custom").DotNetFrameworkName;
+
+            Assert.Equal(".NETFramework, Version=v4.5, Profile=custom", actual);
+        }
+
+        [Theory]
+        [InlineData(".NETPortable40-Profile1", ".NETPortable, Version=v4.0, Profile=Profile1")]
+        [InlineData(".NETPortable-Profile1", ".NETPortable, Version=v0.0, Profile=Profile1")]
+        [InlineData(".NETPortable-net45+win8", ".NETPortable, Version=v0.0, Profile=Profile7")]
+        public void NuGetFramework_PortableMixed(string input, string expected)
+        {
+            string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
+
+            Assert.Equal(expected, actual);
+        }
+
         [Theory]
         [InlineData("foo45", "Unsupported, Version=v0.0")]
         [InlineData("", "Unsupported, Version=v0.0")]
         public void NuGetFramework_ParseUnknown(string input, string expected)
         {
-            string actual = NuGetFramework.Parse(input).FullFrameworkName;
+            string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
 
             Assert.Equal(expected, actual);
         }
@@ -28,7 +55,7 @@ namespace NuGet.Test
         [InlineData("windowsphone8", "WindowsPhone, Version=v8.0")]
         public void NuGetFramework_PartialFull(string input, string expected)
         {
-            string actual = NuGetFramework.Parse(input).FullFrameworkName;
+            string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
 
             Assert.Equal(expected, actual);
         }
@@ -40,7 +67,7 @@ namespace NuGet.Test
         [InlineData("Portable, Version=v0.0, Profile=Profile7", ".NETPortable, Version=v0.0, Profile=Profile7")]
         public void NuGetFramework_ParseFullName(string input, string expected)
         {
-            string actual = NuGetFramework.Parse(input).FullFrameworkName;
+            string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
 
             Assert.Equal(expected, actual);
         }
@@ -51,7 +78,7 @@ namespace NuGet.Test
         [InlineData("portable-win8+net45+monoandroid1+monotouch1", ".NETPortable, Version=v0.0, Profile=Profile7")]
         public void NuGetFramework_Portable(string folder, string expected)
         {
-            string actual = NuGetFramework.Parse(folder).FullFrameworkName;
+            string actual = NuGetFramework.Parse(folder).DotNetFrameworkName;
 
             Assert.Equal(expected, actual);
         }
@@ -78,7 +105,7 @@ namespace NuGet.Test
         [InlineData("net45-cf", ".NETFramework, Version=v4.5, Profile=CompactFramework")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
-            string output = NuGetFramework.Parse(folderName).FullFrameworkName;
+            string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;
 
             Assert.Equal(fullName, output);
         }
@@ -93,7 +120,7 @@ namespace NuGet.Test
         [InlineData("")]
         public void NuGetFramework_Unsupported(string folderName)
         {
-            Assert.Equal("Unsupported, Version=v0.0", NuGetFramework.Parse(folderName).FullFrameworkName);
+            Assert.Equal("Unsupported, Version=v0.0", NuGetFramework.Parse(folderName).DotNetFrameworkName);
         }
     }
 }

@@ -15,12 +15,14 @@ namespace NuGet.Frameworks
         {
             return StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
                 && x.Version == y.Version
-                && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile);
+                && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile)
+                && StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform)
+                && x.Version == y.Version;
         }
 
         public int GetHashCode(NuGetFramework obj)
         {
-            return obj.FullFrameworkName.ToLowerInvariant().GetHashCode();
+            return obj.ToString().ToLowerInvariant().GetHashCode();
         }
     }
 }

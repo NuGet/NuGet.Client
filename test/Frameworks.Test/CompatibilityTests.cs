@@ -12,6 +12,76 @@ namespace NuGet.Test
 {
     public class CompatibilityTests
     {
+        [Fact]
+        public void Compatibility_InferredIndirect()
+        {
+            // win9 -> win8 -> netcore45, win8 -> netcore45
+            var framework1 = NuGetFramework.Parse("win9");
+            var framework2 = NuGetFramework.Parse("netcore45");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // verify that compatibility is inferred across all the mappings
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // verify that this was a one way mapping
+            Assert.True(!compat.IsCompatible(framework2, framework1));
+        }
+
+        [Theory]
+        [InlineData("win", "netcore")]
+        [InlineData("win81", "netcore")]
+        [InlineData("win8", "netcore")]
+        [InlineData("win", "netcore45")]
+        [InlineData("win", "netcore4")]
+        [InlineData("win81", "netcore4")]
+        public void Compatibility_Inferred(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // verify that compatibility is inferred across all the mappings
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // verify that this was a one way mapping
+            Assert.True(!compat.IsCompatible(framework2, framework1));
+        }
+
+        [Theory]
+        [InlineData("win8", "win")]
+        [InlineData("wpa", "wpa81")]
+        public void Compatibility_EqualMappings(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // verify that compatibility is inferred across all the mappings
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // verify that this was a two way mapping
+            Assert.True(compat.IsCompatible(framework2, framework1));
+        }
+
+        [Theory]
+        [InlineData("net45", "native")]
+        [InlineData("net", "native")]
+        public void Compatibility_OneWayMappings(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // verify that compatibility is inferred across all the mappings
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // verify that this was a one way mapping
+            Assert.True(!compat.IsCompatible(framework2, framework1));
+        }
 
         [Fact]
         public void Compatibility_Basic()
@@ -147,21 +217,6 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("win")]
-        [InlineData("win8")]
-        public void WindowsIdentifierCompatibleWithWindowsStoreAppProjects(string identifier)
-        {
-            // Arrange
-            var compat = DefaultCompatibilityProvider.Instance;
-            var packageFramework = NuGetFramework.Parse(identifier);
-
-            var projectFramework = NuGetFramework.Parse("netcore45");
-
-            // Act && Assert
-            Assert.True(compat.IsCompatible(projectFramework, packageFramework));
-        }
-
-        [Theory]
         [InlineData("win9")]
         [InlineData("win9")]
         [InlineData("win10")]
@@ -180,22 +235,22 @@ namespace NuGet.Test
             Assert.False(compat.IsCompatible(projectFramework, packageFramework));
         }
 
-        [Fact]
-        public void NetFrameworkCompatibiilityIsCompatibleReturns()
-        {
-            // Arrange
-            var net40 = NuGetFramework.Parse("net40");
-            var net40Client = NuGetFramework.Parse("net40-client");
-            var compat = DefaultCompatibilityProvider.Instance;
+        //[Fact]
+        //public void NetFrameworkCompatibilityIsCompatibleReturns()
+        //{
+        //    // Arrange
+        //    var net40 = NuGetFramework.Parse("net40");
+        //    var net40Client = NuGetFramework.Parse("net40-client");
+        //    var compat = DefaultCompatibilityProvider.Instance;
 
-            // Act
-            bool netClientCompatibleWithNet = compat.IsCompatible(net40, net40Client);
-            bool netCompatibleWithClient = compat.IsCompatible(net40Client, net40);
+        //    // Act
+        //    bool netClientCompatibleWithNet = compat.IsCompatible(net40, net40Client);
+        //    bool netCompatibleWithClient = compat.IsCompatible(net40Client, net40);
 
-            // Assert
-            Assert.True(netClientCompatibleWithNet);
-            Assert.True(netCompatibleWithClient);
-        }
+        //    // Assert
+        //    Assert.True(netClientCompatibleWithNet);
+        //    Assert.True(netCompatibleWithClient);
+        //}
 
         [Fact]
         public void LowerFrameworkVersionsAreNotCompatibleWithHigherFrameworkVersionsWithSameFrameworkName()

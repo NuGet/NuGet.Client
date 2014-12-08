@@ -32,6 +32,12 @@ namespace NuGet.Frameworks
         // equivalent profiles
         private Dictionary<string, Dictionary<string, HashSet<string>>> _equivalentProfiles;
 
+        // all compatibility mappings
+        private HashSet<OneWayCompatibilityMappingEntry> _compatibilityMappings;
+
+        // subsets, net -> netcore
+        private Dictionary<string, HashSet<string>> _subSetFrameworks;
+
         public FrameworkNameProvider(IEnumerable<IFrameworkMappings> mappings, IEnumerable<IPortableFrameworkMappings> portableMappings)
         {
             _identifierSynonyms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -43,193 +49,56 @@ namespace NuGet.Frameworks
             _portableOptionalFrameworks = new Dictionary<int, HashSet<NuGetFramework>>();
             _equivalentFrameworks = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
             _equivalentProfiles = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
+            _subSetFrameworks = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            _compatibilityMappings = new HashSet<OneWayCompatibilityMappingEntry>(OneWayCompatibilityMappingEntry.Comparer);
 
-            InitMappings(mappings, portableMappings);
+            InitMappings(mappings);
+
+            InitPortableMappings(portableMappings);
         }
 
-        // TODO: split this method up and make sure everything checks for duplicates
-        private void InitMappings(IEnumerable<IFrameworkMappings> mappings, IEnumerable<IPortableFrameworkMappings> portableMappings)
+        /// <summary>
+        /// Converts a key using the mappings, or if the key is already converted, finds the normalized form.
+        /// </summary>
+        private static bool TryConvertOrNormalize(string key, IDictionary<string, string> mappings, IDictionary<string, string> reverse, out string value)
         {
-            foreach(IFrameworkMappings mapping in mappings)
+            if (mappings.TryGetValue(key, out value))
             {
-                // eq profiles
-                foreach (var tuple in mapping.EquivalentProfiles)
-                {
-                    string frameworkIdentifier = tuple.Item1;
-                    string profile1 = tuple.Item2;
-                    string profile2 = tuple.Item3;
-
-                    Dictionary<string, HashSet<string>> profileMappings = null;
-
-                    if (!_equivalentProfiles.TryGetValue(frameworkIdentifier, out profileMappings))
-                    {
-                        profileMappings = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-                        _equivalentProfiles.Add(frameworkIdentifier, profileMappings);
-                    }
-
-                    HashSet<string> innerMappings1 = null;
-                    HashSet<string> innerMappings2 = null;
-
-                    if (!profileMappings.TryGetValue(profile1, out innerMappings1))
-                    {
-                        innerMappings1 = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        profileMappings.Add(profile1, innerMappings1);
-                    }
-
-                    if (!profileMappings.TryGetValue(profile2, out innerMappings2))
-                    {
-                        innerMappings2 = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        profileMappings.Add(profile2, innerMappings2);
-                    }
-
-                    innerMappings1.Add(profile2);
-                    innerMappings2.Add(profile1);
-                }
-
-                // equivalent frameworks
-                foreach (var pair in mapping.EquivalentFrameworks)
-                {
-                    // first direction
-                    HashSet<NuGetFramework> eqFrameworks = null;
-
-                    if (!_equivalentFrameworks.TryGetValue(pair.Key, out eqFrameworks))
-                    {
-                        eqFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
-                        _equivalentFrameworks.Add(pair.Key, eqFrameworks);
-                    }
-
-                    eqFrameworks.Add(pair.Value);
-
-                    // reverse direction
-                    if (!_equivalentFrameworks.TryGetValue(pair.Value, out eqFrameworks))
-                    {
-                        eqFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
-                        _equivalentFrameworks.Add(pair.Value, eqFrameworks);
-                    }
-
-                    eqFrameworks.Add(pair.Key);
-                }
-
-                // add synonyms
-                foreach (var pair in mapping.IdentifierSynonyms)
-                {
-                    if (!_identifierSynonyms.ContainsKey(pair.Key))
-                    {
-                        _identifierSynonyms.Add(pair.Key, pair.Value);
-                    }
-                }
-
-                // populate short <-> long
-                foreach (var pair in mapping.IdentifierShortNames)
-                {
-                    string shortName = pair.Value;
-                    string longName = pair.Key;
-
-                    if (!_identifierSynonyms.ContainsKey(pair.Value))
-                    {
-                        _identifierSynonyms.Add(pair.Value, pair.Key);
-                    }
-
-                    _identifierShortToLong.Add(shortName, longName);
-
-                    _identifierToShortName.Add(longName, shortName);
-                }
-
-                // populate profile names
-                foreach (var pair in mapping.ProfileShortNames)
-                {
-                    _profilesToShortName.Add(pair.Value, pair.Key);
-                    _profileShortToLong.Add(pair.Key, pair.Value);
-                }
-
-                // populate portable framework names
-                foreach (var portableMapping in portableMappings)
-                {
-                    foreach (var pair in portableMapping.ProfileFrameworks)
-                    {
-                        HashSet<NuGetFramework> frameworks = null;
-
-                        if (!_portableFrameworks.TryGetValue(pair.Key, out frameworks))
-                        {
-                            frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
-                            _portableFrameworks.Add(pair.Key, frameworks);
-                        }
-
-                        foreach (var fw in pair.Value)
-                        {
-                            frameworks.Add(fw);
-                        }
-                    }
-                }
-
-                // populate optional frameworks
-                foreach (var portableMapping in portableMappings)
-                {
-                    foreach (var pair in portableMapping.ProfileOptionalFrameworks)
-                    {
-                        HashSet<NuGetFramework> frameworks = null;
-
-                        if (!_portableOptionalFrameworks.TryGetValue(pair.Key, out frameworks))
-                        {
-                            frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
-                            _portableOptionalFrameworks.Add(pair.Key, frameworks);
-                        }
-
-                        foreach (var fw in pair.Value)
-                        {
-                            frameworks.Add(fw);
-                        }
-                    }
-                }
+                return true;
             }
-        }
-
-        public string GetIdentifier(string framework)
-        {
-            string identifier = null;
-
-            if (!_identifierSynonyms.TryGetValue(framework, out identifier))
+            else if (reverse.ContainsKey(key))
             {
-                // check if the exact identifier was passed in
-                if (_identifierToShortName.ContainsKey(framework))
-                {
-                    identifier = _identifierToShortName.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Key, framework)).Select(f => f.Key).Single();
-                }
+                value = reverse.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Key, key)).Select(s => s.Key).Single();
+                return true;
             }
 
-            return identifier;
+            value = null;
+            return false;
         }
 
-        public string GetProfile(string profileShortName)
+        public bool TryGetIdentifier(string framework, out string identifier)
         {
-            string profile = null;
-
-            _profileShortToLong.TryGetValue(profileShortName, out profile);
-
-            return profile;
+            return TryConvertOrNormalize(framework, _identifierSynonyms, _identifierToShortName, out identifier);
         }
 
-        public string GetShortIdentifier(string identifier)
+        public bool TryGetProfile(string frameworkIdentifier, string profileShortName, out string profile)
         {
-            string shortName = null;
-
-            _profilesToShortName.TryGetValue(identifier, out shortName);
-
-            return shortName;
+            return TryConvertOrNormalize(profileShortName, _profileShortToLong, _profilesToShortName, out profile);
         }
 
-        public string GetShortProfile(string profile)
+        public bool TryGetShortIdentifier(string identifier, out string identifierShortName)
         {
-            string shortProfile = null;
-
-            _profilesToShortName.TryGetValue(profile, out shortProfile);
-
-            return shortProfile;
+            return TryConvertOrNormalize(identifier, _identifierToShortName, _identifierShortToLong, out identifierShortName);
         }
 
-        public Version GetVersion(string versionString)
+        public bool TryGetShortProfile(string frameworkIdentifier, string profile, out string profileShortName)
         {
-            Version version = null;
+            return TryConvertOrNormalize(profile, _profilesToShortName, _profileShortToLong, out profileShortName);
+        }
+
+        public bool TryGetVersion(string versionString, out Version version)
+        {
+            version = null;
 
             if (String.IsNullOrEmpty(versionString))
             {
@@ -240,7 +109,7 @@ namespace NuGet.Frameworks
                 if (versionString.IndexOf('.') > -1)
                 {
                     // parse the version as a normal dot delimited version
-                    Version.TryParse(versionString, out version);
+                    return Version.TryParse(versionString, out version);
                 }
                 else
                 {
@@ -253,11 +122,11 @@ namespace NuGet.Frameworks
                     // take only the first 4 digits and add dots
                     // 451 -> 4.5.1
                     // 81233 -> 8123
-                    Version.TryParse(String.Join(".", versionString.ToCharArray().Take(4)), out version);
+                    return Version.TryParse(String.Join(".", versionString.ToCharArray().Take(4)), out version);
                 }
             }
 
-            return version;
+            return false;
         }
 
         public string GetVersionString(Version version)
@@ -279,14 +148,14 @@ namespace NuGet.Frameworks
             return versionString;
         }
 
-        public int GetPortableProfile(IEnumerable<NuGetFramework> supportedFrameworks)
+        public bool TryGetPortableProfile(IEnumerable<NuGetFramework> supportedFrameworks, out int profileNumber)
         {
             if (supportedFrameworks == null)
             {
                 throw new ArgumentNullException("supportedFrameworks");
             }
 
-            int profile = -1;
+            profileNumber = -1;
 
             HashSet<NuGetFramework> input = new HashSet<NuGetFramework>(supportedFrameworks, NuGetFramework.Comparer);
 
@@ -305,14 +174,14 @@ namespace NuGet.Frameworks
                         if (permutation.SetEquals(reduced))
                         {
                             // found a match
-                            profile = pair.Key;
-                            break;
+                            profileNumber = pair.Key;
+                            return true;
                         }
                     }
                 }
             }
 
-            return profile;
+            return false;
         }
 
         // find all combinations that are equivalent
@@ -368,19 +237,20 @@ namespace NuGet.Frameworks
             return Enumerable.Empty<NuGetFramework>();
         }
 
-        public IEnumerable<NuGetFramework> GetPortableFrameworks(int profile)
+        public bool TryGetPortableFrameworks(int profile, out IEnumerable<NuGetFramework> frameworks)
         {
-            return GetPortableFrameworks(profile, true);
+            return TryGetPortableFrameworks(profile, true, out frameworks);
         }
 
-        public IEnumerable<NuGetFramework> GetPortableFrameworks(int profile, bool includeOptional)
+        public bool TryGetPortableFrameworks(int profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
         {
-            HashSet<NuGetFramework> frameworks = null;
-            if (_portableFrameworks.TryGetValue(profile, out frameworks))
+            List<NuGetFramework> result = new List<NuGetFramework>();
+            HashSet<NuGetFramework> tmpFrameworks = null;
+            if (_portableFrameworks.TryGetValue(profile, out tmpFrameworks))
             {
-                foreach (var fw in frameworks)
+                foreach (var fw in tmpFrameworks)
                 {
-                    yield return fw;
+                    result.Add(fw);
                 }
             }
 
@@ -391,15 +261,16 @@ namespace NuGet.Frameworks
                 {
                     foreach (var fw in optional)
                     {
-                        yield return fw;
+                        result.Add(fw);
                     }
                 }
             }
 
-            yield break;
+            frameworks = result;
+            return result.Count > 0;
         }
 
-        public IEnumerable<NuGetFramework> GetPortableFrameworks(string shortPortableProfiles)
+        public bool TryGetPortableFrameworks(string shortPortableProfiles, out IEnumerable<NuGetFramework> frameworks)
         {
             if (shortPortableProfiles == null)
             {
@@ -410,19 +281,19 @@ namespace NuGet.Frameworks
 
             Debug.Assert(shortNames.Length > 0);
 
+            List<NuGetFramework> result = new List<NuGetFramework>();
             foreach (var name in shortNames)
             {
-                yield return NuGetFramework.Parse(name, this);
+                result.Add(NuGetFramework.Parse(name, this));
             }
 
-            yield break;
+            frameworks = result;
+            return result.Count > 0;
         }
 
-        public IEnumerable<NuGetFramework> GetEquivalentFrameworks(NuGetFramework framework)
+        public bool TryGetEquivalentFrameworks(NuGetFramework framework, out IEnumerable<NuGetFramework> frameworks)
         {
-            HashSet<NuGetFramework> frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
-
-            frameworks.Add(framework);
+            HashSet<NuGetFramework> result = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
 
             // add in all framework aliases
             HashSet<NuGetFramework> eqFrameworks = null;
@@ -430,11 +301,12 @@ namespace NuGet.Frameworks
             {
                 foreach (var eqFw in eqFrameworks)
                 {
-                    frameworks.Add(eqFw);
+                    result.Add(eqFw);
                 }
             }
 
-            var baseFrameworks = frameworks.ToArray();
+            var baseFrameworks = new List<NuGetFramework>(result);
+            baseFrameworks.Add(framework);
 
             // add in all profile aliases
             foreach (var fw in baseFrameworks)
@@ -447,13 +319,310 @@ namespace NuGet.Frameworks
                     {
                         foreach (var eqProfile in matchingProfiles)
                         {
-                            frameworks.Add(new NuGetFramework(fw.Framework, fw.Version, eqProfile));
+                            result.Add(new NuGetFramework(fw.Framework, fw.Version, eqProfile));
                         }
                     }
                 }
             }
 
-            return frameworks;
+            frameworks = result;
+            return result.Count > 0;
+        }
+
+        public bool TryGetEquivalentFrameworks(FrameworkRange range, out IEnumerable<NuGetFramework> frameworks)
+        {
+            if (range == null)
+            {
+                throw new ArgumentNullException("range");
+            }
+
+            HashSet<NuGetFramework> relevant = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+
+            foreach (var framework in _equivalentFrameworks.Keys.Where(f => range.Satisfies(f)))
+            {
+                relevant.Add(framework);
+            }
+
+            HashSet<NuGetFramework> results = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+
+            foreach (var framework in relevant)
+            {
+                IEnumerable<NuGetFramework> values = null;
+                if (TryGetEquivalentFrameworks(framework, out values))
+                {
+                    foreach (var val in values)
+                    {
+                        results.Add(val);
+                    }
+                }
+            }
+
+            frameworks = results;
+            return results.Count > 0;
+        }
+
+        private void InitMappings(IEnumerable<IFrameworkMappings> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (IFrameworkMappings mapping in mappings)
+                {
+                    // eq profiles
+                    AddEquivalentProfiles(mapping.EquivalentProfiles);
+
+                    // equivalent frameworks
+                    AddEquivalentFrameworks(mapping.EquivalentFrameworks);
+
+                    // add synonyms
+                    AddFrameworkSynoyms(mapping.IdentifierSynonyms);
+
+                    // populate short <-> long
+                    AddIdentifierShortNames(mapping.IdentifierShortNames);
+
+                    // official profile short names
+                    AddProfileShortNames(mapping.ProfileShortNames);
+
+                    // add compatiblity mappings
+                    AddCompatibilityMappings(mapping.CompatibilityMappings);
+
+                    // add subset frameworks
+                    AddSubSetFrameworks(mapping.SubSetFrameworks);
+                }
+            }
+        }
+
+        private void InitPortableMappings(IEnumerable<IPortableFrameworkMappings> portableMappings)
+        {
+            if (portableMappings != null)
+            {
+                foreach (var portableMapping in portableMappings)
+                {
+                    // populate portable framework names
+                    AddPortableProfileMappings(portableMapping.ProfileFrameworks);
+
+                    // populate optional frameworks
+                    AddPortableOptionalFrameworks(portableMapping.ProfileOptionalFrameworks);
+                }
+            }
+        }
+
+        private void AddCompatibilityMappings(IEnumerable<OneWayCompatibilityMappingEntry> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var mapping in mappings)
+                {
+                    _compatibilityMappings.Add(mapping);
+                }
+            }
+        }
+
+        private void AddSubSetFrameworks(IEnumerable<KeyValuePair<string, string>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var mapping in mappings)
+                {
+                    HashSet<string> subSets = null;
+                    if (!_subSetFrameworks.TryGetValue(mapping.Value, out subSets))
+                    {
+                        subSets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        _subSetFrameworks.Add(mapping.Value, subSets);
+                    }
+
+                    subSets.Add(mapping.Key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 2 way per framework profile equivalence
+        /// </summary>
+        /// <param name="mappings"></param>
+        private void AddEquivalentProfiles(IEnumerable<FrameworkSpecificMapping> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (FrameworkSpecificMapping profileMapping in mappings)
+                {
+                    string frameworkIdentifier = profileMapping.FrameworkIdentifier;
+                    string profile1 = profileMapping.Mapping.Key;
+                    string profile2 = profileMapping.Mapping.Value;
+
+                    Dictionary<string, HashSet<string>> profileMappings = null;
+
+                    if (!_equivalentProfiles.TryGetValue(frameworkIdentifier, out profileMappings))
+                    {
+                        profileMappings = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+                        _equivalentProfiles.Add(frameworkIdentifier, profileMappings);
+                    }
+
+                    HashSet<string> innerMappings1 = null;
+                    HashSet<string> innerMappings2 = null;
+
+                    if (!profileMappings.TryGetValue(profile1, out innerMappings1))
+                    {
+                        innerMappings1 = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        profileMappings.Add(profile1, innerMappings1);
+                    }
+
+                    if (!profileMappings.TryGetValue(profile2, out innerMappings2))
+                    {
+                        innerMappings2 = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        profileMappings.Add(profile2, innerMappings2);
+                    }
+
+                    innerMappings1.Add(profile2);
+                    innerMappings2.Add(profile1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 2 way framework equivalence
+        /// </summary>
+        /// <param name="mappings"></param>
+        private void AddEquivalentFrameworks(IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var pair in mappings)
+                {
+                    // first direction
+                    HashSet<NuGetFramework> eqFrameworks = null;
+
+                    if (!_equivalentFrameworks.TryGetValue(pair.Key, out eqFrameworks))
+                    {
+                        eqFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                        _equivalentFrameworks.Add(pair.Key, eqFrameworks);
+                    }
+
+                    eqFrameworks.Add(pair.Value);
+
+                    // reverse direction
+                    if (!_equivalentFrameworks.TryGetValue(pair.Value, out eqFrameworks))
+                    {
+                        eqFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                        _equivalentFrameworks.Add(pair.Value, eqFrameworks);
+                    }
+
+                    eqFrameworks.Add(pair.Key);
+                }
+            }
+        }
+
+        private void AddFrameworkSynoyms(IEnumerable<KeyValuePair<string, string>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var pair in mappings)
+                {
+                    if (!_identifierSynonyms.ContainsKey(pair.Key))
+                    {
+                        _identifierSynonyms.Add(pair.Key, pair.Value);
+                    }
+                }
+            }
+        }
+
+        private void AddIdentifierShortNames(IEnumerable<KeyValuePair<string, string>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var pair in mappings)
+                {
+                    string shortName = pair.Value;
+                    string longName = pair.Key;
+
+                    if (!_identifierSynonyms.ContainsKey(pair.Value))
+                    {
+                        _identifierSynonyms.Add(pair.Value, pair.Key);
+                    }
+
+                    _identifierShortToLong.Add(shortName, longName);
+
+                    _identifierToShortName.Add(longName, shortName);
+                }
+            }
+        }
+
+        private void AddProfileShortNames(IEnumerable<FrameworkSpecificMapping> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var profileMapping in mappings)
+                {
+                    _profilesToShortName.Add(profileMapping.Mapping.Value, profileMapping.Mapping.Key);
+                    _profileShortToLong.Add(profileMapping.Mapping.Key, profileMapping.Mapping.Value);
+                }
+            }
+        }
+
+        // Add supported frameworks for each portable profile number
+        private void AddPortableProfileMappings(IEnumerable<KeyValuePair<int, NuGetFramework[]>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var pair in mappings)
+                {
+                    HashSet<NuGetFramework> frameworks = null;
+
+                    if (!_portableFrameworks.TryGetValue(pair.Key, out frameworks))
+                    {
+                        frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                        _portableFrameworks.Add(pair.Key, frameworks);
+                    }
+
+                    foreach (var fw in pair.Value)
+                    {
+                        frameworks.Add(fw);
+                    }
+                }
+            }
+        }
+
+        // Add optional frameworks for each portable profile number
+        private void AddPortableOptionalFrameworks(IEnumerable<KeyValuePair<int, NuGetFramework[]>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var pair in mappings)
+                {
+                    HashSet<NuGetFramework> frameworks = null;
+
+                    if (!_portableOptionalFrameworks.TryGetValue(pair.Key, out frameworks))
+                    {
+                        frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                        _portableOptionalFrameworks.Add(pair.Key, frameworks);
+                    }
+
+                    foreach (var fw in pair.Value)
+                    {
+                        frameworks.Add(fw);
+                    }
+                }
+            }
+        }
+
+
+        public bool TryGetCompatibilityMappings(NuGetFramework framework, out IEnumerable<FrameworkRange> supportedFrameworkRanges)
+        {
+            supportedFrameworkRanges = _compatibilityMappings.Where(m => m.TargetFrameworkRange.Satisfies(framework)).Select(m => m.SupportedFrameworkRange);
+
+            return supportedFrameworkRanges.Any();
+        }
+
+        public bool TryGetSubSetFrameworks(string frameworkIdentifier, out IEnumerable<string> subSetFrameworks)
+        {
+            HashSet<string> values = null;
+            if (_subSetFrameworks.TryGetValue(frameworkIdentifier, out values))
+            {
+                subSetFrameworks = values;
+                return true;
+            }
+
+            subSetFrameworks = null;
+            return false;
         }
     }
 }

@@ -33,9 +33,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="comparers\CompatibilityMappingComparer.cs" />
     <Compile Include="comparers\NuGetFrameworkNameComparer.cs" />
     <Compile Include="comparers\NuGetFrameworkFullComparer.cs" />
     <Compile Include="comparers\NuGetFrameworkProfileComparer.cs" />
+    <Compile Include="FrameworkExpander.cs" />
+    <Compile Include="FrameworkRange.cs" />
+    <Compile Include="OneWayCompatibilityMappingEntry.cs" />
     <Compile Include="CompatibilityProvider.cs" />
     <Compile Include="CompatibilityTable.cs" />
     <Compile Include="DefaultCompatibilityProvider.cs" />
@@ -51,6 +55,7 @@
     <Compile Include="def\IFrameworkMappings.cs" />
     <Compile Include="def\IFrameworkNameProvider.cs" />
     <Compile Include="FrameworkReducer.cs" />
+    <Compile Include="FrameworkSpecificMapping.cs" />
     <Compile Include="NuGetFramework.cs" />
     <Compile Include="NuGetFrameworkFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

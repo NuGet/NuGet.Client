@@ -53,9 +53,8 @@ namespace NuGet.Frameworks
 
             string[] parts = frameworkName.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
 
-            string platform = mappings.GetIdentifier(parts[0]);
-
-            if (String.IsNullOrEmpty(platform))
+            string platform = null;
+            if (!mappings.TryGetIdentifier(parts[0], out platform))
             {
                 platform = parts[0];
             }
@@ -89,32 +88,50 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException("folderName");
             }
 
+            if (folderName.IndexOf('%') > -1)
+            {
+                folderName = Uri.UnescapeDataString(folderName);
+            }
+
             NuGetFramework result = UnsupportedFramework;
 
             Match match = FrameworkConstants.FrameworkRegex.Match(folderName);
 
             if (match.Success)
             {
-                string framework = mappings.GetIdentifier(match.Groups["Framework"].Value);
+                string framework = null;
 
                 // TODO: support number only folder names like 45
-                if (!String.IsNullOrEmpty(framework))
+                if (mappings.TryGetIdentifier(match.Groups["Framework"].Value, out framework))
                 {
-                    Version version = mappings.GetVersion(match.Groups["Version"].Value);
+                    Version version = new Version(0, 0); // default for the empty string
+                    string versionString = match.Groups["Version"].Value;
 
-                    // make sure we have a valid version or none at all
-                    if (version != null)
+                    if (String.IsNullOrEmpty(versionString) || mappings.TryGetVersion(versionString, out version))
                     {
                         string profileShort = match.Groups["Profile"].Value.TrimStart('-');
-                        string profile = mappings.GetProfile(profileShort);
+                        string profile = null;
+                        if (!mappings.TryGetProfile(framework, profileShort, out profile))
+                        {
+                            profile = profileShort ?? string.Empty;
+                        }
 
                         if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
                         {
-                            IEnumerable<NuGetFramework> clientFrameworks = mappings.GetPortableFrameworks(profileShort);
+                            IEnumerable<NuGetFramework> clientFrameworks = null;
+                            mappings.TryGetPortableFrameworks(profileShort, out clientFrameworks);
 
-                            string portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(mappings.GetPortableProfile(clientFrameworks));
-
-                            result = new NuGetFramework(framework, version, portableProfileNumber);
+                            int profileNumber = -1;
+                            if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                            {
+                                string portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
+                                result = new NuGetFramework(framework, version, portableProfileNumber);
+                            }
+                            else
+                            {
+                                // TODO: should this be unsupported?
+                                result = new NuGetFramework(framework, version, profileShort);
+                            }
                         }
                         else
                         {
