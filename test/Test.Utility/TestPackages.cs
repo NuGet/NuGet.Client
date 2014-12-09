@@ -1,4 +1,5 @@
 ﻿using Ionic.Zip;
+using NuGet.PackagingCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,11 @@ namespace Test.Utility
 {
     public static class TestPackages
     {
+        public static ZipFileSystem GetZip(FileInfo file)
+        {
+            return new ZipFileSystem(file.OpenRead());
+        }
+
         public static FileInfo GetLegacyTestPackage()
         {
             string file = Guid.NewGuid().ToString() + ".nupkg";

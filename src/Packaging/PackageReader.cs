@@ -25,11 +25,29 @@ namespace NuGet.Packaging
             _fileSystem = fileSystem;
         }
 
+        /// <summary>
+        /// Id and Version of the package
+        /// </summary>
+        /// <returns></returns>
         public PackageIdentity GetIdentity()
         {
             return new PackageIdentity(Nuspec.GetId(), NuGetVersion.Parse(Nuspec.GetVersion()));
         }
 
+        /// <summary>
+        /// Frameworks mentioned in the package.
+        /// </summary>
+        public IEnumerable<NuGetFramework> SupportedFrameworks
+        {
+            get
+            {
+                return GetLibItems().Select(g => NuGetFramework.Parse(g.TargetFramework)).Distinct(NuGetFramework.Comparer);
+            }
+        }
+
+        /// <summary>
+        /// The contents and dependencies of the package.
+        /// </summary>
         public ComponentTree GetComponentTree()
         {
             TreeBuilder builder = new TreeBuilder();
