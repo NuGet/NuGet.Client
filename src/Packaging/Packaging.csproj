@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="def\IPackageReader.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageReader.cs" />
     <Compile Include="PackagesConfigReader.cs" />
     <Compile Include="FrameworkSpecificGroup.cs" />

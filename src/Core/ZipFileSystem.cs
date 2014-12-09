@@ -11,7 +11,7 @@ namespace NuGet.PackagingCore
     /// <summary>
     /// A zipped nupkg.
     /// </summary>
-    public class ZipFileSystem : IFileSystem
+    public class ZipFileSystem : IFileSystem, IDisposable
     {
         private readonly ZipArchive _zip;
         private IReadOnlyCollection<ZipArchiveEntry> _entries;
@@ -79,6 +79,11 @@ namespace NuGet.PackagingCore
             }
 
             return entry;
+        }
+
+        public void Dispose()
+        {
+            _zip.Dispose();
         }
     }
 }

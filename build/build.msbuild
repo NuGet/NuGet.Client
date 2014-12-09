@@ -63,7 +63,7 @@
     </ItemGroup>
 
     <Target Name="RunTests" Condition=" '$(DisableRunningUnitTests)' != 'true' ">        
-      <MsBuild Projects="@(TestProjects)" Targets="RunTests" BuildInParallel="$(BuildTestsInParallel)" />
+      <MsBuild Projects="@(TestProjects)" Targets="RunTests" BuildInParallel="true" />
     </Target>
 
     <Target Name="ReportFxCopResults">
@@ -84,7 +84,7 @@
       <PropertyGroup>
         <EnableCodeAnalysis Condition="'$(EnableCodeAnalysis)' == ''" >true</EnableCodeAnalysis>
       </PropertyGroup>
-      <MSBuild Projects="@(SolutionFile)" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis)" />
+      <MSBuild Projects="@(SolutionFile)" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis)" BuildInParallel="true" />
     </Target>
 
     <Target Name="Build" DependsOnTargets="Clean;CheckForMultipleSolutions;RestorePackages;BuildSln;ReportFxCopResults;RunTests" />
