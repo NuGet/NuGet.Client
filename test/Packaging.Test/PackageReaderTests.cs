@@ -18,79 +18,60 @@ namespace NuGet.Test
 
             using (PackageReader reader = new PackageReader(zip))
             {
-                string[] frameworks = reader.SupportedFrameworks.Select(f => f.DotNetFrameworkName).ToArray();
+                string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
 
-                Assert.Equal("any", frameworks[0]);
-                Assert.Equal("net40", frameworks[1]);
-                Assert.Equal("net45", frameworks[2]);
+                Assert.Equal("Any", frameworks[0]);
+                Assert.Equal(".NETFramework, Version=v4.0", frameworks[1]);
+                Assert.Equal(".NETFramework, Version=v4.5", frameworks[2]);
                 Assert.Equal(frameworks.Length, 3);
             }
         }
 
+        [Fact]
+        public void PackageReader_AgnosticFramework()
+        {
+            var zip = TestPackages.GetZip(TestPackages.GetLegacyContentPackage());
 
-        //[Fact]
-        //public void ArtifactReader_Tree()
-        //{
-        //    var zip = TestPackages.GetLegacyTestPackage();
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
 
-        //    using (PackageReader packageReader = new PackageReader(new ZipFileSystem(zip.OpenRead())))
-        //    {
-        //        ArtifactReader reader = new ArtifactReader(packageReader);
+                Assert.Equal("Agnostic", frameworks[0]);
+                Assert.Equal(frameworks.Length, 1);
+            }
+        }
 
-        //        var artifactTree = reader.GetArtifactTree();
+        [Fact]
+        public void PackageReader_ContentFilesInSubFolder()
+        {
+            var zip = TestPackages.GetZip(TestPackages.GetLegacyContentPackage());
 
-        //        ArtifactGroup[] groups = artifactTree.Groups.ToArray();
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                var groups = reader.GetComponentTree().GetPaths();
+                var group = groups.Single();
+                var prop = group.Properties.Single() as KeyValueTreeProperty;
 
-        //        Assert.Equal(1, groups[0].Items.Count());
-        //    }
-        //}
+                Assert.Equal("any", prop.Value);
+                Assert.Equal(group.Items.Count(), 3);
+            }
+        }
 
-        //[Fact]
-        //public void ArtifactReader_AgnosticFramework()
-        //{
-        //    var zip = TestPackages.GetLegacyContentPackage();
+        // TODO: This behavior might be a breaking change from NuGet legacy
+        [Fact]
+        public void PackageReader_IgnoreSubFolders()
+        {
+            var zip = TestPackages.GetZip(TestPackages.GetLibSubFolderPackage());
 
-        //    using (PackageReader packageReader = new PackageReader(new ZipFileSystem(zip.OpenRead())))
-        //    {
-        //        ArtifactReader reader = new ArtifactReader(packageReader);
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                var groups = reader.GetComponentTree().GetPaths();
+                var group = groups.First();
+                var prop = group.Properties.Single() as KeyValueTreeProperty;
 
-        //        string[] frameworks = reader.GetSupportedFrameworks().ToArray();
-
-        //        Assert.Equal("agnostic", frameworks[0]);
-        //        Assert.Equal(frameworks.Length, 1);
-        //    }
-        //}
-
-        //[Fact]
-        //public void ArtifactReader_ContentFilesInSubFolder()
-        //{
-        //    var zip = TestPackages.GetLegacyContentPackage();
-
-        //    using (PackageReader packageReader = new PackageReader(new ZipFileSystem(zip.OpenRead())))
-        //    {
-        //        ArtifactReader reader = new ArtifactReader(packageReader);
-
-        //        var group = reader.GetArtifactGroups().Single();
-
-        //        Assert.Equal("any", group.Properties.Single().Value);
-        //        Assert.Equal(group.Items.Count(), 3);
-        //    }
-        //}
-
-        //[Fact]
-        //public void ArtifactReader_IgnoreSubFolders()
-        //{
-        //    var zip = TestPackages.GetLibSubFolderPackage();
-
-        //    using (PackageReader packageReader = new PackageReader(new ZipFileSystem(zip.OpenRead())))
-        //    {
-        //        ArtifactReader reader = new ArtifactReader(packageReader);
-
-        //        var group = reader.GetArtifactGroups().Single();
-
-        //        Assert.Equal("net40", group.Properties.Single().Value);
-        //        Assert.Equal(group.Items.Count(), 1);
-        //    }
-        //}
+                Assert.Equal("net40", prop.Value);
+                Assert.Equal(group.Items.Count(), 1);
+            }
+        }
     }
 }

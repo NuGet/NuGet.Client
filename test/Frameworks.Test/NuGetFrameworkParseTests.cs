@@ -47,8 +47,8 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("foo45", "Unsupported, Version=v0.0")]
-        [InlineData("", "Unsupported, Version=v0.0")]
+        [InlineData("foo45", "Unsupported")]
+        [InlineData("", "Unsupported")]
         public void NuGetFramework_ParseUnknown(string input, string expected)
         {
             string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
@@ -81,6 +81,7 @@ namespace NuGet.Test
         }
 
         [Theory]
+        [InlineData("portable-net45+win10.0", ".NETPortable, Version=v0.0, Profile=net45+win10.0")]
         [InlineData("portable-net45+win8", ".NETPortable, Version=v0.0, Profile=Profile7")]
         [InlineData("portable-win8+net45", ".NETPortable, Version=v0.0, Profile=Profile7")]
         [InlineData("portable-win8+net45+monoandroid1+monotouch1", ".NETPortable, Version=v0.0, Profile=Profile7")]
@@ -128,7 +129,7 @@ namespace NuGet.Test
         [InlineData("")]
         public void NuGetFramework_Unsupported(string folderName)
         {
-            Assert.Equal("Unsupported, Version=v0.0", NuGetFramework.Parse(folderName).DotNetFrameworkName);
+            Assert.Equal("Unsupported", NuGetFramework.Parse(folderName).DotNetFrameworkName);
         }
     }
 }

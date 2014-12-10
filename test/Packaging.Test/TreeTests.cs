@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
+using NuGet.PackagingCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,61 +13,50 @@ namespace NuGet.Test
 {
     public class TreeTests
     {
-        //[Fact]
-        //public void Tree_SinglePivot()
-        //{
-        //    TreeBuilder builder = new TreeBuilder();
+        [Fact]
+        public void Tree_SinglePivot()
+        {
+            TreeBuilder builder = new TreeBuilder();
 
-        //    List<KeyValuePair<string, string>> dataA = new List<KeyValuePair<string, string>>();
-        //    dataA.Add(new KeyValuePair<string, string>("path", "lib\\net45\\a.dll"));
+            List<KeyValuePair<string, string>> dataA = new List<KeyValuePair<string, string>>();
+            dataA.Add(new KeyValuePair<string, string>("path", "lib\\net45\\a.dll"));
 
-        //    List<KeyValuePair<string, string>> dataB = new List<KeyValuePair<string, string>>();
-        //    dataB.Add(new KeyValuePair<string, string>("path", "lib\\native\\b.dll"));
+            List<KeyValuePair<string, string>> dataB = new List<KeyValuePair<string, string>>();
+            dataB.Add(new KeyValuePair<string, string>("path", "lib\\native\\b.dll"));
 
-        //    builder.Add(new NuGetTreeItem("reference", true, dataA),
-        //        new TreeProperty[] { new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, "net45") });
+            builder.Add(new DevTreeItem("reference", true, dataA),
+                new KeyValueTreeProperty[] { new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, "net45") });
 
-        //    builder.Add(new NuGetTreeItem("reference", true, dataB),
-        //        new TreeProperty[] { new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, "native") });
+            builder.Add(new DevTreeItem("reference", true, dataB),
+                new KeyValueTreeProperty[] { new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, "native") });
 
-        //    var tree = builder.GetTree();
+            var tree = builder.GetTree();
 
-        //    var paths = tree.GetPaths();
+            var paths = tree.GetPaths();
 
-        //    Assert.Equal(2, paths.Count());
+            Assert.Equal(2, paths.Count());
 
-        //    XElement root = tree.ToXml();
+            Assert.Equal("lib\\net45\\a.dll", paths.First().Items.Select(e => e as DevTreeItem).Single().Data.Where(e => e.Key == "path").Single().Value);
+        }
 
-        //    var children = root.Elements(XName.Get("node")).Elements(XName.Get("children"));
-        //    var items = children.Elements(XName.Get("node")).Elements(XName.Get("items"));
-        //    var item = items.Elements(XName.Get("item"));
-        //    var pathValue = item.Elements(XName.Get("path")).First().Value;
+        [Fact]
+        public void Tree_Basic()
+        {
+            TreeBuilder builder = new TreeBuilder();
 
-        //    Assert.Equal("lib\\net45\\a.dll", pathValue);
-        //}
+            List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
+            data.Add(new KeyValuePair<string, string>("path", "lib\\a.dll"));
 
-        //[Fact]
-        //public void Tree_Basic()
-        //{
-        //    TreeBuilder builder = new TreeBuilder();
+            builder.Add(new DevTreeItem("reference", true, data),
+                new KeyValueTreeProperty[] { new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, PackagingConstants.AnyFramework) });
 
-        //    List<KeyValuePair<string, string>> data = new List<KeyValuePair<string,string>>();
-        //    data.Add(new KeyValuePair<string, string>("path", "lib\\a.dll"));
+            var tree = builder.GetTree();
 
-        //    builder.Add(new NuGetTreeItem("reference", true, data), 
-        //        new TreeProperty[] { new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, PackagingConstants.AnyFramework) });
+            var paths = tree.GetPaths();
 
-        //    var tree = builder.GetTree();
+            Assert.Equal(1, paths.Count());
 
-        //    var paths = tree.GetPaths();
-
-        //    Assert.Equal(1, paths.Count());
-
-        //    XElement root = tree.ToXml();
-
-        //    var typeValue = root.Elements(XName.Get("node")).Elements(XName.Get("items")).Elements(XName.Get("item")).Attributes(XName.Get("type")).Single().Value;
-
-        //    Assert.Equal("reference", typeValue);
-        //}
+            Assert.Equal("reference", paths.First().Items.Select(e => e as DevTreeItem).Single().Type);
+        }
     }
 }

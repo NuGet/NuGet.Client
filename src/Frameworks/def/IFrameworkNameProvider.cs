@@ -54,6 +54,12 @@ namespace NuGet.Frameworks
         bool TryGetPortableFrameworks(int profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks);
 
         /// <summary>
+        /// Returns the frameworks based on a profile string.
+        /// Profile can be either the number in format: Profile=7, or the shortened NuGet version: net45+win8
+        /// </summary>
+        bool TryGetPortableFrameworks(string profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks);
+
+        /// <summary>
         /// Parses a shortened portable framework profile list.
         /// Ex: net45+win8
         /// </summary>

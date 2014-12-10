@@ -10,6 +10,80 @@ namespace NuGet.Test
 {
     public class FrameworkReducerTests
     {
+        [Fact]
+        public void FrameworkReducer_ReduceDownPCL2()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("portable-net45+win8");
+            var framework2 = NuGetFramework.Parse("portable-net45+win8+wp8");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.ReduceDownwards(all);
+
+            Assert.Equal(framework2, result.Single());
+        }
+
+        [Fact]
+        public void FrameworkReducer_ReduceDownPCL()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("portable-net45+win8");
+            var framework2 = NuGetFramework.Parse("portable-net451+win81");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.ReduceDownwards(all);
+
+            Assert.Equal(framework1, result.Single());
+        }
+
+        [Fact]
+        public void FrameworkReducer_ReduceUpPCL2()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("portable-net45+win8");
+            var framework2 = NuGetFramework.Parse("portable-net45+win8+wp8");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.ReduceUpwards(all);
+
+            Assert.Equal(framework1, result.Single());
+        }
+
+        [Fact]
+        public void FrameworkReducer_ReduceUpPCL()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("portable-net45+win8");
+            var framework2 = NuGetFramework.Parse("portable-net451+win81");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.ReduceUpwards(all);
+
+            Assert.Equal(framework2, result.Single());
+        }
+
+        [Fact]
+        public void FrameworkReducer_ReducePCL()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("portable-net45+win8");
+            var framework2 = NuGetFramework.Parse("portable-win+net45");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.Reduce(all);
+
+            Assert.Equal(framework1, result.Single());
+        }
 
         [Fact]
         public void FrameworkReducer_ReduceNonSingle()

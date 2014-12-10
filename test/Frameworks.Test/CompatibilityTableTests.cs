@@ -11,6 +11,28 @@ namespace NuGet.Test
     public class CompatibilityTableTests
     {
         [Fact]
+        public void CompatibilityTable_PCL()
+        {
+            var fw1 = NuGetFramework.Parse("portable-net45+win8");
+            var fw2 = NuGetFramework.Parse("portable-net45+win8+wp8");
+            var win81 = NuGetFramework.Parse("win81");
+
+            var all = new NuGetFramework[] { win81, fw1, fw2 };
+
+            CompatibilityTable table = new CompatibilityTable(all);
+
+            IEnumerable<NuGetFramework> compatible = null;
+            table.TryGetCompatible(win81, out compatible);
+
+            var results = compatible.ToArray();
+
+            Assert.Equal(3, results.Count());
+            Assert.Equal(win81, results[0]);
+            Assert.Equal(fw1, results[1]);
+            Assert.Equal(fw2, results[2]);
+        }
+
+        [Fact]
         public void CompatibilityTable_Alias()
         {
             var win7 = NuGetFramework.Parse("win7");

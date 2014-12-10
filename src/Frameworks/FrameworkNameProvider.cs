@@ -313,6 +313,24 @@ namespace NuGet.Frameworks
             return result.Count > 0;
         }
 
+        public bool TryGetPortableFrameworks(string profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
+        {
+            var match = FrameworkConstants.ProfileNumberRegex.Match(profile);
+
+            int profileNum = -1;
+
+            // attempt to parse the profile for a number
+            if (match.Success 
+                && Int32.TryParse(match.Groups["ProfileNumber"].Value, out profileNum) 
+                && TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
+            {
+                return true;
+            }
+
+            // treat the profile as a list of frameworks
+            return TryGetPortableFrameworks(profile, out frameworks);
+        }
+
         public bool TryGetEquivalentFrameworks(NuGetFramework framework, out IEnumerable<NuGetFramework> frameworks)
         {
             HashSet<NuGetFramework> result = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
@@ -346,6 +364,9 @@ namespace NuGet.Frameworks
                     }
                 }
             }
+
+            // do not include the original framework
+            result.Remove(framework);
 
             frameworks = result;
             return result.Count > 0;

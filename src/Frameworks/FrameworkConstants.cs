@@ -12,6 +12,13 @@ namespace NuGet.Frameworks
         public const string LessThanOrEqualTo = "\u2264";
         public const string GreaterThanOrEqualTo = "\u2265";
 
+        public static class SpecialIdentifiers
+        {
+            public const string Any = "Any";
+            public const string Agnostic = "Agnostic";
+            public const string Unsupported = "Unsupported";
+        }
+
         public static class PlatformIdentifiers
         {
             public const string WindowsPhone = "WindowsPhone";
@@ -44,6 +51,7 @@ namespace NuGet.Frameworks
         }
 
         public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
-        public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*)*)?$", RegexFlags);
+        public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*([0-9]+\.([0-9]+))*)*)?$", RegexFlags);
+        public static readonly Regex ProfileNumberRegex = new Regex(@"^Profile(?<ProfileNumber>[0-9]+)$", RegexFlags);
     }
 }

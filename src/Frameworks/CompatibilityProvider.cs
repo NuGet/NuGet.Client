@@ -11,6 +11,7 @@ namespace NuGet.Frameworks
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
         private static readonly Version _emptyVersion = new Version(0, 0, 0, 0);
+        private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
@@ -18,41 +19,124 @@ namespace NuGet.Frameworks
             _expander = new FrameworkExpander(mappings);
         }
 
-        public bool IsCompatible(NuGetFramework framework, NuGetFramework other)
+        /// <summary>
+        /// Check if the frameworks are compatible.
+        /// </summary>
+        /// <param name="framework">Project framework</param>
+        /// <param name="other">Other framework to check against the project framework</param>
+        /// <returns>True if framework supports other</returns>
+        public virtual bool IsCompatible(NuGetFramework framework, NuGetFramework other)
         {
-            // TODO: how should the special frameworks be handled?
-
-            // unsupported should not be compatible with anything
-            if (framework.IsUnsupported || other.IsUnsupported || framework.IsEmpty || other.IsEmpty)
+            if (framework == null)
             {
-                return false;
+                throw new ArgumentNullException("framework");
             }
 
+            if (other == null)
+            {
+                throw new ArgumentNullException("other");
+            }
+
+            // check if they are the exact same
+            if (_fullComparer.Equals(framework, other))
+            {
+                return true;
+            }
+
+            bool? result = null;
+
+            // special cased frameworks
+            if (!framework.IsSpecificFramework || !other.IsSpecificFramework)
+            {
+                result = SpecialFrameworkCompare(framework, other);
+            }
+
+            if (result == null)
+            {
+                // PCL compat logic
+                if (framework.IsPCL || other.IsPCL)
+                {
+                    result = PCLCompare(framework, other);
+                }
+                else
+                {
+                    // regular framework compat check
+                    result = FrameworkCompare(framework, other);
+                }
+            }
+
+            return result == true;
+        }
+
+        protected virtual bool? SpecialFrameworkCompare(NuGetFramework framework, NuGetFramework other)
+        {
+            // TODO: Revist these
             if (framework.IsAny || other.IsAny)
             {
                 return true;
             }
 
-            // only a PCL can work in a PCL
+            if (framework.IsUnsupported)
+            {
+                return false;
+            }
+
+            if (other.IsAgnostic)
+            {
+                return true;
+            }
+
+            if (other.IsUnsupported)
+            {
+                return false;
+            }
+
+            return null;
+        }
+
+        protected virtual bool? PCLCompare(NuGetFramework framework, NuGetFramework other)
+        {
+            // TODO: PCLs can only depend on other PCLs?
             if (framework.IsPCL && !other.IsPCL)
             {
                 return false;
             }
 
+            IEnumerable<NuGetFramework> frameworks = null;
+            IEnumerable<NuGetFramework> otherFrameworks = null;
+
+            if (framework.IsPCL)
+            {
+                // do not include optional frameworks here since we might be unable to tell what is optional on the other framework
+                _mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks);
+            }
+            else
+            {
+                frameworks = new NuGetFramework[] { framework };
+            }
+
             if (other.IsPCL)
             {
-                // perform the full check
-                throw new NotImplementedException();
+                // include optional frameworks here, the larger the list the more compatible it is
+                _mappings.TryGetPortableFrameworks(other.Profile, true, out otherFrameworks);
             }
-
-            var fullComparer = new NuGetFrameworkFullComparer();
-
-            // check if they are the exact same
-            if (fullComparer.Equals(framework, other))
+            else
             {
-                return true;
+                otherFrameworks = new NuGetFramework[] { other };
             }
 
+            // check if we this is a compatible superset
+            return PCLInnerCompare(frameworks, otherFrameworks);
+        }
+
+        private bool? PCLInnerCompare(IEnumerable<NuGetFramework> profileFrameworks, IEnumerable<NuGetFramework> otherProfileFrameworks)
+        {
+            // TODO: Does this check need to make sure multiple frameworks aren't matched against a single framework from the other list?
+            return profileFrameworks.Count() <= otherProfileFrameworks.Count() && profileFrameworks.All(f => otherProfileFrameworks.Any(ff => IsCompatible(f, ff)));
+        }
+
+        protected virtual bool? FrameworkCompare(NuGetFramework framework, NuGetFramework other)
+        {
             // find all possible substitutions
             HashSet<NuGetFramework> frameworkSet = new HashSet<NuGetFramework>(NuGetFramework.Comparer) { framework };
 

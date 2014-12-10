@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompatibilityPCLTests.cs" />
     <Compile Include="CompatibilityTableTests.cs" />
     <Compile Include="CompatibilityTests.cs" />
     <Compile Include="FrameworkExpanderTests.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="NuGetFrameworkParseTests.cs" />
     <Compile Include="NuGetFrameworkTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpecialFrameworkTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

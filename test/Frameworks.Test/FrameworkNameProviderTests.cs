@@ -11,6 +11,19 @@ namespace NuGet.Test
 {
     public class FrameworkNameProviderTests
     {
+        [Fact]
+        public void FrameworkNameProvider_EqualFrameworksWithoutCurrent()
+        {
+            var provider = DefaultFrameworkNameProvider.Instance;
+
+            NuGetFramework input = new NuGetFramework("Windows", new Version(8, 0));
+            IEnumerable<NuGetFramework> frameworks = null;
+            provider.TryGetEquivalentFrameworks(input, out frameworks);
+
+            var set = new HashSet<NuGetFramework>(frameworks, NuGetFramework.Comparer);
+
+            Assert.False(set.Contains(input));
+        }
 
         [Fact]
         public void FrameworkNameProvider_EqualFrameworks()

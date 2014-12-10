@@ -37,11 +37,18 @@ namespace NuGet.Packaging
         /// <summary>
         /// Frameworks mentioned in the package.
         /// </summary>
-        public IEnumerable<NuGetFramework> SupportedFrameworks
+        public IEnumerable<NuGetFramework> GetSupportedFrameworks()
         {
-            get
+            var libFrameworks = GetLibItems().Select(g => NuGetFramework.Parse(g.TargetFramework)).Distinct(NuGetFramework.Comparer);
+
+            // TODO: improve this
+            if (!libFrameworks.Any() && GetContentItems().Any())
             {
-                return GetLibItems().Select(g => NuGetFramework.Parse(g.TargetFramework)).Distinct(NuGetFramework.Comparer);
+                return new NuGetFramework[] { NuGetFramework.AgnosticFramework };
+            }
+            else
+            {
+                return libFrameworks;
             }
         }
 
@@ -123,6 +130,22 @@ namespace NuGet.Packaging
                     }
                 }
 
+                // content items
+                foreach (var group in GetContentItems())
+                {
+                    var prop = new KeyValueTreeProperty(PackagingConstants.TargetFrameworkPropertyKey, group.TargetFramework, false);
+
+                    foreach (var item in group.Items)
+                    {
+                        List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
+                        data.Add(new KeyValuePair<string, string>("path", item));
+
+                        PackageItem treeItem = new DevTreeItem(PackagingConstants.Schema.TreeItemTypes.Content, true, data);
+
+                        builder.Add(treeItem, new PackageProperty[] { prop });
+                    }
+                }
+
                 // package dependency items
                 foreach (var group in GetPackageDependencies())
                 {
@@ -133,9 +156,11 @@ namespace NuGet.Packaging
                         List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>>();
                         data.Add(new KeyValuePair<string, string>("id", package.Id));
 
-                        VersionRange range = VersionRange.Parse(package.VersionRange);
-
-                        data.Add(new KeyValuePair<string, string>("versionRange", range.ToString()));
+                        if (package.VersionRange != null)
+                        {
+                            VersionRange range = VersionRange.Parse(package.VersionRange);
+                            data.Add(new KeyValuePair<string, string>("versionRange", range.ToString()));
+                        }
 
                         PackageItem treeItem = new DevTreeItem(PackagingConstants.Schema.TreeItemTypes.FrameworkReference, true, data);
 
@@ -258,6 +283,18 @@ namespace NuGet.Packaging
                 .Where(s => s.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase)))
             {
                 string framework = GetFrameworkFromPath(path);
+
+                // Content allows both random folder names and framework folder names.
+                // It's nearly impossible to tell the difference and stay consistent over
+                // time as the frameworks change, but to make the best attempt we can
+                // compare the folder name to the known frameworks
+                if (StringComparer.OrdinalIgnoreCase.Equals(folder, "content"))
+                {
+                    if (!NuGetFramework.Parse(framework).IsSpecificFramework)
+                    {
+                        framework = "any";
+                    }
+                }
 
                 List<string> items = null;
                 if (!groups.TryGetValue(framework, out items))
