@@ -38,6 +38,7 @@
     <Compile Include="comparers\NuGetFrameworkNameComparer.cs" />
     <Compile Include="comparers\NuGetFrameworkFullComparer.cs" />
     <Compile Include="comparers\NuGetFrameworkProfileComparer.cs" />
+    <Compile Include="FrameworkException.cs" />
     <Compile Include="FrameworkExpander.cs" />
     <Compile Include="FrameworkRange.cs" />
     <Compile Include="OneWayCompatibilityMappingEntry.cs" />

@@ -131,21 +131,49 @@ namespace NuGet.Frameworks
 
         public string GetVersionString(Version version)
         {
-            string versionString = null;
+            StringBuilder sb = new StringBuilder();
 
             if (version != null)
             {
-                if (version.Major > 9 || version.Minor > 9 || version.Build > 9 || version.Revision > 9)
+                Stack<int> versionParts = new Stack<int>();
+
+                versionParts.Push(version.Major > 0 ? version.Major : 0);
+                versionParts.Push(version.Minor > 0 ? version.Minor : 0);
+                versionParts.Push(version.Build > 0 ? version.Build : 0);
+                versionParts.Push(version.Revision > 0 ? version.Revision : 0);
+
+                // if any parts of the version are over 9 we need to use decimals
+                bool useDecimals = versionParts.Any(x => x > 9);
+
+                // remove all trailing zeros
+                while (versionParts.Count > 0 && versionParts.Peek() <= 0)
                 {
-                    versionString = version.ToString();
+                    versionParts.Pop();
                 }
-                else
+
+                // write the version string out backwards
+                while (versionParts.Count > 0)
                 {
-                    versionString = version.ToString().Replace(".", "").TrimEnd('0');
+                    // avoid adding a decimal if this is the first digit, but if we are down 
+                    // to only 2 numbers left we have to add a decimal otherwise 10.0 becomes 1.0
+                    // during the parse
+                    if (useDecimals)
+                    {
+                         if (sb.Length > 0)
+                         {
+                             sb.Insert(0, ".");
+                         }
+                         else if (versionParts.Count == 1)
+                         {
+                             sb.Append(".0");
+                         }
+                    }
+
+                    sb.Insert(0, versionParts.Pop());
                 }
             }
 
-            return versionString;
+            return sb.ToString();
         }
 
         public bool TryGetPortableProfile(IEnumerable<NuGetFramework> supportedFrameworks, out int profileNumber)

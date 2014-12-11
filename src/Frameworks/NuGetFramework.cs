@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace NuGet.Frameworks
 {
@@ -47,6 +48,16 @@ namespace NuGet.Frameworks
 
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile, string platformIdentifier, Version platformVersion)
         {
+            if (frameworkIdentifier == null)
+            {
+                throw new ArgumentNullException("frameworkIdentifier");
+            }
+
+            if (frameworkVersion == null)
+            {
+                throw new ArgumentNullException("frameworkVersion");
+            }
+
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = frameworkProfile ?? string.Empty;
@@ -154,6 +165,98 @@ namespace NuGet.Frameworks
             }
         }
 
+        /// <summary>
+        /// Creates the shortened version of the framework using the default mappings.
+        /// Ex: net45
+        /// </summary>
+        public string GetShortFolderName()
+        {
+            return GetShortFolderName(DefaultFrameworkNameProvider.Instance);
+        }
+
+        /// <summary>
+        /// Creates the shortened version of the framework using the given mappings.
+        /// </summary>
+        public string GetShortFolderName(IFrameworkNameProvider mappings)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (IsSpecificFramework)
+            {
+                string shortFramework = string.Empty;
+
+                // get the framework
+                if (!mappings.TryGetShortIdentifier(Framework, out shortFramework))
+                {
+                    shortFramework = GetLettersAndDigitsOnly(Framework);
+                }
+
+                if (String.IsNullOrEmpty(shortFramework))
+                {
+                    throw new FrameworkException("Invalid framework identifier");
+                }
+
+                // add framework
+                sb.Append(shortFramework);
+
+                // add the version if it is non-empty
+                if (!AllFrameworkVersions)
+                {
+                    sb.Append(mappings.GetVersionString(Version));
+                }
+
+                if (IsPCL)
+                {
+                    sb.Append("-");
+
+                    IEnumerable<NuGetFramework> frameworks = null;
+                    if (HasProfile && mappings.TryGetPortableFrameworks(Profile, false, out frameworks) && frameworks.Any())
+                    {
+                        HashSet<NuGetFramework> required = new HashSet<NuGetFramework>(frameworks, NuGetFramework.Comparer);
+
+                        mappings.TryGetPortableFrameworks(Profile, true, out frameworks);
+                        HashSet<NuGetFramework> optional = new HashSet<NuGetFramework>(frameworks.Where(e => !required.Contains(e)), NuGetFramework.Comparer);
+
+                        // sort the PCL frameworks by alphabetical order
+                        List<string> sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
+
+                        // add optional frameworks at the end
+                        sortedFrameworks.AddRange(optional.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+
+                        sb.Append(String.Join("+", sortedFrameworks));
+                    }
+                    else
+                    {
+                        throw new FrameworkException("Invalid portable frameworks");
+                    }
+                }
+                else
+                {
+                    // add the profile
+                    string shortProfile = string.Empty;
+
+                    if (HasProfile && !mappings.TryGetShortProfile(Framework, Profile, out shortProfile))
+                    {
+                        // if we have a profile, but can't get a mapping, just use the profile as is
+                        shortProfile = Profile;
+                    }
+
+                    if (!String.IsNullOrEmpty(shortProfile))
+                    {
+                        sb.Append("-");
+                        sb.Append(shortProfile);
+                    }
+                }
+            }
+            else
+            {
+                // unsupported, any, agnostic
+                sb.Append(Framework);
+            }
+
+            return sb.ToString().ToLowerInvariant();
+        }
+
         private static string GetDisplayVersion(Version version)
         {
             StringBuilder sb = new StringBuilder(String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
@@ -165,6 +268,21 @@ namespace NuGet.Frameworks
                 if (version.Revision > 0)
                 {
                     sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Revision);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string GetLettersAndDigitsOnly(string s)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var c in s.ToCharArray())
+            {
+                if (Char.IsLetterOrDigit(c))
+                {
+                    sb.Append(c);
                 }
             }
 
