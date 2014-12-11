@@ -11,11 +11,11 @@
     <description>Tools for reading nupkg and nuspec files</description>
     <tags>nupkg packaging nuspec</tags>
     <dependencies>
-		<dependency id="NuGet.Versioning" version="1.0.2" />
+		<dependency id="NuGet.Versioning" version="1.0.3" />
 	</dependencies>
   </metadata>
   <files>
-	<file src="..\Core\bin\Debug\NuGet.PackagingCore.dll" target="lib/portable-net45+win" />
-	<file src="..\Frameworks\bin\Debug\NuGet.Frameworks.dll" target="lib/portable-net45+win" />
+	<file src="..\Core\bin\$configuration$\NuGet.PackagingCore.dll" target="lib/portable-net45+win" />
+	<file src="..\Frameworks\bin\$configuration$\NuGet.Frameworks.dll" target="lib/portable-net45+win" />
   </files>
 </package>
