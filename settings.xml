@@ -1,0 +1,6 @@
+<nupkg>
+	<!-- Relative path to the csproj for the main project. This is used for nuget.exe pack -->
+	<csprojPath>\src\NuGet.Client.V3\Client.V3.csproj</csprojPath>
+	<!-- File name without the path for the output from the above project -->
+	<dllName>NuGet.Client.V3.dll</dllName>
+</nupkg>
