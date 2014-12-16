@@ -35,20 +35,23 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="def\IPackageReader.cs" />
+    <Compile Include="Definitions\IPackageReader.cs" />
+    <Compile Include="Exceptions\PackagesConfigReaderException.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageReader.cs" />
+    <Compile Include="PackagesConfigWriter.cs" />
+    <Compile Include="PackageReference.cs" />
     <Compile Include="PackagesConfigReader.cs" />
     <Compile Include="FrameworkSpecificGroup.cs" />
-    <Compile Include="def\INuspecReader.cs" />
+    <Compile Include="Definitions\INuspecReader.cs" />
     <Compile Include="PackageDependency.cs" />
     <Compile Include="NuspecReader.cs" />
     <Compile Include="PackagingConstants.cs" />
     <Compile Include="PackageDependencyGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="tree\DevTree.cs" />
-    <Compile Include="tree\KeyValueTreeProperty.cs" />
-    <Compile Include="tree\DevTreeItem.cs" />
+    <Compile Include="Tree\DevTree.cs" />
+    <Compile Include="Tree\KeyValueTreeProperty.cs" />
+    <Compile Include="Tree\DevTreeItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">
