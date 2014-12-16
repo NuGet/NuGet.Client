@@ -19,19 +19,21 @@ namespace NuGet.Data
         private readonly Uri _uri;
         private readonly int _msWait;
         private readonly Guid _guid;
+        private readonly CancellationToken _cancellationToken;
 
-        public UriLock(Uri uri, int msWait=100)
+        public UriLock(Uri uri, CancellationToken cancellationToken, int msWait=100)
         {
             _uri = uri;
             _msWait = msWait;
             _guid = new Guid();
+            _cancellationToken = cancellationToken;
 
             GetLock();
         }
 
         private void GetLock()
         {
-            while (!_locks.TryAdd(_uri, _guid))
+            while (!_cancellationToken.IsCancellationRequested && !_locks.TryAdd(_uri, _guid))
             {
                 // spin lock
                 Thread.Sleep(_msWait);

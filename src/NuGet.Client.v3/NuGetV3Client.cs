@@ -61,6 +61,11 @@ namespace NuGet.Client.V3
             new Uri("http://schema.nuget.org/schema#version"),
         };
 
+        private static readonly DataCacheOptions DefaultCacheOptions = new DataCacheOptions()
+        {
+            UseFileCache = true,
+            MaxCacheLife = TimeSpan.FromHours(2)
+        };
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The HttpClient can be left open until VS shuts down.")]
         public NuGetV3Client(string rootUrl, string host)
@@ -70,7 +75,8 @@ namespace NuGet.Client.V3
             //TODO: Get context from current UI activity (PowerShell, Dialog, etc.)
             _userAgent = String.Format("NuGetv3Client", host);
 
-            _http = new System.Net.Http.HttpClient(new HttpClientHandler());
+            var handler = new HttpClientHandler();
+            _http = new System.Net.Http.HttpClient(handler);
 
             // Check if we should disable the browser file cache
             FileCacheBase cache = new BrowserFileCache();
@@ -82,7 +88,7 @@ namespace NuGet.Client.V3
             cache = new NullFileCache(); 
 
             _client = new DataClient(
-                _http,
+                handler,
                 cache);
         }
 
@@ -117,7 +123,7 @@ namespace NuGet.Client.V3
 
            
             var queryUri = queryUrl.Uri;
-            var results = await _client.GetFile(queryUri);
+            var results = await _client.GetJObjectAsync(queryUri, DefaultCacheOptions);
             cancellationToken.ThrowIfCancellationRequested();
             if (results == null)
             {              
@@ -163,7 +169,11 @@ namespace NuGet.Client.V3
             var packageUrl = baseUrl.TrimEnd('/') + "/" + packageId.ToLowerInvariant() + "/index.json";
 
             // Resolve the catalog root
-            var catalogPackage = await _client.Ensure(new Uri(packageUrl), CatalogRequiredProperties);
+            // TODO: Validate these properties exist
+            //var catalogPackage = await _client.Ensure(new Uri(packageUrl), CatalogRequiredProperties);
+
+            var catalogPackage = await _client.GetJObjectAsync(new Uri(packageUrl), DefaultCacheOptions);
+
             if (catalogPackage["HttpStatusCode"] != null)
             {
                 // Got an error response from the data client, so just return an empty array
@@ -193,18 +203,21 @@ namespace NuGet.Client.V3
                 string type = item["@type"].ToString();
                 if (Equals(type, "catalog:CatalogPage"))
                 {
-                    var resolved = await _client.Ensure(item, new[] {
-                        new Uri("http://schema.nuget.org/schema#items")
-                    });
-                    Debug.Assert(resolved != null, "DataClient returned null from Ensure :(");
-                    lists.Add(await Descend((JArray)resolved["items"]));
+                    // TODO: fix this
+                    throw new NotImplementedException();
+                    //var resolved = await _client.Ensure(item, new[] {
+                    //    new Uri("http://schema.nuget.org/schema#items")
+                    //});
+                    //Debug.Assert(resolved != null, "DataClient returned null from Ensure :(");
+                    //lists.Add(await Descend((JArray)resolved["items"]));
                 }
                 else if (Equals(type, "Package"))
                 {
                     // Yield this item with catalogEntry and it's subfields ensured
-                    var resolved = await _client.Ensure(item, PackageRequiredProperties);
-                    resolved["catalogEntry"] = await _client.Ensure(resolved["catalogEntry"], PackageDetailsRequiredProperties);
-                    items.Add((JObject)resolved);
+                    //var resolved = await _client.Ensure(item, PackageRequiredProperties);
+                    //resolved["catalogEntry"] = await _client.Ensure(resolved["catalogEntry"], PackageDetailsRequiredProperties);
+                    //items.Add((JObject)resolved);
+                    throw new NotImplementedException();
                 }
             }
 
@@ -215,7 +228,13 @@ namespace NuGet.Client.V3
         private async Task<string> GetServiceUri(Uri type)
         {
             // Read the root document (usually out of the cache :))
-            var doc = await _client.GetFile(_root);
+            DataCacheOptions cacheOptions = new DataCacheOptions()
+            {
+                UseFileCache = true,
+                MaxCacheLife = TimeSpan.FromDays(2)
+            };
+
+            var doc = await _client.GetJObjectAsync(_root, cacheOptions);
             var obj = JsonLdProcessor.Expand(doc).FirstOrDefault();
             if (obj == null)
             {
@@ -250,7 +269,8 @@ namespace NuGet.Client.V3
         private async Task<JObject> ProcessSearchResult(System.Threading.CancellationToken cancellationToken, JObject result)
         {
             // Get the registration
-            result = (JObject)(await _client.Ensure(result, ResultItemRequiredProperties));
+            // TODO: check that all required items are coming back
+            // result = (JObject)(await _client.Ensure(result, ResultItemRequiredProperties));
 
             var searchResult = new JObject();
             searchResult["id"] = result["id"];
