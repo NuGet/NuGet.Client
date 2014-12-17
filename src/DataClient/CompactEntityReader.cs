@@ -11,7 +11,7 @@ namespace NuGet.Data
     /// CompactEntityReader makes an attempt at understanding the expanded entity and RDF concepts from the compacted form 
     /// for scenarios where the graph is not available, or simple answers are needed.
     /// </summary>
-    public class CompactEntityReader
+    internal class CompactEntityReader
     {
         private readonly JObject _entityJson;
         private Uri _entityUri;

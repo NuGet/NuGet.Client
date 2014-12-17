@@ -43,10 +43,6 @@
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JsonLD, Version=1.0.4.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\json-ld.net.1.0.4\lib\net40-Client\JsonLD.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.mshtml, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -65,41 +61,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheEnabledRequestMessage.cs" />
-    <Compile Include="CacheResponse.cs" />
+    <Compile Include="FileCache\CacheEnabledRequestMessage.cs" />
+    <Compile Include="FileCache\CacheResponse.cs" />
     <Compile Include="DataCacheOptions.cs" />
+    <Compile Include="FileCache\FileCacheBase.cs" />
+    <Compile Include="FileCache\FileCacheEntry.cs" />
     <Compile Include="RequestModifierHandler.cs" />
-    <Compile Include="BaseGraph.cs" />
-    <Compile Include="BasicGraph.cs" />
-    <Compile Include="BrowserCache\Native.cs" />
-    <Compile Include="BrowserCache\BrowserCache.cs" />
-    <Compile Include="BrowserFileCache.cs" />
-    <Compile Include="CacheHandler.cs" />
-    <Compile Include="CacheHttpClient.cs" />
+    <Compile Include="FileCache\CacheHandler.cs" />
     <Compile Include="CompactEntityReader.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="EntityCacheHandler.cs" />
-    <Compile Include="DataClientHandler.cs" />
     <Compile Include="DataTraceSources.cs" />
-    <Compile Include="EntityCache.cs" />
-    <Compile Include="FileCacheBase.cs" />
-    <Compile Include="FileCacheEntry.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="IRequestModifier.cs" />
-    <Compile Include="JsonExtensions.cs" />
-    <Compile Include="JsonLdExtensions.cs" />
-    <Compile Include="JsonLdGraph\JsonLdGraph.cs" />
-    <Compile Include="JsonLdGraph\JsonLdGraphFactory.cs" />
-    <Compile Include="JsonLdGraph\JsonLdPage.cs" />
-    <Compile Include="JsonLdGraph\JsonLdTriple.cs" />
-    <Compile Include="JsonLdGraph\JsonLdTripleCollection.cs" />
-    <Compile Include="MemoryFileCache.cs" />
-    <Compile Include="MemoryFileCacheEntry.cs" />
+    <Compile Include="INuGetRequestModifier.cs" />
+    <Compile Include="FileCache\MemoryFileCache.cs" />
+    <Compile Include="FileCache\MemoryFileCacheEntry.cs" />
     <Compile Include="DataClient.cs" />
-    <Compile Include="NullFileCache.cs" />
+    <Compile Include="FileCache\NullFileCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RetryHandler.cs" />
-    <Compile Include="UriLock.cs" />
+    <Compile Include="FileCache\UriLock.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>

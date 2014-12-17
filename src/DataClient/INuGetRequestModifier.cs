@@ -13,7 +13,7 @@ namespace NuGet.Data
     /// </summary>
     /// <remarks>Modifiers should retrieve their settings and a list of package sources at creation time.
     /// They should NOT make calls to the request endpoint to determine if they should handle it.</remarks>
-    public interface IRequestModifier
+    public interface INuGetRequestModifier
     {
         /// <summary>
         /// Provides an opportunity to modify a request before it is sent.

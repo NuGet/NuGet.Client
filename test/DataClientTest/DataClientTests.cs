@@ -394,10 +394,12 @@ namespace DataTest
                 return response;
             });
 
-            using (var client = new DataClient(handler, new MemoryFileCache()))
+            RetryHandler retryHandler = new RetryHandler(handler, 2);
+
+            using (var client = new DataClient(retryHandler))
             {
                 var json = await client.GetJObjectAsync(new Uri("http://test/doc"));
-                Assert.Equal(5, count);
+                Assert.Equal(2, count);
             }
         }
 
@@ -523,7 +525,7 @@ namespace DataTest
                 return response;
             });
 
-            using (var client = new DataClient(handler, new MemoryFileCache()))
+            using (var client = new DataClient(handler))
             {
                 var json = await client.GetJObjectAsync(new Uri("http://test/doc"));
                 json = await client.GetJObjectAsync(new Uri("http://test/doc"));
@@ -533,34 +535,28 @@ namespace DataTest
             }
         }
 
-        [Fact]
-        public async Task DataClient_Basic_UseCache()
-        {
-            int count = 0;
-            TestHandler handler = new TestHandler((request) =>
-            {
-                count++;
-                var response = new HttpResponseMessage(HttpStatusCode.OK);
-                response.Content = new TestContent(TestJson.BasicGraph);
+        //[Fact]
+        //public async Task DataClient_Basic_UseCache()
+        //{
+        //    int count = 0;
+        //    TestHandler handler = new TestHandler((request) =>
+        //    {
+        //        count++;
+        //        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        //        response.Content = new TestContent(TestJson.BasicGraph);
 
-                return response;
-            });
+        //        return response;
+        //    });
 
-            DataCacheOptions options = new DataCacheOptions()
-            {
-                UseFileCache = true,
-                MaxCacheLife = TimeSpan.FromHours(1)
-            };
+        //    using (var client = new DataClient(handler))
+        //    {
+        //        var json = await client.GetJObjectAsync(new Uri("http://test/doc"));
+        //        json = await client.GetJObjectAsync(new Uri("http://test/doc"));
+        //        json = await client.GetJObjectAsync(new Uri("http://test/doc"));
 
-            using (var client = new DataClient(handler, new MemoryFileCache()))
-            {
-                var json = await client.GetJObjectAsync(new Uri("http://test/doc"), options);
-                json = await client.GetJObjectAsync(new Uri("http://test/doc"), options);
-                json = await client.GetJObjectAsync(new Uri("http://test/doc"), options);
-
-                Assert.Equal(1, count);
-            }
-        }
+        //        Assert.Equal(1, count);
+        //    }
+        //}
 
         [Fact]
         public async Task DataClient_Basic()
@@ -573,7 +569,7 @@ namespace DataTest
                     return response;
                 });
 
-            using (var client = new DataClient(handler, new MemoryFileCache()))
+            using (var client = new DataClient(handler))
             {
                 var json = await client.GetJObjectAsync(new Uri("http://test/doc"));
                 Assert.Equal("test", json["name"].ToString());

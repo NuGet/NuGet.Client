@@ -1,5 +1,4 @@
-﻿using JsonLD.Core;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,16 +31,13 @@ namespace NuGet.Data
 
         public async virtual Task<Stream> GetStream()
         {
+            await Task.Delay(1);
             throw new NotImplementedException();
-        }
-
-        public async virtual Task<JArray> GetExpanded()
-        {
-            return JsonLdProcessor.Expand(await GetJObject());
         }
 
         public async virtual Task<JObject> GetJObject()
         {
+            await Task.Delay(1);
             throw new NotImplementedException();
         }
     }

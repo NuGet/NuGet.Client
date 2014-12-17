@@ -61,35 +61,15 @@ namespace NuGet.Client.V3
             new Uri("http://schema.nuget.org/schema#version"),
         };
 
-        private static readonly DataCacheOptions DefaultCacheOptions = new DataCacheOptions()
-        {
-            UseFileCache = true,
-            MaxCacheLife = TimeSpan.FromHours(2)
-        };
-
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The HttpClient can be left open until VS shuts down.")]
         public NuGetV3Client(string rootUrl, string host)
-        {            
+        {
             _root = new Uri(rootUrl);
 
             //TODO: Get context from current UI activity (PowerShell, Dialog, etc.)
             _userAgent = String.Format("NuGetv3Client", host);
 
-            var handler = new HttpClientHandler();
-            _http = new System.Net.Http.HttpClient(handler);
-
-            // Check if we should disable the browser file cache
-            FileCacheBase cache = new BrowserFileCache();
-            if (String.Equals(Environment.GetEnvironmentVariable("NUGET_DISABLE_IE_CACHE"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                cache = new NullFileCache();
-            }
-
-            cache = new NullFileCache(); 
-
-            _client = new DataClient(
-                handler,
-                cache);
+            _client = new DataClient();
         }
 
         public async Task<IEnumerable<JObject>> Search(string searchTerm, IEnumerable<string> supportedFrameworkNames,bool includePrerelease, int skip, int take, System.Threading.CancellationToken cancellationToken)
@@ -123,7 +103,7 @@ namespace NuGet.Client.V3
 
            
             var queryUri = queryUrl.Uri;
-            var results = await _client.GetJObjectAsync(queryUri, DefaultCacheOptions);
+            var results = await _client.GetJObjectAsync(queryUri);
             cancellationToken.ThrowIfCancellationRequested();
             if (results == null)
             {              
@@ -172,7 +152,7 @@ namespace NuGet.Client.V3
             // TODO: Validate these properties exist
             //var catalogPackage = await _client.Ensure(new Uri(packageUrl), CatalogRequiredProperties);
 
-            var catalogPackage = await _client.GetJObjectAsync(new Uri(packageUrl), DefaultCacheOptions);
+            var catalogPackage = await _client.GetJObjectAsync(new Uri(packageUrl));
 
             if (catalogPackage["HttpStatusCode"] != null)
             {
@@ -228,13 +208,7 @@ namespace NuGet.Client.V3
         private async Task<string> GetServiceUri(Uri type)
         {
             // Read the root document (usually out of the cache :))
-            DataCacheOptions cacheOptions = new DataCacheOptions()
-            {
-                UseFileCache = true,
-                MaxCacheLife = TimeSpan.FromDays(2)
-            };
-
-            var doc = await _client.GetJObjectAsync(_root, cacheOptions);
+            var doc = await _client.GetJObjectAsync(_root);
             var obj = JsonLdProcessor.Expand(doc).FirstOrDefault();
             if (obj == null)
             {

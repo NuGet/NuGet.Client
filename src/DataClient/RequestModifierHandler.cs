@@ -13,12 +13,12 @@ namespace NuGet.Data
     /// </summary>
     public class RequestModifierHandler : DelegatingHandler
     {
-        private readonly IEnumerable<IRequestModifier> _modifiers;
+        private readonly IEnumerable<INuGetRequestModifier> _modifiers;
 
-        public RequestModifierHandler(HttpMessageHandler innerHandler, IEnumerable<IRequestModifier> modifiers)
+        public RequestModifierHandler(HttpMessageHandler innerHandler, IEnumerable<INuGetRequestModifier> modifiers)
             : base(innerHandler)
         {
-            _modifiers = modifiers ?? Enumerable.Empty<IRequestModifier>();
+            _modifiers = modifiers ?? Enumerable.Empty<INuGetRequestModifier>();
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

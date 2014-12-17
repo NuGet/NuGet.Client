@@ -1,5 +1,4 @@
-﻿using JsonLD.Core;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -196,28 +195,6 @@ namespace NuGet.Data
             {
                 visitor((JObject)prop.Parent);
             }
-        }
-        public static BasicGraph GetGraphFromCompacted(JToken compacted)
-        {
-            var flattened = JsonLdProcessor.Flatten(compacted, new JsonLdOptions());
-            return GetGraph(flattened);
-        }
-
-        public static BasicGraph GetGraph(JToken flattened)
-        {
-            BasicGraph graph = new BasicGraph();
-
-            RDFDataset dataSet = (RDFDataset)JsonLD.Core.JsonLdProcessor.ToRDF(flattened);
-
-            foreach (var graphName in dataSet.GraphNames())
-            {
-                foreach (var quad in dataSet.GetQuads(graphName))
-                {
-                    graph.Assert(quad);
-                }
-            }
-
-            return graph;
         }
     }
 }
