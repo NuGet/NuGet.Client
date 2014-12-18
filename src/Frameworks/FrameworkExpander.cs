@@ -52,6 +52,16 @@ namespace NuGet.Frameworks
         /// </summary>
         private IEnumerable<NuGetFramework> ExpandInternal(NuGetFramework framework)
         {
+            // check the framework directly, this includes profiles which the range doesn't return
+            IEnumerable<NuGetFramework> directlyEquivalent = null;
+            if (_mappings.TryGetEquivalentFrameworks(framework, out directlyEquivalent))
+            {
+                foreach (var eqFw in directlyEquivalent)
+                {
+                    yield return eqFw;
+                }
+            }
+
             // 0.0 through the current framework
             FrameworkRange frameworkRange = new FrameworkRange(
                 new NuGetFramework(framework.Framework, new Version(0, 0), framework.Profile, framework.Platform, framework.PlatformVersion),

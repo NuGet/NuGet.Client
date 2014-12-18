@@ -52,6 +52,14 @@ namespace NuGet.Frameworks
             }
         }
 
+        public string FrameworkIdentifier
+        {
+            get
+            {
+                return Min.Framework;
+            }
+        }
+
         public bool Satisfies(NuGetFramework framework)
         {
             return SameExceptForVersion(_minFramework, framework)
