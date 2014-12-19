@@ -7,8 +7,8 @@
     <ProjectGuid>{824FE9DA-D1D0-45F4-A3ED-676631981705}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Resolver</RootNamespace>
-    <AssemblyName>Resolver</AssemblyName>
+    <RootNamespace>NuGet.Resolver</RootNamespace>
+    <AssemblyName>NuGet.Resolver</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
