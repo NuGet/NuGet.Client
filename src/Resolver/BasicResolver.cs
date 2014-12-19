@@ -1,4 +1,7 @@
-﻿using NuGet.Versioning;
+﻿using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.PackagingCore;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +10,7 @@ namespace NuGet.Resolver
 {
     public static class BasicResolver
     {
-        public static IList<PackageEntry> Solve(RegistrationInfo registrationInfo)
+        public static IList<PackageReference> Solve(RegistrationInfo registrationInfo)
         {
             IList<KeyValuePair<string, NuGetVersion>>[] plan = BasicResolver.CreatePlan(registrationInfo);
 
@@ -15,7 +18,8 @@ namespace NuGet.Resolver
 
             IEnumerable<KeyValuePair<string, NuGetVersion>> solution = BasicResolver.Execute(registrationInfo, plan, out iterations);
 
-            IList<PackageEntry> result = solution.Select(entry => new PackageEntry(entry.Key, entry.Value)).ToList();
+            // TODO: Determine the real framework to install
+            IList<PackageReference> result = solution.Select(entry => new PackageReference(new PackageIdentity(entry.Key, entry.Value), NuGetFramework.AnyFramework)).ToList();
 
             Console.WriteLine("actual iterations: {0}", iterations);
 

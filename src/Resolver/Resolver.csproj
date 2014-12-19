@@ -52,7 +52,6 @@
     <Compile Include="DependencyGroupInfo.cs" />
     <Compile Include="DependencyInfo.cs" />
     <Compile Include="Evaluate.cs" />
-    <Compile Include="PackageEntry.cs" />
     <Compile Include="PackageInfo.cs" />
     <Compile Include="Participants.cs" />
     <Compile Include="Permutations.cs" />

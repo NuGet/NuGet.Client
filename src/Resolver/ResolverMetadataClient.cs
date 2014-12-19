@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 using NuGet.Versioning;
 using System;
 using System.Collections.Concurrent;
@@ -12,7 +13,7 @@ namespace NuGet.Resolver
 {
     public static class ResolverMetadataClient
     {
-        public static Task<RegistrationInfo> Load(HttpClient httpClient, string targetFramework, bool includePrerelease, IList<PackageEntry> currentInventory, PackageEntry packageToInstall)
+        public static Task<RegistrationInfo> Load(HttpClient httpClient, string targetFramework, bool includePrerelease, IList<PackageReference> currentInventory, PackageReference packageToInstall)
         {
             ResolverApplication application = new ResolverApplication(targetFramework, includePrerelease);
             application.Inventory = currentInventory;

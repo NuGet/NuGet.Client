@@ -1,4 +1,5 @@
 ﻿using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -35,18 +36,18 @@ namespace NuGet.Resolver
             _appRegistrationInfo.Packages.Add(appPackageInfo);
         }
 
-        public IList<PackageEntry> Inventory { get; set; }
+        public IList<PackageReference> Inventory { get; set; }
 
-        public void Install(PackageEntry packageEntry)
+        public void Install(PackageReference packageEntry)
         {
             VersionRange range;
-            if (packageEntry.Version != null)
+            if (packageEntry.PackageIdentity.Version != null)
             {
-                range = new VersionRange(packageEntry.Version, true, packageEntry.Version, true);
+                range = new VersionRange(packageEntry.PackageIdentity.Version, true, packageEntry.PackageIdentity.Version, true);
             }
-            else if (packageEntry.Allowed != null)
+            else if (packageEntry.HasAllowedVersions)
             {
-                range = packageEntry.Allowed;
+                range = packageEntry.AllowedVersions;
             }
             else
             {
@@ -55,9 +56,9 @@ namespace NuGet.Resolver
 
             _appDependencyGroupInfo.Dependencies.Add(new DependencyInfo
             {
-                Id = packageEntry.Id,
+                Id = packageEntry.PackageIdentity.Id,
                 Range = range,
-                RegistrationUri = new Uri(string.Format(RegistrationTemplate, packageEntry.Id.ToLowerInvariant()))
+                RegistrationUri = new Uri(string.Format(RegistrationTemplate, packageEntry.PackageIdentity.Id.ToLowerInvariant()))
             });
         }
 
@@ -65,7 +66,7 @@ namespace NuGet.Resolver
         {
             if (Inventory != null)
             {
-                foreach (PackageEntry packageEntry in Inventory)
+                foreach (PackageReference packageEntry in Inventory)
                 {
                     AddApplicationDependency(packageEntry);
                 }
@@ -78,20 +79,20 @@ namespace NuGet.Resolver
             return fullRegistrationInfo;
         }
 
-        void AddApplicationDependency(PackageEntry packageEntry)
+        void AddApplicationDependency(PackageReference packageEntry)
         {
             _appDependencyGroupInfo.Dependencies.Add(new DependencyInfo
             {
-                Id = packageEntry.Id,
-                Range = packageEntry.Allowed ?? Utils.CreateVersionRange("[0.0.0-alpha,)", _prerelease),
-                RegistrationUri = new Uri(string.Format(RegistrationTemplate, packageEntry.Id.ToLowerInvariant()))
+                Id = packageEntry.PackageIdentity.Id,
+                Range = packageEntry.HasAllowedVersions ? packageEntry.AllowedVersions : Utils.CreateVersionRange("[0.0.0-alpha,)", _prerelease),
+                RegistrationUri = new Uri(string.Format(RegistrationTemplate, packageEntry.PackageIdentity.Id.ToLowerInvariant()))
             });
 
-            _installedVersions.Add(packageEntry.Id, packageEntry.Version);
+            _installedVersions.Add(packageEntry.PackageIdentity.Id, packageEntry.PackageIdentity.Version);
 
-            if (packageEntry.Allowed != null)
+            if (packageEntry.PackageIdentity.Version != null)
             {
-                _allowedVersions.Add(packageEntry.Id, packageEntry.Allowed);
+                _allowedVersions.Add(packageEntry.PackageIdentity.Id, packageEntry.AllowedVersions);
             }
         }
 
