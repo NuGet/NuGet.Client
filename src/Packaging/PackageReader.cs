@@ -31,7 +31,7 @@ namespace NuGet.Packaging
         /// <returns></returns>
         public PackageIdentity GetIdentity()
         {
-            return new PackageIdentity(Nuspec.GetId(), NuGetVersion.Parse(Nuspec.GetVersion()));
+            return new PackageIdentity(Nuspec.GetId(), Nuspec.GetVersion());
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace NuGet.Packaging
 
                         if (package.VersionRange != null)
                         {
-                            VersionRange range = VersionRange.Parse(package.VersionRange);
+                            VersionRange range = package.VersionRange;
                             data.Add(new KeyValuePair<string, string>("versionRange", range.ToString()));
                         }
 

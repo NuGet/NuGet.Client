@@ -1,17 +1,18 @@
-﻿using System;
+﻿using NuGet.Versioning;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.Packaging
+namespace NuGet.PackagingCore
 {
     public class PackageDependency
     {
         private readonly string _id;
-        private readonly string _versionRange;
+        private readonly VersionRange _versionRange;
 
-        public PackageDependency(string id, string versionRange)
+        public PackageDependency(string id, VersionRange versionRange)
         {
             _id = id;
             _versionRange = versionRange;
@@ -25,7 +26,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public string VersionRange
+        public VersionRange VersionRange
         {
             get
             {

@@ -9,12 +9,6 @@ namespace NuGet.Packaging
 {
     public static class PackagingConstants
     {
-        public const string PackageCoreNamespace = "http://schema.nuget.org/packagecore/1.0/";
-        public const string NuGetPackageNamespace = "http://schema.nuget.org/nugetpackage/1.0/";
-        public const string DublinCoreNamespace = "http://purl.org/dc/elements/1.1/";
-
-        public const string PackedManifestFileName = "nuget.packed.json";
-        public const string NuspecExtensionFilter = "*.nuspec";
         public const string NuspecExtension = ".nuspec";
         public const string ContentFolder = "content";
         public const string AnyFramework = "any";

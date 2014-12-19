@@ -18,7 +18,7 @@ namespace NuGet.Test
         {
             var reader = new PackagesConfigReader(PackagesConf1);
 
-            NuGetVersion version = reader.GetMinClientVersion();
+            SemanticVersion version = reader.GetMinClientVersion();
 
             Assert.Equal("2.5.0", version.ToNormalizedString());
 
@@ -41,7 +41,7 @@ namespace NuGet.Test
         {
             var reader = new PackagesConfigReader(PackagesConf2);
 
-            NuGetVersion version = reader.GetMinClientVersion();
+            SemanticVersion version = reader.GetMinClientVersion();
 
             Assert.Equal("2.5.0", version.ToNormalizedString());
 
@@ -63,7 +63,7 @@ namespace NuGet.Test
         {
             var reader = new PackagesConfigReader(PackagesConf3);
 
-            NuGetVersion version = reader.GetMinClientVersion();
+            SemanticVersion version = reader.GetMinClientVersion();
 
             Assert.Equal("3.0.0", version.ToNormalizedString());
 

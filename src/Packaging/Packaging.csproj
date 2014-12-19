@@ -44,7 +44,6 @@
     <Compile Include="PackagesConfigReader.cs" />
     <Compile Include="FrameworkSpecificGroup.cs" />
     <Compile Include="Definitions\INuspecReader.cs" />
-    <Compile Include="PackageDependency.cs" />
     <Compile Include="NuspecReader.cs" />
     <Compile Include="PackagingConstants.cs" />
     <Compile Include="PackageDependencyGroup.cs" />
@@ -65,7 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.3\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.4\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

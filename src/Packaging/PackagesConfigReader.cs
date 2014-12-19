@@ -92,17 +92,17 @@ namespace NuGet.Packaging
         /// Reads the minimum client version from packages.config
         /// </summary>
         /// <returns>Minimum client version or the default of 2.5.0</returns>
-        public NuGetVersion GetMinClientVersion()
+        public SemanticVersion GetMinClientVersion()
         {
-            NuGetVersion version = null;
+            SemanticVersion version = null;
 
             XAttribute node = _doc.Root.Attribute(XName.Get("minClientVersion"));
 
             if (node == null)
             {
-                version = new NuGetVersion(2, 5, 0, 0);
+                version = new SemanticVersion(2, 5, 0);
             }
-            else if (!NuGetVersion.TryParse(node.Value, out version))
+            else if (!SemanticVersion.TryParse(node.Value, out version))
             {
                 throw new PackagesConfigReaderException("Invalid minClientVersion");
             }

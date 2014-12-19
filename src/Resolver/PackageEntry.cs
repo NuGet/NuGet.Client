@@ -1,4 +1,5 @@
-﻿using NuGet.Versioning;
+﻿using NuGet.Packaging;
+using NuGet.Versioning;
 using System;
 
 namespace NuGet.Resolver

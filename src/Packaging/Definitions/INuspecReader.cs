@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.PackagingCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,16 +7,8 @@ using System.Threading.Tasks;
 
 namespace NuGet.Packaging
 {
-    public interface INuspecReader
+    public interface INuspecReader : INuspecCoreReader
     {
-        string GetId();
-
-        string GetVersion();
-
-        string GetMinClientVersion();
-
-        IEnumerable<KeyValuePair<string, string>> GetMetadata();
-
         IEnumerable<PackageDependencyGroup> GetDependencyGroups();
 
         IEnumerable<FrameworkSpecificGroup> GetReferenceGroups();

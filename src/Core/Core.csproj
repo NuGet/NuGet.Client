@@ -36,9 +36,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="def\IFileSystem.cs" />
+    <Compile Include="def\INuspecCoreReader.cs" />
     <Compile Include="def\IPackageCoreReader.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="NuGetConfigReader.cs" />
+    <Compile Include="NuspecCoreReader.cs" />
+    <Compile Include="PackageDependency.cs" />
     <Compile Include="PackageIdentity.cs" />
     <Compile Include="PackagingException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -52,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.3\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.4\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
