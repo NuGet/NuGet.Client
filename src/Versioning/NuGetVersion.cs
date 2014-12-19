@@ -30,6 +30,39 @@ namespace NuGet.Versioning
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion X.Y.Z
+        /// </summary>
+        /// <param name="major">X.y.z</param>
+        /// <param name="minor">x.Y.z</param>
+        /// <param name="patch">x.y.Z</param>
+        public NuGetVersion(int major, int minor, int patch)
+            : this(major, minor, patch, Enumerable.Empty<string>(), null)
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a NuGetVersion X.Y.Z-alpha
+        /// </summary>
+        /// <param name="major">X.y.z</param>
+        /// <param name="minor">x.Y.z</param>
+        /// <param name="patch">x.y.Z</param>
+        /// <param name="releaseLabel">Prerelease label</param>
+        public NuGetVersion(int major, int minor, int patch, string releaseLabel)
+            : this(major, minor, patch, ParseReleaseLabels(releaseLabel), null)
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a NuGetVersion X.Y.Z-alpha#build01
+        /// </summary>
+        /// <param name="major">X.y.z</param>
+        /// <param name="minor">x.Y.z</param>
+        /// <param name="patch">x.y.Z</param>
+        /// <param name="releaseLabel">Prerelease label</param>
+        /// <param name="metadata">Build metadata</param>
         public NuGetVersion(int major, int minor, int patch, string releaseLabel, string metadata)
             : this(major, minor, patch, ParseReleaseLabels(releaseLabel), metadata)
         {
