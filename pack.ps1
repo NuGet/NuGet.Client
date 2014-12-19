@@ -4,7 +4,8 @@ param (
     [switch]$SkipTests, 
     [switch]$SkipBuild, 
     [string]$PFXPath,
-    [switch]$Stable
+    [switch]$Stable,
+    [Parameter(Mandatory=$True)][ValidateSet("NuGet.Client.V3", "NuGet.Client.BaseTypes", "NuGet.Client.V3.VisualStudio", "NuGet.Client.VisualStudio")][string]$Id
 )
 
 # build
@@ -34,8 +35,8 @@ $workingDir = (Get-Item -Path ".\" -Verbose).FullName;
 
 # read settings.xml for repo specific settings
 [xml]$xml = Get-Content "settings.xml"
-$projectPathSetting = Select-Xml "/nupkg/csprojPath" $xml | % { $_.Node.'#text' } | Select-Object -first 1
-$primaryAssemblySetting = Select-Xml "/nupkg/dllName" $xml | % { $_.Node.'#text' } | Select-Object -first 1
+$projectPathSetting = Select-Xml "/nupkgs/nupkg[@id='$Id']/csprojPath" $xml | % { $_.Node.'#text' } | Select-Object -first 1
+$primaryAssemblySetting = Select-Xml "/nupkgs/nupkg[@id='$Id']/dllName" $xml | % { $_.Node.'#text' } | Select-Object -first 1
 
 # build the csproj and dll full paths
 $projectPath = Join-Path $workingDir $projectPathSetting

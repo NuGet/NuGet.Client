@@ -7,3 +7,5 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("NuGet.Client.VisualStudio")]
 [assembly: AssemblyDescription("Contains the view models that are specific to visual studio scenarios.")]
+[assembly: AssemblyVersion("0.1.0.0")]
+[assembly: AssemblyInformationalVersion("0.1.0-alpha")]

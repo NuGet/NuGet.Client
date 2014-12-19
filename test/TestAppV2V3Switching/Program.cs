@@ -16,7 +16,7 @@ namespace TestAppV2V3Switching
     class Program
     {
         private CompositionContainer container;
-        public  void AssembleComponents()
+        public void AssembleComponents()
         {
             try
             {
@@ -24,17 +24,17 @@ namespace TestAppV2V3Switching
                 var aggregateCatalog = new AggregateCatalog();
                 //Build the directory path where the parts will be available
                 var directoryPath = Environment.CurrentDirectory;
-                var directoryCatalog = new DirectoryCatalog(directoryPath, "*.dll");              
-                aggregateCatalog.Catalogs.Add(directoryCatalog);              
-                container = new CompositionContainer(aggregateCatalog);               
-                container.ComposeParts(this);         
+                var directoryCatalog = new DirectoryCatalog(directoryPath, "*.dll");
+                aggregateCatalog.Catalogs.Add(directoryCatalog);
+                container = new CompositionContainer(aggregateCatalog);
+                container.ComposeParts(this);
             }
             catch (Exception ex)
             {
                 throw ex;
             }
         }
-                     
+
         public void TestGetResourceGivesRequiredResourceType()
         {
             IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> providers = container.GetExports<ResourceProvider, IResourceProviderMetadata>();
@@ -68,7 +68,7 @@ namespace TestAppV2V3Switching
             SearchFilter filter = new SearchFilter(); //create a dummy filter.
             List<FrameworkName> fxNames = new List<FrameworkName>();
             fxNames.Add(new FrameworkName(".NET Framework, Version=4.0"));
-            filter.SupportedFrameworks = fxNames;                       
+            filter.SupportedFrameworks = fxNames;
             IEnumerable<VisualStudioUISearchMetadata> searchResults = resource.GetSearchResultsForVisualStudioUI("Elmah", filter, 0, 100, new System.Threading.CancellationToken()).Result;
             Debug.Assert(searchResults.Count() > 0); // Check if non empty search result is returned.
             Debug.Assert(searchResults.Any(p => p.Id.Equals("Elmah", StringComparison.OrdinalIgnoreCase))); //check if there is atleast one result which has Elmah as title.
@@ -81,7 +81,7 @@ namespace TestAppV2V3Switching
             p.TestGetResourceGivesRequiredResourceType();
             p.TestAppropriateExceptionThrownWhenResourceIsNotAvailable();
             p.TestE2E();
-            
+
         }
     }
 }

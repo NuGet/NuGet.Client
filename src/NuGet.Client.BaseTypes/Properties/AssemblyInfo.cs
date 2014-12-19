@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("NuGet.Client.BaseTypes")]
 [assembly: AssemblyDescription("Assembly that exposes the base types required for all package/repository related operations in a Protocol (v2/v3) agnostic way.")]
-
+[assembly: AssemblyVersion("0.1.0.0")]
+[assembly: AssemblyInformationalVersion("0.1.0-alpha")]
 
 
 
