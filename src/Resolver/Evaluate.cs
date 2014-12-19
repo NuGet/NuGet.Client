@@ -5,6 +5,13 @@ namespace NuGet.Resolver
 {
     public static class Evaluate
     {
+        //  A particular candidate solution can be tested back against the original metadata tree. The test is performed by a simple
+        //  combination of two mutually recursive functions. One corresponds to every package registration (i.e. RegistrationInfo) and one
+        //  corresponds to every package version (i.e. PackageInfo).
+        //  For a solution to be valid a package from every registration mentioned in the dependency must be present but any version will work.
+        //  (Note that at this stage the metadata tree has been trimmed to only include specific relevant package versions (i.e. the version ranges
+        //  mentioned in the dependency have been applied and the results inlined in the tree as further branches.)
+
         public static bool Satisfy(RegistrationInfo registrationInfo, IEnumerable<KeyValuePair<string, NuGetVersion>> candidate)
         {
             IDictionary<string, NuGetVersion> dictionary = new Dictionary<string, NuGetVersion>();

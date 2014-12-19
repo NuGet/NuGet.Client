@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 
 namespace NuGet.Resolver
 {
+    // ResolverApplication combines the current inventory (i.e. packages.config) and the desired package install into a
+    // combined RegistrationInfo object for further processing. The Load function actually performs the fetch of all the
+    // relevant metadata from the NuGet server. In other words this code fetches all the Registration blobs and builds
+    // a single unified metadata tree structure that represents the potential packages used in the application.
+
     public class ResolverApplication
     {
         const string RegistrationTemplate = "https://az320820.vo.msecnd.net/registrations-1/{0}/index.json";
@@ -27,7 +32,6 @@ namespace NuGet.Resolver
             _installedVersions = new Dictionary<string, NuGetVersion>();
             _allowedVersions = new Dictionary<string, VersionRange>();
 
-            //PackageInfo appPackageInfo = new PackageInfo { Version = NuGetVersion.Parse("0.0.0"), PackageContent = new Uri("http://tempuri.org/root/package") };
             PackageInfo appPackageInfo = new PackageInfo();
             appPackageInfo.DependencyGroups.Add(_appDependencyGroupInfo);
 

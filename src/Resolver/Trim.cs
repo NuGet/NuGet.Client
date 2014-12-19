@@ -6,6 +6,11 @@ namespace NuGet.Resolver
 {
     static class Trim
     {
+        //  This code trims the metadata tree to just include packages that fit within an allowed-version specification.
+        //  Packages outside of the range are removed from the tree. That removal should filter up the tree which is what the second
+        //  pass is intended to achieve. This notion of allowed versions can trivially be extended for example to include
+        //  for example multiple version ranges. (In fact this code could probably be parameterized with an actual trim lambda.)
+
         public static void TrimByAllowedVersions(RegistrationInfo registrationInfo, IDictionary<string, VersionRange> allowedVersions)
         {
             foreach (KeyValuePair<string, VersionRange> allowedVersion in allowedVersions)

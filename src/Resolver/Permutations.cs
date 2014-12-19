@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Resolver
 {
-    class Permutations
+    static class Permutations
     {
         static bool Loop(IList<KeyValuePair<string, NuGetVersion>>[] x, int i, Stack<KeyValuePair<string, NuGetVersion>> candidate, Func<IEnumerable<KeyValuePair<string, NuGetVersion>>, bool> test)
         {
