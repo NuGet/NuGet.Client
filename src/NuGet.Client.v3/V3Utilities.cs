@@ -22,7 +22,7 @@ namespace NuGet.Client.V3
 
             using (var client = new DataClient())
             {
-                var v3index = client.GetJObjectAsync(url);
+                var v3index = client.GetFile(url);
                 if (v3index == null)
                 {
                     return false;

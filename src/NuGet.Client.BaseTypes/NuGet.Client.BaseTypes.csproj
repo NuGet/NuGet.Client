@@ -56,6 +56,7 @@
     <Compile Include="Package\PackageIdentity.cs" />
     <Compile Include="PackageSource.cs" />
     <Compile Include="Repository\IDownload.cs" />
+    <Compile Include="Repository\IMetadata.cs" />
     <Compile Include="Repository\IMetrics.cs" />
     <Compile Include="Repository\IResolution.cs" />
     <Compile Include="Repository\ResourceProvider.cs" />

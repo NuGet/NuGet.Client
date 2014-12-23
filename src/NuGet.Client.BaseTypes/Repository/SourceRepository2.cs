@@ -25,9 +25,8 @@ namespace NuGet.Client
         private readonly PackageSource _source;       
 
         //*TODOs: Providers should be automatically imported when run inside vs context. Right now passing triggering it as part of testapp and passing it as param.
-        public SourceRepository2(PackageSource source, IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> providers) 
-            
-        {
+        public SourceRepository2(PackageSource source, IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> providers)             
+        {           
             _source = source;
             _providers = providers;
         }

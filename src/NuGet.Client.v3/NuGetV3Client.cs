@@ -103,7 +103,7 @@ namespace NuGet.Client.V3
 
            
             var queryUri = queryUrl.Uri;
-            var results = await _client.GetJObjectAsync(queryUri);
+            var results = await _client.GetFile(queryUri);
             cancellationToken.ThrowIfCancellationRequested();
             if (results == null)
             {              
@@ -152,7 +152,7 @@ namespace NuGet.Client.V3
             // TODO: Validate these properties exist
             //var catalogPackage = await _client.Ensure(new Uri(packageUrl), CatalogRequiredProperties);
 
-            var catalogPackage = await _client.GetJObjectAsync(new Uri(packageUrl));
+            var catalogPackage = await _client.GetFile(new Uri(packageUrl));
 
             if (catalogPackage["HttpStatusCode"] != null)
             {
@@ -183,21 +183,18 @@ namespace NuGet.Client.V3
                 string type = item["@type"].ToString();
                 if (Equals(type, "catalog:CatalogPage"))
                 {
-                    // TODO: fix this
-                    throw new NotImplementedException();
-                    //var resolved = await _client.Ensure(item, new[] {
-                    //    new Uri("http://schema.nuget.org/schema#items")
-                    //});
-                    //Debug.Assert(resolved != null, "DataClient returned null from Ensure :(");
-                    //lists.Add(await Descend((JArray)resolved["items"]));
+                    var resolved = await _client.Ensure(item, new[] {
+                        new Uri("http://schema.nuget.org/schema#items")
+                    });
+                    Debug.Assert(resolved != null, "DataClient returned null from Ensure :(");
+                    lists.Add(await Descend((JArray)resolved["items"]));
                 }
                 else if (Equals(type, "Package"))
                 {
                     // Yield this item with catalogEntry and it's subfields ensured
-                    //var resolved = await _client.Ensure(item, PackageRequiredProperties);
-                    //resolved["catalogEntry"] = await _client.Ensure(resolved["catalogEntry"], PackageDetailsRequiredProperties);
-                    //items.Add((JObject)resolved);
-                    throw new NotImplementedException();
+                    var resolved = await _client.Ensure(item, PackageRequiredProperties);
+                    resolved["catalogEntry"] = await _client.Ensure(resolved["catalogEntry"], PackageDetailsRequiredProperties);
+                    items.Add((JObject)resolved);                  
                 }
             }
 
@@ -208,7 +205,7 @@ namespace NuGet.Client.V3
         private async Task<string> GetServiceUri(Uri type)
         {
             // Read the root document (usually out of the cache :))
-            var doc = await _client.GetJObjectAsync(_root);
+            var doc = await _client.GetFile(_root);
             var obj = JsonLdProcessor.Expand(doc).FirstOrDefault();
             if (obj == null)
             {
