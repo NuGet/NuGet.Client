@@ -35,7 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="def\IFileSystem.cs" />
     <Compile Include="def\INuspecCoreReader.cs" />
     <Compile Include="def\IPackageCoreReader.cs" />
     <Compile Include="GlobalSuppressions.cs" />
@@ -50,7 +49,6 @@
     <Compile Include="tree\TreeNode.cs" />
     <Compile Include="PackageItemGroup.cs" />
     <Compile Include="PackageProperty.cs" />
-    <Compile Include="ZipFileSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NuGet.Versioning">

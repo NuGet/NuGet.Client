@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -17,12 +18,11 @@ namespace NuGet.Packaging
     /// </summary>
     public class PackageReader : IPackageReader
     {
-        private readonly IFileSystem _fileSystem;
         private NuspecReader _nuspec;
 
-        public PackageReader(IFileSystem fileSystem)
+        public PackageReader(ZipArchive zipArchive)
         {
-            _fileSystem = fileSystem;
+            ZipArchive = zipArchive;
         }
 
         /// <summary>
@@ -254,14 +254,6 @@ namespace NuGet.Packaging
             return framework;
         }
 
-        public IFileSystem FileSystem
-        {
-            get
-            {
-                return _fileSystem;
-            }
-        }
-
         private NuspecReader Nuspec
         {
             get
@@ -275,12 +267,18 @@ namespace NuGet.Packaging
             }
         }
 
+        private ZipArchive ZipArchive
+        {
+            get;
+            set;
+        }
+
         private IEnumerable<FrameworkSpecificGroup> GetFiles(string folder)
         {
             Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
 
-            foreach (string path in FileSystem.GetFiles()
-                .Where(s => s.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase)))
+            foreach (string path in ZipArchiveHelper.GetFiles(ZipArchive)
+                .Where(f => f.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase)))
             {
                 string framework = GetFrameworkFromPath(path);
 
@@ -316,7 +314,7 @@ namespace NuGet.Packaging
 
         public Stream GetNuspec()
         {
-            string path = _fileSystem.GetFiles().Where(f => f.EndsWith(PackagingConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            string path = ZipArchiveHelper.GetFiles(ZipArchive).Where(f => f.EndsWith(PackagingConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             return GetStream(path);
         }
 
@@ -347,7 +345,7 @@ namespace NuGet.Packaging
 
             if (!String.IsNullOrEmpty(path))
             {
-                stream = FileSystem.OpenFile(path);
+                stream = ZipArchiveHelper.OpenFile(ZipArchive, path);
             }
 
             return stream;
@@ -359,4 +357,41 @@ namespace NuGet.Packaging
         }
 
     }
+
+    internal static class ZipArchiveHelper
+    {
+        internal static ZipArchiveEntry GetEntry(ZipArchive zipArchive, string path)
+        {
+            var entry = zipArchive.Entries.Where(e => e.FullName == path).FirstOrDefault();
+
+            if(entry == null)
+            {
+                throw new FileNotFoundException(path);
+            }
+
+            return entry;
+        }
+
+        internal static IEnumerable<string> GetFiles(ZipArchive zipArchive)
+        {
+            return zipArchive.Entries.Select(e => UnescapePath(e.FullName));
+        }
+
+        private static string UnescapePath(string path)
+        {
+            if (path != null && path.IndexOf('%') > -1)
+            {
+                return Uri.UnescapeDataString(path);
+            }
+
+            return path;
+        }
+
+        internal static Stream OpenFile(ZipArchive zipArchive, string path)
+        {
+            var entry = GetEntry(zipArchive, path);
+            return entry.Open();
+        }
+    }
+
 }

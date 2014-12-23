@@ -13,7 +13,5 @@ namespace NuGet.PackagingCore
         PackageIdentity GetIdentity();
 
         ComponentTree GetComponentTree();
-
-        IFileSystem FileSystem { get; }
     }
 }
