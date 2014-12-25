@@ -38,9 +38,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Client.BaseTypes, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Client.BaseTypes, Version=0.1.0.0, Culture=neutral, PublicKeyToken=a54e26fdc1b81123, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.1.0-Download-43572338\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.1.2-master-1224\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Data, Version=1.0.1.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -87,7 +87,7 @@
     <Compile Include="V3Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config" />   
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
