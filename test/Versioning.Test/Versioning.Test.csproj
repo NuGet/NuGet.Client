@@ -68,10 +68,6 @@
       <Project>{31afefca-7883-418d-8af7-659453cf0499}</Project>
       <Name>Versioning</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
-      <Project>{8010a76a-cb15-4484-8f9b-d523fbc34dfa}</Project>
-      <Name>Test.Utility</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

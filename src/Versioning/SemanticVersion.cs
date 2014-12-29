@@ -13,14 +13,11 @@ namespace NuGet.Versioning
         internal readonly string _metadata;
         internal Version _version;
 
+        /// <summary>
+        /// Creates a SemanticVersion from an existing SemanticVersion
+        /// </summary>
         public SemanticVersion(SemanticVersion version)
             : this(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata)
-        {
-
-        }
-
-        public SemanticVersion(Version version, string releaseLabel = null, string metadata = null)
-            : this(version, ParseReleaseLabels(releaseLabel), metadata)
         {
 
         }
@@ -64,25 +61,39 @@ namespace NuGet.Versioning
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion X.Y.Z-alpha.1.2#build01
+        /// </summary>
+        /// <param name="major">X.y.z</param>
+        /// <param name="minor">x.Y.z</param>
+        /// <param name="patch">x.y.Z</param>
+        /// <param name="releaseLabels">Release labels that have been split by the dot separator</param>
+        /// <param name="metadata">Build metadata</param>
         public SemanticVersion(int major, int minor, int patch, IEnumerable<string> releaseLabels, string metadata)
             :this(new Version(major, minor, patch), releaseLabels, metadata)
         {
 
         }
 
-        public SemanticVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
+        protected SemanticVersion(Version version, string releaseLabel = null, string metadata = null)
+            : this(version, ParseReleaseLabels(releaseLabel), metadata)
+        {
+
+        }
+
+        protected SemanticVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
             :this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
         {
 
         }
 
-        public SemanticVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
+        protected SemanticVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
             : this(new Version(major, minor, patch, revision), releaseLabels, metadata)
         {
 
         }
 
-        public SemanticVersion(Version version, IEnumerable<string> releaseLabels, string metadata)
+        protected SemanticVersion(Version version, IEnumerable<string> releaseLabels, string metadata)
         {
             if (version == null)
             {

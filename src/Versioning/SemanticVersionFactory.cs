@@ -9,6 +9,9 @@ namespace NuGet.Versioning
     {
         private const RegexOptions _flags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
 
+        /// <summary>
+        /// Parses a SemVer string using strict SemVer rules.
+        /// </summary>
         public static SemanticVersion Parse(string value)
         {
             SemanticVersion ver = null;

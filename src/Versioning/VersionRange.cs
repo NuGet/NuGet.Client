@@ -40,6 +40,9 @@ namespace NuGet.Versioning
             }
         }
 
+        /// <summary>
+        /// True if MinVersion exists;
+        /// </summary>
         public bool HasLowerBound
         {
             get
@@ -48,6 +51,9 @@ namespace NuGet.Versioning
             }
         }
 
+        /// <summary>
+        /// True if MaxVersion exists.
+        /// </summary>
         public bool HasUpperBound
         {
             get
@@ -56,6 +62,9 @@ namespace NuGet.Versioning
             }
         }
 
+        /// <summary>
+        /// True if both MinVersion and MaxVersion exist.
+        /// </summary>
         public bool HasLowerAndUpperBounds
         {
             get
@@ -64,6 +73,9 @@ namespace NuGet.Versioning
             }
         }
 
+        /// <summary>
+        /// True if MinVersion exists and is included in the range.
+        /// </summary>
         public bool IsMinInclusive
         {
             get
@@ -72,6 +84,9 @@ namespace NuGet.Versioning
             }
         }
 
+        /// <summary>
+        /// True if MaxVersion exists and is included in the range.
+        /// </summary>
         public bool IsMaxInclusive
         {
             get
@@ -80,6 +95,9 @@ namespace NuGet.Versioning
             }
         }
 
+        /// <summary>
+        /// Maximum version allowed by this range.
+        /// </summary>
         public SimpleVersion MaxVersion
         {
             get
@@ -88,6 +106,9 @@ namespace NuGet.Versioning
             }
         }
 
+        /// <summary>
+        /// Minimum version allowed by this range.
+        /// </summary>
         public SimpleVersion MinVersion
         {
             get
@@ -176,6 +197,9 @@ namespace NuGet.Versioning
             return condition;
         }
 
+        /// <summary>
+        /// Normalized range string.
+        /// </summary>
         public override string ToString()
         {
             return ToString("N", new VersionRangeFormatter());

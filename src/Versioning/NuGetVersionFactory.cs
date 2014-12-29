@@ -7,6 +7,9 @@ namespace NuGet.Versioning
 {
     public partial class NuGetVersion
     {
+        /// <summary>
+        /// Creates a NuGetVersion from a string representing the semantic version.
+        /// </summary>
         public static new NuGetVersion Parse(string value)
         {
             if (String.IsNullOrEmpty(value))
@@ -49,6 +52,9 @@ namespace NuGet.Versioning
             return false;
         }
 
+        /// <summary>
+        /// Parses a version string using strict SemVer rules.
+        /// </summary>
         public static bool TryParseStrict(string value, out NuGetVersion version)
         {
             version = null;

@@ -12,18 +12,31 @@ namespace NuGet.Versioning
     {
         private readonly string _originalString;
 
+        /// <summary>
+        /// Creates a NuGetVersion using NuGetVersion.Parse(string)
+        /// </summary>
+        /// <param name="version">Version string</param>
         public NuGetVersion(string version)
             : this(Parse(version))
         {
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion from an existing NuGetVersion
+        /// </summary>
         public NuGetVersion(NuGetVersion version)
             : this(version.Version, version.ReleaseLabels, version.Metadata, version.ToString())
         {
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion from a .NET Version
+        /// </summary>
+        /// <param name="version">Version numbers</param>
+        /// <param name="releaseLabel">Prerelease label</param>
+        /// <param name="metadata">Build metadata</param>
         public NuGetVersion(Version version, string releaseLabel = null, string metadata = null)
             : this(version, ParseReleaseLabels(releaseLabel), metadata, GetLegacyString(version, ParseReleaseLabels(releaseLabel), metadata))
         {
@@ -69,30 +82,70 @@ namespace NuGet.Versioning
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion X.Y.Z-alpha.1.2#build01
+        /// </summary>
+        /// <param name="major">X.y.z</param>
+        /// <param name="minor">x.Y.z</param>
+        /// <param name="patch">x.y.Z</param>
+        /// <param name="releaseLabels">Prerelease labels</param>
+        /// <param name="metadata">Build metadata</param>
         public NuGetVersion(int major, int minor, int patch, IEnumerable<string> releaseLabels, string metadata)
             : this(new Version(major, minor, patch), releaseLabels, metadata, null)
         {
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion W.X.Y.Z
+        /// </summary>
+        /// <param name="major">W.x.y.z</param>
+        /// <param name="minor">w.X.y.z</param>
+        /// <param name="patch">w.x.Y.z</param>
+        /// <param name="revision">w.x.y.Z</param>
         public NuGetVersion(int major, int minor, int patch, int revision)
             : this(major, minor, patch, revision, Enumerable.Empty<string>(), null)
         {
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion W.X.Y.Z-alpha#build01
+        /// </summary>
+        /// <param name="major">W.x.y.z</param>
+        /// <param name="minor">w.X.y.z</param>
+        /// <param name="patch">w.x.Y.z</param>
+        /// <param name="revision">w.x.y.Z</param>
+        /// <param name="releaseLabel">Prerelease label</param>
+        /// <param name="metadata">Build metadata</param>
         public NuGetVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
             : this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
         {
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion W.X.Y.Z-alpha.1#build01
+        /// </summary>
+        /// <param name="major">W.x.y.z</param>
+        /// <param name="minor">w.X.y.z</param>
+        /// <param name="patch">w.x.Y.z</param>
+        /// <param name="revision">w.x.y.Z</param>
+        /// <param name="releaseLabels">Prerelease labels</param>
+        /// <param name="metadata">Build metadata</param>
         public NuGetVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
             : this(new Version(major, minor, patch, revision), releaseLabels, metadata, null)
         {
 
         }
 
+        /// <summary>
+        /// Creates a NuGetVersion from a .NET Version with additional release labels, build metadata, and a non-normalized version string.
+        /// </summary>
+        /// <param name="version">Version numbers</param>
+        /// <param name="releaseLabels">prerelease labels</param>
+        /// <param name="metadata">Build metadata</param>
+        /// <param name="originalVersion">Non-normalized original version string</param>
         public NuGetVersion(Version version, IEnumerable<string> releaseLabels, string metadata, string originalVersion)
             : base(version, releaseLabels, metadata)
         {

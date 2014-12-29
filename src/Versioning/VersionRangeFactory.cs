@@ -33,6 +33,9 @@ namespace NuGet.Versioning
             return versionInfo;
         }
 
+        /// <summary>
+        /// Parses a VersionRange from its string representation.
+        /// </summary>
         public static bool TryParse(string value, out VersionRange versionRange)
         {
             if (value == null)

@@ -4,6 +4,9 @@ using System.Text;
 
 namespace NuGet.Versioning
 {
+    /// <summary>
+    /// VersionRange formatter
+    /// </summary>
     public class VersionRangeFormatter : IFormatProvider, ICustomFormatter
     {
         private const string LessThanOrEqualTo = "\u2264";
