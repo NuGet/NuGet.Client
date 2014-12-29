@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client.V3
 {
     public abstract class V3ResourceProvider : ResourceProvider
-    {        
+    {                
         public override bool TryCreateResource(PackageSource source,out Resource resource)
         {
             try

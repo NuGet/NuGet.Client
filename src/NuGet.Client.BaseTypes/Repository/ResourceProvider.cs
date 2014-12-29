@@ -8,7 +8,7 @@ namespace NuGet.Client
 
     public abstract class ResourceProvider
     {
-        protected IDictionary<string, object> packageSourceCache;
+        protected IDictionary<string, object> packageSourceCache = new Dictionary<string,object>();
         public abstract bool TryCreateResource(PackageSource source, out Resource resource);
         public virtual Resource Create(PackageSource source)
         {

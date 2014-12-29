@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
-    public interface IDownload
+    public interface IMetadata
     {
-     Task<PackageDownloadMetadata> GetNupkgUrlForDownload(PackageIdentity identity); 
+        Task<NuGetVersion> GetLatestVersion(string packageId);
+        Task<bool> IsSatellitePackage(string packageId);
     }
 }

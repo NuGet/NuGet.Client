@@ -11,7 +11,12 @@ namespace NuGet.Client
     /// </summary>
     public class PackageDownloadMetadata
     {
+        public PackageDownloadMetadata(Uri nupkgDownloadUrl)
+        {
+            this.NupkgDownloadUrl = nupkgDownloadUrl;
+        }
         public Uri NupkgDownloadUrl { get; private set; }
+        
 
     }
 }
