@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.PackagingCore;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -7,38 +8,38 @@ namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        public static void ExtractPackage(Stream packageStream, string rootDirectory, PackageSaveModes packageSaveMode = PackageSaveModes.Nupkg)
+        public static void ExtractPackage(Stream packageStream, PackageIdentity packageIdentity, PackagePathResolver packagePathResolver, PackageSaveModes packageSaveMode = PackageSaveModes.Nupkg)
         {
             // TODO: Need to handle PackageSaveMode
             // TODO: Need to handle satellite package files differently
             // TODO: Support overwriting files also?
+            long nupkgStartPosition = packageStream.Position;
             var zipArchive = new ZipArchive(packageStream);
-            var directory = Directory.CreateDirectory(rootDirectory);
+            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentity));
             foreach (var entry in zipArchive.Entries)
             {
                 if (PackageHelper.IsPackageFile(entry.FullName, packageSaveMode))
                 {
-                    var packageFileFullPath = Path.Combine(directory.FullName, entry.FullName);
-
-                    if(File.Exists(packageFileFullPath))
+                    var packageFileFullPath = Path.Combine(packageDirectoryInfo.FullName, entry.FullName);
+                    using (var inputStream = entry.Open())
                     {
-                        // Log and skip to next package file
-                        continue;
-                    }
-                    using (Stream outputStream = CreateFileWithDirectory(packageFileFullPath))
-                    {
-                        entry.Open().CopyTo(outputStream);
+                        CreatePackageFile(packageFileFullPath, inputStream);
                     }
                 }
             }
 
             if(packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
             {
-                // TODO
+                var nupkgFilePath = Path.Combine(packageDirectoryInfo.FullName, packagePathResolver.GetPackageFileName(packageIdentity));
+                // During package extraction, nupkg is the last file to be created
+                // Since all the packages are already created, the package stream is likely positioned at its end
+                // Reset it to the nupkgStartPosition
+                packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
+                CreatePackageFile(nupkgFilePath, packageStream);
             }
         }
 
-        private static Stream CreateFileWithDirectory(string packageFileFullPath)
+        private static void CreatePackageFile(string packageFileFullPath, Stream inputStream)
         {
             string directory = Path.GetDirectoryName(packageFileFullPath);
             if (!Directory.Exists(directory))
@@ -46,7 +47,16 @@ namespace NuGet.Packaging
                 Directory.CreateDirectory(directory);
             }
 
-            return File.Create(packageFileFullPath);
+            if (File.Exists(packageFileFullPath))
+            {
+                // Log and skip adding file
+                return;
+            }
+
+            using (Stream outputStream = File.Create(packageFileFullPath))
+            {
+                inputStream.CopyTo(outputStream);
+            }
         }
     }
 
