@@ -66,8 +66,8 @@ namespace TestAppV2V3Switching
         public async void TestV3Search()
         {
             IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> providers = container.GetExports<ResourceProvider, IResourceProviderMetadata>();
-            Debug.Assert(providers.Count() > 0);      
-            PackageSource source = new PackageSource("V3Source", "https://az320820.vo.msecnd.net/ver3-preview/index.json");
+            Debug.Assert(providers.Count() > 0);
+            PackageSource source = new PackageSource("V3Source", @"C:\temp\my.json");
             SourceRepository2 repo = new SourceRepository2(source,providers);
             IVsSearch resource = (IVsSearch)repo.GetResource<IVsSearch>().Result;             
             Debug.Assert(resource != null); //Check if we are able to obtain a resource
@@ -82,22 +82,13 @@ namespace TestAppV2V3Switching
         }
 
         static void Main(string[] args)
-        {
-
-            Uri uri = new Uri(@"C:\temp\index.json");
-            JObject.Parse("{}");
-            Console.WriteLine(uri.IsFile);
-            Console.WriteLine(uri.IsUnc);
-            Console.WriteLine(uri.LocalPath);
-            
+        {        
             
             Program p = new Program();
             p.AssembleComponents();
             p.TestV3Download();
             p.TestV3Metadata();
             p.TestV3Search();
-
-            
 
         }
     }

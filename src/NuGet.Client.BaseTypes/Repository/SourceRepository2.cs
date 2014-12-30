@@ -39,7 +39,8 @@ namespace NuGet.Client
                 if (provider.Metadata.ResourceType == resourceType)
                 {
                     Resource resource = await provider.Value.Create(_source);
-                    return resource;
+                    if (resource != null)
+                        return resource;
                 }
             }
             return null;
