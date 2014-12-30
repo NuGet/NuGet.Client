@@ -7,12 +7,12 @@
     <ProjectGuid>{60F1F764-1792-4FC6-B23D-2373AB328535}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Packaging</RootNamespace>
-    <AssemblyName>Packaging</AssemblyName>
+    <RootNamespace>NuGet.Packaging</RootNamespace>
+    <AssemblyName>NuGet.Packaging</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
-	<DocumentationFile>bin\$(Configuration)\Packaging.XML</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\NuGet.Packaging.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.4\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+    <Reference Include="NuGet.Versioning, Version=1.0.5.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Definitions\INuspecReader.cs" />
     <Compile Include="Definitions\IPackageReader.cs" />
+    <Compile Include="Definitions\IPackageResolver.cs" />
     <Compile Include="Exceptions\PackagesConfigReaderException.cs" />
     <Compile Include="FrameworkSpecificGroup.cs" />
     <Compile Include="GlobalSuppressions.cs" />
@@ -78,11 +80,5 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\sign.targets" />
 </Project>
