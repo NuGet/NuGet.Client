@@ -45,7 +45,7 @@
     </Reference>
     <Reference Include="NuGet.Client.V3, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a54e26fdc1b81123, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.V3.0.1.8-master-1230\lib\net45\NuGet.Client.V3.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.V3.0.1.9-master-1230\lib\net45\NuGet.Client.V3.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.VisualStudio, Version=0.1.0.0, Culture=neutral, PublicKeyToken=a54e26fdc1b81123, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

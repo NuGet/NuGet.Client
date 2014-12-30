@@ -14,9 +14,12 @@ namespace NuGet.Client.V3
         public async override Task<Resource> Create(PackageSource source)
         {
             V3DownloadResource v3DownloadResource;
-            Resource resource = await base.Create(source);           
-            v3DownloadResource = new V3DownloadResource((V3Resource)resource);
-            resource = v3DownloadResource;
+            Resource resource = await base.Create(source);
+            if (resource != null)
+            {
+                v3DownloadResource = new V3DownloadResource((V3Resource)resource);
+                resource = v3DownloadResource;
+            }
             return resource;
            
         }
