@@ -38,11 +38,8 @@ namespace NuGet.Client
                 //Each provider will expose the "ResourceType" that it can create. Filter the provider based on the current "resourceType" that is requested and invoke TryCreateResource on it.
                 if (provider.Metadata.ResourceType == resourceType)
                 {
-                    Resource resource = null;
-                    if (await provider.Value.TryCreateResource(_source, out resource))
-                    {
-                        return resource;
-                    }
+                    Resource resource = await provider.Value.Create(_source);
+                    return resource;
                 }
             }
             return null;

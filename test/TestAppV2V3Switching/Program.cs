@@ -11,6 +11,7 @@ using NuGet.Client.VisualStudio.Models;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using NuGet.Versioning;
+using Newtonsoft.Json.Linq;
 
 namespace TestAppV2V3Switching
 {
@@ -42,7 +43,7 @@ namespace TestAppV2V3Switching
             Debug.Assert(providers.Count() > 0);    
             PackageSource source = new PackageSource("V3Source", "https://az320820.vo.msecnd.net/ver3-preview/index.json");
             SourceRepository2 repo = new SourceRepository2(source,providers);
-            IDownload resource = (IDownload)repo.GetResource<IDownload>();
+            IDownload resource = (IDownload)repo.GetResource<IDownload>().Result;
             Debug.Assert(resource != null);
             Debug.Assert(resource.GetType().GetInterfaces().Contains(typeof(IDownload)));
             PackageDownloadMetadata downloadMetadata = resource.GetNupkgUrlForDownload(new PackageIdentity("jQuery", new NuGetVersion("1.6.4"))).Result;
@@ -55,7 +56,7 @@ namespace TestAppV2V3Switching
             Debug.Assert(providers.Count() > 0);         
             PackageSource source = new PackageSource("V3Source", @"C:\temp\my.json");
             SourceRepository2 repo = new SourceRepository2(source,providers);
-            IMetadata resource = (IMetadata)repo.GetResource<IMetadata>();
+            IMetadata resource = (IMetadata)repo.GetResource<IMetadata>().Result;
             Debug.Assert(resource != null);
             Debug.Assert(resource.GetType().GetInterfaces().Contains(typeof(IMetadata)));
             NuGetVersion latestVersion = resource.GetLatestVersion("jQuery").Result;
@@ -68,7 +69,7 @@ namespace TestAppV2V3Switching
             Debug.Assert(providers.Count() > 0);      
             PackageSource source = new PackageSource("V3Source", "https://az320820.vo.msecnd.net/ver3-preview/index.json");
             SourceRepository2 repo = new SourceRepository2(source,providers);
-            IVsSearch resource = (IVsSearch)repo.GetResource<IVsSearch>();             
+            IVsSearch resource = (IVsSearch)repo.GetResource<IVsSearch>().Result;             
             Debug.Assert(resource != null); //Check if we are able to obtain a resource
             Debug.Assert(resource.GetType().GetInterfaces().Contains(typeof(IVsSearch))); //check if the resource is of type IVsSearch.
             SearchFilter filter = new SearchFilter(); //create a dummy filter.
@@ -84,9 +85,11 @@ namespace TestAppV2V3Switching
         {
 
             Uri uri = new Uri(@"C:\temp\index.json");
+            JObject.Parse("{}");
             Console.WriteLine(uri.IsFile);
             Console.WriteLine(uri.IsUnc);
             Console.WriteLine(uri.LocalPath);
+            
             
             Program p = new Program();
             p.AssembleComponents();

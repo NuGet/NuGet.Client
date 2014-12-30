@@ -206,7 +206,7 @@ namespace NuGet.Client.V3
         private async Task<string> GetServiceUri(Uri type)
         {
             // Read the root document (usually out of the cache :))
-            var doc = JObject.Parse(String.Empty);
+            var doc = JObject.Parse("{}");
             if (_root.IsFile && _root.LocalPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             {
                 doc = JObject.Parse(File.ReadAllText(_root.LocalPath));

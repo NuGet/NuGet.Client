@@ -11,19 +11,13 @@ namespace NuGet.Client.V3
     [ResourceProviderMetadata("V3MetadataResourceProvider", typeof(IMetadata))]
     public class V3MetadataResourceProvider : V3ResourceProvider
     {
-        public override bool TryCreateResource(PackageSource source, out Resource resource)
+        public async override Task<Resource> Create(PackageSource source)
         {
             V3MetadataResource v3MetadataResource;
-            if (base.TryCreateResource(source, out resource))
-            {
-                v3MetadataResource = new V3MetadataResource((V3Resource)resource);
-                resource = v3MetadataResource;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            Resource resource =  await base.Create(source);            
+            v3MetadataResource = new V3MetadataResource((V3Resource)resource);
+            resource = v3MetadataResource;
+            return resource;
         }
     }
 }
