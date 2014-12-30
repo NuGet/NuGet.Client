@@ -15,7 +15,9 @@
 	</dependencies>
   </metadata>
   <files>
-	<file src="..\Core\bin\$configuration$\NuGet.PackagingCore.dll" target="lib/portable-net45+win" />
-	<file src="..\Frameworks\bin\$configuration$\NuGet.Frameworks.dll" target="lib/portable-net45+win" />
+	<file src="..\Core\bin\$configuration$\NuGet.PackagingCore.dll" target="lib/net45" />
+	<file src="..\Frameworks\bin\$configuration$\NuGet.Frameworks.dll" target="lib/net45" />
+	<file src="..\Core\bin\$configuration$\NuGet.PackagingCore.XML" target="lib/net45" />
+	<file src="..\Frameworks\bin\$configuration$\NuGet.Frameworks.XML" target="lib/net45" />
   </files>
 </package>
