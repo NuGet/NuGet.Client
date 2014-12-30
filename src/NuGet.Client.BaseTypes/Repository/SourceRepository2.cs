@@ -31,7 +31,7 @@ namespace NuGet.Client
             _providers = providers;
         }
 
-        public object GetResource(Type resourceType)
+        public async Task<object> GetResource(Type resourceType)
         {            
             foreach(Lazy<ResourceProvider,IResourceProviderMetadata>  provider in _providers)
             {
@@ -39,7 +39,7 @@ namespace NuGet.Client
                 if (provider.Metadata.ResourceType == resourceType)
                 {
                     Resource resource = null;
-                    if (provider.Value.TryCreateResource(_source, out resource))
+                    if (await provider.Value.TryCreateResource(_source, out resource))
                     {
                         return resource;
                     }
@@ -48,6 +48,10 @@ namespace NuGet.Client
             return null;
         }
        
-        public T GetResource<T>() { return (T)GetResource(typeof(T)); }
+        public async Task<T> GetResource<T>() 
+        {
+           object x = await GetResource(typeof(T));
+           return (T)x;            
+        }
     }
 }

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Globalization;
+using System.IO;
 
 
 namespace NuGet.Client.V3
@@ -205,7 +206,15 @@ namespace NuGet.Client.V3
         private async Task<string> GetServiceUri(Uri type)
         {
             // Read the root document (usually out of the cache :))
-            var doc = await _client.GetFile(_root);
+            var doc = JObject.Parse(String.Empty);
+            if (_root.IsFile && _root.LocalPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                doc = JObject.Parse(File.ReadAllText(_root.LocalPath));
+            }
+            else
+            {
+                doc = await _client.GetFile(_root);
+            }
             var obj = JsonLdProcessor.Expand(doc).FirstOrDefault();
             if (obj == null)
             {

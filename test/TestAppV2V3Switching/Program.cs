@@ -53,7 +53,7 @@ namespace TestAppV2V3Switching
         {
             IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> providers = container.GetExports<ResourceProvider, IResourceProviderMetadata>();
             Debug.Assert(providers.Count() > 0);         
-            PackageSource source = new PackageSource("V3Source", "https://az320820.vo.msecnd.net/ver3-preview/index.json");
+            PackageSource source = new PackageSource("V3Source", @"C:\temp\my.json");
             SourceRepository2 repo = new SourceRepository2(source,providers);
             IMetadata resource = (IMetadata)repo.GetResource<IMetadata>();
             Debug.Assert(resource != null);
@@ -62,13 +62,13 @@ namespace TestAppV2V3Switching
             Debug.Assert(latestVersion.ToNormalizedString().Equals("2.1.1")); //*TODOs: Use a proper test package whose latest version is fixed instead of using jQuery.
         }
 
-        public void TestV3Search()
+        public async void TestV3Search()
         {
             IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> providers = container.GetExports<ResourceProvider, IResourceProviderMetadata>();
             Debug.Assert(providers.Count() > 0);      
             PackageSource source = new PackageSource("V3Source", "https://az320820.vo.msecnd.net/ver3-preview/index.json");
             SourceRepository2 repo = new SourceRepository2(source,providers);
-            IVsSearch resource = (IVsSearch)repo.GetResource<IVsSearch>();
+            IVsSearch resource = (IVsSearch)repo.GetResource<IVsSearch>();             
             Debug.Assert(resource != null); //Check if we are able to obtain a resource
             Debug.Assert(resource.GetType().GetInterfaces().Contains(typeof(IVsSearch))); //check if the resource is of type IVsSearch.
             SearchFilter filter = new SearchFilter(); //create a dummy filter.
@@ -82,11 +82,19 @@ namespace TestAppV2V3Switching
 
         static void Main(string[] args)
         {
+
+            Uri uri = new Uri(@"C:\temp\index.json");
+            Console.WriteLine(uri.IsFile);
+            Console.WriteLine(uri.IsUnc);
+            Console.WriteLine(uri.LocalPath);
+            
             Program p = new Program();
             p.AssembleComponents();
             p.TestV3Download();
             p.TestV3Metadata();
             p.TestV3Search();
+
+            
 
         }
     }

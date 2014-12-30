@@ -15,7 +15,7 @@ namespace NuGet.Client.V3
         public static bool IsV3(PackageSource source)
         {
             var url = new Uri(source.Url);
-            if (url.IsFile || url.IsUnc)
+            if (url.IsFile && url.LocalPath.EndsWith(".json",StringComparison.OrdinalIgnoreCase))  //Hook to enable local index.json for development and testing purposes.
             {
                 return File.Exists(url.LocalPath);
             }
