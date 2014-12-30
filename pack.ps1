@@ -2,33 +2,29 @@ param (
     [switch]$Push, 
     [ValidateSet("debug", "release")][string]$Configuration="debug", 
     [switch]$SkipTests, 
-    [switch]$SkipBuild, 
     [string]$PFXPath,
     [switch]$Stable,
     [Parameter(Mandatory=$True)][ValidateSet("NuGet.Client.V3", "NuGet.Client.BaseTypes", "NuGet.Client.V3.VisualStudio", "NuGet.Client.VisualStudio")][string]$Id
 )
 
 # build
-if (!$SkipBuild)
+if ($SkipTests)
 {
-    if ($SkipTests)
-    {
-        $env:DisableRunningUnitTests="true"
-    }
-    else
-    {
-        $env:DisableRunningUnitTests="false"
-    }
-
-    if ($PFXPath)
-    {
-        $env:NUGET_PFX_PATH=$PFXPath
-    }
-
-    Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
-    Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
-    Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
+    $env:DisableRunningUnitTests="true"
 }
+else
+{
+    $env:DisableRunningUnitTests="false"
+}
+
+if ($PFXPath)
+{
+    $env:NUGET_PFX_PATH=$PFXPath
+}
+
+Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
+Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
+Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
 
 # assembly containing the release file version to use for the package
 $workingDir = (Get-Item -Path ".\" -Verbose).FullName;
@@ -52,23 +48,6 @@ Write-Host "Signature check" -ForegroundColor Cyan
 $snPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools\x64\sn.exe"
 Start-Process $snPath "-Tp $primaryAssemblyPath" -Wait -NoNewWindow
 
-# find the current git branch
-$gitBranch = "ci"
-
-git branch | foreach {
-    if ($_ -match "^\*(.*)") {
-        $gitBranch = $matches[1].Trim()
-    }
-}
-
-# prerelease labels can have a max length of 20
-# shorten the branch to 8 chars if needed
-if ($gitBranch.Length -gt 8) {
-    $gitBranch = $gitBranch.SubString(0, 8)
-}
-
-Write-Host "Git branch: $gitBranch" 
-
 # find the release version from the target assembly
 $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryAssemblyPath).FileVersion
 
@@ -77,14 +56,14 @@ if (!$version) {
     exit 1
 }
 
-$now = [System.DateTime]::UtcNow
 
-# (git branch)-(last digit of the year)(day of year)(hour)(minute)
 $version = $version.TrimEnd('0').TrimEnd('.')
 
 if (!$Stable)
 {
-    $version += "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
+    # prerelease labels can have a max length of 20
+    $now = [System.DateTime]::UtcNow
+    $version += "-" + $now.ToString("ayyyyMMddHHmmss-fff")
 }
 
 Write-Host "Package version: $version" -ForegroundColor Cyan
@@ -95,7 +74,7 @@ if ((Test-Path nupkgs) -eq 0) {
 }
 
 # Pack
-.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -build -OutputDirectory nupkgs -version $version
+.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
 
 # Find the path of the nupkg we just built
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }

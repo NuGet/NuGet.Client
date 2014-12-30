@@ -1,11 +1,6 @@
-﻿using NuGet.Client.V3;
-using NuGet.Client.VisualStudio.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel.Composition;
 using System.Threading.Tasks;
+using NuGet.Client.VisualStudio.Models;
 
 namespace NuGet.Client.V3.VisualStudio
 {
@@ -15,11 +10,17 @@ namespace NuGet.Client.V3.VisualStudio
     {
         public async override Task<Resource> Create(PackageSource source)
         {
-            VsV3SearchResource vsV3SearchResource;
-            Resource resource = await base.Create(source);            
-            vsV3SearchResource = new VsV3SearchResource((V3Resource)resource);
-            resource = vsV3SearchResource;
-            return resource;
+            Resource resource = await base.Create(source);
+            if (resource != null)
+            {
+                var vsV3SearchResource = new VsV3SearchResource((V3Resource)resource);
+                resource = vsV3SearchResource;
+                return resource;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

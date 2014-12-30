@@ -1,18 +1,14 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Data;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using JsonLD.Core;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using JsonLD.Core;
+using Newtonsoft.Json.Linq;
+using NuGet.Data;
+using NuGet.Versioning;
 using System.IO;
-
 
 namespace NuGet.Client.V3
 {
@@ -31,7 +27,6 @@ namespace NuGet.Client.V3
         private DataClient _client;     
         private Uri _root;
         private string _userAgent;
-        private System.Net.Http.HttpClient _http;
 
         private static readonly Uri[] ResultItemRequiredProperties = new Uri[] {
             new Uri("http://schema.nuget.org/schema#registration")
@@ -73,7 +68,12 @@ namespace NuGet.Client.V3
             _client = new DataClient();
         }
 
-        public async Task<IEnumerable<JObject>> Search(string searchTerm, IEnumerable<string> supportedFrameworkNames,bool includePrerelease, int skip, int take, System.Threading.CancellationToken cancellationToken)
+        public async Task<IEnumerable<JObject>> Search(
+            string searchTerm, 
+            SearchFilter searchFilter, 
+            int skip, 
+            int take, 
+            System.Threading.CancellationToken cancellationToken)
         {
             //*TODOS: Get the search service URL from the service. Once it is integrated with ServiceDiscovery GetServiceUri would go away.
             cancellationToken.ThrowIfCancellationRequested();
@@ -90,19 +90,22 @@ namespace NuGet.Client.V3
                 "q=" + searchTerm +
                 "&skip=" + skip.ToString() +
                 "&take=" + take.ToString() +
-                "&includePrerelease=" + includePrerelease.ToString().ToLowerInvariant();
-            string frameworks =
-                String.Join("&",
-                    supportedFrameworkNames.Select(
-                        fx => "supportedFramework=" + fx));
-
-            if (!String.IsNullOrEmpty(frameworks))
+                "&includePrerelease=" + searchFilter.IncludePrerelease.ToString().ToLowerInvariant();
+            if (searchFilter.IncludeDelisted)
             {
+                queryString += "&includeDelisted=true";
+            }
+
+            if (searchFilter.SupportedFrameworks != null && searchFilter.SupportedFrameworks.Any())
+            {
+                string frameworks =
+                    String.Join("&",
+                        searchFilter.SupportedFrameworks.Select(
+                            fx => "supportedFramework=" + fx));
                 queryString += "&" + frameworks;
             }
             queryUrl.Query = queryString;
 
-           
             var queryUri = queryUrl.Uri;
             var results = await _client.GetFile(queryUri);
             cancellationToken.ThrowIfCancellationRequested();
@@ -130,7 +133,6 @@ namespace NuGet.Client.V3
             return outputs;
         }      
         
-      
         public async Task<JObject> GetPackageMetadata(string id, NuGetVersion version)
         {
             return (await GetPackageMetadataById(id))
@@ -206,7 +208,7 @@ namespace NuGet.Client.V3
         private async Task<string> GetServiceUri(Uri type)
         {
             // Read the root document (usually out of the cache :))
-            var doc = JObject.Parse("{}");
+            JObject doc;
             if (_root.IsFile && _root.LocalPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             {
                 doc = JObject.Parse(File.ReadAllText(_root.LocalPath));
@@ -233,7 +235,6 @@ namespace NuGet.Client.V3
                               select resource)
                              .ToList();
        
-
             var selected = candidates.FirstOrDefault();
 
             if (selected != null)
@@ -265,6 +266,7 @@ namespace NuGet.Client.V3
         #endregion PrivateHelpers
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -273,7 +275,6 @@ namespace NuGet.Client.V3
             {
                 if (disposing)
                 {
-                    _http.Dispose();
                     _client.Dispose();
                 }
                 disposedValue = true;
@@ -287,8 +288,7 @@ namespace NuGet.Client.V3
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
 
-
+        #endregion IDisposable Support
     }
 }

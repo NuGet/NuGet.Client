@@ -22,12 +22,17 @@ namespace NuGet.Client
     {
         [ImportMany]
         private IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> _providers { get; set; }
-        private readonly PackageSource _source;       
+
+        public PackageSource Source
+        {
+            get;
+            private set;
+        }
 
         //*TODOs: Providers should be automatically imported when run inside vs context. Right now passing triggering it as part of testapp and passing it as param.
         public SourceRepository2(PackageSource source, IEnumerable<Lazy<ResourceProvider, IResourceProviderMetadata>> providers)             
         {           
-            _source = source;
+            Source = source;
             _providers = providers;
         }
 
@@ -38,7 +43,7 @@ namespace NuGet.Client
                 //Each provider will expose the "ResourceType" that it can create. Filter the provider based on the current "resourceType" that is requested and invoke TryCreateResource on it.
                 if (provider.Metadata.ResourceType == resourceType)
                 {
-                    Resource resource = await provider.Value.Create(_source);
+                    Resource resource = await provider.Value.Create(Source);
                     if (resource != null)
                         return resource;
                 }
