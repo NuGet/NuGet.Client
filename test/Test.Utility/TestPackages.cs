@@ -3,6 +3,7 @@ using NuGet.PackagingCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,9 +12,9 @@ namespace Test.Utility
 {
     public static class TestPackages
     {
-        public static ZipFileSystem GetZip(FileInfo file)
+        public static ZipArchive GetZip(FileInfo file)
         {
-            return new ZipFileSystem(file.OpenRead());
+            return new ZipArchive(file.OpenRead());
         }
 
         public static FileInfo GetLegacyTestPackage()

@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,7 +73,7 @@
       <Name>Frameworks</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Packaging\Packaging.csproj">
-      <Project>{5f301d48-5acb-44fe-a80b-7dd878ed1750}</Project>
+      <Project>{60f1f764-1792-4fc6-b23d-2373ab328535}</Project>
       <Name>Packaging</Name>
     </ProjectReference>
     <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
