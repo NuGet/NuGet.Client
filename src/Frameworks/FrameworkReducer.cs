@@ -14,16 +14,63 @@ namespace NuGet.Frameworks
         private readonly IFrameworkNameProvider _mappings;
         private readonly IFrameworkCompatibilityProvider _compat;
 
+        /// <summary>
+        /// Creates a FrameworkReducer using the default framework mappings.
+        /// </summary>
         public FrameworkReducer()
             : this(DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
 
         }
 
+        /// <summary>
+        /// Creates a FrameworkReducer using custom framework mappings.
+        /// </summary>
         public FrameworkReducer(IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
         {
             _mappings = mappings;
             _compat = compat;
+        }
+
+        /// <summary>
+        /// Returns the nearest matching framework that is compatible.
+        /// </summary>
+        /// <param name="framework">Project target framework</param>
+        /// <param name="possibleFrameworks">Possible frameworks to narrow down</param>
+        /// <returns>Nearest compatible framework. If no frameworks are compatible null is returned.</returns>
+        public NuGetFramework GetNearest(NuGetFramework framework, IEnumerable<NuGetFramework> possibleFrameworks)
+        {
+            NuGetFramework nearest = null;
+
+            var compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
+            var reduced = ReduceUpwards(compatible).ToArray();
+
+            if (reduced.Length > 1)
+            {
+                // if we have a pcl and non-pcl mix, throw out the pcls
+                if (reduced.Any(f => f.IsPCL) && reduced.Any(f => !f.IsPCL))
+                {
+                    reduced = reduced.Where(f => !f.IsPCL).ToArray();
+                }
+
+                if (reduced.Length > 1 && reduced.All(f => f.IsPCL))
+                {
+                    // TODO: find the nearest matching PCL
+                    throw new NotImplementedException();
+                }
+
+                if (reduced.Length > 1)
+                {
+                    // just take the first one by rev alphabetical order if we can't narrow it down at all
+                    nearest = reduced.OrderByDescending(f => f.Framework, StringComparer.OrdinalIgnoreCase).ThenBy(f => f.GetHashCode()).First();
+                }
+            }
+            else if (reduced.Length == 1)
+            {
+                nearest = reduced[0];
+            }
+
+            return nearest;
         }
 
         /// <summary>

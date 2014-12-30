@@ -174,5 +174,41 @@ namespace NuGet.Test
 
             Assert.Equal(net35, result.Single());
         }
+
+        [Fact]
+        public void FrameworkReducer_GetNearest()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var net35 = NuGetFramework.Parse("net35");
+            var net40 = NuGetFramework.Parse("net40");
+            var net45 = NuGetFramework.Parse("net45");
+            var net451 = NuGetFramework.Parse("net451");
+            var net453 = NuGetFramework.Parse("net453");
+
+            var all = new NuGetFramework[] { net35, net40, net45, net453 };
+
+            var result = reducer.GetNearest(net451, all);
+
+            Assert.Equal(net45, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearest2()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var net35 = NuGetFramework.Parse("net35");
+            var net40 = NuGetFramework.Parse("net40");
+            var net45 = NuGetFramework.Parse("net45");
+            var net451 = NuGetFramework.Parse("net451");
+            var net453 = NuGetFramework.Parse("net453");
+
+            var all = new NuGetFramework[] { net35, net40, net45, net451, net453 };
+
+            var result = reducer.GetNearest(net451, all);
+
+            Assert.Equal(net451, result);
+        }
     }
 }
