@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace NuGet.ProjectManagement.FileSystem
+namespace NuGet.ProjectManagement
 {
     /// <summary>
     /// This class represents a NuGetProject based on a folder such as packages folder on a VisualStudio solution
     /// </summary>
-    public class FileSystemNuGetProject : NuGetProject
+    public class SimpleNuGetProject : NuGetProject
     {
         private string Root { get; set; }
         public PackagePathResolver PackagePathResolver { get; private set; }
@@ -23,7 +23,7 @@ namespace NuGet.ProjectManagement.FileSystem
         // TODO: Once PackageExtractor supports handling of satellite files, there will another enum here
         //       which can be set to control what happens during package extraction
 
-        public FileSystemNuGetProject(string root)
+        public SimpleNuGetProject(string root)
         {
             if(root == null)
             {

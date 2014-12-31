@@ -52,9 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DotNet\DotNetNuGetProjectSystem.cs" />
-    <Compile Include="DotNet\DotNetNuGetProject.cs" />
-    <Compile Include="FileSystem\FileSystemNuGetProject.cs" />
+    <Compile Include="Projects\IDotNetNuGetProjectSystem.cs" />
+    <Compile Include="Projects\DotNetNuGetProject.cs" />
+    <Compile Include="Projects\SimpleNuGetProject.cs" />
     <Compile Include="NuGetProject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

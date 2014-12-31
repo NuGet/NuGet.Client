@@ -1,11 +1,14 @@
 ﻿using NuGet.Frameworks;
+using System.IO;
 
-namespace NuGet.ProjectManagement.DotNet
+namespace NuGet.ProjectManagement
 {
-    public interface DotNetNuGetProjectSystem
+    public interface IDotNetNuGetProjectSystem
     {
         NuGetFramework TargetFramework { get; }
         string ProjectName { get; }
+
+        void AddFile(string path, Stream stream);
 
         /// <summary>
         /// Method called when adding an assembly reference to the project.
