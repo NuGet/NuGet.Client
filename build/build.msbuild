@@ -57,7 +57,6 @@
 
     <ItemGroup>
       <!-- tests -->
-      <TestProjects Include="$(RootDir)\test\BuildTime.Test\BuildTime.Test.csproj" />
 	  <TestProjects Include="$(RootDir)\test\PackageManagement.Test\PackageManagement.Test.csproj" />
     </ItemGroup>
 

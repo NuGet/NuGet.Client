@@ -1,6 +1,10 @@
-<nupkg>
-	<!-- Relative path to the csproj for the main project. This is used for nuget.exe pack -->
-	<csprojPath>\src\PackageManagement\PackageManagement.nuspec</csprojPath>
-	<!-- File name without the path for the output from the above project -->
-	<dllName>NuGet.PackageManagement.dll</dllName>
-</nupkg>
+<nupkgs>
+	<nupkg id="NuGet.PackageManagement">
+		<csprojPath>\src\PackageManagement\PackageManagement.csproj</csprojPath>
+		<dllName>NuGet.PackageManagement.dll</dllName>
+	</nupkg>
+	<nupkg id="NuGet.ProjectManagement">
+		<csprojPath>\src\ProjectManagement\ProjectManagement.csproj</csprojPath>
+		<dllName>NuGet.ProjectManagement.dll</dllName>
+	</nupkg>
+</nupkgs>
