@@ -40,8 +40,10 @@
     <Compile Include="def\IPackageCoreReader.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="NuspecCoreReader.cs" />
+    <Compile Include="PackageDependencyInfo.cs" />
     <Compile Include="PackageDependency.cs" />
     <Compile Include="PackageIdentity.cs" />
+    <Compile Include="PackageIdentityComparer.cs" />
     <Compile Include="PackagingException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="tree\ComponentTree.cs" />

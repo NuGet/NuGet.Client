@@ -47,7 +47,7 @@
     <Compile Include="DependencyBehavior.cs" />
     <Compile Include="PackageExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resolver.cs" />
+    <Compile Include="PackageResolver.cs" />
     <Compile Include="ResolverPackage.cs" />
   </ItemGroup>
   <ItemGroup>

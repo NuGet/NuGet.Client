@@ -3,17 +3,16 @@ using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NuGet.Resolver
 {
-    public class ResolverPackage
+    public class ResolverPackage : PackageDependencyInfo
     {
         public bool Absent { get; set; }
-        private readonly PackageIdentity _identity;
-        private readonly PackageDependency[] _dependencies;
 
         public ResolverPackage(string id)
             : this(id, null)
@@ -27,8 +26,14 @@ namespace NuGet.Resolver
 
         }
 
-        public ResolverPackage(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies)
-            : this(new PackageIdentity(id, version), dependencies)
+        public ResolverPackage(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies, bool absent=false)
+            : base(id, version, dependencies)
+        {
+            Absent = absent;
+        }
+
+        public ResolverPackage(PackageDependencyInfo info, bool absent)
+            : this(info.Id, info.Version, info.Dependencies, absent)
         {
 
         }
@@ -40,33 +45,9 @@ namespace NuGet.Resolver
         /// <param name="dependencies">Dependencies from the relevant target framework group. This group should be selected based on the 
         /// project target framework.</param>
         public ResolverPackage(PackageIdentity identity, IEnumerable<PackageDependency> dependencies)
+            : this(identity.Id, identity.Version, dependencies)
         {
-            _identity = identity;
 
-            if (dependencies == null)
-            {
-                _dependencies = new PackageDependency[0];
-            }
-            else
-            {
-                _dependencies = dependencies.ToArray();
-            }
-        }
-
-        public PackageIdentity PackageIdentity
-        {
-            get
-            {
-                return _identity;
-            }
-        }
-
-        public PackageDependency[] Dependencies
-        {
-            get
-            {
-                return _dependencies;
-            }
         }
 
         /// <summary>
@@ -88,6 +69,11 @@ namespace NuGet.Resolver
             }
 
             return dependency.VersionRange;
+        }
+
+        public override string ToString()
+        {
+            return String.Format(CultureInfo.InvariantCulture, "{0} {1}", Id, Version);
         }
     }
 }
