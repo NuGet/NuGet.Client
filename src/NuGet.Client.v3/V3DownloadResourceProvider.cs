@@ -11,19 +11,17 @@ namespace NuGet.Client.V3
     [ResourceProviderMetadata("V3DownloadResourceProvider", typeof(IDownload))]
     public class V3DownloadResourceProvider : V3ResourceProvider
     {
-        public override bool TryCreateResource(PackageSource source, out Resource resource)
+        public async override Task<Resource> Create(PackageSource source)
         {
             V3DownloadResource v3DownloadResource;
-            if (base.TryCreateResource(source, out resource))
+            Resource resource = await base.Create(source);
+            if (resource != null)
             {
                 v3DownloadResource = new V3DownloadResource((V3Resource)resource);
                 resource = v3DownloadResource;
-                return true;
             }
-            else
-            {
-                return false;
-            }
+            return resource;
+           
         }
     }
 }

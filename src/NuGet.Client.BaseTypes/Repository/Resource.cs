@@ -20,5 +20,5 @@ namespace NuGet.Client
                 return _host;
             }           
         }            
-    }
+    }    
 }

@@ -31,23 +31,25 @@ namespace NuGet.Client
             _providers = providers;
         }
 
-        public object GetResource(Type resourceType)
+        public async Task<object> GetResource(Type resourceType)
         {            
             foreach(Lazy<ResourceProvider,IResourceProviderMetadata>  provider in _providers)
             {
                 //Each provider will expose the "ResourceType" that it can create. Filter the provider based on the current "resourceType" that is requested and invoke TryCreateResource on it.
                 if (provider.Metadata.ResourceType == resourceType)
                 {
-                    Resource resource = null;
-                    if (provider.Value.TryCreateResource(_source, out resource))
-                    {
+                    Resource resource = await provider.Value.Create(_source);
+                    if (resource != null)
                         return resource;
-                    }
                 }
             }
             return null;
         }
        
-        public T GetResource<T>() { return (T)GetResource(typeof(T)); }
+        public async Task<T> GetResource<T>() 
+        {
+           object x = await GetResource(typeof(T));
+           return (T)x;            
+        }
     }
 }

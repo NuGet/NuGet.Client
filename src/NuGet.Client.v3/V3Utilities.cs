@@ -12,23 +12,23 @@ namespace NuGet.Client.V3
 {
     public static class V3Utilities
     {
-        public static bool IsV3(PackageSource source)
+        public async static Task<bool> IsV3(PackageSource source)
         {
             var url = new Uri(source.Url);
-            if (url.IsFile || url.IsUnc)
+            if (url.IsFile && url.LocalPath.EndsWith(".json",StringComparison.OrdinalIgnoreCase))  //Hook to enable local index.json for development and testing purposes.
             {
                 return File.Exists(url.LocalPath);
             }
 
             using (var client = new DataClient())
             {
-                var v3index = client.GetFile(url);
+                var v3index = await client.GetFile(url);
                 if (v3index == null)
                 {
                     return false;
                 }
 
-                var status = v3index.Result.Value<string>("version");
+                var status = v3index.Value<string>("version");
                 if (status != null && status.StartsWith("3.0"))
                 {
                     return true;
