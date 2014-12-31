@@ -1,18 +1,16 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>NuGet.PackageManagement</id>
+    <id>NuGet.ProjectManagement</id>
     <version>1.0.0-overrideme</version>
-    <title>NuGet.PackageManagement</title>
+    <title>NuGet.ProjectManagement</title>
     <authors>NuGet</authors>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Package manifest reading and writing</description>
-    <tags>nuspec nupkg</tags>
+    <description>API for NuGetProject and more</description>
     <dependencies>
-		<dependency id="NuGet.Versioning" version="1.0.3" />
-		<dependency id="NuGet.Packaging" version="1.0.0-master-43440912" />
-	</dependencies>
+		<dependency id="NuGet.Packaging" version="1.0.0-master-43642026" />
+    </dependencies>
   </metadata>
 </package>
