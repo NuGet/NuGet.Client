@@ -126,6 +126,9 @@
   <data name="FileDoesNotExist" xml:space="preserve">
     <value>File '{0}' does not exist.</value>
   </data>
+  <data name="InvalidNullSettingsOperation" xml:space="preserve">
+    <value>"{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".</value>
+  </data>
   <data name="Settings_FileName_Cannot_Be_A_Path" xml:space="preserve">
     <value>Parameter 'fileName' to Settings must be just a fileName and not a path</value>
   </data>

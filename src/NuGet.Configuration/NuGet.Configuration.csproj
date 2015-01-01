@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Settings\IMachineWideSettings.cs" />
+    <Compile Include="Settings\NullSettings.cs" />
     <Compile Include="Utility\CryptoHashProvider.cs" />
     <Compile Include="Utility\EncryptionUtility.cs" />
     <Compile Include="Utility\FileSystemUtility.cs" />

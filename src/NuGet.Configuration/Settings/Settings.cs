@@ -52,7 +52,7 @@ namespace NuGet.Configuration
                 throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "fileName");
             }
 
-            if(!String.Equals(fileName, Path.GetFileName(fileName), StringComparison.OrdinalIgnoreCase))
+            if(!FileSystemUtility.IsPathAFile(fileName))
             {
                 throw new ArgumentException(NuGet_Configuration_Resources.Settings_FileName_Cannot_Be_A_Path);
             }
@@ -83,6 +83,81 @@ namespace NuGet.Configuration
             {
                 return Path.GetFullPath(Path.Combine(Root, ConfigFileName));
             }
+        }
+
+        /// <summary>
+        /// Loads user settings from the NuGet configuration files. The method walks the directory
+        /// tree in <paramref name="fileSystem"/> up to its root, and reads each NuGet.config file
+        /// it finds in the directories. It then reads the user specific settings,
+        /// which is file <paramref name="configFileName"/>
+        /// in <paramref name="fileSystem"/> if <paramref name="configFileName"/> is not null,
+        /// If <paramref name="configFileName"/> is null, the user specific settings file is
+        /// %AppData%\NuGet\NuGet.config.
+        /// After that, the machine wide settings files are added.
+        /// </summary>
+        /// <remarks>
+        /// For example, if <paramref name="fileSystem"/> is c:\dir1\dir2, <paramref name="configFileName"/>
+        /// is "userConfig.file", the files loaded are (in the order that they are loaded):
+        ///     c:\dir1\dir2\nuget.config
+        ///     c:\dir1\nuget.config
+        ///     c:\nuget.config
+        ///     c:\dir1\dir2\userConfig.file
+        ///     machine wide settings (e.g. c:\programdata\NuGet\Config\*.config)
+        /// </remarks>
+        /// <param name="fileSystem">The file system to walk to find configuration files.
+        /// Can be null.</param>
+        /// <param name="configFileName">The user specified configuration file.</param>
+        /// <param name="machineWideSettings">The machine wide settings. If it's not null, the
+        /// settings files in the machine wide settings are added after the user sepcific
+        /// config file.</param>
+        /// <returns>The settings object loaded.</returns>
+        public static ISettings LoadDefaultSettings(
+            string root,
+            string configFileName,
+            IMachineWideSettings machineWideSettings)
+        {
+            // Walk up the tree to find a config file; also look in .nuget subdirectories
+            var validSettingFiles = new List<Settings>();
+            if (root != null)
+            {
+                validSettingFiles.AddRange(
+                    GetSettingsFileNames(root)
+                        .Select(f => ReadSettings(root, f))
+                        .Where(f => f != null));
+            }
+
+            LoadUserSpecificSettings(validSettingFiles, root, configFileName);
+
+            if (machineWideSettings != null)
+            {
+                validSettingFiles.AddRange(
+                    machineWideSettings.Settings.Select(
+                        s => new Settings(s.Root, s.ConfigFileName, s.IsMachineWideSettings)));
+            }
+
+            if (validSettingFiles == null || !validSettingFiles.Any())
+            {
+                // This means we've failed to load all config files and also failed to load or create the one in %AppData%
+                // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
+                // Returning a null instance prevents us from silently failing and also from picking up the wrong config
+                return NullSettings.Instance;
+            }
+
+            validSettingFiles[0]._priority = validSettingFiles.Count;
+
+            // if multiple setting files were loaded, chain them in a linked list
+            for (int i = 1; i < validSettingFiles.Count; ++i)
+            {
+                validSettingFiles[i]._next = validSettingFiles[i - 1];
+                validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
+            }
+
+            // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
+            // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
+            // wide config files. The head file is the one we want to read first, while the user specific config
+            // is the one that we want to write to.
+            // TODO: add UI to allow specifying which one to write to
+            return validSettingFiles.Last();
         }
 
         private static void LoadUserSpecificSettings(
@@ -579,6 +654,35 @@ namespace NuGet.Configuration
             catch (XmlException)
             {
                 return null;
+            }
+        }
+
+        /// <remarks>
+        /// Order is most significant (e.g. applied last) to least significant (applied first)
+        /// ex:
+        /// c:\foo\nuget.config
+        /// c:\nuget.config
+        /// </remarks>
+        private static IEnumerable<string> GetSettingsFileNames(string root)
+        {
+            // for dirs obtained by walking up the tree, only consider setting files that already exist.
+            // otherwise we'd end up creating them.
+            foreach (var dir in GetSettingsFilePaths(root))
+            {
+                string fileName = Path.Combine(dir, DefaultSettingsFileName);
+                if (FileSystemUtility.DoesFileExistIn(root, fileName))
+                {
+                    yield return fileName;
+                }
+            }
+        }
+
+        private static IEnumerable<string> GetSettingsFilePaths(string root)
+        {
+            while (root != null)
+            {
+                yield return root;
+                root = Path.GetDirectoryName(root);
             }
         }
 

@@ -88,6 +88,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &quot;{0}&quot; cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to &quot;%AppData%\NuGet\NuGet.config&quot;..
+        /// </summary>
+        internal static string InvalidNullSettingsOperation {
+            get {
+                return ResourceManager.GetString("InvalidNullSettingsOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path.
         /// </summary>
         internal static string Settings_FileName_Cannot_Be_A_Path {
