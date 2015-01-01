@@ -21,14 +21,12 @@ namespace NuGet.Configuration
         /// Also, the machine level setting file at '%APPDATA%\NuGet' always uses this name
         /// </summary>
         public const string DefaultSettingsFileName = "NuGet.config";
+
         private XDocument ConfigXDocument { get; set; }
         private string ConfigFileName { get; set; }
-
+        private bool IsMachineWideSettings { get; set; }
         // next config file to read if any
         private Settings _next;
-
-        private readonly bool _isMachineWideSettings;
-
         // The priority of this setting file
         private int _priority;
 
@@ -64,7 +62,7 @@ namespace NuGet.Configuration
             XDocument config = null;
             ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument("configuration", ConfigFilePath));
             ConfigXDocument = config;
-            _isMachineWideSettings = isMachineWideSettings;
+            IsMachineWideSettings = isMachineWideSettings;
         }
 
         /// <summary>
@@ -121,17 +119,66 @@ namespace NuGet.Configuration
 
         public IList<SettingValue> GetSettingValues(string section)
         {
-            throw new NotImplementedException();
+            if (String.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+            }
+
+            var settingValues = new List<SettingValue>();
+            var curr = this;
+            while (curr != null)
+            {
+                curr.PopulateValues(section, settingValues);
+                curr = curr._next;
+            }
+
+            return settingValues.AsReadOnly();
         }
 
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
         {
-            throw new NotImplementedException();
+            if (String.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+            }
+
+            if (String.IsNullOrEmpty(subSection))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "subSection");
+            }
+
+            var values = new List<SettingValue>();
+            var curr = this;
+            while (curr != null)
+            {
+                curr.PopulateNestedValues(section, subSection, values);
+                curr = curr._next;
+            }
+
+            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
         }
 
         public void SetValue(string section, string key, string value)
         {
-            throw new NotImplementedException();
+            // machine wide settings cannot be changed.
+            if (IsMachineWideSettings)
+            {
+                if (_next == null)
+                {
+                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                }
+
+                _next.SetValue(section, key, value);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+            }
+            var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
+            SetValueInternal(sectionElement, key, value);
+            Save();
         }
 
         public void SetValues(string section, IList<KeyValuePair<string, string>> values)
@@ -139,19 +186,104 @@ namespace NuGet.Configuration
             throw new NotImplementedException();
         }
 
-        public void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values)
+        public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
         {
-            throw new NotImplementedException();
+            // machine wide settings cannot be changed.
+            if (IsMachineWideSettings)
+            {
+                if (_next == null)
+                {
+                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                }
+
+                _next.SetNestedValues(section, key, values);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+            }
+            if (values == null)
+            {
+                throw new ArgumentNullException("values");
+            }
+
+            var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
+            var element = GetOrCreateSection(sectionElement, key);
+
+            foreach (var kvp in values)
+            {
+                SetValueInternal(element, kvp.Key, kvp.Value);
+            }
+            Save();
         }
 
         public bool DeleteValue(string section, string key)
         {
-            throw new NotImplementedException();
+            // machine wide settings cannot be changed.
+            if (IsMachineWideSettings)
+            {
+                if (_next == null)
+                {
+                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                }
+
+                return _next.DeleteValue(section, key);
+            }
+
+            if (String.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+            }
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+            }
+
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+            if (sectionElement == null)
+            {
+                return false;
+            }
+
+            var elementToDelete = FindElementByKey(sectionElement, key, null);
+            if (elementToDelete == null)
+            {
+                return false;
+            }
+            XElementUtility.RemoveIndented(elementToDelete);
+            Save();
+            return true;
         }
 
         public bool DeleteSection(string section)
         {
-            throw new NotImplementedException();
+            // machine wide settings cannot be changed.
+            if (IsMachineWideSettings)
+            {
+                if (_next == null)
+                {
+                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                }
+
+                return _next.DeleteSection(section);
+            }
+
+            if (String.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+            }
+
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+            if (sectionElement == null)
+            {
+                return false;
+            }
+
+            XElementUtility.RemoveIndented(sectionElement);
+            Save();
+            return true;
         }
 
         private XElement GetValueInternal(string section, string key, XElement curr)
@@ -173,6 +305,18 @@ namespace NuGet.Configuration
             return parentElement.Element(section);
         }
 
+        private static XElement GetOrCreateSection(XElement parentElement, string sectionName)
+        {
+            sectionName = XmlConvert.EncodeLocalName(sectionName);
+            var section = parentElement.Element(sectionName);
+            if (section == null)
+            {
+                section = new XElement(sectionName);
+                XElementUtility.AddIndented(parentElement, section);
+            }
+            return section;
+        }
+
         private static XElement FindElementByKey(XElement sectionElement, string key, XElement curr)
         {
             XElement result = curr;
@@ -184,7 +328,7 @@ namespace NuGet.Configuration
                     result = null;
                 }
                 else if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase) &&
-                         XmlUtility.GetOptionalAttributeValue(element, "key").Equals(key, StringComparison.OrdinalIgnoreCase))
+                         XElementUtility.GetOptionalAttributeValue(element, "key").Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
                     result = element;
                 }
@@ -200,7 +344,7 @@ namespace NuGet.Configuration
             }
 
             // Return the optional value which if not there will be null;
-            string value = XmlUtility.GetOptionalAttributeValue(element, "value");
+            string value = XElementUtility.GetOptionalAttributeValue(element, "value");
             if (!isPath || String.IsNullOrEmpty(value))
             {
                 return value;
@@ -224,6 +368,100 @@ namespace NuGet.Configuration
                 return Path.Combine(Path.GetPathRoot(configDirectory), value.Substring(1));
             }
             return Path.Combine(configDirectory, value);
+        }
+
+        private void PopulateValues(string section, List<SettingValue> current)
+        {
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+            if (sectionElement != null)
+            {
+                ReadSection(sectionElement, current);
+            }
+        }
+
+        private void PopulateNestedValues(string section, string subSection, List<SettingValue> current)
+        {
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+            if (sectionElement == null)
+            {
+                return;
+            }
+            var subSectionElement = GetSection(sectionElement, subSection);
+            if (subSection == null)
+            {
+                return;
+            }
+            ReadSection(subSectionElement, current);
+        }
+
+        private void ReadSection(XContainer sectionElement, ICollection<SettingValue> values)
+        {
+            var elements = sectionElement.Elements();
+
+            foreach (var element in elements)
+            {
+                string elementName = element.Name.LocalName;
+                if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase))
+                {
+                    var v = ReadValue(element);
+                    values.Add(new SettingValue(v.Key, v.Value, IsMachineWideSettings, _priority));
+                }
+                else if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                {
+                    values.Clear();
+                }
+            }
+        }
+
+        private KeyValuePair<string, string> ReadValue(XElement element)
+        {
+            var keyAttribute = element.Attribute("key");
+            var valueAttribute = element.Attribute("value");
+
+            if (keyAttribute == null || String.IsNullOrEmpty(keyAttribute.Value) || valueAttribute == null)
+            {
+                throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
+            }
+
+            var value = valueAttribute.Value;
+            //Uri uri;
+            //if (isPath && Uri.TryCreate(value, UriKind.Relative, out uri))
+            //{
+            //    string configDirectory = Path.GetDirectoryName(ConfigFilePath);
+            //    value = _fileSystem.GetFullPath(Path.Combine(configDirectory, value));
+            //}
+
+            return new KeyValuePair<string, string>(keyAttribute.Value, value);
+        }
+
+        private void SetValueInternal(XElement sectionElement, string key, string value)
+        {
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+            }
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
+            var element = FindElementByKey(sectionElement, key, null);
+            if (element != null)
+            {
+                element.SetAttributeValue("value", value);
+                Save();
+            }
+            else
+            {
+                XElementUtility.AddIndented(sectionElement, new XElement("add",
+                                                            new XAttribute("key", key),
+                                                            new XAttribute("value", value)));
+            }
+        }
+
+        private void Save()
+        {
+            ExecuteSynchronized(() => FileSystemUtility.AddFile(ConfigFilePath, ConfigXDocument.Save));
         }
 
         /// <summary>

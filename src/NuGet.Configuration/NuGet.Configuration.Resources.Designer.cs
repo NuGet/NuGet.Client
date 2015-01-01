@@ -70,6 +70,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no writable config files..
+        /// </summary>
+        internal static string Error_NoWritableConfig {
+            get {
+                return ResourceManager.GetString("Error_NoWritableConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path.
         /// </summary>
         internal static string Settings_FileName_Cannot_Be_A_Path {
@@ -79,11 +88,20 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm &amp;apos;{0}&amp;apos; is unsupported. Supported algorithms include: SHA512 and SHA256..
+        ///   Looks up a localized string similar to Hash algorithm &apos;{0}&apos; is unsupported. Supported algorithms include: SHA512 and SHA256..
         /// </summary>
         internal static string UnsupportedHashAlgorithm {
             get {
                 return ResourceManager.GetString("UnsupportedHashAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to parse config file &apos;{0}&apos;..
+        /// </summary>
+        internal static string UserSettings_UnableToParseConfigFile {
+            get {
+                return ResourceManager.GetString("UserSettings_UnableToParseConfigFile", resourceCulture);
             }
         }
     }
