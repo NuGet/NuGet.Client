@@ -85,6 +85,113 @@ namespace NuGet.Configuration
             }
         }
 
+        private static void LoadUserSpecificSettings(
+            List<Settings> validSettingFiles,
+            string root,
+            string configFileName)
+        {
+            if (root == null)
+            {
+                // Path.Combine is performed with root so it should not be null
+                // However, it is legal for it be empty in this method
+                root = String.Empty;
+            }
+            // for the default location, allow case where file does not exist, in which case it'll end
+            // up being created if needed
+            Settings appDataSettings = null;
+            if (configFileName == null)
+            {
+                // load %AppData%\NuGet\NuGet.config
+                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                if (!String.IsNullOrEmpty(appDataPath))
+                {
+                    var defaultSettingsFilePath = Path.Combine(
+                        appDataPath, "NuGet", DefaultSettingsFileName);
+
+                    // Since defaultSettingsFilePath is a full path, so it doesn't matter what value is
+                    // used as root for the PhysicalFileSystem.
+                    appDataSettings = ReadSettings(
+                        root,
+                        defaultSettingsFilePath);
+                }
+            }
+            else
+            {
+                if (!FileSystemUtility.DoesFileExistIn(root, configFileName))
+                {
+                    string message = String.Format(CultureInfo.CurrentCulture,
+                        NuGet_Configuration_Resources.FileDoesNotExist,
+                        Path.Combine(root, configFileName));
+                    throw new InvalidOperationException(message);
+                }
+
+                appDataSettings = ReadSettings(root, configFileName);
+            }
+
+            if (appDataSettings != null)
+            {
+                validSettingFiles.Add(appDataSettings);
+            }
+        }
+
+        /// <summary>
+        /// Loads the machine wide settings.
+        /// </summary>
+        /// <remarks>
+        /// For example, if <paramref name="paths"/> is {"IDE", "Version", "SKU" }, then
+        /// the files loaded are (in the order that they are loaded):
+        ///     %programdata%\NuGet\Config\IDE\Version\SKU\*.config
+        ///     %programdata%\NuGet\Config\IDE\Version\*.config
+        ///     %programdata%\NuGet\Config\IDE\*.config
+        ///     %programdata%\NuGet\Config\*.config
+        /// </remarks>
+        /// <param name="root">The file system in which the settings files are read.</param>
+        /// <param name="paths">The additional paths under which to look for settings files.</param>
+        /// <returns>The list of settings read.</returns>
+        public static IEnumerable<Settings> LoadMachineWideSettings(
+            string root,
+            params string[] paths)
+        {
+            if (String.IsNullOrEmpty(root))
+            {
+                throw new ArgumentException("root cannot be null or empty");
+            }
+
+            List<Settings> settingFiles = new List<Settings>();
+            string basePath = @"NuGet\Config";
+            string combinedPath = Path.Combine(paths);
+
+            while (true)
+            {
+                string directory = Path.Combine(basePath, combinedPath);
+
+                // load setting files in directory
+                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(directory, "*.config"))
+                {
+                    var settings = ReadSettings(root, file, true);
+                    if (settings != null)
+                    {
+                        settingFiles.Add(settings);
+                    }
+                }
+
+                if (combinedPath.Length == 0)
+                {
+                    break;
+                }
+
+                int index = combinedPath.LastIndexOf(Path.DirectorySeparatorChar);
+                if (index < 0)
+                {
+                    index = 0;
+                }
+                combinedPath = combinedPath.Substring(0, index);
+            }
+
+            return settingFiles;
+        }
+
+
         public string GetValue(string section, string key, bool isPath = false)
         {
             if (String.IsNullOrEmpty(section))
@@ -456,6 +563,22 @@ namespace NuGet.Configuration
                 XElementUtility.AddIndented(sectionElement, new XElement("add",
                                                             new XAttribute("key", key),
                                                             new XAttribute("value", value)));
+            }
+        }
+
+        private static Settings ReadSettings(string root, string settingsPath, bool isMachineWideSettings = false)
+        {
+            try
+            {
+                if(!FileSystemUtility.IsPathAFile(settingsPath))
+                {
+                    root = Path.GetDirectoryName(Path.Combine(root ?? String.Empty, settingsPath));
+                }
+                return new Settings(root, settingsPath, isMachineWideSettings);
+            }
+            catch (XmlException)
+            {
+                return null;
             }
         }
 

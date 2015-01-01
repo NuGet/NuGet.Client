@@ -79,6 +79,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; does not exist..
+        /// </summary>
+        internal static string FileDoesNotExist {
+            get {
+                return ResourceManager.GetString("FileDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path.
         /// </summary>
         internal static string Settings_FileName_Cannot_Be_A_Path {
