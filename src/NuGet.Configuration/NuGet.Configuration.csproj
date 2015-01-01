@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,15 +41,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ISettings.cs" />
+    <Compile Include="Utility\CryptoHashProvider.cs" />
+    <Compile Include="Utility\EncryptionUtility.cs" />
+    <Compile Include="Utility\FileSystemUtility.cs" />
+    <Compile Include="Utility\XmlUtility.cs" />
+    <Compile Include="Settings\ISettings.cs" />
     <Compile Include="NuGet.Configuration.Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>NuGet.Configuration.Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Settings.cs" />
-    <Compile Include="SettingValue.cs" />
+    <Compile Include="Settings\Settings.cs" />
+    <Compile Include="Settings\SettingValue.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NuGet.Configuration.Resources.resx">

@@ -68,5 +68,23 @@ namespace NuGet.Configuration {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path.
+        /// </summary>
+        internal static string Settings_FileName_Cannot_Be_A_Path {
+            get {
+                return ResourceManager.GetString("Settings_FileName_Cannot_Be_A_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hash algorithm &amp;apos;{0}&amp;apos; is unsupported. Supported algorithms include: SHA512 and SHA256..
+        /// </summary>
+        internal static string UnsupportedHashAlgorithm {
+            get {
+                return ResourceManager.GetString("UnsupportedHashAlgorithm", resourceCulture);
+            }
+        }
     }
 }
