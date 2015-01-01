@@ -25,6 +25,11 @@ bld/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
+!packages/*/build/
+
+.nuget/
+
 #NUNIT
 *.VisualState.xml
 TestResult.xml

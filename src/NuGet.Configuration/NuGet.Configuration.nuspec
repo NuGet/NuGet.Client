@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.Configuration</id>
+    <version>1.0.0-overrideme</version>
+    <title>NuGet.Configuration</title>
+    <authors>NuGet</authors>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.Configuration/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NuGet.Configuration</description>
+  </metadata>
+</package>

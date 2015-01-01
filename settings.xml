@@ -1,0 +1,6 @@
+<nupkgs>
+	<nupkg id="NuGet.Configuration">
+		<csprojPath>\src\NuGet.Configuration\NuGet.Configuration.csproj</csprojPath>
+		<dllName>NuGet.Configuration.dll</dllName>
+	</nupkg>
+</nupkgs>
