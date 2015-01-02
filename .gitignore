@@ -29,6 +29,7 @@ bld/
 !packages/*/build/
 
 .nuget/
+nupkgs/
 
 #NUNIT
 *.VisualState.xml
