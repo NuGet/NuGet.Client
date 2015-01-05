@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement
             {
                 if (source.IsEnabled)
                 {
-                    NuGet.Client.PackageSource legacySource = new Client.PackageSource(source.Name, source.Source);
+                    PackageSource legacySource = new PackageSource(source.Name, source.Source);
 
                     SourceRepository sourceRepo = new SourceRepository(legacySource, _resourceProviders);
                     _repositories.Add(sourceRepo);
