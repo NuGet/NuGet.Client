@@ -21,9 +21,14 @@ namespace NuGet.PackageManagement
         private IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _resourceProviders;
         private List<SourceRepository> _repositories;
 
+        public SourceRepositoryProvider()
+        {
+
+        }
+
         // TODO: fix the settings here
         [ImportingConstructor]
-        public SourceRepositoryProvider(IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders)
+        public SourceRepositoryProvider([ImportMany]IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders)
             : this(new PackageSourceProvider(NullSettings.Instance), resourceProviders)
         {
 
@@ -57,7 +62,9 @@ namespace NuGet.PackageManagement
             {
                 if (source.IsEnabled)
                 {
-                    SourceRepository sourceRepo = new SourceRepository(source, _resourceProviders);
+                    NuGet.Client.PackageSource legacySource = new Client.PackageSource(source.Name, source.Source);
+
+                    SourceRepository sourceRepo = new SourceRepository(legacySource, _resourceProviders);
                     _repositories.Add(sourceRepo);
                 }
             }
