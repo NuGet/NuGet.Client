@@ -53,11 +53,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\IPowerShellAutoComplete.cs" />
+    <Compile Include="Models\IPowerShellSearch.cs" />
     <Compile Include="Models\PowershellSearchMetadata.cs" />
+    <Compile Include="Models\VisualStudioUIPackageDependency.cs" />
+    <Compile Include="Models\VisualStudioUIPackageDependencySet.cs" />
     <Compile Include="Models\VisualStudioUIPackageMetadata.cs" />
     <Compile Include="Models\VisualStudioUISearchMetadata.cs" />
-    <Compile Include="Models\IVsMetadata.cs" />
-    <Compile Include="Models\IVsSearch.cs" />
+    <Compile Include="Models\IVisualStudioUIMetadata.cs" />
+    <Compile Include="Models\IVisualStudioUISearch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

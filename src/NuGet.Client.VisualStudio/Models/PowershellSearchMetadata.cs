@@ -13,14 +13,16 @@ namespace NuGet.Client.VisualStudio.Models
     /// </summary>
     public sealed class PowershellSearchMetadata
     {      
-        public PowershellSearchMetadata(string id,NuGetVersion version,string summary)
+        public PowershellSearchMetadata(string id,NuGetVersion version, IEnumerable<NuGetVersion> versions, string summary)
         {
             Id = id;
             Version = version;
+            Versions = versions;
             Summary = summary;
         }
         public string Id { get; private set; }
         public NuGetVersion Version { get; private set; }
+        public IEnumerable<NuGetVersion> Versions { get; private set; }
         public string Summary { get; private set; }
        
     }

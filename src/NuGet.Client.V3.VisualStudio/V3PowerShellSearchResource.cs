@@ -1,36 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
+using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Client.VisualStudio.Models;
+using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
 
 namespace NuGet.Client.V3.VisualStudio
 {
-    /// <summary>
-    /// *TODOs: GetShortFrameworkName need to be used.
-    /// </summary>
-    public class VsV3SearchResource : V3Resource, IVsSearch
+    public class V3PowerShellSearchResource :V3Resource, IPowerShellSearch
     {
-        public VsV3SearchResource(V3Resource v3Resource)
+        public V3PowerShellSearchResource(V3Resource v3Resource)
             : base(v3Resource) { }
-
-        public async Task<IEnumerable<VisualStudioUISearchMetadata>> GetSearchResultsForVisualStudioUI(string searchTerm, SearchFilter filter, int skip, int take, System.Threading.CancellationToken cancellationToken)
+        public async Task<IEnumerable<PowershellSearchMetadata>> GetSearchResultsForPowerShell(string searchTerm, SearchFilter filters, int skip, int take, System.Threading.CancellationToken cancellationToken)
         {
-            IEnumerable<JObject> searchResultJsonObjects = await V3Client.Search(searchTerm, filter, skip, take, cancellationToken);
-            List<VisualStudioUISearchMetadata> visualStudioUISearchResults = new List<VisualStudioUISearchMetadata>();
+            IEnumerable<JObject> searchResultJsonObjects = await V3Client.Search(searchTerm, filters, skip, take, cancellationToken);
+            List<PowershellSearchMetadata> powerShellSearchResults = new List<PowershellSearchMetadata>();
             foreach (JObject searchResultJson in searchResultJsonObjects)
-                visualStudioUISearchResults.Add(GetVisualStudioUISearchResult(searchResultJson, filter.IncludePrerelease));
-            return visualStudioUISearchResults;
+                powerShellSearchResults.Add(GetPowerShellSearchResult(searchResultJson, filters.IncludePrerelease));
+            return powerShellSearchResults;
         }
 
-        private VisualStudioUISearchMetadata GetVisualStudioUISearchResult(JObject package, bool includePrerelease)
+        private PowershellSearchMetadata GetPowerShellSearchResult(JObject package, bool includePrerelease)
         {
             string id = package.Value<string>(Properties.PackageId);
-            NuGetVersion version = NuGetVersion.Parse(package.Value<string>(Properties.LatestVersion));
-            Uri iconUrl = GetUri(package, Properties.IconUrl);
+            NuGetVersion version = NuGetVersion.Parse(package.Value<string>(Properties.LatestVersion));         
 
             // get other versions
             var versionList = new List<NuGetVersion>();
@@ -69,22 +64,10 @@ namespace NuGet.Client.V3.VisualStudio
                 // summary is empty. Use its description instead.
                 summary = package.Value<string>(Properties.Description);
             }
-            VisualStudioUISearchMetadata searchResult = new VisualStudioUISearchMetadata(id, version, summary, iconUrl, nuGetVersions, null);
+            PowershellSearchMetadata searchResult = new PowershellSearchMetadata(id, version, nuGetVersions, summary);
             return searchResult;
         }
 
-        private Uri GetUri(JObject json, string property)
-        {
-            if (json[property] == null)
-            {
-                return null;
-            }
-            string str = json[property].ToString();
-            if (String.IsNullOrEmpty(str))
-            {
-                return null;
-            }
-            return new Uri(str);
-        }
+     
     }
 }

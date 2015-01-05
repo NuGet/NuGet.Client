@@ -133,6 +133,50 @@ namespace NuGet.Client.V3
             return outputs;
         }      
         
+        public async Task<IEnumerable<string>> SearchAutocomplete(string searchTermPrefix, System.Threading.CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var searchAutocompleteService = await GetServiceUri(ServiceUris.SearchAutocompleteService);
+            if (String.IsNullOrEmpty(searchAutocompleteService))
+            {
+                throw new NuGetProtocolException(Strings.Protocol_MissingSearchService);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Construct the query
+            var queryUrl = new UriBuilder(searchAutocompleteService);
+            string queryString =
+                "q=" + searchTermPrefix;
+             
+           
+            queryUrl.Query = queryString;
+
+            var queryUri = queryUrl.Uri;
+            var results = await _client.GetFile(queryUri);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (results == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+            var data = results.Value<JArray>("data");
+            if (data == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            // Resolve all the objects
+            List<string> outputs = new List<string>();
+            foreach (var result in data)
+            {
+                 if (result != null)
+                {
+                   outputs.Add(result.ToString());
+                }
+            }
+
+            return outputs;
+        }
+
         public async Task<JObject> GetPackageMetadata(string id, NuGetVersion version)
         {
             return (await GetPackageMetadataById(id))

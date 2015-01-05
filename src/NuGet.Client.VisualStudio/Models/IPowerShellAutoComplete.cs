@@ -9,8 +9,8 @@ namespace NuGet.Client.VisualStudio.Models
 {
     public interface IPowerShellAutoComplete
     {
-       IEnumerable<string> GetPackageIdsStartingWith(string packageIdPrefix);
-       IEnumerable<NuGetVersion> GetPackageVersionsStartingWith(string versionPrefix);
+       Task<IEnumerable<string>> GetPackageIdsStartingWith(string packageIdPrefix,System.Threading.CancellationToken cancellationToken);
+       Task<IEnumerable<NuGetVersion>> GetAllVersions(string versionPrefix);
     }
 }
 

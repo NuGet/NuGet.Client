@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client.VisualStudio.Models
 {
-    public interface IVsSearch
+    public interface IVisualStudioUISearch
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
          Task<IEnumerable<VisualStudioUISearchMetadata>> GetSearchResultsForVisualStudioUI(

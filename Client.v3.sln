@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataTest", "test\DataClient
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.V3Test", "test\Client.V3Test\Client.V3Test.csproj", "{AB83B9DA-6C04-4E5C-8881-CE8221580382}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppV2V3Switching", "test\TestAppV2V3Switching\TestAppV2V3Switching.csproj", "{14E47D13-C5BA-46DB-BCB9-07583F1B271F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V2V3ResourcesTest", "test\TestAppV2V3Switching\V2V3ResourcesTest.csproj", "{14E47D13-C5BA-46DB-BCB9-07583F1B271F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Client.BaseTypes", "src\NuGet.Client.BaseTypes\NuGet.Client.BaseTypes.csproj", "{05B640AD-133D-4B36-8DF0-036323D7873E}"
 EndProject
