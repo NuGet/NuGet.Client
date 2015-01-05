@@ -11,7 +11,7 @@
     <description>Tools for reading nupkg and nuspec files</description>
     <tags>nupkg packaging nuspec</tags>
     <dependencies>
-		<dependency id="NuGet.Versioning" version="1.0.3" />
+		<dependency id="NuGet.Versioning" version="1.0.5" />
 	</dependencies>
   </metadata>
   <files>
@@ -19,5 +19,7 @@
 	<file src="..\Frameworks\bin\$configuration$\NuGet.Frameworks.dll" target="lib/net45" />
 	<file src="..\Core\bin\$configuration$\NuGet.PackagingCore.XML" target="lib/net45" />
 	<file src="..\Frameworks\bin\$configuration$\NuGet.Frameworks.XML" target="lib/net45" />
+	<file src="..\Resolver\bin\$configuration$\NuGet.Resolver.dll" target="lib/net45" />
+	<file src="..\Resolver\bin\$configuration$\NuGet.Resolver.XML" target="lib/net45" />
   </files>
 </package>
