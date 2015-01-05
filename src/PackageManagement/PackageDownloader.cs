@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement
             // TODO: Tie up machine cache with CacheClient?!
 
             // Step-1 : Get the download url for packageIdentity
-            DownloadResource downloadResource = await sourceRepository.GetResource<DownloadResource>();
+            DownloadResource downloadResource = sourceRepository.GetResource<DownloadResource>();
             Uri downloadUrl = await downloadResource.GetDownloadUrl(packageIdentity);
 
             // Step-2: Download the package using the downloadUrl

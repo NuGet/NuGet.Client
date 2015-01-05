@@ -64,34 +64,34 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Installs the latest version of the given <param name="packageId"></param> to NuGetProject <param name="project"></param>
+        /// Installs the latest version of the given <param name="packageId"></param> to NuGetProject <param name="nuGetProject"></param>
         /// </summary>
-        public async Task InstallPackageAsync(NuGetProject project, string packageId)
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId)
         {
             // Step-1 : Get latest version for packageId
             var sourceRepository = FirstEnabledSourceRepository;
-            var metadataResource = await sourceRepository.GetResource<MetadataResource>();
+            var metadataResource = sourceRepository.GetResource<MetadataResource>();
             var allVersions = await metadataResource.GetLatestVersions(new List<string>() { packageId });
             var latestVersion = allVersions.ToList().Max<NuGetVersion>();
 
             // Step-2 : Call InstallPackage(project, packageIdentity)
-            await InstallPackageAsync(project, new PackageIdentity(packageId, latestVersion));
+            await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion));
         }
 
         /// <summary>
-        /// Installs given <param name="packageIdentity"></param> to NuGetProject <param name="project"></param>
+        /// Installs given <param name="packageIdentity"></param> to NuGetProject <param name="nuGetProject"></param>
         /// </summary>
-        public async Task InstallPackageAsync(NuGetProject project, PackageIdentity packageIdentity /* policies such as DependencyVersion, AllowPrerelease and so on */)
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity /* policies such as DependencyVersion, AllowPrerelease and so on */)
         {
             var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
             // Step-1 : Get metadata resources using gatherer
             var sourceRepository = FirstEnabledSourceRepository;
-            var dependencyInfoResource = await sourceRepository.GetResource<DepedencyInfoResource>();
+            var dependencyInfoResource = sourceRepository.GetResource<DepedencyInfoResource>();
             var packageDependencyInfo =
-                await dependencyInfoResource.ResolvePackages(packagesToInstall, includePrerelease: false);
+                await dependencyInfoResource.ResolvePackages(packagesToInstall, nuGetProject.TargetFramework, includePrerelease: false);
 
             // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
-            var projectInstalledPackageReferences = project.GetInstalledPackages();
+            var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
             var newListOfInstalledPackages = PackageResolver.Resolve(packagesToInstall, packageDependencyInfo, projectInstalledPackageReferences);
 
             // Step-3 : Get the list of package actions to perform, install/uninstall on the nugetproject 
@@ -104,14 +104,14 @@ namespace NuGet.PackageManagement
             // Step-4 : For each package to be uninstalled, call into NuGetProject
             foreach(PackageIdentity newPackageToUninstall in newPackagesToUninstall)
             {
-                ExecuteUninstall(project, newPackageToUninstall);
+                ExecuteUninstall(nuGetProject, newPackageToUninstall);
             }
 
             // Step-5 : For each package to be installed, call into NuGetProject
             foreach(PackageIdentity newPackageToInstall in newPackagesToInstall)
             {
                 var packageStream = await PackageDownloader.GetPackage(sourceRepository, newPackageToInstall);
-                ExecuteInstall(project, newPackageToInstall, packageStream);
+                ExecuteInstall(nuGetProject, newPackageToInstall, packageStream);
             }
         }
 
