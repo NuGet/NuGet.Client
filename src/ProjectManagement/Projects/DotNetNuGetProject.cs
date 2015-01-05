@@ -14,7 +14,7 @@ namespace NuGet.ProjectManagement
     public class DotNetNuGetProject : NuGetProject
     {
         private IDotNetNuGetProjectSystem DotNetNuGetProjectSystem { get; set; }
-        public SimpleNuGetProject FileSystemNuGetProject { get; private set; }
+        public SimpleNuGetProject SimpleNuGetProject { get; private set; }
         public DotNetNuGetProject(IDotNetNuGetProjectSystem nugetDotNetProjectSystem, SimpleNuGetProject fileSystemNuGetProject)
         {
             if (nugetDotNetProjectSystem == null)
@@ -28,7 +28,7 @@ namespace NuGet.ProjectManagement
             }
 
             DotNetNuGetProjectSystem = nugetDotNetProjectSystem;
-            FileSystemNuGetProject = fileSystemNuGetProject;
+            SimpleNuGetProject = fileSystemNuGetProject;
         }
 
         public override IEnumerable<PackageReference> GetInstalledPackages()
