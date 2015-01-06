@@ -10,7 +10,7 @@ namespace NuGet.ProjectManagement
     /// <summary>
     /// Comprises of the various client context such as logging, fileconflictaction
     /// </summary>
-    public interface IExecutionContext
+    public interface IProjectContext
     {
         /// <summary>
         /// Logs a message for the given execution context

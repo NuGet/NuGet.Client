@@ -16,12 +16,12 @@ namespace NuGet.ProjectManagement
         /// This installs a package into the NuGetProject using the packageStream passed in
         /// </summary>
         /// <returns>Returns false if the package was already present in the NuGetProject. On successful installation, returns true</returns>
-        public abstract bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, IExecutionContext executionContext);
+        public abstract bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, IProjectContext projectContext);
         /// <summary>
         /// This uninstalls the package from the NuGetProject, if found
         /// </summary>
         /// <returns>Returns false if the package was not found. On successful uninstallation, returns true</returns>
-        public abstract bool UninstallPackage(PackageIdentity packageIdentity, IExecutionContext executionContext);
+        public abstract bool UninstallPackage(PackageIdentity packageIdentity, IProjectContext projectContext);
         /// <summary>
         /// GetInstalledPackages will be used by Dependency Resolver and more
         /// </summary>
