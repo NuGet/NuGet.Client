@@ -4,6 +4,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
+using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -37,24 +38,23 @@ namespace NuGet.PackageManagement
         public event EventHandler<PackageOperationEventArgs> PackageUninstalled;
 
         private SourceRepositoryProvider SourceRepositoryProvider { get; set; }
-        private IPackageResolver PackageResolver { get; set; }
 
         /// <summary>
         /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param> and <param name="packageResolver"></param>
         /// </summary>
-        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider, IPackageResolver packageResolver)
+        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider/*, IPackageResolver packageResolver */)
         {
             if (sourceRepositoryProvider == null)
             {
                 throw new ArgumentNullException("sourceRepositoryProvider");
             }
 
-            PackageResolver = packageResolver;
             SourceRepositoryProvider = sourceRepositoryProvider;
         }
 
         /// <summary>
         /// Installs the latest version of the given <param name="packageId"></param> to NuGetProject <param name="nuGetProject"></param>
+        /// <param name="resolutionContext"></param> and <param name="executionContext"></param> are used in the process
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, IExecutionContext executionContext)
         {
@@ -74,6 +74,7 @@ namespace NuGet.PackageManagement
 
         /// <summary>
         /// Installs given <param name="packageIdentity"></param> to NuGetProject <param name="nuGetProject"></param>
+        /// <param name="resolutionContext"></param> and <param name="executionContext"></param> are used in the process
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, IExecutionContext executionContext)
         {
@@ -83,7 +84,9 @@ namespace NuGet.PackageManagement
 
             // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
             var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
-            var newListOfInstalledPackages = PackageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet.Keys, projectInstalledPackageReferences);
+            // TODO: Consider using IPackageResolver once it is extensible
+            var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
+            var newListOfInstalledPackages = packageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet.Keys, projectInstalledPackageReferences);
 
             // Step-3 : Get the list of package actions to perform, install/uninstall on the nugetproject 
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages

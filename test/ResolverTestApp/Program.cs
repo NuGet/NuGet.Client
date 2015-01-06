@@ -40,7 +40,7 @@ namespace ResolverTestApp
             installed.Add(new PackageReference(new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.5")), NuGetFramework.Parse("portable-net40+win8")));
 
             // build the repo provider instead of importing it so that it has only v3
-            var repositoryProvider = new SourceRepositoryProvider(new V3Source(), p.ResourceProviders.ToArray());
+            var repositoryProvider = new SourceRepositoryProvider(new V3OnlyPackageSourceProvider(), p.ResourceProviders.ToArray());
 
             // package to install
             var target = new PackageIdentity("WindowsAzure.Storage", NuGetVersion.Parse("4.0.1"));
@@ -113,7 +113,7 @@ namespace ResolverTestApp
         /// <summary>
         /// Provider that only returns V3 as a source
         /// </summary>
-        private class V3Source : IPackageSourceProvider
+        private class V3OnlyPackageSourceProvider : IPackageSourceProvider
         {
 
             public void DisablePackageSource(NuGet.Configuration.PackageSource source)

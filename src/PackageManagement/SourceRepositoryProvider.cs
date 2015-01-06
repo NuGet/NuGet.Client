@@ -28,8 +28,8 @@ namespace NuGet.PackageManagement
 
         // TODO: fix the settings here
         [ImportingConstructor]
-        public SourceRepositoryProvider([ImportMany]IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders)
-            : this(new PackageSourceProvider(NullSettings.Instance), resourceProviders)
+        public SourceRepositoryProvider([ImportMany]IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders, [Import]ISettings settings)
+            : this(new PackageSourceProvider(settings), resourceProviders)
         {
 
         }
