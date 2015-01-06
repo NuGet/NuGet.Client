@@ -34,6 +34,21 @@
     <Reference Include="Ionic.Zip">
       <HintPath>..\..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
+    <Reference Include="NuGet.Frameworks">
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.Frameworks.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Packaging">
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.Packaging.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.PackagingCore">
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.PackagingCore.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.ProjectManagement">
+      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-master-50062312\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Versioning">
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,8 +62,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExceptionAssert.cs" />
+    <Compile Include="ProjectManagement\TestNuGetProjectContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestFilesystemUtility.cs" />
+    <Compile Include="ProjectManagement\TestMSBuildNuGetProjectSystem.cs" />
     <Compile Include="TestPackages.cs" />
   </ItemGroup>
   <ItemGroup>
