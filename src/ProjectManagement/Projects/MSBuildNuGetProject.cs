@@ -44,7 +44,7 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, IProjectContext projectContext)
+        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
         {
             // 1. FileSystemNuGetProject.InstallPackage(packageIdentity, packageStream);
             // 2. Update packages.config
@@ -52,7 +52,7 @@ namespace NuGet.ProjectManagement
             throw new NotImplementedException();
         }
 
-        public override bool UninstallPackage(PackageIdentity packageIdentity, IProjectContext projectContext)
+        public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
             throw new NotImplementedException();
         }

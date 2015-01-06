@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileConflictAction.cs" />
-    <Compile Include="IProjectContext.cs" />
+    <Compile Include="INuGetProjectContext.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Projects\MSBuildNuGetProject.cs" />
     <Compile Include="Projects\FolderNuGetProject.cs" />

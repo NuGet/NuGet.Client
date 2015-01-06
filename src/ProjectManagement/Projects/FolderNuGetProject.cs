@@ -42,7 +42,7 @@ namespace NuGet.ProjectManagement
             return Enumerable.Empty<PackageReference>();
         }
 
-        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, IProjectContext projectContext)
+        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
         {
             // 1. Check if the Package already exists at root, if so, return false
             if (PackageExistsInProject(packageIdentity))
@@ -55,7 +55,7 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public override bool UninstallPackage(PackageIdentity packageIdentity, IProjectContext projectContext)
+        public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
             // TODO: Handle removing of satellite files from the runtime package also
 
