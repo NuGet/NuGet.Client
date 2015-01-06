@@ -3,7 +3,7 @@ using System.IO;
 
 namespace NuGet.ProjectManagement
 {
-    public interface IDotNetNuGetProjectSystem
+    public interface IMSBuildNuGetProjectSystem
     {
         NuGetFramework TargetFramework { get; }
         string ProjectName { get; }

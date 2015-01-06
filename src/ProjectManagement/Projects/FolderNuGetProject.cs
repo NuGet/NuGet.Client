@@ -11,7 +11,7 @@ namespace NuGet.ProjectManagement
     /// <summary>
     /// This class represents a NuGetProject based on a folder such as packages folder on a VisualStudio solution
     /// </summary>
-    public class SimpleNuGetProject : NuGetProject
+    public class FolderNuGetProject : NuGetProject
     {
         private string Root { get; set; }
         public PackagePathResolver PackagePathResolver { get; private set; }
@@ -23,7 +23,7 @@ namespace NuGet.ProjectManagement
         // TODO: Once PackageExtractor supports handling of satellite files, there will another enum here
         //       which can be set to control what happens during package extraction
 
-        public SimpleNuGetProject(string root)
+        public FolderNuGetProject(string root)
         {
             if(root == null)
             {
@@ -42,7 +42,7 @@ namespace NuGet.ProjectManagement
             return Enumerable.Empty<PackageReference>();
         }
 
-        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream)
+        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, IExecutionContext executionContext)
         {
             // 1. Check if the Package already exists at root, if so, return false
             if (PackageExistsInProject(packageIdentity))
@@ -55,7 +55,7 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public override bool UninstallPackage(PackageIdentity packageIdentity)
+        public override bool UninstallPackage(PackageIdentity packageIdentity, IExecutionContext executionContext)
         {
             // TODO: Handle removing of satellite files from the runtime package also
 
