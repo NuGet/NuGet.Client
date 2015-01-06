@@ -1,6 +1,8 @@
-﻿using NuGet.PackagingCore;
+﻿using NuGet.Frameworks;
+using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
+using System;
 using System.IO;
 using Test.Utility;
 using Xunit;
@@ -14,9 +16,9 @@ namespace ProjectManagement.Test
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
-            var randomTestSourcePath = TestFilesystemUtilites.CreateRandomTestFolder();
+            var randomTestSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            var randomTestDestinationPath = TestFilesystemUtilites.CreateRandomTestFolder();
+            var randomTestDestinationPath = TestFilesystemUtility.CreateRandomTestFolder();
             var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
             var packageInstallPath = folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
             var nupkgFilePath = Path.Combine(packageInstallPath, folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
@@ -31,8 +33,7 @@ namespace ProjectManagement.Test
             Assert.True(File.Exists(Path.Combine(packageInstallPath, "lib/test.dll")));
 
             // Clean-up
-            TestFilesystemUtilites.DeleteRandomTestPath(randomTestDestinationPath);
-            TestFilesystemUtilites.DeleteRandomTestPath(randomTestDestinationPath);
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
         }
 
         [Fact]
@@ -40,9 +41,9 @@ namespace ProjectManagement.Test
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
-            var randomTestSourcePath = TestFilesystemUtilites.CreateRandomTestFolder();
+            var randomTestSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            var randomTestDestinationPath = TestFilesystemUtilites.CreateRandomTestFolder();
+            var randomTestDestinationPath = TestFilesystemUtility.CreateRandomTestFolder();
             var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
             var packageInstallPath = folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
             var nupkgFilePath = Path.Combine(packageInstallPath, folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
@@ -61,8 +62,24 @@ namespace ProjectManagement.Test
             Assert.True(!Directory.Exists(packageInstallPath));
 
             // Clean-up
-            TestFilesystemUtilites.DeleteRandomTestPath(randomTestDestinationPath);
-            TestFilesystemUtilites.DeleteRandomTestPath(randomTestDestinationPath);
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
+        }
+
+        [Fact]
+        public void TestFolderNuGetProjectTargetFramework()
+        {
+            // Arrange
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var folderNuGetProject = new FolderNuGetProject(randomTestFolder);
+
+            // Act & Assert
+            NuGetFramework targetFramework;
+            Assert.True(folderNuGetProject.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out targetFramework));
+            Assert.Equal(targetFramework, NuGetFramework.AnyFramework);
+            Assert.Equal(folderNuGetProject.Metadata.Count, 1);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
         }
     }
 }

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Test.Utility
 {
-    public static class TestFilesystemUtilites
+    public static class TestFilesystemUtility
     {
         private static readonly string NuGetTestFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -17,7 +17,15 @@ namespace Test.Utility
             return path;
         }
 
-        public static void DeleteRandomTestPath(string randomTestPath)
+        public static void DeleteRandomTestFolders(params string[] randomTestPaths)
+        {
+            foreach(var randomTestPath in randomTestPaths)
+            {
+                DeleteRandomTestFolder(randomTestPath);
+            }
+        }
+
+        public static void DeleteRandomTestFolder(string randomTestPath)
         {
             if (Directory.Exists(randomTestPath))
             {
