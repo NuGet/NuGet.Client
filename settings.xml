@@ -7,4 +7,8 @@
 		<csprojPath>\src\ProjectManagement\ProjectManagement.csproj</csprojPath>
 		<dllName>NuGet.ProjectManagement.dll</dllName>
 	</nupkg>
+	<nupkg id="NuGet.TestUtility">
+		<csprojPath>\test\Test.Utility\Test.Utility.csproj</csprojPath>
+		<dllName>NuGet.TestUtility.dll</dllName>
+	</nupkg>
 </nupkgs>
