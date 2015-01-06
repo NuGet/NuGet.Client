@@ -1,16 +1,32 @@
 ﻿using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace NuGet.ProjectManagement
 {
     public abstract class NuGetProject
     {
-        // Is the concept of TargetFramework core enough in NuGet to be here?
-        // Or is it specific to Visual Studio projects like a net45 or projectk library?
-        public abstract NuGetFramework TargetFramework { get; }
+        protected NuGetProject() : this(new Dictionary<string, object>()) { }
+        protected NuGetProject(IDictionary<string, object> metadata)
+        {
+            if(metadata == null)
+            {
+                throw new ArgumentNullException("metadata");
+            }
+            InternalMetadata = metadata;
+        }
+        protected IDictionary<string, object> InternalMetadata { get; set; }
+        public IReadOnlyDictionary<string, object> Metadata
+        {
+            get
+            {
+                return (IReadOnlyDictionary<string, object>)InternalMetadata;
+            }
+        }
         // TODO: Consider adding CancellationToken here
         /// <summary>
         /// This installs a package into the NuGetProject using the packageStream passed in
@@ -27,5 +43,40 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <returns></returns>
         public abstract IEnumerable<PackageReference> GetInstalledPackages();
+        public T GetMetadata<T>(string key)
+        {
+            if(key == null)
+            {
+                throw new ArgumentNullException("key");
+            }
+
+            object value = Metadata[key];
+            return (T)value;
+        }
+
+        public bool TryGetMetadata<T>(string key, out T value)
+        {
+            value = default(T);
+            try
+            {
+                value = GetMetadata<T>(key);
+                return true;
+            }
+            catch (KeyNotFoundException ex)
+            {
+            }
+            catch(InvalidCastException ex)
+            {
+            }
+            catch(Exception ex)
+            {
+            }
+            return false;
+        }
+    }
+
+    public static class NuGetProjectMetadataKeys
+    {
+        public const string TargetFramework = "TargetFramework";
     }
 }

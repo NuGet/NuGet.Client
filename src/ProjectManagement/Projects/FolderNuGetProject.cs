@@ -32,11 +32,9 @@ namespace NuGet.ProjectManagement
             Root = root;
             PackagePathResolver = new PackagePathResolver(root);
             PackageSaveMode = PackageSaveModes.Nupkg;
+            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.AnyFramework);
         }
-        public override NuGetFramework TargetFramework
-        {
-            get { return NuGetFramework.AnyFramework; }
-        }
+
         public override IEnumerable<PackageReference> GetInstalledPackages()
         {
             return Enumerable.Empty<PackageReference>();

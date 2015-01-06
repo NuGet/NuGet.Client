@@ -61,6 +61,7 @@
     <Compile Include="Projects\MSBuildNuGetProject.cs" />
     <Compile Include="Projects\FolderNuGetProject.cs" />
     <Compile Include="NuGetProject.cs" />
+    <Compile Include="Projects\PackagesConfigNuGetProject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

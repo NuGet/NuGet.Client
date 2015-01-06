@@ -9,26 +9,27 @@ using System.IO;
 namespace NuGet.ProjectManagement
 {
     /// <summary>
-    /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a FileSystemNuGetProject
+    /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a FolderNuGetProject
     /// </summary>
     public class MSBuildNuGetProject : NuGetProject
     {
         private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
         public FolderNuGetProject FolderNuGetProject { get; private set; }
-        public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, FolderNuGetProject fileSystemNuGetProject)
+        public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, FolderNuGetProject folderNuGetProject)
         {
             if (msbuildNuGetProjectSystem == null)
             {
                 throw new ArgumentNullException("nugetDotNetProjectSystem");
             }
 
-            if (fileSystemNuGetProject == null)
+            if (folderNuGetProject == null)
             {
-                throw new ArgumentNullException("fileSystemNuGetProject");
+                throw new ArgumentNullException("folderSystemNuGetProject");
             }
 
             MSBuildNuGetProjectSystem = msbuildNuGetProjectSystem;
-            FolderNuGetProject = fileSystemNuGetProject;
+            FolderNuGetProject = folderNuGetProject;
+            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, MSBuildNuGetProjectSystem.TargetFramework);
         }
 
         public override IEnumerable<PackageReference> GetInstalledPackages()
@@ -36,17 +37,9 @@ namespace NuGet.ProjectManagement
             throw new NotImplementedException();
         }
 
-        public override NuGetFramework TargetFramework
-        {
-            get
-            {
-                return MSBuildNuGetProjectSystem.TargetFramework;
-            }
-        }
-
         public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
         {
-            // 1. FileSystemNuGetProject.InstallPackage(packageIdentity, packageStream);
+            // 1. FolderNuGetProject.InstallPackage(packageIdentity, packageStream);
             // 2. Update packages.config
             // 3. Call into DotNetNuGetProjectSystem
             throw new NotImplementedException();
