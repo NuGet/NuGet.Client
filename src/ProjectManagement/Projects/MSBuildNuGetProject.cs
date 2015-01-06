@@ -15,21 +15,28 @@ namespace NuGet.ProjectManagement
     {
         private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
         public FolderNuGetProject FolderNuGetProject { get; private set; }
-        public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, FolderNuGetProject folderNuGetProject)
+        public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; private set; }
+        public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFullPath)
         {
             if (msbuildNuGetProjectSystem == null)
             {
                 throw new ArgumentNullException("nugetDotNetProjectSystem");
             }
 
-            if (folderNuGetProject == null)
+            if (folderNuGetProjectPath == null)
             {
-                throw new ArgumentNullException("folderSystemNuGetProject");
+                throw new ArgumentNullException("folderNuGetProjectPath");
+            }
+
+            if (packagesConfigFullPath == null)
+            {
+                throw new ArgumentNullException("packagesConfigFullPath");
             }
 
             MSBuildNuGetProjectSystem = msbuildNuGetProjectSystem;
-            FolderNuGetProject = folderNuGetProject;
+            FolderNuGetProject = new FolderNuGetProject(folderNuGetProjectPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, MSBuildNuGetProjectSystem.TargetFramework);
+            PackagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, InternalMetadata);
         }
 
         public override IEnumerable<PackageReference> GetInstalledPackages()

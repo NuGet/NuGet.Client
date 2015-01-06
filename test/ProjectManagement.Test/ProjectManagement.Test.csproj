@@ -47,11 +47,11 @@
     </Reference>
     <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-master-50062241\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-master-50062339\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.TestUtility, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.TestUtility.1.0.0-master-50062253\lib\net45\NuGet.TestUtility.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.TestUtility.1.0.0-master-50062332\lib\net45\NuGet.TestUtility.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Versioning">
       <HintPath>..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
@@ -70,6 +70,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FolderNuGetProjectTests.cs" />
+    <Compile Include="MSBuildNuGetProjectTests.cs" />
+    <Compile Include="PackagesConfigNuGetProjectTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

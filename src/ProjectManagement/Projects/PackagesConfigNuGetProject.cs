@@ -38,6 +38,7 @@ namespace NuGet.ProjectManagement
             {
                 var writer = new PackagesConfigWriter(stream);
                 writer.WritePackageEntry(packageIdentity, TargetFramework);
+                writer.Close();
             }
             return true;
         }
