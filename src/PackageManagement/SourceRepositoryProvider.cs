@@ -41,8 +41,16 @@ namespace NuGet.PackageManagement
         {
             _packageSourceProvider = packageSourceProvider;
             _resourceProviders = resourceProviders;
+            _repositories = new List<SourceRepository>();
 
+            // Refresh the package sources
             Init();
+
+            // Hook up event to refresh package sources when the package sources changed
+            packageSourceProvider.PackageSourcesSaved += (sender, e) =>
+            {
+                Init();
+            };
         }
 
         /// <summary>
@@ -56,15 +64,12 @@ namespace NuGet.PackageManagement
 
         private void Init()
         {
-            _repositories = new List<SourceRepository>();
-
+            _repositories.Clear();
             foreach (var source in _packageSourceProvider.LoadPackageSources())
             {
                 if (source.IsEnabled)
                 {
-                    PackageSource legacySource = new PackageSource(source.Name, source.Source);
-
-                    SourceRepository sourceRepo = new SourceRepository(legacySource, _resourceProviders);
+                    SourceRepository sourceRepo = new SourceRepository(source, _resourceProviders);
                     _repositories.Add(sourceRepo);
                 }
             }

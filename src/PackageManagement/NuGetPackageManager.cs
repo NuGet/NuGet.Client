@@ -1,5 +1,6 @@
 ﻿using NuGet.Client;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
@@ -35,32 +36,21 @@ namespace NuGet.PackageManagement
         /// </summary>
         public event EventHandler<PackageOperationEventArgs> PackageUninstalled;
 
-        private IPackageSourceProvider PackageSourceProvider { get; set; }
-        private List<SourceRepository> SourceRepositories { get; set; }
+        private SourceRepositoryProvider SourceRepositoryProvider { get; set; }
         private IPackageResolver PackageResolver { get; set; }
 
         /// <summary>
-        /// Creates a NuGetPackageManager for a given <param name="packageSourceProvider"></param> and <param name="packageResolver"></param>
+        /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param> and <param name="packageResolver"></param>
         /// </summary>
-        public NuGetPackageManager(IPackageSourceProvider packageSourceProvider, IPackageResolver packageResolver)
+        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider, IPackageResolver packageResolver)
         {
-            if(packageSourceProvider == null)
+            if (sourceRepositoryProvider == null)
             {
-                throw new ArgumentNullException("packageSourceProvider");
+                throw new ArgumentNullException("sourceRepositoryProvider");
             }
 
             PackageResolver = packageResolver;
-            PackageSourceProvider = packageSourceProvider;
-            SourceRepositories = new List<SourceRepository>();
-
-            // Refresh the package sources
-            RefreshPackageSources();
-
-            // Hook up event to refresh package sources when the package sources changed
-            packageSourceProvider.PackageSourcesSaved += (sender, e) =>
-            {
-                RefreshPackageSources();
-            };
+            SourceRepositoryProvider = sourceRepositoryProvider;
         }
 
         /// <summary>
@@ -68,14 +58,18 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId)
         {
+            // HACK: Need to all the sourceRepositories much like it is done for DependencyInfoResource and DownloadResource
             // Step-1 : Get latest version for packageId
-            var sourceRepository = FirstEnabledSourceRepository;
+            var sourceRepository = SourceRepositoryProvider.GetRepositories().First();
             var metadataResource = sourceRepository.GetResource<MetadataResource>();
-            var allVersions = await metadataResource.GetLatestVersions(new List<string>() { packageId });
-            var latestVersion = allVersions.ToList().Max<NuGetVersion>();
+            if(metadataResource != null)
+            {
+                var allVersions = await metadataResource.GetLatestVersions(new List<string>() { packageId });
+                var latestVersion = allVersions.ToList().Max<NuGetVersion>();
 
-            // Step-2 : Call InstallPackage(project, packageIdentity)
-            await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion));
+                // Step-2 : Call InstallPackage(project, packageIdentity)
+                await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion));
+            }
         }
 
         /// <summary>
@@ -85,14 +79,11 @@ namespace NuGet.PackageManagement
         {
             var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
             // Step-1 : Get metadata resources using gatherer
-            var sourceRepository = FirstEnabledSourceRepository;
-            var dependencyInfoResource = sourceRepository.GetResource<DepedencyInfoResource>();
-            var packageDependencyInfo =
-                await dependencyInfoResource.ResolvePackages(packagesToInstall, nuGetProject.TargetFramework, includePrerelease: false);
+            var availablePackageDependencyInfoWithSourceSet = await GatherPackageDependencyInfo(packageIdentity, nuGetProject.TargetFramework);
 
             // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
             var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
-            var newListOfInstalledPackages = PackageResolver.Resolve(packagesToInstall, packageDependencyInfo, projectInstalledPackageReferences);
+            var newListOfInstalledPackages = PackageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet.Keys, projectInstalledPackageReferences);
 
             // Step-3 : Get the list of package actions to perform, install/uninstall on the nugetproject 
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages
@@ -110,7 +101,13 @@ namespace NuGet.PackageManagement
             // Step-5 : For each package to be installed, call into NuGetProject
             foreach(PackageIdentity newPackageToInstall in newPackagesToInstall)
             {
-                var packageStream = await PackageDownloader.GetPackage(sourceRepository, newPackageToInstall);
+                var fakePkgDepInfo = new PackageDependencyInfo(newPackageToInstall.Id, newPackageToInstall.Version);
+                SourceRepository sourceRepository;
+                if(!availablePackageDependencyInfoWithSourceSet.TryGetValue(fakePkgDepInfo, out sourceRepository))
+                {
+                    throw new InvalidOperationException("Package cannot be installed because the source repository is not known??!!");
+                }
+                var packageStream = await PackageDownloader.GetPackageStream(sourceRepository, newPackageToInstall);
                 ExecuteInstall(nuGetProject, newPackageToInstall, packageStream);
             }
         }
@@ -157,22 +154,33 @@ namespace NuGet.PackageManagement
             }
         }
 
-        // HACK: to always use the first source repository
-        private SourceRepository FirstEnabledSourceRepository
+        private async Task<IDictionary<PackageDependencyInfo, SourceRepository>> GatherPackageDependencyInfo(PackageIdentity packageIdentity, NuGetFramework targetFramework)
         {
-            get
-            {
-                return SourceRepositories[0];
-            }
-        }
+            // get a distinct set of packages from all repos
+            var packageDependencyInfoSet = new Dictionary<PackageDependencyInfo, SourceRepository>(PackageDependencyInfo.Comparer);
 
-        private void RefreshPackageSources()
-        {
-            SourceRepositories.Clear();
-            foreach(var packageSource in PackageSourceProvider.LoadPackageSources().Where(s => s.IsEnabled))
+            // find all needed packages from online
+            foreach (var sourceRepository in SourceRepositoryProvider.GetRepositories())
             {
-                SourceRepositories.Add(new SourceRepository(packageSource, null));
+                // get the resolver data resource
+                var dependencyInfoResource = sourceRepository.GetResource<DepedencyInfoResource>();
+
+                // resources can always be null
+                if (dependencyInfoResource != null)
+                {
+                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackages(new PackageIdentity[] { packageIdentity }, targetFramework, true);
+
+                    foreach (var pkgDepInfo in packageDependencyInfo)
+                    {
+                        if(!packageDependencyInfoSet.ContainsKey(pkgDepInfo))
+                        {
+                            packageDependencyInfoSet.Add(pkgDepInfo, sourceRepository);
+                        }
+                    }
+                }
             }
+
+            return packageDependencyInfoSet;
         }
     }
 

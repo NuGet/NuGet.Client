@@ -48,9 +48,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50022312\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Data">
-      <HintPath>..\..\packages\NuGet.Data.1.0.1-master-43391912\lib\net45\NuGet.Data.dll</HintPath>
-    </Reference>
     <Reference Include="NuGet.Frameworks, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-50050213\lib\net45\NuGet.Frameworks.dll</HintPath>
