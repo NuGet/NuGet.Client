@@ -54,9 +54,9 @@ namespace NuGet.PackageManagement
 
         /// <summary>
         /// Installs the latest version of the given <param name="packageId"></param> to NuGetProject <param name="nuGetProject"></param>
-        /// <param name="resolutionContext"></param> and <param name="executionContext"></param> are used in the process
+        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, IExecutionContext executionContext)
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
             // HACK: Need to all the sourceRepositories much like it is done for DependencyInfoResource and DownloadResource
             // Step-1 : Get latest version for packageId
@@ -68,15 +68,15 @@ namespace NuGet.PackageManagement
                 var latestVersion = allVersions.ToList().Max<NuGetVersion>();
 
                 // Step-2 : Call InstallPackage(project, packageIdentity)
-                await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext, executionContext);
+                await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext, nuGetProjectContext);
             }
         }
 
         /// <summary>
         /// Installs given <param name="packageIdentity"></param> to NuGetProject <param name="nuGetProject"></param>
-        /// <param name="resolutionContext"></param> and <param name="executionContext"></param> are used in the process
+        /// <param name="resolutionContext"></param> and <param name="projectContext"></param> are used in the process
         /// </summary>
-        public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, IExecutionContext executionContext)
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
             var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
             // Step-1 : Get metadata resources using gatherer
@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement
             // Step-4 : For each package to be uninstalled, call into NuGetProject
             foreach(PackageIdentity newPackageToUninstall in newPackagesToUninstall)
             {
-                ExecuteUninstall(nuGetProject, newPackageToUninstall, executionContext);
+                ExecuteUninstall(nuGetProject, newPackageToUninstall, nuGetProjectContext);
             }
 
             // Step-5 : For each package to be installed, call into NuGetProject
@@ -111,18 +111,18 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException("Package cannot be installed because the source repository is not known??!!");
                 }
                 var packageStream = await PackageDownloader.GetPackageStream(sourceRepository, newPackageToInstall);
-                ExecuteInstall(nuGetProject, newPackageToInstall, packageStream, executionContext);
+                ExecuteInstall(nuGetProject, newPackageToInstall, packageStream, nuGetProjectContext);
             }
         }
 
-        private void ExecuteInstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, IExecutionContext executionContext)
+        private void ExecuteInstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
         {
             var packageOperationEventArgs = new PackageOperationEventArgs(packageIdentity);
             if(PackageInstalling != null)
             {
                 PackageInstalling(this, packageOperationEventArgs);
             }
-            nuGetProject.InstallPackage(packageIdentity, packageStream, executionContext);
+            nuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
             //if (packageOperationEventArgs.Cancel)
@@ -136,14 +136,14 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private void ExecuteUninstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, IExecutionContext executionContext)
+        private void ExecuteUninstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
             var packageOperationEventArgs = new PackageOperationEventArgs(packageIdentity);
             if (PackageUninstalling != null)
             {
                 PackageUninstalling(this, packageOperationEventArgs);
             }
-            nuGetProject.UninstallPackage(packageIdentity, executionContext);
+            nuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
             //if (packageOperationEventArgs.Cancel)
