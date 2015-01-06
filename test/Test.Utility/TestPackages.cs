@@ -10,10 +10,10 @@ namespace Test.Utility
 {
     public static class TestPackages
     {
-        public static FileInfo GetLegacyTestPackage()
+        public static FileInfo GetLegacyTestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
-            string file = Guid.NewGuid().ToString() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            string file = packageId + "." + packageVersion + ".nupkg";
+            FileInfo result = new FileInfo(Path.Combine(path, file));
 
             ZipFile zip = new ZipFile(result.FullName);
 
@@ -22,11 +22,11 @@ namespace Test.Utility
             zip.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
             zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
 
-            zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+            zip.AddEntry(packageId + ".nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
                               <metadata>
-                                <id>packageA</id>
-                                <version>2.0.3</version>
+                                <id>" + packageId + @"</id>
+                                <version>" + packageVersion + @"</version>
                                 <authors>Author1, author2</authors>
                                 <description>Sample description</description>
                                 <language>en-US</language>

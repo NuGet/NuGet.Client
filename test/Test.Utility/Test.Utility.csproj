@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="ExceptionAssert.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestFilesystemUtilites.cs" />
     <Compile Include="TestPackages.cs" />
   </ItemGroup>
   <ItemGroup>

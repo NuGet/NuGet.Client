@@ -57,7 +57,7 @@
 
     <ItemGroup>
       <!-- tests -->
-	  <TestProjects Include="$(RootDir)\test\PackageManagement.Test\PackageManagement.Test.csproj" />
+	  <TestProjects Include="$(RootDir)\test\ProjectManagement.Test\ProjectManagement.Test.csproj" />
     </ItemGroup>
 
     <Target Name="RunTests" Condition=" '$(DisableRunningUnitTests)' != 'true' ">        
