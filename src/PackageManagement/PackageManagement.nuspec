@@ -13,6 +13,7 @@
     <dependencies>
 		<dependency id="NuGet.Versioning" version="1.0.3" />
 		<dependency id="NuGet.Packaging" version="1.0.0-master-43440912" />
+        <dependency id="NuGet.ProjectManagement" version="1.0.0-master-50060030" />
 	</dependencies>
   </metadata>
 </package>
