@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.PackageManagement</id>
+    <version>1.0.0-overrideme</version>
+    <title>NuGet.PackageManagement.UI</title>
+    <authors>NuGet</authors>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NuGet UI</description>
+    <tags>nugetui</tags>
+    <dependencies>
+		<dependency id="NuGet.Versioning" version="1.0.5" />
+		<dependency id="NuGet.Packaging" version="1.0.0-master-43440912" />
+	</dependencies>
+  </metadata>
+</package>

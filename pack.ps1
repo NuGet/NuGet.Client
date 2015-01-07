@@ -5,7 +5,7 @@ param (
     [switch]$SkipBuild, 
     [string]$PFXPath,
     [switch]$Stable,
-    [Parameter(Mandatory=$True)][ValidateSet("NuGet.PackageManagement", "NuGet.ProjectManagement", "NuGet.TestUtility")][string]$Id
+    [Parameter(Mandatory=$True)][ValidateSet("NuGet.PackageManagement", "NuGet.ProjectManagement", "NuGet.TestUtility", "NuGet.PackageManagement.UI")][string]$Id
 )
 
 # build

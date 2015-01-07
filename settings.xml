@@ -1,4 +1,8 @@
 <nupkgs>
+	<nupkg id="NuGet.PackageManagement.UI">
+		<csprojPath>\src\PackageManagement.UI\PackageManagement.UI.csproj</csprojPath>
+		<dllName>NuGet.PackageManagement.UI.dll</dllName>
+	</nupkg>
 	<nupkg id="NuGet.PackageManagement">
 		<csprojPath>\src\PackageManagement\PackageManagement.csproj</csprojPath>
 		<dllName>NuGet.PackageManagement.dll</dllName>
