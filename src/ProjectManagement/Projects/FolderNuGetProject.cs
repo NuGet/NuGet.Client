@@ -45,11 +45,14 @@ namespace NuGet.ProjectManagement
             // 1. Check if the Package already exists at root, if so, return false
             if (PackageExistsInProject(packageIdentity))
             {
+                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInFolder, packageIdentity);
                 return false;
             }
 
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity);
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
             PackageExtractor.ExtractPackage(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity);
             return true;
         }
 

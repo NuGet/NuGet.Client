@@ -46,8 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-50060114\lib\net45\NuGet.PackagingCore.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.ProjectManagement">
-      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-master-50062312\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+    <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-master-50071904\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver">
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-50060114\lib\net45\NuGet.Resolver.dll</HintPath>

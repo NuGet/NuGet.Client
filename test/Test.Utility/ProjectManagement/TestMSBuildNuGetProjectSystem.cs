@@ -9,12 +9,14 @@ using System.Threading.Tasks;
 
 namespace Test.Utility
 {
-    internal class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
+    public class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
     {
         internal TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework)
         {
             TargetFramework = targetFramework;
+            References = new List<string>();
         }
+
         public void AddFile(string path, Stream stream)
         {
             throw new NotImplementedException();
@@ -32,12 +34,27 @@ namespace Test.Utility
 
         public void AddReference(string referencePath)
         {
+            References.Add(referencePath);
+        }
+
+        public void DeleteFile(string path)
+        {
             throw new NotImplementedException();
+        }
+
+        public string ProjectFullPath
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public string ProjectName
         {
             get { throw new NotImplementedException(); }
+        }
+
+        public bool ReferenceExists(string name)
+        {
+            throw new NotImplementedException();
         }
 
         public void RemoveImport(string targetFullPath)
@@ -55,5 +72,7 @@ namespace Test.Utility
             get;
             private set;
         }
+
+        public List<string> References { get; private set; }
     }
 }

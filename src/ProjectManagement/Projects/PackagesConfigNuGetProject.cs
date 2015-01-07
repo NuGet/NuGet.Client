@@ -40,6 +40,7 @@ namespace NuGet.ProjectManagement
                 writer.WritePackageEntry(packageIdentity, TargetFramework);
                 writer.Close();
             }
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToPackagesConfig, packageIdentity);
             return true;
         }
 
