@@ -25,7 +25,7 @@ namespace Test.Utility
             }
         }
 
-        public static void DeleteRandomTestFolder(string randomTestPath)
+        private static void DeleteRandomTestFolder(string randomTestPath)
         {
             if (Directory.Exists(randomTestPath))
             {

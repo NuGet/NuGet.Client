@@ -75,8 +75,8 @@ namespace ProjectManagement.Test
             // Act & Assert
             NuGetFramework targetFramework;
             Assert.True(folderNuGetProject.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out targetFramework));
-            Assert.Equal(targetFramework, NuGetFramework.AnyFramework);
-            Assert.Equal(folderNuGetProject.Metadata.Count, 1);
+            Assert.Equal(NuGetFramework.AnyFramework, targetFramework);
+            Assert.Equal(1, folderNuGetProject.Metadata.Count);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);

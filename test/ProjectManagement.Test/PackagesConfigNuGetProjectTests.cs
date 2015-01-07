@@ -30,8 +30,8 @@ namespace ProjectManagement.Test
 
             // Assert
             var installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
-            Assert.Equal(installedPackagesList.Count, 1);
-            Assert.Equal(installedPackagesList[0].TargetFramework, targetFramework);
+            Assert.Equal(1, installedPackagesList.Count);
+            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
         }
     }
 }

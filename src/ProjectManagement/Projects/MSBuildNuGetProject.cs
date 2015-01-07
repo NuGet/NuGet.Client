@@ -92,8 +92,12 @@ namespace NuGet.ProjectManagement
         {
             FrameworkReducer reducer = new FrameworkReducer();
             NuGetFramework mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => NuGetFramework.Parse(i.TargetFramework)));
-            FrameworkSpecificGroup mostCompatibleGroup = itemGroups.Where(i => NuGetFramework.Parse(i.TargetFramework).Equals(mostCompatibleFramework)).FirstOrDefault();
-            return mostCompatibleGroup;
+            if(mostCompatibleFramework != null)
+            {
+                IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => NuGetFramework.Parse(i.TargetFramework).Equals(mostCompatibleFramework));
+                return mostCompatibleGroups.FirstOrDefault();
+            }
+            return null;
         }
     }
 }

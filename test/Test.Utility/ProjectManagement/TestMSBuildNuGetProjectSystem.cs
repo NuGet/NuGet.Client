@@ -11,7 +11,7 @@ namespace Test.Utility
 {
     public class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
     {
-        internal TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework)
+        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework)
         {
             TargetFramework = targetFramework;
             References = new List<string>();
