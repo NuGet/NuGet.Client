@@ -37,12 +37,12 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, null);
+                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, new TestNuGetProjectContext());
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
-            Assert.False(File.Exists(randomPackagesConfigPath));
+            Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
             packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
