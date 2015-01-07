@@ -1,22 +1,25 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Test.Utility;
 using Xunit;
+using Xunit.Extensions;
 
 namespace NuGet.Configuration.Test
 {
     public class SettingsTests
     {
-        [Fact]
-        public void TestNullConfigFileName()
+        [Theory]
+        [InlineData(@"D:\", @"C:\Users\SomeUsers\AppData\Roaming\nuget\nuget.config", @"C:\Users\SomeUsers\AppData\Roaming\nuget", @"nuget.config")]
+        [InlineData(@"D:\", (string)null, @"D:\", (string)null)]
+        [InlineData(@"D:\", "nuget.config", @"D:\", "nuget.config")]
+        public void TestGetFileNameAndItsRoot(string root, string settingsPath, string expectedRoot, string expectedFileName)
         {
-            // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
             // Act
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(), configFileName: null, machineWideSettings: null);
+            var tuple = Settings.GetFileNameAndItsRoot(root, settingsPath);
 
-            // Clean-up
-            TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            // Assert
+            Assert.Equal(tuple.Item1, expectedFileName);
+            Assert.Equal(tuple.Item2, expectedRoot);
         }
     }
 }

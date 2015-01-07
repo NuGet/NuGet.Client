@@ -645,28 +645,36 @@ namespace NuGet.Configuration
         {
             try
             {
-                string fileName = null;
-                if (Path.IsPathRooted(settingsPath))
-                {
-                    root = Path.GetDirectoryName(settingsPath);
-                    fileName = Path.GetFileName(settingsPath);
-                }
-                else if (!FileSystemUtility.IsPathAFile(settingsPath))
-                {
-                    root = Path.GetDirectoryName(Path.Combine(root ?? String.Empty, settingsPath));
-                    fileName = settingsPath;
-                }
-                else
-                {
-                    fileName = settingsPath;
-                }
-
+                var tuple = GetFileNameAndItsRoot(root, settingsPath);
+                string fileName = tuple.Item1;
+                root = tuple.Item2;
                 return new Settings(root, fileName, isMachineWideSettings);
             }
             catch (XmlException)
             {
                 return null;
             }
+        }
+
+        public static Tuple<string, string> GetFileNameAndItsRoot(string root, string settingsPath)
+        {
+            string fileName = null;
+            if (Path.IsPathRooted(settingsPath))
+            {
+                root = Path.GetDirectoryName(settingsPath);
+                fileName = Path.GetFileName(settingsPath);
+            }
+            else if (!FileSystemUtility.IsPathAFile(settingsPath))
+            {
+                root = Path.GetDirectoryName(Path.Combine(root ?? String.Empty, settingsPath));
+                fileName = settingsPath;
+            }
+            else
+            {
+                fileName = settingsPath;
+            }
+
+            return new Tuple<string, string>(fileName, root);
         }
 
         /// <remarks>
