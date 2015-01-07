@@ -645,11 +645,23 @@ namespace NuGet.Configuration
         {
             try
             {
-                if(!FileSystemUtility.IsPathAFile(settingsPath))
+                string fileName = null;
+                if (Path.IsPathRooted(settingsPath))
+                {
+                    root = Path.GetDirectoryName(settingsPath);
+                    fileName = Path.GetFileName(settingsPath);
+                }
+                else if (!FileSystemUtility.IsPathAFile(settingsPath))
                 {
                     root = Path.GetDirectoryName(Path.Combine(root ?? String.Empty, settingsPath));
+                    fileName = settingsPath;
                 }
-                return new Settings(root, settingsPath, isMachineWideSettings);
+                else
+                {
+                    fileName = settingsPath;
+                }
+
+                return new Settings(root, fileName, isMachineWideSettings);
             }
             catch (XmlException)
             {
