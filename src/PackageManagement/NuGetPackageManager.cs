@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement
         private SourceRepositoryProvider SourceRepositoryProvider { get; set; }
 
         /// <summary>
-        /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param> and <param name="packageResolver"></param>
+        /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param>
         /// </summary>
         public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider/*, IPackageResolver packageResolver */)
         {
@@ -58,25 +58,54 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
-            // HACK: Need to all the sourceRepositories much like it is done for DependencyInfoResource and DownloadResource
             // Step-1 : Get latest version for packageId
-            var sourceRepository = SourceRepositoryProvider.GetRepositories().First();
-            var metadataResource = sourceRepository.GetResource<MetadataResource>();
-            if(metadataResource != null)
-            {
-                var allVersions = await metadataResource.GetLatestVersions(new List<string>() { packageId });
-                var latestVersion = allVersions.ToList().Max<NuGetVersion>();
+            var latestVersion = await GetLatestVersionAsync(packageId);
 
-                // Step-2 : Call InstallPackage(project, packageIdentity)
-                await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext, nuGetProjectContext);
+            if(latestVersion == null)
+            {
+                throw new InvalidOperationException(Strings.NoLatestVersionFound);
             }
+
+            // Step-2 : Call InstallPackageAsync(project, packageIdentity)
+            await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext, nuGetProjectContext);
         }
 
         /// <summary>
         /// Installs given <param name="packageIdentity"></param> to NuGetProject <param name="nuGetProject"></param>
-        /// <param name="resolutionContext"></param> and <param name="projectContext"></param> are used in the process
+        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        {
+            // Step-1 : Call PreviewInstallPackagesAsync to get all the nuGetProjectActions
+            var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext);
+
+            // Step-2 : Execute all the nuGetProjectActions
+            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
+        }
+
+        /// <summary>
+        /// Gives the preview as a list of NuGetProjectActions that will be performed to install <param name="packageId"></param> into <param name="nuGetProject"></param>
+        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
+        /// </summary>
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        {
+            // Step-1 : Get latest version for packageId
+            var latestVersion = await GetLatestVersionAsync(packageId);
+
+            if (latestVersion == null)
+            {
+                throw new InvalidOperationException(Strings.NoLatestVersionFound);
+            }
+
+            // Step-2 : Call InstallPackage(project, packageIdentity)
+            return await PreviewInstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext, nuGetProjectContext);
+        }
+
+        /// <summary>
+        /// Gives the preview as a list of NuGetProjectActions that will be performed to install <param name="packageIdentity"></param> into <param name="nuGetProject"></param>
+        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
+        /// </summary>
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
             var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
             // Step-1 : Get metadata resources using gatherer
@@ -88,30 +117,51 @@ namespace NuGet.PackageManagement
             var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
             var newListOfInstalledPackages = packageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet.Keys, projectInstalledPackageReferences);
 
-            // Step-3 : Get the list of package actions to perform, install/uninstall on the nugetproject 
+            // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
             var newPackagesToUninstall = oldListOfInstalledPackages.Where(p => !newListOfInstalledPackages.Contains(p));
             var newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
 
-            // Step-4 : For each package to be uninstalled, call into NuGetProject
-            foreach(PackageIdentity newPackageToUninstall in newPackagesToUninstall)
+            List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
+            foreach (PackageIdentity newPackageToUninstall in newPackagesToUninstall)
             {
-                ExecuteUninstall(nuGetProject, newPackageToUninstall, nuGetProjectContext);
+                nuGetProjectActions.Add(NuGetProjectAction.CreateUninstallProjectAction(newPackageToUninstall));
             }
 
-            // Step-5 : For each package to be installed, call into NuGetProject
-            foreach(PackageIdentity newPackageToInstall in newPackagesToInstall)
+            IDictionary<PackageIdentity, SourceRepository> packageIdentitySourceRepositoryDict = (IDictionary<PackageIdentity, SourceRepository>)availablePackageDependencyInfoWithSourceSet;
+            foreach (PackageIdentity newPackageToInstall in newPackagesToInstall)
             {
-                var fakePkgDepInfo = new PackageDependencyInfo(newPackageToInstall.Id, newPackageToInstall.Version);
                 SourceRepository sourceRepository;
-                if(!availablePackageDependencyInfoWithSourceSet.TryGetValue(fakePkgDepInfo, out sourceRepository))
+                if (!packageIdentitySourceRepositoryDict.TryGetValue(newPackageToInstall, out sourceRepository))
                 {
                     throw new InvalidOperationException("Package cannot be installed because the source repository is not known??!!");
                 }
-                var packageStream = await PackageDownloader.GetPackageStream(sourceRepository, newPackageToInstall);
-                ExecuteInstall(nuGetProject, newPackageToInstall, packageStream, nuGetProjectContext);
+
+                nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceRepository));
+            }
+
+            return nuGetProjectActions;
+        }
+
+        /// <summary>
+        /// Executes the list of <param name="nuGetProjectActions"></param> on <param name="nuGetProject"></param>, which is likely obtained by calling into PreviewInstallPackageAsync
+        /// <param name="nuGetProjectContext"></param> is used in the process
+        /// </summary>
+        public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject, IEnumerable<NuGetProjectAction> nuGetProjectActions, INuGetProjectContext nuGetProjectContext)
+        {
+            foreach (NuGetProjectAction nuGetProjectAction in nuGetProjectActions)
+            {
+                if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                {
+                    ExecuteUninstall(nuGetProject, nuGetProjectAction.PackageIdentity, nuGetProjectContext);
+                }
+                else
+                {
+                    var packageStream = await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity);
+                    ExecuteInstall(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, nuGetProjectContext);
+                }
             }
         }
 
@@ -155,6 +205,22 @@ namespace NuGet.PackageManagement
             {
                 PackageUninstalled(this, packageOperationEventArgs);
             }
+        }
+
+        private async Task<NuGetVersion> GetLatestVersionAsync(string packageId)
+        {
+            List<NuGetVersion> latestVersions = new List<NuGetVersion>();
+            foreach (var sourceRepository in SourceRepositoryProvider.GetRepositories())
+            {
+                var metadataResource = sourceRepository.GetResource<MetadataResource>();
+                if (metadataResource != null)
+                {
+                    var allVersions = await metadataResource.GetLatestVersions(new List<string>() { packageId });
+                    var latestVersion = allVersions.ToList().Max<NuGetVersion>();
+                }
+            }
+
+            return latestVersions.Max<NuGetVersion>();
         }
 
         private async Task<IDictionary<PackageDependencyInfo, SourceRepository>> GatherPackageDependencyInfo(PackageIdentity packageIdentity, NuGetFramework targetFramework)

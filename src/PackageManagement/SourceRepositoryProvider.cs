@@ -21,12 +21,17 @@ namespace NuGet.PackageManagement
         private IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _resourceProviders;
         private List<SourceRepository> _repositories;
 
+        /// <summary>
+        /// Public parameter-less constructor for SourceRepositoryProvider
+        /// </summary>
         public SourceRepositoryProvider()
         {
 
         }
 
-        // TODO: fix the settings here
+        /// <summary>
+        /// Public importing constructor for SourceRepositoryProvider
+        /// </summary>
         [ImportingConstructor]
         public SourceRepositoryProvider([ImportMany]IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders, [Import]ISettings settings)
             : this(new PackageSourceProvider(settings), resourceProviders)
