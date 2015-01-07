@@ -7,8 +7,8 @@
     <ProjectGuid>{538ADEFD-2170-40A9-A2C5-EC8369CFE490}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PackageManagement.UI</RootNamespace>
-    <AssemblyName>PackageManagement.UI</AssemblyName>
+    <RootNamespace>NuGet.PackageManagement.UI</RootNamespace>
+    <AssemblyName>NuGet.PackageManagement.UI</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -29,25 +29,269 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <Choose>
+    <When Condition="$(VisualStudioVersion)=='14.0'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ExtensionsExplorer.UI, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="$(VisualStudioVersion)=='12.0'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ExtensionsExplorer.UI, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="$(VisualStudioVersion)=='11.0'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ExtensionsExplorer.UI, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
+    <Reference Include="JsonLD">
+      <HintPath>..\..\packages\json-ld.net.1.0.4\lib\net40-Client\JsonLD.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.12.0, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Immutable.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.12.0, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client">
+      <HintPath>..\..\packages\NuGet.Client.V3.1.0.0-clean-50060100\lib\net45\NuGet.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.BaseTypes">
+      <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.1.0-clean-50060056\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.VisualStudio">
+      <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.1.0-clean-50060103\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Configuration">
+      <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50022312\lib\net45\NuGet.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Data">
+      <HintPath>..\..\packages\NuGet.Client.V3.1.0.0-clean-50060100\lib\net45\NuGet.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Frameworks">
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-50060114\lib\net45\NuGet.Frameworks.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-master-50070221\lib\net45\NuGet.PackageManagement.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Packaging">
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-50060114\lib\net45\NuGet.Packaging.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.PackagingCore">
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-50060114\lib\net45\NuGet.PackagingCore.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-master-50071904\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Resolver">
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-50060114\lib\net45\NuGet.Resolver.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Versioning">
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Extensions">
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives">
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
+    <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
+    <Compile Include="Converters\FontSizeConverter.cs" />
+    <Compile Include="Converters\IconUrlToVisibilityConverter.cs" />
+    <Compile Include="Converters\StyleKeyConverter.cs" />
+    <Compile Include="DependencyBehaviorItem.cs" />
+    <Compile Include="DetailControlModel.cs" />
+    <Compile Include="FileConflictActionItem.cs" />
+    <Compile Include="Filter.cs" />
+    <Compile Include="IUserInterfaceService.cs" />
+    <Compile Include="Models\PackageLicenseInfo.cs" />
+    <Compile Include="Models\UiDetailedPackage.cs" />
+    <Compile Include="Models\UiPackageDependency.cs" />
+    <Compile Include="Options.cs" />
+    <Compile Include="PackageAction.cs" />
+    <Compile Include="PackageActionType.cs" />
+    <Compile Include="PackageDetailControlModel.cs" />
+    <Compile Include="PackageManagerControlCommands.cs" />
+    <Compile Include="PackageManagerModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Models\UiPackageDependencySet.cs" />
+    <Compile Include="Models\UiSearchResultPackage.cs" />
+    <Compile Include="Resources\Colors.cs" />
+    <Compile Include="Resources\IUIBrushes.cs" />
+    <Compile Include="Resources\Commands.cs" />
+    <Compile Include="Resources\Resources1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SimpleSearchBox.cs" />
+    <Compile Include="StyleHelper.cs" />
+    <Compile Include="UserAction.cs" />
+    <Compile Include="UserInterfaceService.cs" />
+    <Compile Include="VersionForDisplay.cs" />
+    <Compile Include="VsDialogWindow.cs" />
+    <Compile Include="Xamls\ActionsAndVersions.xaml.cs">
+      <DependentUpon>ActionsAndVersions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\ErrorReportingDialog.xaml.cs">
+      <DependentUpon>ErrorReportingDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\FileConflictDialog.xaml.cs">
+      <DependentUpon>FileConflictDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\InstalledIndicator.xaml.cs">
+      <DependentUpon>InstalledIndicator.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\InfiniteScrollList.xaml.cs">
+      <DependentUpon>InfiniteScrollList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="Xamls\OptionsControl.xaml.cs">
+      <DependentUpon>OptionsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\PackageItemControl.xaml.cs">
+      <DependentUpon>PackageItemControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\PackageManagerControl.xaml.cs">
+      <DependentUpon>PackageManagerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\PackageStatusToInstallImageConverter.cs" />
+    <Compile Include="Xamls\PackageMetadataControl.xaml.cs">
+      <DependentUpon>PackageMetadataControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\DetailControl.xaml.cs">
+      <DependentUpon>DetailControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\PreviewWindow.xaml.cs">
+      <DependentUpon>PreviewWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\LicenseAcceptanceWindow.xaml.cs">
+      <DependentUpon>LicenseAcceptanceWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\VersionToVersionForDisplayConverter.cs" />
+    <Compile Include="Xamls\ProgressDialog.xaml.cs">
+      <DependentUpon>ProgressDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\UpdateAvailableIndicator.xaml.cs">
+      <DependentUpon>UpdateAvailableIndicator.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Xamls\ActionsAndVersions.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\ErrorReportingDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\FileConflictDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\InstalledIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\InfiniteScrollList.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\OptionsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PackageItemControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PackageManagerControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\PackageMetadataControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\DetailControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PreviewWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\ProgressDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\Resources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\LicenseAcceptanceWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\UpdateAvailableIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\packageicon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\build\sign.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
+    <Error Condition="!Exists('..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

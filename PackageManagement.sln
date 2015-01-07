@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.UI", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio", "src\NuGet.VisualStudio\NuGet.VisualStudio.csproj", "{3C9ADB09-229E-4E9D-8DD4-7DB0E2EE98DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneUI", "test\StandaloneUI\StandaloneUI.csproj", "{114FD278-477D-4292-82AA-7F8A5FC0BA08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{3C9ADB09-229E-4E9D-8DD4-7DB0E2EE98DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C9ADB09-229E-4E9D-8DD4-7DB0E2EE98DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C9ADB09-229E-4E9D-8DD4-7DB0E2EE98DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{114FD278-477D-4292-82AA-7F8A5FC0BA08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{114FD278-477D-4292-82AA-7F8A5FC0BA08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{114FD278-477D-4292-82AA-7F8A5FC0BA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{114FD278-477D-4292-82AA-7F8A5FC0BA08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,5 +74,6 @@ Global
 		{8010A76A-CB15-4484-8F9B-D523FBC34DFA} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 		{A967469C-6E80-4226-B124-AEB764F0CCD8} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 		{B3DC228A-78F5-437E-B206-7CB6B3FF1323} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
+		{114FD278-477D-4292-82AA-7F8A5FC0BA08} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 	EndGlobalSection
 EndGlobal

@@ -109,7 +109,7 @@ namespace NuGet.PackageManagement
         {
             var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
             // Step-1 : Get metadata resources using gatherer
-            var availablePackageDependencyInfoWithSourceSet = await GatherPackageDependencyInfo(packageIdentity, nuGetProject.TargetFramework);
+            var availablePackageDependencyInfoWithSourceSet = await GatherPackageDependencyInfo(packageIdentity, nuGetProject.GetMetadata<NuGetFramework>("TargetFramework"));
 
             // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
             var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
