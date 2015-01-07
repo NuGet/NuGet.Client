@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>NuGet.PackageManagement</id>
+    <id>NuGet.PackageManagement.UI</id>
     <version>1.0.0-overrideme</version>
     <title>NuGet.PackageManagement.UI</title>
     <authors>NuGet</authors>
