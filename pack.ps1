@@ -53,13 +53,14 @@ $snPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft SDKs\Windows\v8.1A\bin\N
 Start-Process $snPath "-Tp $primaryAssemblyPath" -Wait -NoNewWindow
 
 # find the current git branch
-$gitBranch = "ci"
+# 20150107 hardcoding to master to make things easier
+$gitBranch = "master"
 
-git branch | foreach {
-    if ($_ -match "^\*(.*)") {
-        $gitBranch = $matches[1].Trim()
-    }
-}
+#git branch | foreach {
+#    if ($_ -match "^\*(.*)") {
+#        $gitBranch = $matches[1].Trim()
+#    }
+#}
 
 # prerelease labels can have a max length of 20
 # shorten the branch to 8 chars if needed
@@ -95,7 +96,7 @@ if ((Test-Path nupkgs) -eq 0) {
 }
 
 # Pack
-.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -build -OutputDirectory nupkgs -version $version
+.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
 
 # Find the path of the nupkg we just built
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
