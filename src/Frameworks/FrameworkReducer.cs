@@ -42,6 +42,12 @@ namespace NuGet.Frameworks
         {
             NuGetFramework nearest = null;
 
+            // Unsupported frameworks always lose, throw them out unless it's all we were given
+            if (possibleFrameworks.Any(e => e != NuGetFramework.UnsupportedFramework))
+            {
+                possibleFrameworks = possibleFrameworks.Where(e => e != NuGetFramework.UnsupportedFramework);
+            }
+
             var compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
             var reduced = ReduceUpwards(compatible).ToArray();
 
@@ -113,6 +119,13 @@ namespace NuGet.Frameworks
         /// </summary>
         public IEnumerable<NuGetFramework> ReduceUpwards(IEnumerable<NuGetFramework> frameworks)
         {
+            // NuGetFramework.AnyFramework is a special case
+            if (frameworks.Any(e => e != NuGetFramework.AnyFramework))
+            {
+                // Remove all instances of Any unless it is the only one in the list
+                frameworks = frameworks.Where(e => e != NuGetFramework.AnyFramework);
+            }
+
             // x: net40 j: net45 -> remove net40
             // x: wp8 j: win8 -> keep wp8
             return ReduceCore(frameworks, (x, y) => _compat.IsCompatible(y, x)).ToArray();
@@ -124,6 +137,13 @@ namespace NuGet.Frameworks
         /// </summary>
         public IEnumerable<NuGetFramework> ReduceDownwards(IEnumerable<NuGetFramework> frameworks)
         {
+            // NuGetFramework.AnyFramework is a special case
+            if (frameworks.Any(e => e == NuGetFramework.AnyFramework))
+            {
+                // Any is always the lowest
+                return new NuGetFramework[] { NuGetFramework.AnyFramework };
+            }
+
             return ReduceCore(frameworks, (x, y) => _compat.IsCompatible(x, y)).ToArray();
         }
 

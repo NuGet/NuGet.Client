@@ -210,5 +210,72 @@ namespace NuGet.Test
 
             Assert.Equal(net451, result);
         }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestWithAny()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var net40 = NuGetFramework.Parse("net40");
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { NuGetFramework.AnyFramework, net40, net45 };
+
+            var result = reducer.GetNearest(net45, all);
+
+            Assert.Equal(net45, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestWithUnsupported()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { NuGetFramework.AnyFramework, NuGetFramework.UnsupportedFramework };
+
+            var result = reducer.GetNearest(net45, all);
+
+            Assert.Equal(NuGetFramework.AnyFramework, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestWithUnsupported2()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var all = new NuGetFramework[] { NuGetFramework.AnyFramework, NuGetFramework.UnsupportedFramework };
+
+            var result = reducer.GetNearest(NuGetFramework.UnsupportedFramework, all);
+
+            Assert.Equal(NuGetFramework.AnyFramework, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestWithUnsupported3()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var all = new NuGetFramework[] { NuGetFramework.UnsupportedFramework };
+
+            var result = reducer.GetNearest(NuGetFramework.UnsupportedFramework, all);
+
+            Assert.Equal(NuGetFramework.UnsupportedFramework, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestWithAnyOnly()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { NuGetFramework.AnyFramework };
+
+            var result = reducer.GetNearest(net45, all);
+
+            Assert.Equal(NuGetFramework.AnyFramework, result);
+        }
     }
 }
