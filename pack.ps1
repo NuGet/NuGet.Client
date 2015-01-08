@@ -4,7 +4,8 @@ param (
     [switch]$SkipTests, 
     [switch]$SkipBuild, 
     [string]$PFXPath,
-    [switch]$Stable
+    [switch]$Stable,
+    [switch]$NoLock
 )
 
 # build
@@ -85,6 +86,11 @@ if (!$Stable)
     # prerelease labels can have a max length of 20
     $now = [System.DateTime]::UtcNow
     $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
+
+    if ($Configuration -eq "debug")
+    {
+        $version += "-d"
+    }
 }
 
 Write-Host "Package version: $version" -ForegroundColor Cyan
@@ -95,12 +101,18 @@ if ((Test-Path nupkgs) -eq 0) {
 }
 
 # Pack
-.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -build -OutputDirectory nupkgs -version $version
+.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
 
 # Find the path of the nupkg we just built
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
 
 Write-Host $nupkgPath -ForegroundColor Cyan
+
+if (!$Stable -And !$NoLock)
+{
+    Write-Host "Locking dependencies down"
+    .\tools\NupkgLock\NupkgLock.exe "NuGet.Packaging.nuspec" $nupkgPath
+}
 
 if ($Push)
 {
