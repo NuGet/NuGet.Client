@@ -1,6 +1,6 @@
 param (
     [switch]$Push, 
-    [ValidateSet("debug", "release")][string]$Configuration="debug", 
+    [ValidateSet("debug", "release")][string]$Configuration="release",
     [switch]$SkipTests, 
     [switch]$SkipBuild, 
     [string]$PFXPath,
@@ -78,12 +78,13 @@ if (!$version) {
 
 $now = [System.DateTime]::UtcNow
 
-# (git branch)-(last digit of the year)(day of year)(hour)(minute)
 $version = $version.TrimEnd('0').TrimEnd('.')
 
 if (!$Stable)
 {
-    $version += "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
+    # prerelease labels can have a max length of 20
+    $now = [System.DateTime]::UtcNow
+    $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
 }
 
 Write-Host "Package version: $version" -ForegroundColor Cyan
