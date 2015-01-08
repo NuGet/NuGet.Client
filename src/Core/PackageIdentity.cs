@@ -14,6 +14,7 @@ namespace NuGet.PackagingCore
     {
         private readonly string _id;
         private readonly NuGetVersion _version;
+        private const string ToStringFormat = "{0}.{1}";
 
         /// <summary>
         /// Creates a new package identity.
@@ -88,6 +89,14 @@ namespace NuGet.PackagingCore
             {
                 return new PackageIdentityComparer();
             }
+        }
+
+        /// <summary>
+        /// PackageIdentity.ToString returns "<packageId>.<packageVersion>"
+        /// </summary>
+        public override string ToString()
+        {
+            return String.Format(ToStringFormat, Id, Version.ToNormalizedString());
         }
     }
 }
