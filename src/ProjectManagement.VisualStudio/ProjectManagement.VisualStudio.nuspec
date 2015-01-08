@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.ProjectManagement.VisualStudio</id>
+    <version>1.0.0-overrideme</version>
+    <title>NuGet.ProjectManagement.VisualStudio</title>
+    <authors>NuGet</authors>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>VisualStudio related NuGetProjects</description>
+  </metadata>
+</package>
