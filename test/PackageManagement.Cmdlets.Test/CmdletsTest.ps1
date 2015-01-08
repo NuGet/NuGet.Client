@@ -1,19 +1,14 @@
 ﻿$ScriptRoot = Split-Path $SCRIPT:MyInvocation.MyCommand.Path
 $AssemblyPath = Join-Path -path $ScriptRoot -childPath '..\..\src\PackageManagement.PowerShellCmdlets\bin\debug\PackageManagement.PowerShellCmdlets.dll'
-write-host '$ScriptRoot = ' $ScriptRoot
-write-host '$AssemblyPath = ' $AssemblyPath
-
-if(($env:Path -split ';') -notcontains $ScriptRoot) {
-    $env:Path += ';' + $ScriptRoot
-	$env:Path += ';' + $CmdletRoot
-}
+Write-host '$ScriptRoot = ' $ScriptRoot
+Write-host '$AssemblyPath = ' $AssemblyPath
 
 Import-Module -Assembly ([Reflection.Assembly]::LoadFrom($AssemblyPath))
 
 try
 {
 	Install-Package jquery -version 1.4.4
-	Write-Host "Passed!!!"
+	Write-host "Passed!!!"
 }
 catch 
 {

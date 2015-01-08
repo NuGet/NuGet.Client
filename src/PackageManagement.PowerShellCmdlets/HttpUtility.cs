@@ -6,7 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PackageManagement.PowerShellCmdlets
+namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public static class HttpUtility
     {

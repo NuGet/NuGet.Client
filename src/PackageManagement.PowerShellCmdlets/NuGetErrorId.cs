@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PackageManagement.PowerShellCmdlets
+namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
     /// This class houses locale-agnostic error identifiers which aid

@@ -5,7 +5,7 @@ using System.Management.Automation;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PackageManagement.PowerShellCmdlets
+namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
     /// Interface defining common NuGet Cmdlet error handling and generation operations.

@@ -7,8 +7,8 @@
     <ProjectGuid>{26DC17AC-A390-4515-A2C0-07A0950036C5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PackageManagement.PowerShellCmdlets</RootNamespace>
-    <AssemblyName>PackageManagement.PowerShellCmdlets</AssemblyName>
+    <RootNamespace>NuGet.PackageManagement.PowerShellCmdlets</RootNamespace>
+    <AssemblyName>NuGet.PackageManagement.PowerShellCmdlets</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>3a5dc395</NuGetPackageImportStamp>
@@ -37,6 +37,7 @@
     <Reference Include="JsonLD">
       <HintPath>..\..\packages\json-ld.net.1.0.4\lib\net40-Client\JsonLD.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -102,12 +103,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExceptionUtility.cs" />
+    <Compile Include="GetPackageCommand.cs" />
+    <Compile Include="GetProjectCommand.cs" />
     <Compile Include="HttpUtility.cs" />
     <Compile Include="IErrorHandler.cs" />
     <Compile Include="IHttpClientEvents.cs" />
     <Compile Include="InstallPackageCommand.cs" />
     <Compile Include="NuGetErrorId.cs" />
     <Compile Include="NuGetPowerShellBaseCommand.cs" />
+    <Compile Include="OpenPackagePageCommand.cs" />
     <Compile Include="ProgressActivityIds.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
@@ -116,6 +120,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="SourceRepositoryProvider.cs" />
+    <Compile Include="UninstallPackageCommand.cs" />
+    <Compile Include="UpdatePackageCommand.cs" />
     <Compile Include="WebRequestEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +135,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\build\sign.targets" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

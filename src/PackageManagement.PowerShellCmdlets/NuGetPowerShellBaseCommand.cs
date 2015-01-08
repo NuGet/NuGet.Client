@@ -10,10 +10,11 @@ using NuGet.ProjectManagement;
 using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Management.Automation.Host;
-using PackageManagement.PowerShellCmdlets;
+using NuGet.PackageManagement.PowerShellCmdlets;
 using System.Diagnostics;
+using NuGet.NuGet.PackageManagement.PowerShellCmdlets;
 
-namespace PackageManagement.PowerShellCmdlets
+namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
     /// This command process the specified package against the specified project.

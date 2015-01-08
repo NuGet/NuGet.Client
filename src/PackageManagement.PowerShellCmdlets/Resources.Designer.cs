@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PackageManagement.PowerShellCmdlets {
+namespace NuGet.NuGet.PackageManagement.PowerShellCmdlets {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace PackageManagement.PowerShellCmdlets {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PackageManagement.PowerShellCmdlets.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.NuGet.PackageManagement.PowerShellCmdlets.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
