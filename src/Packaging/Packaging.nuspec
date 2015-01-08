@@ -10,9 +10,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Tools for reading nupkg and nuspec files</description>
     <tags>nupkg packaging nuspec</tags>
-    <dependencies>
-		<dependency id="NuGet.Versioning" version="1.0.5" />
-	</dependencies>
   </metadata>
   <files>
 	<file src="..\Core\bin\$configuration$\NuGet.PackagingCore.dll" target="lib/net45" />
