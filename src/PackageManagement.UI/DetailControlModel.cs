@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Versioning;
 using NuGet.ProjectManagement;
+using NuGet.Client.VisualStudio;
+using NuGet.PackagingCore;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -120,7 +122,10 @@ namespace NuGet.PackageManagement.UI
 
         public UiPackageMetadata PackageMetadata
         {
-            get { return _packageMetadata; }
+            get 
+            { 
+                return _packageMetadata; 
+            }
             set
             {
                 if (_packageMetadata != value)
@@ -206,6 +211,39 @@ namespace NuGet.PackageManagement.UI
                     OnSelectedVersionChanged();
                     OnPropertyChanged("SelectedVersion");
                 }
+            }
+        }
+
+        public async Task LoadPackageMetadaAsync(UIMetadataResource metadataResource)
+        {
+            List<PackageIdentity> ids = new List<PackageIdentity>();
+
+            foreach (var version in _versions.Where(e => e != null))
+            {
+                ids.Add(new PackageIdentity(Id, version.Version));
+            }
+
+            var dict = new Dictionary<NuGetVersion, UiPackageMetadata>();
+
+            // TODO: request data from the server
+
+            if (metadataResource != null)
+            {
+                //var metadata = await metadataResource.GetMetadata(ids);
+
+                //foreach (var item in metadata)
+                //{
+                //    dict.Add();
+                //}
+            }
+
+            _metadataDict = dict;
+
+            UiPackageMetadata p;
+            if (SelectedVersion != null &&
+                _metadataDict.TryGetValue(SelectedVersion.Version, out p))
+            {
+                PackageMetadata = p;
             }
         }
 
