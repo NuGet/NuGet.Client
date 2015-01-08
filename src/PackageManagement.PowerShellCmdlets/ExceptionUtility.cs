@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PackageManagement.PowerShellCmdlets
+namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public static class ExceptionUtility
     {

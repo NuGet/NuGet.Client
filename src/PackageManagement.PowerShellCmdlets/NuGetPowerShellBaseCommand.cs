@@ -10,10 +10,11 @@ using NuGet.ProjectManagement;
 using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Management.Automation.Host;
-using PackageManagement.PowerShellCmdlets;
+using NuGet.PackageManagement.PowerShellCmdlets;
 using System.Diagnostics;
+using NuGet.NuGet.PackageManagement.PowerShellCmdlets;
 
-namespace PackageManagement.PowerShellCmdlets
+namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
     /// This command process the specified package against the specified project.
@@ -24,7 +25,6 @@ namespace PackageManagement.PowerShellCmdlets
         //internal const string PSCommandsUserAgentClient = "NuGet VS PowerShell Console";
         //private readonly Lazy<string> _psCommandsUserAgent = new Lazy<string>(
         //    () => HttpUtility.CreateUserAgentString(PSCommandsUserAgentClient, VsVersionHelper.FullVsEdition));
-        private MSBuildNuGetProject _msbuildNuGetProject;
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
 

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NuGet.PackageManagement.PowerShellCmdlets")]
+[assembly: AssemblyTitle("PackageManagement.Cmdlets.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NuGet.PackageManagement.PowerShellCmdlets")]
+[assembly: AssemblyProduct("PackageManagement.Cmdlets.Test")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("573277ac-7ff1-4cba-a8be-b6ed63724268")]
+[assembly: Guid("a238361f-2c7d-4bb7-857d-e6517dbc156a")]
 
 // Version information for an assembly consists of the following four values:
 //

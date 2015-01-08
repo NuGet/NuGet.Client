@@ -11,32 +11,61 @@ using System.Management.Automation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
-    [Cmdlet(VerbsLifecycle.Install, "Package")]
-    public class InstallPackageCommand : NuGetPowerShellBaseCommand
+    [Cmdlet(VerbsData.Update, "Package", DefaultParameterSetName = "All")]
+    public class UpdatePackageCommand : NuGetPowerShellBaseCommand
     {
         private NuGetPackageManager _nugetPackageManager;
         private ResolutionContext _context;
+        private string _id;
+        private string _projectName;
+        private bool _idSpecified;
+        private bool _projectSpecified;
 
         [ImportMany]
         public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
 
-        public InstallPackageCommand()
+        public UpdatePackageCommand()
         {
             ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
             SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
             _nugetPackageManager = new NuGetPackageManager(provider);
         }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
-        public virtual string Id { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Project")]
+        [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "All")]
+        [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Reinstall")]
+        public string Id
+        {
+            get
+            {
+                return _id;
+            }
+            set
+            {
+                _id = value;
+                _idSpecified = true;
+            }
+        }
 
-        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
-        [ValidateNotNullOrEmpty]
-        public virtual string ProjectName { get; set; }
+        [Parameter(Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "All")]
+        [Parameter(Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "Project")]
+        [Parameter(Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "Reinstall")]
+        public string ProjectName
+        {
+            get
+            {
+                return _projectName;
+            }
+            set
+            {
+                _projectName = value;
+                _projectSpecified = true;
+            }
+        }
 
-        [Parameter(Position = 2)]
+        [Parameter(Position = 2, ParameterSetName = "Project")]
         [ValidateNotNullOrEmpty]
-        public virtual string Version { get; set; }
+        public string Version { get; set; }
 
         [Parameter(Position = 3)]
         [ValidateNotNullOrEmpty]
@@ -46,7 +75,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public SwitchParameter WhatIf { get; set; }
 
         [Parameter]
-        public SwitchParameter Force { get; set; }
+        public SwitchParameter Safe { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "Reinstall")]
+        [Parameter(ParameterSetName = "All")]
+        public SwitchParameter Reinstall { get; set; }
 
         [Parameter, Alias("Prerelease")]
         public SwitchParameter IncludePrerelease { get; set; }
@@ -64,6 +97,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             FolderNuGetProject project = new FolderNuGetProject("c:\temp");
             PackageIdentity identity = GetPackageIdentity();
+            // TODO: Update package logic here or in PackageManager?
+            // How to get the latest version of the packages?
             if (WhatIf.IsPresent)
             {
                 _nugetPackageManager.PreviewInstallPackageAsync(project, identity, ResolutionContext, this);
@@ -95,18 +130,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, Force.IsPresent, false);
+                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, Reinstall.IsPresent, false);
                 return _context;
             }
         }
 
         private DependencyBehavior GetDependencyBehavior()
         {
-            if (Force.IsPresent)
-            {
-                return DependencyBehavior.Ignore;
-            }
-
             if (IgnoreDependencies.IsPresent)
             {
                 return DependencyBehavior.Ignore;

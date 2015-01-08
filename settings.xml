@@ -1,4 +1,8 @@
 <nupkgs>
+	<nupkg id="NuGet.PackageManagement.PowerShellCmdlets">
+		<csprojPath>\src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj</csprojPath>
+		<dllName>NuGet.PackageManagement.PowerShellCmdlets.dll</dllName>
+	</nupkg>
 	<nupkg id="NuGet.PackageManagement.UI">
 		<csprojPath>\src\PackageManagement.UI\PackageManagement.UI.csproj</csprojPath>
 		<dllName>NuGet.PackageManagement.UI.dll</dllName>

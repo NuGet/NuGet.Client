@@ -11,8 +11,8 @@ using System.Management.Automation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
-    [Cmdlet(VerbsLifecycle.Install, "Package")]
-    public class InstallPackageCommand : NuGetPowerShellBaseCommand
+    [Cmdlet(VerbsLifecycle.Uninstall, "Package")]
+    public class UninstallPackageCommand : NuGetPowerShellBaseCommand
     {
         private NuGetPackageManager _nugetPackageManager;
         private ResolutionContext _context;
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [ImportMany]
         public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
 
-        public InstallPackageCommand()
+        public UninstallPackageCommand()
         {
             ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
             SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
@@ -48,30 +48,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter Force { get; set; }
 
-        [Parameter, Alias("Prerelease")]
-        public SwitchParameter IncludePrerelease { get; set; }
-
         [Parameter]
-        public SwitchParameter IgnoreDependencies { get; set; }
-
-        [Parameter]
-        public FileConflictAction FileConflictAction { get; set; }
-
-        [Parameter]
-        public DependencyBehavior? DependencyVersion { get; set; }
+        public SwitchParameter RemoveDependencies { get; set; }
 
         protected override void ProcessRecordCore()
         {
             FolderNuGetProject project = new FolderNuGetProject("c:\temp");
             PackageIdentity identity = GetPackageIdentity();
-            if (WhatIf.IsPresent)
-            {
-                _nugetPackageManager.PreviewInstallPackageAsync(project, identity, ResolutionContext, this);
-            }
-            else
-            {
-                _nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
-            }
+            // TODO: UninstallAsync?
+            _nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
         }
 
         /// <summary>
@@ -95,30 +80,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, Force.IsPresent, false);
+                _context = new ResolutionContext(DependencyBehavior.Lowest, false, RemoveDependencies.IsPresent, Force.IsPresent, false);
                 return _context;
-            }
-        }
-
-        private DependencyBehavior GetDependencyBehavior()
-        {
-            if (Force.IsPresent)
-            {
-                return DependencyBehavior.Ignore;
-            }
-
-            if (IgnoreDependencies.IsPresent)
-            {
-                return DependencyBehavior.Ignore;
-            }
-            else if (DependencyVersion.HasValue)
-            {
-                return DependencyVersion.Value;
-            }
-            else
-            {
-                // TODO: Read it from NuGet.Config and default to Lowest.
-                return DependencyBehavior.Lowest;
             }
         }
     }
