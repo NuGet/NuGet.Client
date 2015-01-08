@@ -13,13 +13,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataTest", "test\DataClient
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.V3Test", "test\Client.V3Test\Client.V3Test.csproj", "{AB83B9DA-6C04-4E5C-8881-CE8221580382}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V2V3ResourcesTest", "test\TestAppV2V3Switching\V2V3ResourcesTest.csproj", "{14E47D13-C5BA-46DB-BCB9-07583F1B271F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppV2V3Switching", "test\TestAppV2V3Switching\TestAppV2V3Switching.csproj", "{14E47D13-C5BA-46DB-BCB9-07583F1B271F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Client.BaseTypes", "src\NuGet.Client.BaseTypes\NuGet.Client.BaseTypes.csproj", "{05B640AD-133D-4B36-8DF0-036323D7873E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Client.V3.VisualStudio", "src\NuGet.Client.V3.VisualStudio\NuGet.Client.V3.VisualStudio.csproj", "{0D830186-A6F3-4E2C-B373-73B0741333F6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Client.VisualStudio", "src\NuGet.Client.VisualStudio\NuGet.Client.VisualStudio.csproj", "{2DE18BAB-DDA1-4F71-9000-641198758399}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "V3WebTest", "test\V3WebTest\V3WebTest.csproj", "{F9C8FCB2-6D60-4898-BD46-B22B682821B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{2DE18BAB-DDA1-4F71-9000-641198758399}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DE18BAB-DDA1-4F71-9000-641198758399}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DE18BAB-DDA1-4F71-9000-641198758399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9C8FCB2-6D60-4898-BD46-B22B682821B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9C8FCB2-6D60-4898-BD46-B22B682821B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9C8FCB2-6D60-4898-BD46-B22B682821B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9C8FCB2-6D60-4898-BD46-B22B682821B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,5 +73,6 @@ Global
 		{98432933-C3E5-49DA-9142-44A443A9C057} = {4A83D327-A984-4FE4-8821-2E37A7947A83}
 		{AB83B9DA-6C04-4E5C-8881-CE8221580382} = {4A83D327-A984-4FE4-8821-2E37A7947A83}
 		{14E47D13-C5BA-46DB-BCB9-07583F1B271F} = {4A83D327-A984-4FE4-8821-2E37A7947A83}
+		{F9C8FCB2-6D60-4898-BD46-B22B682821B8} = {4A83D327-A984-4FE4-8821-2E37A7947A83}
 	EndGlobalSection
 EndGlobal

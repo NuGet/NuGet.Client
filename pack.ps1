@@ -1,30 +1,35 @@
 param (
     [switch]$Push, 
-    [ValidateSet("debug", "release")][string]$Configuration="debug", 
+    [ValidateSet("debug", "release")][string]$Configuration="release", 
     [switch]$SkipTests, 
+    [switch]$SkipBuild, 
     [string]$PFXPath,
     [switch]$Stable,
-    [Parameter(Mandatory=$True)][ValidateSet("NuGet.Client.V3", "NuGet.Client.BaseTypes", "NuGet.Client.V3.VisualStudio", "NuGet.Client.VisualStudio")][string]$Id
+    [Parameter(Mandatory=$True)][ValidateSet("NuGet.Client.V3", "NuGet.Client.BaseTypes", "NuGet.Client.V3.VisualStudio", "NuGet.Client.VisualStudio")][string]$Id,
+    [switch]$NoLock
 )
 
 # build
-if ($SkipTests)
+if (!$SkipBuild)
 {
-    $env:DisableRunningUnitTests="true"
-}
-else
-{
-    $env:DisableRunningUnitTests="false"
-}
+    if ($SkipTests)
+    {
+        $env:DisableRunningUnitTests="true"
+    }
+    else
+    {
+        $env:DisableRunningUnitTests="false"
+    }
 
-if ($PFXPath)
-{
-    $env:NUGET_PFX_PATH=$PFXPath
-}
+    if ($PFXPath)
+    {
+        $env:NUGET_PFX_PATH=$PFXPath
+    }
 
-Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
-Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
-Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
+    Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
+    Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
+    Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
+}
 
 # assembly containing the release file version to use for the package
 $workingDir = (Get-Item -Path ".\" -Verbose).FullName;
@@ -48,6 +53,23 @@ Write-Host "Signature check" -ForegroundColor Cyan
 $snPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools\x64\sn.exe"
 Start-Process $snPath "-Tp $primaryAssemblyPath" -Wait -NoNewWindow
 
+# find the current git branch
+$gitBranch = "ci"
+
+git branch | foreach {
+    if ($_ -match "^\*(.*)") {
+        $gitBranch = $matches[1].Trim()
+    }
+}
+
+# prerelease labels can have a max length of 20
+# shorten the branch to 8 chars if needed
+if ($gitBranch.Length -gt 8) {
+    $gitBranch = $gitBranch.SubString(0, 8)
+}
+
+Write-Host "Git branch: $gitBranch" 
+
 # find the release version from the target assembly
 $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryAssemblyPath).FileVersion
 
@@ -56,14 +78,21 @@ if (!$version) {
     exit 1
 }
 
+$now = [System.DateTime]::UtcNow
 
+# (git branch)-(last digit of the year)(day of year)(hour)(minute)
 $version = $version.TrimEnd('0').TrimEnd('.')
 
 if (!$Stable)
 {
     # prerelease labels can have a max length of 20
     $now = [System.DateTime]::UtcNow
-    $version += "-" + $now.ToString("ayyyyMMddHHmmss-fff")
+    $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
+
+    if ($Configuration -eq "debug")
+    {
+        $version += "-d"
+    }
 }
 
 Write-Host "Package version: $version" -ForegroundColor Cyan
@@ -80,6 +109,12 @@ if ((Test-Path nupkgs) -eq 0) {
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
 
 Write-Host $nupkgPath -ForegroundColor Cyan
+
+if (!$Stable -And !$NoLock)
+{
+    Write-Host "Locking dependencies down"
+    .\tools\NupkgLock\NupkgLock.exe "$Id.nuspec" $nupkgPath
+}
 
 if ($Push)
 {

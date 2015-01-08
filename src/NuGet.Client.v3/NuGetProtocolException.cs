@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.Client.V3
+namespace NuGet.Client
 {
     [Serializable]
     public class NuGetProtocolException : Exception

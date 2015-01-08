@@ -1,26 +1,44 @@
-﻿using System;
+﻿using NuGet.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.Client.V3
+namespace NuGet.Client
 {
-    [Export(typeof(ResourceProvider))]
-    [ResourceProviderMetadata("V3MetadataResourceProvider", typeof(IMetadata))]
-    public class V3MetadataResourceProvider : V3ResourceProvider
+    [Export(typeof(INuGetResourceProvider))]
+    [NuGetResourceProviderMetadata(typeof(MetadataResource))]
+    public class V3MetadataResourceProvider : INuGetResourceProvider
     {
-        public async override Task<Resource> Create(PackageSource source)
+        private readonly DataClient _client;
+
+        public V3MetadataResourceProvider()
+            : this(new DataClient())
         {
-            V3MetadataResource v3MetadataResource;
-            Resource resource =  await base.Create(source); 
-            if(resource != null)
+
+        }
+
+        public V3MetadataResourceProvider(DataClient client)
+        {
+            _client = client;
+        }
+
+        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        {
+            V3MetadataResource curResource = null;
+            V3RegistrationResource regResource = source.GetResource<V3RegistrationResource>();
+
+            if (regResource != null)
             {
-            v3MetadataResource = new V3MetadataResource((V3Resource)resource);
-            resource = v3MetadataResource;
+                curResource = new V3MetadataResource(_client, regResource);
             }
-            return resource;
+
+            resource = curResource;
+            return resource != null;
         }
     }
+
+
 }

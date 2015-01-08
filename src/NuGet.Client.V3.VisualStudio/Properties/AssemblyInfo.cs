@@ -7,5 +7,5 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("NuGet.Client.V3.VisualStudio")]
 [assembly: AssemblyDescription("Contains V3 implementation of resources that are specific to visual studio (UI/Powershell) scenarios.")]
-[assembly: AssemblyVersion("0.1.4.0")]
-[assembly: AssemblyInformationalVersion("0.1.4-alpha")]
+[assembly: AssemblyVersion("0.2.0.0")]
+[assembly: AssemblyInformationalVersion("0.2.0-alpha")]

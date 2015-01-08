@@ -1,7 +1,7 @@
 <nupkgs>
 	<nupkg id="NuGet.Client.V3">
 		<csprojPath>\src\NuGet.Client.V3\Client.V3.csproj</csprojPath>
-		<dllName>NuGet.Client.V3.dll</dllName>
+		<dllName>NuGet.Client.dll</dllName>
 	</nupkg>
 	<nupkg id="NuGet.Client.BaseTypes">
 		<csprojPath>\src\NuGet.Client.BaseTypes\NuGet.Client.BaseTypes.csproj</csprojPath>
