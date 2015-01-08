@@ -27,7 +27,7 @@ namespace PackageManagement.PowerShellCmdlets
 
         public InstallPackageCommand()
         {
-            ISettings settings = Settings.LoadDefaultSettings(@"C:\Users\danliu\AppData\Roaming\NuGet", "nuget.config", null);
+            ISettings settings = Settings.LoadDefaultSettings(@"C:\", null, null);
             SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
             _nugetPackageManager = new NuGetPackageManager(provider);
         }
