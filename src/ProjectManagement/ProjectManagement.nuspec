@@ -9,8 +9,5 @@
     <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>API for NuGetProject and more</description>
-    <dependencies>
-		<dependency id="NuGet.Packaging" version="1.0.0-master-43642026" />
-    </dependencies>
   </metadata>
 </package>
