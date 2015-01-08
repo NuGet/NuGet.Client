@@ -61,11 +61,83 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attempting to gather dependencies information for package &apos;{0}&apos; to install on project targeting &apos;{1}&apos;.
+        /// </summary>
+        internal static string AttemptingToGatherDependencyInfo {
+            get {
+                return ResourceManager.GetString("AttemptingToGatherDependencyInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempting to resolve dependencies for package &apos;{0}&apos; with DependencyBehavior &apos;{1}&apos;.
+        /// </summary>
+        internal static string AttemptingToResolveDependencies {
+            get {
+                return ResourceManager.GetString("AttemptingToResolveDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed package &apos;{0}&apos; to project.
+        /// </summary>
+        internal static string InstalledPackage {
+            get {
+                return ResourceManager.GetString("InstalledPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installing package &apos;{0}&apos; to project.
+        /// </summary>
+        internal static string InstallingPackage {
+            get {
+                return ResourceManager.GetString("InstallingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No latest version found for the &apos;packageId&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {
             get {
                 return ResourceManager.GetString("NoLatestVersionFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolved actions to install package &apos;{0}&apos;.
+        /// </summary>
+        internal static string ResolvedActionsToInstallPackage {
+            get {
+                return ResourceManager.GetString("ResolvedActionsToInstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolving actions to install package &apos;{0}&apos;.
+        /// </summary>
+        internal static string ResolvingActionsToInstallPackage {
+            get {
+                return ResourceManager.GetString("ResolvingActionsToInstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to gather dependencies information for package &apos;{0}&apos;.
+        /// </summary>
+        internal static string UnableToGatherDependencyInfo {
+            get {
+                return ResourceManager.GetString("UnableToGatherDependencyInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to resolve dependencies for package &apos;{0}&apos; with DependencyBehavior &apos;{1}&apos;.
+        /// </summary>
+        internal static string UnableToResolveDependencyInfo {
+            get {
+                return ResourceManager.GetString("UnableToResolveDependencyInfo", resourceCulture);
             }
         }
     }

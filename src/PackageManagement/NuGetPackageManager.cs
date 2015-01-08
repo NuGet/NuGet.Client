@@ -109,18 +109,30 @@ namespace NuGet.PackageManagement
         {
             var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
             // Step-1 : Get metadata resources using gatherer
-            var availablePackageDependencyInfoWithSourceSet = await GatherPackageDependencyInfo(packageIdentity, nuGetProject.GetMetadata<NuGetFramework>("TargetFramework"));
+            var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, targetFramework);
+            var availablePackageDependencyInfoWithSourceSet = await GatherPackageDependencyInfo(packageIdentity, targetFramework);
+            if(availablePackageDependencyInfoWithSourceSet.Count == 0)
+            {
+                throw new InvalidOperationException(String.Format(Strings.UnableToGatherDependencyInfo, packageIdentity));
+            }
 
             // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
             var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
             // TODO: Consider using IPackageResolver once it is extensible
             var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
-            var newListOfInstalledPackages = packageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet.Keys, projectInstalledPackageReferences);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
+            IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet.Keys, projectInstalledPackageReferences);
+            if(newListOfInstalledPackages == null)
+            {
+                throw new InvalidOperationException(String.Format(Strings.UnableToResolveDependencyInfo, packageIdentity, resolutionContext.DependencyBehavior));
+            }
 
             // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallPackage, packageIdentity);
             var newPackagesToUninstall = oldListOfInstalledPackages.Where(p => !newListOfInstalledPackages.Contains(p));
             var newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
 
@@ -130,18 +142,19 @@ namespace NuGet.PackageManagement
                 nuGetProjectActions.Add(NuGetProjectAction.CreateUninstallProjectAction(newPackageToUninstall));
             }
 
-            IDictionary<PackageIdentity, SourceRepository> packageIdentitySourceRepositoryDict = (IDictionary<PackageIdentity, SourceRepository>)availablePackageDependencyInfoWithSourceSet;
             foreach (PackageIdentity newPackageToInstall in newPackagesToInstall)
             {
                 SourceRepository sourceRepository;
-                if (!packageIdentitySourceRepositoryDict.TryGetValue(newPackageToInstall, out sourceRepository))
+                var fakePackageDependencyInfo = new PackageDependencyInfo(newPackageToInstall, null);
+                if (!availablePackageDependencyInfoWithSourceSet.TryGetValue(fakePackageDependencyInfo, out sourceRepository))
                 {
-                    throw new InvalidOperationException("Package cannot be installed because the source repository is not known??!!");
+                    throw new InvalidOperationException();
                 }
 
                 nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceRepository));
             }
 
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToInstallPackage, packageIdentity);
             return nuGetProjectActions;
         }
 

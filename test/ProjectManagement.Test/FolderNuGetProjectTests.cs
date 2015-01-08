@@ -22,10 +22,11 @@ namespace ProjectManagement.Test
             var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
             var packageInstallPath = folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
             var nupkgFilePath = Path.Combine(packageInstallPath, folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
+            var testNuGetProjectContext = new TestNuGetProjectContext();
             using(var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                folderNuGetProject.InstallPackage(packageIdentity, packageStream, null);
+                folderNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
             }
 
             // Assert
@@ -47,10 +48,11 @@ namespace ProjectManagement.Test
             var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
             var packageInstallPath = folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
             var nupkgFilePath = Path.Combine(packageInstallPath, folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
+            var testNuGetProjectContext = new TestNuGetProjectContext();
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                folderNuGetProject.InstallPackage(packageIdentity, packageStream, null);
+                folderNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
             }
 
             // Assert
