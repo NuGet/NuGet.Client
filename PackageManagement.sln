@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneUI", "test\Standa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.Cmdlets.Test", "test\PackageManagement.Cmdlets.Test\PackageManagement.Cmdlets.Test.csproj", "{89C56D87-02F1-4809-BE22-D50751000DE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89C56D87-02F1-4809-BE22-D50751000DE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89C56D87-02F1-4809-BE22-D50751000DE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89C56D87-02F1-4809-BE22-D50751000DE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89C56D87-02F1-4809-BE22-D50751000DE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,5 +87,6 @@ Global
 		{A967469C-6E80-4226-B124-AEB764F0CCD8} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 		{B3DC228A-78F5-437E-B206-7CB6B3FF1323} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 		{114FD278-477D-4292-82AA-7F8A5FC0BA08} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
+		{89C56D87-02F1-4809-BE22-D50751000DE7} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 	EndGlobalSection
 EndGlobal

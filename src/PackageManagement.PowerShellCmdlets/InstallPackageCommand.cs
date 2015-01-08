@@ -1,4 +1,5 @@
-﻿using NuGet.PackageManagement;
+﻿using NuGet.Configuration;
+using NuGet.PackageManagement;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
@@ -10,17 +11,24 @@ using System.Management.Automation;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.Composition;
+using NuGet.Client;
 
 namespace PackageManagement.PowerShellCmdlets
 {
+    [Cmdlet(VerbsLifecycle.Install, "Package")]
     public class InstallPackageCommand : NuGetPowerShellBaseCommand
     {
         private NuGetPackageManager _nugetPackageManager;
         private ResolutionContext _context;
 
+        [ImportMany]
+        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
+
         public InstallPackageCommand()
         {
-            SourceRepositoryProvider provider = new SourceRepositoryProvider();
+            ISettings settings = Settings.LoadDefaultSettings(@"C:\Users\danliu\AppData\Roaming\NuGet", "nuget.config", null);
+            SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
             _nugetPackageManager = new NuGetPackageManager(provider);
         }
 
@@ -55,7 +63,7 @@ namespace PackageManagement.PowerShellCmdlets
         public FileConflictAction FileConflictAction { get; set; }
 
         [Parameter]
-        public NuGet.Resolver.DependencyBehavior? DependencyVersion { get; set; }
+        public DependencyBehavior? DependencyVersion { get; set; }
 
         protected override void ProcessRecordCore()
         {
@@ -85,7 +93,7 @@ namespace PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, Force.IsPresent, false);
+                _context = new ResolutionContext();
                 return _context;
             }
         }
