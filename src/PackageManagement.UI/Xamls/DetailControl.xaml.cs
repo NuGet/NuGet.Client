@@ -76,8 +76,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ActionButtonClicked(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
-            //Control.PerformAction(this);
+            Control.PerformAction(this);
         }
 
         public FileConflictAction FileConflictAction

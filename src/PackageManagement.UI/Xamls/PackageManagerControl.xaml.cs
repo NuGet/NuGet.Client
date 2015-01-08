@@ -4,6 +4,7 @@ using NuGet.Client;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,7 +21,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageManagerControl.xaml
     /// </summary>
-    public partial class PackageManagerControl : UserControl
+    public partial class PackageManagerControl : UserControl, IVsWindowSearch
     {
         private const int PageSize = 10;
 
@@ -39,6 +40,7 @@ namespace NuGet.PackageManagement.UI
         //private IPackageRestoreManager _packageRestoreManager;
 
         private IVsWindowSearchHost _windowSearchHost;
+        private IVsWindowSearchHostFactory _windowSearchHostFactory;
 
         public PackageManagerModel Model { get; private set; }
 
@@ -50,23 +52,31 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public NuGetProject Target
+        public IEnumerable<NuGetProject> Projects
         {
             get
             {
-                return Model.Target;
+                return new NuGetProject[] { Model.Target };
             }
         }
 
         public PackageManagerControl(PackageManagerModel model, IUserInterfaceService ui)
-            : this(model, ui, new SimpleSearchBox())
+            : this(model, ui, new SimpleSearchBoxFactory())
         {
 
         }
 
-        public PackageManagerControl(PackageManagerModel model, IUserInterfaceService ui, IVsWindowSearchHost searchHost)
+        public PackageManagerControl(PackageManagerModel model, IUserInterfaceService ui, IVsWindowSearchHostFactory searchFactory)
         {
-            _windowSearchHost = searchHost;
+            _windowSearchHostFactory = searchFactory;
+
+            if (_windowSearchHostFactory != null)
+            {
+                _windowSearchHost = _windowSearchHostFactory.CreateWindowSearchHost(_searchControlParent);
+                _windowSearchHost.SetupSearch(this);
+                _windowSearchHost.IsVisible = true;
+            }
+
             UI = ui;
             Model = model;
 
@@ -75,6 +85,14 @@ namespace NuGet.PackageManagement.UI
             _filter.Items.Add(Resx.Resources.Filter_All);
             _filter.Items.Add(Resx.Resources.Filter_Installed);
             _filter.Items.Add(Resx.Resources.Filter_UpdateAvailable);
+
+            //_packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
+            AddRestoreBar();
+
+            _packageDetail.Control = this;
+
+            //var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
+            //_outputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
 
             InitSourceRepoList();
 
@@ -125,43 +143,43 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        //private void AddRestoreBar()
-        //{
-        //    _restoreBar = new PackageRestoreBar(_packageRestoreManager);
-        //    _root.Children.Add(_restoreBar);
-        //    _packageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
-        //}
+        private void AddRestoreBar()
+        {
+            //_restoreBar = new PackageRestoreBar(_packageRestoreManager);
+            //_root.Children.Add(_restoreBar);
+            //_packageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
+        }
 
-        //private void RemoveRestoreBar()
-        //{
-        //    if (_restoreBar != null)
-        //    {
-        //        _restoreBar.CleanUp();
-        //        _packageRestoreManager.PackagesMissingStatusChanged -= packageRestoreManager_PackagesMissingStatusChanged;
-        //    }
-        //}
+        private void RemoveRestoreBar()
+        {
+            //if (_restoreBar != null)
+            //{
+            //    _restoreBar.CleanUp();
+            //    _packageRestoreManager.PackagesMissingStatusChanged -= packageRestoreManager_PackagesMissingStatusChanged;
+            //}
+        }
 
         //private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         //{
         //    // PackageRestoreManager fires this event even when solution is closed.
         //    // Don't do anything if solution is closed.
-        //    if (!Target.IsAvailable)
-        //    {
-        //        return;
-        //    }
+        //    //if (!Target.IsAvailable)
+        //    //{
+        //    //    return;
+        //    //}
 
-        //    if (!e.PackagesMissing)
-        //    {
-        //        // packages are restored. Update the UI
-        //        if (Target.IsSolution)
-        //        {
-        //            // TODO: update UI here
-        //        }
-        //        else
-        //        {
-        //            // TODO: update UI here
-        //        }
-        //    }
+        //    //if (!e.PackagesMissing)
+        //    //{
+        //    //    // packages are restored. Update the UI
+        //    //    if (Target.IsSolution)
+        //    //    {
+        //    //        // TODO: update UI here
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        // TODO: update UI here
+        //    //    }
+        //    //}
         //}
 
         private void InitSourceRepoList()
@@ -230,14 +248,17 @@ namespace NuGet.PackageManagement.UI
                 filter = Filter.UpdatesAvailable;
             }
 
-           if (_activeSource != null)
-           {
-               //var searchResource = _activeSource.GetResource<UISearchResource>();
-               //searchResource.Search(searchText, new SearchFilter(), 0, 30, CancellationToken.None);
+            if (_activeSource != null)
+            {
+                PackageLoaderOption option = new PackageLoaderOption(filter, IncludePrerelease);
 
-               // load the search results
-               //throw new NotImplementedException();
-           }
+                var loader = new PackageLoader(
+                    option,
+                    Projects,
+                    _activeSource,
+                    searchText);
+                _packageList.Loader = loader;
+            }
         }
 
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
@@ -271,8 +292,9 @@ namespace NuGet.PackageManagement.UI
                 //}
 
                 // project level model
+                // TODO: pass in the list instead of the first one
                 newModel = new PackageDetailControlModel(
-                        Target,
+                        Projects.SingleOrDefault(),
                         selectedPackage);
 
                 var oldModel = _packageDetail.DataContext as DetailControlModel;
@@ -282,6 +304,9 @@ namespace NuGet.PackageManagement.UI
                 }
                 _packageDetail.DataContext = newModel;
                 _packageDetail.ScrollToHome();
+
+
+                await newModel.LoadPackageMetadaAsync(await _activeSource.GetResourceAsync<UIMetadataResource>());
             }
         }
 
@@ -309,201 +334,210 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        //internal void UpdatePackageStatus()
-        //{
-        //    if (ShowInstalled || ShowUpdatesAvailable)
-        //    {
-        //        // refresh the whole package list
-        //        _packageList.Reload();
-        //    }
-        //    else
-        //    {
-        //        // in this case, we only need to update PackageStatus of
-        //        // existing items in the package list
-        //        foreach (var item in _packageList.Items)
-        //        {
-        //            var package = item as UiSearchResultPackage;
-        //            if (package == null)
-        //            {
-        //                continue;
-        //            }
+        internal void UpdatePackageStatus()
+        {
+            if (ShowInstalled || ShowUpdatesAvailable)
+            {
+                // refresh the whole package list
+                _packageList.Reload();
+            }
+            else
+            {
+                // in this case, we only need to update PackageStatus of
+                // existing items in the package list
+                foreach (var item in _packageList.Items)
+                {
+                    var package = item as UiSearchResultPackage;
+                    if (package == null)
+                    {
+                        continue;
+                    }
 
-        //            package.Status = PackageManagerControl.GetPackageStatus(
-        //                package.Id,
-        //                Target,
-        //                package.Versions);
-        //        }
-        //    }
-        //}
+                    package.Status = PackageManagerControl.GetPackageStatus(
+                        package.Id,
+                        Projects,
+                        package.Versions);
+                }
+            }
+        }
 
-        ///// <summary>
-        ///// Gets the status of the package specified by <paramref name="packageId"/> in
-        ///// the specified installation target.
-        ///// </summary>
-        ///// <param name="packageId">package id.</param>
-        ///// <param name="target">The installation target.</param>
-        ///// <param name="allVersions">List of all versions of the package.</param>
-        ///// <returns>The status of the package in the installation target.</returns>
-        //public static PackageStatus GetPackageStatus(
-        //    string packageId,
-        //    InstallationTarget target,
-        //    IEnumerable<NuGetVersion> allVersions)
-        //{
-        //    var latestStableVersion = allVersions
-        //        .Where(p => !p.IsPrerelease)
-        //        .Max(p => p);
+        /// <summary>
+        /// Gets the status of the package specified by <paramref name="packageId"/> in
+        /// the specified installation target.
+        /// </summary>
+        /// <param name="packageId">package id.</param>
+        /// <param name="target">The installation target.</param>
+        /// <param name="allVersions">List of all versions of the package.</param>
+        /// <returns>The status of the package in the installation target.</returns>
+        public static PackageStatus GetPackageStatus(
+            string packageId,
+            IEnumerable<NuGetProject> projects,
+            IEnumerable<NuGetVersion> allVersions)
+        {
+            var latestStableVersion = allVersions
+                .Where(p => !p.IsPrerelease)
+                .Max(p => p);
 
-        //    // Get the minimum version installed in any target project/solution
-        //    var minimumInstalledPackage = target.GetAllTargetsRecursively()
-        //        .Select(t => t.InstalledPackages.GetInstalledPackage(packageId))
-        //        .Where(p => p != null)
-        //        .OrderBy(r => r.Identity.Version)
-        //        .FirstOrDefault();
+            // Get the minimum version installed in any target project/solution
+            var minimumInstalledPackage = projects.SelectMany(project => project.GetInstalledPackages())
+                .Where(p => p != null)
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
+                .OrderBy(r => r.PackageIdentity.Version)
+                .FirstOrDefault();
 
-        //    PackageStatus status;
-        //    if (minimumInstalledPackage != null)
-        //    {
-        //        if (minimumInstalledPackage.Identity.Version < latestStableVersion)
-        //        {
-        //            status = PackageStatus.UpdateAvailable;
-        //        }
-        //        else
-        //        {
-        //            status = PackageStatus.Installed;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        status = PackageStatus.NotInstalled;
-        //    }
+            PackageStatus status;
+            if (minimumInstalledPackage != null)
+            {
+                if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
+                {
+                    status = PackageStatus.UpdateAvailable;
+                }
+                else
+                {
+                    status = PackageStatus.Installed;
+                }
+            }
+            else
+            {
+                status = PackageStatus.NotInstalled;
+            }
 
-        //    return status;
-        //}
+            return status;
+        }
 
-        //public bool ShowLicenseAgreement(IEnumerable<PackageAction> operations)
-        //{
-        //    var licensePackages = operations.Where(op =>
-        //        op.ActionType == PackageActionType.Install &&
-        //        op.Package.Value<bool>("requireLicenseAcceptance"));
+        public bool ShowLicenseAgreement(IEnumerable<PackageAction> operations)
+        {
+            throw new NotImplementedException();
+            return false;
 
-        //    // display license window if necessary
-        //    if (licensePackages.Any())
-        //    {
-        //        // Hacky distinct without writing a custom comparer
-        //        var licenseModels = licensePackages
-        //            .GroupBy(a => Tuple.Create(a.Package["id"], a.Package["version"]))
-        //            .Select(g =>
-        //            {
-        //                dynamic p = g.First().Package;
-        //                string licenseUrl = (string)p.licenseUrl;
-        //                string id = (string)p.id;
-        //                string authors = (string)p.authors;
+            //var licensePackages = operations.Where(op =>
+            //    op.ActionType == PackageActionType.Install &&
+            //    op.Package.re);
 
-        //                return new PackageLicenseInfo(
-        //                    id,
-        //                    licenseUrl == null ? null : new Uri(licenseUrl),
-        //                    authors);
-        //            })
-        //            .Where(pli => pli.LicenseUrl != null); // Shouldn't get nulls, but just in case
+            //// display license window if necessary
+            //if (licensePackages.Any())
+            //{
+            //    // Hacky distinct without writing a custom comparer
+            //    var licenseModels = licensePackages
+            //        .GroupBy(a => Tuple.Create(a.PackageIdentity.Id, a.PackageIdentity.Version.ToNormalizedString()))
+            //        .Select(g =>
+            //        {
+            //            dynamic p = g.First().Package;
+            //            string licenseUrl = (string)p.licenseUrl;
+            //            string id = (string)p.id;
+            //            string authors = (string)p.authors;
 
-        //        bool accepted = this.UI.PromptForLicenseAcceptance(licenseModels);
-        //        if (!accepted)
-        //        {
-        //            return false;
-        //        }
-        //    }
+            //            return new PackageLicenseInfo(
+            //                id,
+            //                licenseUrl == null ? null : new Uri(licenseUrl),
+            //                authors);
+            //        })
+            //        .Where(pli => pli.LicenseUrl != null); // Shouldn't get nulls, but just in case
 
-        //    return true;
-        //}
+            //    bool accepted = this.UI.PromptForLicenseAcceptance(licenseModels);
+            //    if (!accepted)
+            //    {
+            //        return false;
+            //    }
+            //}
 
-        ///// <summary>
-        ///// Shows the preveiw window for the actions.
-        ///// </summary>
-        ///// <param name="actions">actions to preview.</param>
-        ///// <returns>True if nuget should continue to perform the actions. Otherwise false.</returns>
-        //private bool PreviewActions(IEnumerable<PackageAction> actions)
-        //{
-        //    var w = new PreviewWindow();
-        //    w.DataContext = new PreviewWindowModel(actions, Target);
-        //    return w.ShowModal() == true;
-        //}
+            //return true;
+        }
 
-        //private void ActivateOutputWindow()
-        //{
-        //    var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
-        //    if (uiShell == null)
-        //    {
-        //        return;
-        //    }
+        /// <summary>
+        /// Shows the preveiw window for the actions.
+        /// </summary>
+        /// <param name="actions">actions to preview.</param>
+        /// <returns>True if nuget should continue to perform the actions. Otherwise false.</returns>
+        private bool PreviewActions(IEnumerable<PackageAction> actions)
+        {
+            var w = new PreviewWindow();
+            w.DataContext = new PreviewWindowModel(Enumerable.Empty<PreviewResult>());
+            return w.ShowModal() == true;
+        }
 
-        //    var guid = new Guid(EnvDTE.Constants.vsWindowKindOutput);
-        //    IVsWindowFrame f = null;
-        //    uiShell.FindToolWindow(0, ref guid, out f);
-        //    if (f == null)
-        //    {
-        //        return;
-        //    }
+        private void ActivateOutputWindow()
+        {
+            //var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
+            //if (uiShell == null)
+            //{
+            //    return;
+            //}
 
-        //    f.Show();
-        //}
+            //var guid = new Guid(EnvDTE.Constants.vsWindowKindOutput);
+            //IVsWindowFrame f = null;
+            //uiShell.FindToolWindow(0, ref guid, out f);
+            //if (f == null)
+            //{
+            //    return;
+            //}
 
-        //// perform the user selected action
-        //internal async void PerformAction(DetailControl detailControl)
-        //{
-        //    ActivateOutputWindow();
-        //    _outputConsole.Clear();
-        //    var progressDialog = new ProgressDialog(_outputConsole);
-        //    progressDialog.Owner = Window.GetWindow(this);
-        //    progressDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        //    progressDialog.FileConflictAction = detailControl.FileConflictAction;
-        //    progressDialog.Show();
+            //f.Show();
+        }
 
-        //    try
-        //    {
-        //        var actions = await detailControl.ResolveActionsAsync(progressDialog);
+        // perform the user selected action
+        internal async void PerformAction(DetailControl detailControl)
+        {
+            bool acceptLicense = ShowLicenseAgreement(null);
+            if (!acceptLicense)
+            {
+                return;
+            }
 
-        //        // show preview
-        //        var model = (DetailControlModel)_packageDetail.DataContext;
-        //        if (model.Options.ShowPreviewWindow)
-        //        {
-        //            var shouldContinue = PreviewActions(actions);
-        //            if (!shouldContinue)
-        //            {
-        //                return;
-        //            }
-        //        }
+            ActivateOutputWindow();
+            //_outputConsole.Clear();
+            //var progressDialog = new ProgressDialog(_outputConsole);
+            //progressDialog.Owner = Window.GetWindow(this);
+            //progressDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            //progressDialog.FileConflictAction = detailControl.FileConflictAction;
+            //progressDialog.Show();
 
-        //        // show license agreeement
-        //        bool acceptLicense = ShowLicenseAgreement(actions);
-        //        if (!acceptLicense)
-        //        {
-        //            return;
-        //        }
+            //try
+            //{
+            //    var actions = await detailControl.ResolveActionsAsync(progressDialog);
 
-        //        // Create the executor and execute the actions
-        //        var userAction = detailControl.GetUserAction();                
-        //        var executor = new ActionExecutor();
-        //        await Task.Run(
-        //            () =>
-        //            {
-        //                executor.ExecuteActions(actions, progressDialog, userAction);
-        //            });
+            //    // show preview
+            //    var model = (DetailControlModel)_packageDetail.DataContext;
+            //    if (model.Options.ShowPreviewWindow)
+            //    {
+            //        var shouldContinue = PreviewActions(actions);
+            //        if (!shouldContinue)
+            //        {
+            //            return;
+            //        }
+            //    }
 
-        //        UpdatePackageStatus();
-        //        detailControl.Refresh();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        var errorDialog = new ErrorReportingDialog(
-        //            ex.Message,
-        //            ex.ToString());
-        //        errorDialog.ShowModal();
-        //    }
-        //    finally
-        //    {
-        //        progressDialog.CloseWindow();
-        //    }
-        //}
+            //    // show license agreeement
+            //    bool acceptLicense = ShowLicenseAgreement(actions);
+            //    if (!acceptLicense)
+            //    {
+            //        return;
+            //    }
+
+            //    // Create the executor and execute the actions
+            //    var userAction = detailControl.GetUserAction();
+            //    var executor = new ActionExecutor();
+            //    await Task.Run(
+            //        () =>
+            //        {
+            //            executor.ExecuteActions(actions, progressDialog, userAction);
+            //        });
+
+            //    UpdatePackageStatus();
+            //    detailControl.Refresh();
+            //}
+            //catch (Exception ex)
+            //{
+            //    var errorDialog = new ErrorReportingDialog(
+            //        ex.Message,
+            //        ex.ToString());
+            //    errorDialog.ShowModal();
+            //}
+            //finally
+            //{
+            //    progressDialog.CloseWindow();
+            //}
+        }
 
         private void _searchControl_SearchStart(object sender, EventArgs e)
         {
@@ -512,8 +546,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            throw new NotImplementedException();
-            //SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
         }
 
         private void _checkboxPrerelease_CheckChanged(object sender, RoutedEventArgs e)
@@ -523,8 +556,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            throw new NotImplementedException();
-            //SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
         }
 
         internal class SearchQuery : IVsSearchQuery
@@ -623,7 +655,7 @@ namespace NuGet.PackageManagement.UI
         public void CleanUp()
         {
             _windowSearchHost.TerminateSearch();
-            //RemoveRestoreBar();
+            RemoveRestoreBar();
         }
     }
 }

@@ -16,16 +16,6 @@ namespace NuGet.PackageManagement.UI
             if (parameter == null)
                 return null;
 
-            if (parameter == Brushes.UIText)
-            {
-                return SystemColors.ActiveCaptionTextBrush;
-            }
-
-            if (parameter == Brushes.DetailPaneBackground)
-            {
-                return SystemColors.WindowFrameColor;
-            }
-
             return null;
         }
 

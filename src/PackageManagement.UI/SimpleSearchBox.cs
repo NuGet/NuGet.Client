@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace NuGet.PackageManagement.UI
 {
-    public sealed class SimpleSearchBox : IVsWindowSearchHost
+    public sealed class SimpleSearchBox : TextBox, IVsWindowSearchHost
     {
         public SimpleSearchBox()
         {
@@ -55,15 +56,16 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private bool _visible;
         public bool IsVisible
         {
             get
             {
-                throw new NotImplementedException();
+                return _visible;
             }
             set
             {
-                throw new NotImplementedException();
+                _visible = value;
             }
         }
 
@@ -99,7 +101,7 @@ namespace NuGet.PackageManagement.UI
 
         public void SetupSearch(IVsWindowSearch pWindowSearch)
         {
-            throw new NotImplementedException();
+
         }
 
         public void TerminateSearch()
