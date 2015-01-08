@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NuGet.Client;
 using Xunit;
+using Newtonsoft.Json.Linq;
 
 
 namespace Client.V3Test
@@ -26,6 +27,14 @@ namespace Client.V3Test
            Assert.True(searchTokens.Count() > 0);
             //check if all items contains the given search text.
            Assert.False(searchTokens.Any(item => item.IndexOf("elm", StringComparison.OrdinalIgnoreCase) == -1));
+        }
+
+        [Fact]
+        public async Task TestGetPackageMetadata()
+        {
+            IEnumerable<JObject> allversions = await V3Client.GetPackageMetadataById("Nuget.core");         
+            Assert.True(allversions.Count() == 46);
+            string obj = (string)allversions.ToList()[0]["packageContent"];           
         }
     }
 }

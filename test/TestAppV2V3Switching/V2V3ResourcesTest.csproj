@@ -48,21 +48,19 @@
     </Reference>
     <Reference Include="NuGet.Client.BaseTypes, Version=0.1.9.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.1.9-a20150106051637-536\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.1.9-a20150108072730-966\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Client.V3">
-      <HintPath>..\..\packages\NuGet.Client.V3.1.0.0-a20150106053848-968\lib\net45\NuGet.Client.V3.dll</HintPath>
+    <Reference Include="NuGet.Client.V3, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Client.V3.1.0.0-a20150108175210-183\lib\net45\NuGet.Client.V3.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Client.V3.VisualStudio">
-      <HintPath>..\..\packages\NuGet.Client.V3.VisualStudio.0.1.4-a20150106054137-621\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
+    <Reference Include="NuGet.Client.V3.VisualStudio, Version=0.1.4.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Client.V3.VisualStudio.0.1.4-a20150108175256-085\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.VisualStudio, Version=0.1.3.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.1.3-a20150106051707-928\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Data, Version=1.0.1.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Data.1.0.1-master-43391912\lib\net45\NuGet.Data.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.1.3-a20150108072746-556\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Versioning, Version=1.0.3.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -106,6 +104,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DataClient\Data.csproj">
+      <Project>{7e69cb0e-4819-45fe-ab28-11efb81f81c0}</Project>
+      <Name>Data</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

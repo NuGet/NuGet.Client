@@ -29,7 +29,7 @@ namespace V2V3ResourcesTest
                 var aggregateCatalog = new AggregateCatalog();
                 //Build the directory path where the parts will be available
                 var directoryPath = Environment.CurrentDirectory;
-                var directoryCatalog = new DirectoryCatalog(directoryPath, "*NuGet.Client*.dll");
+                var directoryCatalog = new DirectoryCatalog(directoryPath, "*NuGet.Client.V3*.dll");
                 aggregateCatalog.Catalogs.Add(directoryCatalog);
                 container = new CompositionContainer(aggregateCatalog);
                 container.ComposeParts(this);
@@ -85,7 +85,7 @@ namespace V2V3ResourcesTest
 
             IEnumerable<VisualStudioUIPackageMetadata> packageMetadataList = resource.GetPackageMetadataForAllVersionsForVisualStudioUI("Nuget.core").Result;
             Assert.True(packageMetadataList != null);
-            Assert.True(packageMetadataList.Count() == 40);
+            Assert.True(packageMetadataList.Count() == 46);
             
         }
 
