@@ -35,7 +35,7 @@ namespace NuGet.ProjectManagement.VisualStudio
         {
         }
 
-        internal VSSolutionManager(DTE dte, IVsSolution vsSolution, IVsMonitorSelection vsMonitorSelection)
+        public VSSolutionManager(DTE dte, IVsSolution vsSolution, IVsMonitorSelection vsMonitorSelection)
         {
             if (dte == null)
             {

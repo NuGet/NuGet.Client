@@ -238,8 +238,9 @@ namespace NuGet.PackageManagement
                         resolutionContext.IncludePrerelease, resolutionContext.IncludeUnlisted, CancellationToken.None);
                     if((latestVersionKeyPairList == null || !latestVersionKeyPairList.Any()))
                     {
-                        latestVersionFromDifferentRepositories.Add(latestVersionKeyPairList.FirstOrDefault().Value);
+                        continue;
                     }
+                    latestVersionFromDifferentRepositories.Add(latestVersionKeyPairList.FirstOrDefault().Value);
                 }
             }
 
