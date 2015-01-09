@@ -7,7 +7,7 @@ using Xunit;
 
 namespace PackageManagement.Cmdlets.Test
 {
-    public class PowerShellCmdletsTest : IUseFixture<PowerShellCmdletsTestContext>
+    public class PowerShellCmdletsTest : IClassFixture<PowerShellCmdletsTestContext>
     {
         private SourceRepositoryProvider _provider;
         private PowerShellCmdletsTestContext _testContext;

@@ -133,6 +133,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void WriteLine(string message = null)
         {
+            Console.WriteLine(message);
             if (Host == null)
             {
                 // Host is null when running unit tests. Simply return in this case
@@ -173,12 +174,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             progressRecord.CurrentOperation = operation;
             progressRecord.PercentComplete = percentComplete;
 
+            Console.WriteLine(string.Format("{0} {1} {2}", progressRecord.Activity, progressRecord.CurrentOperation, progressRecord.StatusDescription));
             WriteProgress(progressRecord);
         }
 
         private void OnProgressAvailable(object sender, ProgressEventArgs e)
         {
             WriteProgress(ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete);
+            Console.WriteLine(string.Format("{0} {1} {2}", ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete));
         }
 
         protected void SubscribeToProgressEvents()
@@ -226,6 +229,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 WriteError(new Exception(message));
             }
+            Console.WriteLine(message);
         }
 
         protected void WriteError(Exception exception)

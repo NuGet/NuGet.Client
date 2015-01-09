@@ -83,22 +83,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (string.IsNullOrEmpty(Version))
                 {
-                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, Id, ResolutionContext, this);
+                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, Id, ResolutionContext, this).Wait();
                 }
                 else
                 {
-                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, identity, ResolutionContext, this);
+                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, identity, ResolutionContext, this).Wait();
                 }
             }
             else
             {
                 if (string.IsNullOrEmpty(Version))
                 {
-                    _nugetPackageManager.InstallPackageAsync(nuGetProject, Id, ResolutionContext, this);
+                    _nugetPackageManager.InstallPackageAsync(nuGetProject, Id, ResolutionContext, this).Wait();
                 }
                 else
                 {
-                    _nugetPackageManager.InstallPackageAsync(nuGetProject, identity, ResolutionContext, this);
+                   _nugetPackageManager.InstallPackageAsync(nuGetProject, identity, ResolutionContext, this).Wait();
                 }
             }
         }
