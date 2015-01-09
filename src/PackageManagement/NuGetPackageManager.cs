@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement
@@ -59,7 +60,7 @@ namespace NuGet.PackageManagement
         public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
             // Step-1 : Get latest version for packageId
-            var latestVersion = await GetLatestVersionAsync(packageId);
+            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext);
 
             if(latestVersion == null)
             {
@@ -90,7 +91,7 @@ namespace NuGet.PackageManagement
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
             // Step-1 : Get latest version for packageId
-            var latestVersion = await GetLatestVersionAsync(packageId);
+            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext);
 
             if (latestVersion == null)
             {
@@ -220,20 +221,24 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private async Task<NuGetVersion> GetLatestVersionAsync(string packageId)
+        private async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext)
         {
-            List<NuGetVersion> latestVersions = new List<NuGetVersion>();
+            List<NuGetVersion> latestVersionFromDifferentRepositories = new List<NuGetVersion>();
             foreach (var sourceRepository in SourceRepositoryProvider.GetRepositories())
             {
                 var metadataResource = sourceRepository.GetResource<MetadataResource>();
                 if (metadataResource != null)
                 {
-                    var allVersions = await metadataResource.GetLatestVersions(new List<string>() { packageId });
-                    var latestVersion = allVersions.ToList().Max<NuGetVersion>();
+                    var latestVersionKeyPairList = await metadataResource.GetLatestVersions(new List<string>() { packageId },
+                        resolutionContext.IncludePrerelease, resolutionContext.IncludeUnlisted, CancellationToken.None);
+                    if((latestVersionKeyPairList == null || !latestVersionKeyPairList.Any()))
+                    {
+                        latestVersionFromDifferentRepositories.Add(latestVersionKeyPairList.FirstOrDefault().Value);
+                    }
                 }
             }
 
-            return latestVersions.Max<NuGetVersion>();
+            return latestVersionFromDifferentRepositories.Count == 0 ? null : latestVersionFromDifferentRepositories.Max<NuGetVersion>();
         }
 
         private async Task<IDictionary<PackageDependencyInfo, SourceRepository>> GatherPackageDependencyInfo(PackageIdentity packageIdentity, NuGetFramework targetFramework)
