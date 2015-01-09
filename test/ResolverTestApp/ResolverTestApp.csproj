@@ -39,7 +39,7 @@
     </Reference>
     <Reference Include="NuGet.Client, Version=1.0.1.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.V3.1.0.1-pre-20150108023137\lib\net45\NuGet.Client.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.V3.1.0.1-pre-20150109014018\lib\net45\NuGet.Client.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.BaseTypes, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -50,7 +50,7 @@
     </Reference>
     <Reference Include="NuGet.Data, Version=1.0.1.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.V3.1.0.1-pre-20150108023137\lib\net45\NuGet.Data.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.V3.1.0.1-pre-20150109014018\lib\net45\NuGet.Data.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Frameworks, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
