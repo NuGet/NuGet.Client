@@ -134,7 +134,9 @@ namespace NuGet.PackageManagement
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallPackage, packageIdentity);
-            var newPackagesToUninstall = oldListOfInstalledPackages.Where(p => !newListOfInstalledPackages.Contains(p));
+            var newPackagesToUninstall = oldListOfInstalledPackages
+                .Where(op => newListOfInstalledPackages
+                    .Where(np => op.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase)).Any());
             var newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
 
             List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();

@@ -59,8 +59,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150108074227\lib\net45\NuGet.Frameworks.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.PackageManagement">
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150109065454\lib\net45\NuGet.PackageManagement.dll</HintPath>
+    <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150109084334\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -80,7 +81,7 @@
     </Reference>
     <Reference Include="NuGet.TestUtility, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.TestUtility.1.0.0-pre-20150109072941\lib\net45\NuGet.TestUtility.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.TestUtility.1.0.0-pre-20150109084506\lib\net45\NuGet.TestUtility.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Versioning">
       <HintPath>..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
