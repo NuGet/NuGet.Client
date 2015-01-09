@@ -1,14 +1,15 @@
 ﻿using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.PowerShellCmdlets;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.Linq;
+using System.IO;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PackageManagement.Cmdlets.Test
 {
@@ -17,10 +18,13 @@ namespace PackageManagement.Cmdlets.Test
         [ImportMany]
         public IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> ResourceProviders { get; set; }
 
+        private Runspace _runSpace;
+
         static void Main(string[] args)
         {
             var p = new Program();
             p.InitializeComponents();
+            p.ImportModule();
             p.InstallPackage();
         }
 
@@ -38,17 +42,52 @@ namespace PackageManagement.Cmdlets.Test
         {
             try
             {
-                ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-                var packageSourceProvider = new PackageSourceProvider(settings);
-                var packageSources = packageSourceProvider.LoadPackageSources();
-                SourceRepositoryProvider provider = new SourceRepositoryProvider(packageSourceProvider, ResourceProviders);
-                InstallPackageCommand installCommand = new InstallPackageCommand();
-                Console.WriteLine(provider.ToString());
+                RunScript("Install-Package", "jquery", "1.4.4");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        private void ImportModule()
+        {
+            InitialSessionState initial = InitialSessionState.CreateDefault();
+            string assemblyPath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\src\PackageManagement.PowerShellCmdlets\bin\debug\NuGet.PackageManagement.PowerShellCmdlets.dll");
+            initial.ImportPSModule(new string[] { assemblyPath });
+            _runSpace = RunspaceFactory.CreateRunspace(initial);
+            _runSpace.Open();
+        }
+
+        private void RunScript(string scriptText, params string[] parameters)
+        {
+            ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
+            var packageSourceProvider = new PackageSourceProvider(settings);
+            var packageSources = packageSourceProvider.LoadPackageSources();
+            SourceRepositoryProvider provider = new SourceRepositoryProvider(packageSourceProvider, ResourceProviders);
+
+            PowerShell ps = PowerShell.Create();
+            ps.Runspace = _runSpace;
+            ps.Commands.AddCommand(scriptText);
+
+            // Run the scriptText
+            var testCommand = ps.Commands.Commands[0];
+            testCommand.Parameters.Add("Id", parameters[0]);
+            testCommand.Parameters.Add("Version", parameters[1]);
+            // Add as a test hook to pass in the provider
+            testCommand.Parameters.Add("Provider", provider);
+
+            // Add out-string
+            ps.Commands.AddCommand("Out-String");
+
+            // execute the script
+            foreach (PSObject result in ps.Invoke())
+            {
+                Console.WriteLine(result.ToString());
+            }
+
+            // close the runspace
+            _runSpace.Close();
         }
     }
 }

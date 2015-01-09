@@ -56,7 +56,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             FolderNuGetProject project = new FolderNuGetProject("c:\temp");
             PackageIdentity identity = GetPackageIdentity();
             // TODO: UninstallAsync?
-            _nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
+            //_nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
+            project.UninstallPackage(identity, this);
         }
 
         /// <summary>
