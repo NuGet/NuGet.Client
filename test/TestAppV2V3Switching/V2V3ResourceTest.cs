@@ -52,7 +52,7 @@ namespace V2V3ResourcesTest
             SourceRepository repo = GetSourceRepository(SourceUrl);
             DownloadResource resource = repo.GetResource<DownloadResource>();
             Assert.True(resource != null);
-            Uri downloadMetadata = resource.GetDownloadUrl(new PackageIdentity("jQuery", new NuGetVersion("1.6.4"))).Result;
+            Uri downloadMetadata = await resource.GetDownloadUrl(new PackageIdentity("jQuery", new NuGetVersion("1.6.4")));
             //*TODOs: Check if the download Url ends with .nupkg. More detailed verification can be added to see if the nupkg file can be fetched from the location.
             Assert.True(downloadMetadata.OriginalString.EndsWith(".nupkg"));
         }
@@ -87,7 +87,6 @@ namespace V2V3ResourcesTest
             IEnumerable<UIPackageMetadata> packageMetadataList = resource.GetMetadata("Nuget.core", true, true, CancellationToken.None).Result;
             Assert.True(packageMetadataList != null);
             Assert.True(packageMetadataList.Count() == 46);
-
         }
 
         [Theory]
