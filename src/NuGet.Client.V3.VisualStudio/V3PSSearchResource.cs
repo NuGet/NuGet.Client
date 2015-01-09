@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using NuGet.Client.VisualStudio;
+using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace NuGet.Client.V3.VisualStudio
             List<PSSearchMetadata> powerShellSearchResults = new List<PSSearchMetadata>();
             foreach (UISearchMetadata result in searchResultJsonObjects)
             {
-                powerShellSearchResults.Add(new PSSearchMetadata(result.Id, result.Version, result.Versions, result.Summary));
+                powerShellSearchResults.Add(new PSSearchMetadata(result.Identity, result.Versions, result.Summary));
             }
 
             return powerShellSearchResults;

@@ -3,6 +3,7 @@ using NuGet.Client;
 using NuGet.Client.V3;
 using NuGet.Client.VisualStudio;
 using NuGet.Data;
+using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,9 @@ namespace NuGet.Client.V3.VisualStudio
         {
             string id = package.Value<string>(Properties.PackageId);
             NuGetVersion version = NuGetVersion.Parse(package.Value<string>(Properties.LatestVersion));
+
+            PackageIdentity topPackage = new PackageIdentity(id, version);
+
             Uri iconUrl = GetUri(package, Properties.IconUrl);
 
             // get other versions
@@ -85,7 +89,7 @@ namespace NuGet.Client.V3.VisualStudio
                 // summary is empty. Use its description instead.
                 summary = package.Value<string>(Properties.Description);
             }
-            UISearchMetadata searchResult = new UISearchMetadata(id, version, summary, iconUrl, nuGetVersions, null);
+            UISearchMetadata searchResult = new UISearchMetadata(topPackage, summary, iconUrl, nuGetVersions, null);
             return searchResult;
         }
 

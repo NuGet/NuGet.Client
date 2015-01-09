@@ -1,4 +1,5 @@
-﻿using NuGet.Versioning;
+﻿using NuGet.PackagingCore;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace NuGet.Client.VisualStudio
 {
     public sealed class UIPackageMetadata 
     {
-        public UIPackageMetadata(NuGetVersion version, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl,
+        public UIPackageMetadata(PackageIdentity identity, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl,
             string tags, int downloadCount, DateTimeOffset? published, IEnumerable<UIPackageDependencySet> dependencySet, bool hasDependencies)
         {
-            Version = version;
+            Identity = identity;
             Summary = summary;
             Description = description;
             Authors = authors;
@@ -27,7 +28,8 @@ namespace NuGet.Client.VisualStudio
             HasDependencies = hasDependencies;
         }
 
-        public NuGetVersion Version { get; private set; }
+        public PackageIdentity Identity { get; private set; }
+
         public string Summary { get; private set; }
 
         public string Description { get; private set; }

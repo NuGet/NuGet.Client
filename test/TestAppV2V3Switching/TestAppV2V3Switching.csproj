@@ -48,13 +48,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.2.0-pre-20150109013546\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Client.V3.VisualStudio, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.V3.VisualStudio.0.2.0-pre-20150109014920\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
-    </Reference>
     <Reference Include="NuGet.Client.VisualStudio, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.2.0-pre-20150109014424\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.2.0-pre-20150109062345\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Configuration">
       <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50072141\lib\net45\NuGet.Configuration.dll</HintPath>
@@ -112,6 +108,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NuGet.Client.V3.VisualStudio\NuGet.Client.V3.VisualStudio.csproj">
+      <Project>{0d830186-a6f3-4e2c-b373-73b0741333f6}</Project>
+      <Name>NuGet.Client.V3.VisualStudio</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />

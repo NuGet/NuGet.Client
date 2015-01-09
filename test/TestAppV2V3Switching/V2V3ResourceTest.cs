@@ -108,7 +108,7 @@ namespace V2V3ResourcesTest
             // Check if non empty search result is returned.
             Assert.True(searchResults.Count() > 0);
             //check if there is atleast one result which has Elmah as title.
-            Assert.True(searchResults.Any(p => p.Id.Equals("Elmah", StringComparison.OrdinalIgnoreCase)));
+            Assert.True(searchResults.Any(p => p.Identity.Id.Equals("Elmah", StringComparison.OrdinalIgnoreCase)));
         }
 
         [Theory]

@@ -55,6 +55,7 @@ namespace NuGet.Client.V3.VisualStudio
                 Published = DateTime.Parse(publishedStr);
             }
 
+            string id = metadata.Value<string>(Properties.PackageId);
             string Summary = metadata.Value<string>(Properties.Summary);
             string Description = metadata.Value<string>(Properties.Description);
             string Authors = metadata.Value<string>(Properties.Authors);
@@ -69,7 +70,7 @@ namespace NuGet.Client.V3.VisualStudio
             bool HasDependencies = DependencySets.Any(
                 set => set.Dependencies != null && set.Dependencies.Count > 0);
 
-            return new UIPackageMetadata(Version, Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, DownloadCount, Published, DependencySets, HasDependencies);
+            return new UIPackageMetadata(new PackageIdentity(id, Version), Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, DownloadCount, Published, DependencySets, HasDependencies);
         }
         private Uri GetUri(JObject json, string property)
         {

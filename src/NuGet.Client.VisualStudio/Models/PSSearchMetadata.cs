@@ -1,4 +1,5 @@
-﻿using NuGet.Versioning;
+﻿using NuGet.PackagingCore;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,14 +14,13 @@ namespace NuGet.Client.VisualStudio
     /// </summary>
     public sealed class PSSearchMetadata
     {
-        public PSSearchMetadata(string id, NuGetVersion version, IEnumerable<NuGetVersion> versions, string summary)
+        public PSSearchMetadata(PackageIdentity identity, IEnumerable<NuGetVersion> versions, string summary)
         {
-            Id = id;
-            Version = version;
+            Identity = identity;
             Versions = versions;
             Summary = summary;
         }
-        public string Id { get; private set; }
+        public PackageIdentity Identity { get; private set; }
         public NuGetVersion Version { get; private set; }
         public IEnumerable<NuGetVersion> Versions { get; private set; }
         public string Summary { get; private set; }

@@ -52,5 +52,20 @@ namespace V3WebTest
         {
             get { return _type; }
         }
+
+        public IEnumerable<string> After
+        {
+            get { return new string[0]; }
+        }
+
+        public IEnumerable<string> Before
+        {
+            get { return new string[0]; }
+        }
+
+        public string Name
+        {
+            get { return string.Empty; }
+        }
     }
 }
