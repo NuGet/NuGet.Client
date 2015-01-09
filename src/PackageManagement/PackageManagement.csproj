@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISolutionManager.cs" />
     <Compile Include="NuGetPackageManager.cs" />
     <Compile Include="NuGetProjectAction.cs" />
     <Compile Include="PackageDownloader.cs" />

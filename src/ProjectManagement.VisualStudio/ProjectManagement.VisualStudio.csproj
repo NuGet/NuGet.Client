@@ -33,6 +33,12 @@
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="JsonLD">
+      <HintPath>..\..\packages\json-ld.net.1.0.4\lib\net40-Client\JsonLD.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -55,11 +61,21 @@
       <HintPath>..\..\..\..\Windows\assembly\GAC\Microsoft.VisualStudio.Shell.Interop.8.0\8.0.0.0__b03f5f7f11d50a3a\microsoft.visualstudio.shell.interop.8.0.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.BaseTypes">
+      <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.2.0-pre-20150109013546\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Configuration">
       <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50072141\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Frameworks">
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150108074227\lib\net45\NuGet.Frameworks.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.PackageManagement">
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150109085942\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging">
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150108074227\lib\net45\NuGet.Packaging.dll</HintPath>
@@ -76,8 +92,11 @@
     <Reference Include="NuGet.Versioning">
       <HintPath>..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -86,9 +105,11 @@
     <Reference Include="VSLangProj, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
+    <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="VSNuGetProjectFactory.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -105,8 +126,10 @@
     <Compile Include="Utility\EnvDTEProjectUtility.cs" />
     <Compile Include="Utility\VsHierarchyUtility.cs" />
     <Compile Include="VS.ProjectSystems\VcxProject.cs" />
+    <Compile Include="VSSolutionManager.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

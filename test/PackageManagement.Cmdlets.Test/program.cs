@@ -42,7 +42,7 @@ namespace PackageManagement.Cmdlets.Test
         {
             try
             {
-                RunScript("Install-Package", "jquery", "1.4.4");
+                RunScript("Install-Package", "entityframework", "5.0.0");
             }
             catch (Exception ex)
             {

@@ -62,7 +62,7 @@
     </Reference>
     <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150109084334\lib\net45\NuGet.PackageManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150109092532\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -121,6 +121,10 @@
     <ProjectReference Include="..\..\src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>PackageManagement.PowerShellCmdlets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ProjectManagement.VisualStudio\ProjectManagement.VisualStudio.csproj">
+      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
+      <Name>ProjectManagement.VisualStudio</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

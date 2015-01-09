@@ -20,6 +20,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [ImportMany]
         public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
 
+        [Import]
+        public ISolutionManager VSSolutionManager;
+
         public InstallPackageCommand()
         {
         }
@@ -74,28 +77,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
-            FolderNuGetProject project = new FolderNuGetProject("c:\temp");
+            var nuGetProject = new FolderNuGetProject(@"C:\temp");
             PackageIdentity identity = GetPackageIdentity();
             if (WhatIf.IsPresent)
             {
                 if (string.IsNullOrEmpty(Version))
                 {
-                    _nugetPackageManager.PreviewInstallPackageAsync(project, Id, ResolutionContext, this);
+                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, Id, ResolutionContext, this);
                 }
                 else
                 {
-                    _nugetPackageManager.PreviewInstallPackageAsync(project, identity, ResolutionContext, this);
+                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, identity, ResolutionContext, this);
                 }
             }
             else
             {
                 if (string.IsNullOrEmpty(Version))
                 {
-                    _nugetPackageManager.InstallPackageAsync(project, Id, ResolutionContext, this);
+                    _nugetPackageManager.InstallPackageAsync(nuGetProject, Id, ResolutionContext, this);
                 }
                 else
                 {
-                    _nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
+                    _nugetPackageManager.InstallPackageAsync(nuGetProject, identity, ResolutionContext, this);
                 }
             }
         }
