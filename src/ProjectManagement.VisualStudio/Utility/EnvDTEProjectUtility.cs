@@ -14,6 +14,7 @@ using EnvDTESolution = EnvDTE.Solution;
 using EnvDTEProperty = EnvDTE.Property;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Frameworks;
 
 namespace NuGet.ProjectManagement.VisualStudio
 {
@@ -326,6 +327,62 @@ namespace NuGet.ProjectManagement.VisualStudio
         {
             return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(envDTEproject.FullName).FirstOrDefault() ??
                    ProjectCollection.GlobalProjectCollection.LoadProject(envDTEproject.FullName);
+        }
+
+        public static NuGetFramework GetTargetNuGetFramework(EnvDTEProject envDTEProject)
+        {
+            string targetFrameworkMoniker = GetTargetNuGetFrameworkString(envDTEProject);
+            if (targetFrameworkMoniker != null)
+            {
+                return NuGetFramework.Parse(targetFrameworkMoniker);
+            }
+
+            return null;
+        }
+
+        public static string GetTargetNuGetFrameworkString(EnvDTEProject envDTEProject)
+        {
+            if (envDTEProject == null)
+            {
+                return null;
+            }
+
+            if (IsJavaScriptProject(envDTEProject))
+            {
+                // JavaScript apps do not have a TargetFrameworkMoniker property set.
+                // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
+
+                string platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
+                string platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+
+                // use the default values for JS if they were not given
+                if (String.IsNullOrEmpty(platformVersion))
+                    platformVersion = "0.0";
+
+                if (String.IsNullOrEmpty(platformIdentifier))
+                    platformIdentifier = "Windows";
+
+                return String.Format(CultureInfo.InvariantCulture, "{0}, Version={1}", platformIdentifier, platformVersion);
+            }
+
+            if (IsNativeProject(envDTEProject))
+            {
+                // The C++ project does not have a TargetFrameworkMoniker property set. 
+                // We hard-code the return value to Native.
+                return "Native, Version=0.0";
+            }
+
+            string targetFramework = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
+
+            // XNA project lies about its true identity, reporting itself as a normal .NET 4.0 project.
+            // We detect it and changes its target framework to Silverlight4-WindowsPhone71
+            if (".NETFramework,Version=v4.0".Equals(targetFramework, StringComparison.OrdinalIgnoreCase) &&
+                IsXnaWindowsPhoneProject(envDTEProject))
+            {
+                return "Silverlight,Version=v4.0,Profile=WindowsPhone71";
+            }
+
+            return targetFramework;
         }
 
         #endregion // Get "Project" Information

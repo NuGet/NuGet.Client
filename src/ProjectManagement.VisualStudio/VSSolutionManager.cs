@@ -106,7 +106,13 @@ namespace NuGet.ProjectManagement.VisualStudio
 
         public bool IsSolutionOpen
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                return _dte != null &&
+                       _dte.Solution != null &&
+                       _dte.Solution.IsOpen &&
+                       !IsSolutionSavedAsRequired();
+            }
         }
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
@@ -175,7 +181,7 @@ namespace NuGet.ProjectManagement.VisualStudio
             }
         }
 
-        private void SetDefaultProject()
+        public void SetDefaultProject()
         {
             // when a new solution opens, we set its startup project as the default project in NuGet Console
             var solutionBuild = (SolutionBuild2)_dte.Solution.SolutionBuild;
@@ -228,14 +234,14 @@ namespace NuGet.ProjectManagement.VisualStudio
 
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {
-            //if (dwCmdUICookie == _solutionLoadedUICookie && fActive == 1)
-            //{
-            //    OnSolutionOpened();
-            //    // We must call DeleteMarkedPackageDirectories outside of OnSolutionOpened, because OnSolutionOpened might be called in the constructor
-            //    // and DeleteOnRestartManager requires VsFileSystemProvider and RepositorySetings which both have dependencies on SolutionManager.
-            //    // In practice, this code gets executed even when a solution is opened directly during Visual Studio startup.
-            //    DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories();
-            //}
+            if (dwCmdUICookie == _solutionLoadedUICookie && fActive == 1)
+            {
+                OnSolutionOpened();
+                // We must call DeleteMarkedPackageDirectories outside of OnSolutionOpened, because OnSolutionOpened might be called in the constructor
+                // and DeleteOnRestartManager requires VsFileSystemProvider and RepositorySetings which both have dependencies on SolutionManager.
+                // In practice, this code gets executed even when a solution is opened directly during Visual Studio startup.
+                //DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories();
+            }
 
             return VSConstants.S_OK;
         }

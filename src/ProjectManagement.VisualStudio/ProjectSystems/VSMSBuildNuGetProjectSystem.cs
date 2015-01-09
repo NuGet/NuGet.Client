@@ -212,9 +212,17 @@ namespace NuGet.ProjectManagement.VisualStudio
             throw new NotImplementedException();
         }
 
+        private NuGetFramework _targetFramework;
         public NuGetFramework TargetFramework
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                if (_targetFramework == null)
+                {
+                    _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject) ?? NuGetFramework.UnsupportedFramework;
+                }
+                return _targetFramework;
+            }
         }
 
         private static void TrySetCopyLocal(dynamic reference)
