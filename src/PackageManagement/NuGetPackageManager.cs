@@ -173,8 +173,11 @@ namespace NuGet.PackageManagement
                 }
                 else
                 {
-                    var packageStream = await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity);
-                    ExecuteInstall(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, nuGetProjectContext);
+                    using (var targetPackageStream = new MemoryStream())
+                    {
+                        await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream);
+                        ExecuteInstall(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext);
+                    }
                 }
             }
         }
