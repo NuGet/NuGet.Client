@@ -14,6 +14,25 @@ namespace NuGet.ResolverTest
 {
     public class ResolverTests
     {
+        [Fact]
+        public void Resolver_IgnoreDependencies()
+        {
+            var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", null }, { "C", null } });
+
+            var sourceRepository = new List<ResolverPackage>() { 
+                target, 
+                CreatePackage("B", "1.0", new Dictionary<string, string>() { { "D", null } }),
+                CreatePackage("C", "1.0", new Dictionary<string, string>() { { "D", null } }),
+                CreatePackage("D", "1.0"),
+            };
+
+            var resolver = new PackageResolver(DependencyBehavior.Ignore);
+            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository).ToDictionary(p => p.Id);
+
+            // Assert
+            Assert.Equal(1, packages.Count());
+            Assert.NotNull(packages["A"]);
+        }
 
         [Fact]
         public void ResolveDependenciesForInstallDiamondDependencyGraph()

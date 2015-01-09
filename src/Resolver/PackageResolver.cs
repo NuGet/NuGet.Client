@@ -48,8 +48,27 @@ namespace NuGet.Resolver
 
             var packageComparer = PackageIdentity.Comparer;
 
-            var resolverPackages = availablePackages.Select(e => new ResolverPackage(e.Id, e.Version, e.Dependencies));
+            List<ResolverPackage> resolverPackages = new List<ResolverPackage>();
 
+            // convert the available packages into ResolverPackages
+            foreach (var package in availablePackages)
+            {
+                IEnumerable<PackageDependency> dependencies = null;
+
+                // clear out the dependencies if the behavior is set to ignore
+                if (_dependencyBehavior == DependencyBehavior.Ignore)
+                {
+                    dependencies = Enumerable.Empty<PackageDependency>();
+                }
+                else
+                {
+                    dependencies = package.Dependencies;
+                }
+
+                resolverPackages.Add(new ResolverPackage(package.Id, package.Version, dependencies));
+            }
+
+            // group the packages by id
             foreach (var group in resolverPackages.GroupBy(e => e.Id))
             {
                 List<ResolverPackage> curSet = group.ToList();
@@ -163,6 +182,7 @@ namespace NuGet.Resolver
             {
                 case DependencyBehavior.Lowest:
                     return VersionComparer.Default.Compare(xv, yv);
+                case DependencyBehavior.Ignore:
                 case DependencyBehavior.Highest:
                     return -1 * VersionComparer.Default.Compare(xv, yv);
                 case DependencyBehavior.HighestMinor:
