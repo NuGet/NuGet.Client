@@ -9,7 +9,6 @@ namespace PackageManagement.Cmdlets.Test
 {
     public class PowerShellCmdletsTest : IUseFixture<PowerShellCmdletsTestContext>
     {
-        private Runspace _runSpace;
         private SourceRepositoryProvider _provider;
         private PowerShellCmdletsTestContext _testContext;
 
@@ -52,9 +51,9 @@ namespace PackageManagement.Cmdlets.Test
             }
         }
 
-        public void SetFixture()
+        public void SetFixture(PowerShellCmdletsTestContext data)
         {
-            _testContext = new PowerShellCmdletsTestContext();
+            _testContext = data;
             ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
             var packageSourceProvider = new PackageSourceProvider(settings);
             var packageSources = packageSourceProvider.LoadPackageSources();
