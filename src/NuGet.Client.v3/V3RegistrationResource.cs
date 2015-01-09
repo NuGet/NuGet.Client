@@ -4,6 +4,7 @@ using NuGet.PackagingCore;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
+    /// <summary>
+    /// Registration blob reader
+    /// </summary>
     public class V3RegistrationResource : INuGetResource
     {
         // cache all json retrieved in this resource, the resource *should* be thrown away after the operation is done
@@ -26,16 +30,27 @@ namespace NuGet.Client
             _cache = new ConcurrentDictionary<Uri, JObject>();
         }
 
+        /// <summary>
+        /// Constructs the URI of a registration index blob
+        /// </summary>
         public virtual Uri GetUri(string packageId)
         {
-            return new Uri(_baseUrl.AbsoluteUri.TrimEnd('/') + "/" + packageId.ToLowerInvariant() + "/index.json");
+            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json", 
+                _baseUrl.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
         }
 
+        /// <summary>
+        /// Constructs the URI of a registration blob with a specific version
+        /// </summary>
         public virtual Uri GetUri(PackageIdentity package)
         {
-            throw new NotImplementedException();
+            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", _baseUrl.AbsoluteUri.TrimEnd('/'), 
+                package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));
         }
 
+        /// <summary>
+        /// Returns the registration blob for the id and version
+        /// </summary>
         public virtual async Task<JObject> GetPackage(PackageIdentity identity, CancellationToken token)
         {
             var allVersions = await Get(identity.Id, true, true, token);
@@ -43,6 +58,9 @@ namespace NuGet.Client
             return allVersions.FirstOrDefault(p => String.Equals(p["version"].ToString(), identity.Version.ToNormalizedString(), StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Returns all versions of a package 
+        /// </summary>
         public virtual async Task<IEnumerable<JObject>> Get(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             // TODO: use filters

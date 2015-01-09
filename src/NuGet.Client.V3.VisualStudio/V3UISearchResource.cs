@@ -19,9 +19,9 @@ namespace NuGet.Client.V3.VisualStudio
 {
     public class V3UISearchResource : UISearchResource
     {
-        private readonly RawSearchResource _searchResource;
+        private readonly V3RawSearchResource _searchResource;
 
-        public V3UISearchResource(RawSearchResource searchResource)
+        public V3UISearchResource(V3RawSearchResource searchResource)
             : base()
         {
             _searchResource = searchResource;

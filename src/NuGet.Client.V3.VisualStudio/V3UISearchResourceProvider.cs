@@ -34,7 +34,7 @@ namespace NuGet.Client.V3.VisualStudio
 
             if (serviceIndex != null)
             {
-                var rawSearch = source.GetResource<RawSearchResource>();
+                var rawSearch = source.GetResource<V3RawSearchResource>();
 
                 curResource = new V3UISearchResource(rawSearch);
             }

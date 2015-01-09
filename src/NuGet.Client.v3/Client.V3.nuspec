@@ -12,5 +12,6 @@
   </metadata> 
   <files>
 	<file src="..\DataClient\bin\$configuration$\NuGet.Data.dll" target="lib/net45" />
+	<file src="..\DataClient\bin\$configuration$\NuGet.Data.XML" target="lib/net45" />
   </files>
 </package>

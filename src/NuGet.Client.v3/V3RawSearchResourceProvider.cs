@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(RawSearchResource))]
+    [NuGetResourceProviderMetadata(typeof(V3RawSearchResource))]
     public class V3RawSearchResourceProvider : INuGetResourceProvider
     {
         private readonly DataClient _client;

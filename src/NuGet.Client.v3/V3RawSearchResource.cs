@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
-    public class V3RawSearchResource : RawSearchResource
+    public class V3RawSearchResource : INuGetResource
     {
 
         private readonly DataClient _client;
@@ -23,7 +23,7 @@ namespace NuGet.Client
             _searchEndpoints = searchEndpoints.ToArray();
         }
 
-        public override async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
             for (int i = 0; i < _searchEndpoints.Length; i++)
             {
@@ -78,7 +78,7 @@ namespace NuGet.Client
             throw new NuGetProtocolException(Strings.Protocol_MissingSearchService);
         }
 
-        public override async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
             var results = await SearchPage(searchTerm, filters, skip, take, cancellationToken);
 
