@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Management.Automation;
+using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -21,10 +22,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private const int DefaultFirstValue = 50;
         private bool _enablePaging;
+        private NuGetPackageManager _nugetPackageManager;
+
+        [ImportMany]
+        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
 
         public GetPackageCommand() :
             base()
         {
+            ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
+            SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
+            _nugetPackageManager = new NuGetPackageManager(provider);
         }
 
         [Parameter(Position = 0)]
@@ -92,7 +100,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // If Remote & Updates set of parameters are not specified
             if (!UseRemoteSource)
             {
-
+                FolderNuGetProject project = new FolderNuGetProject("c:\temp");
+                IEnumerable<PackageReference> installedPackages = project.GetInstalledPackages();
+                WritePackages(installedPackages);
             }
             else
             {
@@ -117,6 +127,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 }
             }
+        }
+
+        private void WritePackages(IEnumerable<PackageReference> installedPackages)
+        {
+            List<PackageIdentity> identities = new List<PackageIdentity>();
+            foreach (PackageReference package in installedPackages)
+            {
+                identities.Add(package.PackageIdentity);
+            }
+            WriteObject(identities);
         }
     }
 }

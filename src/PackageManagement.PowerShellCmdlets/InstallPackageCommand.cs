@@ -22,10 +22,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public InstallPackageCommand()
         {
-            ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-            SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
-            _nugetPackageManager = new NuGetPackageManager(provider);
         }
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        public SourceRepositoryProvider Provider { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public virtual string Id { get; set; }
@@ -60,17 +60,43 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public DependencyBehavior? DependencyVersion { get; set; }
 
+        private void Preprocess()
+        {
+            if (Provider == null)
+            {
+                ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
+                Provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
+            }
+            _nugetPackageManager = new NuGetPackageManager(Provider);
+        }
+
         protected override void ProcessRecordCore()
         {
+            Preprocess();
+
             FolderNuGetProject project = new FolderNuGetProject("c:\temp");
             PackageIdentity identity = GetPackageIdentity();
             if (WhatIf.IsPresent)
             {
-                _nugetPackageManager.PreviewInstallPackageAsync(project, identity, ResolutionContext, this);
+                if (string.IsNullOrEmpty(Version))
+                {
+                    _nugetPackageManager.PreviewInstallPackageAsync(project, Id, ResolutionContext, this);
+                }
+                else
+                {
+                    _nugetPackageManager.PreviewInstallPackageAsync(project, identity, ResolutionContext, this);
+                }
             }
             else
             {
-                _nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
+                if (string.IsNullOrEmpty(Version))
+                {
+                    _nugetPackageManager.InstallPackageAsync(project, Id, ResolutionContext, this);
+                }
+                else
+                {
+                    _nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
+                }
             }
         }
 
