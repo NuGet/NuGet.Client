@@ -120,6 +120,9 @@
   <data name="Debug_AddReference" xml:space="preserve">
     <value>Added reference '{0}' to project '{1}'.</value>
   </data>
+  <data name="DTE_ProjectUnsupported" xml:space="preserve">
+    <value>The project '{0}' is unsupported</value>
+  </data>
   <data name="FailedToAddReference" xml:space="preserve">
     <value>Failed to add reference to '{0}'.</value>
   </data>

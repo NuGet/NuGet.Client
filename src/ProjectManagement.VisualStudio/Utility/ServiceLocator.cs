@@ -60,8 +60,7 @@ namespace NuGet.ProjectManagement.VisualStudio
                 }
             }
 
-            throw new InvalidOperationException("Not using Shell yet");
-            //return (TInterface)Package.GetGlobalService(typeof(TService));
+            return (TInterface)Package.GetGlobalService(typeof(TService));
         }
 
         private static TService GetDTEService<TService>() where TService : class
@@ -127,8 +126,7 @@ namespace NuGet.ProjectManagement.VisualStudio
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The caller is responsible for disposing this")]
         private static IServiceProvider GetServiceProvider(_DTE dte)
         {
-            throw new InvalidOperationException("Not using Shell yet");
-            IServiceProvider serviceProvider = null;  //new ServiceProvider(dte as VsServiceProvider);
+            IServiceProvider serviceProvider = new ServiceProvider(dte as VsServiceProvider);
             Debug.Assert(serviceProvider != null, "Service provider is null");
             return serviceProvider;
         }

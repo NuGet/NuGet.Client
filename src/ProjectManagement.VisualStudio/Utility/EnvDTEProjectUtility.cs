@@ -12,6 +12,8 @@ using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectIt
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTESolution = EnvDTE.Solution;
 using EnvDTEProperty = EnvDTE.Property;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.ProjectManagement.VisualStudio
 {
@@ -412,18 +414,17 @@ namespace NuGet.ProjectManagement.VisualStudio
             bool isShared = false;
             var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            throw new InvalidOperationException("Not using Shell yet");
-            //// VSHPROPID_ProjectCapabilities is a space delimited list of capabilities (Dev11+)
-            //object capObj;
-            //if (ErrorHandler.Succeeded(hier.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID5.VSHPROPID_ProjectCapabilities, out capObj)) && capObj != null)
-            //{
-            //    string cap = capObj as string;
+            // VSHPROPID_ProjectCapabilities is a space delimited list of capabilities (Dev11+)
+            object capObj;
+            if (ErrorHandler.Succeeded(hier.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID5.VSHPROPID_ProjectCapabilities, out capObj)) && capObj != null)
+            {
+                string cap = capObj as string;
 
-            //    if (!String.IsNullOrEmpty(cap))
-            //    {
-            //        isShared = cap.Split(' ').Any(s => StringComparer.OrdinalIgnoreCase.Equals("SharedAssetsProject", s));
-            //    }
-            //}
+                if (!String.IsNullOrEmpty(cap))
+                {
+                    isShared = cap.Split(' ').Any(s => StringComparer.OrdinalIgnoreCase.Equals("SharedAssetsProject", s));
+                }
+            }
 
             return isShared;
         }

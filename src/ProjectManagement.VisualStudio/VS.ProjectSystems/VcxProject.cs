@@ -13,7 +13,7 @@ namespace NuGet.ProjectManagement.VisualStudio
             vcxFile = Loader.Instance.LoadXml(fullname);
         }
 
-        public bool HasClrSupport(Configuration config)
+        public bool HasClrSupport(EnvDTE.Configuration config)
         {
             string filter = config.ConfigurationName + "|" + config.PlatformName;
             var elements = vcxFile.Descendants().Where(x => x.Name.LocalName == "PropertyGroup");

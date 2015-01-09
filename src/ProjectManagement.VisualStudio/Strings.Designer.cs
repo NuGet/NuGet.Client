@@ -70,6 +70,15 @@ namespace NuGet.ProjectManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; is unsupported.
+        /// </summary>
+        internal static string DTE_ProjectUnsupported {
+            get {
+                return ResourceManager.GetString("DTE_ProjectUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;..
         /// </summary>
         internal static string FailedToAddReference {
