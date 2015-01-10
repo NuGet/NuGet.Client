@@ -71,29 +71,6 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<IEnumerable<UISearchMetadata>> Search(int startIndex, CancellationToken ct)
         {
-            // new Uri("http://nuget.org/Content/Images/packageDefaultIcon.png")
-
-            // TEST packages
-
-                UISearchMetadata pkg1 = new UISearchMetadata("packageA", NuGetVersion.Parse("1.0.0"), "summary", null,
-        new List<NuGetVersion>() { NuGetVersion.Parse("1.0.0"), NuGetVersion.Parse("1.0.0-alpha") },
-        new UIPackageMetadata("Package A", new string[] { "author1", "author2" }, new string[] { "owner1", "owner2" },
-            null,
-            null, null, false, "description", "summary", "notes", "en-us", "tag1 tag2", string.Empty, new Version(1, 0, 0)));
-
-                List<UISearchMetadata> results = new List<UISearchMetadata>();
-                results.Add(pkg1);
-
-                UISearchMetadata pkg2 = new UISearchMetadata("packageB", NuGetVersion.Parse("2.0.0"), "summary", null,
-            new List<NuGetVersion>() { NuGetVersion.Parse("2.0.0"), NuGetVersion.Parse("2.0.0-alpha") },
-            new UIPackageMetadata("Package B", new string[] { "author1", "author2" }, new string[] { "owner1", "owner2" },
-                null,
-                null, null, false, "description", "summary", "notes", "en-us", "tag1 tag2", string.Empty, new Version(1, 0, 0)));
-
-                results.Add(pkg2);
-
-                return results;
-
             if (_option.Filter == Filter.Installed ||
                 _option.Filter == Filter.UpdatesAvailable)
             {
@@ -148,8 +125,8 @@ namespace NuGet.PackageManagement.UI
                 ++resultCount;
 
                 var searchResultPackage = new UiSearchResultPackage(_sourceRepository);
-                searchResultPackage.Id = package.Id;
-                searchResultPackage.Version = package.Version;
+                searchResultPackage.Id = package.Identity.Id;
+                searchResultPackage.Version = package.Identity.Version;
                 searchResultPackage.IconUrl = package.IconUrl;
 
                 // get other versions
