@@ -6,6 +6,7 @@ using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Management.Automation;
 
@@ -14,36 +15,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsLifecycle.Install, "Package")]
     public class InstallPackageCommand : NuGetPowerShellBaseCommand
     {
-        private NuGetPackageManager _nugetPackageManager;
         private ResolutionContext _context;
-
-        [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
-
-        [Import]
-        public ISolutionManager VSSolutionManager;
 
         public InstallPackageCommand()
         {
         }
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
-        public SourceRepositoryProvider Provider { get; set; }
-
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public virtual string Id { get; set; }
-
-        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
-        [ValidateNotNullOrEmpty]
-        public virtual string ProjectName { get; set; }
 
         [Parameter(Position = 2)]
         [ValidateNotNullOrEmpty]
         public virtual string Version { get; set; }
-
-        [Parameter(Position = 3)]
-        [ValidateNotNullOrEmpty]
-        public string Source { get; set; }
 
         [Parameter]
         public SwitchParameter WhatIf { get; set; }
@@ -63,42 +46,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public DependencyBehavior? DependencyVersion { get; set; }
 
-        private void Preprocess()
-        {
-            if (Provider == null)
-            {
-                ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-                Provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
-            }
-            _nugetPackageManager = new NuGetPackageManager(Provider);
-        }
-
         protected override void ProcessRecordCore()
         {
             Preprocess();
-
-            var nuGetProject = new FolderNuGetProject(@"C:\temp");
             PackageIdentity identity = GetPackageIdentity();
+
             if (WhatIf.IsPresent)
             {
                 if (string.IsNullOrEmpty(Version))
                 {
-                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, Id, ResolutionContext, this).Wait();
+                    PackageManager.PreviewInstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
                 }
                 else
                 {
-                    _nugetPackageManager.PreviewInstallPackageAsync(nuGetProject, identity, ResolutionContext, this).Wait();
+                    PackageManager.PreviewInstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
                 }
             }
             else
             {
                 if (string.IsNullOrEmpty(Version))
                 {
-                    _nugetPackageManager.InstallPackageAsync(nuGetProject, Id, ResolutionContext, this).Wait();
+                    PackageManager.InstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
                 }
                 else
                 {
-                   _nugetPackageManager.InstallPackageAsync(nuGetProject, identity, ResolutionContext, this).Wait();
+                   PackageManager.InstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
                 }
             }
         }
@@ -109,6 +81,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private PackageIdentity GetPackageIdentity()
         {
+            // TODO: Get latest package version when Version is not specified.
             PackageIdentity identity = null;
             if (!string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(Version))
             {

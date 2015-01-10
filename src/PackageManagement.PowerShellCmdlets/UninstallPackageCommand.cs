@@ -8,39 +8,25 @@ using NuGet.Versioning;
 using System;
 using System.ComponentModel.Composition;
 using System.Management.Automation;
+using System.Linq;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     [Cmdlet(VerbsLifecycle.Uninstall, "Package")]
     public class UninstallPackageCommand : NuGetPowerShellBaseCommand
     {
-        private NuGetPackageManager _nugetPackageManager;
         private ResolutionContext _context;
-
-        [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
 
         public UninstallPackageCommand()
         {
-            ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-            SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
-            _nugetPackageManager = new NuGetPackageManager(provider);
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public virtual string Id { get; set; }
 
-        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
-        [ValidateNotNullOrEmpty]
-        public virtual string ProjectName { get; set; }
-
         [Parameter(Position = 2)]
         [ValidateNotNullOrEmpty]
         public virtual string Version { get; set; }
-
-        [Parameter(Position = 3)]
-        [ValidateNotNullOrEmpty]
-        public string Source { get; set; }
 
         [Parameter]
         public SwitchParameter WhatIf { get; set; }
@@ -53,11 +39,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            FolderNuGetProject project = new FolderNuGetProject("c:\temp");
+            Preprocess();
+
             PackageIdentity identity = GetPackageIdentity();
             // TODO: UninstallAsync?
-            //_nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
-            project.UninstallPackage(identity, this);
+            //PackageManager.UninstallPackageAsync(project, identity, ResolutionContext, this);
+            Project.UninstallPackage(identity, this);
         }
 
         /// <summary>
@@ -67,9 +54,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private PackageIdentity GetPackageIdentity()
         {
             PackageIdentity identity = null;
-            if (!string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(Version))
+            if (!string.IsNullOrEmpty(Id))
             {
-                identity = new PackageIdentity(Id, NuGetVersion.Parse(Version));
+                if (!string.IsNullOrEmpty(Version))
+                {
+                    identity = new PackageIdentity(Id, NuGetVersion.Parse(Version));
+                }
+                else
+                {
+                    // If Version is not specified.
+                    identity = Project.GetInstalledPackages()
+                        .Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase))
+                        .FirstOrDefault().
+                        PackageIdentity;
+                }
             }
             return identity;
         }

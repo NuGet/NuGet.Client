@@ -14,21 +14,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsData.Update, "Package", DefaultParameterSetName = "All")]
     public class UpdatePackageCommand : NuGetPowerShellBaseCommand
     {
-        private NuGetPackageManager _nugetPackageManager;
         private ResolutionContext _context;
         private string _id;
         private string _projectName;
         private bool _idSpecified;
         private bool _projectSpecified;
 
-        [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
-
         public UpdatePackageCommand()
         {
-            ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-            SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
-            _nugetPackageManager = new NuGetPackageManager(provider);
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Project")]
@@ -50,7 +43,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "All")]
         [Parameter(Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "Project")]
         [Parameter(Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "Reinstall")]
-        public string ProjectName
+        public override string ProjectName
         {
             get
             {
@@ -66,10 +59,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(Position = 2, ParameterSetName = "Project")]
         [ValidateNotNullOrEmpty]
         public string Version { get; set; }
-
-        [Parameter(Position = 3)]
-        [ValidateNotNullOrEmpty]
-        public string Source { get; set; }
 
         [Parameter]
         public SwitchParameter WhatIf { get; set; }
@@ -95,17 +84,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            FolderNuGetProject project = new FolderNuGetProject("c:\temp");
+            Preprocess();
             PackageIdentity identity = GetPackageIdentity();
+
             // TODO: Update package logic here or in PackageManager?
             // How to get the latest version of the packages?
             if (WhatIf.IsPresent)
             {
-                _nugetPackageManager.PreviewInstallPackageAsync(project, identity, ResolutionContext, this);
+                if (string.IsNullOrEmpty(Version))
+                {
+                    PackageManager.PreviewInstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
+                }
+                else
+                {
+                    PackageManager.PreviewInstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
+                }
             }
             else
             {
-                _nugetPackageManager.InstallPackageAsync(project, identity, ResolutionContext, this);
+                if (string.IsNullOrEmpty(Version))
+                {
+                    PackageManager.InstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
+                }
+                else
+                {
+                    PackageManager.InstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
+                }
             }
         }
 

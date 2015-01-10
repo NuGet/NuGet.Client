@@ -13,6 +13,9 @@ using System.Management.Automation.Host;
 using NuGet.PackageManagement.PowerShellCmdlets;
 using System.Diagnostics;
 using NuGet.NuGet.PackageManagement.PowerShellCmdlets;
+using System.ComponentModel.Composition;
+using NuGet.Client;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -27,6 +30,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         //    () => HttpUtility.CreateUserAgentString(PSCommandsUserAgentClient, VsVersionHelper.FullVsEdition));
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
+
+        [ImportMany]
+        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
+
+        [Import]
+        public ISolutionManager VSSolutionManager;
+
+        public NuGetPackageManager PackageManager { get; set; }
+
+        public NuGetProject Project { get; set; }
+
+        [Parameter(ValueFromPipelineByPropertyName = true)]
+        public SourceRepositoryProvider Provider { get; set; }
+
+        [Parameter(Position = 3)]
+        [ValidateNotNullOrEmpty]
+        public string Source { get; set; }
+
+        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
+        [ValidateNotNullOrEmpty]
+        public virtual string ProjectName { get; set; }
 
         internal void Execute()
         {
@@ -57,6 +81,41 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by NuGetBaseCmdlet.
         /// </summary>
         protected abstract void ProcessRecordCore();
+
+        protected virtual void Preprocess()
+        {
+            GetSourceRepositoryProvider();
+            PackageManager = new NuGetPackageManager(Provider);
+            GetNuGetProject();
+        }
+
+        private void GetSourceRepositoryProvider()
+        {
+            if (Provider == null)
+            {
+                ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
+                List<PackageSource> sources = new List<PackageSource>();
+                if (string.IsNullOrEmpty(Source))
+                {
+                    PackageSource source = new PackageSource(Source);
+                    sources.Add(source);
+                }
+                PackageSourceProvider pacakgeSourceProvider = new PackageSourceProvider(settings, sources);
+                Provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
+            }
+        }
+
+        private void GetNuGetProject()
+        {
+            if (string.IsNullOrEmpty(ProjectName))
+            {
+                Project = VSSolutionManager.DefaultNuGetProject;
+            }
+            else
+            {
+                Project = VSSolutionManager.GetNuGetProject(ProjectName);
+            }
+        }
 
         protected IErrorHandler ErrorHandler
         {

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NuGet.ProjectManagement;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 
@@ -29,7 +31,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            throw new NotImplementedException();
+            Preprocess();
+            
+            if (All.IsPresent)
+            {
+                IEnumerable<NuGetProject> projects = VSSolutionManager.GetProjects();
+                WriteObject(projects, enumerateCollection: true);
+            }
+            else
+            {
+                WriteObject(Project);
+            }
         }
     }
 }

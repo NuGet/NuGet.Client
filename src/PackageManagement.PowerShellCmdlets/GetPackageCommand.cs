@@ -86,11 +86,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual bool CollapseVersions { get; set; }
 
-        protected void Preprocess()
+        protected override void Preprocess()
         {
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
             CollapseVersions = !AllVersions.IsPresent && ListAvailable;
+            base.Preprocess();
         }
 
         protected override void ProcessRecordCore()
@@ -100,8 +101,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // If Remote & Updates set of parameters are not specified
             if (!UseRemoteSource)
             {
-                FolderNuGetProject project = new FolderNuGetProject("c:\temp");
-                IEnumerable<PackageReference> installedPackages = project.GetInstalledPackages();
+                IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
                 WritePackages(installedPackages);
             }
             else
