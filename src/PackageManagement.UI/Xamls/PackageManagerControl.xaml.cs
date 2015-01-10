@@ -184,10 +184,11 @@ namespace NuGet.PackageManagement.UI
 
         private void InitSourceRepoList()
         {
+            // TODO: get this from the projects
             _label.Text = string.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Resources.Label_PackageManager,
-                "TODO IMPL PROJ NAME");
+                "<Project>");
 
             // init source repo list
             _sourceRepoList.Items.Clear();
@@ -306,7 +307,7 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.ScrollToHome();
 
 
-                await newModel.LoadPackageMetadaAsync(await _activeSource.GetResourceAsync<UIMetadataResource>());
+                await newModel.LoadPackageMetadaAsync(await _activeSource.GetResourceAsync<UIMetadataResource>(), CancellationToken.None);
             }
         }
 

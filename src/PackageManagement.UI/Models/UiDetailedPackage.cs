@@ -1,11 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using NuGet.Versioning;
+using NuGet.Client.VisualStudio;
+using System.Linq;
 
 namespace NuGet.PackageManagement.UI
 {
     public class UiPackageMetadata
     {
+        public UiPackageMetadata()
+        {
+
+        }
+
+        public UiPackageMetadata(UIPackageMetadata serverData)
+        {
+            Version = serverData.Identity.Version;
+            Summary = serverData.Summary;
+            Description = serverData.Description;
+            Authors = serverData.Authors;
+            Owners = serverData.Owners;
+            IconUrl = serverData.IconUrl;
+            LicenseUrl = serverData.LicenseUrl;
+            ProjectUrl = serverData.ProjectUrl;
+            Tags = serverData.Tags;
+            DownloadCount = serverData.DownloadCount;
+            Published = serverData.Published;
+            DependencySets = serverData.DependencySets.Select(e => new UiPackageDependencySet(e));
+            HasDependencies = serverData.HasDependencies;
+        }
+
         public NuGetVersion Version { get; set; }
         public string Summary { get; set; }
 

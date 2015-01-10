@@ -93,7 +93,7 @@ namespace StandaloneUI
 
         public IEnumerable<NuGet.Configuration.PackageSource> LoadPackageSources()
         {
-            return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3") };
+            return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://nugetrcstage.blob.core.windows.net/ver3-rc/index.json", "v3") };
         }
 
         public event EventHandler PackageSourcesSaved;

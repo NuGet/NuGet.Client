@@ -4,11 +4,23 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using NuGet.Versioning;
+using NuGet.PackagingCore;
 
 namespace NuGet.PackageManagement.UI
 {
     public class UiPackageDependency
     {
+        public UiPackageDependency()
+        {
+
+        }
+
+        public UiPackageDependency(PackageDependency serverData)
+        {
+            Id = serverData.Id;
+            Range = serverData.VersionRange;
+        }
+
         public string Id
         {
             get;

@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         NuGetFramework framework = project.GetMetadata<NuGetFramework>("TargetFramework");
 
-                        if (framework != null)
+                        if (framework != null && framework.IsSpecificFramework)
                         {
                             frameworks.Add(new FrameworkName(framework.DotNetFrameworkName));
                         }
@@ -128,6 +128,12 @@ namespace NuGet.PackageManagement.UI
                 searchResultPackage.Id = package.Identity.Id;
                 searchResultPackage.Version = package.Identity.Version;
                 searchResultPackage.IconUrl = package.IconUrl;
+
+                //if (searchResultPackage.IconUrl == null)
+                //{
+                //    // use the default
+                //    searchResultPackage.IconUrl = new Uri("https://nuget.org/Content/Images/packageDefaultIcon.png");
+                //}
 
                 // get other versions
                 var versionList = package.Versions.ToList();

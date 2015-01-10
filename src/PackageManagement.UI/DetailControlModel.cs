@@ -8,6 +8,7 @@ using NuGet.Versioning;
 using NuGet.ProjectManagement;
 using NuGet.Client.VisualStudio;
 using NuGet.PackagingCore;
+using System.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -214,7 +215,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task LoadPackageMetadaAsync(UIMetadataResource metadataResource)
+        public async Task LoadPackageMetadaAsync(UIMetadataResource metadataResource, CancellationToken token)
         {
             List<PackageIdentity> ids = new List<PackageIdentity>();
 
@@ -225,16 +226,18 @@ namespace NuGet.PackageManagement.UI
 
             var dict = new Dictionary<NuGetVersion, UiPackageMetadata>();
 
-            // TODO: request data from the server
-
             if (metadataResource != null)
             {
-                //var metadata = await metadataResource.GetMetadata(ids);
+                // load up the full details for each version
+                var metadata = await metadataResource.GetMetadata(ids, true, false, token);
 
-                //foreach (var item in metadata)
-                //{
-                //    dict.Add();
-                //}
+                foreach (var item in metadata)
+                {
+                    if (!dict.ContainsKey(item.Identity.Version))
+                    {
+                        dict.Add(item.Identity.Version, new UiPackageMetadata(item));
+                    }
+                }
             }
 
             _metadataDict = dict;

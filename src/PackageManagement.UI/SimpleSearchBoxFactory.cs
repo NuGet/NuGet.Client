@@ -14,8 +14,9 @@ namespace NuGet.PackageManagement.UI
         public IVsWindowSearchHost CreateWindowSearchHost(object pParentControl, IDropTarget pDropTarget = null)
         {
             var parent = pParentControl as Border;
-
+            
             var box = new SimpleSearchBox();
+            
 
             if (parent != null)
             {
