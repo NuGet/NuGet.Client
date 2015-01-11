@@ -12,7 +12,7 @@ namespace NuGet.Packaging
         {
             if(String.IsNullOrEmpty(rootDirectory))
             {
-                throw new ArgumentException("rootDirectory cannot be null or empty");
+                throw new ArgumentException(String.Format(Strings.StringCannotBeNullOrEmpty, "rootDirectory"));
             }
             _rootDirectory = rootDirectory;
             _useSideBySidePaths = useSideBySidePaths;

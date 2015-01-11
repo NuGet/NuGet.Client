@@ -10,6 +10,26 @@ namespace NuGet.Packaging
     {
         public static void ExtractPackage(Stream packageStream, PackageIdentity packageIdentity, PackagePathResolver packagePathResolver, PackageSaveModes packageSaveMode = PackageSaveModes.Nupkg)
         {
+            if(packageStream == null)
+            {
+                throw new ArgumentNullException("packageStream");
+            }
+
+            if(!packageStream.CanSeek)
+            {
+                throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
+            }
+
+            if(packageIdentity == null)
+            {
+                throw new ArgumentNullException("packageIdentity");
+            }
+
+            if(packagePathResolver == null)
+            {
+                throw new ArgumentNullException("packagePathResolver");
+            }
+
             // TODO: Need to handle PackageSaveMode
             // TODO: Need to handle satellite package files differently
             // TODO: Support overwriting files also?
