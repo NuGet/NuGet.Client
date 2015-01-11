@@ -32,6 +32,7 @@ namespace NuGet.ProjectManagement
             Root = root;
             PackagePathResolver = new PackagePathResolver(root);
             PackageSaveMode = PackageSaveModes.Nupkg;
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, root);
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.AnyFramework);
         }
 
@@ -42,6 +43,21 @@ namespace NuGet.ProjectManagement
 
         public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
         {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException("packageIdentity");
+            }
+
+            if (packageStream == null)
+            {
+                throw new ArgumentNullException("packageStream");
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException("nuGetProjectContext");
+            }
+
             // 1. Check if the Package already exists at root, if so, return false
             if (PackageExistsInProject(packageIdentity))
             {
@@ -49,26 +65,39 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Root);
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
             PackageExtractor.ExtractPackage(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode);
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
             return true;
         }
 
         public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
+            if(packageIdentity == null)
+            {
+                throw new ArgumentNullException("packageIdentity");
+            }
+
+            if(nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException("nuGetProjectContext");
+            }
+
             // TODO: Handle removing of satellite files from the runtime package also
 
             // 1. Check if the Package exists at root, if not, return false
             if (!PackageExistsInProject(packageIdentity))
             {
+                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExistInFolder, packageIdentity);
                 return false;
             }
 
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovingPackageFromFolder, packageIdentity, Root);
             // 2. Delete the package folder and files from the root directory of this FileSystemNuGetProject
             // Remember that the following code may throw System.UnauthorizedAccessException
             Directory.Delete(PackagePathResolver.GetInstallPath(packageIdentity), recursive: true);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromFolder, packageIdentity, Root);
             return true;
         }
 

@@ -79,6 +79,15 @@ namespace NuGet.ProjectManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;. Please make sure that it is in the Global Assembly Cache..
+        /// </summary>
+        internal static string FailedToAddGacReference {
+            get {
+                return ResourceManager.GetString("FailedToAddGacReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;..
         /// </summary>
         internal static string FailedToAddReference {

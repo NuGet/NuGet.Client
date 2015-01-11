@@ -41,19 +41,34 @@ namespace NuGet.ProjectManagement.VisualStudio
             private set;
         }
 
-        public void ResetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
+        public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
         {
             NuGetProjectContext = nuGetProjectContext;
         }
 
-        public void AddFile(string path, System.IO.Stream stream)
+        public void AddFile(string path, Stream stream)
         {
             throw new NotImplementedException();
         }
 
         public void AddFrameworkReference(string name)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Add a reference to the project
+                AddGacReference(name);
+
+                NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, name), e);
+            }
+        }
+
+        protected virtual void AddGacReference(string name)
+        {
+            EnvDTEProjectUtility.GetReferences(EnvDTEProject).Add(name);
         }
 
         public void AddImport(string targetFullPath, ImportLocation location)

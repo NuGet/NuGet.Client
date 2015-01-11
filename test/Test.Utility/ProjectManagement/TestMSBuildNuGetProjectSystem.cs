@@ -74,5 +74,11 @@ namespace Test.Utility
         }
 
         public List<string> References { get; private set; }
+
+
+        public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
+        {
+            // No-op
+        }
     }
 }

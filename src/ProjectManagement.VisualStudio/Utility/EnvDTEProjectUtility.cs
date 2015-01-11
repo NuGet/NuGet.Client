@@ -337,10 +337,10 @@ namespace NuGet.ProjectManagement.VisualStudio
                 return NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
-            return null;
+            return NuGetFramework.UnsupportedFramework;
         }
 
-        public static string GetTargetNuGetFrameworkString(EnvDTEProject envDTEProject)
+        private static string GetTargetNuGetFrameworkString(EnvDTEProject envDTEProject)
         {
             if (envDTEProject == null)
             {

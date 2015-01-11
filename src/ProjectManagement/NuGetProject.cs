@@ -30,6 +30,7 @@ namespace NuGet.ProjectManagement
         // TODO: Consider adding CancellationToken here
         /// <summary>
         /// This installs a package into the NuGetProject using the packageStream passed in
+        /// <param name="packageStream"></param> should be seekable
         /// </summary>
         /// <returns>Returns false if the package was already present in the NuGetProject. On successful installation, returns true</returns>
         public abstract bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext);
@@ -77,6 +78,7 @@ namespace NuGet.ProjectManagement
 
     public static class NuGetProjectMetadataKeys
     {
+        public const string Name = "Name";
         public const string TargetFramework = "TargetFramework";
     }
 }

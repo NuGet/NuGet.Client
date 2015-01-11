@@ -8,6 +8,7 @@ namespace NuGet.ProjectManagement
         NuGetFramework TargetFramework { get; }
         string ProjectName { get; }
         string ProjectFullPath { get;}
+        void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);
         void DeleteFile(string path);
         /// <summary>
