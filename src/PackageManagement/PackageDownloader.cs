@@ -17,14 +17,12 @@ namespace NuGet.PackageManagement
         /// Sets <param name="targetPackageStream"></param> for a given <param name="packageIdentity"></param> 
         /// from one of the given <param name="sourceRepositories"></param>. If successfully set, returns true. Otherwise, false
         /// </summary>
-        public static async Task<bool> GetPackageStream(IEnumerable<SourceRepository> sourceRepositories, PackageIdentity packageIdentity, Stream targetPackageStream)
+        public static async Task<bool> GetPackageStream(HttpClient httpClient, IEnumerable<SourceRepository> sourceRepositories, PackageIdentity packageIdentity, Stream targetPackageStream)
         {
-            // TODO: Tie up machine cache with CacheClient?!
-
             // Get the download url for packageIdentity from one of the source repositories
             foreach(var sourceRepo in sourceRepositories)
             {
-                if(await GetPackageStream(sourceRepo, packageIdentity, targetPackageStream))
+                if(await GetPackageStream(httpClient, sourceRepo, packageIdentity, targetPackageStream))
                 {
                     return true;
                 }
@@ -37,7 +35,7 @@ namespace NuGet.PackageManagement
         /// Sets <param name="targetPackageStream"></param> for a given <param name="packageIdentity"></param> 
         /// from the given <param name="sourceRepository"></param>. If successfully set, returns true. Otherwise, false
         /// </summary>
-        public static async Task<bool> GetPackageStream(SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream)
+        public static async Task<bool> GetPackageStream(HttpClient httpClient, SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream)
         {
             // TODO: Tie up machine cache with CacheClient?!
 
@@ -47,7 +45,7 @@ namespace NuGet.PackageManagement
             // Step-2: Download the package using the downloadUrl
             // TODO: Need to check usage here and likely not create CacheHttpClient everytime
             // TODO: Also, need to pass in a HttpMessageHandler/INuGetRequestModifier to set UserAgent
-            return await GetPackageStream(downloadUrl, targetPackageStream);
+            return await GetPackageStream(httpClient, downloadUrl, targetPackageStream);
         }
 
         private static async Task<Uri> GetDownloadUrl(SourceRepository sourceRepository, PackageIdentity packageIdentity)
@@ -62,13 +60,13 @@ namespace NuGet.PackageManagement
             return downloadUrl;
         }
 
-        public static async Task<bool> GetPackageStream(/* HttpClient ,*/ Uri downloadUrl, Stream targetPackageStream)
+        public static async Task<bool> GetPackageStream(HttpClient httpClient, Uri downloadUrl, Stream targetPackageStream)
         {
             if(downloadUrl == null)
             {
                 return false;
             }
-            var httpClient = new HttpClient();
+
             try
             {
                 using (var responseStream = await httpClient.GetStreamAsync(downloadUrl))

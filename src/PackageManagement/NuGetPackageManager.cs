@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Cache;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,10 +42,18 @@ namespace NuGet.PackageManagement
 
         private SourceRepositoryProvider SourceRepositoryProvider { get; set; }
 
+        private HttpClient HttpClient { get; set; }
+
+        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider)
+            : this(sourceRepositoryProvider, new HttpClient(new WebRequestHandler()
+            {
+                CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default)
+            })) {}
+
         /// <summary>
-        /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param>
+        /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param> and <param name="httpClient"></param>
         /// </summary>
-        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider/*, IPackageResolver packageResolver */)
+        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient/*, IPackageResolver packageResolver */)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -177,7 +187,7 @@ namespace NuGet.PackageManagement
                 {
                     using (var targetPackageStream = new MemoryStream())
                     {
-                        await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream);
+                        await PackageDownloader.GetPackageStream(HttpClient, nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream);
                         ExecuteInstall(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext);
                     }
                 }
