@@ -15,13 +15,15 @@ namespace Test.Utility
         public HashSet<string> References { get; private set; }
         public HashSet<string> FrameworkReferences { get; private set; }
         public HashSet<string> ContentFiles { get; private set; }
+        public INuGetProjectContext NuGetProjectContext { get; private set; }
 
-        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework)
+        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext)
         {
             TargetFramework = targetFramework;
             References = new HashSet<string>();
             FrameworkReferences = new HashSet<string>();
             ContentFiles = new HashSet<string>();
+            NuGetProjectContext = nuGetProjectContext;
         }
 
         public void AddFile(string path, Stream stream)
@@ -82,7 +84,27 @@ namespace Test.Utility
 
         public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
         {
-            // No-op
+            NuGetProjectContext = nuGetProjectContext;
+        }
+
+        public bool FileExistsInProject(string path)
+        {
+            return ContentFiles.Where(c => path.Equals(c, StringComparison.OrdinalIgnoreCase)).Any();
+        }
+
+        public dynamic GetPropertyValue(string propertyName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ResolvePath(string path)
+        {
+            return path;
+        }
+
+        public bool IsSupportedFile(string path)
+        {
+            return true;
         }
     }
 }

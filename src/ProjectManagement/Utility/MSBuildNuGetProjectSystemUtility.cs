@@ -1,4 +1,5 @@
-﻿using NuGet.Packaging;
+﻿using NuGet.Frameworks;
+using NuGet.Packaging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -46,25 +47,32 @@ namespace NuGet.ProjectManagement
                                         FrameworkSpecificGroup frameworkSpecificGroup,
                                         IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
-            // Convert items to a file list
-            List<string> packageItemList = frameworkSpecificGroup.Items.ToList();
+            // Convert package items to a archive entry name. That is, replace Path.DirectorySeparatorChar with Path.AltDirectorySeparatorChar
+            List<string> packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
 
-            packageItemList.Sort(new PackageItemComparer());
+            packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
             {
-                var zipArchiveEntryList = packageItemList.Select(i => zipArchive.GetEntry(i)).ToList();
+                var zipArchiveEntryList = packageItemListAsArchiveEntryNames.Select(i => zipArchive.GetEntry(i)).ToList();
                 foreach (ZipArchiveEntry zipArchiveEntry in zipArchiveEntryList)
                 {
+                    if (zipArchiveEntry == null)
+                    {
+                        throw new ArgumentNullException("zipArchiveEntry");
+                    }
+
                     if (IsEmptyFolder(zipArchiveEntry.FullName))
                     {
                         continue;
                     }
 
+                    var effectivePathForContentFile = GetEffectivePathForContentFile(msBuildNuGetProjectSystem.TargetFramework, zipArchiveEntry.FullName);
+
                     // Resolve the target path
                     IPackageFileTransformer installTransformer;
                     string path = ResolveTargetPath(msBuildNuGetProjectSystem,
                         fileTransformers,
-                        fte => fte.InstallExtension, zipArchiveEntry.Name, out installTransformer);
+                        fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
 
                     if (msBuildNuGetProjectSystem.IsSupportedFile(path))
                     {
@@ -77,7 +85,7 @@ namespace NuGet.ProjectManagement
                             // Ignore uninstall transform file during installation
                             string truncatedPath;
                             IPackageFileTransformer uninstallTransformer =
-                                FindFileTransformer(fileTransformers, fte => fte.UninstallExtension, zipArchiveEntry.Name, out truncatedPath);
+                                FindFileTransformer(fileTransformers, fte => fte.UninstallExtension, effectivePathForContentFile, out truncatedPath);
                             if (uninstallTransformer != null)
                             {
                                 continue;
@@ -162,6 +170,44 @@ namespace NuGet.ProjectManagement
 
             truncatedPath = effectivePath;
             return null;
+        }
+
+        internal static string ReplaceAltDirSeparatorWithDirSeparator(string path)
+        {
+            return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+        }
+
+        internal static string ReplaceDirSeparatorWithAltDirSeparator(string path)
+        {
+            return Uri.UnescapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        }
+
+        private static string GetEffectivePathForContentFile(NuGetFramework nuGetFramework, string zipArchiveEntryFullName)
+        {
+            var effectivePathForContentFile = zipArchiveEntryFullName;
+            // NOTE that ZipArchiveEntries have '/' in them, which is, Path.AltDirectorySeparatorChar
+            if (zipArchiveEntryFullName.StartsWith(Constants.ContentDirectory + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
+                effectivePathForContentFile = zipArchiveEntryFullName.Substring((Constants.ContentDirectory + Path.AltDirectorySeparatorChar).Length);
+                if(nuGetFramework.Equals(NuGetFramework.AnyFramework))
+                {                    
+                    //// TODO: Content files cannot be target framework specific has been made as an assumption
+                    int frameworkFolderEndIndex = effectivePathForContentFile.IndexOf(Path.AltDirectorySeparatorChar);
+                    if (frameworkFolderEndIndex != -1)
+                    {
+                        var potentialFrameworkName = effectivePathForContentFile.Substring(0, frameworkFolderEndIndex);
+                        if(nuGetFramework != NuGetFramework.UnsupportedFramework && NuGetFramework.Parse(potentialFrameworkName).Equals(nuGetFramework))
+                        {
+                            throw new ArgumentException(Strings.ContentFilesShouldNotBeTargetFrameworkSpecific, zipArchiveEntryFullName);
+                        }                        
+                    }
+
+                    return effectivePathForContentFile;
+                }
+            }
+
+            // Return the effective path with Path.DirectorySeparatorChar
+            return ReplaceAltDirSeparatorWithDirSeparator(effectivePathForContentFile);
         }
     }
 }

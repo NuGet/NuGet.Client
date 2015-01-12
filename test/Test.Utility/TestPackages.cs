@@ -49,9 +49,9 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
-            zipFile.AddEntry("content/Scripts/test.js", new byte[] { 0 });
-            zipFile.AddEntry("content/Scripts/test2.js", new byte[] { 0 });
-            zipFile.AddEntry("content/Scripts/test3.js", new byte[] { 0 });
+            zipFile.AddEntry("Content/Scripts/test1.js", new byte[] { 0 });
+            zipFile.AddEntry("Content/Scripts/test2.js", new byte[] { 0 });
+            zipFile.AddEntry("Content/Scripts/test3.js", new byte[] { 0 });
 
             SetSimpleNuspec(zipFile, packageId, packageVersion);
             zipFile.Save();

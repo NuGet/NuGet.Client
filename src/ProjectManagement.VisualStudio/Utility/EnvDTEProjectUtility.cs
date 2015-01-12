@@ -12,9 +12,12 @@ using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectIt
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTESolution = EnvDTE.Solution;
 using EnvDTEProperty = EnvDTE.Property;
+using EnvDTEProjectItem = EnvDTE.ProjectItem;
+using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.ProjectManagement.VisualStudio
 {
@@ -24,7 +27,7 @@ namespace NuGet.ProjectManagement.VisualStudio
         public const string NuGetSolutionSettingsFolder = ".nuget";
         public const string PackageReferenceFile = "packages.config";
 
-        private static readonly HashSet<string> _supportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
+        private static readonly HashSet<string> SupportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
         {
             NuGetVSConstants.WebSiteProjectTypeGuid, 
             NuGetVSConstants.CsharpProjectTypeGuid, 
@@ -46,28 +49,28 @@ namespace NuGet.ProjectManagement.VisualStudio
         private const string AppConfig = "app.config";
         private const string BinFolder = "Bin";
 
-        private static readonly Dictionary<string, string> _knownNestedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+        private static readonly Dictionary<string, string> KnownNestedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
             { "web.debug.config", "web.config" },
             { "web.release.config", "web.config" }
         };
 
-        private static readonly HashSet<string> _unsupportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+        private static readonly HashSet<string> UnsupportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                                                                             NuGetVSConstants.LightSwitchProjectTypeGuid,
                                                                             NuGetVSConstants.InstallShieldLimitedEditionTypeGuid
                                                                         };
 
-        private static readonly IEnumerable<string> _fileKinds = new[] { NuGetVSConstants.VsProjectItemKindPhysicalFile, NuGetVSConstants.VsProjectItemKindSolutionItem };
-        private static readonly IEnumerable<string> _folderKinds = new[] { NuGetVSConstants.VsProjectItemKindPhysicalFolder, NuGetVSConstants.TDSItemTypeGuid };
+        private static readonly IEnumerable<string> FileKinds = new[] { NuGetVSConstants.VsProjectItemKindPhysicalFile, NuGetVSConstants.VsProjectItemKindSolutionItem };
+        private static readonly IEnumerable<string> FolderKinds = new[] { NuGetVSConstants.VsProjectItemKindPhysicalFolder, NuGetVSConstants.TDSItemTypeGuid };
 
         // List of project types that cannot have references added to them
-        private static readonly string[] _unsupportedProjectTypesForAddingReferences = new[] 
+        private static readonly string[] UnsupportedProjectTypesForAddingReferences = new[] 
             { 
                 NuGetVSConstants.WixProjectTypeGuid, 
                 NuGetVSConstants.CppProjectTypeGuid,
             };
 
         // List of project types that cannot have binding redirects added
-        private static readonly string[] _unsupportedProjectTypesForBindingRedirects = new[] 
+        private static readonly string[] UnsupportedProjectTypesForBindingRedirects = new[] 
             { 
                 NuGetVSConstants.WixProjectTypeGuid, 
                 NuGetVSConstants.JsProjectTypeGuid, 
@@ -156,7 +159,7 @@ namespace NuGet.ProjectManagement.VisualStudio
                 return true;
             }
 
-            return envDTEProject.Kind != null && _supportedProjectTypes.Contains(envDTEProject.Kind) && !IsSharedProject(envDTEProject);
+            return envDTEProject.Kind != null && SupportedProjectTypes.Contains(envDTEProject.Kind) && !IsSharedProject(envDTEProject);
         }
 
         public static bool IsUnloaded(EnvDTEProject envDTEProject)
@@ -320,7 +323,7 @@ namespace NuGet.ProjectManagement.VisualStudio
 
         public static bool IsExplicitlyUnsupported(EnvDTEProject envDTEProject)
         {
-            return envDTEProject.Kind == null || _unsupportedProjectTypes.Contains(envDTEProject.Kind);
+            return envDTEProject.Kind == null || UnsupportedProjectTypes.Contains(envDTEProject.Kind);
         }
 
         public static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(EnvDTEProject envDTEproject)
@@ -385,6 +388,254 @@ namespace NuGet.ProjectManagement.VisualStudio
             return targetFramework;
         }
 
+        public static bool ContainsFile(EnvDTEProject envDTEProject, string path)
+        {
+            if (string.Equals(envDTEProject.Kind, NuGetVSConstants.WixProjectTypeGuid, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(envDTEProject.Kind, NuGetVSConstants.NemerleProjectTypeGuid, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(envDTEProject.Kind, NuGetVSConstants.FsharpProjectTypeGuid, StringComparison.OrdinalIgnoreCase))
+            {
+                // For Wix and Nemerle projects, IsDocumentInProject() returns not found
+                // even though the file is in the project. So we use GetProjectItem()
+                // instead. Nemerle is a high-level statically typed programming language for .NET platform
+                // Note that pszMkDocument, the document moniker, passed to IsDocumentInProject(), must be a path to the file
+                // for certain file-based project systems such as F#. And, not just a filename. For these project systems as well,
+                // do the following
+                EnvDTEProjectItem item = GetProjectItem(envDTEProject, path);
+                return item != null;
+            }
+            else
+            {
+                IVsProject vsProject = (IVsProject)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+                if (vsProject == null)
+                {
+                    return false;
+                }
+                int pFound;
+                uint itemId;
+                int hr = vsProject.IsDocumentInProject(path, out pFound, new VSDOCUMENTPRIORITY[0], out itemId);
+                return ErrorHandler.Succeeded(hr) && pFound == 1;
+            }
+        }
+
+        // Get the ProjectItems for a folder path
+        public static EnvDTEProjectItems GetProjectItems(EnvDTEProject envDTEProject, string folderPath, bool createIfNotExists = false)
+        {
+            if (String.IsNullOrEmpty(folderPath))
+            {
+                return envDTEProject.ProjectItems;
+            }
+
+            // Traverse the path to get at the directory
+            string[] pathParts = folderPath.Split(PathSeparatorChars, StringSplitOptions.RemoveEmptyEntries);
+
+            // 'cursor' can contain a reference to either a Project instance or ProjectItem instance. 
+            // Both types have the ProjectItems property that we want to access.
+            object cursor = envDTEProject;
+
+            string fullPath = GetFullPath(envDTEProject);
+            string folderRelativePath = String.Empty;
+
+            foreach (string part in pathParts)
+            {
+                fullPath = Path.Combine(fullPath, part);
+                folderRelativePath = Path.Combine(folderRelativePath, part);
+
+                cursor = GetOrCreateFolder(envDTEProject, cursor, fullPath, folderRelativePath, part, createIfNotExists);
+                if (cursor == null)
+                {
+                    return null;
+                }
+            }
+
+            return GetProjectItems(cursor);
+        }
+
+        // 'parentItem' can be either a Project or ProjectItem
+        private static EnvDTEProjectItem GetOrCreateFolder(
+            EnvDTEProject envDTEProject,
+            object parentItem,
+            string fullPath,
+            string folderRelativePath,
+            string folderName,
+            bool createIfNotExists)
+        {
+            if (parentItem == null)
+            {
+                return null;
+            }
+
+            EnvDTEProjectItem subFolder;
+
+            EnvDTEProjectItems envDTEProjectItems = GetProjectItems(parentItem);
+            if (TryGetFolder(envDTEProjectItems, folderName, out subFolder))
+            {
+                // Get the sub folder
+                return subFolder;
+            }
+            else if (createIfNotExists)
+            {
+                // The JS Metro project system has a bug whereby calling AddFolder() to an existing folder that
+                // does not belong to the project will throw. To work around that, we have to manually include 
+                // it into our project.
+                if (IsJavaScriptProject(envDTEProject) && Directory.Exists(fullPath))
+                {
+                    bool succeeded = IncludeExistingFolderToProject(envDTEProject, folderRelativePath);
+                    if (succeeded)
+                    {
+                        // IMPORTANT: after including the folder into project, we need to get 
+                        // a new EnvDTEProjecItems snapshot from the parent item. Otherwise, reusing 
+                        // the old snapshot from above won't have access to the added folder.
+                        envDTEProjectItems = GetProjectItems(parentItem);
+                        if (TryGetFolder(envDTEProjectItems, folderName, out subFolder))
+                        {
+                            // Get the sub folder
+                            return subFolder;
+                        }
+                    }
+                    return null;
+                }
+
+                try
+                {
+                    return envDTEProjectItems.AddFromDirectory(fullPath);
+                }
+                catch (NotImplementedException)
+                {
+                    // This is the case for F#'s project system, we can't add from directory so we fall back
+                    // to this impl
+                    return envDTEProjectItems.AddFolder(folderName);
+                }
+            }
+
+            return null;
+        }
+
+        public static bool TryGetFolder(EnvDTEProjectItems envDTEProjectItems, string name, out EnvDTEProjectItem envDTEProjectItem)
+        {
+            envDTEProjectItem = GetProjectItem(envDTEProjectItems, name, FolderKinds);
+
+            return envDTEProjectItem != null;
+        }
+
+        private static bool IncludeExistingFolderToProject(EnvDTEProject envDTEProject, string folderRelativePath)
+        {
+            IVsUIHierarchy projectHierarchy = (IVsUIHierarchy)VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+
+            uint itemId;
+            int hr = projectHierarchy.ParseCanonicalName(folderRelativePath, out itemId);
+            if (!ErrorHandler.Succeeded(hr))
+            {
+                return false;
+            }
+
+            // Execute command to include the existing folder into project. Must do this on UI thread.
+            hr = ThreadHelper.Generic.Invoke(() =>
+                    projectHierarchy.ExecCommand(
+                        itemId,
+                        ref VsMenus.guidStandardCommandSet2K,
+                        (int)VSConstants.VSStd2KCmdID.INCLUDEINPROJECT,
+                        0,
+                        IntPtr.Zero,
+                        IntPtr.Zero));
+
+            return ErrorHandler.Succeeded(hr);
+        }
+
+        public static bool TryGetFile(EnvDTEProjectItems envDTEProjectItems, string name, out EnvDTEProjectItem envDTEProjectItem)
+        {
+            envDTEProjectItem = GetProjectItem(envDTEProjectItems, name, FileKinds);
+
+            if (envDTEProjectItem == null)
+            {
+                // Try to get the nested project item
+                return TryGetNestedFile(envDTEProjectItems, name, out envDTEProjectItem);
+            }
+
+            return envDTEProjectItem != null;
+        }
+
+        /// <summary>
+        /// If we didn't find the project item at the top level, then we look one more level down.
+        /// In VS files can have other nested files like foo.aspx and foo.aspx.cs or web.config and web.debug.config. 
+        /// These are actually top level files in the file system but are represented as nested project items in VS.            
+        /// </summary>
+        private static bool TryGetNestedFile(EnvDTEProjectItems envDTEProjectItems, string name, out EnvDTEProjectItem envDTEProjectItem)
+        {
+            string parentFileName;
+            if (!KnownNestedFiles.TryGetValue(name, out parentFileName))
+            {
+                parentFileName = Path.GetFileNameWithoutExtension(name);
+            }
+
+            // If it's not one of the known nested files then we're going to look up prefixes backwards
+            // i.e. if we're looking for foo.aspx.cs then we look for foo.aspx then foo.aspx.cs as a nested file
+            EnvDTEProjectItem parentEnvDTEProjectItem = GetProjectItem(envDTEProjectItems, parentFileName, FileKinds);
+
+            if (parentEnvDTEProjectItem != null)
+            {
+                // Now try to find the nested file
+                envDTEProjectItem = GetProjectItem(parentEnvDTEProjectItem.ProjectItems, name, FileKinds);
+            }
+            else
+            {
+                envDTEProjectItem = null;
+            }
+
+            return envDTEProjectItem != null;
+        }
+
+        private static EnvDTEProjectItem GetProjectItem(EnvDTEProjectItems envDTEProjectItems, string name, IEnumerable<string> allowedItemKinds)
+        {
+            try
+            {
+                EnvDTEProjectItem envDTEProjectItem = envDTEProjectItems.Item(name);
+                if (envDTEProjectItem != null && allowedItemKinds.Contains(envDTEProjectItem.Kind, StringComparer.OrdinalIgnoreCase))
+                {
+                    return envDTEProjectItem;
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static EnvDTEProjectItems GetProjectItems(object parent)
+        {
+            var envDTEProject = parent as EnvDTEProject;
+            if (envDTEProject != null)
+            {
+                return envDTEProject.ProjectItems;
+            }
+
+            var envDTEProjectItem = parent as EnvDTEProjectItem;
+            if (envDTEProjectItem != null)
+            {
+                return envDTEProjectItem.ProjectItems;
+            }
+
+            return null;
+        }
+
+        public static EnvDTEProjectItem GetProjectItem(EnvDTEProject envDTEProject, string path)
+        {
+            string folderPath = Path.GetDirectoryName(path);
+            string itemName = Path.GetFileName(path);
+
+            EnvDTEProjectItems container = GetProjectItems(envDTEProject, folderPath);
+
+            EnvDTEProjectItem projectItem;
+            // If we couldn't get the folder, or the child item doesn't exist, return null
+            if (container == null ||
+                (!TryGetFile(container, itemName, out projectItem) &&
+                 !TryGetFolder(container, itemName, out projectItem)))
+            {
+                return null;
+            }
+
+            return projectItem;
+        }
         #endregion // Get "Project" Information
 
 

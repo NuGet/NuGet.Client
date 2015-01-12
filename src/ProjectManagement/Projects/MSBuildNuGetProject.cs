@@ -231,17 +231,12 @@ namespace NuGet.ProjectManagement
                 if(IsValid(mostCompatibleGroup))
                 {
                     mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
-                        mostCompatibleGroup.Items.Select(item => GetValidPath(item)));
+                        mostCompatibleGroup.Items.Select(item => MSBuildNuGetProjectSystemUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
                 }
 
                 return mostCompatibleGroup;
             }
             return null;
-        }
-
-        private static string GetValidPath(string path)
-        {
-            return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
         }
 
         private static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)

@@ -7,11 +7,16 @@ using System.Reflection;
 using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
 using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectItem;
 using EnvDTEProject = EnvDTE.Project;
+using EnvDTEProperty = EnvDTE.Property;
+using EnvDTEProjectItem = EnvDTE.ProjectItem;
+using EnvDTEProjectItems = EnvDTE.ProjectItems;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.ProjectManagement.VisualStudio
 {
     public class VSMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
     {
+        private const string BinDir = "bin";
         public VSMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
             if(envDTEProject == null)
@@ -41,6 +46,33 @@ namespace NuGet.ProjectManagement.VisualStudio
             private set;
         }
 
+        public string ProjectFullPath
+        {
+            get;
+            private set;
+        }
+
+        public string ProjectName
+        {
+            get
+            {
+                return EnvDTEProject.Name;
+            }
+        }
+
+        private NuGetFramework _targetFramework;
+        public NuGetFramework TargetFramework
+        {
+            get
+            {
+                if (_targetFramework == null)
+                {
+                    _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject) ?? NuGetFramework.UnsupportedFramework;
+                }
+                return _targetFramework;
+            }
+        }
+
         public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
         {
             NuGetProjectContext = nuGetProjectContext;
@@ -48,7 +80,71 @@ namespace NuGet.ProjectManagement.VisualStudio
 
         public void AddFile(string path, Stream stream)
         {
+            AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, stream));
+        }
+
+        public void AddFile(string path, Action<Stream> writeToStream)
+        {
+            AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, writeToStream));
+        }
+
+        private void AddFileCore(string path, Action addFile)
+        {
+            bool fileExistsInProject = FileExistsInProject(path);
+
+            // If the file exists on disk but not in the project then skip it.
+            // One exception is the 'packages.config' file, in which case we want to include
+            // it into the project.
+            if (File.Exists(Path.Combine(ProjectFullPath, path)) && !fileExistsInProject && !path.Equals(Constants.PackageReferenceFile))
+            {
+                NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
+            }
+            else
+            {
+                //EnsureCheckedOutIfExists(path);
+                addFile();
+                if (!fileExistsInProject)
+                {
+                    AddFileToProject(path);
+                }
+            }
+        }
+
+        private void EnsureCheckedOutIfExists(string path)
+        {
             throw new NotImplementedException();
+        }
+
+        protected virtual bool ExcludeFile(string path)
+        {
+            // Exclude files from the bin directory.
+            return Path.GetDirectoryName(path).Equals(BinDir, StringComparison.OrdinalIgnoreCase);
+        }
+
+        protected virtual void AddFileToProject(string path)
+        {
+            if (ExcludeFile(path))
+            {
+                return;
+            }
+
+            // Get the project items for the folder path
+            string folderPath = Path.GetDirectoryName(path);
+            string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
+
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                EnvDTEProjectItems container = EnvDTEProjectUtility.GetProjectItems(EnvDTEProject, folderPath, createIfNotExists: true);
+                // Add the file to project or folder
+                AddFileToContainer(fullPath, folderPath, container);
+            });
+
+            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
+        }
+
+        protected virtual void AddFileToContainer(string fullPath, string folderPath, EnvDTEProjectItems container)
+        {
+            container.AddFromFileCopy(fullPath);
         }
 
         public void AddFrameworkReference(string name)
@@ -148,7 +244,7 @@ namespace NuGet.ProjectManagement.VisualStudio
                                 item.SetMetadataValue("Private", "True");
 
                                 // Save the project after we've modified it.
-                                FilesystemUtility.MakeWriteable(EnvDTEProject.FullName);
+                                FileSystemUtility.MakeWriteable(EnvDTEProject.FullName);
                                 EnvDTEProject.Save();
                             }
                         }
@@ -198,20 +294,6 @@ namespace NuGet.ProjectManagement.VisualStudio
             throw new NotImplementedException();
         }
 
-        public string ProjectFullPath
-        {
-            get;
-            private set;
-        }
-
-        public string ProjectName
-        {
-            get
-            {
-                return EnvDTEProject.Name;
-            }
-        }
-
         public bool ReferenceExists(string name)
         {
             throw new NotImplementedException();
@@ -225,19 +307,6 @@ namespace NuGet.ProjectManagement.VisualStudio
         public void RemoveReference(string name)
         {
             throw new NotImplementedException();
-        }
-
-        private NuGetFramework _targetFramework;
-        public NuGetFramework TargetFramework
-        {
-            get
-            {
-                if (_targetFramework == null)
-                {
-                    _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject) ?? NuGetFramework.UnsupportedFramework;
-                }
-                return _targetFramework;
-            }
         }
 
         private static void TrySetCopyLocal(dynamic reference)
@@ -278,6 +347,44 @@ namespace NuGet.ProjectManagement.VisualStudio
             {
 
             }
+        }
+
+
+        public bool FileExistsInProject(string path)
+        {
+            return EnvDTEProjectUtility.ContainsFile(EnvDTEProject, path);
+        }
+
+        public dynamic GetPropertyValue(string propertyName)
+        {
+            try
+            {
+                EnvDTEProperty envDTEProperty = EnvDTEProject.Properties.Item(propertyName);
+                if (envDTEProperty != null)
+                {
+                    return envDTEProperty.Value;
+                }
+            }
+            catch (ArgumentException)
+            {
+                // If the property doesn't exist this will throw an argument exception
+            }
+            return null;
+        }
+
+        public bool IsSupportedFile(string path)
+        {
+            string fileName = Path.GetFileName(path);
+
+            // exclude all file names with the pattern as "web.*.config", 
+            // e.g. web.config, web.release.config, web.debug.config
+            return !(fileName.StartsWith("web.", StringComparison.OrdinalIgnoreCase) &&
+                     fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public string ResolvePath(string path)
+        {
+            return path;
         }
     }
 }

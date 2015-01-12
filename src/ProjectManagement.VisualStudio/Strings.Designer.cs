@@ -61,6 +61,15 @@ namespace NuGet.ProjectManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Added file &apos;{0}&apos; to project &apos;{1}&apos;..
+        /// </summary>
+        internal static string Debug_AddedFileToProject {
+            get {
+                return ResourceManager.GetString("Debug_AddedFileToProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Added reference &apos;{0}&apos; in the Global Assembly Cache to project &apos;{1}&apos;.
         /// </summary>
         internal static string Debug_AddGacReference {
@@ -102,6 +111,15 @@ namespace NuGet.ProjectManagement.VisualStudio {
         internal static string FailedToAddReference {
             get {
                 return ResourceManager.GetString("FailedToAddReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; already exists. Skipping....
+        /// </summary>
+        internal static string Warning_FileAlreadyExists {
+            get {
+                return ResourceManager.GetString("Warning_FileAlreadyExists", resourceCulture);
             }
         }
     }

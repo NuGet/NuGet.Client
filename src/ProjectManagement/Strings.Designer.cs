@@ -115,6 +115,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Content files should not be target framework specific, whereas, &apos;{0}&apos; is.
+        /// </summary>
+        internal static string ContentFilesShouldNotBeTargetFrameworkSpecific {
+            get {
+                return ResourceManager.GetString("ContentFilesShouldNotBeTargetFrameworkSpecific", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &gt;&gt; {0} are being added from &apos;{1}&apos;{2}.
         /// </summary>
         internal static string Debug_TargetFrameworkInfo {

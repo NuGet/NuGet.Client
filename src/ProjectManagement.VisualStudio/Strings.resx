@@ -132,4 +132,10 @@
   <data name="Debug_AddGacReference" xml:space="preserve">
     <value>Added reference '{0}' in the Global Assembly Cache to project '{1}'</value>
   </data>
+  <data name="Warning_FileAlreadyExists" xml:space="preserve">
+    <value>'{0}' already exists. Skipping...</value>
+  </data>
+  <data name="Debug_AddedFileToProject" xml:space="preserve">
+    <value>Added file '{0}' to project '{1}'.</value>
+  </data>
 </root>

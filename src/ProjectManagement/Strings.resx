@@ -135,6 +135,9 @@
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
   </data>
+  <data name="ContentFilesShouldNotBeTargetFrameworkSpecific" xml:space="preserve">
+    <value>Content files should not be target framework specific, whereas, '{0}' is</value>
+  </data>
   <data name="Debug_TargetFrameworkInfo" xml:space="preserve">
     <value>&gt;&gt; {0} are being added from '{1}'{2}</value>
   </data>
