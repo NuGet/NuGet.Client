@@ -17,7 +17,8 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
             var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
-            var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+            var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
+                packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");

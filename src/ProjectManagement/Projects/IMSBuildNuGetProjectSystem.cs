@@ -10,7 +10,7 @@ namespace NuGet.ProjectManagement
         string ProjectFullPath { get;}
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);
-        void DeleteFile(string path);
+        void RemoveFile(string path);
         /// <summary>
         /// Method called when adding an assembly reference to the project.
         /// </summary>

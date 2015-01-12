@@ -44,7 +44,7 @@ namespace Test.Utility
             References.Add(referencePath);
         }
 
-        public void DeleteFile(string path)
+        public void RemoveFile(string path)
         {
             ContentFiles.Remove(path);
         }
