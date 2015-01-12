@@ -129,4 +129,7 @@
   <data name="FailedToAddGacReference" xml:space="preserve">
     <value>Failed to add reference to '{0}'. Please make sure that it is in the Global Assembly Cache.</value>
   </data>
+  <data name="Debug_AddGacReference" xml:space="preserve">
+    <value>Added reference '{0}' in the Global Assembly Cache to project '{1}'</value>
+  </data>
 </root>

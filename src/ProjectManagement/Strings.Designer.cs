@@ -106,6 +106,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty.
+        /// </summary>
+        internal static string Argument_Cannot_Be_Null_Or_Empty {
+            get {
+                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &gt;&gt; {0} are being added from &apos;{1}&apos;{2}.
         /// </summary>
         internal static string Debug_TargetFrameworkInfo {
@@ -165,6 +174,24 @@ namespace NuGet.ProjectManagement {
         internal static string Debug_TargetFrameworkInfoPrefix {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfoPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; already exists in project &apos;{1}&apos;. Do you want to overwrite it?.
+        /// </summary>
+        internal static string FileConflictMessage {
+            get {
+                return ResourceManager.GetString("FileConflictMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Overwriting existing file &apos;{0}&apos;...
+        /// </summary>
+        internal static string Info_OverwritingExistingFile {
+            get {
+                return ResourceManager.GetString("Info_OverwritingExistingFile", resourceCulture);
             }
         }
         
@@ -277,11 +304,29 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The replacement token &apos;{0}&apos; has no value.
+        /// </summary>
+        internal static string TokenHasNoValue {
+            get {
+                return ResourceManager.GetString("TokenHasNoValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not install package &apos;{0}&apos;. You are trying to install this package into a project that targets &apos;{1}, but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author...
         /// </summary>
         internal static string UnableToFindCompatibleItems {
             get {
                 return ResourceManager.GetString("UnableToFindCompatibleItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; already exists. Skipping....
+        /// </summary>
+        internal static string Warning_FileAlreadyExists {
+            get {
+                return ResourceManager.GetString("Warning_FileAlreadyExists", resourceCulture);
             }
         }
     }

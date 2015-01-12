@@ -132,6 +132,9 @@
   <data name="AddingPackageToMSBuildProject" xml:space="preserve">
     <value>Adding package '{0}' to project '{1}'</value>
   </data>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Argument cannot be null or empty</value>
+  </data>
   <data name="Debug_TargetFrameworkInfo" xml:space="preserve">
     <value>&gt;&gt; {0} are being added from '{1}'{2}</value>
   </data>
@@ -152,6 +155,12 @@
   </data>
   <data name="Debug_TargetFrameworkInfo_PowershellScripts" xml:space="preserve">
     <value>&gt;&gt; PowerShell scripts are being executed from '{0}'{1}</value>
+  </data>
+  <data name="FileConflictMessage" xml:space="preserve">
+    <value>File '{0}' already exists in project '{1}'. Do you want to overwrite it?</value>
+  </data>
+  <data name="Info_OverwritingExistingFile" xml:space="preserve">
+    <value>Overwriting existing file '{0}'..</value>
   </data>
   <data name="PackageAlreadyExistsInFolder" xml:space="preserve">
     <value>Package '{0}' already exists in folder '{1}'</value>
@@ -189,7 +198,13 @@
   <data name="RemovingPackageFromMSBuildProject" xml:space="preserve">
     <value>Removing package '{0}' from project '{1}'</value>
   </data>
+  <data name="TokenHasNoValue" xml:space="preserve">
+    <value>The replacement token '{0}' has no value</value>
+  </data>
   <data name="UnableToFindCompatibleItems" xml:space="preserve">
     <value>Could not install package '{0}'. You are trying to install this package into a project that targets '{1}, but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author..</value>
+  </data>
+  <data name="Warning_FileAlreadyExists" xml:space="preserve">
+    <value>'{0}' already exists. Skipping...</value>
   </data>
 </root>

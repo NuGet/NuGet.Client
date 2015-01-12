@@ -61,6 +61,15 @@ namespace NuGet.ProjectManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Added reference &apos;{0}&apos; in the Global Assembly Cache to project &apos;{1}&apos;.
+        /// </summary>
+        internal static string Debug_AddGacReference {
+            get {
+                return ResourceManager.GetString("Debug_AddGacReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Added reference &apos;{0}&apos; to project &apos;{1}&apos;..
         /// </summary>
         internal static string Debug_AddReference {

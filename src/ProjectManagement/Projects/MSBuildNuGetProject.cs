@@ -9,9 +9,37 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace NuGet.ProjectManagement
 {
+    internal class PackageItemComparer : IComparer<string>
+    {
+        public int Compare(string x, string y)
+        {
+            // BUG 636: We sort files so that they are added in the correct order
+            // e.g aspx before aspx.cs
+
+            if (x.Equals(y, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            // Add files that are prefixes of other files first
+            if (x.StartsWith(y, StringComparison.OrdinalIgnoreCase))
+            {
+                return -1;
+            }
+
+            if (y.StartsWith(x, StringComparison.OrdinalIgnoreCase))
+            {
+                return 1;
+            }
+
+            return y.CompareTo(x);
+        }
+    }
+
     /// <summary>
     /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a FolderNuGetProject
     /// </summary>
@@ -20,6 +48,15 @@ namespace NuGet.ProjectManagement
         private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
         public FolderNuGetProject FolderNuGetProject { get; private set; }
         public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; private set; }
+
+        private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
+            new Dictionary<FileTransformExtensions, IPackageFileTransformer>() 
+        {
+            //{ new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
+            { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() }
+            //{ new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
+        };
+
         public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFullPath)
         {
             if (msbuildNuGetProjectSystem == null)
@@ -69,7 +106,7 @@ namespace NuGet.ProjectManagement
             // Step-0: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
-            var packageReference = PackagesConfigNuGetProject.InstalledPackagesList.Where(
+            var packageReference = GetInstalledPackages().Where(
                 p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
             if (packageReference != null)
             {
@@ -79,7 +116,8 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-1: Create PackageReader using the PackageStream and obtain the various item groups
-            PackageReader packageReader = new PackageReader(new ZipArchive(packageStream));
+            var zipArchive = new ZipArchive(packageStream);
+            PackageReader packageReader = new PackageReader(zipArchive);
             IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
             IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
@@ -98,7 +136,7 @@ namespace NuGet.ProjectManagement
                 GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, buildFileGroups);            
 
             hasCompatibleItems = IsValid(compatibleLibItemsGroup) || IsValid(compatibleFrameworkReferencesGroup) ||
-                IsValid(compatibleContentFilesGroup) && IsValid(compatibleBuildFilesGroup);
+                IsValid(compatibleContentFilesGroup) || IsValid(compatibleBuildFilesGroup);
 
             // Step-3: Check if there are any compatible items in the package. If not, throw
             if(!hasCompatibleItems)
@@ -116,27 +154,39 @@ namespace NuGet.ProjectManagement
 
             // Step-6: MSBuildNuGetProjectSystem operations
             // Step-6.1: Add references to project
-            foreach (var libItem in compatibleLibItemsGroup.Items)
+            if (IsValid(compatibleLibItemsGroup))
             {
-                if(IsAssemblyReference(libItem))
+                foreach (var libItem in compatibleLibItemsGroup.Items)
                 {
-                    var libItemFullPath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), libItem);
-                    MSBuildNuGetProjectSystem.AddReference(libItemFullPath);
+                    if (IsAssemblyReference(libItem))
+                    {
+                        var libItemFullPath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), libItem);
+                        MSBuildNuGetProjectSystem.AddReference(libItemFullPath);
+                    }
                 }
             }
 
             // Step-6.2: Add Frameworkreferences to project
-            foreach(var frameworkReference in compatibleFrameworkReferencesGroup.Items)
+            if (IsValid(compatibleFrameworkReferencesGroup))
             {
-                if(IsAssemblyReference(frameworkReference))
+                foreach (var frameworkReference in compatibleFrameworkReferencesGroup.Items)
                 {
-                    MSBuildNuGetProjectSystem.AddReference(Path.GetFileName(frameworkReference));
+                    MSBuildNuGetProjectSystem.AddFrameworkReference(Path.GetFileName(frameworkReference));
                 }
             }
 
             // Step-6.3: Add Content Files
+            if(IsValid(compatibleContentFilesGroup))
+            {
+                MSBuildNuGetProjectSystemUtility.AddFiles(MSBuildNuGetProjectSystem,
+                    zipArchive, compatibleContentFilesGroup, FileTransformers);
+            }
 
             // Step-6.4: Add Build imports
+            if(IsValid(compatibleBuildFilesGroup))
+            {
+                throw new NotImplementedException("Build files are not implemented");
+            }
             
             // Step-6.5: Execute powershell script
 
@@ -158,7 +208,7 @@ namespace NuGet.ProjectManagement
             // Step-0: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
-            var packageReference = PackagesConfigNuGetProject.InstalledPackagesList.Where(
+            var packageReference = GetInstalledPackages().Where(
                 p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
             if (packageReference == null)
             {
@@ -177,14 +227,26 @@ namespace NuGet.ProjectManagement
             if(mostCompatibleFramework != null)
             {
                 IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => NuGetFramework.Parse(i.TargetFramework).Equals(mostCompatibleFramework));
-                return mostCompatibleGroups.FirstOrDefault();
+                var mostCompatibleGroup = mostCompatibleGroups.FirstOrDefault();
+                if(IsValid(mostCompatibleGroup))
+                {
+                    mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
+                        mostCompatibleGroup.Items.Select(item => GetValidPath(item)));
+                }
+
+                return mostCompatibleGroup;
             }
             return null;
         }
 
-        private bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
+        private static string GetValidPath(string path)
         {
-            // It is possible for a compatible frameworkSpecificGroup 
+            return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+        }
+
+        private static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
+        {
+            // It is possible for a compatible frameworkSpecificGroup, there are no items
             return (frameworkSpecificGroup != null && frameworkSpecificGroup.Items != null);
         }
 
@@ -207,7 +269,8 @@ namespace NuGet.ProjectManagement
         private static bool IsAssemblyReference(string filePath)
         {
             // assembly reference must be under lib/
-            if (!filePath.StartsWith(Constants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (!filePath.StartsWith(Constants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                && !filePath.StartsWith(Constants.LibDirectory + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -223,6 +286,16 @@ namespace NuGet.ProjectManagement
             // Assembly reference must have a .dll|.exe|.winmd extension and is not a resource assembly;
             return !filePath.EndsWith(Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase) &&
                 Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static IDictionary<XName, Action<XElement, XElement>> GetConfigMappings()
+        {
+            // REVIEW: This might be an edge case, but we're setting this rule for all xml files.
+            // If someone happens to do a transform where the xml file has a configSections node
+            // we will add it first. This is probably fine, but this is a config specific scenario
+            return new Dictionary<XName, Action<XElement, XElement>>() {
+                { "configSections" , (parent, element) => parent.AddFirst(element) }
+            };
         }
     }
 

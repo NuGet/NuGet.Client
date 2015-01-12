@@ -58,7 +58,7 @@ namespace NuGet.ProjectManagement.VisualStudio
                 // Add a reference to the project
                 AddGacReference(name);
 
-                NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
+                NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddGacReference, name, ProjectName);
             }
             catch (Exception e)
             {
@@ -193,7 +193,7 @@ namespace NuGet.ProjectManagement.VisualStudio
             return true;
         }
 
-        public void DeleteFile(string path)
+        public void RemoveFile(string path)
         {
             throw new NotImplementedException();
         }

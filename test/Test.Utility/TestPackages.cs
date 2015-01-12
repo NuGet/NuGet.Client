@@ -25,7 +25,7 @@ namespace Test.Utility
                             </package>";
 
         private static string FrameworkAssembliesStringFormat = @"<frameworkAssemblies>
-            <frameworkAssembly assemblyName='{0}' targetFramework='{1} />
+            <frameworkAssembly assemblyName='{0}' targetFramework='{1}' />
         </frameworkAssemblies>";
 
         public static FileInfo GetLegacyTestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")

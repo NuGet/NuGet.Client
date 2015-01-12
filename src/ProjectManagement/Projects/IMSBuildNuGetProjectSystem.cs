@@ -8,9 +8,11 @@ namespace NuGet.ProjectManagement
         NuGetFramework TargetFramework { get; }
         string ProjectName { get; }
         string ProjectFullPath { get;}
+        INuGetProjectContext NuGetProjectContext { get; }
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);
         void RemoveFile(string path);
+        bool FileExistsInProject(string path);
         /// <summary>
         /// Method called when adding an assembly reference to the project.
         /// </summary>
@@ -25,6 +27,9 @@ namespace NuGet.ProjectManagement
         void AddFrameworkReference(string name);
         void AddImport(string targetFullPath, ImportLocation location);
         void RemoveImport(string targetFullPath);
+        dynamic GetPropertyValue(string propertyName);
+        string ResolvePath(string path);
+        bool IsSupportedFile(string path);
 
         // LIKELY, THERE HAS TO MORE STUFF HERE like 'IsSupportedFile' and 'IsBindingRedirectsEnabled'
         // IMO, there are hacks introduced to special case based on project systems like 'websites' and 'silverlight'

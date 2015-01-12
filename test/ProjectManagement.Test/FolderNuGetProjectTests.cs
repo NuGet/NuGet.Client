@@ -60,7 +60,7 @@ namespace ProjectManagement.Test
 
             // Now, test uninstall
             // Act
-            folderNuGetProject.UninstallPackage(packageIdentity, null);
+            folderNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
             Assert.True(!Directory.Exists(packageInstallPath));
 
             // Clean-up
@@ -68,7 +68,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestFolderNuGetProjectTargetFramework()
+        public void TestFolderNuGetProjectMetadata()
         {
             // Arrange
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
@@ -77,8 +77,11 @@ namespace ProjectManagement.Test
             // Act & Assert
             NuGetFramework targetFramework;
             Assert.True(folderNuGetProject.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out targetFramework));
+            string name;
+            Assert.True(folderNuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out name));
             Assert.Equal(NuGetFramework.AnyFramework, targetFramework);
-            Assert.Equal(1, folderNuGetProject.Metadata.Count);
+            Assert.Equal(randomTestFolder, name);
+            Assert.Equal(2, folderNuGetProject.Metadata.Count);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
