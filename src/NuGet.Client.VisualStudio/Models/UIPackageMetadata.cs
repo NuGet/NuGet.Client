@@ -11,7 +11,7 @@ namespace NuGet.Client.VisualStudio
     public sealed class UIPackageMetadata 
     {
         public UIPackageMetadata(PackageIdentity identity, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl,
-            string tags, int downloadCount, DateTimeOffset? published, IEnumerable<UIPackageDependencySet> dependencySet, bool hasDependencies)
+            string tags, int downloadCount, DateTimeOffset? published, IEnumerable<UIPackageDependencySet> dependencySet, bool hasDependencies, bool requireLicenseAccept)
         {
             Identity = identity;
             Summary = summary;
@@ -26,6 +26,7 @@ namespace NuGet.Client.VisualStudio
             Tags = tags;
             DependencySets = dependencySet;
             HasDependencies = hasDependencies;
+            RequireLicenseAcceptance = requireLicenseAccept;
         }
 
         public PackageIdentity Identity { get; private set; }
@@ -54,5 +55,7 @@ namespace NuGet.Client.VisualStudio
 
         // This property is used by data binding to display text "No dependencies"
         public bool HasDependencies { get; private set; }
+
+        public bool RequireLicenseAcceptance { get; private set; }
     }
 }
