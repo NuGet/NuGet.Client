@@ -16,17 +16,9 @@ namespace NuGet.Client
     [NuGetResourceProviderMetadata(typeof(DepedencyInfoResource))]
     public class V3DependencyInfoResourceProvider : INuGetResourceProvider
     {
-        private readonly DataClient _client;
-
         public V3DependencyInfoResourceProvider()
-            : this(new DataClient())
         {
 
-        }
-
-        public V3DependencyInfoResourceProvider(DataClient client)
-        {
-            _client = client;
         }
 
         public bool TryCreate(SourceRepository source, out INuGetResource resource)
@@ -35,8 +27,10 @@ namespace NuGet.Client
 
             if (source.GetResource<V3ServiceIndexResource>() != null)
             {
+                DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+
                 // construct a new resource
-                dependencyInfoResource = new V3DependencyInfoResource(_client);
+                dependencyInfoResource = new V3DependencyInfoResource(client);
             }
 
             resource = dependencyInfoResource;

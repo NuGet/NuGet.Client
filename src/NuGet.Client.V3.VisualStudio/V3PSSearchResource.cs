@@ -19,7 +19,7 @@ namespace NuGet.Client.V3.VisualStudio
         {
             _searchResource = searchResource;
         }
-
+         
         public override async Task<IEnumerable<PSSearchMetadata>> Search(string search, SearchFilter filters, int skip, int take, CancellationToken token)
         {
             // TODO: stop using UI search

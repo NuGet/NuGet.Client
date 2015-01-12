@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,10 +17,10 @@ namespace NuGet.Client
         private readonly DataClient _client;
         private readonly Uri[] _searchEndpoints;
 
-        public V3RawSearchResource(DataClient client, IEnumerable<Uri> searchEndpoints)
+        public V3RawSearchResource(HttpMessageHandler handler, IEnumerable<Uri> searchEndpoints)
             : base()
         {
-            _client = client;
+            _client = new DataClient(handler);
             _searchEndpoints = searchEndpoints.ToArray();
         }
 

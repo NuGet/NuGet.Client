@@ -58,6 +58,17 @@ namespace NuGet.Data
         }
 
         /// <summary>
+        /// Default caching handler used by the data client
+        /// </summary>
+        public static HttpMessageHandler DefaultHandler
+        {
+            get
+            {
+                return AssembleHandlers(CachingHandler, Enumerable.Empty<INuGetRequestModifier>());
+            }
+        }
+
+        /// <summary>
         /// Chain the handlers together
         /// </summary>
         private static HttpMessageHandler AssembleHandlers(HttpMessageHandler handler, IEnumerable<INuGetRequestModifier> modifiers)

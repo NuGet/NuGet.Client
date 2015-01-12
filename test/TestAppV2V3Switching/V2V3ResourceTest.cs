@@ -102,7 +102,7 @@ namespace V2V3ResourcesTest
             SearchFilter filter = new SearchFilter(); //create a dummy filter.
             List<FrameworkName> fxNames = new List<FrameworkName>();
             fxNames.Add(new FrameworkName(".NET Framework, Version=4.0"));
-            filter.SupportedFrameworks = fxNames;
+            filter.SupportedFrameworks = fxNames.Select(e => e.ToString());
             IEnumerable<UISearchMetadata> searchResults = await resource.Search("Elmah", filter, 0, 100, new System.Threading.CancellationToken());
             // Check if non empty search result is returned.
             Assert.True(searchResults.Count() > 0);

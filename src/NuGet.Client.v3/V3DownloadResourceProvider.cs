@@ -33,7 +33,9 @@ namespace NuGet.Client
                 {
                     var registrationResource = source.GetResource<V3RegistrationResource>();
 
-                    downloadResource = new V3DownloadResource(new DataClient(), registrationResource);
+                    DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+
+                    downloadResource = new V3DownloadResource(client, registrationResource);
 
                     _cache.TryAdd(source.PackageSource, downloadResource);
                 }

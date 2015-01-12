@@ -12,17 +12,9 @@ namespace NuGet.Client
     [NuGetResourceProviderMetadata(typeof(V3RegistrationResource))]
     public class V3RegistrationResourceProvider : INuGetResourceProvider
     {
-        private readonly DataClient _client;
-
         public V3RegistrationResourceProvider()
-            : this(new DataClient())
         {
    
-        }
-
-        public V3RegistrationResourceProvider(DataClient client)
-        {
-            _client = client;
         }
 
         public bool TryCreate(SourceRepository source, out INuGetResource resource)
@@ -34,8 +26,10 @@ namespace NuGet.Client
             {
                 Uri baseUrl = serviceIndex.Index["resources"].Where(j => ((string)j["@type"]) == "RegistrationsBaseUrl").Select(o => o["@id"].ToObject<Uri>()).FirstOrDefault();
 
+                DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+
                 // construct a new resource
-                regResource = new V3RegistrationResource(_client, baseUrl);
+                regResource = new V3RegistrationResource(client, baseUrl);
             }
 
             resource = regResource;

@@ -13,17 +13,9 @@ namespace NuGet.Client
     [NuGetResourceProviderMetadata(typeof(V3RawSearchResource))]
     public class V3RawSearchResourceProvider : INuGetResourceProvider
     {
-        private readonly DataClient _client;
-
         public V3RawSearchResourceProvider()
-            : this(new DataClient())
         {
 
-        }
-
-        public V3RawSearchResourceProvider(DataClient client)
-        {
-            _client = client;
         }
 
         public bool TryCreate(SourceRepository source, out INuGetResource resource)
@@ -38,8 +30,10 @@ namespace NuGet.Client
 
                 if (endpoints.Length > 0)
                 {
+                    HttpHandlerResource handler = source.GetResource<HttpHandlerResource>();
+
                     // construct a new resource
-                    curResource = new V3RawSearchResource(_client, endpoints);
+                    curResource = new V3RawSearchResource(handler.MessageHandler, endpoints);
                 }
             }
 

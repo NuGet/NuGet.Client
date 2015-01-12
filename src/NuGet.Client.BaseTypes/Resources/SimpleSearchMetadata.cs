@@ -1,4 +1,5 @@
 ﻿using NuGet.PackagingCore;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,11 +23,17 @@ namespace NuGet.Client
         /// </summary>
         public string Description { get; private set; }
 
+        /// <summary>
+        /// All versions of the package
+        /// </summary>
+        public IEnumerable<NuGetVersion> AllVersions { get; private set; }
 
-        public SimpleSearchMetadata(PackageIdentity identity, string description)
+
+        public SimpleSearchMetadata(PackageIdentity identity, string description, IEnumerable<NuGetVersion> allVersions)
         {
             Identity = identity;
             Description = description;
+            AllVersions = allVersions;
         }
     }
 }

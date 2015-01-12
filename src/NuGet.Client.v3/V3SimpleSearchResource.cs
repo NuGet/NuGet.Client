@@ -1,4 +1,5 @@
-﻿using NuGet.PackagingCore;
+﻿using Newtonsoft.Json.Linq;
+using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,16 @@ namespace NuGet.Client
                 NuGetVersion version = NuGetVersion.Parse(result["version"].ToString());
                 PackageIdentity identity = new PackageIdentity(result["id"].ToString(), version);
 
-                SimpleSearchMetadata data = new SimpleSearchMetadata(identity, result["description"].ToString());
+                string description = result["description"].ToString();
+
+                List<NuGetVersion> allVersions = new List<NuGetVersion>();
+
+                foreach (var versionObj in ((JArray)result["versions"]))
+                {
+                    allVersions.Add(NuGetVersion.Parse(versionObj["version"].ToString()));
+                }
+
+                SimpleSearchMetadata data = new SimpleSearchMetadata(identity, description, allVersions);
 
                 results.Add(data);
             }

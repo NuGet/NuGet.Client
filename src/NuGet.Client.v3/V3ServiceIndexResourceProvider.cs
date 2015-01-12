@@ -21,18 +21,10 @@ namespace NuGet.Client
     public class V3ServiceIndexResourceProvider : INuGetResourceProvider
     {
         private readonly ConcurrentDictionary<string, V3ServiceIndexResource> _cache;
-        private readonly DataClient _client;
 
         public V3ServiceIndexResourceProvider()
-            : this(new DataClient())
-        {
-
-        }
-
-        public V3ServiceIndexResourceProvider(DataClient client)
         {
             _cache = new ConcurrentDictionary<string, V3ServiceIndexResource>();
-            _client = client;
         }
 
         // TODO: refresh the file when it gets old
@@ -48,7 +40,9 @@ namespace NuGet.Client
                 // check the cache before downloading the file
                 if (!_cache.TryGetValue(url, out index))
                 {
-                    JObject json = _client.GetJObject(new Uri(url));
+                    DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+
+                    JObject json = client.GetJObject(new Uri(url));
 
                     if (json != null)
                     {

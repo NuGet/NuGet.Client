@@ -12,17 +12,9 @@ namespace NuGet.Client
     [NuGetResourceProviderMetadata(typeof(MetadataResource))]
     public class V3MetadataResourceProvider : INuGetResourceProvider
     {
-        private readonly DataClient _client;
-
         public V3MetadataResourceProvider()
-            : this(new DataClient())
         {
 
-        }
-
-        public V3MetadataResourceProvider(DataClient client)
-        {
-            _client = client;
         }
 
         public bool TryCreate(SourceRepository source, out INuGetResource resource)
@@ -32,7 +24,9 @@ namespace NuGet.Client
 
             if (regResource != null)
             {
-                curResource = new V3MetadataResource(_client, regResource);
+                DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+
+                curResource = new V3MetadataResource(client, regResource);
             }
 
             resource = curResource;
