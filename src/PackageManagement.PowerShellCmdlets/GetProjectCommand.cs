@@ -1,5 +1,4 @@
 ﻿using NuGet.ProjectManagement;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
@@ -11,7 +10,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// which is used for tab expansion.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Project", DefaultParameterSetName = ParameterSetByName)]
-    //[OutputType(typeof(Project))]
+    [OutputType(typeof(NuGetProject))]
     public class GetProjectCommand : NuGetPowerShellBaseCommand
     {
         private const string ParameterSetByName = "ByName";

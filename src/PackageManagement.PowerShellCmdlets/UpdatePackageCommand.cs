@@ -1,12 +1,12 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
-using NuGet.PackagingCore;
+﻿using NuGet.Client.VisualStudio;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
-using System.ComponentModel.Composition;
+using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -82,49 +82,115 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public DependencyBehavior? DependencyVersion { get; set; }
 
+        public List<NuGetProject> Projects;
+
+        protected override void Preprocess()
+        {
+            base.Preprocess();
+            if (string.IsNullOrEmpty(ProjectName))
+            {
+                Projects = VSSolutionManager.GetProjects().ToList();
+            }
+            else
+            {
+                Projects = new List<NuGetProject>() { Project };
+            }
+        }
+
         protected override void ProcessRecordCore()
         {
-            Preprocess();
-            PackageIdentity identity = GetPackageIdentity();
+            CheckForSolutionOpen();
 
-            // TODO: Update package logic here or in PackageManager?
-            // How to get the latest version of the packages?
-            if (WhatIf.IsPresent)
+            Preprocess();
+
+            SubscribeToProgressEvents();
+
+            if (!Reinstall.IsPresent)
             {
-                if (string.IsNullOrEmpty(Version))
+                PerformPackageUpdates();
+            }
+            else
+            {
+                PerformPackageReinstalls();
+            }
+
+            UnsubscribeFromProgressEvents();
+        }
+
+        private void PerformPackageUpdates()
+        {
+            // Update All
+            if (!_idSpecified)
+            {
+                foreach (NuGetProject project in Projects)
                 {
-                    PackageManager.PreviewInstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
-                }
-                else
-                {
-                    PackageManager.PreviewInstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
+                    string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
+                    IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
+                    Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent);
+                    ExecuteUpdates(remoteUpdates, project);
                 }
             }
             else
             {
-                if (string.IsNullOrEmpty(Version))
+                foreach (NuGetProject project in Projects)
                 {
-                    PackageManager.InstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
-                }
-                else
-                {
-                    PackageManager.InstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
+                    string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
+                    PackageReference installedPackage = Project.GetInstalledPackages().Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                    // If package Id exists in Packages folder but is not actually installed to the current project, throw.
+                    if (installedPackage == null)
+                    {
+                        WriteError(string.Format(Resources.PackageNotInstalledInAnyProject, Id));
+                    }
+                    else
+                    {
+                        List<PackageReference> installedPackages = new List<PackageReference>() { installedPackage };
+                        Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent);
+                        ExecuteUpdates(remoteUpdates, project);
+                    }
                 }
             }
         }
 
-        /// <summary>
-        /// Returns single package identity for resolver when Id is specified
-        /// </summary>
-        /// <returns></returns>
-        private PackageIdentity GetPackageIdentity()
+        private void PerformPackageReinstalls()
         {
-            PackageIdentity identity = null;
-            if (!string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(Version))
+            // Reinstall All
+            if (!_idSpecified)
             {
-                identity = new PackageIdentity(Id, NuGetVersion.Parse(Version));
+                foreach (NuGetProject project in Projects)
+                {
+                    IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
+                    foreach (PackageReference package in installedPackages)
+                    {
+                        InstallPackageByIdentity(project, package.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true);
+                    }
+                }
             }
-            return identity;
+            else
+            {
+                foreach (NuGetProject project in Projects)
+                {
+                    PackageReference installedPackage = Project.GetInstalledPackages().Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                    // If package Id exists in Packages folder but is not actually installed to the current project, throw.
+                    if (installedPackage == null)
+                    {
+                        WriteError(string.Format(Resources.PackageNotInstalledInAnyProject, Id));
+                    }
+                    else
+                    {
+                        InstallPackageByIdentity(project, installedPackage.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true);
+                    }
+                }
+            }
+        }
+
+        private void ExecuteUpdates(Dictionary<PSSearchMetadata, NuGetVersion> updates, NuGetProject nuGetProject)
+        {
+            foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> entry in updates)
+            {
+                InstallPackageByIdentity(nuGetProject, entry.Key.Identity, ResolutionContext, this, WhatIf.IsPresent);
+            }
         }
 
         /// <summary>

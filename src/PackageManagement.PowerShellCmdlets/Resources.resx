@@ -261,4 +261,7 @@
   <data name="FileConflictTitle" xml:space="preserve">
     <value>File Conflict</value>
   </data>
+  <data name="PackageNotInstalledInAnyProject" xml:space="preserve">
+    <value>'{0}' was not installed in any project. Update failed.</value>
+  </data>
 </root>

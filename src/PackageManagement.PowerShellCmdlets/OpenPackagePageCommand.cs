@@ -1,16 +1,22 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.NuGet.PackageManagement.PowerShellCmdlets;
+﻿using NuGet.Client;
+using NuGet.Client.VisualStudio;
+using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Management.Automation;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     [Cmdlet(VerbsCommon.Open, "PackagePage", DefaultParameterSetName = ParameterAttribute.AllParameterSets, SupportsShouldProcess = true)]
     public class OpenPackagePageCommand : NuGetPowerShellBaseCommand
     {
-        public OpenPackagePageCommand() 
+        public OpenPackagePageCommand()
+            : base()
         {
         }
 
@@ -19,7 +25,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         [Parameter(Position = 1)]
         [ValidateNotNull]
-        public SemanticVersion Version { get; set; }
+        public string Version { get; set; }
 
         [Parameter(Position = 2)]
         [ValidateNotNullOrEmpty]
@@ -34,6 +40,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter PassThru { get; set; }
 
+        [Parameter]
+        public SwitchParameter IncludePrerelease { get; set; }
+
         private void Preprocess()
         {
         }
@@ -42,34 +51,56 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
-            JObject package = null;
+            UIPackageMetadata package = null;
             try
             {
-                //if (Version == null || string.IsNullOrEmpty(Version.ToString()))
-                //{
-                //    string latestVersion = PowerShellPackage.GetLastestVersionForPackage(ActiveSourceRepository, Id, Enumerable.Empty<FrameworkName>(), true);
-                //    Version = new SemanticVersion(latestVersion);
-                //}
-                //package = PowerShellPackage.GetPackageByIdAndVersion(ActiveSourceRepository, Id, Version.ToString(), true);
+                UIMetadataResource resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
+                IEnumerable<UIPackageMetadata> metadata = Enumerable.Empty<UIPackageMetadata>();
+                if (string.IsNullOrEmpty(Version))
+                {
+                    Task<IEnumerable<UIPackageMetadata>> task = resource.GetMetadata(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
+                    metadata = task.Result;
+                }
+                else
+                {
+                    NuGetVersion nVersion;
+                    bool success = NuGetVersion.TryParse(Version, out nVersion);
+                    if (success)
+                    {
+                        PackageIdentity identity = new PackageIdentity(Id, nVersion);
+                        Task<IEnumerable<UIPackageMetadata>> task = resource.GetMetadata(identity, IncludePrerelease.IsPresent, false, CancellationToken.None);
+                        metadata = task.Result;
+                    }
+                }
+                package = metadata.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             }
-            catch (InvalidOperationException) { }
+            catch (Exception)
+            {
+                // show appropriate error message depending on whether Version parameter is set.
+                if (string.IsNullOrEmpty(Version))
+                {
+                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdNotFound, Id));
+                }
+                else
+                {
+                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdAndVersionNotFound, Id, Version));
+                }
+            }
 
             if (package != null)
             {
                 Uri targetUrl = null;
                 if (License.IsPresent)
                 {
-                    //targetUrl = GetUri(package, Properties.LicenseUrl);
+                    targetUrl = GetUri(package, Properties.LicenseUrl);
                 }
                 else if (ReportAbuse.IsPresent)
                 {
-                    // TODO: ReportAbuseUrl is not exposed in the package registration. 
                     //targetUrl = GetUri(package, Properties.ReportAbuseUrl);
-                    targetUrl = null;
                 }
                 else
                 {
-                    //targetUrl = GetUri(package, Properties.ProjectUrl);
+                    targetUrl = GetUri(package, Properties.ProjectUrl);
                 }
 
                 if (targetUrl != null)
@@ -86,33 +117,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_UrlMissing, Id + " " + Version));
                 }
             }
-            else
-            {
-                // show appropriate error message depending on whether Version parameter is set.
-                if (Version == null)
-                {
-                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdNotFound, Id));
-                }
-                else
-                {
-                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdAndVersionNotFound, Id, Version));
-                }
-            }
         }
 
         // TODO: This should be a common method for UI and PoweShell. 
-        private static Uri GetUri(JObject json, string property)
+        private static Uri GetUri(UIPackageMetadata metadata, string property)
         {
-            if (json[property] == null)
+            if (property == Properties.LicenseUrl)
+            {
+                return metadata.LicenseUrl;
+            }
+            else if (property == Properties.ProjectUrl)
+            {
+                return metadata.ProjectUrl;
+            }
+            // TODO: Fix ReportAbuseUrl
+            else
             {
                 return null;
             }
-            string str = json[property].ToString();
-            if (String.IsNullOrEmpty(str))
-            {
-                return null;
-            }
-            return new Uri(str.TrimEnd('/'));
         }
 
         private void OpenUrl(Uri targetUrl)

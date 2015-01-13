@@ -1,21 +1,23 @@
-﻿using System;
+﻿using NuGet.Client;
+using NuGet.Client.V3.VisualStudio;
+using NuGet.Client.VisualStudio;
+using NuGet.Configuration;
+using NuGet.Packaging;
+using NuGet.PackagingCore;
+using NuGet.ProjectManagement;
+using NuGet.Versioning;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
-using System.Globalization;
-using System.Collections.ObjectModel;
 using System.Management.Automation.Host;
-using NuGet.PackageManagement.PowerShellCmdlets;
-using System.Diagnostics;
-using NuGet.NuGet.PackageManagement.PowerShellCmdlets;
-using System.ComponentModel.Composition;
-using NuGet.Client;
-using NuGet.Configuration;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -39,6 +41,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public NuGetPackageManager PackageManager { get; set; }
 
+        public SourceRepository ActiveSourceRepository { get; set; }
+
         public NuGetProject Project { get; set; }
 
         [Parameter(ValueFromPipelineByPropertyName = true)]
@@ -46,7 +50,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         [Parameter(Position = 3)]
         [ValidateNotNullOrEmpty]
-        public string Source { get; set; }
+        public virtual string Source { get; set; }
 
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
         [ValidateNotNullOrEmpty]
@@ -94,14 +98,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (Provider == null)
             {
                 ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-                List<PackageSource> sources = new List<PackageSource>();
-                if (string.IsNullOrEmpty(Source))
-                {
-                    PackageSource source = new PackageSource(Source);
-                    sources.Add(source);
-                }
-                PackageSourceProvider pacakgeSourceProvider = new PackageSourceProvider(settings, sources);
                 Provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
+                PackageSource source; 
+                if (!string.IsNullOrEmpty(Source))
+                {
+                    source = new PackageSource(Source);
+                    ActiveSourceRepository = new SourceRepository(source, ResourceProviders);
+                }
+                else
+                {
+                    IEnumerable<SourceRepository> repoes = Provider.GetRepositories();
+                    ActiveSourceRepository = repoes.FirstOrDefault();
+                }
             }
         }
 
@@ -115,6 +123,102 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Project = VSSolutionManager.GetNuGetProject(ProjectName);
             }
+        }
+
+        protected void CheckForSolutionOpen()
+        {
+            if (!VSSolutionManager.IsSolutionOpen)
+            {
+                ErrorHandler.ThrowSolutionNotOpenTerminatingError();
+            }
+        }
+
+        protected void InstallPackageByIdentity(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false)
+        {
+            if (isPreview)
+            {
+                PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
+            }
+            else
+            {
+                if (isForce)
+                {
+                    project.UninstallPackage(identity, this);
+                }
+                PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
+            }
+        }
+
+        protected void InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false)
+        {
+            if (isPreview)
+            {
+                PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+            }
+            else
+            {
+                if (isForce)
+                {
+                    // TODO: Fix this when API is ready
+                    //project.UninstallPackage(identity, this);
+                }
+                PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+            }
+        }
+
+        protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks, bool includePrerelease, int skip, int take)
+        {
+            SearchFilter searchfilter = new SearchFilter();
+            searchfilter.IncludePrerelease = includePrerelease;
+            searchfilter.SupportedFrameworks = targetFrameworks;
+            searchfilter.IncludeDelisted = false;
+
+            V3PSSearchResource resource = ActiveSourceRepository.GetResource<V3PSSearchResource>();
+            Task<IEnumerable<PSSearchMetadata>> task = resource.Search(packageId, searchfilter, skip, take, CancellationToken.None);
+            IEnumerable<PSSearchMetadata> packages = task.Result;
+            return packages;
+        }
+
+        protected Dictionary<PSSearchMetadata, NuGetVersion> GetPackageUpdatesFromRemoteSource(IEnumerable<PackageReference> installedPackages, IEnumerable<string> targetFrameworks, bool includePrerelease, int skip = 0, int take = 30)
+        {
+            Dictionary<PSSearchMetadata, NuGetVersion> updates = new Dictionary<PSSearchMetadata, NuGetVersion>();
+
+            foreach (PackageReference package in installedPackages)
+            {
+                PSSearchMetadata metadata = GetPackagesFromRemoteSource(package.PackageIdentity.Id, targetFrameworks, includePrerelease, skip, take)
+                    .Where(p => string.Equals(p.Identity.Id, package.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                updates.Add(metadata, package.PackageIdentity.Version);
+            }
+
+            return updates;
+        }
+
+        protected void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType)
+        {
+            // Get the PowerShellPackageView
+            var view = PowerShellPackage.GetPowerShellPackageView(packages, versionType);
+            WriteObject(view, enumerateCollection: true);
+        }
+
+        protected void WritePackages(Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates, VersionType versionType)
+        {
+            List<PowerShellPackage> view = new List<PowerShellPackage>();
+            foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> pair in remoteUpdates)
+            {
+                PowerShellPackage package = PowerShellPackage.GetPowerShellPackageView(pair.Key, pair.Value, versionType);
+                view.Add(package);
+            }
+            WriteObject(view, enumerateCollection: true);
+        }
+
+        protected void WritePackages(IEnumerable<PackageReference> installedPackages)
+        {
+            List<PackageIdentity> identities = new List<PackageIdentity>();
+            foreach (PackageReference package in installedPackages)
+            {
+                identities.Add(package.PackageIdentity);
+            }
+            WriteObject(identities);
         }
 
         protected IErrorHandler ErrorHandler

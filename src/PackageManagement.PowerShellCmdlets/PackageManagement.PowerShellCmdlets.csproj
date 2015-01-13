@@ -50,6 +50,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.2.0-pre-20150109225656\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
+    <Reference Include="NuGet.Client.V3.VisualStudio">
+      <HintPath>..\..\packages\NuGet.Client.V3.VisualStudio.0.2.0-pre-20150110003326\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.VisualStudio">
+      <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.2.0-pre-20150110003113\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50072141\lib\net45\NuGet.Configuration.dll</HintPath>
@@ -107,7 +113,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddBindingRedirectCommand.cs" />
     <Compile Include="ExceptionUtility.cs" />
+    <Compile Include="FindPackageCommand.cs" />
     <Compile Include="GetPackageCommand.cs" />
     <Compile Include="GetProjectCommand.cs" />
     <Compile Include="HttpUtility.cs" />
@@ -117,6 +125,7 @@
     <Compile Include="NuGetErrorId.cs" />
     <Compile Include="NuGetPowerShellBaseCommand.cs" />
     <Compile Include="OpenPackagePageCommand.cs" />
+    <Compile Include="PowerShellPackage.cs" />
     <Compile Include="ProgressActivityIds.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">

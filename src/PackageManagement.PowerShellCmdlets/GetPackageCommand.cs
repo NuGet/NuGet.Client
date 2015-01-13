@@ -1,15 +1,12 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
-using NuGet.PackagingCore;
+﻿using NuGet.Client.VisualStudio;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
-using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+using System.Linq;
 using System.Management.Automation;
-using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -17,22 +14,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// This command lists the available packages which are either from a package source or installed in the current solution.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Package", DefaultParameterSetName = ParameterAttribute.AllParameterSets)]
-    //[OutputType(typeof(IPackage))]
+    [OutputType(typeof(PowerShellPackage))]
     public class GetPackageCommand : NuGetPowerShellBaseCommand
     {
         private const int DefaultFirstValue = 50;
         private bool _enablePaging;
-        private NuGetPackageManager _nugetPackageManager;
 
-        [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
-
-        public GetPackageCommand() :
-            base()
+        public GetPackageCommand()
+            : base()
         {
-            ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-            SourceRepositoryProvider provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
-            _nugetPackageManager = new NuGetPackageManager(provider);
         }
 
         [Parameter(Position = 0)]
@@ -41,12 +31,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         [Parameter(Position = 1, Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "Project")]
         [ValidateNotNullOrEmpty]
-        public string ProjectName { get; set; }
+        public override string ProjectName { get; set; }
 
         [Parameter(ParameterSetName = "Remote")]
         [Parameter(ParameterSetName = "Updates")]
         [ValidateNotNullOrEmpty]
-        public string Source { get; set; }
+        public override string Source { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "Remote")]
         [Alias("Online", "Remote")]
@@ -86,12 +76,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual bool CollapseVersions { get; set; }
 
+        public List<NuGetProject> Projects { get; set; }
+
         protected override void Preprocess()
         {
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
             CollapseVersions = !AllVersions.IsPresent && ListAvailable;
             base.Preprocess();
+            if (string.IsNullOrEmpty(ProjectName))
+            {
+                Projects = VSSolutionManager.GetProjects().ToList();
+            }
+            else
+            {
+                Projects = new List<NuGetProject>() { Project };
+            }
         }
 
         protected override void ProcessRecordCore()
@@ -116,27 +116,69 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     First = DefaultFirstValue;
                 }
 
+                if (Filter == null)
+                {
+                    Filter = string.Empty;
+                }
+
                 // Find avaiable packages from the online sources and not taking targetframeworks into account. 
                 if (UseRemoteSourceOnly)
                 {
-
+                    IEnumerable<PSSearchMetadata> remotePackages = GetPackagesFromRemoteSource(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent,  Skip, First);
+                    if (CollapseVersions)
+                    {
+                        WritePackages(remotePackages, VersionType.latest);
+                    }
+                    else
+                    {
+                        WritePackages(remotePackages, VersionType.all);
+                    }
                 }
                 else
                 {
-                    // Get package updates from the remote source and take targetframeworks into account.
+                    CheckForSolutionOpen();
 
+                    foreach (NuGetProject project in Projects)
+                    {
+                        string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
+                        IEnumerable<PackageReference> installedPackages = project.GetInstalledPackages();
+                        Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent, Skip, First);
+                        if (CollapseVersions)
+                        {
+                            WritePackages(remoteUpdates, VersionType.latest);
+                        }
+                        else
+                        {
+                            WritePackages(remoteUpdates, VersionType.updates);
+                        }
+                    }
                 }
             }
         }
 
-        private void WritePackages(IEnumerable<PackageReference> installedPackages)
+        private void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType, bool outputWarning = false)
         {
-            List<PackageIdentity> identities = new List<PackageIdentity>();
-            foreach (PackageReference package in installedPackages)
+            // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
+            // and will be replaced by Find-Package [-Id] 
+            string message;
+            if (!CollapseVersions)
             {
-                identities.Add(package.PackageIdentity);
+                versionType = VersionType.all;
+                message = "Find-Package [-Id] -ListAll";
             }
-            WriteObject(identities);
+            else
+            {
+                versionType = VersionType.latest;
+                message = "Find-Package [-Id]";
+            }
+
+            // Output list of PowerShellPackages
+            if (outputWarning && !string.IsNullOrEmpty(Filter))
+            {
+                LogCore(MessageLevel.Warning, string.Format(Resources.Cmdlet_CommandObsolete, message));
+            }
+
+            WritePackages(packages, versionType);
         }
     }
 }

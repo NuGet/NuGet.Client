@@ -55,6 +55,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.2.0-pre-20150109225656\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
+    <Reference Include="NuGet.Client.V3.VisualStudio">
+      <HintPath>..\..\packages\NuGet.Client.V3.VisualStudio.0.2.0-pre-20150110003326\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.VisualStudio">
+      <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.2.0-pre-20150110003113\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Configuration">
       <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50072141\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>

@@ -1,13 +1,7 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
-using NuGet.PackagingCore;
+﻿using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Management.Automation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -17,7 +11,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private ResolutionContext _context;
 
-        public InstallPackageCommand()
+        public InstallPackageCommand() 
+            : base()
         {
         }
 
@@ -48,31 +43,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
+            CheckForSolutionOpen();
+
             Preprocess();
             PackageIdentity identity = GetPackageIdentity();
 
-            if (WhatIf.IsPresent)
+            SubscribeToProgressEvents();
+
+            if (string.IsNullOrEmpty(Version))
             {
-                if (string.IsNullOrEmpty(Version))
-                {
-                    PackageManager.PreviewInstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
-                }
-                else
-                {
-                    PackageManager.PreviewInstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
-                }
+                InstallPackageById(Project, Id, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent);
             }
             else
             {
-                if (string.IsNullOrEmpty(Version))
-                {
-                    PackageManager.InstallPackageAsync(Project, Id, ResolutionContext, this).Wait();
-                }
-                else
-                {
-                   PackageManager.InstallPackageAsync(Project, identity, ResolutionContext, this).Wait();
-                }
+                InstallPackageByIdentity(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent);
             }
+
+            UnsubscribeFromProgressEvents();
         }
 
         /// <summary>
@@ -81,11 +68,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private PackageIdentity GetPackageIdentity()
         {
-            // TODO: Get latest package version when Version is not specified.
             PackageIdentity identity = null;
-            if (!string.IsNullOrEmpty(Id) && !string.IsNullOrEmpty(Version))
+            if (!string.IsNullOrEmpty(Version))
             {
-                identity = new PackageIdentity(Id, NuGetVersion.Parse(Version));
+                NuGetVersion nVersion;
+                bool success = NuGetVersion.TryParse(Version, out nVersion);
+                if (success)
+                {
+                    identity = new PackageIdentity(Id, nVersion);
+                }
             }
             return identity;
         }

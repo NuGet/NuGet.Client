@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.NuGet.PackageManagement.PowerShellCmdlets {
+namespace NuGet.PackageManagement.PowerShellCmdlets {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace NuGet.NuGet.PackageManagement.PowerShellCmdlets {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.NuGet.PackageManagement.PowerShellCmdlets.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageManagement.PowerShellCmdlets.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -489,6 +489,15 @@ namespace NuGet.NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Log_OperationWhatIf {
             get {
                 return ResourceManager.GetString("Log_OperationWhatIf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; was not installed in any project. Update failed..
+        /// </summary>
+        internal static string PackageNotInstalledInAnyProject {
+            get {
+                return ResourceManager.GetString("PackageNotInstalledInAnyProject", resourceCulture);
             }
         }
     }
