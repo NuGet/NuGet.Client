@@ -84,5 +84,36 @@ namespace Test.Utility
         {
             // No-op
         }
+
+
+        public bool FileExistsInProject(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public dynamic GetPropertyValue(string propertyName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsSupportedFile(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public INuGetProjectContext NuGetProjectContext
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void RemoveFile(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ResolvePath(string path)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
