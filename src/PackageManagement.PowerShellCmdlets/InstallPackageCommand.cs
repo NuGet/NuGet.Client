@@ -1,8 +1,13 @@
-﻿using NuGet.PackagingCore;
+﻿using NuGet.Client;
+using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using System;
+using System.Globalization;
+using System.IO;
 using System.Management.Automation;
+using System.Net.NetworkInformation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -10,10 +15,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public class InstallPackageCommand : NuGetPowerShellBaseCommand
     {
         private ResolutionContext _context;
+        private SourceRepository _currentSource = null;
+        private bool _readFromPackagesConfig;
+        private bool _readFromDirectPackagePath;
+        private bool _isHttp;
+        private bool _isNetworkAvailable;
+        private string _fallbackToLocalCacheMessge = Resources.Cmdlet_FallbackToCache;
+        private string _localCacheFailureMessage = Resources.Cmdlet_LocalCacheFailure;
+        private string _cacheStatusMessage = String.Empty;
 
         public InstallPackageCommand() 
             : base()
         {
+            _isNetworkAvailable = isNetworkAvailable();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -41,6 +55,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public DependencyBehavior? DependencyVersion { get; set; }
 
+        protected override void Preprocess()
+        {
+            base.Preprocess();
+        }
+
         protected override void ProcessRecordCore()
         {
             CheckForSolutionOpen();
@@ -60,6 +79,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             UnsubscribeFromProgressEvents();
+        }
+
+        private static bool isNetworkAvailable()
+        {
+            return NetworkInterface.GetIsNetworkAvailable();
         }
 
         /// <summary>
