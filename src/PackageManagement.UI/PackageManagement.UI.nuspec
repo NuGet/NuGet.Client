@@ -10,9 +10,8 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet UI</description>
     <tags>nugetui</tags>
-    <dependencies>
-		<dependency id="NuGet.Versioning" version="1.0.5" />
-		<dependency id="NuGet.Packaging" version="1.0.0-master-43440912" />
-	</dependencies>
   </metadata>
+  <files>
+	<file src="..\ProjectManagement.VisualStudio\bin\$configuration$\ProjectManagement.VisualStudio.dll" target="lib/net45" />
+  </files>
 </package>
