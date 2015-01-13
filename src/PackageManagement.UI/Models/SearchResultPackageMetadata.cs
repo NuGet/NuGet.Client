@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI
         UpdateAvailable
     }
 
-    public class UiSearchResultPackage : INotifyPropertyChanged
+    internal class SearchResultPackageMetadata : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
 
         private SourceRepository _source;
 
-        public UiSearchResultPackage(SourceRepository source)
+        public SearchResultPackageMetadata(SourceRepository source)
         {
             _source = source;
         }

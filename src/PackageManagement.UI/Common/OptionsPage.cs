@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class PreviewResult
+    public enum OptionsPage
     {
-
-        // TODO: hook this up to PM
-
+        General,
+        PackageSources
     }
 }

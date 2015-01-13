@@ -17,9 +17,9 @@ namespace NuGet.PackageManagement.UI
         {
             _fileConflicActions = new[]
             {
-                new FileConflictActionItem(Resources.FileConflictAction_Prompt, FileConflictAction.PromptUser),
-                new FileConflictActionItem(Resources.FileConflictAction_IgnoreAll, FileConflictAction.IgnoreAll),
-                new FileConflictActionItem(Resources.FileConflictAction_OverwriteAll, FileConflictAction.OverwriteAll)
+                new FileConflictActionOptionItem(Resources.FileConflictAction_Prompt, FileConflictAction.PromptUser),
+                new FileConflictActionOptionItem(Resources.FileConflictAction_IgnoreAll, FileConflictAction.IgnoreAll),
+                new FileConflictActionOptionItem(Resources.FileConflictAction_OverwriteAll, FileConflictAction.OverwriteAll)
             };
 
             SelectedFileConflictAction = _fileConflicActions[0];
@@ -38,9 +38,9 @@ namespace NuGet.PackageManagement.UI
             SelectedDependencyBehavior = _dependencyBehaviors[1];
         }
 
-        private FileConflictActionItem[] _fileConflicActions;
+        private FileConflictActionOptionItem[] _fileConflicActions;
 
-        public IEnumerable<FileConflictActionItem> FileConflictActions
+        public IEnumerable<FileConflictActionOptionItem> FileConflictActions
         {
             get
             {
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public FileConflictActionItem SelectedFileConflictAction
+        public FileConflictActionOptionItem SelectedFileConflictAction
         {
             get;
             set;

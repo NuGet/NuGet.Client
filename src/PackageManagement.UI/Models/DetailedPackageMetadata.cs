@@ -6,14 +6,14 @@ using System.Linq;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class UiPackageMetadata
+    internal class DetailedPackageMetadata
     {
-        public UiPackageMetadata()
+        public DetailedPackageMetadata()
         {
 
         }
 
-        public UiPackageMetadata(UIPackageMetadata serverData)
+        public DetailedPackageMetadata(UIPackageMetadata serverData)
         {
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;
@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
             Tags = serverData.Tags;
             DownloadCount = serverData.DownloadCount;
             Published = serverData.Published;
-            DependencySets = serverData.DependencySets.Select(e => new UiPackageDependencySet(e));
+            DependencySets = serverData.DependencySets.Select(e => new PackageDependencySetMetadata(e));
             HasDependencies = serverData.HasDependencies;
         }
 
@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.UI
 
         public DateTimeOffset? Published { get; set; }
 
-        public IEnumerable<UiPackageDependencySet> DependencySets { get; set; }
+        public IEnumerable<PackageDependencySetMetadata> DependencySets { get; set; }
 
         // This property is used by data binding to display text "No dependencies"
         public bool HasDependencies { get; set; }

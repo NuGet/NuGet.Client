@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Resx = NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.PackagingCore;
+using NuGet.Client.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -18,7 +19,7 @@ namespace NuGet.PackageManagement.UI
     // PackageSolutionDetailControlModel or PackageDetailControlModel.
     public partial class DetailControl : UserControl
     {
-        public PackageManagerControl Control { get; set; }
+        private PackageManagerControl _control;
 
         public DetailControl()
         {
@@ -43,7 +44,7 @@ namespace NuGet.PackageManagement.UI
             Hyperlink hyperlink = e.OriginalSource as Hyperlink;
             if (hyperlink != null && hyperlink.NavigateUri != null)
             {
-                Control.UI.LaunchExternalLink(hyperlink.NavigateUri);
+                Control.Model.UIController.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
             }
         }
@@ -76,7 +77,24 @@ namespace NuGet.PackageManagement.UI
 
         private void ActionButtonClicked(object sender, RoutedEventArgs e)
         {
-            Control.PerformAction(this);
+            var action = GetUserAction();
+            WaitCallback callback = new WaitCallback(async (obj) => 
+                await Control.Model.Context.UIActionEngine.PerformAction(Control.Model.UIController, action, this, CancellationToken.None));
+
+            // Run the action using the UIActionEngine on a background thread
+            ThreadPool.QueueUserWorkItem(callback, this);
+        }
+
+        /// <summary>
+        /// Shows the preveiw window for the actions.
+        /// </summary>
+        /// <param name="actions">actions to preview.</param>
+        /// <returns>True if nuget should continue to perform the actions. Otherwise false.</returns>
+        private bool PreviewActions(IEnumerable<PreviewResult> actions)
+        {
+            var w = new PreviewWindow();
+            w.DataContext = new PreviewWindowModel(actions);
+            return w.ShowModal() == true;
         }
 
         public FileConflictAction FileConflictAction
@@ -85,6 +103,38 @@ namespace NuGet.PackageManagement.UI
             {
                 var model = (DetailControlModel)DataContext;
                 return model.Options.SelectedFileConflictAction.Action;
+            }
+        }
+
+        public bool DisplayPreviewWindow
+        {
+            get
+            {
+                var model = (DetailControlModel)DataContext;
+                return model.Options.ShowPreviewWindow;
+            }
+        }
+
+        public PackageManagerControl Control
+        {
+            get
+            {
+                return _control;
+            }
+
+            set
+            {
+                if (_control == null)
+                {
+                    // register with the UI controller the first time we get the control model
+                    NuGetUI controller = value.Model.UIController as NuGetUI;
+                    if (controller != null)
+                    {
+                        controller.DetailControl = this;
+                    }
+                }
+
+                _control = value;
             }
         }
     }

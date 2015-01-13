@@ -37,6 +37,10 @@ namespace NuGet.PackageManagement.UI
 
         private NuGetProject[] _projects;
 
+        private HashSet<PackageIdentity> _installedPackages;
+        private HashSet<string> _installedPackageIds;
+        private bool _installedPackagesLoaded = false;
+
         private PackageLoaderOption _option;
 
         private string _searchText;
@@ -61,6 +65,9 @@ namespace NuGet.PackageManagement.UI
                     CultureInfo.CurrentCulture,
                     Resources.Text_Searching,
                     searchText);
+
+            _installedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+            _installedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public string LoadingMessage
@@ -71,11 +78,14 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<IEnumerable<UISearchMetadata>> Search(int startIndex, CancellationToken ct)
         {
-            if (_option.Filter == Filter.Installed ||
-                _option.Filter == Filter.UpdatesAvailable)
+            if (_option.Filter == Filter.Installed)
             {
                 // TODO: filter packges by the query
-
+                throw new NotImplementedException();
+            }
+            else if (_option.Filter == Filter.UpdatesAvailable)
+            {
+                // TODO: filter packges by the query
                 throw new NotImplementedException();
             }
             else
@@ -116,7 +126,20 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<LoadResult> LoadItems(int startIndex, CancellationToken ct)
         {
-            List<UiSearchResultPackage> packages = new List<UiSearchResultPackage>();
+            // Load up the packages from the project for the package status
+            // TODO: move this somewhere else? refresh it?
+            if (!_installedPackagesLoaded)
+            {
+                _installedPackagesLoaded = true;
+
+                foreach (var package in _projects.SelectMany(p => p.GetInstalledPackages()))
+                {
+                    _installedPackages.Add(package.PackageIdentity);
+                    _installedPackageIds.Add(package.PackageIdentity.Id);
+                }
+            }
+
+            List<SearchResultPackageMetadata> packages = new List<SearchResultPackageMetadata>();
             var results = await Search(startIndex, ct);
             int resultCount = 0;
             foreach (var package in results)
@@ -124,7 +147,7 @@ namespace NuGet.PackageManagement.UI
                 ct.ThrowIfCancellationRequested();
                 ++resultCount;
 
-                var searchResultPackage = new UiSearchResultPackage(_sourceRepository);
+                var searchResultPackage = new SearchResultPackageMetadata(_sourceRepository);
                 searchResultPackage.Id = package.Identity.Id;
                 searchResultPackage.Version = package.Identity.Version;
                 searchResultPackage.IconUrl = package.IconUrl;
@@ -180,7 +203,25 @@ namespace NuGet.PackageManagement.UI
 
         private PackageStatus GetStatus(PackageIdentity package)
         {
-            // TODO: search the projects to find installed projects
+            if (_installedPackageIds.Contains(package.Id))
+            {
+                // check for an exact match
+                if (_installedPackages.Contains(package))
+                {
+                    return PackageStatus.Installed;
+                }
+
+                // find our highest version to compare
+                var highestInstalled = _installedPackages.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id)).OrderByDescending(p => p.Version, VersionComparer.Default).First();
+
+                if (VersionComparer.VersionRelease.Compare(highestInstalled.Version, package.Version) < 0)
+                {
+                    return PackageStatus.UpdateAvailable;
+                }
+
+                return PackageStatus.Installed;
+            }
+
             return PackageStatus.NotInstalled;
         }
     }

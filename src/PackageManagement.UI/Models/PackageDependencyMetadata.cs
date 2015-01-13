@@ -8,14 +8,14 @@ using NuGet.PackagingCore;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class UiPackageDependency
+    internal class PackageDependencyMetadata
     {
-        public UiPackageDependency()
+        public PackageDependencyMetadata()
         {
 
         }
 
-        public UiPackageDependency(PackageDependency serverData)
+        public PackageDependencyMetadata(PackageDependency serverData)
         {
             Id = serverData.Id;
             Range = serverData.VersionRange;
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI
             private set;
         }
 
-        public UiPackageDependency(string id, VersionRange range)
+        public PackageDependencyMetadata(string id, VersionRange range)
         {
             Id = id;
             Range = range;

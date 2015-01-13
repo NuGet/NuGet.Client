@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.UI {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageManagement.UI.Resources.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageManagement.UI.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -93,6 +93,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Action_Update {
             get {
                 return ResourceManager.GetString("Action_Update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some NuGet packages are missing from this solution. Click to restore from your online package sources..
+        /// </summary>
+        public static string AskForRestoreMessage {
+            get {
+                return ResourceManager.GetString("AskForRestoreMessage", resourceCulture);
             }
         }
         
@@ -552,6 +561,80 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Version {
             get {
                 return ResourceManager.GetString("Label_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished configuring this solution to restore NuGet packages on build..
+        /// </summary>
+        public static string PackageRestoreCompleted {
+            get {
+                return ResourceManager.GetString("PackageRestoreCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you want to configure this solution to download and restore missing NuGet packages during build? A .nuget folder will be added to the root of the solution that contains files that enable package restore.
+        ///
+        ///Packages installed into Website projects will not be restored during build. Consider converting those into Web application projects if necessary..
+        /// </summary>
+        public static string PackageRestoreConfirmation {
+            get {
+                return ResourceManager.GetString("PackageRestoreConfirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading package &apos;{0}&apos; failed..
+        /// </summary>
+        public static string PackageRestoreDownloadPackageFailed {
+            get {
+                return ResourceManager.GetString("PackageRestoreDownloadPackageFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while configuring the solution to restore NuGet packages on build.
+        /// </summary>
+        public static string PackageRestoreErrorMessage {
+            get {
+                return ResourceManager.GetString("PackageRestoreErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while trying to restore packages:.
+        /// </summary>
+        public static string PackageRestoreErrorTryAgain {
+            get {
+                return ResourceManager.GetString("PackageRestoreErrorTryAgain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading missing packages....
+        /// </summary>
+        public static string PackageRestoreProgressMessage {
+            get {
+                return ResourceManager.GetString("PackageRestoreProgressMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuring the solution to restore NuGet packages on build....
+        /// </summary>
+        public static string PackageRestoreWaitMessage {
+            get {
+                return ResourceManager.GetString("PackageRestoreWaitMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Restore.
+        /// </summary>
+        public static string RestoreButtonLabel {
+            get {
+                return ResourceManager.GetString("RestoreButtonLabel", resourceCulture);
             }
         }
         

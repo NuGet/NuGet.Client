@@ -16,23 +16,34 @@ namespace NuGet.PackageManagement.UI
     /// The base class of PackageDetailControlModel and PackageSolutionDetailControlModel.
     /// When user selects an action, this triggers version list update.
     /// </summary>
-    public abstract class DetailControlModel : INotifyPropertyChanged
+    internal abstract class DetailControlModel : INotifyPropertyChanged
     {
-        protected NuGetProject _target;
+        protected IEnumerable<NuGetProject> _projects;
         protected List<NuGetVersion> _allPackages;
-        protected UiSearchResultPackage _searchResultPackage;
+        protected SearchResultPackageMetadata _searchResultPackage;
 
-        private Dictionary<NuGetVersion, UiPackageMetadata> _metadataDict;
+        private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
         public DetailControlModel(
-            NuGetProject target,
-            UiSearchResultPackage searchResultPackage)
+            IEnumerable<NuGetProject> projects,
+            SearchResultPackageMetadata searchResultPackage)
         {
-            _target = target;
+            _projects = projects;
             _searchResultPackage = searchResultPackage;
             _allPackages = new List<NuGetVersion>(searchResultPackage.Versions);
             _options = new UI.Options();
             CreateActions();
+        }
+
+        /// <summary>
+        /// Get all installed packages across all projects (distinct)
+        /// </summary>
+        public virtual IEnumerable<PackageIdentity> InstalledPackages
+        {
+            get
+            {
+                return _projects.SelectMany(p => p.GetInstalledPackages()).Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+            }
         }
 
         public virtual void Refresh()
@@ -119,9 +130,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private UiPackageMetadata _packageMetadata;
+        private DetailedPackageMetadata _packageMetadata;
 
-        public UiPackageMetadata PackageMetadata
+        public DetailedPackageMetadata PackageMetadata
         {
             get 
             { 
@@ -199,7 +210,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _selectedVersion = value;
 
-                    UiPackageMetadata packageMetadata;
+                    DetailedPackageMetadata packageMetadata;
                     if (_metadataDict != null &&
                         _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
                     {
@@ -224,7 +235,7 @@ namespace NuGet.PackageManagement.UI
                 ids.Add(new PackageIdentity(Id, version.Version));
             }
 
-            var dict = new Dictionary<NuGetVersion, UiPackageMetadata>();
+            var dict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
 
             if (metadataResource != null)
             {
@@ -235,14 +246,14 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (!dict.ContainsKey(item.Identity.Version))
                     {
-                        dict.Add(item.Identity.Version, new UiPackageMetadata(item));
+                        dict.Add(item.Identity.Version, new DetailedPackageMetadata(item));
                     }
                 }
             }
 
             _metadataDict = dict;
 
-            UiPackageMetadata p;
+            DetailedPackageMetadata p;
             if (SelectedVersion != null &&
                 _metadataDict.TryGetValue(SelectedVersion.Version, out p))
             {

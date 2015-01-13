@@ -32,41 +32,22 @@ namespace NuGet.PackageManagement.UI
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
 
-        //private IConsole _outputConsole;
-
-        internal IUserInterfaceService UI { get; private set; }
-
-        //private PackageRestoreBar _restoreBar;
-        //private IPackageRestoreManager _packageRestoreManager;
+        // TODO: hook this back up
+        private PackageRestoreBar _restoreBar;
 
         private IVsWindowSearchHost _windowSearchHost;
         private IVsWindowSearchHostFactory _windowSearchHostFactory;
 
         public PackageManagerModel Model { get; private set; }
 
-        public SourceRepositoryProvider Sources
-        {
-            get
-            {
-                return Model.Sources;
-            }
-        }
 
-        public IEnumerable<NuGetProject> Projects
-        {
-            get
-            {
-                return new NuGetProject[] { Model.Target };
-            }
-        }
-
-        public PackageManagerControl(PackageManagerModel model, IUserInterfaceService ui)
-            : this(model, ui, new SimpleSearchBoxFactory())
+        public PackageManagerControl(PackageManagerModel model)
+            : this(model, new SimpleSearchBoxFactory())
         {
 
         }
 
-        public PackageManagerControl(PackageManagerModel model, IUserInterfaceService ui, IVsWindowSearchHostFactory searchFactory)
+        public PackageManagerControl(PackageManagerModel model, IVsWindowSearchHostFactory searchFactory)
         {
             _windowSearchHostFactory = searchFactory;
 
@@ -77,7 +58,6 @@ namespace NuGet.PackageManagement.UI
                 _windowSearchHost.IsVisible = true;
             }
 
-            UI = ui;
             Model = model;
 
             InitializeComponent();
@@ -86,18 +66,30 @@ namespace NuGet.PackageManagement.UI
             _filter.Items.Add(Resx.Resources.Filter_Installed);
             _filter.Items.Add(Resx.Resources.Filter_UpdateAvailable);
 
-            //_packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
             AddRestoreBar();
 
             _packageDetail.Control = this;
+            _packageDetail.Visibility = Visibility.Hidden;
 
-            //var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
-            //_outputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
-
+            SetTitle();
             InitSourceRepoList();
 
             _initialized = true;
 
+            // register with the UI controller
+            NuGetUI controller = model.UIController as NuGetUI;
+            if (controller != null)
+            {
+                controller.PackageManagerControl = this;
+            }
+        }
+
+        private IEnumerable<SourceRepository> EnabledSources
+        {
+            get
+            {
+                return Model.Context.SourceProvider.GetRepositories().Where(s => s.PackageSource.IsEnabled);
+            }
         }
 
         private void Sources_PackageSourcesChanged(object sender, EventArgs e)
@@ -109,7 +101,7 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 var oldActiveSource = _sourceRepoList.SelectedItem as PackageSource;
-                var newSources = new List<PackageSource>(Sources.GetRepositories().Select(s => s.PackageSource));
+                var newSources = new List<PackageSource>(EnabledSources.Select(s => s.PackageSource));
 
                 // Update the source repo list with the new value.
                 _sourceRepoList.Items.Clear();
@@ -145,54 +137,77 @@ namespace NuGet.PackageManagement.UI
 
         private void AddRestoreBar()
         {
-            //_restoreBar = new PackageRestoreBar(_packageRestoreManager);
-            //_root.Children.Add(_restoreBar);
-            //_packageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
+            if (Model.Context.PackageRestoreManager != null)
+            {
+                _restoreBar = new PackageRestoreBar(Model.Context.PackageRestoreManager);
+                _root.Children.Add(_restoreBar);
+                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
+            }
         }
 
         private void RemoveRestoreBar()
         {
-            //if (_restoreBar != null)
+            if (_restoreBar != null)
+            {
+                _restoreBar.CleanUp();
+
+                // TODO: clean this up during dispose also
+                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged -= packageRestoreManager_PackagesMissingStatusChanged;
+            }
+        }
+
+        private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
+        {
+            // PackageRestoreManager fires this event even when solution is closed.
+            // Don't do anything if solution is closed.
+            //if (!Target.IsAvailable)
             //{
-            //    _restoreBar.CleanUp();
-            //    _packageRestoreManager.PackagesMissingStatusChanged -= packageRestoreManager_PackagesMissingStatusChanged;
+            //    return;
+            //}
+
+            //if (!e.PackagesMissing)
+            //{
+            //    // packages are restored. Update the UI
+            //    if (Target.IsSolution)
+            //    {
+            //        // TODO: update UI here
+            //    }
+            //    else
+            //    {
+            //        // TODO: update UI here
+            //    }
             //}
         }
 
-        //private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
-        //{
-        //    // PackageRestoreManager fires this event even when solution is closed.
-        //    // Don't do anything if solution is closed.
-        //    //if (!Target.IsAvailable)
-        //    //{
-        //    //    return;
-        //    //}
-
-        //    //if (!e.PackagesMissing)
-        //    //{
-        //    //    // packages are restored. Update the UI
-        //    //    if (Target.IsSolution)
-        //    //    {
-        //    //        // TODO: update UI here
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        // TODO: update UI here
-        //    //    }
-        //    //}
-        //}
-
-        private void InitSourceRepoList()
+        private void SetTitle()
         {
-            // TODO: get this from the projects
+            List<string> projectNames = new List<string>();
+
+            foreach (var project in Model.Context.Projects)
+            {
+                string s = null;
+                if (project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out s))
+                {
+                    projectNames.Add(s);
+                }
+                else
+                {
+                    // TODO: Localize
+                    projectNames.Add("Unknown");
+                }
+            }
+
             _label.Text = string.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Resources.Label_PackageManager,
-                "<Project>");
+                String.Join(", ", projectNames));
+        }
 
+        private void InitSourceRepoList()
+        {
             // init source repo list
             _sourceRepoList.Items.Clear();
-            foreach (var source in Sources.GetRepositories())
+            foreach (var source in EnabledSources)
             {
                 if (_activeSource == null)
                 {
@@ -232,9 +247,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal SourceRepository CreateActiveRepository()
+        internal SourceRepository ActiveSource
         {
-            return _activeSource;
+            get
+            {
+                return _activeSource;
+            }
         }
 
         private void SearchPackageInActivePackageSource(string searchText)
@@ -255,7 +273,7 @@ namespace NuGet.PackageManagement.UI
 
                 var loader = new PackageLoader(
                     option,
-                    Projects,
+                    Model.Context.Projects,
                     _activeSource,
                     searchText);
                 _packageList.Loader = loader;
@@ -264,7 +282,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
         {
-            UI.LaunchNuGetOptionsDialog();
+            Model.UIController.LaunchNuGetOptionsDialog();
         }
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -277,13 +295,16 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async void UpdateDetailPane()
         {
-            var selectedPackage = _packageList.SelectedItem as UiSearchResultPackage;
+            var selectedPackage = _packageList.SelectedItem as SearchResultPackageMetadata;
             if (selectedPackage == null)
             {
+                _packageDetail.Visibility = Visibility.Hidden;
                 _packageDetail.DataContext = null;
             }
             else
             {
+                _packageDetail.Visibility = Visibility.Visible;
+
                 DetailControlModel newModel;
                 //if (Target.IsSolution)
                 //{
@@ -295,7 +316,7 @@ namespace NuGet.PackageManagement.UI
                 // project level model
                 // TODO: pass in the list instead of the first one
                 newModel = new PackageDetailControlModel(
-                        Projects.SingleOrDefault(),
+                        Model.Context.Projects,
                         selectedPackage);
 
                 var oldModel = _packageDetail.DataContext as DetailControlModel;
@@ -321,7 +342,7 @@ namespace NuGet.PackageManagement.UI
             var newSource = _sourceRepoList.SelectedItem as PackageSource;
             if (newSource != null)
             {
-                _activeSource = Sources.GetRepositories().Where(s => s.PackageSource == _sourceRepoList.SelectedItem).SingleOrDefault();
+                _activeSource = EnabledSources.Where(s => s.PackageSource == _sourceRepoList.SelectedItem).SingleOrDefault();
             }
 
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
@@ -348,7 +369,7 @@ namespace NuGet.PackageManagement.UI
                 // existing items in the package list
                 foreach (var item in _packageList.Items)
                 {
-                    var package = item as UiSearchResultPackage;
+                    var package = item as SearchResultPackageMetadata;
                     if (package == null)
                     {
                         continue;
@@ -356,7 +377,7 @@ namespace NuGet.PackageManagement.UI
 
                     package.Status = PackageManagerControl.GetPackageStatus(
                         package.Id,
-                        Projects,
+                        Model.Context.Projects,
                         package.Versions);
                 }
             }
@@ -457,35 +478,37 @@ namespace NuGet.PackageManagement.UI
             return w.ShowModal() == true;
         }
 
-        private void ActivateOutputWindow()
-        {
-            //var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
-            //if (uiShell == null)
-            //{
-            //    return;
-            //}
+        //private void ActivateOutputWindow()
+        //{
+        //    //var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
+        //    //if (uiShell == null)
+        //    //{
+        //    //    return;
+        //    //}
 
-            //var guid = new Guid(EnvDTE.Constants.vsWindowKindOutput);
-            //IVsWindowFrame f = null;
-            //uiShell.FindToolWindow(0, ref guid, out f);
-            //if (f == null)
-            //{
-            //    return;
-            //}
+        //    //var guid = new Guid(EnvDTE.Constants.vsWindowKindOutput);
+        //    //IVsWindowFrame f = null;
+        //    //uiShell.FindToolWindow(0, ref guid, out f);
+        //    //if (f == null)
+        //    //{
+        //    //    return;
+        //    //}
 
-            //f.Show();
-        }
+        //    //f.Show();
+        //}
 
         // perform the user selected action
         internal async void PerformAction(DetailControl detailControl)
         {
-            bool acceptLicense = ShowLicenseAgreement(null);
-            if (!acceptLicense)
-            {
-                return;
-            }
+            //bool acceptLicense = ShowLicenseAgreement(null);
+            //if (!acceptLicense)
+            //{
+            //    return;
+            //}
 
-            ActivateOutputWindow();
+
+
+            //ActivateOutputWindow();
             //_outputConsole.Clear();
             //var progressDialog = new ProgressDialog(_outputConsole);
             //progressDialog.Owner = Window.GetWindow(this);

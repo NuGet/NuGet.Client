@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Windows;
 using System.Linq;
 using NuGet.ProjectManagement;
+using NuGet.Frameworks;
 
 namespace StandaloneUI
 {
@@ -18,11 +19,14 @@ namespace StandaloneUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] _resourceProviders;
-
         [Import]
-        public IUserInterfaceService _uiService;
+        public INuGetUIFactory _uiServiceFactory;
+
+        [ImportMany]
+        public IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _resourceProviders;
+
+        //[Import]
+        public INuGetUIContextFactory _contextFactory;
 
         private CompositionContainer _container;
 
@@ -41,17 +45,27 @@ namespace StandaloneUI
 
             var repositoryProvider = new SourceRepositoryProvider(new V3OnlyPackageSourceProvider(), _resourceProviders);
 
-            NuGetProject project = new FolderNuGetProject("tmpproject");
+            var projectMetadata = new Dictionary<string, object>();
+            projectMetadata.Add(NuGetProjectMetadataKeys.Name, "Test Project");
+            projectMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net45"));
 
-            PackageManagerModel model = new PackageManagerModel(repositoryProvider, project);
-            PackageManagerControl control = new PackageManagerControl(model, _uiService);
+            NuGetProject project = new PackagesConfigNuGetProject(@"C:\Users\juste\Documents\Visual Studio 2013\Projects\ConsoleApplication2\ConsoleApplication2\packages.config", projectMetadata);
+            var projects = new NuGetProject[] { project };
+
+            _contextFactory = new NuGetUIContextFactory(repositoryProvider);
+            var context = _contextFactory.Create(projects);
+            var uiController = _uiServiceFactory.Create(projects);
+
+            PackageManagerModel model = new PackageManagerModel(uiController, context);
+
+            PackageManagerControl control = new PackageManagerControl(model);
 
             layoutGrid.Children.Add(control);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
+
         }
 
         private CompositionContainer Initialize()
@@ -93,7 +107,7 @@ namespace StandaloneUI
 
         public IEnumerable<NuGet.Configuration.PackageSource> LoadPackageSources()
         {
-            return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://nugetrcstage.blob.core.windows.net/ver3-rc/index.json", "v3") };
+            return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://api.nuget.org/v3/index.json", "nuget.org v3") };
         }
 
         public event EventHandler PackageSourcesSaved;

@@ -16,7 +16,12 @@ namespace NuGet.PackageManagement.UI
             if (parameter == null)
                 return null;
 
-            return null;
+            if (StandaloneSwitch.IsRunningStandalone)
+            {
+                return null;
+            }
+
+            return parameter;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

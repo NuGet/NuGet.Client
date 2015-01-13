@@ -81,11 +81,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public static Microsoft.VisualStudio.Shell.ThemeResourceKey IndicatorFillBrushKey
+        public static object IndicatorFillBrushKey
         {
             get
             {
-                return Microsoft.VisualStudio.PlatformUI.ProgressBarColors.IndicatorFillBrushKey;
+                if (StandaloneSwitch.IsRunningStandalone)
+                {
+                    return System.Windows.SystemColors.WindowFrameColor;
+                }
+                else
+                {
+                    return Microsoft.VisualStudio.PlatformUI.ProgressBarColors.IndicatorFillBrushKey;
+                }
             }
         }
     }

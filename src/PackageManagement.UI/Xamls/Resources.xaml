@@ -18,11 +18,11 @@
     <Tools:FontSizeConverter Scale="122" x:Key="Font122PercentSizeConverter" />
     <Tools:FontSizeConverter Scale="155" x:Key="Font155PercentSizeConverter" />
 
-    <DataTemplate DataType="{x:Type Tools:UiPackageDependency}">
+    <DataTemplate DataType="{x:Type Tools:PackageDependencyMetadata}">
         <TextBlock Text="{Binding}" />
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type Tools:UiSearchResultPackage}">
+    <DataTemplate DataType="{x:Type Tools:SearchResultPackageMetadata}">
         <Tools:PackageItemControl DataContext="{Binding}" />
     </DataTemplate>
 

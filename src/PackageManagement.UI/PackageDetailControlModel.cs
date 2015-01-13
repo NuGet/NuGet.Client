@@ -6,31 +6,33 @@ using NuGet.Versioning;
 using NuGet.ProjectManagement;
 using System;
 using NuGet.Packaging;
+using NuGet.PackagingCore;
 
 namespace NuGet.PackageManagement.UI
 {
     // The DataContext of the PackageDetail control is this class
     // It has two mode: Project, or Solution
-    public class PackageDetailControlModel : DetailControlModel
+    internal class PackageDetailControlModel : DetailControlModel
     {
         public PackageDetailControlModel(
-            NuGetProject target,
-            UiSearchResultPackage searchResultPackage)
-            : base(target, searchResultPackage)
+            IEnumerable<NuGetProject> projects,
+            SearchResultPackageMetadata searchResultPackage)
+            : base(projects, searchResultPackage)
         {
             UpdateInstalledVersion();
         }
 
         private void UpdateInstalledVersion()
         {
-            var installed = _target.GetInstalledPackages().Where(p =>
-                StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, Id)).SingleOrDefault();
-            if (installed != null)
+            var installed = InstalledPackages.Where(p =>
+                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).OrderByDescending(p => p.Version, VersionComparer.Default);
+
+            if (installed.Any())
             {
                 InstalledVersion = string.Format(
                     CultureInfo.CurrentCulture,
                     Resources.Text_InstalledVersion,
-                    installed.PackageIdentity.Version.ToNormalizedString());
+                    installed.First().Version.ToNormalizedString());
             }
             else
             {
@@ -44,26 +46,26 @@ namespace NuGet.PackageManagement.UI
             UpdateInstalledVersion();
         }
 
-        private static bool HasId(string id, IEnumerable<PackageReference> packages)
+        private static bool HasId(string id, IEnumerable<PackageIdentity> packages)
         {
             return packages.Any(p =>
-                StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id));
+                StringComparer.OrdinalIgnoreCase.Equals(p.Id, id));
         }
 
         protected override bool CanUpdate()
         {
-            return HasId(Id, _target.GetInstalledPackages()) &&
+            return HasId(Id, InstalledPackages) &&
                 _allPackages.Count >= 2;
         }
 
         protected override bool CanInstall()
         {
-            return !HasId(Id, _target.GetInstalledPackages());
+            return !HasId(Id, InstalledPackages);
         }
 
         protected override bool CanUninstall()
         {
-            return HasId(Id, _target.GetInstalledPackages());
+            return HasId(Id, InstalledPackages);
         }
 
         protected override bool CanConsolidate()
@@ -74,15 +76,15 @@ namespace NuGet.PackageManagement.UI
         protected override void CreateVersions()
         {
             _versions = new List<VersionForDisplay>();
-            var installedVersion = _target.GetInstalledPackages().Where(p =>
-                StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, Id)).SingleOrDefault();
+            var installedVersion = InstalledPackages.Where(p =>
+                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).SingleOrDefault();
 
             var allVersions = _allPackages.OrderByDescending(v => v);
             var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
 
             if (SelectedAction == Resources.Action_Uninstall)
             {
-                _versions.Add(new VersionForDisplay(installedVersion.PackageIdentity.Version, string.Empty));
+                _versions.Add(new VersionForDisplay(installedVersion.Version, string.Empty));
             }
             else if (SelectedAction == Resources.Action_Install)
             {
@@ -103,7 +105,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // update
                 if (latestStableVersion != null &&
-                    latestStableVersion != installedVersion.PackageIdentity.Version)
+                    latestStableVersion != installedVersion.Version)
                 {
                     _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
 
@@ -111,7 +113,7 @@ namespace NuGet.PackageManagement.UI
                     _versions.Add(null);
                 }
 
-                foreach (var version in allVersions.Where(v => v != installedVersion.PackageIdentity.Version))
+                foreach (var version in allVersions.Where(v => v != installedVersion.Version))
                 {
                     _versions.Add(new VersionForDisplay(version, string.Empty));
                 }

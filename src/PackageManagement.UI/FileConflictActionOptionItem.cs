@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace NuGet.PackageManagement.UI
 {
     // Represents an item in the FileConflictAction combobox.
-    public class FileConflictActionItem
+    public class FileConflictActionOptionItem
     {
         public string Text
         {
@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
             private set;
         }
 
-        public FileConflictActionItem(string text, FileConflictAction action)
+        public FileConflictActionOptionItem(string text, FileConflictAction action)
         {
             Text = text;
             Action = action;

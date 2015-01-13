@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
 
         void PackageMetadataControl_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
         {
-            if (DataContext is UiPackageMetadata)
+            if (DataContext is DetailedPackageMetadata)
             {
                 Visibility = System.Windows.Visibility.Visible;
             }
