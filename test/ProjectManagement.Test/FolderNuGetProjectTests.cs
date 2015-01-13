@@ -1,9 +1,11 @@
-﻿using NuGet.Frameworks;
+﻿using Ionic.Zip;
+using NuGet.Frameworks;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using System;
 using System.IO;
+using System.IO.Compression;
 using Test.Utility;
 using Xunit;
 
@@ -32,6 +34,11 @@ namespace ProjectManagement.Test
             // Assert
             Assert.True(File.Exists(nupkgFilePath));
             Assert.True(File.Exists(Path.Combine(packageInstallPath, "lib/test.dll")));
+            using(var packageStream = File.OpenRead(nupkgFilePath))
+            {
+                var zipArchive = new ZipArchive(packageStream);
+                Assert.Equal(5, zipArchive.Entries.Count);
+            }
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);

@@ -94,6 +94,15 @@ namespace NuGet.PackageManagement
             await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
         }
 
+        public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        {
+            // Step-1 : Call PreviewUninstallPackagesAsync to get all the nuGetProjectActions
+            var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext);
+
+            // Step-2 : Execute all the nuGetProjectActions
+            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
+        }
+
         /// <summary>
         /// Gives the preview as a list of NuGetProjectActions that will be performed to install <param name="packageId"></param> into <param name="nuGetProject"></param>
         /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
@@ -168,6 +177,43 @@ namespace NuGet.PackageManagement
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToInstallPackage, packageIdentity);
+            return nuGetProjectActions;
+        }
+
+        /// <summary>
+        /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall <param name="packageId"></param> into <param name="nuGetProject"></param>
+        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
+        /// </summary>
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        {
+            // Step-0: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
+            PackageReference packageReference = nuGetProject.GetInstalledPackages()
+                .Where(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            if (packageReference == null || packageReference.PackageIdentity == null)
+            {
+                throw new ArgumentException(String.Format(Strings.PackageToBeUninstalledCouldNotBeFound,
+                    packageId, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+            }
+
+            // Step-1 : Get metadata resources using gatherer/locally from "packages" folder
+            var packageIdentity = packageReference.PackageIdentity;
+            var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, targetFramework);
+
+            // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
+            // TODO:
+
+            // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
+            // based on newPackages obtained in Step-2 and project.GetInstalledPackages
+
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToUninstallPackage, packageIdentity);
+            // TODO:
+
+            // TODO: Stuff here
+            var nuGetProjectActions = new NuGetProjectAction[] { NuGetProjectAction.CreateUninstallProjectAction(packageIdentity) };
+
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
             return nuGetProjectActions;
         }
 

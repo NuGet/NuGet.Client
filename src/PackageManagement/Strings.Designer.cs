@@ -106,6 +106,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; to be uninstalled could not be found in project &apos;{1}&apos;.
+        /// </summary>
+        internal static string PackageToBeUninstalledCouldNotBeFound {
+            get {
+                return ResourceManager.GetString("PackageToBeUninstalledCouldNotBeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resolved actions to install package &apos;{0}&apos;.
         /// </summary>
         internal static string ResolvedActionsToInstallPackage {
@@ -115,11 +124,29 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Resolved actions to uninstall package &apos;{0}&apos;.
+        /// </summary>
+        internal static string ResolvedActionsToUninstallPackage {
+            get {
+                return ResourceManager.GetString("ResolvedActionsToUninstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resolving actions to install package &apos;{0}&apos;.
         /// </summary>
         internal static string ResolvingActionsToInstallPackage {
             get {
                 return ResourceManager.GetString("ResolvingActionsToInstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolving actions to uninstall package &apos;{0}&apos;.
+        /// </summary>
+        internal static string ResolvingActionsToUninstallPackage {
+            get {
+                return ResourceManager.GetString("ResolvingActionsToUninstallPackage", resourceCulture);
             }
         }
         

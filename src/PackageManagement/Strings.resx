@@ -132,11 +132,20 @@
   <data name="NoLatestVersionFound" xml:space="preserve">
     <value>No latest version found for the 'packageId' for the given source repositories and resolution context</value>
   </data>
+  <data name="PackageToBeUninstalledCouldNotBeFound" xml:space="preserve">
+    <value>Package '{0}' to be uninstalled could not be found in project '{1}'</value>
+  </data>
   <data name="ResolvedActionsToInstallPackage" xml:space="preserve">
     <value>Resolved actions to install package '{0}'</value>
   </data>
+  <data name="ResolvedActionsToUninstallPackage" xml:space="preserve">
+    <value>Resolved actions to uninstall package '{0}'</value>
+  </data>
   <data name="ResolvingActionsToInstallPackage" xml:space="preserve">
     <value>Resolving actions to install package '{0}'</value>
+  </data>
+  <data name="ResolvingActionsToUninstallPackage" xml:space="preserve">
+    <value>Resolving actions to uninstall package '{0}'</value>
   </data>
   <data name="UnableToGatherDependencyInfo" xml:space="preserve">
     <value>Unable to gather dependencies information for package '{0}'</value>
