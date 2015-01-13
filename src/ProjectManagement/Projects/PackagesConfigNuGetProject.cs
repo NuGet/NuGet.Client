@@ -14,7 +14,7 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public class PackagesConfigNuGetProject : NuGetProject
     {
-        private string FullPath { get; set; }
+        public string FullPath { get; set; }
         private NuGetFramework TargetFramework { get; set; }
 
         internal PackagesConfigNuGetProject(string fullPath, NuGetFramework targetFramework)

@@ -103,7 +103,7 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            // Step-0: Check if the package already exists after setting the nuGetProjectContext
+            // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
             var packageReference = GetInstalledPackages().Where(
@@ -115,7 +115,7 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            // Step-1: Create PackageReader using the PackageStream and obtain the various item groups
+            // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
             var zipArchive = new ZipArchive(packageStream);
             PackageReader packageReader = new PackageReader(zipArchive);
             IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
@@ -123,7 +123,7 @@ namespace NuGet.ProjectManagement
             IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
             IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
 
-            // Step-2: Get the most compatible items groups for all items groups
+            // Step-3: Get the most compatible items groups for all items groups
             bool hasCompatibleItems = false;
 
             FrameworkSpecificGroup compatibleLibItemsGroup =
@@ -138,7 +138,7 @@ namespace NuGet.ProjectManagement
             hasCompatibleItems = IsValid(compatibleLibItemsGroup) || IsValid(compatibleFrameworkReferencesGroup) ||
                 IsValid(compatibleContentFilesGroup) || IsValid(compatibleBuildFilesGroup);
 
-            // Step-3: Check if there are any compatible items in the package. If not, throw
+            // Step-4: Check if there are any compatible items in the package. If not, throw
             if(!hasCompatibleItems)
             {
                 throw new InvalidOperationException(
@@ -146,11 +146,8 @@ namespace NuGet.ProjectManagement
                            Strings.UnableToFindCompatibleItems, packageIdentity, MSBuildNuGetProjectSystem.TargetFramework));
             }
 
-            // Step-4: FolderNuGetProject.InstallPackage(packageIdentity, packageStream);
+            // Step-5: Install package to FolderNuGetProject
             FolderNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
-
-            // Step-5: Update packages.config
-            PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
 
             // Step-6: MSBuildNuGetProjectSystem operations
             // Step-6.1: Add references to project
@@ -189,6 +186,11 @@ namespace NuGet.ProjectManagement
             }
             
             // Step-6.5: Execute powershell script
+
+            // Step-7: Install package to PackagesConfigNuGetProject
+            PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
+
+            // Step-8: Add packages.config to MSBuildNuGetProject
 
             return true;
         }

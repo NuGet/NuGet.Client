@@ -14,7 +14,7 @@ namespace Test.Utility
         private const string TestProjectName = "TestProjectName";
         public HashSet<string> References { get; private set; }
         public HashSet<string> FrameworkReferences { get; private set; }
-        public HashSet<string> ContentFiles { get; private set; }
+        public HashSet<string> Files { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
         public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext)
@@ -22,13 +22,16 @@ namespace Test.Utility
             TargetFramework = targetFramework;
             References = new HashSet<string>();
             FrameworkReferences = new HashSet<string>();
-            ContentFiles = new HashSet<string>();
+            Files = new HashSet<string>();
             NuGetProjectContext = nuGetProjectContext;
         }
 
         public void AddFile(string path, Stream stream)
         {
-            ContentFiles.Add(path);
+            using (var streamReader = new StreamReader(stream))
+            {
+                Files.Add(path);
+            }
         }
 
         public void AddFrameworkReference(string name)
@@ -48,7 +51,7 @@ namespace Test.Utility
 
         public void RemoveFile(string path)
         {
-            ContentFiles.Remove(path);
+            Files.Remove(path);
         }
 
         public string ProjectFullPath
@@ -89,7 +92,7 @@ namespace Test.Utility
 
         public bool FileExistsInProject(string path)
         {
-            return ContentFiles.Where(c => path.Equals(c, StringComparison.OrdinalIgnoreCase)).Any();
+            return Files.Where(c => path.Equals(c, StringComparison.OrdinalIgnoreCase)).Any();
         }
 
         public dynamic GetPropertyValue(string propertyName)
@@ -105,6 +108,12 @@ namespace Test.Utility
         public bool IsSupportedFile(string path)
         {
             return true;
+        }
+
+
+        public void AddExistingFile(string path)
+        {
+            Files.Add(path);
         }
     }
 }

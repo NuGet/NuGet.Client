@@ -11,6 +11,7 @@ namespace NuGet.ProjectManagement
         INuGetProjectContext NuGetProjectContext { get; }
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);
+        void AddExistingFile(string path);
         void RemoveFile(string path);
         bool FileExistsInProject(string path);
         /// <summary>
