@@ -1,13 +1,10 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
+﻿using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement.PowerShellCmdlets
+namespace NuGet.PackageManagement
 {
     /// <summary>
     /// Static class for UriHelper
@@ -170,7 +167,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var packageSources = packageSourceProvider.LoadPackageSources();
                 var activeSource = packageSources.FirstOrDefault();
                 //PackageSource activeSource = packageSourceProvider.ActivePackageSource;
-                
+
                 //if (activeSource.IsAggregate())
                 if (activeSource.IsEnabled)
                 {

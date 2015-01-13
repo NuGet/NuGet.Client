@@ -87,8 +87,8 @@
     <Compile Include="IDE\IPackageRestoreManagercs.cs" />
     <Compile Include="IDE\IProductUpdateService.cs" />
     <Compile Include="IDE\ISolutionManager.cs" />
-    <Compile Include="NuGetEvent.cs" />
-    <Compile Include="NuGetEventTrigger.cs" />
+    <Compile Include="Utility\NuGetEvent.cs" />
+    <Compile Include="Utility\NuGetEventTrigger.cs" />
     <Compile Include="NuGetPackageManager.cs" />
     <Compile Include="NuGetProjectAction.cs" />
     <Compile Include="PackageDownloader.cs" />
@@ -102,7 +102,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Include="UriHelper.cs" />
+    <Compile Include="Utility\UriHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
