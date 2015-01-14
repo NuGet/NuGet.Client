@@ -29,8 +29,10 @@ namespace NuGet.Client
             {
                 DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
 
+                var regResource = source.GetResource<V3RegistrationResource>();
+
                 // construct a new resource
-                dependencyInfoResource = new V3DependencyInfoResource(client);
+                dependencyInfoResource = new V3DependencyInfoResource(client, regResource);
             }
 
             resource = dependencyInfoResource;

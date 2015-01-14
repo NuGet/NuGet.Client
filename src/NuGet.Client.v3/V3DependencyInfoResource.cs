@@ -22,14 +22,13 @@ namespace NuGet.Client
     {
         private readonly HttpClient _client;
         private readonly ConcurrentDictionary<Uri, JObject> _cache;
+        private readonly V3RegistrationResource _regResource;
 
-        // TODO: use the discovery client instead of hardcoding this
-        private const string RegistrationTemplate = "https://az320820.vo.msecnd.net/registrations-1/{0}/index.json";
-
-        public V3DependencyInfoResource(HttpClient client)
+        public V3DependencyInfoResource(HttpClient client, V3RegistrationResource regResource)
         {
             _client = client;
             _cache = new ConcurrentDictionary<Uri, JObject>();
+            _regResource = regResource;
         }
 
         public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
@@ -39,17 +38,30 @@ namespace NuGet.Client
 
             foreach (var package in packages)
             {
-                Uri uri = new Uri(String.Format(CultureInfo.InvariantCulture, RegistrationTemplate, package.Id.ToLowerInvariant()));
+                var range = new VersionRange(package.Version, true, package.Version, true);
 
-                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, new VersionRange(package.Version, true, package.Version, true), projectFramework, _cache);
-
-                // TODO: add filtering support
-                var result = await ResolverMetadataClient.GetTree(_client, regInfo, projectFramework, _cache);
-
-                foreach (var curPkg in GetPackagesFromRegistration(result))
+                foreach (var result in await GetPackagesFromRegistration(package.Id, range, projectFramework, token))
                 {
-                    results.Add(curPkg);
+                    results.Add(result);
                 }
+            }
+
+            return results.Where(e => includePrerelease || !e.Version.IsPrerelease);
+        }
+
+        private async Task<IEnumerable<PackageDependencyInfo>> GetPackagesFromRegistration(string packageId, VersionRange range, NuGetFramework projectFramework, CancellationToken token)
+        {
+            HashSet<PackageDependencyInfo> results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
+
+            Uri uri = _regResource.GetUri(packageId);
+
+            var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, range, projectFramework, _cache);
+
+            var result = await ResolverMetadataClient.GetTree(_client, regInfo, projectFramework, _cache);
+
+            foreach (var curPkg in GetPackagesFromRegistration(result, token))
+            {
+                results.Add(curPkg);
             }
 
             return results;
@@ -58,7 +70,7 @@ namespace NuGet.Client
         /// <summary>
         /// Walk the RegistrationInfo tree to find all package instances and their dependencies.
         /// </summary>
-        private static IEnumerable<PackageDependencyInfo> GetPackagesFromRegistration(RegistrationInfo registration)
+        private static IEnumerable<PackageDependencyInfo> GetPackagesFromRegistration(RegistrationInfo registration, CancellationToken token)
         {
             foreach (var pkgInfo in registration.Packages)
             {
@@ -67,8 +79,11 @@ namespace NuGet.Client
 
                 foreach (var dep in pkgInfo.Dependencies)
                 {
-                    foreach (var depPkg in GetPackagesFromRegistration(dep.RegistrationInfo))
+                    foreach (var depPkg in GetPackagesFromRegistration(dep.RegistrationInfo, token))
                     {
+                        // check if we have been cancelled
+                        token.ThrowIfCancellationRequested();
+
                         yield return depPkg;
                     }
                 }
@@ -77,9 +92,18 @@ namespace NuGet.Client
             yield break;
         }
 
+        /// <summary>
+        /// Gives all packages for an Id, and all dependencies recursively.
+        /// </summary>
         public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
         {
-            throw new NotImplementedException();
+            // max range from the metadata client
+            // TODO: replace this
+            var maxRange = VersionRange.Parse("[0.0.0-aaaa,)");
+
+            var results = await GetPackagesFromRegistration(packageId, maxRange, projectFramework, token);
+
+            return results.Where(e => includePrerelease || !e.Version.IsPrerelease);
         }
     }
 }
