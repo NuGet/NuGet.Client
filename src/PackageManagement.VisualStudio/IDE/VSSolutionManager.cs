@@ -66,9 +66,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 int hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
                 ErrorHandler.ThrowOnFailure(hr);
             }
-            
-            //_solutionEvents.BeforeClosing += OnBeforeClosing;
-            //_solutionEvents.AfterClosing += OnAfterClosing;
+
+            _solutionEvents.BeforeClosing += OnBeforeClosing;
+            _solutionEvents.AfterClosing += OnAfterClosing;
             //_solutionEvents.ProjectAdded += OnProjectAdded;
             //_solutionEvents.ProjectRemoved += OnProjectRemoved;
             //_solutionEvents.ProjectRenamed += OnProjectRenamed;
@@ -258,6 +258,25 @@ namespace NuGet.PackageManagement.VisualStudio
             if (SolutionOpened != null)
             {
                 SolutionOpened(this, EventArgs.Empty);
+            }
+        }
+
+        private void OnAfterClosing()
+        {
+            if (SolutionClosed != null)
+            {
+                SolutionClosed(this, EventArgs.Empty);
+            }
+        }
+
+        private void OnBeforeClosing()
+        {
+            DefaultNuGetProjectName = null;
+            EnvDTEProjectCache = null;
+            VSNuGetProjectFactory = null;
+            if (SolutionClosing != null)
+            {
+                SolutionClosing(this, EventArgs.Empty);
             }
         }
 

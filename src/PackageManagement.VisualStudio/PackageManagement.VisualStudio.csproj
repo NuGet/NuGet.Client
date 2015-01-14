@@ -137,6 +137,7 @@
     <Compile Include="Utility\VsHierarchyUtility.cs" />
     <Compile Include="VS.ProjectSystems\VcxProject.cs" />
     <Compile Include="IDE\VSSolutionManager.cs" />
+    <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
