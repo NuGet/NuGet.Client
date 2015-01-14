@@ -11,7 +11,4 @@
     <description>NuGet UI</description>
     <tags>nugetui</tags>
   </metadata>
-  <files>
-	<file src="..\ProjectManagement.VisualStudio\bin\$configuration$\NuGet.ProjectManagement.VisualStudio.dll" target="lib/net45" />
-  </files>
 </package>

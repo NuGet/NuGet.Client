@@ -146,11 +146,12 @@ namespace ProjectManagement.Test
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
             // Check that the reference has been added to MSBuildNuGetProjectSystem
-            Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
-            var contentFilesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\test3.js", contentFilesList[0]);
-            Assert.Equal("Scripts\\test2.js", contentFilesList[1]);
-            Assert.Equal("Scripts\\test1.js", contentFilesList[2]);
+            Assert.Equal(4, msBuildNuGetProjectSystem.Files.Count);
+            var filesList = msBuildNuGetProjectSystem.Files.ToList();
+            Assert.Equal("Scripts\\test3.js", filesList[0]);
+            Assert.Equal("Scripts\\test2.js", filesList[1]);
+            Assert.Equal("Scripts\\test1.js", filesList[2]);
+            Assert.Equal("packages.config", filesList[3]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);

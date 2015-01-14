@@ -191,7 +191,7 @@ namespace NuGet.ProjectManagement
             PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
 
             // Step-8: Add packages.config to MSBuildNuGetProject
-
+            MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
             return true;
         }
 

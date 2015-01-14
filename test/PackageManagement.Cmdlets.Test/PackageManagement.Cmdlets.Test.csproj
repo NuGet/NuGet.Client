@@ -142,10 +142,6 @@
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>PackageManagement.PowerShellCmdlets</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ProjectManagement.VisualStudio\ProjectManagement.VisualStudio.csproj">
-      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>ProjectManagement.VisualStudio</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
       <Project>{8010a76a-cb15-4484-8f9b-d523fbc34dfa}</Project>
       <Name>Test.Utility</Name>
