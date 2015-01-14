@@ -208,7 +208,7 @@ namespace NuGet.Tools
             // the <Import> element added.
             if (PackageRestoreManager.IsCurrentSolutionEnabledForRestore)
             {
-                if (_dte != null) // *** VsVersionHelper.IsVisualStudio2013)
+                if (VSVersionHelper.IsVisualStudio2013)
                 {
                     // Run on a background thread in VS2013 to avoid CPS hangs. The modal loading dialog will block
                     // until this completes.
@@ -722,7 +722,7 @@ namespace NuGet.Tools
 
         private void EnablePackagesRestore(object sender, EventArgs args)
         {
-            if (sender != null) // *** VsVersionHelper.IsVisualStudio2013)
+            if (VSVersionHelper.IsVisualStudio2013)
             {
                 // This method is called by the UI thread when the user clicks the menu item. To avoid
                 // hangs on CPS project systems this needs to be done on a background thread.

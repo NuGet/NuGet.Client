@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool IsCurrentSolutionEnabledForRestore
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;

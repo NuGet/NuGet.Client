@@ -321,6 +321,37 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        /// <summary>
+        /// Returns the unique name of the specified project including all solution folder names containing it.
+        /// </summary>
+        /// <remarks>
+        /// This is different from the DTE Project.UniqueName property, which is the absolute path to the project file.
+        /// </remarks>
+        public static string GetCustomUniqueName(EnvDTEProject envDTEProject)
+        {
+            if (IsWebSite(envDTEProject))
+            {
+                // website projects always have unique name
+                return envDTEProject.Name;
+            }
+            else
+            {
+                Stack<string> nameParts = new Stack<string>();
+
+                EnvDTEProject cursor = envDTEProject;
+                nameParts.Push(GetName(cursor));
+
+                // walk up till the solution root
+                while (cursor.ParentProjectItem != null && cursor.ParentProjectItem.ContainingProject != null)
+                {
+                    cursor = cursor.ParentProjectItem.ContainingProject;
+                    nameParts.Push(GetName(cursor));
+                }
+
+                return String.Join("\\", nameParts);
+            }
+        }
+
         public static bool IsExplicitlyUnsupported(EnvDTEProject envDTEProject)
         {
             return envDTEProject.Kind == null || UnsupportedProjectTypes.Contains(envDTEProject.Kind);

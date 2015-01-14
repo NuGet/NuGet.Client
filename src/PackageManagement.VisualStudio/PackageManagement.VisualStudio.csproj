@@ -115,11 +115,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDE\EnvDTEProjectCache.cs" />
+    <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />
+    <Compile Include="VSMachineWideSettings.cs" />
     <Compile Include="VSNuGetProjectFactory.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
