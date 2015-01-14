@@ -33,9 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JsonLD">
-      <HintPath>..\..\packages\json-ld.net.1.0.4\lib\net40-Client\JsonLD.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -87,6 +84,8 @@
     <Compile Include="IDE\IPackageRestoreManagercs.cs" />
     <Compile Include="IDE\IProductUpdateService.cs" />
     <Compile Include="IDE\ISolutionManager.cs" />
+    <Compile Include="Resolution\ResolverGather.cs" />
+    <Compile Include="Resolution\SourceDependencyInfo.cs" />
     <Compile Include="Utility\NuGetEvent.cs" />
     <Compile Include="Utility\NuGetEventTrigger.cs" />
     <Compile Include="NuGetPackageManager.cs" />

@@ -131,8 +131,14 @@ namespace NuGet.PackageManagement
             // Step-1 : Get metadata resources using gatherer
             var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, targetFramework);
-            var availablePackageDependencyInfoWithSourceSet = await GatherPackageDependencyInfo(packageIdentity, targetFramework);
-            if(availablePackageDependencyInfoWithSourceSet.Count == 0)
+
+            // TODO: these sources should be ordered
+            // TODO: search in only the active source but allow dependencies to come from other sources?
+            var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+
+            var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext, packageIdentity, targetFramework, enabledSources, CancellationToken.None);
+
+            if(!availablePackageDependencyInfoWithSourceSet.Any())
             {
                 throw new InvalidOperationException(String.Format(Strings.UnableToGatherDependencyInfo, packageIdentity));
             }
@@ -142,7 +148,7 @@ namespace NuGet.PackageManagement
             // TODO: Consider using IPackageResolver once it is extensible
             var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
-            IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet.Keys, projectInstalledPackageReferences);
+            IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packagesToInstall, availablePackageDependencyInfoWithSourceSet, projectInstalledPackageReferences);
             if(newListOfInstalledPackages == null)
             {
                 throw new InvalidOperationException(String.Format(Strings.UnableToResolveDependencyInfo, packageIdentity, resolutionContext.DependencyBehavior));
@@ -164,16 +170,20 @@ namespace NuGet.PackageManagement
                 nuGetProjectActions.Add(NuGetProjectAction.CreateUninstallProjectAction(newPackageToUninstall));
             }
 
+            var comparer = PackageIdentity.Comparer;
+
             foreach (PackageIdentity newPackageToInstall in newPackagesToInstall)
             {
-                SourceRepository sourceRepository;
-                var fakePackageDependencyInfo = new PackageDependencyInfo(newPackageToInstall, null);
-                if (!availablePackageDependencyInfoWithSourceSet.TryGetValue(fakePackageDependencyInfo, out sourceRepository))
+                // find the package match based on identity
+                SourceDependencyInfo sourceDepInfo = availablePackageDependencyInfoWithSourceSet.Where(p => comparer.Equals(p, newPackageToInstall)).SingleOrDefault();
+
+                if (sourceDepInfo == null)
                 {
+                    // this really should never happen
                     throw new InvalidOperationException();
                 }
 
-                nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceRepository));
+                nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToInstallPackage, packageIdentity);
@@ -301,35 +311,6 @@ namespace NuGet.PackageManagement
             }
 
             return latestVersionFromDifferentRepositories.Count == 0 ? null : latestVersionFromDifferentRepositories.Max<NuGetVersion>();
-        }
-
-        private async Task<IDictionary<PackageDependencyInfo, SourceRepository>> GatherPackageDependencyInfo(PackageIdentity packageIdentity, NuGetFramework targetFramework)
-        {
-            // get a distinct set of packages from all repos
-            var packageDependencyInfoSet = new Dictionary<PackageDependencyInfo, SourceRepository>(PackageDependencyInfo.Comparer);
-
-            // find all needed packages from online
-            foreach (var sourceRepository in SourceRepositoryProvider.GetRepositories())
-            {
-                // get the resolver data resource
-                var dependencyInfoResource = sourceRepository.GetResource<DepedencyInfoResource>();
-
-                // resources can always be null
-                if (dependencyInfoResource != null)
-                {
-                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackages(new PackageIdentity[] { packageIdentity }, targetFramework, true);
-
-                    foreach (var pkgDepInfo in packageDependencyInfo)
-                    {
-                        if(!packageDependencyInfoSet.ContainsKey(pkgDepInfo))
-                        {
-                            packageDependencyInfoSet.Add(pkgDepInfo, sourceRepository);
-                        }
-                    }
-                }
-            }
-
-            return packageDependencyInfoSet;
         }
     }
 

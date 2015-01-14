@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Cache;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Test.Utility;
@@ -19,10 +21,18 @@ namespace NuGet.Test
         [Fact]
         public async Task TestDownloadPackage()
         {
+            WebRequestHandler handler = new WebRequestHandler()
+            {
+                CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default),
+            };
+
+            HttpClient client = new HttpClient(handler);
+
+
             Uri downloadUrl = new Uri(@"http://nuget.org/api/v2/Package/JQuery/1.8.2");
             using(var targetStream = new MemoryStream())
             {
-                await PackageDownloader.GetPackageStream(downloadUrl, targetStream);
+                await PackageDownloader.GetPackageStream(client, downloadUrl, targetStream);
                 // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
                 Assert.Equal(185476, targetStream.Length);
             }
@@ -31,6 +41,13 @@ namespace NuGet.Test
         [Fact]
         public async Task TestDownloadAndInstallPackage()
         {
+            WebRequestHandler handler = new WebRequestHandler()
+            {
+                CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default),
+            };
+
+            HttpClient client = new HttpClient(handler);
+
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
             Uri downloadUrl = new Uri(@"http://nuget.org/api/v2/Package/EntityFramework/5.0.0");
             var folderNuGetProject = new FolderNuGetProject(randomTestFolder);
@@ -40,7 +57,7 @@ namespace NuGet.Test
             var testNuGetProjectContext = new TestNuGetProjectContext();
             using (var targetStream = new MemoryStream())
             {
-                await PackageDownloader.GetPackageStream(downloadUrl, targetStream);
+                await PackageDownloader.GetPackageStream(client, downloadUrl, targetStream);
                 folderNuGetProject.InstallPackage(packageIdentity, targetStream, testNuGetProjectContext);
             }
 
