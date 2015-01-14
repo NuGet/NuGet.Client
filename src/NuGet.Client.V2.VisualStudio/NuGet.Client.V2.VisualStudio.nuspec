@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>NuGet.Client.V2.VisualStudio</id>
+    <version>1.0.0-changeme</version>
+    <title>NuGet.Client.V2.VisualStudio</title>
+    <authors>NuGet</authors>
+    <owners>NuGet</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NuGet v2.0.0 VisualStudio resources</description>
+    <projectUrl>https://github.com/NuGet/NuGet.Client.V2.VisualStudio/</projectUrl>
+  </metadata>
+</package>

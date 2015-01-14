@@ -15,4 +15,12 @@
 		<csprojPath>\src\NuGet.Client.VisualStudio\NuGet.Client.VisualStudio.csproj</csprojPath>
 		<dllName>NuGet.Client.VisualStudio.dll</dllName>
 	</nupkg>
+        <nupkg id="NuGet.Client.V2">
+		<csprojPath>\src\NuGet.Client.VisualStudio\NuGet.Client.V2.csproj</csprojPath>
+		<dllName>NuGet.Client.V2.dll</dllName>
+	</nupkg>
+        <nupkg id="NuGet.Client.V2.VisualStudio">
+		<csprojPath>\src\NuGet.Client.VisualStudio\NuGet.Client.V2.VisualStudio.csproj</csprojPath>
+		<dllName>NuGet.Client.V2.VisualStudio.dll</dllName>
+	</nupkg>
 </nupkgs>

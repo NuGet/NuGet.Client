@@ -66,7 +66,7 @@ namespace NuGet.Client.V3.VisualStudio
                 }
             }
 
-            return outputs;
+            return outputs.Where(item => item.StartsWith(packageIdPrefix,StringComparison.OrdinalIgnoreCase));
         }
 
         public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, CancellationToken token)
@@ -75,7 +75,11 @@ namespace NuGet.Client.V3.VisualStudio
             IEnumerable<JObject> packages = await _regResource.Get(packageId, includePrerelease, false, token);
             List<NuGetVersion> versions = new List<NuGetVersion>();
             foreach (var package in packages)
-                versions.Add(new NuGetVersion((string)package["version"]));
+            {
+                string version = (string)package["version"];
+                if(version.StartsWith(versionPrefix,StringComparison.OrdinalIgnoreCase))
+                   versions.Add(new NuGetVersion(version));
+            }
             return versions;
         }
 
