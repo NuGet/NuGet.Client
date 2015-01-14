@@ -2,7 +2,7 @@
 using NuGet.Client.V3.VisualStudio;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
-using NuGet.Data;
+//using NuGet.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +16,13 @@ namespace V3WebTest
     {
         static void Main(string[] args)
         {
-            PackageSource source = new PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "RC V3");
+            //PackageSource source = new PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "RC V3");
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers = new List<Lazy<INuGetResourceProvider,INuGetResourceProviderMetadata>>();
+            //List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers = new List<Lazy<INuGetResourceProvider,INuGetResourceProviderMetadata>>();
 
-            DataClient client = new DataClient();
+            //DataClient client = new DataClient();
 
-            INuGetResourceProviderMetadata attribute = new ResourceMetadata(typeof(UISearchResource)) as INuGetResourceProviderMetadata;
+            //INuGetResourceProviderMetadata attribute = new ResourceMetadata(typeof(UISearchResource)) as INuGetResourceProviderMetadata;
 
             //providers.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new V3UISearchResourceProvider(client), attribute));
 

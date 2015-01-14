@@ -1,9 +1,9 @@
 <nupkgs>
-	<nupkg id="NuGet.Client.V3">
+	<nupkg id="NuGet.Protocol.V2V3">
 		<csprojPath>\src\NuGet.Client.V3\Client.V3.csproj</csprojPath>
 		<dllName>NuGet.Client.dll</dllName>
 	</nupkg>
-	<nupkg id="NuGet.Client.BaseTypes">
+	<nupkg id="NuGet.Protocol.Types">
 		<csprojPath>\src\NuGet.Client.BaseTypes\NuGet.Client.BaseTypes.csproj</csprojPath>
 		<dllName>NuGet.Client.BaseTypes.dll</dllName>
 	</nupkg>
