@@ -35,7 +35,7 @@ namespace NuGet.Test
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
             var packageIdentity = NoDependencyLibPackages[0];
 
@@ -73,7 +73,7 @@ namespace NuGet.Test
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
             var firstPackageIdentity = NoDependencyLibPackages[0];
 
@@ -121,7 +121,7 @@ namespace NuGet.Test
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
             var firstPackageIdentity = NoDependencyLibPackages[0];
 

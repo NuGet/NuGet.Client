@@ -28,7 +28,7 @@ namespace Test.Utility
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             NuGetProject project = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
             return project;
         }
