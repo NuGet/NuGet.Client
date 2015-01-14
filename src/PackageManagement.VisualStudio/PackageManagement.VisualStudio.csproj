@@ -123,6 +123,7 @@
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
+    <Compile Include="Utility\PathHelper.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
     <Compile Include="VSNuGetProjectFactory.cs" />
