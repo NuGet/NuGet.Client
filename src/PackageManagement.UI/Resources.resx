@@ -390,4 +390,16 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="RestoreButtonLabel" xml:space="preserve">
     <value>_Restore</value>
   </data>
+  <data name="AskForUpdateMessage" xml:space="preserve">
+    <value>A new version of NuGet Package Manager is available.</value>
+  </data>
+  <data name="DoNotRemindAgain" xml:space="preserve">
+    <value>Don't show again</value>
+  </data>
+  <data name="IgnoreUpgrade" xml:space="preserve">
+    <value>Ignore for now</value>
+  </data>
+  <data name="ShowDetails" xml:space="preserve">
+    <value>Show Details</value>
+  </data>
 </root>

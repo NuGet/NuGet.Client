@@ -140,6 +140,9 @@
     <Compile Include="Common\PackageRestoreBar.xaml.cs">
       <DependentUpon>PackageRestoreBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Common\ProductUpdateBar.xaml.cs">
+      <DependentUpon>ProductUpdateBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
     <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
@@ -238,6 +241,10 @@
     <Page Include="Common\PackageRestoreBar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Common\ProductUpdateBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\ActionsAndVersions.xaml">
       <SubType>Designer</SubType>
