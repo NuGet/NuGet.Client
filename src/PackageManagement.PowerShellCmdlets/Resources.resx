@@ -264,4 +264,10 @@
   <data name="PackageNotInstalledInAnyProject" xml:space="preserve">
     <value>'{0}' was not installed in any project. Update failed.</value>
   </data>
+  <data name="UnknownPackage" xml:space="preserve">
+    <value>Unable to find package '{0}'.</value>
+  </data>
+  <data name="UnknownPackageSpecificVersion" xml:space="preserve">
+    <value>Unable to find version '{1}' of package '{0}'.</value>
+  </data>
 </root>

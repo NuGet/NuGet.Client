@@ -9,8 +9,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageActionBaseCommand : NuGetPowerShellBaseCommand
     {
-        private ISolutionManager _solutionManager;
-
         public PackageActionBaseCommand(
             Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider,
             ISolutionManager solutionManager)

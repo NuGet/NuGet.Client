@@ -1,9 +1,9 @@
 ﻿using NuGet.Client;
-using NuGet.Client.VisualStudio;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
+using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private string _projectName;
         private bool _idSpecified;
         private bool _projectSpecified;
+        private bool _versionSpecifiedPrerelease;
+        private DependencyBehavior _updateVersionEnum;
+        private NuGetVersion _nugetVersion;
 
         public UpdatePackageCommand(
             Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider,
@@ -73,8 +76,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public List<NuGetProject> Projects;
 
+        public bool IsVersionEnum { get; set; }
+
         protected override void Preprocess()
         {
+            ParseUserInputForVersion();
             base.Preprocess();
             if (_projectSpecified)
             {
@@ -111,7 +117,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                     IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
-                    Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent);
+                    IEnumerable<PackageIdentity> remoteUpdates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
                     ExecuteUpdates(remoteUpdates, project);
                 }
             }
@@ -132,13 +138,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         List<PackageReference> installedPackages = new List<PackageReference>() { installedPackage };
                         if (!string.IsNullOrEmpty(Version))
                         {
-                            NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
-                            PackageIdentity update = new PackageIdentity(Id, nVersion);
+                            if (IsVersionEnum)
+                            {
+                                _nugetVersion = PowerShellCmdletsUtility.GetUpdateVersionForDependentPackage(ActiveSourceRepository, installedPackage.PackageIdentity, project, _updateVersionEnum, IncludePrerelease.IsPresent);
+                            }
+
+                            PackageIdentity update = new PackageIdentity(Id, _nugetVersion);
                             InstallPackageByIdentity(project, update, ResolutionContext, this, WhatIf.IsPresent);
                         }
                         else
                         {
-                            Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent);
+                            IEnumerable<PackageIdentity> remoteUpdates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
                             ExecuteUpdates(remoteUpdates, project);
                         }
                     }
@@ -179,11 +189,33 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        private void ExecuteUpdates(Dictionary<PSSearchMetadata, NuGetVersion> updates, NuGetProject nuGetProject)
+        private void ExecuteUpdates(IEnumerable<PackageIdentity> updates, NuGetProject nuGetProject)
         {
-            foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> entry in updates)
+            foreach (PackageIdentity identity in updates)
             {
-                InstallPackageByIdentity(nuGetProject, entry.Key.Identity, ResolutionContext, this, WhatIf.IsPresent);
+                InstallPackageByIdentity(nuGetProject, identity, ResolutionContext, this, WhatIf.IsPresent);
+            }
+        }
+
+        private void ParseUserInputForVersion()
+        {
+            if (!string.IsNullOrEmpty(Version))
+            {
+                DependencyBehavior updateVersion;
+                IsVersionEnum = Enum.TryParse<DependencyBehavior>(Version, true, out updateVersion);
+                if (IsVersionEnum)
+                {
+                    _updateVersionEnum = updateVersion;
+                }
+                // If Version is prerelease, automatically allow prerelease (i.e. append -Prerelease switch).
+                else
+                {
+                    _nugetVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
+                    if (_nugetVersion.IsPrerelease)
+                    {
+                        _versionSpecifiedPrerelease = true;
+                    }
+                }
             }
         }
 
@@ -194,7 +226,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, Reinstall.IsPresent, false);
+                bool allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
+                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false, Reinstall.IsPresent, false);
                 return _context;
             }
         }

@@ -28,6 +28,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private string _fallbackToLocalCacheMessge = Resources.Cmdlet_FallbackToCache;
         private string _localCacheFailureMessage = Resources.Cmdlet_LocalCacheFailure;
         private string _cacheStatusMessage = String.Empty;
+        private NuGetVersion _nugetVersion;
+        private bool _versionSpecifiedPrerelease;
 
         public InstallPackageCommand(
             Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
@@ -44,6 +46,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             FallbackToCacheIfNeccessary();
             ParseUserInputForId();
+            ParseUserInputForVersion();
             base.Preprocess();
         }
 
@@ -166,14 +169,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private IEnumerable<PackageIdentity> GetPackageIdentity()
         {
             PackageIdentity identity = null;
-            if (!string.IsNullOrEmpty(Version))
+            if (_nugetVersion != null)
             {
-                NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
-                identity = new PackageIdentity(Id, nVersion);
+                identity = new PackageIdentity(Id, _nugetVersion);
             }
             else
             {
-                identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(Id, Project, IncludePrerelease.IsPresent, ActiveSourceRepository);
+                identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, Id, Project, IncludePrerelease.IsPresent);
             }
             return new List<PackageIdentity>() { identity };
         }
@@ -254,6 +256,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return null;
         }
 
+        private void ParseUserInputForVersion()
+        {
+            if (!string.IsNullOrEmpty(Version))
+            {
+                _nugetVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
+                if (_nugetVersion.IsPrerelease)
+                {
+                    _versionSpecifiedPrerelease = true;
+                }
+            }
+        }
+
         /// <summary>
         /// Resolution Context for the command
         /// </summary>
@@ -261,10 +275,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, Force.IsPresent, false);
+                bool allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
+                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false, Force.IsPresent, false);
                 return _context;
             }
         }
+
         protected override DependencyBehavior GetDependencyBehavior()
         {
             if (Force.IsPresent)

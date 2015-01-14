@@ -500,5 +500,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
                 return ResourceManager.GetString("PackageNotInstalledInAnyProject", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnknownPackage {
+            get {
+                return ResourceManager.GetString("UnknownPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find version &apos;{1}&apos; of package &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnknownPackageSpecificVersion {
+            get {
+                return ResourceManager.GetString("UnknownPackageSpecificVersion", resourceCulture);
+            }
+        }
     }
 }

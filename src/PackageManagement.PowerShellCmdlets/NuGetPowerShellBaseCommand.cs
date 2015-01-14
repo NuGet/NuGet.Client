@@ -174,6 +174,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return updates;
         }
 
+        protected IEnumerable<PackageIdentity> GetPackageUpdates(IEnumerable<PackageReference> installedPackages, NuGetProject project, bool includePrerelease, bool isSafe)
+        {
+            List<PackageIdentity> updates = new List<PackageIdentity>();
+
+            foreach (PackageReference package in installedPackages)
+            {
+                PackageIdentity identity;
+                if (!isSafe)
+                {
+                    identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease);
+                }
+                else
+                {
+                    identity = PowerShellCmdletsUtility.GetSafeVersionForPackageId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease, package.PackageIdentity.Version);
+                }
+                updates.Add(identity);
+            }
+
+            return updates;
+        }
+
         protected void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType)
         {
             // Get the PowerShellPackageView
