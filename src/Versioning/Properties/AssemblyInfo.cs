@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 // Common attributes
 [assembly: AssemblyCompany("Outercurve Foundation")]
 [assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("\x00a9 Outercurve Foundation. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright Outercurve Foundation. All rights reserved.")]
 
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: CLSCompliant(true)]
