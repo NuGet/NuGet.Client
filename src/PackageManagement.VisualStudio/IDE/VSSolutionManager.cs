@@ -8,7 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,9 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     return null;
                 }
-                EnvDTEProject envDTEProject = GetEnvDTEProject(DefaultNuGetProjectName);
-                Debug.Assert(envDTEProject != null, "Invalid default project");
-                return VSNuGetProjectFactory.GetNuGetProject(envDTEProject, ToBeDeletedNuGetProjectContext);
+                return GetNuGetProjectFromProjectSafeName(DefaultNuGetProjectName);
             }
         }
 
@@ -99,7 +99,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
-            throw new NotImplementedException();
+            return GetNuGetProjectFromProjectSafeName(nuGetProjectSafeName);
+        }
+
+        private NuGetProject GetNuGetProjectFromProjectSafeName(string nuGetProjectSafeName)
+        {
+            EnvDTEProject envDTEProject = GetEnvDTEProject(nuGetProjectSafeName);
+            Debug.Assert(envDTEProject != null, "Invalid default project");
+            return VSNuGetProjectFactory.GetNuGetProject(envDTEProject, ToBeDeletedNuGetProjectContext);
         }
 
         private EnvDTEProject GetEnvDTEProject(string projectSafeName)
@@ -125,7 +132,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<NuGetProject> GetProjects()
         {
-            throw new NotImplementedException();
+            if (IsSolutionOpen)
+            {
+                EnsureEnvDTEProjectCache();
+                return EnvDTEProjectCache.GetProjects()
+                    .Select(p => VSNuGetProjectFactory.GetNuGetProject(p, ToBeDeletedNuGetProjectContext));
+            }
+            else
+            {
+                return Enumerable.Empty<NuGetProject>();
+            }
         }
 
         public bool IsSolutionOpen
@@ -147,7 +163,47 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string SolutionDirectory
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                if (!IsSolutionOpen)
+                {
+                    return null;
+                }
+
+                string solutionFilePath = GetSolutionFilePath();
+
+                if (String.IsNullOrEmpty(solutionFilePath))
+                {
+                    return null;
+                }
+                return Path.GetDirectoryName(solutionFilePath);
+            }
+        }
+
+        private string GetSolutionFilePath()
+        {
+            // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
+            // available if the solution is just being created
+            string solutionFilePath = null;
+
+            Property property = _dte.Solution.Properties.Item("Path");
+            if (property == null)
+            {
+                return null;
+            }
+            try
+            {
+                // When using a temporary solution, (such as by saying File -> New File), querying this value throws.
+                // Since we wouldn't be able to do manage any packages at this point, we return null. Consumers of this property typically 
+                // use a String.IsNullOrEmpty check either way, so it's alright.
+                solutionFilePath = (string)property.Value;
+            }
+            catch (COMException)
+            {
+                return null;
+            }
+
+            return solutionFilePath;
         }
 
         public event EventHandler SolutionOpened;
