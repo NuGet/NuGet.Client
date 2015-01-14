@@ -138,4 +138,7 @@
   <data name="Debug_AddedFileToProject" xml:space="preserve">
     <value>Added file '{0}' to project '{1}'.</value>
   </data>
+  <data name="PathToExistingFileNotPresent" xml:space="preserve">
+    <value>Path '{0}' to existing file is not found on disk. Cannot add to project '{1}'</value>
+  </data>
 </root>

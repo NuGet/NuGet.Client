@@ -191,12 +191,12 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150113000240\lib\net45\NuGet.PackageManagement.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150114174410\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.PackageManagement.UI.1.0.0-pre-20150113224715\lib\net45\NuGet.PackageManagement.UI.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.PackageManagement.UI.1.0.0-pre-20150114175143\lib\net45\NuGet.PackageManagement.UI.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Packaging.dll</HintPath>
@@ -207,8 +207,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-pre-20150112223800\lib\net45\NuGet.ProjectManagement.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-pre-20150114173912\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Resolver.dll</HintPath>

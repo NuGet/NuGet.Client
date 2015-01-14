@@ -115,6 +115,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
+        /// </summary>
+        public static string PathToExistingFileNotPresent {
+            get {
+                return ResourceManager.GetString("PathToExistingFileNotPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; already exists. Skipping....
         /// </summary>
         public static string Warning_FileAlreadyExists {

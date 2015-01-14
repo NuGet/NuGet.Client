@@ -111,6 +111,17 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public void AddExistingFile(string path)
+        {
+            var fullPath = Path.Combine(ProjectFullPath, path);
+            if(!File.Exists(fullPath))
+            {
+                throw new ArgumentNullException(String.Format(Strings.PathToExistingFileNotPresent, fullPath, ProjectName));
+            }
+
+            AddFileCore(path, () => { });
+        }
+
         private void EnsureCheckedOutIfExists(string path)
         {
             throw new NotImplementedException();
