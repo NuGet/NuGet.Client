@@ -9,6 +9,31 @@ namespace NuGet.Test
 {
     public class NuGetVersionTest
     {
+        [Fact]
+        public void NuGetVersionConstructors()
+        {
+            // Arrange
+            HashSet<SimpleVersion> versions = new HashSet<SimpleVersion>(VersionComparer.Default);
+
+            // act
+            versions.Add(new NuGetVersion("4.3.0"));
+            versions.Add(new NuGetVersion(NuGetVersion.Parse("4.3.0")));
+            versions.Add(new NuGetVersion(new Version(4, 3, 0)));
+            versions.Add(new NuGetVersion(new Version(4, 3, 0), string.Empty, string.Empty));
+            versions.Add(new NuGetVersion(4, 3, 0));
+            versions.Add(new NuGetVersion(4, 3, 0, string.Empty));
+            versions.Add(new NuGetVersion(4, 3, 0, null));
+            versions.Add(new NuGetVersion(4, 3, 0, 0));
+            versions.Add(new NuGetVersion(new Version(4, 3, 0), new string[0], string.Empty, "4.3"));
+
+            versions.Add(new SemanticVersion(4, 3, 0));
+            versions.Add(new SemanticVersion(4, 3, 0, string.Empty));
+            versions.Add(new SemanticVersion(4, 3, 0, null));
+
+            // Assert
+            Assert.Equal<int>(1, versions.Count);
+        }
+
         [Theory]
         [InlineData("1.0.0")]
         [InlineData("0.0.1")]

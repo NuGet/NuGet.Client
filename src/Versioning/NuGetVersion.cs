@@ -91,7 +91,7 @@ namespace NuGet.Versioning
         /// <param name="releaseLabels">Prerelease labels</param>
         /// <param name="metadata">Build metadata</param>
         public NuGetVersion(int major, int minor, int patch, IEnumerable<string> releaseLabels, string metadata)
-            : this(new Version(major, minor, patch), releaseLabels, metadata, null)
+            : this(new Version(major, minor, patch, 0), releaseLabels, metadata, null)
         {
 
         }

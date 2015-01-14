@@ -70,7 +70,7 @@ namespace NuGet.Versioning
         /// <param name="releaseLabels">Release labels that have been split by the dot separator</param>
         /// <param name="metadata">Build metadata</param>
         public SemanticVersion(int major, int minor, int patch, IEnumerable<string> releaseLabels, string metadata)
-            :this(new Version(major, minor, patch), releaseLabels, metadata)
+            :this(new Version(major, minor, patch, 0), releaseLabels, metadata)
         {
 
         }
@@ -100,7 +100,7 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException("version");
             }
 
-            _version = version;
+            _version = NormalizeVersionValue(version);
             _metadata = metadata;
 
             if (releaseLabels != null)

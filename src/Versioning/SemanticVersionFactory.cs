@@ -50,10 +50,18 @@ namespace NuGet.Versioning
 
         private static Version NormalizeVersionValue(Version version)
         {
-            return new Version(version.Major,
-                               version.Minor,
+            Version normalized = version;
+
+            if (version.Major < 0 || version.Minor < 0 || version.Build < 0 || version.Revision < 0)
+            {
+                normalized = new Version(
+                               Math.Max(version.Major, 0),
+                               Math.Max(version.Minor, 0),
                                Math.Max(version.Build, 0),
                                Math.Max(version.Revision, 0));
+            }
+
+            return normalized;
         }
 
         private static IEnumerable<string> ParseReleaseLabels(string releaseLabels)

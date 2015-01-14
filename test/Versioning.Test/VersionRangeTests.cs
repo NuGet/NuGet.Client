@@ -12,6 +12,15 @@ namespace NuGet.Test
 {
     public class VersionRangeTests
     {
+        [Fact]
+        public void VersionRange_Exact()
+        {
+            // Act 
+            var versionInfo = new VersionRange(new NuGetVersion(4, 3, 0), true, new NuGetVersion(4, 3, 0), true, false);
+
+            // Assert
+            Assert.True(versionInfo.Satisfies(NuGetVersion.Parse("4.3.0")));
+        }
 
         [Fact]
         public void ParseVersionRangePrerelease()
