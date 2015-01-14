@@ -1,12 +1,16 @@
-﻿using NuGet.Client.VisualStudio;
+﻿using NuGet.Client;
+using NuGet.Client.VisualStudio;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Host;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -20,8 +24,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private const int DefaultFirstValue = 50;
         private bool _enablePaging;
 
-        public GetPackageCommand()
-            : base()
+        public GetPackageCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
+            ISolutionManager solutionManager)
+            : base(resourceProvider, solutionManager)
         {
         }
 
@@ -31,12 +37,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         [Parameter(Position = 1, Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "Project")]
         [ValidateNotNullOrEmpty]
-        public override string ProjectName { get; set; }
+        public string ProjectName { get; set; }
 
         [Parameter(ParameterSetName = "Remote")]
         [Parameter(ParameterSetName = "Updates")]
         [ValidateNotNullOrEmpty]
-        public override string Source { get; set; }
+        public string Source { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "Remote")]
         [Alias("Online", "Remote")]
@@ -83,6 +89,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
             CollapseVersions = !AllVersions.IsPresent && ListAvailable;
+            GetSourceRepositoryProvider(Source);
+            PackageManager = new NuGetPackageManager(SourceRepositoryProvider);
+
             base.Preprocess();
             if (string.IsNullOrEmpty(ProjectName))
             {
@@ -90,6 +99,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
+                GetNuGetProject(ProjectName);
                 Projects = new List<NuGetProject>() { Project };
             }
         }
@@ -124,14 +134,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Find avaiable packages from the online sources and not taking targetframeworks into account. 
                 if (UseRemoteSourceOnly)
                 {
-                    IEnumerable<PSSearchMetadata> remotePackages = GetPackagesFromRemoteSource(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent,  Skip, First);
-                    if (CollapseVersions)
+                    IEnumerable<PSSearchMetadata> remotePackages = GetPackagesFromRemoteSource(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, Skip, First);
+                    WritePackagesFromRemoteSource(remotePackages, true);
+
+                    if (_enablePaging)
                     {
-                        WritePackages(remotePackages, VersionType.latest);
-                    }
-                    else
-                    {
-                        WritePackages(remotePackages, VersionType.all);
+                        WriteMoreRemotePackagesWithPaging(remotePackages);
                     }
                 }
                 else
@@ -143,23 +151,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                         IEnumerable<PackageReference> installedPackages = project.GetInstalledPackages();
                         Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent, Skip, First);
-                        if (CollapseVersions)
-                        {
-                            WritePackages(remoteUpdates, VersionType.latest);
-                        }
-                        else
-                        {
-                            WritePackages(remoteUpdates, VersionType.updates);
-                        }
+                        WriteUpdatePackagesFromRemoteSource(remoteUpdates);
                     }
                 }
             }
         }
 
-        private void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType, bool outputWarning = false)
+        private void WritePackagesFromRemoteSource(IEnumerable<PSSearchMetadata> packages, bool outputWarning = false)
         {
             // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
             // and will be replaced by Find-Package [-Id] 
+            VersionType versionType;
             string message;
             if (!CollapseVersions)
             {
@@ -179,6 +181,63 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             WritePackages(packages, versionType);
+        }
+
+        private void WriteMoreRemotePackagesWithPaging(IEnumerable<PSSearchMetadata> packagesToDisplay)
+        {
+            // Display more packages with paging
+            int pageNumber = 1;
+            while (true)
+            {
+                packagesToDisplay = GetPackagesFromRemoteSource(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, pageNumber * PageSize, PageSize);
+                if (packagesToDisplay.Count() != 0)
+                {
+                    // Prompt to user and if want to continue displaying more packages
+                    int command = AskToContinueDisplayPackages();
+                    if (command == 0)
+                    {
+                        // If yes, display the next page of (PageSize) packages
+                        WritePackagesFromRemoteSource(packagesToDisplay);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                pageNumber++;
+            }
+        }
+
+        private void WriteUpdatePackagesFromRemoteSource(Dictionary<PSSearchMetadata, NuGetVersion> packagesToDisplay)
+        {
+            VersionType versionType;
+            if (!CollapseVersions)
+            {
+                versionType = VersionType.updates;
+            }
+            else
+            {
+                versionType = VersionType.latest;
+            }
+            WritePackages(packagesToDisplay, versionType);
+        }
+
+        private int AskToContinueDisplayPackages()
+        {
+            // Add a line before message prompt
+            WriteLine();
+            var choices = new Collection<ChoiceDescription>
+            {
+                new ChoiceDescription(Resources.Cmdlet_Yes, Resources.Cmdlet_DisplayMorePackagesYesHelp),
+                new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_DisplayMorePackagesNoHelp),
+            };
+
+            int choice = Host.UI.PromptForChoice(string.Empty, Resources.Cmdlet_PrompToDisplayMorePackages, choices, defaultChoice: 1);
+
+            Debug.Assert(choice >= 0 && choice < 2);
+            // Add a line after
+            WriteLine();
+            return choice;
         }
     }
 }

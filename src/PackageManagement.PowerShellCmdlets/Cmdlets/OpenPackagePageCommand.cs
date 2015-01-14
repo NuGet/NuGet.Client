@@ -15,8 +15,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsCommon.Open, "PackagePage", DefaultParameterSetName = ParameterAttribute.AllParameterSets, SupportsShouldProcess = true)]
     public class OpenPackagePageCommand : NuGetPowerShellBaseCommand
     {
-        public OpenPackagePageCommand()
-            : base()
+        public OpenPackagePageCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
+            ISolutionManager solutionManager)
+            : base(resourceProvider, solutionManager)
         {
         }
 
@@ -27,9 +29,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [ValidateNotNull]
         public string Version { get; set; }
 
-        [Parameter(Position = 2)]
+        [Parameter]
         [ValidateNotNullOrEmpty]
-        public string Source { get; set; }
+        public virtual string Source { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "License")]
         public SwitchParameter License { get; set; }
@@ -43,8 +45,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter IncludePrerelease { get; set; }
 
-        private void Preprocess()
+        protected override void Preprocess()
         {
+            GetSourceRepositoryProvider(Source);
+            base.Preprocess();
         }
 
         protected override void ProcessRecordCore()
@@ -142,7 +146,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // ask for confirmation or if WhatIf is specified
             if (ShouldProcess(targetUrl.OriginalString, Resources.Cmdlet_OpenPackagePageAction))
             {
-                //UriHelper.OpenExternalLink(targetUrl);
+                UriHelper.OpenExternalLink(targetUrl);
             }
         }
     }

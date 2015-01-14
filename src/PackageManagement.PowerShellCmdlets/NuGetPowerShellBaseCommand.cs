@@ -9,7 +9,6 @@ using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -26,6 +25,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// </summary>
     public abstract class NuGetPowerShellBaseCommand : PSCmdlet, INuGetProjectContext, IErrorHandler
     {
+        private Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] _resourceProviders;
+        private ISolutionManager _solutionManager;
         private readonly IHttpClientEvents _httpClientEvents;
         //internal const string PSCommandsUserAgentClient = "NuGet VS PowerShell Console";
         //private readonly Lazy<string> _psCommandsUserAgent = new Lazy<string>(
@@ -33,28 +34,35 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
 
-        [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
-
-        [Import]
-        public ISolutionManager VSSolutionManager;
+        public NuGetPowerShellBaseCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
+            ISolutionManager solutionManager)
+        {
+            _resourceProviders = resourceProvider;
+            _solutionManager = solutionManager;
+        }
 
         public NuGetPackageManager PackageManager { get; set; }
 
+        public SourceRepositoryProvider SourceRepositoryProvider { get; private set; }
+
+        public PackageSourceProvider PackageSourceProvider { get; set; }
+
         public SourceRepository ActiveSourceRepository { get; set; }
+
+        public ISolutionManager VSSolutionManager
+        {
+            get
+            {
+                return _solutionManager;
+            }
+        }
+
+        public ISettings ConfigSettings { get; set; }
 
         public NuGetProject Project { get; set; }
 
-        [Parameter(ValueFromPipelineByPropertyName = true)]
-        public SourceRepositoryProvider Provider { get; set; }
-
-        [Parameter(Position = 3)]
-        [ValidateNotNullOrEmpty]
-        public virtual string Source { get; set; }
-
-        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
-        [ValidateNotNullOrEmpty]
-        public virtual string ProjectName { get; set; }
+        public FileConflictAction? ConflictAction { get; set; }
 
         internal void Execute()
         {
@@ -88,40 +96,34 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual void Preprocess()
         {
-            GetSourceRepositoryProvider();
-            PackageManager = new NuGetPackageManager(Provider);
-            GetNuGetProject();
         }
 
-        private void GetSourceRepositoryProvider()
+        protected void GetSourceRepositoryProvider(string sourceUrl = null)
         {
-            if (Provider == null)
+            ConfigSettings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
+            PackageSourceProvider = new PackageSourceProvider(ConfigSettings);
+            SourceRepositoryProvider = new SourceRepositoryProvider(PackageSourceProvider, _resourceProviders);
+            if (!string.IsNullOrEmpty(sourceUrl))
             {
-                ISettings settings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-                Provider = new SourceRepositoryProvider(new PackageSourceProvider(settings), ResourceProviders);
-                PackageSource source; 
-                if (!string.IsNullOrEmpty(Source))
-                {
-                    source = new PackageSource(Source);
-                    ActiveSourceRepository = new SourceRepository(source, ResourceProviders);
-                }
-                else
-                {
-                    IEnumerable<SourceRepository> repoes = Provider.GetRepositories();
-                    ActiveSourceRepository = repoes.FirstOrDefault();
-                }
+                PackageSource source = new PackageSource(sourceUrl);
+                ActiveSourceRepository = new SourceRepository(source, _resourceProviders);
+            }
+            else
+            {
+                IEnumerable<SourceRepository> repoes = SourceRepositoryProvider.GetRepositories();
+                ActiveSourceRepository = repoes.FirstOrDefault();
             }
         }
 
-        private void GetNuGetProject()
+        protected void GetNuGetProject(string projectName = null)
         {
-            if (string.IsNullOrEmpty(ProjectName))
+            if (string.IsNullOrEmpty(projectName))
             {
                 Project = VSSolutionManager.DefaultNuGetProject;
             }
             else
             {
-                Project = VSSolutionManager.GetNuGetProject(ProjectName);
+                Project = VSSolutionManager.GetNuGetProject(projectName);
             }
         }
 
@@ -133,36 +135,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected void InstallPackageByIdentity(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false)
+        protected void UninstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview)
         {
             if (isPreview)
             {
-                PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
+                PackageManager.PreviewUninstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
             }
             else
             {
-                if (isForce)
-                {
-                    project.UninstallPackage(identity, this);
-                }
-                PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
-            }
-        }
-
-        protected void InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false)
-        {
-            if (isPreview)
-            {
-                PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
-            }
-            else
-            {
-                if (isForce)
-                {
-                    // TODO: Fix this when API is ready
-                    //project.UninstallPackage(identity, this);
-                }
-                PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+                PackageManager.UninstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
             }
         }
 
@@ -466,6 +447,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (_ignoreAll)
             {
                 return FileConflictAction.IgnoreAll;
+            }
+
+            if (ConflictAction != null && ConflictAction != FileConflictAction.PromptUser)
+            {
+                return (FileConflictAction)ConflictAction;
             }
 
             var choices = new Collection<ChoiceDescription>

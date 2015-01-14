@@ -1,4 +1,6 @@
-﻿using NuGet.ProjectManagement;
+﻿using NuGet.Client;
+using NuGet.ProjectManagement;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
@@ -16,7 +18,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private const string ParameterSetByName = "ByName";
         private const string ParameterSetAllProjects = "AllProjects";
 
-        public GetProjectCommand() 
+        public GetProjectCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
+            ISolutionManager solutionManager)
+            : base(resourceProvider, solutionManager)
         {
         }
 
@@ -28,8 +33,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(Mandatory = true, ParameterSetName = ParameterSetAllProjects)]
         public SwitchParameter All { get; set; }
 
+        protected override void Preprocess()
+        {
+            base.Preprocess();
+        }
+
         protected override void ProcessRecordCore()
         {
+            CheckForSolutionOpen();
+
             Preprocess();
             
             if (All.IsPresent)

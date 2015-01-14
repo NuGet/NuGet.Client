@@ -1,4 +1,5 @@
-﻿using NuGet.Client.VisualStudio;
+﻿using NuGet.Client;
+using NuGet.Client.VisualStudio;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -18,8 +19,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private const int MaxReturnedPackages = 30;
 
-        public FindPackageCommand()
-            : base()
+        public FindPackageCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
+            ISolutionManager solutionManager)
+            : base(resourceProvider, solutionManager)
         {
         }
 
@@ -32,7 +35,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         [Parameter]
         [ValidateNotNullOrEmpty]
-        public string Source { get; set; }
+        public virtual string Source { get; set; }
+
+        [Parameter]
+        [Alias("Prerelease")]
+        public SwitchParameter IncludePrerelease { get; set; }
 
         [Parameter]
         public SwitchParameter ListAll { get; set; }
@@ -43,10 +50,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         [Parameter]
         public SwitchParameter ExactMatch { get; set; }
-
-        [Parameter]
-        [Alias("Prerelease")]
-        public SwitchParameter IncludePrerelease { get; set; }
 
         [Parameter]
         [ValidateRange(0, Int32.MaxValue)]
@@ -69,6 +72,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Version = string.Empty;
             }
+
+            GetSourceRepositoryProvider(Source);
+            PackageManager = new NuGetPackageManager(SourceRepositoryProvider);
             base.Preprocess();
         }
 

@@ -1,8 +1,9 @@
-﻿using NuGet.Client.VisualStudio;
+﻿using NuGet.Client;
+using NuGet.Client.VisualStudio;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
-using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Management.Automation;
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     [Cmdlet(VerbsData.Update, "Package", DefaultParameterSetName = "All")]
-    public class UpdatePackageCommand : NuGetPowerShellBaseCommand
+    public class UpdatePackageCommand : PackageActionBaseCommand
     {
         private ResolutionContext _context;
         private string _id;
@@ -20,14 +21,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private bool _idSpecified;
         private bool _projectSpecified;
 
-        public UpdatePackageCommand()
+        public UpdatePackageCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider,
+            ISolutionManager solutionManager)
+            : base(resourceProvider, solutionManager)
         {
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Project")]
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "All")]
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Reinstall")]
-        public string Id
+        public override string Id
         {
             get
             {
@@ -58,10 +62,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         [Parameter(Position = 2, ParameterSetName = "Project")]
         [ValidateNotNullOrEmpty]
-        public string Version { get; set; }
-
-        [Parameter]
-        public SwitchParameter WhatIf { get; set; }
+        public override string Version { get; set; }
 
         [Parameter]
         public SwitchParameter Safe { get; set; }
@@ -70,24 +71,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(ParameterSetName = "All")]
         public SwitchParameter Reinstall { get; set; }
 
-        [Parameter, Alias("Prerelease")]
-        public SwitchParameter IncludePrerelease { get; set; }
-
-        [Parameter]
-        public SwitchParameter IgnoreDependencies { get; set; }
-
-        [Parameter]
-        public FileConflictAction FileConflictAction { get; set; }
-
-        [Parameter]
-        public DependencyBehavior? DependencyVersion { get; set; }
-
         public List<NuGetProject> Projects;
 
         protected override void Preprocess()
         {
             base.Preprocess();
-            if (string.IsNullOrEmpty(ProjectName))
+            if (_projectSpecified)
             {
                 Projects = VSSolutionManager.GetProjects().ToList();
             }
@@ -99,12 +88,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            CheckForSolutionOpen();
-
-            Preprocess();
+            base.ProcessRecordCore();
 
             SubscribeToProgressEvents();
-
             if (!Reinstall.IsPresent)
             {
                 PerformPackageUpdates();
@@ -113,7 +99,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 PerformPackageReinstalls();
             }
-
             UnsubscribeFromProgressEvents();
         }
 
@@ -145,8 +130,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     else
                     {
                         List<PackageReference> installedPackages = new List<PackageReference>() { installedPackage };
-                        Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent);
-                        ExecuteUpdates(remoteUpdates, project);
+                        if (!string.IsNullOrEmpty(Version))
+                        {
+                            NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
+                            PackageIdentity update = new PackageIdentity(Id, nVersion);
+                            InstallPackageByIdentity(project, update, ResolutionContext, this, WhatIf.IsPresent);
+                        }
+                        else
+                        {
+                            Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent);
+                            ExecuteUpdates(remoteUpdates, project);
+                        }
                     }
                 }
             }
@@ -202,23 +196,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, Reinstall.IsPresent, false);
                 return _context;
-            }
-        }
-
-        private DependencyBehavior GetDependencyBehavior()
-        {
-            if (IgnoreDependencies.IsPresent)
-            {
-                return DependencyBehavior.Ignore;
-            }
-            else if (DependencyVersion.HasValue)
-            {
-                return DependencyVersion.Value;
-            }
-            else
-            {
-                // TODO: Read it from NuGet.Config and default to Lowest.
-                return DependencyBehavior.Lowest;
             }
         }
     }

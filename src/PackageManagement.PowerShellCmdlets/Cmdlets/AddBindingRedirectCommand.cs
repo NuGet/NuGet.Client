@@ -1,4 +1,5 @@
-﻿using NuGet.ProjectManagement;
+﻿using NuGet.Client;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -13,8 +14,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         //private readonly IFileSystemProvider _fileSystemProvider;
         //private readonly IVsFrameworkMultiTargeting _frameworkMultiTargeting;
 
-        public AddBindingRedirectCommand()
-            : base()
+        public AddBindingRedirectCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
+            ISolutionManager solutionManager)
+            : base(resourceProvider, solutionManager)
         {
         }
 
@@ -23,12 +26,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "PowerShell API requirement")]
         public string[] ProjectName { get; set; }
 
+        protected override void Preprocess()
+        {
+            base.Preprocess();
+        }
+
         protected override void ProcessRecordCore()
         {
-            if (!VSSolutionManager.IsSolutionOpen)
-            {
-                ErrorHandler.ThrowSolutionNotOpenTerminatingError();
-            }
+            CheckForSolutionOpen();
+
+            Preprocess();
 
             var projects = new List<NuGetProject>();
 

@@ -1,8 +1,6 @@
-﻿using NuGet.PackagingCore;
+﻿using NuGet.Client;
 using NuGet.Resolver;
-using NuGet.Versioning;
 using System;
-using System.Linq;
 using System.Management.Automation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -12,8 +10,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private ResolutionContext _context;
 
-        public UninstallPackageCommand()
-            : base()
+        public UninstallPackageCommand(
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider,
+            ISolutionManager solutionManager)
+            : base(resourceProvider, solutionManager)
         {
         }
 
@@ -33,48 +33,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter RemoveDependencies { get; set; }
 
+        protected override void Preprocess()
+        {
+            GetSourceRepositoryProvider();
+            PackageManager = new NuGetPackageManager(SourceRepositoryProvider);
+            GetNuGetProject();
+            base.Preprocess();
+        }
+
         protected override void ProcessRecordCore()
         {
             CheckForSolutionOpen();
 
             Preprocess();
-            PackageIdentity identity = GetPackageIdentity();
 
             SubscribeToProgressEvents();
-
-            // TODO: UninstallAsync?
-            //PackageManager.UninstallPackageAsync(project, identity, ResolutionContext, this);
-            Project.UninstallPackage(identity, this);
-
+            UninstallPackageById(Project, Id, ResolutionContext, this, WhatIf.IsPresent);
             UnsubscribeFromProgressEvents();
-        }
-
-        /// <summary>
-        /// Returns single package identity for resolver when Id is specified
-        /// </summary>
-        /// <returns></returns>
-        private PackageIdentity GetPackageIdentity()
-        {
-            PackageIdentity identity = null;
-
-            if (!string.IsNullOrEmpty(Version))
-            {
-                NuGetVersion nVersion;
-                bool success = NuGetVersion.TryParse(Version, out nVersion);
-                if (success)
-                {
-                    identity = new PackageIdentity(Id, nVersion);
-                }
-            }
-            else
-            {
-                // If Version is not specified.
-                identity = Project.GetInstalledPackages()
-                    .Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault().PackageIdentity;
-            }
-
-            return identity;
         }
 
         /// <summary>
