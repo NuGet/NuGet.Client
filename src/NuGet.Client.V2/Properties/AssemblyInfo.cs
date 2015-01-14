@@ -15,3 +15,4 @@ using System.Runtime.InteropServices;
 
 
 
+[assembly: AssemblyFileVersion("0.2.0.0")] 

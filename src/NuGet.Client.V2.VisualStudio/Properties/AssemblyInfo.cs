@@ -15,3 +15,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyInformationalVersion("0.2.0-alpha")]
 
 
+
+
+
+
+[assembly: AssemblyFileVersion("0.2.0.0")] 

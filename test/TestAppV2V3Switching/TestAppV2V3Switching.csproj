@@ -37,6 +37,10 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -49,12 +53,24 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.2.0-pre-20150112215135\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
+    <Reference Include="NuGet.Client.V2, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Client.V2.0.2.0-pre-20150114165552-d\lib\net45\NuGet.Client.V2.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.V2.VisualStudio, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Client.V2.VisualStudio.0.2.0-pre-20150114165736-d\lib\net45\NuGet.Client.V2.VisualStudio.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Client.VisualStudio, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Client.VisualStudio.0.2.0-pre-20150112215430\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Configuration">
       <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50072141\lib\net45\NuGet.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Data, Version=1.0.1.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -115,14 +131,6 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NuGet.Client.V2.VisualStudio\NuGet.Client.V2.VisualStudio.csproj">
-      <Project>{876b40be-a94e-4c26-be0a-dc7c09aa5194}</Project>
-      <Name>NuGet.Client.V2.VisualStudio</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\NuGet.Client.V2\NuGet.Client.V2.csproj">
-      <Project>{82621397-b9ed-4a5b-872f-b08ed7e7efdb}</Project>
-      <Name>NuGet.Client.V2</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\NuGet.Client.V3.VisualStudio\NuGet.Client.V3.VisualStudio.csproj">
       <Project>{0d830186-a6f3-4e2c-b373-73b0741333f6}</Project>
       <Name>NuGet.Client.V3.VisualStudio</Name>
