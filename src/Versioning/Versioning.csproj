@@ -14,7 +14,7 @@
     <TargetFrameworkProfile>Profile5</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-	<DocumentationFile>bin\$(Configuration)\NuGet.Versioning.XML</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\NuGet.Versioning.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,7 +46,7 @@
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IVersionComparer.cs" />
@@ -63,8 +63,9 @@
     <Compile Include="VersionRangeFactory.cs" />
     <Compile Include="VersionRangeFormatter.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <None Include="Versioning.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\build\sign.targets" />

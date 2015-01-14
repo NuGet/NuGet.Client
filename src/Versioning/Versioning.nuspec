@@ -7,6 +7,7 @@
     <authors>NuGet</authors>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.Versioning/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Versioning/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet.Versioning is the NuGet implementation of Semantic Versioning.</description>
     <tags>semver semantic versioning</tags>
