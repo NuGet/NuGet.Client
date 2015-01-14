@@ -7,6 +7,7 @@ using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -26,7 +27,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly uint _solutionLoadedUICookie;
         private readonly IVsSolution _vsSolution;
         private bool _initNeeded;
-        private IDictionary<string, EnvDTEProject> _projectCache = null;
+        private EnvDTEProjectCache EnvDTEProjectCache { get; set; }
+        private VSNuGetProjectFactory VSNuGetProjectFactory { get; set; }
+        private ToBeDeletedNuGetProjectContext ToBeDeletedNuGetProjectContext { get; set; }
 
         public VSSolutionManager()
             : this(
@@ -70,29 +73,49 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Run the init on another thread to avoid an endless loop of SolutionManager -> Project System -> VSPackageManager -> SolutionManager
             ThreadPool.QueueUserWorkItem(new WaitCallback(Init));
+            VSNuGetProjectFactory = new VSNuGetProjectFactory();
+            ToBeDeletedNuGetProjectContext = new ToBeDeletedNuGetProjectContext();
         }
 
         public NuGetProject DefaultNuGetProject
         {
-            get;
-            private set;
+            get
+            {
+                if (String.IsNullOrEmpty(DefaultNuGetProjectName))
+                {
+                    return null;
+                }
+                EnvDTEProject envDTEProject = GetEnvDTEProject(DefaultNuGetProjectName);
+                Debug.Assert(envDTEProject != null, "Invalid default project");
+                return VSNuGetProjectFactory.GetNuGetProject(envDTEProject, ToBeDeletedNuGetProjectContext);
+            }
         }
 
         public string DefaultNuGetProjectName
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get;
+            set;
         }
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
             throw new NotImplementedException();
+        }
+
+        private EnvDTEProject GetEnvDTEProject(string projectSafeName)
+        {
+            if (IsSolutionOpen)
+            {
+                EnsureEnvDTEProjectCache();
+
+                EnvDTEProject envDTEProject;
+                if (EnvDTEProjectCache.TryGetProject(projectSafeName, out envDTEProject))
+                {
+                    return envDTEProject;
+                }
+            }
+
+            return null;
         }
 
         public string GetNuGetProjectSafeName(NuGetProject nuGetProject)
@@ -174,15 +197,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            EnsureProjectCache();
-            SetDefaultProject();
+            EnsureEnvDTEProjectCache();
+            SetDefaultProjectName();
             if (SolutionOpened != null)
             {
                 SolutionOpened(this, EventArgs.Empty);
             }
         }
 
-        public void SetDefaultProject()
+        private void SetDefaultProjectName()
         {
             // when a new solution opens, we set its startup project as the default project in NuGet Console
             var solutionBuild = (SolutionBuild2)_dte.Solution.SolutionBuild;
@@ -192,28 +215,49 @@ namespace NuGet.PackageManagement.VisualStudio
                 string startupProjectName = startupProjects.Cast<string>().FirstOrDefault();
                 if (!String.IsNullOrEmpty(startupProjectName))
                 {
-                    EnvDTEProject startupProject;
-                    if (_projectCache.TryGetValue(startupProjectName, out startupProject))
+                    EnvDTEProjectName envDTEProjectName;
+                    if (EnvDTEProjectCache.TryGetProjectName(startupProjectName, out envDTEProjectName))
                     {
-                        var vsNuGetProjectFactory = new VSNuGetProjectFactory();
-                        DefaultNuGetProject = vsNuGetProjectFactory.GetNuGetProject(startupProject, new ToBeDeletedNuGetProjectContext());
+                        DefaultNuGetProjectName = EnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName) ?
+                                             envDTEProjectName.CustomUniqueName :
+                                             envDTEProjectName.ShortName;
                     }
                 }
             }
         }
 
-        private void EnsureProjectCache()
+        private void EnsureEnvDTEProjectCache()
         {
-            if (IsSolutionOpen && _projectCache == null)
+            if (IsSolutionOpen && EnvDTEProjectCache == null)
             {
-                _projectCache = new Dictionary<string, EnvDTEProject>();
+                EnvDTEProjectCache = new EnvDTEProjectCache();
 
                 var allEnvDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte.Solution);
                 foreach (EnvDTEProject envDTEProject in allEnvDTEProjects)
                 {
                     var uniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
-                    _projectCache.Add(uniqueName, envDTEProject);
+                    AddEnvDTEProjectToCache(envDTEProject);
                 }
+            }
+        }
+
+        private void AddEnvDTEProjectToCache(EnvDTEProject envDTEProject)
+        {
+            if (!EnvDTEProjectUtility.IsSupported(envDTEProject))
+            {
+                return;
+            }
+            EnvDTEProjectName oldEnvDTEProjectName;
+            EnvDTEProjectCache.TryGetProjectNameByShortName(EnvDTEProjectUtility.GetName(envDTEProject), out oldEnvDTEProjectName);
+
+            EnvDTEProjectName newEnvDTEProjectName = EnvDTEProjectCache.AddProject(envDTEProject);
+
+            if (String.IsNullOrEmpty(DefaultNuGetProjectName) ||
+                newEnvDTEProjectName.ShortName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase))
+            {
+                DefaultNuGetProjectName = oldEnvDTEProjectName != null ?
+                                     oldEnvDTEProjectName.CustomUniqueName :
+                                     newEnvDTEProjectName.ShortName;
             }
         }
 
