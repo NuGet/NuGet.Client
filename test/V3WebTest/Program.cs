@@ -16,7 +16,7 @@ namespace V3WebTest
     {
         static void Main(string[] args)
         {
-            //PackageSource source = new PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "RC V3");
+            //PackageSource source = new PackageSource("https://api.nuget.org/v3/index.json", "RC V3");
 
             //List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers = new List<Lazy<INuGetResourceProvider,INuGetResourceProviderMetadata>>();
 

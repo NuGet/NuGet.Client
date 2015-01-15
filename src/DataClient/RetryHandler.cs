@@ -45,7 +45,7 @@ namespace NuGet.Data
                 }
                 catch
                 {
-                    // surpress exceptions until the final try
+                    // suppress exceptions until the final try
                     if (tries >= _retries)
                     {
                         throw;

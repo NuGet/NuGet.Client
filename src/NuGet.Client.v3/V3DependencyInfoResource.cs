@@ -23,14 +23,33 @@ namespace NuGet.Client
         private readonly HttpClient _client;
         private readonly ConcurrentDictionary<Uri, JObject> _cache;
         private readonly V3RegistrationResource _regResource;
+        private static readonly VersionRange AllVersions = new VersionRange(null, true, null, true, true);
 
+        /// <summary>
+        /// Dependency info resource
+        /// </summary>
+        /// <param name="client">Http client</param>
+        /// <param name="regResource">Registration blob resource</param>
         public V3DependencyInfoResource(HttpClient client, V3RegistrationResource regResource)
         {
+            if (client == null)
+            {
+                throw new ArgumentNullException("client");
+            }
+
+            if (regResource == null)
+            {
+                throw new ArgumentNullException("regResource");
+            }
+
             _client = client;
             _cache = new ConcurrentDictionary<Uri, JObject>();
             _regResource = regResource;
         }
 
+        /// <summary>
+        /// Retrieves all the package and all dependant packages
+        /// </summary>
         public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
         {
             // compare results based on the id/version
@@ -49,19 +68,38 @@ namespace NuGet.Client
             return results.Where(e => includePrerelease || !e.Version.IsPrerelease);
         }
 
+        /// <summary>
+        /// Gives all packages for an Id, and all dependencies recursively.
+        /// </summary>
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
+        {
+            return await GetPackagesFromRegistration(packageId, AllVersions, projectFramework, token);
+        }
+
+        /// <summary>
+        /// Helper for finding all versions of a package and all dependencies.
+        /// </summary>
         private async Task<IEnumerable<PackageDependencyInfo>> GetPackagesFromRegistration(string packageId, VersionRange range, NuGetFramework projectFramework, CancellationToken token)
         {
             HashSet<PackageDependencyInfo> results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
 
             Uri uri = _regResource.GetUri(packageId);
 
-            var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, range, projectFramework, _cache);
-
-            var result = await ResolverMetadataClient.GetTree(_client, regInfo, projectFramework, _cache);
-
-            foreach (var curPkg in GetPackagesFromRegistration(result, token))
+            try
             {
-                results.Add(curPkg);
+                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, range, projectFramework, _cache);
+
+                var result = await ResolverMetadataClient.GetTree(_client, regInfo, projectFramework, _cache);
+
+                foreach (var curPkg in GetPackagesFromRegistration(result, token))
+                {
+                    results.Add(curPkg);
+                }
+            }
+            catch (ArgumentException)
+            {
+                // ignore missing packages
+                // TODO: add an exception type for missing packages to be thrown in the metadata client
             }
 
             return results;
@@ -90,20 +128,6 @@ namespace NuGet.Client
             }
 
             yield break;
-        }
-
-        /// <summary>
-        /// Gives all packages for an Id, and all dependencies recursively.
-        /// </summary>
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
-        {
-            // max range from the metadata client
-            // TODO: replace this
-            var maxRange = VersionRange.Parse("[0.0.0-aaaa,)");
-
-            var results = await GetPackagesFromRegistration(packageId, maxRange, projectFramework, token);
-
-            return results.Where(e => includePrerelease || !e.Version.IsPrerelease);
         }
     }
 }

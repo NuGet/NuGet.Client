@@ -72,7 +72,7 @@ namespace NuGet.Client.V3.VisualStudio
         public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, CancellationToken token)
         {
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ? 
-            IEnumerable<JObject> packages = await _regResource.Get(packageId, includePrerelease, false, token);
+            IEnumerable<JObject> packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, token);
             List<NuGetVersion> versions = new List<NuGetVersion>();
             foreach (var package in packages)
             {

@@ -16,7 +16,6 @@ namespace NuGet.Client
     /// </summary>
     public class V3MetadataResource : MetadataResource
     {
-        private static readonly DateTimeOffset Unpublished = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8));
         private V3RegistrationResource _regResource;
         private HttpClient _client;
 
@@ -38,15 +37,8 @@ namespace NuGet.Client
 
             foreach (var id in packageIds)
             {
-                var registrations = await _regResource.Get(id, includePrerelease, includeUnlisted, token);
-                var allVersions = registrations.Select(p => NuGetVersion.Parse(p["version"].ToString()));
-
-                if (!includePrerelease)
-                {
-                    allVersions = allVersions.Where(e => !e.IsPrerelease);
-                }
-
-                // TODO: implement unlisted on the server, and then here!
+                var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, token);
+                var allVersions = catalogEntries.Select(p => NuGetVersion.Parse(p["version"].ToString()));
 
                 // find the latest
                 var latest = allVersions.OrderByDescending(p => p, VersionComparer.VersionRelease).FirstOrDefault();
