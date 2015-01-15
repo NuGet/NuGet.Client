@@ -11,4 +11,8 @@
     <description>Package manifest reading and writing</description>
     <tags>nuspec nupkg</tags>
   </metadata>
+  <files>
+	<file src="..\ProjectManagement\bin\$configuration$\NuGet.ProjectManagement.dll" target="lib/net45" />
+	<file src="..\ProjectManagement\bin\$configuration$\NuGet.ProjectManagement.xml" target="lib/net45" />
+  </files>
 </package>

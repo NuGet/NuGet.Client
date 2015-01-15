@@ -72,7 +72,7 @@
     </Reference>
     <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150114225027\lib\net45\NuGet.PackageManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150115002249\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -84,15 +84,15 @@
     </Reference>
     <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-pre-20150114173912\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150115002249\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Resolver.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Versioning, Version=1.0.5.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Versioning, Version=1.0.6.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Versioning.1.0.6\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
