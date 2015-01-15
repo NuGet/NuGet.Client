@@ -49,8 +49,9 @@
     <Reference Include="NuGet.Resolver">
       <HintPath>..\..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Resolver.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\..\packages\NuGet.Versioning.1.0.6\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+    <Reference Include="NuGet.Versioning, Version=1.0.5.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\NuGet.Versioning.1.0.5\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
