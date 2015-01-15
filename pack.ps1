@@ -1,12 +1,15 @@
 param (
-    [switch]$Push, 
-    [ValidateSet("debug", "release")][string]$Configuration="debug", 
-    [switch]$SkipTests, 
-    [switch]$SkipBuild, 
+    [string]$PushTarget,
+    [ValidateSet("debug", "release")][string]$Configuration="debug",
+    [switch]$SkipTests,
+    [switch]$SkipBuild,
     [string]$PFXPath,
+    [switch]$DelaySign,
     [switch]$Stable,
-    [Parameter(Mandatory=$True)][ValidateSet("NuGet.Configuration")][string]$Id
+    [string]$Version
 )
+
+$Id = "NuGet.Configuration"
 
 # build
 if (!$SkipBuild)
@@ -23,6 +26,11 @@ if (!$SkipBuild)
     if ($PFXPath)
     {
         $env:NUGET_PFX_PATH=$PFXPath
+
+        if ($DelaySign)
+        {
+            $env:NUGET_DELAYSIGN="true"
+        }
     }
 
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
@@ -69,22 +77,24 @@ if ($gitBranch.Length -gt 8) {
 
 Write-Host "Git branch: $gitBranch" 
 
-# find the release version from the target assembly
-$version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryAssemblyPath).FileVersion
+if (!$Version) {
+    # find the release version from the target assembly
+    $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryAssemblyPath).FileVersion
 
-if (!$version) {
-    Write-Error "Unable to find the file version!"
-    exit 1
-}
+    if (!$version) {
+        Write-Error "Unable to find the file version!"
+        exit 1
+    }
 
-$now = [System.DateTime]::UtcNow
+    $now = [System.DateTime]::UtcNow
 
-# (git branch)-(last digit of the year)(day of year)(hour)(minute)
-$version = $version.TrimEnd('0').TrimEnd('.')
+    # (git branch)-(last digit of the year)(day of year)(hour)(minute)
+    $version = $version.TrimEnd('0').TrimEnd('.')
 
-if (!$Stable)
-{
-    $version += "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
+    if (!$Stable)
+    {
+        $version += "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
+    }
 }
 
 Write-Host "Package version: $version" -ForegroundColor Cyan
@@ -102,13 +112,13 @@ $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName 
 
 Write-Host $nupkgPath -ForegroundColor Cyan
 
-if ($Push)
+if ($PushTarget)
 {
     Write-Host "Pushing: $nupkgPath" -ForegroundColor Cyan
     # use nuget.exe setApiKey <key> before running this
-    .\.nuget\nuget.exe push $nupkgPath
+    .\.nuget\nuget.exe push $nupkgPath -source $PushTarget
 }
 else
 {
-    Write-Warning "Package not uploaded. Specify -Push to upload this package to nuget.org"
+    Write-Warning "Package not uploaded. Specify -PushTarget to upload this package"
 }
