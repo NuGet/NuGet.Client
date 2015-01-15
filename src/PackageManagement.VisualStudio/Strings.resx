@@ -144,4 +144,13 @@
   <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
     <value>Value must be greater than or equal to {0}.</value>
   </data>
+  <data name="Debug_RemovedFile" xml:space="preserve">
+    <value>Removed file '{0}'</value>
+  </data>
+  <data name="Debug_RemovedFileFromFolder" xml:space="preserve">
+    <value>Removed file '{0}' from folder '{1}'</value>
+  </data>
+  <data name="Debug_RemoveReference" xml:space="preserve">
+    <value>Removed reference '{0}' from project '{1}'</value>
+  </data>
 </root>

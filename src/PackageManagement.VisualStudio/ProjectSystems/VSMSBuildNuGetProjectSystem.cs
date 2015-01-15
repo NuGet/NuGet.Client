@@ -301,9 +301,20 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public void RemoveFile(string path)
+        public virtual void RemoveFile(string path)
         {
-            throw new NotImplementedException();
+            if (EnvDTEProjectUtility.DeleteProjectItem(EnvDTEProject, path))
+            {
+                string folderPath = Path.GetDirectoryName(path);
+                if (!String.IsNullOrEmpty(folderPath))
+                {
+                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
+                }
+                else
+                {
+                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(path));
+                }
+            }
         }
 
         public bool ReferenceExists(string name)
@@ -316,9 +327,31 @@ namespace NuGet.PackageManagement.VisualStudio
             throw new NotImplementedException();
         }
 
-        public void RemoveReference(string name)
+        public virtual void RemoveReference(string name)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Get the reference name without extension
+                string referenceName = Path.GetFileNameWithoutExtension(name);
+
+                // Remove the reference from the project
+                // NOTE:- Project.Object.References.Item requires Reference.Identity
+                //        which is, the Assembly name without path or extension
+                //        But, we pass in the assembly file name. And, this works for
+                //        almost all the assemblies since Assembly Name is the same as the assembly file name
+                //        In case of F#, the input parameter is case-sensitive as well
+                //        Hence, an override to THIS function is added to take care of that
+                var reference = EnvDTEProjectUtility.GetReferences(EnvDTEProject).Item(referenceName);
+                if (reference != null)
+                {
+                    reference.Remove();
+                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
+                }
+            }
+            catch (Exception e)
+            {
+                NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+            }
         }
 
         private static void TrySetCopyLocal(dynamic reference)

@@ -816,5 +816,19 @@ namespace NuGet.PackageManagement.VisualStudio
 #endif
 
         #endregion // Check Project Types
+
+        #region Act on Project
+        public static bool DeleteProjectItem(EnvDTEProject envDTEProject, string path)
+        {
+            EnvDTEProjectItem projectItem = GetProjectItem(envDTEProject, path);
+            if (projectItem == null)
+            {
+                return false;
+            }
+
+            projectItem.Delete();
+            return true;
+        }
+        #endregion
     }
 }
