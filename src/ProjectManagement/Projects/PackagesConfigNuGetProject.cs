@@ -45,16 +45,30 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
+            var newPackageReference = new PackageReference(packageIdentity, TargetFramework);
             List<PackageReference> installedPackagesList = GetInstalledPackagesList();
-            var packageReference = installedPackagesList.Where(p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
-            if(packageReference != null)
+            var packageReferenceWithSameId = installedPackagesList.Where(p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            if (packageReferenceWithSameId != null)
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity);
-                return false;
+                if(packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity);
+                    return false;
+                }
+                else
+                {
+                    // Higher version of an installed package is being installed. Remove old and add new
+                    installedPackagesList.Remove(packageReferenceWithSameId);
+                    installedPackagesList.Add(newPackageReference);
+                }
+            }
+            else
+            {
+                installedPackagesList.Add(newPackageReference);
             }
 
-            installedPackagesList.Add(new PackageReference(packageIdentity, TargetFramework));
-            using (var stream = File.OpenWrite(FullPath))
+            // Create new file or overwrite existing file
+            using (var stream = File.Create(FullPath))
             {
                 var writer = new PackagesConfigWriter(stream);
                 foreach (var pr in installedPackagesList)
@@ -90,7 +104,8 @@ namespace NuGet.ProjectManagement
             installedPackagesList.Remove(packageReference);
             if (installedPackagesList.Count > 0)
             {
-                using (var stream = File.OpenWrite(FullPath))
+                // Create new file or overwrite existing file
+                using (var stream = File.Create(FullPath))
                 {
                     var writer = new PackagesConfigWriter(stream);
                     foreach (var pr in installedPackagesList)
