@@ -24,7 +24,7 @@
     <!--MefComponent>|Console|</MefComponent-->
     <!--MefComponent>NuGet.Client.V2.dll</MefComponent-->
     <!--MefComponent>NuGet.Client.V2.VisualStudio.dll</MefComponent-->
-    <MefComponent>NuGet.Client.V3.dll</MefComponent>
+    <MefComponent>NuGet.Client.dll</MefComponent>
     <MefComponent>NuGet.Client.V3.VisualStudio.dll</MefComponent>
     <MefComponent>|PackageManagement.VisualStudio|</MefComponent> 
     <MefComponent>NuGet.PackageManagement.UI.dll</MefComponent>

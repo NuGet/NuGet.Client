@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.UI.Common;
 using System.Windows;
 using System.Windows.Controls;
 
