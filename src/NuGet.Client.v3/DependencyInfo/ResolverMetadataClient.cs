@@ -166,7 +166,17 @@ namespace NuGet.Client.DependencyInfo
 
                     id = catalogEntry["id"].ToString();
 
-                    if (range.Satisfies(packageVersion))
+                    int publishedDate = 0;
+                    JToken publishedValue;
+
+                    if (catalogEntry.TryGetValue("published", out publishedValue))
+                    {
+                        publishedDate = int.Parse(publishedValue.ToObject<DateTime>().ToString("yyyyMMdd"));
+                    }
+
+                    //publishedDate = 0 means the property doesn't exist in index.json
+                    //publishedDate = 19000101 means the property exists but the package is unlisted
+                    if (range.Satisfies(packageVersion) && (publishedDate!= 19000101))
                     {
                         PackageInfo packageInfo = new PackageInfo();
                         packageInfo.Version = packageVersion;
