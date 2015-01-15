@@ -5,9 +5,12 @@
     <version>1.0.0-overrideme</version>
     <title>NuGet.Configuration</title>
     <authors>NuGet</authors>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.Configuration/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Configuration/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>NuGet.Configuration</description>
+    <description>NuGet.Configuration implements NuGet's configuration settings</description>
+    <tags>nuget configuration nuget.config</tags>
   </metadata>
 </package>
