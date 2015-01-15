@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public class NuGetUIContext : INuGetUIContext
     {
-        private readonly SourceRepositoryProvider _sourceProvider;
+        private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly ISolutionManager _solutionManager;
         private readonly NuGetPackageManager _packageManager;
         private readonly UIActionEngine _uiActionEngine;
@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
         private readonly NuGetProject[] _projects;
 
         public NuGetUIContext(
-            SourceRepositoryProvider sourceProvider, 
+            ISourceRepositoryProvider sourceProvider, 
             ISolutionManager solutionManager, 
             NuGetPackageManager packageManager,
             UIActionEngine uiActionEngine,
@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.UI
             _projects = projects.ToArray();
         }
 
-        public SourceRepositoryProvider SourceProvider
+        public ISourceRepositoryProvider SourceProvider
         {
             get
             {

@@ -13,8 +13,8 @@ namespace NuGet.PackageManagement
     /// <summary>
     /// SourceRepositoryProvider is the high level source for repository objects representing package sources.
     /// </summary>
-    [Export]
-    public sealed class SourceRepositoryProvider
+    [Export(typeof(ISourceRepositoryProvider))]
+    public sealed class SourceRepositoryProvider : ISourceRepositoryProvider
     {
         // TODO: add support for reloading sources when changes occur
         private readonly IPackageSourceProvider _packageSourceProvider;

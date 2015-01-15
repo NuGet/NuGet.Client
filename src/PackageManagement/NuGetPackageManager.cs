@@ -40,11 +40,11 @@ namespace NuGet.PackageManagement
         /// </summary>
         public event EventHandler<PackageOperationEventArgs> PackageUninstalled;
 
-        private SourceRepositoryProvider SourceRepositoryProvider { get; set; }
+        private ISourceRepositoryProvider SourceRepositoryProvider { get; set; }
 
         private HttpClient HttpClient { get; set; }
 
-        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider)
             : this(sourceRepositoryProvider, new HttpClient(new WebRequestHandler()
             {
                 CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default)
@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param> and <param name="httpClient"></param>
         /// </summary>
-        public NuGetPackageManager(SourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient/*, IPackageResolver packageResolver */)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient/*, IPackageResolver packageResolver */)
         {
             if (sourceRepositoryProvider == null)
             {

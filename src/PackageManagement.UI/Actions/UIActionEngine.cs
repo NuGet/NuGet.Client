@@ -17,13 +17,13 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public class UIActionEngine
     {
-        private readonly SourceRepositoryProvider _sourceProvider;
+        private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
-        public UIActionEngine(SourceRepositoryProvider sourceProvider, NuGetPackageManager packageManager)
+        public UIActionEngine(ISourceRepositoryProvider sourceProvider, NuGetPackageManager packageManager)
         {
             _sourceProvider = sourceProvider;
             _packageManager = packageManager;

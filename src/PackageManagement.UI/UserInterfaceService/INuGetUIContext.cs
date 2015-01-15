@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.UI
 {
     public interface INuGetUIContext
     {
-        SourceRepositoryProvider SourceProvider { get; }
+        ISourceRepositoryProvider SourceProvider { get; }
 
         ISolutionManager SolutionManager { get; }
 

@@ -12,15 +12,24 @@ namespace NuGet.PackageManagement.UI
     [Export(typeof(INuGetUIContextFactory))]
     public class NuGetUIContextFactory : INuGetUIContextFactory
     {
-        private readonly SourceRepositoryProvider _repositoryProvider;
+        private readonly ISourceRepositoryProvider _repositoryProvider;
 
         // TODO: add this one it is implemented
         private readonly ISolutionManager _solutionManager;
         private readonly IPackageRestoreManager _restoreManager;
         private readonly IOptionsPageActivator _optionsPage;
 
-        [ImportingConstructor]
+        /// <summary>
+        /// Non-MEF constructor
+        /// </summary>
+        /// <param name="repositoryProvider"></param>
         public NuGetUIContextFactory(SourceRepositoryProvider repositoryProvider)
+        {
+            _repositoryProvider = repositoryProvider;
+        }
+
+        [ImportingConstructor]
+        public NuGetUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider)
         {
             _repositoryProvider = repositoryProvider;
         }
