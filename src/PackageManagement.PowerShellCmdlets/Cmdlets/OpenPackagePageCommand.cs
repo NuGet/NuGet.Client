@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Uri targetUrl = null;
                 if (License.IsPresent)
                 {
-                    targetUrl = GetUri(package, Properties.LicenseUrl);
+                    targetUrl = GetUri(package, "licenseUrl");
                 }
                 else if (ReportAbuse.IsPresent)
                 {
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    targetUrl = GetUri(package, Properties.ProjectUrl);
+                    targetUrl = GetUri(package, "projectUrl");
                 }
 
                 if (targetUrl != null)
@@ -126,11 +126,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         // TODO: This should be a common method for UI and PoweShell. 
         private static Uri GetUri(UIPackageMetadata metadata, string property)
         {
-            if (property == Properties.LicenseUrl)
+            if (property == "licenseUrl")
             {
                 return metadata.LicenseUrl;
             }
-            else if (property == Properties.ProjectUrl)
+            else if (property == "projectUrl")
             {
                 return metadata.ProjectUrl;
             }

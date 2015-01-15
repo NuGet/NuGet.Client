@@ -1,5 +1,4 @@
 ﻿using NuGet.Client;
-using NuGet.Client.V3.VisualStudio;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -154,7 +153,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             searchfilter.SupportedFrameworks = targetFrameworks;
             searchfilter.IncludeDelisted = false;
 
-            V3PSSearchResource resource = ActiveSourceRepository.GetResource<V3PSSearchResource>();
+            PSSearchResource resource = ActiveSourceRepository.GetResource<PSSearchResource>();
             Task<IEnumerable<PSSearchMetadata>> task = resource.Search(packageId, searchfilter, skip, take, CancellationToken.None);
             IEnumerable<PSSearchMetadata> packages = task.Result;
             return packages;

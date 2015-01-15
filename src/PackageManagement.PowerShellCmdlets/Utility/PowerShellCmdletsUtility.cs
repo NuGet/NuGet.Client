@@ -1,5 +1,4 @@
 ﻿using NuGet.Client;
-using NuGet.Client.V3.VisualStudio;
 using NuGet.Client.VisualStudio;
 using NuGet.Frameworks;
 using NuGet.PackagingCore;
@@ -96,7 +95,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             searchfilter.IncludePrerelease = includePrerelease;
             searchfilter.SupportedFrameworks = targetFrameworks;
             searchfilter.IncludeDelisted = false;
-            V3PSSearchResource resource = sourceRepository.GetResource<V3PSSearchResource>();
+            PSSearchResource resource = sourceRepository.GetResource<PSSearchResource>();
             PSSearchMetadata result = null;
             IEnumerable<NuGetVersion> allVersions = Enumerable.Empty<NuGetVersion>();
 
