@@ -189,11 +189,6 @@ namespace NuGetVSExtension
             _dte = (DTE)GetService(typeof(SDTE));
             Debug.Assert(_dte != null);
 
-            var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-            var restore = ServiceLocator.GetInstance<IPackageRestoreManager>();
-            var settingsImport = ServiceLocator.GetInstance<ISettings>();
-            var sourceRepoProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
