@@ -26,17 +26,17 @@ namespace NuGet.Client.V2
         {
             V2Client = resource.V2Client;
         }
-        public override Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, Frameworks.NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, Frameworks.NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
         {
             List<Tuple<string,IVersionSpec>> packageVersions = new List<Tuple<string,IVersionSpec>>();
             packageVersions.Add(new Tuple<string,IVersionSpec>(packageId,new VersionSpec()));
-            return Task.Run(() => GetFlattenedDependencyTree(packageVersions, new List<PackageDependencyInfo>().AsEnumerable(), projectFramework, includePrerelease, token));
+            return GetFlattenedDependencyTree(packageVersions, new List<PackageDependencyInfo>().AsEnumerable(), projectFramework, includePrerelease, token);
         }
 
-        public override Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, Frameworks.NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, Frameworks.NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
         {
             List<Tuple<string, IVersionSpec>> packageVersions = packages.Select(item => GetIdAndVersionSpec(item)).ToList();
-            return Task.Run(() => GetFlattenedDependencyTree(packageVersions,new List<PackageDependencyInfo>().AsEnumerable(), projectFramework, includePrerelease, token));
+            return GetFlattenedDependencyTree(packageVersions, new PackageDependencyInfo[0], projectFramework, includePrerelease, token);
         }
 
      

@@ -19,24 +19,21 @@ namespace NuGet.Client.V2
             V2Client = resource.V2Client;
         }     
 
-        public override Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, System.Threading.CancellationToken token)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, System.Threading.CancellationToken token)
         {
-            return Task.Factory.StartNew(() =>
+            List<KeyValuePair<string, NuGetVersion>> results = new List<KeyValuePair<string, NuGetVersion>>();
+            foreach (var id in packageIds)
             {
-               List<KeyValuePair<string, NuGetVersion>> results = new List<KeyValuePair<string, NuGetVersion>>();
-                foreach (var id in packageIds)
-                {
-                    SemanticVersion latestVersion = V2Client.FindPackagesById(id).OrderByDescending(p => p.Version).FirstOrDefault().Version;
-                    //  return new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion);
-                    results.Add(new KeyValuePair<string, NuGetVersion>(id, new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion)));
-                }
-                return results.AsEnumerable();
-            });
+                SemanticVersion latestVersion = V2Client.FindPackagesById(id).OrderByDescending(p => p.Version).FirstOrDefault().Version;
+                //  return new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion);
+                results.Add(new KeyValuePair<string, NuGetVersion>(id, new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion)));
+            }
+            return results.AsEnumerable();
         }
     }
 }

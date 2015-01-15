@@ -25,40 +25,33 @@ namespace NuGet.Client.V2.VisualStudio
         {
             V2Client = repo;
         }
-        public override Task<IEnumerable<string>> IdStartsWith(string packageIdPrefix, bool includePrerelease, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<string>> IdStartsWith(string packageIdPrefix, bool includePrerelease, System.Threading.CancellationToken token)
         {
-            return Task.Factory.StartNew(() =>
+            //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
+            LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
+            if (lrepo != null)
             {
-                //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
-                LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
-                if (lrepo != null)
-                {
-                    return GetPackageIdsFromLocalPackageRepository(lrepo, packageIdPrefix, true);
-                }
-                else
-                {
-                    return GetPackageIdsFromHttpSourceRepository(V2Client, packageIdPrefix, true);
-                }
-            });
+                return GetPackageIdsFromLocalPackageRepository(lrepo, packageIdPrefix, true);
+            }
+            else
+            {
+                return GetPackageIdsFromHttpSourceRepository(V2Client, packageIdPrefix, true);
+            }
         }
 
-        public override Task<IEnumerable<Versioning.NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, System.Threading.CancellationToken token)
         {
-            return Task.Factory.StartNew(() =>
+            //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
+            LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
+            if (lrepo != null)
             {
-                //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
-                LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
-                if (lrepo != null)
-                {
-                    return GetPackageVersionsFromLocalPackageRepository(lrepo,packageId,versionPrefix, includePrerelease);
-                }
-                else
-                {
-                    return GetPackageversionsFromHttpSourceRepository(V2Client, packageId, versionPrefix, includePrerelease);
-                }
-            });
+                return GetPackageVersionsFromLocalPackageRepository(lrepo,packageId,versionPrefix, includePrerelease);
+            }
+            else
+            {
+                return GetPackageversionsFromHttpSourceRepository(V2Client, packageId, versionPrefix, includePrerelease);
+            }
         }
-    
 
         private static IEnumerable<string> GetPackageIdsFromHttpSourceRepository(IPackageRepository packageRepository,string searchFilter,bool includePrerelease)
         {

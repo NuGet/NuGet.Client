@@ -19,46 +19,44 @@ namespace NuGet.Client.V2
         {
             V2Client = resource.V2Client;
         }
-        public override Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, System.Threading.CancellationToken cancellationToken)
+        public override async Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, System.Threading.CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                var query = V2Client.Search(
-                    searchTerm,
-                    filters.SupportedFrameworks,
-                    filters.IncludePrerelease);
+            var query = V2Client.Search(
+                searchTerm,
+                filters.SupportedFrameworks,
+                filters.IncludePrerelease);
              
-                // V2 sometimes requires that we also use an OData filter for latest/latest prerelease version
-                if (filters.IncludePrerelease)
-                {
-                    query = query.Where(p => p.IsAbsoluteLatestVersion);
-                }
-                else
-                {
-                    query = query.Where(p => p.IsLatestVersion);
-                }
+            // V2 sometimes requires that we also use an OData filter for latest/latest prerelease version
+            if (filters.IncludePrerelease)
+            {
+                query = query.Where(p => p.IsAbsoluteLatestVersion);
+            }
+            else
+            {
+                query = query.Where(p => p.IsLatestVersion);
+            }
 
-                if (V2Client is LocalPackageRepository)
-                {
-                    // if the repository is a local repo, then query contains all versions of packages.
-                    // we need to explicitly select the latest version.
-                    query = query.OrderBy(p => p.Id)
-                        .ThenByDescending(p => p.Version)
-                        .GroupBy(p => p.Id)
-                        .Select(g => g.First());
-                }
+            if (V2Client is LocalPackageRepository)
+            {
+                // if the repository is a local repo, then query contains all versions of packages.
+                // we need to explicitly select the latest version.
+                query = query.OrderBy(p => p.Id)
+                    .ThenByDescending(p => p.Version)
+                    .GroupBy(p => p.Id)
+                    .Select(g => g.First());
+            }
 
-                // Now apply skip and take and the rest of the party
-                return (IEnumerable<SimpleSearchMetadata>)query
-                    .Skip(skip)
-                    .Take(take)
-                    .ToList()
-                    .AsParallel()
-                    .AsOrdered()
-                    .Select(p => CreatePackageSearchResult(p))
-                    .ToList();
-            }, cancellationToken);
+            // Now apply skip and take and the rest of the party
+            return (IEnumerable<SimpleSearchMetadata>)query
+                .Skip(skip)
+                .Take(take)
+                .ToList()
+                .AsParallel()
+                .AsOrdered()
+                .Select(p => CreatePackageSearchResult(p))
+                .ToList();
         }
+
         private SimpleSearchMetadata CreatePackageSearchResult(IPackage package)
         {          
             var versions = V2Client.FindPackagesById(package.Id);

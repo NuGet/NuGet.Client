@@ -25,43 +25,36 @@ namespace NuGet.Client.V2.VisualStudio
             V2Client = resource.V2Client;
         }
 
-        public override Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                return V2Client.FindPackagesById(packageId).Select(p => GetVisualStudioUIPackageMetadata(p));
-            });
+            return V2Client.FindPackagesById(packageId).Select(p => GetVisualStudioUIPackageMetadata(p));
         }
 
-        public override Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackagingCore.PackageIdentity> packages, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackagingCore.PackageIdentity> packages, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-
-            return Task.Factory.StartNew(() =>
+            List<UIPackageMetadata> packageMetadataList = new List<Client.VisualStudio.UIPackageMetadata>();
+            foreach (var identity in packages)
             {
-                List<UIPackageMetadata> packageMetadataList = new List<Client.VisualStudio.UIPackageMetadata>();
-                foreach (var identity in packages)
+                var semver = new SemanticVersion(identity.Version.ToNormalizedString());
+                var package = V2Client.FindPackage(identity.Id, semver);
+
+                // Sometimes, V2 APIs seem to fail to return a value for Packages(Id=,Version=) requests...
+
+                if (package == null)
                 {
-                    var semver = new SemanticVersion(identity.Version.ToNormalizedString());
-                    var package = V2Client.FindPackage(identity.Id, semver);
-
-                    // Sometimes, V2 APIs seem to fail to return a value for Packages(Id=,Version=) requests...
-
-                    if (package == null)
-                    {
-                        var packagesList = V2Client.FindPackagesById(identity.Id);
-                        package = packagesList.FirstOrDefault(p => Equals(p.Version, semver));
-                    }
-
-                    // If still null, fail
-                    if (package == null)
-                    {
-                        return null;
-                    }
-
-                    packageMetadataList.Add(GetVisualStudioUIPackageMetadata(package));
+                    var packagesList = V2Client.FindPackagesById(identity.Id);
+                    package = packagesList.FirstOrDefault(p => Equals(p.Version, semver));
                 }
-                return packageMetadataList.AsEnumerable();
-            });
+
+                // If still null, fail
+                if (package == null)
+                {
+                    return null;
+                }
+
+                packageMetadataList.Add(GetVisualStudioUIPackageMetadata(package));
+            }
+            return packageMetadataList.AsEnumerable();
         }
 
         private static UIPackageMetadata GetVisualStudioUIPackageMetadata(IPackage package)
