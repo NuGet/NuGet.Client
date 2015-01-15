@@ -108,9 +108,6 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
 
-            // Store streamStartPosition here
-            long streamStartPosition = packageStream.Position;
-
             // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
@@ -124,7 +121,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-2: Create PackageReader using the PackageStream and obtain the various item groups            
-            packageStream.Seek(streamStartPosition, SeekOrigin.Begin);
+            packageStream.Seek(0, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
             PackageReader packageReader = new PackageReader(zipArchive);
             IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
@@ -158,7 +155,6 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-5: Install package to FolderNuGetProject     
-            packageStream.Seek(streamStartPosition, SeekOrigin.Begin);
             FolderNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
 
             // Step-6: MSBuildNuGetProjectSystem operations
@@ -170,6 +166,11 @@ namespace NuGet.ProjectManagement
                     if (IsAssemblyReference(libItem))
                     {
                         var libItemFullPath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), libItem);
+                        var libAssemblyName = Path.GetFileName(libItem);
+                        if (MSBuildNuGetProjectSystem.ReferenceExists(libAssemblyName))
+                        {
+                            MSBuildNuGetProjectSystem.RemoveReference(libAssemblyName);
+                        }
                         MSBuildNuGetProjectSystem.AddReference(libItemFullPath);
                     }
                 }
@@ -180,7 +181,11 @@ namespace NuGet.ProjectManagement
             {
                 foreach (var frameworkReference in compatibleFrameworkReferencesGroup.Items)
                 {
-                    MSBuildNuGetProjectSystem.AddFrameworkReference(Path.GetFileName(frameworkReference));
+                    var frameworkReferenceName = Path.GetFileName(frameworkReference);
+                    if (!MSBuildNuGetProjectSystem.ReferenceExists(frameworkReference))
+                    {
+                        MSBuildNuGetProjectSystem.AddFrameworkReference(frameworkReference);
+                    }
                 }
             }
 
@@ -200,7 +205,6 @@ namespace NuGet.ProjectManagement
             // Step-6.5: Execute powershell script
 
             // Step-7: Install package to PackagesConfigNuGetProject
-            packageStream.Seek(streamStartPosition, SeekOrigin.Begin);
             PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
 
             // Step-8: Add packages.config to MSBuildNuGetProject
@@ -238,11 +242,11 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
-            // Get the package target framework instead of using project targetframework
             var packageTargetFramework = packageReference.TargetFramework;
             using (var packageStream = File.OpenRead(GetPackagePath(FolderNuGetProject, packageIdentity)))
             {
+                // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
+                // Get the package target framework instead of using project targetframework
                 var zipArchive = new ZipArchive(packageStream);
                 var packageReader = new PackageReader(zipArchive);
 
@@ -266,8 +270,14 @@ namespace NuGet.ProjectManagement
                 // Step-4: Uninstall package from packages.config
                 PackagesConfigNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
 
-                // Step-5: Uninstall package from the msbuild project
-                // Step-5.1: Remove references
+                // Step-5: Remove packages.config from MSBuildNuGetProject if there are no packages
+                if(!PackagesConfigNuGetProject.GetInstalledPackages().Any())
+                {
+                    MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+                }
+
+                // Step-6: Uninstall package from the msbuild project
+                // Step-6.1: Remove references
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup))
                 {
                     foreach (var item in compatibleLibItemsGroup.Items)
@@ -279,34 +289,36 @@ namespace NuGet.ProjectManagement
                     }
                 }
 
-                // Step-5.2: Remove framework references
+                // Step-6.2: Remove framework references
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
                 {
                     throw new NotImplementedException("Removing framework references is not implemented since one needs to check all the packages");
                 }
 
-                // Step-5.3: Remove content files
+                // Step-6.3: Remove content files
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
                 {
-                    throw new NotImplementedException();
-                    //MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
-                    //    zipArchive,
-
-                    //    )
+                    MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
+                        zipArchive,
+                        GetInstalledPackages().Select(pr => GetPackagePath(FolderNuGetProject, pr.PackageIdentity)),
+                        compatibleContentFilesGroup,
+                        FileTransformers);
                 }
 
-                // Step-5.4: Remove build imports
+                // Step-6.4: Remove build imports
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
                 {
                     throw new NotImplementedException();
                 }
 
-                // Step-5.5: Execute powershell script
+                // Step-6.5: Execute powershell script
 
             }
 
-            // Step-6: Uninstall package from the folderNuGetProject
+            // Step-7: Uninstall package from the folderNuGetProject
             FolderNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
+
+            // Step-8: 
             return true;
         }
 

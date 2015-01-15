@@ -12,18 +12,19 @@ namespace Test.Utility
     public class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
     {
         private const string TestProjectName = "TestProjectName";
-        public HashSet<string> References { get; private set; }
+        public Dictionary<string, string> References { get; private set; }
         public HashSet<string> FrameworkReferences { get; private set; }
         public HashSet<string> Files { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
-        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext)
+        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext, string projectFullPath = null)
         {
             TargetFramework = targetFramework;
-            References = new HashSet<string>();
+            References = new Dictionary<string, string>();
             FrameworkReferences = new HashSet<string>();
             Files = new HashSet<string>();
             NuGetProjectContext = nuGetProjectContext;
+            ProjectFullPath = String.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
         }
 
         public void AddFile(string path, Stream stream)
@@ -31,11 +32,18 @@ namespace Test.Utility
             using (var streamReader = new StreamReader(stream))
             {
                 Files.Add(path);
+                var fullPath = Path.Combine(ProjectFullPath, path);
+                Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+                File.WriteAllText(fullPath, streamReader.ReadToEnd());
             }
         }
 
         public void AddFrameworkReference(string name)
         {
+            if(FrameworkReferences.Contains(name))
+            {
+                throw new InvalidOperationException("Cannot add existing reference. That would be a COMException in VS");
+            }
             FrameworkReferences.Add(name);
         }
 
@@ -46,17 +54,28 @@ namespace Test.Utility
 
         public void AddReference(string referencePath)
         {
-            References.Add(referencePath);
+            var referenceAssemblyName = Path.GetFileName(referencePath);
+            if (References.ContainsKey(referenceAssemblyName))
+            {
+                throw new InvalidOperationException("Cannot add existing reference. That would be a COMException in VS");
+            }
+            References.Add(referenceAssemblyName, referencePath);
         }
 
         public void RemoveFile(string path)
         {
             Files.Remove(path);
+            string fullPath = Path.Combine(ProjectFullPath, path);
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
         }
 
         public string ProjectFullPath
         {
-            get { return Environment.CurrentDirectory; }
+            get;
+            private set;
         }
 
         public string ProjectName
@@ -66,7 +85,7 @@ namespace Test.Utility
 
         public bool ReferenceExists(string name)
         {
-            return References.Where(r => name.Equals(r, StringComparison.OrdinalIgnoreCase)).Any();
+            return References.ContainsKey(name);
         }
 
         public void RemoveImport(string targetFullPath)
@@ -75,11 +94,10 @@ namespace Test.Utility
         }
 
         public void RemoveReference(string name)
-        {
-            string fullPath = References.Where(p => Path.GetFileName(p).Equals(name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-            if(!String.IsNullOrEmpty(fullPath))
+        {            
+            if(References.ContainsKey(name))
             {
-                References.Remove(fullPath);
+                References.Remove(name);
             }
         }
 
@@ -113,7 +131,6 @@ namespace Test.Utility
         {
             return true;
         }
-
 
         public void AddExistingFile(string path)
         {

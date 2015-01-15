@@ -17,6 +17,6 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Reverses the transform
         /// </summary>
-        void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<ZipArchiveEntry> matchingFiles, IMSBuildNuGetProjectSystem projectSystem);
+        void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem projectSystem);
     }
 }

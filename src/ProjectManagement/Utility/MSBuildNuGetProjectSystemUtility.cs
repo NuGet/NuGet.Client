@@ -75,7 +75,7 @@ namespace NuGet.ProjectManagement
                                         FrameworkSpecificGroup frameworkSpecificGroup,
                                         IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
-            // Convert package items to a archive entry name. That is, replace Path.DirectorySeparatorChar with Path.AltDirectorySeparatorChar
+            // Content files are maintained with AltDirectorySeparatorChar
             List<string> packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
 
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
@@ -146,9 +146,9 @@ namespace NuGet.ProjectManagement
 
             // Get all directories that this package may have added
             var directories = from grouping in directoryLookup
-                                from directory in GetDirectories(grouping.Key)
-                                orderby directory.Length descending
-                                select directory;
+                              from directory in GetDirectories(grouping.Key, altDirectorySeparator: false)
+                              orderby directory.Length descending
+                              select directory;
 
             // Remove files from every directory
             foreach (var directory in directories)
@@ -180,13 +180,27 @@ namespace NuGet.ProjectManagement
                         {
                             if (transformer != null)
                             {
-                                IEnumerable<ZipArchiveEntry> matchingFiles = new List<ZipArchiveEntry>();
-                                //var matchingFiles = from p in otherPackageZipArchives
-                                //                    from otherFile in GetMostCompatibleGroup(packageTargetFramework,
-                                //                        new PackageReader(p).GetContentItems(), altDirSeparator: true).Items
-                                //                    where GetEffectivePathForContentFile(packageTargetFramework, otherFile)
-                                //                    .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase)
-                                //                    select p.GetEntry(otherFile);
+                                List<InternalZipFileInfo> matchingFiles = new List<InternalZipFileInfo>();
+                                foreach(var otherPackagePath in otherPackagesPath)
+                                {
+                                    using(var otherPackageStream = File.OpenRead(otherPackagePath))
+                                    {
+                                        var otherPackageZipArchive = new ZipArchive(otherPackageStream);
+                                        var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
+                                        var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(packageTargetFramework, otherPackageZipReader.GetContentItems(), altDirSeparator: true);
+                                        if(IsValid(mostCompatibleContentFilesGroup))
+                                        {
+                                            foreach(var otherPackageItem in mostCompatibleContentFilesGroup.Items)
+                                            {
+                                                if(GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
+                                                    .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    matchingFiles.Add(new InternalZipFileInfo(otherPackagePath, otherPackageItem));
+                                                }
+                                            }
+                                        }
+                                    }                                    
+                                }
 
                                 try
                                 {
@@ -226,14 +240,15 @@ namespace NuGet.ProjectManagement
             // Only delete the file if it exists and the checksum is the same
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
             {
-                if (ContentEquals(path, streamFactory))
+                var fullPath = Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path);
+                if (ContentEquals(fullPath, streamFactory))
                 {
                     PerformSafeAction(() => msBuildNuGetProjectSystem.RemoveFile(path), msBuildNuGetProjectSystem.NuGetProjectContext);
                 }
                 else
                 {
                     // This package installed a file that was modified so warn the user
-                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, path);
+                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, fullPath);
                 }
             }
         }
@@ -280,9 +295,9 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        internal static IEnumerable<string> GetDirectories(string path)
+        internal static IEnumerable<string> GetDirectories(string path, bool altDirectorySeparator)
         {
-            foreach (var index in IndexOfAll(path, Path.DirectorySeparatorChar))
+            foreach (var index in IndexOfAll(path, altDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar))
             {
                 yield return path.Substring(0, index);
             }
@@ -384,15 +399,16 @@ namespace NuGet.ProjectManagement
             return Uri.UnescapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         }
 
-        private static string GetEffectivePathForContentFile(NuGetFramework nuGetFramework, string zipArchiveEntryFullName, bool altDirSeparator = false)
+        private static string GetEffectivePathForContentFile(NuGetFramework nuGetFramework, string zipArchiveEntryFullName)
         {
-            var effectivePathForContentFile = zipArchiveEntryFullName;
-            // NOTE that ZipArchiveEntries have '/' in them, which is, Path.AltDirectorySeparatorChar
-            if (zipArchiveEntryFullName.StartsWith(Constants.ContentDirectory + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            // Always use Path.DirectorySeparatorChar
+            var effectivePathForContentFile = ReplaceAltDirSeparatorWithDirSeparator(zipArchiveEntryFullName);
+
+            if (effectivePathForContentFile.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
-                effectivePathForContentFile = zipArchiveEntryFullName.Substring((Constants.ContentDirectory + Path.AltDirectorySeparatorChar).Length);
+                effectivePathForContentFile = effectivePathForContentFile.Substring((Constants.ContentDirectory + Path.DirectorySeparatorChar).Length);
                 if(nuGetFramework.Equals(NuGetFramework.AnyFramework))
-                {                    
+                {
                     //// TODO: Content files cannot be target framework specific has been made as an assumption
                     int frameworkFolderEndIndex = effectivePathForContentFile.IndexOf(Path.AltDirectorySeparatorChar);
                     if (frameworkFolderEndIndex != -1)
@@ -400,7 +416,7 @@ namespace NuGet.ProjectManagement
                         var potentialFrameworkName = effectivePathForContentFile.Substring(0, frameworkFolderEndIndex);
                         if(nuGetFramework != NuGetFramework.UnsupportedFramework && NuGetFramework.Parse(potentialFrameworkName).Equals(nuGetFramework))
                         {
-                            throw new ArgumentException(Strings.ContentFilesShouldNotBeTargetFrameworkSpecific, zipArchiveEntryFullName);
+                            throw new ArgumentException(Strings.ContentFilesShouldNotBeTargetFrameworkSpecific, effectivePathForContentFile);
                         }                        
                     }
 
@@ -409,8 +425,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Return the effective path with Path.DirectorySeparatorChar
-            return altDirSeparator ? ReplaceAltDirSeparatorWithDirSeparator(effectivePathForContentFile)
-                : ReplaceDirSeparatorWithAltDirSeparator(effectivePathForContentFile);
+            return effectivePathForContentFile;
         }
     }
 }

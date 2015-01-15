@@ -20,7 +20,7 @@ namespace NuGet.ProjectManagement
                 () => StreamUtility.StreamFromString(Process(packageFile, msBuildNuGetProjectSystem)));
         }
 
-        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<ZipArchiveEntry> matchingFiles, IMSBuildNuGetProjectSystem projectSystem)
+        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem projectSystem)
         {
             throw new NotImplementedException();
         }

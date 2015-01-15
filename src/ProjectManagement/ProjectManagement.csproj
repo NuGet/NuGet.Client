@@ -81,6 +81,7 @@
     <Compile Include="Utility\StreamUtility.cs" />
     <Compile Include="Utility\Token.cs" />
     <Compile Include="Utility\Tokenizer.cs" />
+    <Compile Include="Utility\InternalZipFileInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

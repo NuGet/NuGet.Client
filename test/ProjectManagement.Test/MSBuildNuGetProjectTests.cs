@@ -53,7 +53,7 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(1, msBuildNuGetProjectSystem.References.Count);
             Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
-                "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First());
+                "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First().Value);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
@@ -113,12 +113,12 @@ namespace ProjectManagement.Test
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
             var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
 
             // Pre-Assert
@@ -154,7 +154,7 @@ namespace ProjectManagement.Test
             Assert.Equal("packages.config", filesList[3]);
 
             // Clean-up
-            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(1, msBuildNuGetProjectSystem.References.Count);
             Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
-                "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First());
+                "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First().Value);
 
             // Main Act
             msBuildNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
@@ -220,12 +220,12 @@ namespace ProjectManagement.Test
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
             var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
 
             // Pre-Assert
@@ -271,7 +271,7 @@ namespace ProjectManagement.Test
             Assert.Equal(0, msBuildNuGetProjectSystem.Files.Count);
 
             // Clean-up
-            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
 
     }

@@ -58,6 +58,11 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
+            if (!packageStream.CanSeek)
+            {
+                throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
+            }
+
             // 1. Check if the Package already exists at root, if so, return false
             if (PackageExistsInProject(packageIdentity))
             {
@@ -67,6 +72,7 @@ namespace NuGet.ProjectManagement
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Root);
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
+            packageStream.Seek(0, SeekOrigin.Begin);
             PackageExtractor.ExtractPackage(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode);
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
             return true;
