@@ -35,7 +35,7 @@
       <HintPath>..\..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Frameworks.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement">
-      <HintPath>..\..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150114225027\lib\net45\NuGet.PackageManagement.dll</HintPath>
+      <HintPath>..\..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150115002249\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging">
       <HintPath>..\..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Packaging.dll</HintPath>
@@ -44,7 +44,7 @@
       <HintPath>..\..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.PackagingCore.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.ProjectManagement">
-      <HintPath>..\..\..\packages\NuGet.ProjectManagement.1.0.0-pre-20150114173912\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+      <HintPath>..\..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150115002249\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver">
       <HintPath>..\..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Resolver.dll</HintPath>
