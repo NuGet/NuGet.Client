@@ -14,10 +14,9 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Initializes a new instance of the EditorPane class.
         /// </summary>
-        public PackageManagerWindowPane(PackageManagerModel myDoc)
+        public PackageManagerWindowPane(PackageManagerControl control)
             : base(null)
         {
-            PackageManagerControl control = new PackageManagerControl(myDoc);
             _content = control;
         }
 

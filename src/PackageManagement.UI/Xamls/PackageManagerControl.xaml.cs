@@ -1,19 +1,18 @@
-﻿using Microsoft.VisualStudio.PlatformUI;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Client;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
@@ -40,27 +39,23 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerModel Model { get; private set; }
 
-
         public PackageManagerControl(PackageManagerModel model)
             : this(model, new SimpleSearchBoxFactory())
         {
-
         }
 
         public PackageManagerControl(PackageManagerModel model, IVsWindowSearchHostFactory searchFactory)
         {
-            _windowSearchHostFactory = searchFactory;
+            Model = model;
+            InitializeComponent();
 
+            _windowSearchHostFactory = searchFactory;
             if (_windowSearchHostFactory != null)
             {
                 _windowSearchHost = _windowSearchHostFactory.CreateWindowSearchHost(_searchControlParent);
                 _windowSearchHost.SetupSearch(this);
                 _windowSearchHost.IsVisible = true;
             }
-
-            Model = model;
-
-            InitializeComponent();
 
             _filter.Items.Add(Resx.Resources.Filter_All);
             _filter.Items.Add(Resx.Resources.Filter_Installed);
@@ -327,7 +322,6 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.DataContext = newModel;
                 _packageDetail.ScrollToHome();
 
-
                 await newModel.LoadPackageMetadaAsync(await _activeSource.GetResourceAsync<UIMetadataResource>(), CancellationToken.None);
             }
         }
@@ -506,8 +500,6 @@ namespace NuGet.PackageManagement.UI
             //    return;
             //}
 
-
-
             //ActivateOutputWindow();
             //_outputConsole.Clear();
             //var progressDialog = new ProgressDialog(_outputConsole);
@@ -642,7 +634,7 @@ namespace NuGet.PackageManagement.UI
                 x => x.Command == Commands.FocusOnSearchBox).Gesture;
             return string.Format(CultureInfo.CurrentCulture,
                 Resx.Resources.Text_SearchBoxText,
-                focusOnSearchKeyGesture.GetDisplayStringForCulture(CultureInfo.CurrentCulture));                
+                focusOnSearchKeyGesture.GetDisplayStringForCulture(CultureInfo.CurrentCulture));
         }
 
         public bool SearchEnabled

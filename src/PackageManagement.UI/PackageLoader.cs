@@ -100,20 +100,18 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     var searchFilter = new SearchFilter();
-                    searchFilter.IncludePrerelease = _option.IncludePrerelease;
-
-                    List<FrameworkName> frameworks = new List<FrameworkName>();
-
+                    searchFilter.IncludePrerelease = _option.IncludePrerelease;     
+                    var frameworks = new List<string>();
                     foreach (var project in _projects)
                     {
                         NuGetFramework framework = project.GetMetadata<NuGetFramework>("TargetFramework");
 
                         if (framework != null && framework.IsSpecificFramework)
                         {
-                            frameworks.Add(new FrameworkName(framework.DotNetFrameworkName));
+                            frameworks.Add(NuGetFramework.Parse(framework.DotNetFrameworkName).GetShortFolderName());
                         }
                     }
-
+                    searchFilter.SupportedFrameworks = frameworks;
                     return await searchResource.Search(
                         _searchText,
                         searchFilter,
