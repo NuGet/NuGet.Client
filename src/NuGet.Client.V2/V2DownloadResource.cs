@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
 using NuGet.PackagingCore;
+using System.Threading;
 
 namespace NuGet.Client.V2
 {
@@ -24,19 +25,35 @@ namespace NuGet.Client.V2
             V2Client = resource.V2Client;
         }
       
-        public override async Task<Uri> GetDownloadUrl(PackageIdentity identity, System.Threading.CancellationToken token)
+        public override async Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
         {
             //*TODOs: Temp implementation. Need to do erorr handling and stuff.
             if (V2Client is DataServicePackageRepository)
             {
-                //TODOs:Not sure if there is some other standard way to get the Url from a dataservice repo. DataServicePackage has downloadurl property but not sure how to get it.
-                return new Uri(Path.Combine(V2Client.Source,  identity.Id + "." + identity.Version + ".nupkg"));
-            }
+                    if (V2Client.Exists(identity.Id, new SemanticVersion(identity.Version.ToString())))
+                    {
+                        //TODOs:Not sure if there is some other standard way to get the Url from a dataservice repo. DataServicePackage has downloadurl property but not sure how to get it.
+                        return new Uri(Path.Combine(V2Client.Source, identity.Id + "." + identity.Version + ".nupkg"));
+                    }
+                    else
+                        return null;
+                }
             else if (V2Client is LocalPackageRepository)
             {
                 LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
-                SemanticVersion semVer = new SemanticVersion(identity.Version.Version);
-                return new Uri(Path.Combine(V2Client.Source, lrepo.PathResolver.GetPackageFileName(identity.Id, semVer)));
+                    //Using Path resolver doesnt work. It doesnt consider the subfolders present inside the source directory. Hence using PackageLookupPaths.
+                    //return new Uri(Path.Combine(V2Client.Source, lrepo.PathResolver.GetPackageFileName(identity.Id, semVer)));
+                    //Using version.ToString() as version.Version gives the normalized string even if the nupkg has unnormalized version in its path.
+                    List<string> paths = lrepo.GetPackageLookupPaths(identity.Id, new SemanticVersion(identity.Version.ToString())).ToList();
+                    foreach (var path in paths)
+                    {
+                        if (File.Exists(Path.Combine(V2Client.Source, path)))
+                        {
+                            return new Uri(Path.Combine(V2Client.Source, path));
+                        }
+                    }
+                    return null;
+
             }
             else
             {

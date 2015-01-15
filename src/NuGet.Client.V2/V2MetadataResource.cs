@@ -29,9 +29,18 @@ namespace NuGet.Client.V2
             List<KeyValuePair<string, NuGetVersion>> results = new List<KeyValuePair<string, NuGetVersion>>();
             foreach (var id in packageIds)
             {
-                SemanticVersion latestVersion = V2Client.FindPackagesById(id).OrderByDescending(p => p.Version).FirstOrDefault().Version;
+                    //check if a package by that Id exists.
+                    IEnumerable<IPackage> packages = V2Client.FindPackagesById(id);
+                    if(packages == null || packages.Count() == 0)
+                    {
+                        results.Add(new KeyValuePair<string,NuGetVersion>(id,null));
+                    }
+                    else
+                    {
+                    SemanticVersion latestVersion = packages.OrderByDescending(p => p.Version).FirstOrDefault().Version;
                 //  return new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion);
                 results.Add(new KeyValuePair<string, NuGetVersion>(id, new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion)));
+                    }
             }
             return results.AsEnumerable();
         }
