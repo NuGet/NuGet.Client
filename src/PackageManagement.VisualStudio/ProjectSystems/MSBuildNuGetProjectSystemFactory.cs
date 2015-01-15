@@ -18,8 +18,8 @@ namespace NuGet.PackageManagement.VisualStudio
             { NuGetVSConstants.WebSiteProjectTypeGuid, (project, nuGetProjectContext) => new WebSiteProjectSystem(project, nuGetProjectContext) },
             { NuGetVSConstants.FsharpProjectTypeGuid, (project, nuGetProjectContext) => new FSharpProjectSystem(project, nuGetProjectContext) },
             { NuGetVSConstants.WixProjectTypeGuid, (project, nuGetProjectContext) => new WixProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.JsProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.WindowsStoreProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) },
+            { NuGetVSConstants.JsProjectTypeGuid, (project, nuGetProjectContext) => new JsProjectSystem(project, nuGetProjectContext) },
+            { NuGetVSConstants.WindowsStoreProjectTypeGuid, (project, nuGetProjectContext) => new WindowsStoreProjectSystem(project, nuGetProjectContext) },
             { NuGetVSConstants.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) }
         };
 
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var vcx = new VcxProject(envDTEProject.FullName);
                 if (!vcx.HasClrSupport(envDTEProject.ConfigurationManager.ActiveConfiguration))
-                    return new VSMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
+                    return new NativeProjectSystem(envDTEProject, nuGetProjectContext);
             }
 
 

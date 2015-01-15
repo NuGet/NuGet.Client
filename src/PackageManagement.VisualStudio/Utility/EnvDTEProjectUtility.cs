@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using Microsoft.VisualStudio.Shell;
 using VsWebSite;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -826,6 +827,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion // Check Project Types
 
+
         #region Act on Project
         public static bool DeleteProjectItem(EnvDTEProject envDTEProject, string path)
         {
@@ -839,5 +841,24 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
         #endregion
+
+        public static void AddImportStatement(EnvDTEProject project, string targetsPath, ImportLocation location)
+        {
+            MicrosoftBuildEvaluationProjectUtility.AddImportStatement(AsMSBuildProject(project), targetsPath, location);
+        }
+
+        public static MicrosoftBuildEvaluationProject AsMSBuildProject(EnvDTEProject project)
+        {
+            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(project.FullName).FirstOrDefault() ??
+                   ProjectCollection.GlobalProjectCollection.LoadProject(project.FullName);
+        }
+
+        public static void Save(EnvDTEProject project)
+        {
+            var fullPath = FileSystemUtility.GetFullPath(GetFullPath(project), project.FullName);
+            FileSystemUtility.MakeWriteable(project.FullName);
+            project.Save();
+        }
+
     }
 }

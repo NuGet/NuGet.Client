@@ -1,6 +1,5 @@
 ﻿using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.PackageManagement.VisualStudio.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
