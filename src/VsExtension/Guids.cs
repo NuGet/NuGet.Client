@@ -1,6 +1,6 @@
 using System;
 
-namespace NuGet.Tools
+namespace NuGetVSExtension
 {
     static class GuidList
     {

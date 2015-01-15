@@ -7,6 +7,7 @@
   </Metadata>
   <Installation InstalledByMsi="false">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[12.0]" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[14.0]" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
@@ -15,8 +16,11 @@
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="PackageManagement.VisualStudio" Path="|PackageManagement.VisualStudio|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Client.BaseTypes.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Configuration.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Client.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.UI.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
   </Assets>
 </PackageManifest>

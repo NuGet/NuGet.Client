@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.Shell;
 
-namespace NuGet.Tools
+namespace NuGetVSExtension
 {
     public class ProvideSearchProviderAttribute : RegistrationAttribute
     {

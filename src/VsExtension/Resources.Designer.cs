@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.Tools {
+namespace NuGetVSExtension {
     using System;
     
     

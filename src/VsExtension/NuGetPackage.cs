@@ -23,7 +23,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Configuration;
 
-namespace NuGet.Tools
+namespace NuGetVSExtension
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -189,8 +189,10 @@ namespace NuGet.Tools
             _dte = (DTE)GetService(typeof(SDTE));
             Debug.Assert(_dte != null);
 
+            var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
             var restore = ServiceLocator.GetInstance<IPackageRestoreManager>();
-            var sourceRepoProvider = ServiceLocator.GetInstance<SourceRepositoryProvider>();
+            var settingsImport = ServiceLocator.GetInstance<ISettings>();
+            var sourceRepoProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
 
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
@@ -487,7 +489,7 @@ namespace NuGet.Tools
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            var solutionManager = ServiceLocator.GetInstance<PackageManagement.ISolutionManager>();
+            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             var nugetProject = solutionManager.GetNuGetProject(project.Name); // *** use safe name here
 
             var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();            
@@ -541,10 +543,10 @@ namespace NuGet.Tools
             var searchText = GetSearchText(parameterString);
 
             // *** temp code            
-            Project project =  NuGet.Tools.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
+            Project project =  NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
 
             if (project != null &&
-                !NuGet.Tools.Utilities.VsUtility.IsUnloaded(project) && 
+                !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) && 
                 EnvDTEProjectUtility.IsSupported(project))
             {
                 ShowDocWindow(project, searchText);
@@ -809,8 +811,8 @@ namespace NuGet.Tools
         {
             get
             {
-                Project project = NuGet.Tools.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !NuGet.Tools.Utilities.VsUtility.IsUnloaded(project) 
+                Project project = NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
+                return project != null && !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) 
                     && EnvDTEProjectUtility.IsSupported(project);
             }
         }
