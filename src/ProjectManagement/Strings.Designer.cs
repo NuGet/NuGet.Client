@@ -338,5 +338,14 @@ namespace NuGet.ProjectManagement {
                 return ResourceManager.GetString("Warning_FileAlreadyExists", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skipping &apos;{0}&apos; because it was modified..
+        /// </summary>
+        internal static string Warning_FileModified {
+            get {
+                return ResourceManager.GetString("Warning_FileModified", resourceCulture);
+            }
+        }
     }
 }

@@ -136,16 +136,18 @@ namespace NuGet.ProjectManagement
             bool hasCompatibleItems = false;
 
             FrameworkSpecificGroup compatibleLibItemsGroup =
-                GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, libItemGroups);
+                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, libItemGroups);
             FrameworkSpecificGroup compatibleFrameworkReferencesGroup =
-                GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, frameworkReferenceGroups);
+                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, frameworkReferenceGroups);
             FrameworkSpecificGroup compatibleContentFilesGroup =
-                GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, contentFileGroups);
+                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, contentFileGroups);
             FrameworkSpecificGroup compatibleBuildFilesGroup =
-                GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, buildFileGroups);            
+                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, buildFileGroups);
 
-            hasCompatibleItems = IsValid(compatibleLibItemsGroup) || IsValid(compatibleFrameworkReferencesGroup) ||
-                IsValid(compatibleContentFilesGroup) || IsValid(compatibleBuildFilesGroup);
+            hasCompatibleItems = MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup) ||
+                MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
+                MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
+                MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
 
             // Step-4: Check if there are any compatible items in the package. If not, throw
             if(!hasCompatibleItems)
@@ -161,7 +163,7 @@ namespace NuGet.ProjectManagement
 
             // Step-6: MSBuildNuGetProjectSystem operations
             // Step-6.1: Add references to project
-            if (IsValid(compatibleLibItemsGroup))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup))
             {
                 foreach (var libItem in compatibleLibItemsGroup.Items)
                 {
@@ -174,7 +176,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-6.2: Add Frameworkreferences to project
-            if (IsValid(compatibleFrameworkReferencesGroup))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
             {
                 foreach (var frameworkReference in compatibleFrameworkReferencesGroup.Items)
                 {
@@ -183,14 +185,14 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-6.3: Add Content Files
-            if(IsValid(compatibleContentFilesGroup))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
             {
                 MSBuildNuGetProjectSystemUtility.AddFiles(MSBuildNuGetProjectSystem,
                     zipArchive, compatibleContentFilesGroup, FileTransformers);
             }
 
             // Step-6.4: Add Build imports
-            if(IsValid(compatibleBuildFilesGroup))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
             {
                 throw new NotImplementedException("Build files are not implemented");
             }
@@ -206,6 +208,12 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
+        private static string GetPackagePath(FolderNuGetProject folderNuGetProject, PackageIdentity packageIdentity)
+        {
+            return Path.Combine(folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+                folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
+        }
+
         public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
             if (packageIdentity == null)
@@ -218,7 +226,7 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            // Step-0: Check if the package already exists after setting the nuGetProjectContext
+            // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
             var packageReference = GetInstalledPackages().Where(
@@ -230,32 +238,76 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            throw new NotImplementedException();
-        }
-
-        protected static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework, IEnumerable<FrameworkSpecificGroup> itemGroups)
-        {
-            FrameworkReducer reducer = new FrameworkReducer();
-            NuGetFramework mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => NuGetFramework.Parse(i.TargetFramework)));
-            if(mostCompatibleFramework != null)
+            // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
+            // Get the package target framework instead of using project targetframework
+            var packageTargetFramework = packageReference.TargetFramework;
+            using (var packageStream = File.OpenRead(GetPackagePath(FolderNuGetProject, packageIdentity)))
             {
-                IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => NuGetFramework.Parse(i.TargetFramework).Equals(mostCompatibleFramework));
-                var mostCompatibleGroup = mostCompatibleGroups.FirstOrDefault();
-                if(IsValid(mostCompatibleGroup))
+                var zipArchive = new ZipArchive(packageStream);
+                var packageReader = new PackageReader(zipArchive);
+
+                IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
+                IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
+                IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
+                IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
+
+                // Step-3: Get the most compatible items groups for all items groups
+                FrameworkSpecificGroup compatibleLibItemsGroup =
+                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, libItemGroups);
+                FrameworkSpecificGroup compatibleFrameworkReferencesGroup =
+                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, frameworkReferenceGroups);
+                FrameworkSpecificGroup compatibleContentFilesGroup =
+                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, contentFileGroups);
+                FrameworkSpecificGroup compatibleBuildFilesGroup =
+                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, buildFileGroups);
+
+                // TODO: Need to handle References element??
+
+                // Step-4: Uninstall package from packages.config
+                PackagesConfigNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
+
+                // Step-5: Uninstall package from the msbuild project
+                // Step-5.1: Remove references
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup))
                 {
-                    mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
-                        mostCompatibleGroup.Items.Select(item => MSBuildNuGetProjectSystemUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
+                    foreach (var item in compatibleLibItemsGroup.Items)
+                    {
+                        if (IsAssemblyReference(item))
+                        {
+                            MSBuildNuGetProjectSystem.RemoveReference(Path.GetFileName(item));
+                        }
+                    }
                 }
 
-                return mostCompatibleGroup;
-            }
-            return null;
-        }
+                // Step-5.2: Remove framework references
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
+                {
+                    throw new NotImplementedException("Removing framework references is not implemented since one needs to check all the packages");
+                }
 
-        private static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
-        {
-            // It is possible for a compatible frameworkSpecificGroup, there are no items
-            return (frameworkSpecificGroup != null && frameworkSpecificGroup.Items != null);
+                // Step-5.3: Remove content files
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
+                {
+                    throw new NotImplementedException();
+                    //MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
+                    //    zipArchive,
+
+                    //    )
+                }
+
+                // Step-5.4: Remove build imports
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
+                {
+                    throw new NotImplementedException();
+                }
+
+                // Step-5.5: Execute powershell script
+
+            }
+
+            // Step-6: Uninstall package from the folderNuGetProject
+            FolderNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
+            return true;
         }
 
         private void LogTargetFrameworkInfo(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,

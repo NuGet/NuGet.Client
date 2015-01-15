@@ -7,12 +7,40 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
-    public static class MSBuildNuGetProjectSystemUtility
+    internal static class MSBuildNuGetProjectSystemUtility
     {
+        internal static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework, IEnumerable<FrameworkSpecificGroup> itemGroups,
+            bool altDirSeparator = false)
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+            NuGetFramework mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => NuGetFramework.Parse(i.TargetFramework)));
+            if (mostCompatibleFramework != null)
+            {
+                IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => NuGetFramework.Parse(i.TargetFramework).Equals(mostCompatibleFramework));
+                var mostCompatibleGroup = mostCompatibleGroups.FirstOrDefault();
+                if (IsValid(mostCompatibleGroup))
+                {
+                    mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
+                        mostCompatibleGroup.Items.Select(item => altDirSeparator ? MSBuildNuGetProjectSystemUtility.ReplaceDirSeparatorWithAltDirSeparator(item)
+                            : MSBuildNuGetProjectSystemUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
+                }
+
+                return mostCompatibleGroup;
+            }
+            return null;
+        }
+
+        internal static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
+        {
+            // It is possible for a compatible frameworkSpecificGroup, there are no items
+            return (frameworkSpecificGroup != null && frameworkSpecificGroup.Items != null);
+        }
+
         internal static void TryAddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Func<Stream> content)
         {
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
@@ -101,6 +129,180 @@ namespace NuGet.ProjectManagement
             }
         }
 
+        internal static void DeleteFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
+                                            ZipArchive zipArchive,
+                                            IEnumerable<string> otherPackagesPath,
+                                            FrameworkSpecificGroup frameworkSpecificGroup,
+                                            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
+        {
+            var packageTargetFramework = NuGetFramework.Parse(frameworkSpecificGroup.TargetFramework);
+            IPackageFileTransformer transformer;
+            var directoryLookup = frameworkSpecificGroup.Items.ToLookup(
+                p => Path.GetDirectoryName(ResolveTargetPath(msBuildNuGetProjectSystem,
+                    fileTransformers,
+                    fte => fte.UninstallExtension,
+                    GetEffectivePathForContentFile(packageTargetFramework, p),
+                    out transformer)));
+
+            // Get all directories that this package may have added
+            var directories = from grouping in directoryLookup
+                                from directory in GetDirectories(grouping.Key)
+                                orderby directory.Length descending
+                                select directory;
+
+            // Remove files from every directory
+            foreach (var directory in directories)
+            {
+                var directoryFiles = directoryLookup.Contains(directory) ? directoryLookup[directory] : Enumerable.Empty<string>();
+
+                if (!Directory.Exists(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, directory)))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    foreach (var file in directoryFiles)
+                    {
+                        if (IsEmptyFolder(file))
+                        {
+                            continue;
+                        }
+
+                        // Resolve the path
+                        string path = ResolveTargetPath(msBuildNuGetProjectSystem,
+                                                        fileTransformers,
+                                                        fte => fte.UninstallExtension,
+                                                        GetEffectivePathForContentFile(packageTargetFramework, file),
+                                                        out transformer);
+
+                        if (msBuildNuGetProjectSystem.IsSupportedFile(path))
+                        {
+                            if (transformer != null)
+                            {
+                                IEnumerable<ZipArchiveEntry> matchingFiles = new List<ZipArchiveEntry>();
+                                //var matchingFiles = from p in otherPackageZipArchives
+                                //                    from otherFile in GetMostCompatibleGroup(packageTargetFramework,
+                                //                        new PackageReader(p).GetContentItems(), altDirSeparator: true).Items
+                                //                    where GetEffectivePathForContentFile(packageTargetFramework, otherFile)
+                                //                    .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase)
+                                //                    select p.GetEntry(otherFile);
+
+                                try
+                                {
+                                    var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceAltDirSeparatorWithDirSeparator(file));
+                                    transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
+                                }
+                                catch (Exception e)
+                                {
+                                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                                }
+                            }
+                            else
+                            {
+                                var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceDirSeparatorWithAltDirSeparator(file));
+                                DeleteFileSafe(path, zipArchiveFileEntry.Open, msBuildNuGetProjectSystem);
+                            }
+                        }
+                    }
+
+
+                    //// If the directory is empty then delete it
+                    //if (!project.GetFilesSafe(directory).Any() &&
+                    //    !project.GetDirectoriesSafe(directory).Any())
+                    //{
+                    //    project.DeleteDirectorySafe(directory, recursive: false);
+                    //}
+                }
+                finally
+                {
+
+                }
+            }
+        }
+
+        internal static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        {
+            // Only delete the file if it exists and the checksum is the same
+            if (msBuildNuGetProjectSystem.FileExistsInProject(path))
+            {
+                if (ContentEquals(path, streamFactory))
+                {
+                    PerformSafeAction(() => msBuildNuGetProjectSystem.RemoveFile(path), msBuildNuGetProjectSystem.NuGetProjectContext);
+                }
+                else
+                {
+                    // This package installed a file that was modified so warn the user
+                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, path);
+                }
+            }
+        }
+
+        private static bool ContentEquals(string path, Func<Stream> streamFactory)
+        {
+            using (Stream stream = streamFactory(),
+                fileStream = File.OpenRead(path))
+            {
+                return stream.ContentEquals(fileStream);
+            }
+        }
+
+        private static void PerformSafeAction(Action action, INuGetProjectContext nuGetProjectContext)
+        {
+            try
+            {
+                Attempt(action);
+            }
+            catch (Exception e)
+            {
+                nuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+            }
+        }
+
+        private static void Attempt(Action action, int retries = 3, int delayBeforeRetry = 150)
+        {
+            while (retries > 0)
+            {
+                try
+                {
+                    action();
+                    break;
+                }
+                catch
+                {
+                    retries--;
+                    if (retries == 0)
+                    {
+                        throw;
+                    }
+                }
+                Thread.Sleep(delayBeforeRetry);
+            }
+        }
+
+        internal static IEnumerable<string> GetDirectories(string path)
+        {
+            foreach (var index in IndexOfAll(path, Path.DirectorySeparatorChar))
+            {
+                yield return path.Substring(0, index);
+            }
+            yield return path;
+        }
+
+        private static IEnumerable<int> IndexOfAll(string value, char ch)
+        {
+            int index = -1;
+            do
+            {
+                index = value.IndexOf(ch, index + 1);
+                if (index >= 0)
+                {
+                    yield return index;
+                }
+            }
+            while (index >= 0);
+        }
+
         private static bool IsEmptyFolder(string packageFilePath)
         {
             return packageFilePath != null &&
@@ -182,7 +384,7 @@ namespace NuGet.ProjectManagement
             return Uri.UnescapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         }
 
-        private static string GetEffectivePathForContentFile(NuGetFramework nuGetFramework, string zipArchiveEntryFullName)
+        private static string GetEffectivePathForContentFile(NuGetFramework nuGetFramework, string zipArchiveEntryFullName, bool altDirSeparator = false)
         {
             var effectivePathForContentFile = zipArchiveEntryFullName;
             // NOTE that ZipArchiveEntries have '/' in them, which is, Path.AltDirectorySeparatorChar
@@ -207,7 +409,8 @@ namespace NuGet.ProjectManagement
             }
 
             // Return the effective path with Path.DirectorySeparatorChar
-            return ReplaceAltDirSeparatorWithDirSeparator(effectivePathForContentFile);
+            return altDirSeparator ? ReplaceAltDirSeparatorWithDirSeparator(effectivePathForContentFile)
+                : ReplaceDirSeparatorWithAltDirSeparator(effectivePathForContentFile);
         }
     }
 }

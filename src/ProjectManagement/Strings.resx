@@ -210,4 +210,7 @@
   <data name="Warning_FileAlreadyExists" xml:space="preserve">
     <value>'{0}' already exists. Skipping...</value>
   </data>
+  <data name="Warning_FileModified" xml:space="preserve">
+    <value>Skipping '{0}' because it was modified.</value>
+  </data>
 </root>

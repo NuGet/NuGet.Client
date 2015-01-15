@@ -76,7 +76,11 @@ namespace Test.Utility
 
         public void RemoveReference(string name)
         {
-            References.Remove(name);
+            string fullPath = References.Where(p => Path.GetFileName(p).Equals(name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            if(!String.IsNullOrEmpty(fullPath))
+            {
+                References.Remove(fullPath);
+            }
         }
 
         public NuGetFramework TargetFramework

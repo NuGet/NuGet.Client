@@ -88,14 +88,24 @@ namespace NuGet.ProjectManagement
             }
 
             installedPackagesList.Remove(packageReference);
-            using (var stream = File.OpenWrite(FullPath))
+            if (installedPackagesList.Count > 0)
             {
-                var writer = new PackagesConfigWriter(stream);
-                foreach (var pr in installedPackagesList)
+                using (var stream = File.OpenWrite(FullPath))
                 {
-                    writer.WritePackageEntry(pr);
+                    var writer = new PackagesConfigWriter(stream);
+                    foreach (var pr in installedPackagesList)
+                    {
+                        writer.WritePackageEntry(pr);
+                    }
+                    writer.Close();
                 }
-                writer.Close();
+            }
+            else
+            {
+                if(File.Exists(FullPath))
+                {
+                    File.Delete(FullPath);
+                }
             }
             nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity);
             return true;
