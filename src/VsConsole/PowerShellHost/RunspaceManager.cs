@@ -104,7 +104,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             // We store our PS module file at <extension root>\Modules\NuGet\NuGet.psd1
             string extensionRoot = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string modulePath = Path.Combine(extensionRoot, "Modules", "NuGet", "NuGet.psd1");
+            string modulePath = Path.Combine(extensionRoot, "bin", "debug", "NuGet.PackageManagement.PowerShellCmdlets.dll");
             runspace.ImportModule(modulePath);
 
 
