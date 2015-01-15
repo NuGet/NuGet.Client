@@ -319,7 +319,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool ReferenceExists(string name)
         {
-            throw new NotImplementedException();
+            try
+            {
+                string referenceName = name;
+                if (Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(name), StringComparer.OrdinalIgnoreCase))
+                {
+                    // Get the reference name without extension
+                    referenceName = Path.GetFileNameWithoutExtension(name);
+                }
+
+                return EnvDTEProjectUtility.GetReferences(EnvDTEProject).Item(referenceName) != null;
+            }
+            catch
+            {
+            }
+            return false;
         }
 
         public void RemoveImport(string targetFullPath)
