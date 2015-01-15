@@ -3,7 +3,7 @@ using System.Globalization;
 using Microsoft.Internal.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell;
 
-namespace NuGet.Tools
+namespace NuGetVSExtension
 {
     /// <summary>
     /// This attribute registers a package load key for your package.  

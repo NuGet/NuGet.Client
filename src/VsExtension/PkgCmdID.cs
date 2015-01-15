@@ -1,4 +1,4 @@
-namespace NuGet.Tools
+namespace NuGetVSExtension
 {
     static class PkgCmdIDList
     {

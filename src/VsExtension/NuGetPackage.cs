@@ -15,15 +15,15 @@ using NuGet.PackageManagement.UI;
 //*** using NuGet.Options;
 using NuGet.VisualStudio;
 //*** using NuGet.VisualStudio11;
-//*** using NuGetConsole;
-//*** using NuGetConsole.Implementation;
+using NuGetConsole;
+using NuGetConsole.Implementation;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using NuGet.ProjectManagement;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Configuration;
 
-namespace NuGet.Tools
+namespace NuGetVSExtension
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -31,7 +31,7 @@ namespace NuGet.Tools
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", NuGetPackage.ProductVersion, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-/*    [ProvideToolWindow(typeof(PowerConsoleToolWindow),
+    [ProvideToolWindow(typeof(PowerConsoleToolWindow),
         Style = VsDockStyle.Tabbed,
         Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the Output tool window, which is present in both VS and VWD
         Orientation = ToolWindowOrientation.Right)]
@@ -39,21 +39,21 @@ namespace NuGet.Tools
         Style = VsDockStyle.Tabbed,
         Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the Output tool window, which is present in both VS and VWD
         Orientation = ToolWindowOrientation.Right)]
-    [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
-    [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)] */
-    // *** [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
+    //[ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
+    //[ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)] */
+    //[ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
-/*    [FontAndColorsRegistration(
+    [FontAndColorsRegistration(
         "Package Manager Console",
         NuGetConsole.Implementation.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
-        "{" + GuidList.guidNuGetPkgString + "}")]    */
+        "{" + GuidList.guidNuGetPkgString + "}")]    
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : Package, IVsPackageExtensionProvider
     {
         // This product version will be updated by the build script to match the daily build version.
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "2.8.0.0";
+        public const string ProductVersion = "3.0.0";
 
         private static readonly string[] _visualizerSupportedSKUs = new[] { "Premium", "Ultimate" };
 
@@ -70,7 +70,7 @@ namespace NuGet.Tools
         private OleMenuCommand _managePackageForSolutionDialogCommand;
         private OleMenuCommandService _mcs;
         private bool _powerConsoleCommandExecuting;
-        private IMachineWideSettings _machineWideSettings;
+        private NuGet.Configuration.IMachineWideSettings _machineWideSettings;
 
         private Dictionary<Project, int> _projectToToolWindowId;
 
@@ -154,13 +154,13 @@ namespace NuGet.Tools
         }
         */
 
-        private IMachineWideSettings MachineWideSettings
+        private NuGet.Configuration.IMachineWideSettings MachineWideSettings
         {
             get
             {
                 if (_machineWideSettings == null)
                 {
-                    _machineWideSettings = ServiceLocator.GetInstance<IMachineWideSettings>();
+                    _machineWideSettings = ServiceLocator.GetInstance<NuGet.Configuration.IMachineWideSettings>();
                     Debug.Assert(_machineWideSettings != null);
                 }
 
@@ -196,11 +196,14 @@ namespace NuGet.Tools
             var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
             Debug.Assert(webProxy != null);
 
-            var settings = Settings.LoadDefaultSettings(
-                _solutionManager == null ? null : _solutionManager.SolutionDirectory,
-                configFileName: null,
-                machineWideSettings: MachineWideSettings);
-            var packageSourceProvider = new PackageSourceProvider(settings);
+
+            string dir = _solutionManager == null ? null : _solutionManager.SolutionDirectory;
+
+            NuGet.Configuration.ISettings settings = NuGet.Configuration.Settings.LoadDefaultSettings(
+                dir,
+                null,
+                MachineWideSettings);
+            var packageSourceProvider = new NuGet.Configuration.PackageSourceProvider(settings);
 
             // when NuGet loads, if the current solution has package
             // restore mode enabled, we make sure every thing is set up correctly.
@@ -287,7 +290,6 @@ namespace NuGet.Tools
 
         private void ExecutePowerConsoleCommand(object sender, EventArgs e)
         {
-            /*
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
@@ -319,12 +321,10 @@ namespace NuGet.Tools
                     powerConsoleService.ExecuteEnd += PowerConsoleService_ExecuteEnd;
                 }
             }
-             * */
         }
 
         private void ShowDebugConsole(object sender, EventArgs e)
         {
-            /*
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
@@ -336,7 +336,6 @@ namespace NuGet.Tools
 
             IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
             ErrorHandler.ThrowOnFailure(windowFrame.Show());
-            */ 
         }
 
         private void PowerConsoleService_ExecuteEnd(object sender, EventArgs e)
@@ -485,7 +484,7 @@ namespace NuGet.Tools
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            var solutionManager = ServiceLocator.GetInstance<PackageManagement.ISolutionManager>();
+            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             var nugetProject = solutionManager.GetNuGetProject(project.Name); // *** use safe name here
 
             var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();            
@@ -539,10 +538,10 @@ namespace NuGet.Tools
             var searchText = GetSearchText(parameterString);
 
             // *** temp code            
-            Project project =  NuGet.Tools.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
+            Project project =  NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
 
             if (project != null &&
-                !NuGet.Tools.Utilities.VsUtility.IsUnloaded(project) && 
+                !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) && 
                 EnvDTEProjectUtility.IsSupported(project))
             {
                 ShowDocWindow(project, searchText);
@@ -807,8 +806,8 @@ namespace NuGet.Tools
         {
             get
             {
-                Project project = NuGet.Tools.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !NuGet.Tools.Utilities.VsUtility.IsUnloaded(project) 
+                Project project = NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
+                return project != null && !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) 
                     && EnvDTEProjectUtility.IsSupported(project);
             }
         }

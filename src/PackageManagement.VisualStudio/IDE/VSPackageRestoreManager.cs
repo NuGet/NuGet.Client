@@ -9,12 +9,12 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public void CheckForMissingPackages()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void EnableCurrentSolutionForRestore(bool fromActivation)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public bool IsCurrentSolutionEnabledForRestore

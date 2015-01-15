@@ -8,7 +8,7 @@ using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace NuGet.Tools.Utilities
+namespace NuGetVSExtension.Utilities
 {
     public static class VsUtility
     {
