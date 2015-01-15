@@ -125,8 +125,10 @@
     <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
+    <Compile Include="ProjectSystems\FSharpProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
+    <Compile Include="ProjectSystems\WixProjectSystem.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\PathHelper.cs" />
     <Compile Include="Utility\PathUtility.cs" />
