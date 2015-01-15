@@ -12,6 +12,8 @@ using EnvDTEProjectItem = EnvDTE.ProjectItem;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -79,12 +81,12 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectContext = nuGetProjectContext;
         }
 
-        public void AddFile(string path, Stream stream)
+        public virtual void AddFile(string path, Stream stream)
         {
             AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, stream));
         }
 
-        public void AddFile(string path, Action<Stream> writeToStream)
+        public virtual void AddFile(string path, Action<Stream> writeToStream)
         {
             AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, writeToStream));
         }
@@ -96,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // If the file exists on disk but not in the project then skip it.
             // One exception is the 'packages.config' file, in which case we want to include
             // it into the project.
-            if (File.Exists(Path.Combine(ProjectFullPath, path)) && !fileExistsInProject && !path.Equals(Constants.PackageReferenceFile))
+            if (File.Exists(Path.Combine(ProjectFullPath, path)) && !fileExistsInProject && !path.Equals(ProjectManagement.Constants.PackageReferenceFile))
             {
                 NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }
@@ -181,7 +183,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void AddImport(string targetFullPath, ImportLocation location)
         {
-            throw new NotImplementedException();
+            if (String.IsNullOrEmpty(targetFullPath))
+            {
+                throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "targetPath");
+            }
+
+            string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(EnvDTEProjectUtility.GetFullPath(EnvDTEProject)), targetFullPath);
+            EnvDTEProjectUtility.AddImportStatement(EnvDTEProject, relativeTargetPath, location);
+
+            EnvDTEProjectUtility.Save(EnvDTEProject);
+
+            // notify the project system of the change
+            UpdateImportStamp(EnvDTEProject);
         }
 
         public virtual void AddReference(string referencePath)
@@ -397,6 +410,25 @@ namespace NuGet.PackageManagement.VisualStudio
         public string ResolvePath(string path)
         {
             return path;
+        }
+
+        /// <summary>
+        /// Sets NuGetPackageImportStamp to a new random guid. This is a hack to let the project system know it is out of date.
+        /// The value does not matter, it just needs to change.
+        /// </summary>
+        protected static void UpdateImportStamp(EnvDTEProject envDTEProject)
+        {
+            // There is no reason to call this for pre-Dev12 project systems.
+            if (VSVersionHelper.VsMajorVersion >= 12)
+            {
+                IVsBuildPropertyStorage propStore = VsHierarchyUtility.ToVsHierarchy(envDTEProject) as IVsBuildPropertyStorage;
+                if (propStore != null)
+                {
+                    // <NuGetPackageImportStamp>af617720</NuGetPackageImportStamp>
+                    string stamp = Guid.NewGuid().ToString().Split('-')[0];
+                    ErrorHandler.ThrowOnFailure(propStore.SetPropertyValue("NuGetPackageImportStamp", string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE, stamp));
+                }
+            }
         }
     }
 }

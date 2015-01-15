@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement.VisualStudio.Utility
+namespace NuGet.PackageManagement.VisualStudio
 {
     public static class PathUtility
     {
