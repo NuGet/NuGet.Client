@@ -103,6 +103,14 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
+            if(!packageStream.CanSeek)
+            {
+                throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
+            }
+
+            // Store streamStartPosition here
+            long streamStartPosition = packageStream.Position;
+
             // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
@@ -115,7 +123,8 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
+            // Step-2: Create PackageReader using the PackageStream and obtain the various item groups            
+            packageStream.Seek(streamStartPosition, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
             PackageReader packageReader = new PackageReader(zipArchive);
             IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
@@ -146,7 +155,8 @@ namespace NuGet.ProjectManagement
                            Strings.UnableToFindCompatibleItems, packageIdentity, MSBuildNuGetProjectSystem.TargetFramework));
             }
 
-            // Step-5: Install package to FolderNuGetProject
+            // Step-5: Install package to FolderNuGetProject     
+            packageStream.Seek(streamStartPosition, SeekOrigin.Begin);
             FolderNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
 
             // Step-6: MSBuildNuGetProjectSystem operations
@@ -188,6 +198,7 @@ namespace NuGet.ProjectManagement
             // Step-6.5: Execute powershell script
 
             // Step-7: Install package to PackagesConfigNuGetProject
+            packageStream.Seek(streamStartPosition, SeekOrigin.Begin);
             PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
 
             // Step-8: Add packages.config to MSBuildNuGetProject
