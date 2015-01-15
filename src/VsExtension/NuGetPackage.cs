@@ -70,7 +70,7 @@ namespace NuGet.Tools
         private OleMenuCommand _managePackageForSolutionDialogCommand;
         private OleMenuCommandService _mcs;
         private bool _powerConsoleCommandExecuting;
-        private IMachineWideSettings _machineWideSettings;
+        private NuGet.Configuration.IMachineWideSettings _machineWideSettings;
 
         private Dictionary<Project, int> _projectToToolWindowId;
 
@@ -154,13 +154,13 @@ namespace NuGet.Tools
         }
         */
 
-        private IMachineWideSettings MachineWideSettings
+        private NuGet.Configuration.IMachineWideSettings MachineWideSettings
         {
             get
             {
                 if (_machineWideSettings == null)
                 {
-                    _machineWideSettings = ServiceLocator.GetInstance<IMachineWideSettings>();
+                    _machineWideSettings = ServiceLocator.GetInstance<NuGet.Configuration.IMachineWideSettings>();
                     Debug.Assert(_machineWideSettings != null);
                 }
 
@@ -189,6 +189,9 @@ namespace NuGet.Tools
             _dte = (DTE)GetService(typeof(SDTE));
             Debug.Assert(_dte != null);
 
+            var restore = ServiceLocator.GetInstance<IPackageRestoreManager>();
+            var sourceRepoProvider = ServiceLocator.GetInstance<SourceRepositoryProvider>();
+
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
@@ -196,11 +199,14 @@ namespace NuGet.Tools
             var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
             Debug.Assert(webProxy != null);
 
-            var settings = Settings.LoadDefaultSettings(
-                _solutionManager == null ? null : _solutionManager.SolutionDirectory,
-                configFileName: null,
-                machineWideSettings: MachineWideSettings);
-            var packageSourceProvider = new PackageSourceProvider(settings);
+
+            string dir = _solutionManager == null ? null : _solutionManager.SolutionDirectory;
+
+            NuGet.Configuration.ISettings settings = NuGet.Configuration.Settings.LoadDefaultSettings(
+                dir,
+                null,
+                MachineWideSettings);
+            var packageSourceProvider = new NuGet.Configuration.PackageSourceProvider(settings);
 
             // when NuGet loads, if the current solution has package
             // restore mode enabled, we make sure every thing is set up correctly.
