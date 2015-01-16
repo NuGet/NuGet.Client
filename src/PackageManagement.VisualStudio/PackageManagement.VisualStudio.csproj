@@ -138,6 +138,11 @@
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />
     <Compile Include="ProjectSystems\WixProjectSystem.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
+    <Compile Include="Utility\PathUtility.cs" />
+    <Compile Include="Utility\RefreshFileUtility.cs" />
+    <Compile Include="Utility\StreamUtility.cs" />
+    <Compile Include="Utility\UriUtility.cs" />
+    <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\PathHelper.cs" />
     <Compile Include="Utility\PathUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
@@ -163,6 +168,11 @@
     <Compile Include="Utility\VsHierarchyUtility.cs" />
     <Compile Include="VS.ProjectSystems\VcxProject.cs" />
     <Compile Include="IDE\VSSolutionManager.cs" />
+    <Compile Include="VsResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>VsResources.resx</DependentUpon>
+    </Compile>
     <Compile Include="VSSettings.cs" />
     <Compile Include="VsResources.Designer.cs">
       <AutoGen>True</AutoGen>

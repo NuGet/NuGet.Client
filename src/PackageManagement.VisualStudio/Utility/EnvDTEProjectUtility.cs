@@ -827,7 +827,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion // Check Project Types
 
-
         #region Act on Project
         public static bool DeleteProjectItem(EnvDTEProject envDTEProject, string path)
         {
@@ -859,6 +858,5 @@ namespace NuGet.PackageManagement.VisualStudio
             FileSystemUtility.MakeWriteable(project.FullName);
             project.Save();
         }
-
     }
 }
