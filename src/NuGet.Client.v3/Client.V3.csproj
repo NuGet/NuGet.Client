@@ -36,13 +36,13 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Client.BaseTypes, Version=0.3.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.Types.0.3.0-pre-20150115030521\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+    <Reference Include="NuGet.Client.BaseTypes, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Protocol.Types.3.0.0-rc\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Client.VisualStudio, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.Types.0.3.0-pre-20150115030521\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
+    <Reference Include="NuGet.Client.VisualStudio, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Protocol.Types.3.0.0-rc\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Configuration, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NuGet.Configuration.3.0.0-rc\lib\net45\NuGet.Configuration.dll</HintPath>

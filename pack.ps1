@@ -1,11 +1,13 @@
 param (
-    [switch]$Push, 
-    [ValidateSet("debug", "release")][string]$Configuration="release", 
-    [switch]$SkipTests, 
-    [switch]$SkipBuild, 
+    [string]$PushTarget,
+    [ValidateSet("debug", "release")][string]$Configuration="release",
+    [switch]$SkipTests,
+    [switch]$SkipBuild,
     [string]$PFXPath,
+    [switch]$DelaySign,
+    [Parameter(Mandatory=$True)][ValidateSet("NuGet.Protocol.Types", "NuGet.Protocol")][string]$Id,
     [switch]$Stable,
-    [Parameter(Mandatory=$True)][ValidateSet("NuGet.Protocol.Types", "NuGet.Protocol.V2V3")][string]$Id,
+    [string]$Version,
     [switch]$NoLock
 )
 
@@ -24,6 +26,11 @@ if (!$SkipBuild)
     if ($PFXPath)
     {
         $env:NUGET_PFX_PATH=$PFXPath
+
+        if ($DelaySign)
+        {
+            $env:NUGET_DELAYSIGN="true"
+        }
     }
 
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
@@ -70,28 +77,30 @@ if ($gitBranch.Length -gt 8) {
 
 Write-Host "Git branch: $gitBranch" 
 
-# find the release version from the target assembly
-$version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryAssemblyPath).FileVersion
+if (!$Version) {
+    # find the release version from the target assembly
+    $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryAssemblyPath).FileVersion
 
-if (!$version) {
-    Write-Error "Unable to find the file version!"
-    exit 1
-}
+    if (!$version) {
+        Write-Error "Unable to find the file version!"
+        exit 1
+    }
 
-$now = [System.DateTime]::UtcNow
-
-# (git branch)-(last digit of the year)(day of year)(hour)(minute)
-$version = $version.TrimEnd('0').TrimEnd('.')
-
-if (!$Stable)
-{
-    # prerelease labels can have a max length of 20
     $now = [System.DateTime]::UtcNow
-    $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
 
-    if ($Configuration -eq "debug")
+    # (git branch)-(last digit of the year)(day of year)(hour)(minute)
+    $version = $version.TrimEnd('0').TrimEnd('.')
+
+    if (!$Stable)
     {
-        $version += "-d"
+        # prerelease labels can have a max length of 20
+        $now = [System.DateTime]::UtcNow
+        $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
+
+        if ($Configuration -eq "debug")
+        {
+            $version += "-d"
+        }
     }
 }
 
@@ -103,7 +112,7 @@ if ((Test-Path nupkgs) -eq 0) {
 }
 
 # Pack
-.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
+.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -build -OutputDirectory nupkgs -version $version
 
 # Find the path of the nupkg we just built
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
@@ -116,13 +125,13 @@ if (!$Stable -And !$NoLock)
     .\tools\NupkgLock\NupkgLock.exe "$Id.nuspec" $nupkgPath
 }
 
-if ($Push)
+if ($PushTarget)
 {
     Write-Host "Pushing: $nupkgPath" -ForegroundColor Cyan
     # use nuget.exe setApiKey <key> before running this
-    .\.nuget\nuget.exe push $nupkgPath
+    .\.nuget\nuget.exe push $nupkgPath -source $PushTarget
 }
 else
 {
-    Write-Warning "Package not uploaded. Specify -Push to upload this package to nuget.org"
+    Write-Warning "Package not uploaded. Specify -PushTarget to upload this package"
 }
