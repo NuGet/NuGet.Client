@@ -5,8 +5,10 @@
     <version>1.0.0-overrideme</version>
     <title>NuGet.Packaging</title>
     <authors>NuGet</authors>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.Packaging/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Tools for reading nupkg and nuspec files</description>
     <tags>nupkg packaging nuspec</tags>
