@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client.V2
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(SimpleSearchResource))]
+    [NuGetResourceProviderMetadata(typeof(SimpleSearchResource), "V2SimpleSearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2SimpleSearchResourceProvider : V2ResourceProvider
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, SimpleSearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, SimpleSearchResource>();

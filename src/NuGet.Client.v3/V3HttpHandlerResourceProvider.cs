@@ -11,7 +11,7 @@ namespace NuGet.Client
 {
 
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(HttpHandlerResource))]
+    [NuGetResourceProviderMetadata(typeof(HttpHandlerResource), "V3HttpHandlerResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V3HttpHandlerResourceProvider : INuGetResourceProvider
     {
         public V3HttpHandlerResourceProvider()

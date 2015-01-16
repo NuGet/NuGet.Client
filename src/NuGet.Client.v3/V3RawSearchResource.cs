@@ -20,6 +20,16 @@ namespace NuGet.Client
         public V3RawSearchResource(HttpMessageHandler handler, IEnumerable<Uri> searchEndpoints)
             : base()
         {
+            if (handler == null)
+            {
+                throw new ArgumentNullException("handler");
+            }
+
+            if (searchEndpoints == null)
+            {
+                throw new ArgumentNullException("searchEndpoints");
+            }
+
             _client = new DataClient(handler);
             _searchEndpoints = searchEndpoints.ToArray();
         }

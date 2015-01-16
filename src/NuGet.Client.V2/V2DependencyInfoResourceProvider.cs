@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client.V2
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(DepedencyInfoResource))]
+    [NuGetResourceProviderMetadata(typeof(DepedencyInfoResource), "V2DependencyInfoResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2DependencyInfoResourceProvider : V2ResourceProvider
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, DepedencyInfoResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, DepedencyInfoResource>();

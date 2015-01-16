@@ -23,6 +23,16 @@ namespace NuGet.Client
         public V3DownloadResource(HttpClient client, V3RegistrationResource regResource)
             : base()
         {
+            if (client == null)
+            {
+                throw new ArgumentNullException("client");
+            }
+
+            if (regResource == null)
+            {
+                throw new ArgumentNullException("regResource");
+            }
+
             _regResource = regResource;
             _client = client;
         }
@@ -43,7 +53,16 @@ namespace NuGet.Client
 
         public override async Task<Stream> GetStream(PackageIdentity identity, CancellationToken token)
         {
-            return await _client.GetStreamAsync(await GetDownloadUrl(identity, token));
+            Stream stream = null;
+
+            Uri uri = await GetDownloadUrl(identity, token);
+
+            if (uri != null)
+            {
+                stream = await _client.GetStreamAsync(uri);
+            }
+
+            return stream;
         }
     }
 }

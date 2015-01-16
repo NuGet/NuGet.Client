@@ -1,13 +1,12 @@
 ﻿using NuGet.PackagingCore;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Client.VisualStudio
 {
+    /// <summary>
+    /// Full package details as used by the UI
+    /// </summary>
     public sealed class UIPackageMetadata 
     {
         public UIPackageMetadata(PackageIdentity identity, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl,

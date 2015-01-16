@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 namespace NuGet.Client.V2.VisualStudio
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(PSAutoCompleteResource))]
+    [NuGetResourceProviderMetadata(typeof(PSAutoCompleteResource), "V2PowerShellAutoCompleteResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2PowerShellAutoCompleteResourceProvider : V2ResourceProvider
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, PSAutoCompleteResource> _cache = new ConcurrentDictionary<Configuration.PackageSource,PSAutoCompleteResource>();

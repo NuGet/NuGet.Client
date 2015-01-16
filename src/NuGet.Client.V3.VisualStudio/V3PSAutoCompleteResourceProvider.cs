@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client.V3.VisualStudio
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(PSAutoCompleteResource))]
+    [NuGetResourceProviderMetadata(typeof(PSAutoCompleteResource), "V3PSAutoCompleteResourceProvider", "V2PSAutoCompleteResourceProvider")]
     public class V3PSAutoCompleteResourceProvider : INuGetResourceProvider
     {
         private readonly DataClient _client;

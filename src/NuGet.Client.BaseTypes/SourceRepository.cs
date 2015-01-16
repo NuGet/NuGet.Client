@@ -1,38 +1,64 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
-using NuGet.Versioning;
+﻿using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
     /// <summary>
-    /// Represents a Server endpoint. Exposes methods to get a specific resource like Search resoure, Metrics service and so on for the given server endpoint.
-    /// This will be the replacement for existing SourceRepository class.
+    /// Represents a Server endpoint. Exposes methods to get a specific resource such as Search, Metrics service and so on for the given server endpoint.
     /// </summary>  
-    public sealed class SourceRepository
+    public class SourceRepository
     {
-        private readonly Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] _providers;
+        private readonly Dictionary<Type, Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[]> _providerCache;
         private readonly PackageSource _source;
 
-        public SourceRepository(PackageSource source, IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers)
+        /// <summary>
+        /// Source Repository
+        /// </summary>
+        /// <param name="source">source url</param>
+        /// <param name="providers">Resource providers</param>
+        public SourceRepository(PackageSource source, IEnumerable<KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>> providers)
+            : this (source, providers.Select(p => new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => p.Value, p.Key)))
         {
+
+        }
+
+        /// <summary>
+        /// Source Repository
+        /// </summary>
+        /// <param name="source">source url</param>
+        /// <param name="providers">Resource providers</param>
+        public SourceRepository(PackageSource source, IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers)
+            : this()
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (providers == null)
+            {
+                throw new ArgumentNullException("providers");
+            }
+
             _source = source;
-            _providers = providers.ToArray();
+            _providerCache = Init(providers);
+        }
+
+        /// <summary>
+        /// Internal default constructor
+        /// </summary>
+        protected SourceRepository()
+        {
+
         }
 
         /// <summary>
         /// Package source
         /// </summary>
-        public PackageSource PackageSource
+        public virtual PackageSource PackageSource
         {
             get
             {
@@ -45,16 +71,16 @@ namespace NuGet.Client
         /// </summary>
         /// <typeparam name="T">Expected resource type</typeparam>
         /// <returns>Null if the resource does not exist</returns>
-        public T GetResource<T>()
+        public virtual T GetResource<T>()
         {
             Type resourceType = typeof(T);
             INuGetResource resource = null;
 
-            // TODO: add ordering support here
-            foreach (Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata> provider in _providers)
+            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] possible = null;
+
+            if (_providerCache.TryGetValue(resourceType, out possible))
             {
-                // return the first provider we find whose output is the requested type, or whose output derives from the type.
-                if (resourceType == provider.Metadata.ResourceType || resourceType.IsSubclassOf(provider.Metadata.ResourceType))
+                foreach (var provider in possible)
                 {
                     if (provider.Value.TryCreate(this, out resource))
                     {
@@ -72,9 +98,61 @@ namespace NuGet.Client
         /// </summary>
         /// <typeparam name="T">Expected resource type</typeparam>
         /// <returns>Null if the resource does not exist</returns>
-        public async Task<T> GetResourceAsync<T>() 
+        public virtual async Task<T> GetResourceAsync<T>() 
         {
             return await Task.Run(() => GetResource<T>());
         }
+
+        /// <summary>
+        /// Initialize provider cache
+        /// </summary>
+        /// <param name="providers"></param>
+        /// <returns></returns>
+        private static Dictionary<Type, Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[]>
+            Init(IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers)
+        {
+            var cache = new Dictionary<Type, Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[]>();
+
+            foreach (var group in providers.GroupBy(p => p.Metadata.ResourceType))
+            {
+                cache.Add(group.Key, Sort(group).ToArray());
+            }
+
+            return cache;
+        }
+
+        // TODO: improve this sort
+        private static Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] 
+            Sort(IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> group)
+        {
+            // initial ordering to help make this deterministic 
+            var items = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>(
+                group.OrderBy(e => e.Metadata.Name).ThenBy(e => e.Metadata.After.Count()).ThenBy(e => e.Metadata.Before.Count()));
+
+
+            ProviderComparer comparer = new ProviderComparer();
+
+            var ordered = new Queue<Lazy<INuGetResourceProvider,INuGetResourceProviderMetadata>>();
+
+            // List.Sort does not work when lists have unsolvable gaps, which can occur here
+            while (items.Count > 0)
+            {
+                Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata> best = items[0];
+
+                for (int i=1; i < items.Count; i++)
+                {
+                    if (comparer.Compare(items[i], best) < 0)
+                    {
+                        best = items[i];
+                    }
+                }
+
+                items.Remove(best);
+                ordered.Enqueue(best);
+            }
+
+            return ordered.ToArray();
+        }
+
     }
 }

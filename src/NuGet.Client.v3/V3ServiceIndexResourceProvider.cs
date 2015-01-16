@@ -17,7 +17,7 @@ namespace NuGet.Client
     /// V3ServiceIndexResource stores the json, all work is done in the provider
     /// </summary>
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(V3ServiceIndexResource))]
+    [NuGetResourceProviderMetadata(typeof(V3ServiceIndexResource), "V3ServiceIndexResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V3ServiceIndexResourceProvider : INuGetResourceProvider
     {
         private readonly ConcurrentDictionary<string, V3ServiceIndexResource> _cache;

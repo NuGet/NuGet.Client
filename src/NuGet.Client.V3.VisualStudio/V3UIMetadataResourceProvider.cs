@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client.V3.VisualStudio
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(UIMetadataResource))]
+    [NuGetResourceProviderMetadata(typeof(UIMetadataResource), "V3UIMetadataResourceProvider", "V2UIMetadataResourceProvider")]
     public class V3UIMetadataResourceProvider : INuGetResourceProvider
     {
         private readonly DataClient _client;

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(V3RawSearchResource))]
+    [NuGetResourceProviderMetadata(typeof(V3RawSearchResource), "V3RawSearchResource", NuGetResourceProviderPositions.Last)]
     public class V3RawSearchResourceProvider : INuGetResourceProvider
     {
         public V3RawSearchResourceProvider()

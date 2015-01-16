@@ -22,6 +22,16 @@ namespace NuGet.Client
         public V3MetadataResource(HttpClient client, V3RegistrationResource regResource)
             : base()
         {
+            if (client == null)
+            {
+                throw new ArgumentNullException("client");
+            }
+
+            if (regResource == null)
+            {
+                throw new ArgumentNullException("regResource");
+            }
+
             _regResource = regResource;
             _client = client;
         }
