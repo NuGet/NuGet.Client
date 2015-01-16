@@ -1,14 +1,25 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System;
+using System.Reflection;
+using System.Resources;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NuGet.Client.BaseTypes")]
-[assembly: AssemblyDescription("Assembly that exposes the base types required for all package/repository related operations in a Protocol (v2/v3) agnostic way.")]
-[assembly: AssemblyVersion("0.3.0.0")]
-[assembly: AssemblyInformationalVersion("0.3.0-alpha")]
+// Project-specific attributes
+[assembly: AssemblyTitle("NuGet's base types for the client/server protocol.")]
+[assembly: AssemblyDescription("NuGet's base types for the client/server protocol.")]
 
+// Common attributes
+[assembly: AssemblyCompany("Outercurve Foundation")]
+[assembly: AssemblyProduct("NuGet")]
+[assembly: AssemblyCopyright("Copyright Outercurve Foundation. All rights reserved.")]
 
+[assembly: NeutralResourcesLanguage("en-US")]
+[assembly: CLSCompliant(true)]
 
+// When built on the build server, the NuGet release version is specified by the build.
+// When built locally, the NuGet release version is the values specified in this file.
+#if !FIXED_ASSEMBLY_VERSION
+[assembly: AssemblyVersion("3.0.0.0")]
+[assembly: AssemblyInformationalVersion("3.0.0-rc")]
+#endif

@@ -114,6 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Client.V3.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
