@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 VCProjectHelper.AddFileToProject(EnvDTEProject.Object, fullPath, folderPath);   
             });
 
-            NuGetProjectContext.Log(MessageLevel.Debug, VsResources.Debug_AddedFileToProject, path, ProjectName);
+            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
     }
 

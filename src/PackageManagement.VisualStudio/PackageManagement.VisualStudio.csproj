@@ -140,14 +140,6 @@
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\PathUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
-    <Compile Include="Utility\StreamUtility.cs" />
-    <Compile Include="Utility\UriUtility.cs" />
-    <Compile Include="Utility\VCProjectHelper.cs" />
-    <Compile Include="Utility\PathHelper.cs" />
-    <Compile Include="Utility\PathUtility.cs" />
-    <Compile Include="Utility\RefreshFileUtility.cs" />
-    <Compile Include="Utility\StreamUtility.cs" />
-    <Compile Include="Utility\UriUtility.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
@@ -168,17 +160,7 @@
     <Compile Include="Utility\VsHierarchyUtility.cs" />
     <Compile Include="VS.ProjectSystems\VcxProject.cs" />
     <Compile Include="IDE\VSSolutionManager.cs" />
-    <Compile Include="VsResources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>VsResources.resx</DependentUpon>
-    </Compile>
     <Compile Include="VSSettings.cs" />
-    <Compile Include="VsResources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>VsResources.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -191,10 +173,6 @@
     <EmbeddedResource Include="Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="VsResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>VsResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

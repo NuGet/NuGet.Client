@@ -153,4 +153,7 @@
   <data name="Debug_RemoveReference" xml:space="preserve">
     <value>Removed reference '{0}' from project '{1}'</value>
   </data>
+  <data name="Error_FailedToCreateParentFolder" xml:space="preserve">
+    <value>Failed to create parent folder for file '{0}' in project {1}.</value>
+  </data>
 </root>

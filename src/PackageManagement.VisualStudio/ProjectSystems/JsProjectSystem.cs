@@ -50,13 +50,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentException(
                     String.Format(
                         CultureInfo.CurrentCulture,
-                        VsResources.Error_FailedToCreateParentFolder,
+                        Strings.Error_FailedToCreateParentFolder,
                         path,
                         ProjectName));
             }
             AddFileToContainer(fullPath, folderPath, container);
 
-            NuGetProjectContext.Log(MessageLevel.Debug, VsResources.Debug_AddedFileToProject, path, ProjectName);
+            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
     }
 

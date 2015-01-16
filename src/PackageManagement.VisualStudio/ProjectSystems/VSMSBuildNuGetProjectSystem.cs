@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 string referenceName = name;
-                if (Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(name), StringComparer.OrdinalIgnoreCase))
+                if (ProjectManagement.Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(name), StringComparer.OrdinalIgnoreCase))
                 {
                     // Get the reference name without extension
                     referenceName = Path.GetFileNameWithoutExtension(name);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.ProjectManagement;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 try
                 {
-                    using (var stream = StreamUtility.AsStream(relativeAssemblyPath))
+                    using (var stream = StreamUtility.StreamFromString(relativeAssemblyPath))
                     {
                         FileSystemUtility.AddFile(root,refreshFilePath, stream);
                     }
