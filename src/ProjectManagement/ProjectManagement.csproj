@@ -65,6 +65,7 @@
     <Compile Include="FileModifiers\FileTransformExtensions.cs" />
     <Compile Include="FileModifiers\IPackageFileTransformer.cs" />
     <Compile Include="FileModifiers\Preprocessor.cs" />
+    <Compile Include="FileModifiers\XmlTransformer.cs" />
     <Compile Include="INuGetProjectContext.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Projects\MSBuildNuGetProject.cs" />
@@ -77,11 +78,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utility\FileSystemUtility.cs" />
     <Compile Include="Utility\MSBuildNuGetProjectSystemUtility.cs" />
     <Compile Include="Utility\StreamUtility.cs" />
     <Compile Include="Utility\Token.cs" />
     <Compile Include="Utility\Tokenizer.cs" />
     <Compile Include="Utility\InternalZipFileInfo.cs" />
+    <Compile Include="Utility\XElementExtensions.cs" />
+    <Compile Include="Utility\XmlUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
