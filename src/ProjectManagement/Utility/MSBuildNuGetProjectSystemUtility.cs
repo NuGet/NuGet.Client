@@ -256,30 +256,7 @@ namespace NuGet.ProjectManagement
 
         public static IEnumerable<string> GetFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter, bool recursive)
         {
-            path = PathUtility.EnsureTrailingSlash(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path));
-            if (String.IsNullOrEmpty(filter))
-            {
-                filter = "*.*";
-            }
-            try
-            {
-                if (!Directory.Exists(path))
-                {
-                    return Enumerable.Empty<string>();
-                }
-                return Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                                .Select(p => p.Substring(msBuildNuGetProjectSystem.ProjectFullPath.Length).TrimStart(Path.DirectorySeparatorChar));
-            }
-            catch (UnauthorizedAccessException)
-            {
-
-            }
-            catch (DirectoryNotFoundException)
-            {
-
-            }
-
-            return Enumerable.Empty<string>();
+            return FileSystemUtility.GetFiles(msBuildNuGetProjectSystem.ProjectFullPath, path, filter, recursive);
         }
 
         public static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)

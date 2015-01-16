@@ -22,7 +22,7 @@ namespace NuGet.ProjectManagement {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    public class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace NuGet.ProjectManagement {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.ProjectManagement.Strings", typeof(Strings).Assembly);
@@ -51,7 +51,7 @@ namespace NuGet.ProjectManagement {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Added package &apos;{0}&apos; to folder &apos;{1}&apos;.
         /// </summary>
-        internal static string AddedPackageToFolder {
+        public static string AddedPackageToFolder {
             get {
                 return ResourceManager.GetString("AddedPackageToFolder", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Added package &apos;{0}&apos; to project &apos;{1}&apos;.
         /// </summary>
-        internal static string AddedPackageToMSBuildProject {
+        public static string AddedPackageToMSBuildProject {
             get {
                 return ResourceManager.GetString("AddedPackageToMSBuildProject", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Added package &apos;{0}&apos; to &quot;packages.config&quot;.
         /// </summary>
-        internal static string AddedPackageToPackagesConfig {
+        public static string AddedPackageToPackagesConfig {
             get {
                 return ResourceManager.GetString("AddedPackageToPackagesConfig", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Adding package &apos;{0}&apos; to folder &apos;{1}&apos;.
         /// </summary>
-        internal static string AddingPackageToFolder {
+        public static string AddingPackageToFolder {
             get {
                 return ResourceManager.GetString("AddingPackageToFolder", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Adding package &apos;{0}&apos; to project &apos;{1}&apos;.
         /// </summary>
-        internal static string AddingPackageToMSBuildProject {
+        public static string AddingPackageToMSBuildProject {
             get {
                 return ResourceManager.GetString("AddingPackageToMSBuildProject", resourceCulture);
             }
@@ -108,16 +108,25 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Argument cannot be null or empty.
         /// </summary>
-        internal static string Argument_Cannot_Be_Null_Or_Empty {
+        public static string Argument_Cannot_Be_Null_Or_Empty {
             get {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
             }
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Value must be greater than or equal to {0}.
+        /// </summary>
+        public static string Argument_Must_Be_GreaterThanOrEqualTo {
+            get {
+                return ResourceManager.GetString("Argument_Must_Be_GreaterThanOrEqualTo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Content files should not be target framework specific, whereas, &apos;{0}&apos; is.
         /// </summary>
-        internal static string ContentFilesShouldNotBeTargetFrameworkSpecific {
+        public static string ContentFilesShouldNotBeTargetFrameworkSpecific {
             get {
                 return ResourceManager.GetString("ContentFilesShouldNotBeTargetFrameworkSpecific", resourceCulture);
             }
@@ -126,7 +135,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Removed folder &apos;{0}&apos;..
         /// </summary>
-        internal static string Debug_RemovedFolder {
+        public static string Debug_RemovedFolder {
             get {
                 return ResourceManager.GetString("Debug_RemovedFolder", resourceCulture);
             }
@@ -135,7 +144,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to &gt;&gt; {0} are being added from &apos;{1}&apos;{2}.
         /// </summary>
-        internal static string Debug_TargetFrameworkInfo {
+        public static string Debug_TargetFrameworkInfo {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfo", resourceCulture);
             }
@@ -144,7 +153,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Assembly references.
         /// </summary>
-        internal static string Debug_TargetFrameworkInfo_AssemblyReferences {
+        public static string Debug_TargetFrameworkInfo_AssemblyReferences {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfo_AssemblyReferences", resourceCulture);
             }
@@ -153,7 +162,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Build files.
         /// </summary>
-        internal static string Debug_TargetFrameworkInfo_BuildFiles {
+        public static string Debug_TargetFrameworkInfo_BuildFiles {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfo_BuildFiles", resourceCulture);
             }
@@ -162,7 +171,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Content files.
         /// </summary>
-        internal static string Debug_TargetFrameworkInfo_ContentFiles {
+        public static string Debug_TargetFrameworkInfo_ContentFiles {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfo_ContentFiles", resourceCulture);
             }
@@ -171,7 +180,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to (not framework-specific).
         /// </summary>
-        internal static string Debug_TargetFrameworkInfo_NotFrameworkSpecific {
+        public static string Debug_TargetFrameworkInfo_NotFrameworkSpecific {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfo_NotFrameworkSpecific", resourceCulture);
             }
@@ -180,7 +189,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to &gt;&gt; PowerShell scripts are being executed from &apos;{0}&apos;{1}.
         /// </summary>
-        internal static string Debug_TargetFrameworkInfo_PowershellScripts {
+        public static string Debug_TargetFrameworkInfo_PowershellScripts {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfo_PowershellScripts", resourceCulture);
             }
@@ -189,7 +198,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to For adding package &apos;{0}&apos; to project &apos;{1}&apos; that targets &apos;{2}&apos;..
         /// </summary>
-        internal static string Debug_TargetFrameworkInfoPrefix {
+        public static string Debug_TargetFrameworkInfoPrefix {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfoPrefix", resourceCulture);
             }
@@ -198,7 +207,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to File &apos;{0}&apos; already exists in project &apos;{1}&apos;. Do you want to overwrite it?.
         /// </summary>
-        internal static string FileConflictMessage {
+        public static string FileConflictMessage {
             get {
                 return ResourceManager.GetString("FileConflictMessage", resourceCulture);
             }
@@ -207,7 +216,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Overwriting existing file &apos;{0}&apos;...
         /// </summary>
-        internal static string Info_OverwritingExistingFile {
+        public static string Info_OverwritingExistingFile {
             get {
                 return ResourceManager.GetString("Info_OverwritingExistingFile", resourceCulture);
             }
@@ -216,7 +225,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists in folder &apos;{1}&apos;.
         /// </summary>
-        internal static string PackageAlreadyExistsInFolder {
+        public static string PackageAlreadyExistsInFolder {
             get {
                 return ResourceManager.GetString("PackageAlreadyExistsInFolder", resourceCulture);
             }
@@ -225,7 +234,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists in &quot;packages.config&quot;.
         /// </summary>
-        internal static string PackageAlreadyExistsInPackagesConfig {
+        public static string PackageAlreadyExistsInPackagesConfig {
             get {
                 return ResourceManager.GetString("PackageAlreadyExistsInPackagesConfig", resourceCulture);
             }
@@ -234,7 +243,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists in project &apos;{1}&apos;.
         /// </summary>
-        internal static string PackageAlreadyExistsInProject {
+        public static string PackageAlreadyExistsInProject {
             get {
                 return ResourceManager.GetString("PackageAlreadyExistsInProject", resourceCulture);
             }
@@ -243,7 +252,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; does not exist in folder &apos;{1}&apos;.
         /// </summary>
-        internal static string PackageDoesNotExistInFolder {
+        public static string PackageDoesNotExistInFolder {
             get {
                 return ResourceManager.GetString("PackageDoesNotExistInFolder", resourceCulture);
             }
@@ -252,7 +261,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; does not exist in project &apos;{1}&apos;.
         /// </summary>
-        internal static string PackageDoesNotExistInProject {
+        public static string PackageDoesNotExistInProject {
             get {
                 return ResourceManager.GetString("PackageDoesNotExistInProject", resourceCulture);
             }
@@ -261,7 +270,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; does not exists in &quot;packages.config&quot;.
         /// </summary>
-        internal static string PackageDoesNotExisttInPackagesConfig {
+        public static string PackageDoesNotExisttInPackagesConfig {
             get {
                 return ResourceManager.GetString("PackageDoesNotExisttInPackagesConfig", resourceCulture);
             }
@@ -270,7 +279,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Package stream should be seekable.
         /// </summary>
-        internal static string PackageStreamShouldBeSeekable {
+        public static string PackageStreamShouldBeSeekable {
             get {
                 return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
             }
@@ -279,7 +288,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Removed package &apos;{0}&apos; from folder &apos;{1}&apos;.
         /// </summary>
-        internal static string RemovedPackageFromFolder {
+        public static string RemovedPackageFromFolder {
             get {
                 return ResourceManager.GetString("RemovedPackageFromFolder", resourceCulture);
             }
@@ -288,7 +297,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Removed package &apos;{0}&apos; from project &apos;{1}&apos;.
         /// </summary>
-        internal static string RemovedPackageFromMSBuildProject {
+        public static string RemovedPackageFromMSBuildProject {
             get {
                 return ResourceManager.GetString("RemovedPackageFromMSBuildProject", resourceCulture);
             }
@@ -297,7 +306,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Removed package &apos;{0}&apos; from &quot;packages.config&quot;.
         /// </summary>
-        internal static string RemovedPackageFromPackagesConfig {
+        public static string RemovedPackageFromPackagesConfig {
             get {
                 return ResourceManager.GetString("RemovedPackageFromPackagesConfig", resourceCulture);
             }
@@ -306,7 +315,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Removing package &apos;{0}&apos; from folder &apos;{1}&apos;.
         /// </summary>
-        internal static string RemovingPackageFromFolder {
+        public static string RemovingPackageFromFolder {
             get {
                 return ResourceManager.GetString("RemovingPackageFromFolder", resourceCulture);
             }
@@ -315,7 +324,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Removing package &apos;{0}&apos; from project &apos;{1}&apos;.
         /// </summary>
-        internal static string RemovingPackageFromMSBuildProject {
+        public static string RemovingPackageFromMSBuildProject {
             get {
                 return ResourceManager.GetString("RemovingPackageFromMSBuildProject", resourceCulture);
             }
@@ -324,7 +333,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to The replacement token &apos;{0}&apos; has no value.
         /// </summary>
-        internal static string TokenHasNoValue {
+        public static string TokenHasNoValue {
             get {
                 return ResourceManager.GetString("TokenHasNoValue", resourceCulture);
             }
@@ -333,7 +342,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Could not install package &apos;{0}&apos;. You are trying to install this package into a project that targets &apos;{1}, but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author...
         /// </summary>
-        internal static string UnableToFindCompatibleItems {
+        public static string UnableToFindCompatibleItems {
             get {
                 return ResourceManager.GetString("UnableToFindCompatibleItems", resourceCulture);
             }
@@ -342,7 +351,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; already exists. Skipping....
         /// </summary>
-        internal static string Warning_FileAlreadyExists {
+        public static string Warning_FileAlreadyExists {
             get {
                 return ResourceManager.GetString("Warning_FileAlreadyExists", resourceCulture);
             }
@@ -351,7 +360,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to Skipping &apos;{0}&apos; because it was modified..
         /// </summary>
-        internal static string Warning_FileModified {
+        public static string Warning_FileModified {
             get {
                 return ResourceManager.GetString("Warning_FileModified", resourceCulture);
             }
@@ -360,7 +369,7 @@ namespace NuGet.ProjectManagement {
         /// <summary>
         ///   Looks up a localized string similar to An error occurred while applying transformation to &apos;{0}&apos; in project &apos;{1}&apos;.
         /// </summary>
-        internal static string XdtError {
+        public static string XdtError {
             get {
                 return ResourceManager.GetString("XdtError", resourceCulture);
             }

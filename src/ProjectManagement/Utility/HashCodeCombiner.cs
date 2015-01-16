@@ -1,7 +1,7 @@
 ﻿
 namespace NuGet.ProjectManagement
 {
-    internal class HashCodeCombiner
+    public class HashCodeCombiner
     {
         private long _combinedHash64 = 0x1505L;
 

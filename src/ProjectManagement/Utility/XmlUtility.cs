@@ -48,7 +48,7 @@ namespace NuGet.ProjectManagement
             return safeSettings;
         }
 
-        internal static XDocument GetOrCreateDocument(XName rootName, string root, string path)
+        public static XDocument GetOrCreateDocument(XName rootName, string root, string path)
         {
             if (File.Exists(Path.Combine(root, path)))
             {
@@ -73,7 +73,7 @@ namespace NuGet.ProjectManagement
             return document;
         }
 
-        internal static XDocument GetDocument(string root, string path)
+        public static XDocument GetDocument(string root, string path)
         {
             var fullPath = Path.Combine(root, path);
             using (Stream configStream = File.OpenRead(fullPath))
@@ -82,7 +82,7 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        internal static bool TryParseDocument(string content, out XDocument document)
+        public static bool TryParseDocument(string content, out XDocument document)
         {
             document = null;
             try

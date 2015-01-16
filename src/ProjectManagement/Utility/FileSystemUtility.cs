@@ -79,5 +79,33 @@ namespace NuGet.ProjectManagement
 
             return File.Create(GetFullPath(root, path));
         }
+
+        public static IEnumerable<string> GetFiles(string root, string path, string filter, bool recursive)
+        {
+            path = PathUtility.EnsureTrailingSlash(Path.Combine(root, path));
+            if (String.IsNullOrEmpty(filter))
+            {
+                filter = "*.*";
+            }
+            try
+            {
+                if (!Directory.Exists(path))
+                {
+                    return Enumerable.Empty<string>();
+                }
+                return Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                                .Select(p => p.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar));
+            }
+            catch (UnauthorizedAccessException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            return Enumerable.Empty<string>();
+        }
     }
 }
