@@ -3,6 +3,7 @@ using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -114,6 +115,16 @@ namespace Test.Utility
         public void AddExistingFile(string path)
         {
             Files.Add(path);
+        }
+
+        public void AddBindingRedirects()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ExecuteScript(ZipArchive zipArchive, string scriptArchiveEntryFullName)
+        {
+            throw new NotImplementedException();
         }
     }
 }

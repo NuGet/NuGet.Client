@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
@@ -20,6 +21,8 @@ namespace NuGet.PackageManagement.UI
         private ObservableCollection<object> _items;
         private LoadingStatusIndicator _loadingStatusIndicator;
         private ScrollViewer _scrollViewer;
+        private Task _loadTask;
+        private object _taskStartLockObj = new object();
         
         public event SelectionChangedEventHandler SelectionChanged;
 
@@ -70,53 +73,69 @@ namespace NuGet.PackageManagement.UI
             Load();
         }
 
-        private async void Load()
+        // Thread safe call to start an update
+        private void Load()
         {
-            if (_cts != null)
+            lock (_taskStartLockObj)
             {
-                // There is another async loading process. Cancel it.
-                _cts.Cancel();
-            }
+                if (_cts != null)
+                {
+                    // There is another async loading process. Cancel it.
+                    _cts.Cancel();
+                }
 
-            var newCts = new CancellationTokenSource();
-            _cts = newCts;
+                _cts = new CancellationTokenSource();
+
+                // let this run in the background
+                _loadTask = Task.Run(async () => await LoadWork(this.Dispatcher, _cts.Token));
+            }
+        }
+
+        // Runs on a background thread
+        private async Task LoadWork(Dispatcher dispatcher, CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
 
             _loadingStatusIndicator.Status = LoadingStatus.Loading;
             var currentLoader = _loader;
             try
             {
+                // multiple loads may occur at the same time
                 var r = await Loader.LoadItems(_startIndex, _cts.Token);
 
-                UpdatePackageList(r);
-
-                // select the first item if none was selected before
-                if (_list.SelectedIndex == -1 && _items.Count > 1)
+                if (!token.IsCancellationRequested && currentLoader == _loader)
                 {
-                    _list.SelectedIndex = 0;
+                    // only one list update may occur at the same time
+                    dispatcher.Invoke(() =>
+                    {
+                        UpdatePackageList(r);
+
+                        // select the first item if none was selected before
+                        if (_list.SelectedIndex == -1 && _items.Count > 1)
+                        {
+                            _list.SelectedIndex = 0;
+                        }
+                    });
                 }
             }
             catch (Exception ex)
             {
-                if (currentLoader != _loader)
+                // only display errors if this is still relevant
+                if (!token.IsCancellationRequested)
                 {
-                    // loader has been changed so the result of this process
-                    // is no longer needed. do nothing.
+                    dispatcher.Invoke(() =>
+                    {
+                        var message = String.Format(
+                            CultureInfo.CurrentCulture,
+                            Resx.Resources.Text_ErrorOccurred,
+                            ex);
+                        _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
+                        _loadingStatusIndicator.ErrorMessage = message;
+                    });
                 }
-                else
-                {
-                    var message = String.Format(
-                        CultureInfo.CurrentCulture,
-                        Resx.Resources.Text_ErrorOccurred,
-                        ex);
-                    _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
-                    _loadingStatusIndicator.ErrorMessage = message;
-                }
-            }
-
-            // When the process is complete, signal that another process can proceed.
-            if (_cts == newCts)
-            {
-                _cts = null;
             }
         }
 

@@ -67,6 +67,15 @@ namespace NuGet.PackageManagement
             return _repositories;
         }
 
+
+        /// <summary>
+        /// Create a repository for one time use.
+        /// </summary>
+        public SourceRepository CreateRepository(PackageSource source)
+        {
+            return new SourceRepository(source, _resourceProviders);
+        }
+
         private void Init()
         {
             _repositories.Clear();

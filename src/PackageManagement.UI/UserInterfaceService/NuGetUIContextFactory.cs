@@ -29,9 +29,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         [ImportingConstructor]
-        public NuGetUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider)
+        public NuGetUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider, [Import]ISolutionManager solutionManager)
         {
             _repositoryProvider = repositoryProvider;
+            _solutionManager = solutionManager;
         }
 
         public INuGetUIContext Create(IEnumerable<NuGetProject> projects)
@@ -41,7 +42,7 @@ namespace NuGet.PackageManagement.UI
                 throw new ArgumentNullException("projects");
             }
 
-            NuGetPackageManager packageManager = new NuGetPackageManager(_repositoryProvider);
+            NuGetPackageManager packageManager = new NuGetPackageManager(_repositoryProvider, _solutionManager);
             UIActionEngine actionEngine = new UIActionEngine(_repositoryProvider, packageManager);
 
             return new NuGetUIContext(_repositoryProvider, _solutionManager, packageManager, actionEngine, _restoreManager, _optionsPage, projects);

@@ -421,45 +421,6 @@ namespace NuGet.PackageManagement.UI
             return status;
         }
 
-        public bool ShowLicenseAgreement(IEnumerable<PackageAction> operations)
-        {
-            throw new NotImplementedException();
-            return false;
-
-            //var licensePackages = operations.Where(op =>
-            //    op.ActionType == PackageActionType.Install &&
-            //    op.Package.re);
-
-            //// display license window if necessary
-            //if (licensePackages.Any())
-            //{
-            //    // Hacky distinct without writing a custom comparer
-            //    var licenseModels = licensePackages
-            //        .GroupBy(a => Tuple.Create(a.PackageIdentity.Id, a.PackageIdentity.Version.ToNormalizedString()))
-            //        .Select(g =>
-            //        {
-            //            dynamic p = g.First().Package;
-            //            string licenseUrl = (string)p.licenseUrl;
-            //            string id = (string)p.id;
-            //            string authors = (string)p.authors;
-
-            //            return new PackageLicenseInfo(
-            //                id,
-            //                licenseUrl == null ? null : new Uri(licenseUrl),
-            //                authors);
-            //        })
-            //        .Where(pli => pli.LicenseUrl != null); // Shouldn't get nulls, but just in case
-
-            //    bool accepted = this.UI.PromptForLicenseAcceptance(licenseModels);
-            //    if (!accepted)
-            //    {
-            //        return false;
-            //    }
-            //}
-
-            //return true;
-        }
-
         /// <summary>
         /// Shows the preveiw window for the actions.
         /// </summary>
@@ -470,89 +431,6 @@ namespace NuGet.PackageManagement.UI
             var w = new PreviewWindow();
             w.DataContext = new PreviewWindowModel(Enumerable.Empty<PreviewResult>());
             return w.ShowModal() == true;
-        }
-
-        //private void ActivateOutputWindow()
-        //{
-        //    //var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
-        //    //if (uiShell == null)
-        //    //{
-        //    //    return;
-        //    //}
-
-        //    //var guid = new Guid(EnvDTE.Constants.vsWindowKindOutput);
-        //    //IVsWindowFrame f = null;
-        //    //uiShell.FindToolWindow(0, ref guid, out f);
-        //    //if (f == null)
-        //    //{
-        //    //    return;
-        //    //}
-
-        //    //f.Show();
-        //}
-
-        // perform the user selected action
-        internal async void PerformAction(DetailControl detailControl)
-        {
-            //bool acceptLicense = ShowLicenseAgreement(null);
-            //if (!acceptLicense)
-            //{
-            //    return;
-            //}
-
-            //ActivateOutputWindow();
-            //_outputConsole.Clear();
-            //var progressDialog = new ProgressDialog(_outputConsole);
-            //progressDialog.Owner = Window.GetWindow(this);
-            //progressDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            //progressDialog.FileConflictAction = detailControl.FileConflictAction;
-            //progressDialog.Show();
-
-            //try
-            //{
-            //    var actions = await detailControl.ResolveActionsAsync(progressDialog);
-
-            //    // show preview
-            //    var model = (DetailControlModel)_packageDetail.DataContext;
-            //    if (model.Options.ShowPreviewWindow)
-            //    {
-            //        var shouldContinue = PreviewActions(actions);
-            //        if (!shouldContinue)
-            //        {
-            //            return;
-            //        }
-            //    }
-
-            //    // show license agreeement
-            //    bool acceptLicense = ShowLicenseAgreement(actions);
-            //    if (!acceptLicense)
-            //    {
-            //        return;
-            //    }
-
-            //    // Create the executor and execute the actions
-            //    var userAction = detailControl.GetUserAction();
-            //    var executor = new ActionExecutor();
-            //    await Task.Run(
-            //        () =>
-            //        {
-            //            executor.ExecuteActions(actions, progressDialog, userAction);
-            //        });
-
-            //    UpdatePackageStatus();
-            //    detailControl.Refresh();
-            //}
-            //catch (Exception ex)
-            //{
-            //    var errorDialog = new ErrorReportingDialog(
-            //        ex.Message,
-            //        ex.ToString());
-            //    errorDialog.ShowModal();
-            //}
-            //finally
-            //{
-            //    progressDialog.CloseWindow();
-            //}
         }
 
         private void _searchControl_SearchStart(object sender, EventArgs e)

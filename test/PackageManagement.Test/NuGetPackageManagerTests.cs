@@ -28,7 +28,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, null);
 
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
@@ -66,7 +66,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, null);
 
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
@@ -114,7 +114,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, null);
 
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();

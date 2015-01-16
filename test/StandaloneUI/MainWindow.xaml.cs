@@ -11,6 +11,7 @@ using System.Windows;
 using System.Linq;
 using NuGet.ProjectManagement;
 using NuGet.Frameworks;
+using System.Diagnostics;
 
 namespace StandaloneUI
 {
@@ -24,6 +25,9 @@ namespace StandaloneUI
 
         [ImportMany]
         public IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _resourceProviders;
+
+        [Import]
+        public NuGet.Configuration.ISettings _settings;
 
         //[Import]
         public INuGetUIContextFactory _contextFactory;
@@ -43,7 +47,7 @@ namespace StandaloneUI
             Height = 800;
             Width = 1000;
 
-            var repositoryProvider = new SourceRepositoryProvider(new V3OnlyPackageSourceProvider(), _resourceProviders);
+            var repositoryProvider = new SourceRepositoryProvider(_resourceProviders, _settings);
 
             var projectMetadata = new Dictionary<string, object>();
             projectMetadata.Add(NuGetProjectMetadataKeys.Name, "Test Project");
@@ -51,6 +55,8 @@ namespace StandaloneUI
 
             NuGetProject project = new PackagesConfigNuGetProject(@"C:\Users\juste\Documents\Visual Studio 2013\Projects\ConsoleApplication2\ConsoleApplication2\packages.config", projectMetadata);
             var projects = new NuGetProject[] { project };
+
+            //var uiContext = _contextFactory.Create(projects);
 
             _contextFactory = new NuGetUIContextFactory(repositoryProvider);
             var context = _contextFactory.Create(projects);
@@ -74,7 +80,7 @@ namespace StandaloneUI
 
             var path = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            using (var catalog = new AggregateCatalog(new AssemblyCatalog(Assembly.GetExecutingAssembly().Location),
+            using (var catalog = new AggregateCatalog(
                 new AssemblyCatalog(Assembly.Load(assemblyName)),
                 new DirectoryCatalog(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll")))
             {
@@ -87,6 +93,8 @@ namespace StandaloneUI
                 }
                 catch (Exception ex)
                 {
+                    Debug.Fail("MEF: " + ex.ToString());
+
                     throw;
                 }
             }
