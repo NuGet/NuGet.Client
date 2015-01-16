@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 // Project-specific attributes
 [assembly: AssemblyTitle("NuGet.Versioning")]
-[assembly: AssemblyDescription("NuGet.Versioning is the NuGet implementation of Semantic Versioning.")]
+[assembly: AssemblyDescription("NuGet's implementation of Semantic Versioning.")]
 
 // Common attributes
 [assembly: AssemblyCompany("Outercurve Foundation")]
