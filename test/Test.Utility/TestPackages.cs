@@ -58,6 +58,18 @@ namespace Test.Utility
 
             return fileInfo;
         }
+        
+        public static FileInfo GetPackageWithWebConfigTransform(string path, string packageId, string packageVersion, string webConfigTransformContent)
+        {
+            ZipFile zipFile;
+            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            zipFile.AddEntry("Content/web.config.transform", webConfigTransformContent);
+            SetSimpleNuspec(zipFile, packageId, packageVersion);
+            zipFile.Save();
+
+            return fileInfo;
+        }
 
         public static FileInfo GetPackageWithFrameworkReference(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {

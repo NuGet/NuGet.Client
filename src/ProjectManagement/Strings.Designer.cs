@@ -347,5 +347,14 @@ namespace NuGet.ProjectManagement {
                 return ResourceManager.GetString("Warning_FileModified", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while applying transformation to &apos;{0}&apos; in project &apos;{1}&apos;.
+        /// </summary>
+        internal static string XdtError {
+            get {
+                return ResourceManager.GetString("XdtError", resourceCulture);
+            }
+        }
     }
 }

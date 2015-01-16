@@ -53,8 +53,8 @@ namespace NuGet.ProjectManagement
             new Dictionary<FileTransformExtensions, IPackageFileTransformer>() 
         {
             { new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
-            { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() }
-            //{ new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
+            { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() },
+            { new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
         };
 
         public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFullPath)

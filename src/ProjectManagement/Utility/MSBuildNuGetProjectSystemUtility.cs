@@ -204,7 +204,7 @@ namespace NuGet.ProjectManagement
 
                                 try
                                 {
-                                    var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceAltDirSeparatorWithDirSeparator(file));
+                                    var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceDirSeparatorWithAltDirSeparator(file));
                                     transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
                                 }
                                 catch (Exception e)
