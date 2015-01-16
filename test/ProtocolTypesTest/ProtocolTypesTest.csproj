@@ -30,8 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NuGet.Configuration">
-      <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50130044\lib\net45\NuGet.Configuration.dll</HintPath>
+    <Reference Include="NuGet.Configuration, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-rc\lib\net45\NuGet.Configuration.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
