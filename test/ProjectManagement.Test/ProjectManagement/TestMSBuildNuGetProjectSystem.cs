@@ -136,5 +136,11 @@ namespace Test.Utility
         {
             Files.Add(path);
         }
+
+
+        public void AddBindingRedirects()
+        {
+            // No-op
+        }
     }
 }

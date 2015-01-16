@@ -207,7 +207,8 @@ namespace NuGet.ProjectManagement
                 }
             }
             
-            // Step-6.5: Execute powershell script
+            // Step-6.5: Add binding redirects. Project system is supposed to check if binding redirects are needed and add as needed
+            MSBuildNuGetProjectSystem.AddBindingRedirects();
 
             // Step-7: Install package to PackagesConfigNuGetProject
             PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
@@ -316,14 +317,12 @@ namespace NuGet.ProjectManagement
                     }
                 }
 
-                // Step-6.5: Execute powershell script
-
+                // Step-6.5: Remove binding redirects. This is a no-op
             }
 
             // Step-7: Uninstall package from the folderNuGetProject
             FolderNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
 
-            // Step-8: 
             return true;
         }
 

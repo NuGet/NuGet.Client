@@ -417,7 +417,7 @@ namespace ProjectManagement.Test
             // Check that the transform is applied properly
             using (var streamReader = new StreamReader(Path.Combine(randomProjectFolderPath, "web.config")))
             {
-                Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                Assert.Equal(@"
 <configuration>
     <system.web>
         <compilation baz=""test"" debug=""true"" targetFramework=""4.0"" />
