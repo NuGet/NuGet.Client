@@ -16,6 +16,11 @@ namespace NuGet.Client
 
         public V3HttpHandlerResource(HttpMessageHandler messageHandler)
         {
+            if (messageHandler == null)
+            {
+                throw new ArgumentNullException("messageHandler");
+            }
+
             _messageHandler = messageHandler;
         }
 

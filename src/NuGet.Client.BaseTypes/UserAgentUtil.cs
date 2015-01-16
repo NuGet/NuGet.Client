@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using NuGet.Versioning;
+using System;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Versioning;
 
 namespace NuGet.Client
 {

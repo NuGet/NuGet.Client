@@ -26,7 +26,7 @@ namespace V2V3ResourcesTest
     public class V2V3ResourcesTest
     {
         private CompositionContainer container;
-        private string V3SourceUrl = "https://az320820.vo.msecnd.net/ver3-preview/index.json";
+        private string V3SourceUrl = "https://api.nuget.org/v3/index.json";
         private string V2SourceUrl = "https://nuget.org/api/v2";
         public V2V3ResourcesTest()
         {
@@ -49,7 +49,7 @@ namespace V2V3ResourcesTest
 
         [Theory]
         [InlineData("https://nuget.org/api/v2")]
-        [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestDownloadResource(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
@@ -62,7 +62,7 @@ namespace V2V3ResourcesTest
 
         [Theory]
         [InlineData("https://nuget.org/api/v2/")]
-        [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestMetadataResource(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
@@ -74,7 +74,7 @@ namespace V2V3ResourcesTest
 
         [Theory]
         [InlineData("https://nuget.org/api/v2/")]
-        [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestVisualStudioUIMetadataResource(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
@@ -92,7 +92,7 @@ namespace V2V3ResourcesTest
 
         [Theory]
         [InlineData("https://nuget.org/api/v2/")]
-        [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestAllSearchResources(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
@@ -122,7 +122,7 @@ namespace V2V3ResourcesTest
 
         [Theory]
         [InlineData("https://nuget.org/api/v2")]
-        [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestPowerShellAutocompleteResourceForPackageIds(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
@@ -138,7 +138,7 @@ namespace V2V3ResourcesTest
 
         [Theory]
         [InlineData("https://nuget.org/api/v2")]
-        [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestPowerShellAutocompleteResourceForPackageVersions(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
@@ -152,7 +152,7 @@ namespace V2V3ResourcesTest
 
         [Theory]
         [InlineData("https://nuget.org/api/v2/")]
-        [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestDependencyInfoResourceForPackageWithAnyFramework(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
@@ -206,7 +206,7 @@ namespace V2V3ResourcesTest
 
        [Theory]
        [InlineData("https://nuget.org/api/v2/")]
-   //  [InlineData("https://az320820.vo.msecnd.net/ver3-preview/index.json")]     
+       [InlineData("https://api.nuget.org/v3/index.json")]     
        public async Task TestAllResourcesForNonExistentPackage(string SourceUrl)
        {
            string packageId = "nonexistentpackage";

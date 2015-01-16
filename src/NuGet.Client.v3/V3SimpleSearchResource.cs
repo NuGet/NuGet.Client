@@ -20,6 +20,11 @@ namespace NuGet.Client
 
         public V3SimpleSearchResource(V3RawSearchResource rawSearch)
         {
+            if (rawSearch == null)
+            {
+                throw new ArgumentNullException("rawSearch");
+            }
+
             _rawSearch = rawSearch;
         }
 

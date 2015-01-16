@@ -1,15 +1,17 @@
-﻿using NuGet.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.VisualStudio
 {
+    /// <summary>
+    /// Retrieves search metadata in the from used by the VS UI
+    /// </summary>
     public abstract class UISearchResource : INuGetResource
     {
+        /// <summary>
+        /// Retrieves search results
+        /// </summary>
          public abstract Task<IEnumerable<UISearchMetadata>> Search(
             string searchTerm,
             SearchFilter filters,

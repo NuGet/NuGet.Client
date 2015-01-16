@@ -31,8 +31,12 @@ namespace NuGet.Client.V3.VisualStudio
 
             foreach (var package in packages)
             {
-                JObject metatdata = await _regResource.GetPackage(package, token);
-                results.Add(GetVisualstudioPackageMetadata(metatdata));
+                JObject metadata = await _regResource.GetPackageMetadata(package, token);
+
+                if (metadata != null)
+                {
+                    results.Add(GetVisualstudioPackageMetadata(metadata));
+                }
             }
 
             return results;
@@ -40,7 +44,7 @@ namespace NuGet.Client.V3.VisualStudio
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            IEnumerable<JObject> metadataList = await _regResource.Get(packageId, includePrerelease, includeUnlisted, token);
+            IEnumerable<JObject> metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, token);
             return metadataList.Select(item => GetVisualstudioPackageMetadata(item));
         }
 

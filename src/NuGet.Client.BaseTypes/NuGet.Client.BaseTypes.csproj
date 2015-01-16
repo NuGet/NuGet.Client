@@ -71,11 +71,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="HashCodeCombiner.cs" />
     <Compile Include="INuGetMessageHandlerProvider.cs" />
     <Compile Include="INuGetResource.cs" />
     <Compile Include="INuGetResourceProvider.cs" />
     <Compile Include="MEFAttributes\INuGetResourceProviderMetadata.cs" />
+    <Compile Include="NuGetResourceProviderPositions.cs" />
+    <Compile Include="ProviderComparer.cs" />
     <Compile Include="Resources\DownloadResource.cs" />
     <Compile Include="Resources\HttpHandlerResource.cs" />
     <Compile Include="Resources\MetadataResource.cs" />
@@ -85,8 +86,8 @@
     <Compile Include="MEFAttributes\NuGetResourceProviderMetadata.cs" />
     <Compile Include="Resources\SimpleSearchMetadata.cs" />
     <Compile Include="Resources\SimpleSearchResource.cs" />
-    <Compile Include="SourceRepository.cs" />
     <Compile Include="SearchFilter.cs" />
+    <Compile Include="SourceRepository.cs" />
     <Compile Include="UserAgentUtil.cs" />
   </ItemGroup>
   <ItemGroup>

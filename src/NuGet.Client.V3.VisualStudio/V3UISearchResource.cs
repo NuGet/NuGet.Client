@@ -89,6 +89,7 @@ namespace NuGet.Client.V3.VisualStudio
                 // summary is empty. Use its description instead.
                 summary = package.Value<string>(Properties.Description);
             }
+
             UISearchMetadata searchResult = new UISearchMetadata(topPackage, summary, iconUrl, nuGetVersions, null);
             return searchResult;
         }

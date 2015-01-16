@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using NuGet.Client;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +17,7 @@ namespace NuGet.Data
     public sealed class DataClient : HttpClient
     {
         private bool _disposed;
-        private readonly INuGetRequestModifier[] _modifiers;
+        private readonly INuGetMessageHandlerProvider[] _modifiers;
 
         /// <summary>
         /// Raw constructor that allows full overriding of all caching and default DataClient behavior.
@@ -34,16 +35,7 @@ namespace NuGet.Data
         /// DataClient with the default options and caching support
         /// </summary>
         public DataClient()
-            : this(CachingHandler, Enumerable.Empty<INuGetRequestModifier>())
-        {
-
-        }
-
-        /// <summary>
-        /// DataClient with modifiers and default caching support
-        /// </summary>
-        public DataClient(IEnumerable<INuGetRequestModifier> modifiers)
-            : this(CachingHandler, modifiers)
+            : this(CachingHandler)
         {
 
         }
@@ -51,7 +43,7 @@ namespace NuGet.Data
         /// <summary>
         /// Internal constructor for building the final handler
         /// </summary>
-        internal DataClient(HttpMessageHandler handler, IEnumerable<INuGetRequestModifier> modifiers)
+        internal DataClient(HttpMessageHandler handler, IEnumerable<INuGetMessageHandlerProvider> modifiers)
             : this(AssembleHandlers(handler, modifiers))
         {
             _modifiers = modifiers.ToArray();
@@ -64,22 +56,24 @@ namespace NuGet.Data
         {
             get
             {
-                return AssembleHandlers(CachingHandler, Enumerable.Empty<INuGetRequestModifier>());
+                return AssembleHandlers(CachingHandler, Enumerable.Empty<INuGetMessageHandlerProvider>());
             }
         }
 
         /// <summary>
         /// Chain the handlers together
         /// </summary>
-        private static HttpMessageHandler AssembleHandlers(HttpMessageHandler handler, IEnumerable<INuGetRequestModifier> modifiers)
+        private static HttpMessageHandler AssembleHandlers(HttpMessageHandler handler, IEnumerable<INuGetMessageHandlerProvider> modifiers)
         {
             // final retry logic
-            RetryHandler retryHandler = new RetryHandler(handler, 5);
+            // RetryHandler retryHandler = new RetryHandler(handler, 5);
 
             // auth & proxy
-            RequestModifierHandler modHandler = new RequestModifierHandler(retryHandler, modifiers);
+            //RequestModifierHandler modHandler = new RequestModifierHandler(handler, modifiers);
 
-            return modHandler;
+            //return modHandler;
+
+            return handler;
         }
 
         /// <summary>
@@ -107,6 +101,7 @@ namespace NuGet.Data
         public async Task<JObject> GetJObjectAsync(Uri address, CancellationToken token)
         {
             var response = await GetAsync(address, token);
+
             string json = await response.Content.ReadAsStringAsync();
 
             return await Task.Run(() =>

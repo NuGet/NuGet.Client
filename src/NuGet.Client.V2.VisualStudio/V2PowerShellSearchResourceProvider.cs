@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client.V2.VisualStudio
 {
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(PSSearchResource))]
+    [NuGetResourceProviderMetadata(typeof(PSSearchResource), "V2PSSearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2PSSearchResourceProvider : V2ResourceProvider
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, PSSearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, PSSearchResource>();

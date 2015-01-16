@@ -13,7 +13,7 @@ namespace NuGet.Client.V2
     /// Resource provider for V2 download.
     /// </summary>
     [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(DownloadResource))]
+    [NuGetResourceProviderMetadata(typeof(DownloadResource), "V2DownloadResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2DownloadResourceProvider : V2ResourceProvider
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, DownloadResource> _cache = new ConcurrentDictionary<Configuration.PackageSource,DownloadResource>();
