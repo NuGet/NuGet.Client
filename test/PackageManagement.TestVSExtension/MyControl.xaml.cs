@@ -123,7 +123,8 @@ namespace NuGet.PackageManagement_TestVSExtension
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            MyControl.Logger.Text = String.Format(message, args);
+            MyControl.Logger.Text += Environment.NewLine;
+            MyControl.Logger.Text += String.Format(message, args);
         }
 
         public FileConflictAction ResolveFileConflict(string message)
