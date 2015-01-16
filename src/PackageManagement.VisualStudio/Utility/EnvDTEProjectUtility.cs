@@ -18,6 +18,8 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using Microsoft.VisualStudio.Shell;
+using VsWebSite;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -221,6 +223,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
             return false;
+        }
+
+        public static AssemblyReferences GetAssemblyReferences(EnvDTEProject project)
+        {
+            dynamic projectObj = project.Object;
+            var references = (AssemblyReferences)projectObj.References;
+            projectObj = null;
+            return references;
         }
 
         /// <summary>
@@ -830,5 +840,23 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
         #endregion
+
+        public static void AddImportStatement(EnvDTEProject project, string targetsPath, ImportLocation location)
+        {
+            MicrosoftBuildEvaluationProjectUtility.AddImportStatement(AsMSBuildProject(project), targetsPath, location);
+        }
+
+        public static MicrosoftBuildEvaluationProject AsMSBuildProject(EnvDTEProject project)
+        {
+            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(project.FullName).FirstOrDefault() ??
+                   ProjectCollection.GlobalProjectCollection.LoadProject(project.FullName);
+        }
+
+        public static void Save(EnvDTEProject project)
+        {
+            var fullPath = FileSystemUtility.GetFullPath(GetFullPath(project), project.FullName);
+            FileSystemUtility.MakeWriteable(project.FullName);
+            project.Save();
+        }
     }
 }

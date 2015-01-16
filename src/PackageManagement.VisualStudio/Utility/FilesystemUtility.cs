@@ -24,6 +24,12 @@ namespace NuGet.PackageManagement.VisualStudio
             Directory.CreateDirectory(path);
         }
 
+        public static bool FileExists(string root, string path)
+        {
+            path = GetFullPath(root, path);
+            return File.Exists(path);
+        }
+
         public static string GetFullPath(string root, string path)
         {
             if (String.IsNullOrEmpty(path))
