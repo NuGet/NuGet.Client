@@ -137,5 +137,15 @@ if (!$SkipBuild)
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
 }
 
+# When building the full stack, update our dependencies on our own packages
+if ($PushTarget) {
+    & nuget.exe update Client.v3.sln -source "$PushTarget"
+}
+
 Pack("NuGet.Protocol.Types")
+
+# Now update the dependency on the NuGet.Protocol.Types package that we just produced
+$localNupkgs = Join-Path "." "nupkgs" -resolve
+& nuget.exe update Client.v3.sln -id "NuGet.Protocol.Types" -source "$localNupkgs"
+
 Pack("NuGet.Protocol")
