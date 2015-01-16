@@ -138,6 +138,9 @@
   <data name="ContentFilesShouldNotBeTargetFrameworkSpecific" xml:space="preserve">
     <value>Content files should not be target framework specific, whereas, '{0}' is</value>
   </data>
+  <data name="Debug_RemovedFolder" xml:space="preserve">
+    <value>Removed folder '{0}'.</value>
+  </data>
   <data name="Debug_TargetFrameworkInfo" xml:space="preserve">
     <value>&gt;&gt; {0} are being added from '{1}'{2}</value>
   </data>

@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="Utility\FileSystemUtility.cs" />
     <Compile Include="Utility\MSBuildNuGetProjectSystemUtility.cs" />
+    <Compile Include="Utility\PathUtility.cs" />
     <Compile Include="Utility\StreamUtility.cs" />
     <Compile Include="Utility\Token.cs" />
     <Compile Include="Utility\Tokenizer.cs" />

@@ -124,6 +124,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Removed folder &apos;{0}&apos;..
+        /// </summary>
+        internal static string Debug_RemovedFolder {
+            get {
+                return ResourceManager.GetString("Debug_RemovedFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &gt;&gt; {0} are being added from &apos;{1}&apos;{2}.
         /// </summary>
         internal static string Debug_TargetFrameworkInfo {

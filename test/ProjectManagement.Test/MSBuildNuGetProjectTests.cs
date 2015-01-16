@@ -269,6 +269,7 @@ namespace ProjectManagement.Test
             Assert.Equal(0, packagesInPackagesConfig.Count);
             // Check that the files have been removed from MSBuildNuGetProjectSystem
             Assert.Equal(0, msBuildNuGetProjectSystem.Files.Count);
+            Assert.False(Directory.Exists(Path.Combine(randomProjectFolderPath, "Scripts")));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
