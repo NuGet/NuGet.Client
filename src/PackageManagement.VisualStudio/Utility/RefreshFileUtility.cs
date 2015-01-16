@@ -41,5 +41,37 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
         }
+
+        public static IEnumerable<string> ResolveRefreshPaths(string root)
+        {
+            // Resolve all .refresh files from the website's bin directory. Once resolved, verify the path exists on disk and that they look like an assembly reference. 
+            return from file in FileSystemUtility.GetFiles(root, "bin", "*" + RefreshFileExtension, recursive: false)
+                   let resolvedPath = SafeResolveRefreshPath(root, file)
+                   where resolvedPath != null &&
+                         FileSystemUtility.FileExists(root, resolvedPath) &&
+                         Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(resolvedPath))
+                   select resolvedPath;
+        }
+
+        private static string SafeResolveRefreshPath(string root, string file)
+        {
+            string relativePath;
+            try
+            {
+                using (var stream = File.OpenRead(FileSystemUtility.GetFullPath(root, file)))
+                {
+                    using (var streamReader = new StreamReader(stream))
+                    {
+                        relativePath = streamReader.ReadToEnd();
+                    }
+                }
+                return FileSystemUtility.GetFullPath(root, relativePath);
+            }
+            catch
+            {
+                // Ignore the .refresh file if it cannot be read.
+            }
+            return null;
+        }
     }
 }

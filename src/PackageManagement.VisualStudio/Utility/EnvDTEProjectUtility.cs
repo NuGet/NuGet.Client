@@ -20,6 +20,7 @@ using NuGet.Frameworks;
 using Microsoft.VisualStudio.Shell;
 using VsWebSite;
 using NuGet.ProjectManagement;
+using System.Runtime.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -375,7 +376,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static NuGetFramework GetTargetNuGetFramework(EnvDTEProject envDTEProject)
         {
-            string targetFrameworkMoniker = GetTargetNuGetFrameworkString(envDTEProject);
+            string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
             if (targetFrameworkMoniker != null)
             {
                 return NuGetFramework.Parse(targetFrameworkMoniker);
@@ -384,7 +385,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetFramework.UnsupportedFramework;
         }
 
-        private static string GetTargetNuGetFrameworkString(EnvDTEProject envDTEProject)
+        private static string GetTargetFrameworkString(EnvDTEProject envDTEProject)
         {
             if (envDTEProject == null)
             {
@@ -677,6 +678,170 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return projectItem;
         }
+
+        public static bool SupportsReferences(EnvDTEProject envDTEProject)
+        {
+            return envDTEProject.Kind != null &&
+                !UnsupportedProjectTypesForAddingReferences.Contains(envDTEProject.Kind, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static bool SupportsBindingRedirects(EnvDTEProject envDTEProject)
+        {
+            return (envDTEProject.Kind != null & !UnsupportedProjectTypesForBindingRedirects.Contains(envDTEProject.Kind, StringComparer.OrdinalIgnoreCase)) &&
+                    !IsWindowsStoreApp(envDTEProject);
+        }
+
+        // TODO: Return null for library projects
+        public static string GetConfigurationFile(EnvDTEProject envDTEProject)
+        {
+            return IsWebProject(envDTEProject) ? WebConfig : AppConfig;
+        }
+
+        public static FrameworkName GetDotNetFrameworkName(EnvDTEProject envDTEProject)
+        {
+            string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
+            if (targetFrameworkMoniker != null)
+            {
+                return new FrameworkName(targetFrameworkMoniker);
+            }
+
+            return null;
+        }
+
+        internal static HashSet<string> GetAssemblyClosure(EnvDTEProject envDTEProject, IDictionary<string, HashSet<string>> visitedProjects)
+        {
+            HashSet<string> assemblies;
+            if (visitedProjects.TryGetValue(envDTEProject.UniqueName, out assemblies))
+            {
+                return assemblies;
+            }
+
+            assemblies = new HashSet<string>(PathComparer.Default);
+            CollectionsUtility.AddRange(assemblies, GetLocalProjectAssemblies(envDTEProject));
+            CollectionsUtility.AddRange(assemblies, GetReferencedProjects(envDTEProject).SelectMany(p => GetAssemblyClosure(p, visitedProjects)));
+
+            visitedProjects.Add(envDTEProject.UniqueName, assemblies);
+
+            return assemblies;
+        }
+
+        private static HashSet<string> GetLocalProjectAssemblies(EnvDTEProject envDTEProject)
+        {
+            if (IsWebSite(envDTEProject))
+            {
+                return GetWebsiteLocalAssemblies(envDTEProject);
+            }
+
+            var assemblies = new HashSet<string>(PathComparer.Default);
+            References references;
+            try
+            {
+                references = GetReferences(envDTEProject);
+            }
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+            {
+                //References property doesn't exist, project does not have references
+                references = null;
+            }
+            if (references != null)
+            {
+                foreach (Reference reference in references)
+                {
+                    // Get the referenced project from the reference if any
+                    if (reference.SourceProject == null &&
+                        reference.CopyLocal &&
+                        File.Exists(reference.Path))
+                    {
+                        assemblies.Add(reference.Path);
+                    }
+                }
+            }
+            return assemblies;
+        }
+
+        private static HashSet<string> GetWebsiteLocalAssemblies(EnvDTEProject envDTEProject)
+        {
+            var assemblies = new HashSet<string>(PathComparer.Default);
+            AssemblyReferences references = GetAssemblyReferences(envDTEProject);
+            foreach (AssemblyReference reference in references)
+            {
+                // For websites only include bin assemblies
+                if (reference.ReferencedProject == null &&
+                    reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceBin &&
+                    File.Exists(reference.FullPath))
+                {
+                    assemblies.Add(reference.FullPath);
+                }
+            }
+
+            // For website projects, we always add .refresh files that point to the corresponding binaries in packages. In the event of bin deployed assemblies that are also GACed,
+            // the ReferenceKind is not AssemblyReferenceBin. Consequently, we work around this by looking for any additional assembly declarations specified via .refresh files.
+            string envDTEProjectPath = GetFullPath(envDTEProject);
+            CollectionsUtility.AddRange(assemblies, RefreshFileUtility.ResolveRefreshPaths(envDTEProjectPath));
+
+            return assemblies;
+        }
+
+        private class PathComparer : IEqualityComparer<string>
+        {
+            public static readonly PathComparer Default = new PathComparer();
+            public bool Equals(string x, string y)
+            {
+                return Path.GetFileName(x).Equals(Path.GetFileName(y));
+            }
+
+            public int GetHashCode(string obj)
+            {
+                return Path.GetFileName(obj).GetHashCode();
+            }
+        }
+
+        internal static IList<EnvDTEProject> GetReferencedProjects(EnvDTEProject envDTEProject)
+        {
+            if (IsWebSite(envDTEProject))
+            {
+                return GetWebsiteReferencedProjects(envDTEProject);
+            }
+
+            var envDTEProjects = new List<EnvDTEProject>();
+            References references;
+            try
+            {
+                references = GetReferences(envDTEProject);
+            }
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+            {
+                //References property doesn't exist, project does not have references
+                references = null;
+            }
+            if (references != null)
+            {
+                foreach (Reference reference in references)
+                {
+                    // Get the referenced project from the reference if any
+                    if (reference.SourceProject != null)
+                    {
+                        envDTEProjects.Add(reference.SourceProject);
+                    }
+                }
+            }
+            return envDTEProjects;
+        }
+
+        private static IList<EnvDTEProject> GetWebsiteReferencedProjects(EnvDTEProject envDTEProject)
+        {
+            var envDTEProjects = new List<EnvDTEProject>();
+            AssemblyReferences references = GetAssemblyReferences(envDTEProject);
+            foreach (AssemblyReference reference in references)
+            {
+                if (reference.ReferencedProject != null)
+                {
+                    envDTEProjects.Add(reference.ReferencedProject);
+                }
+            }
+            return envDTEProjects;
+        }
+
         #endregion // Get "Project" Information
 
 
@@ -838,8 +1003,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             projectItem.Delete();
             return true;
-        }
-        #endregion
+        }        
 
         public static void AddImportStatement(EnvDTEProject project, string targetsPath, ImportLocation location)
         {
@@ -858,5 +1022,6 @@ namespace NuGet.PackageManagement.VisualStudio
             FileSystemUtility.MakeWriteable(project.FullName);
             project.Save();
         }
+        #endregion
     }
 }

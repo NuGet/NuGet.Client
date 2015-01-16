@@ -477,5 +477,42 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
         }
+
+        #region Binding Redirects Stuff
+        private const string SilverlightTargetFrameworkIdentifier = "Silverlight";
+        protected virtual bool IsBindingRedirectSupported
+        {
+            get
+            {
+                // Silverlight projects and Windows Phone projects do not support binding redirect. 
+                // They both share the same identifier as "Silverlight"
+                return !SilverlightTargetFrameworkIdentifier.Equals(TargetFramework.DotNetFrameworkName, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        public void AddBindingRedirects()
+        {
+            InitForBindingRedirects();
+            if(IsBindingRedirectSupported && VSSolutionManager != null)
+            {
+                RuntimeHelpers.AddBindingRedirects(VSSolutionManager, EnvDTEProject, VSFrameworkMultiTargeting);
+            }
+        }
+
+        private bool BindingRedirectsRelatedInitialized = false;
+        private VSSolutionManager VSSolutionManager { get; set; }
+        private IVsFrameworkMultiTargeting VSFrameworkMultiTargeting { get; set; }
+
+        private void InitForBindingRedirects()
+        {
+            if(!BindingRedirectsRelatedInitialized)
+            {
+                var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+                VSSolutionManager = (solutionManager != null) ? (solutionManager as VSSolutionManager) : null;
+
+                //VSFrameworkMultiTargeting = ServiceLocator.GetInstance<IVsFrameworkMultiTargeting>();
+            }
+        }
+        #endregion
     }
 }

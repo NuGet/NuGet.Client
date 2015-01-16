@@ -1,6 +1,7 @@
 ﻿using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
@@ -132,16 +133,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<NuGetProject> GetProjects()
         {
-            if (IsSolutionOpen)
+            return GetEnvDTEProjects().Select(p => VSNuGetProjectFactory.GetNuGetProject(p, ToBeDeletedNuGetProjectContext));
+        }
+
+        internal IEnumerable<EnvDTEProject> GetEnvDTEProjects()
+        {
+            if(IsSolutionOpen)
             {
                 EnsureEnvDTEProjectCache();
-                return EnvDTEProjectCache.GetProjects()
-                    .Select(p => VSNuGetProjectFactory.GetNuGetProject(p, ToBeDeletedNuGetProjectContext));
+                return EnvDTEProjectCache.GetProjects();
             }
-            else
-            {
-                return Enumerable.Empty<NuGetProject>();
-            }
+
+            return Enumerable.Empty<EnvDTEProject>();
         }
 
         public bool IsSolutionOpen
@@ -348,6 +351,57 @@ namespace NuGet.PackageManagement.VisualStudio
             catch (Exception)
             {
             }
+        }
+
+        // REVIEW: This might be inefficient, see what we can do with caching projects until references change
+        internal IEnumerable<EnvDTEProject> GetDependentEnvDTEProjects(EnvDTEProject envDTEProject)
+        {
+            if (envDTEProject == null)
+            {
+                throw new ArgumentNullException("project");
+            }
+
+            var dependentProjects = new Dictionary<string, List<Project>>();
+
+            // Get all of the projects in the solution and build the reverse graph. i.e.
+            // if A has a project reference to B (A -> B) the this will return B -> A
+            // We need to run this on the ui thread so that it doesn't freeze for websites. Since there might be a 
+            // large number of references.           
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                foreach (EnvDTEProject envDTEProj in GetEnvDTEProjects())
+                {
+                    if (EnvDTEProjectUtility.SupportsReferences(envDTEProj))
+                    {
+                        foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(envDTEProj))
+                        {
+                            AddDependentProject(dependentProjects, referencedProject, envDTEProject);
+                        }
+                    }
+                }
+            });
+
+            List<Project> dependents;
+            if (dependentProjects.TryGetValue(EnvDTEProjectUtility.GetUniqueName(envDTEProject), out dependents))
+            {
+                return dependents;
+            }
+
+            return Enumerable.Empty<EnvDTEProject>();
+        }
+
+        private static void AddDependentProject(IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectDictionary,
+            EnvDTEProject envDTEProject, EnvDTEProject dependentEnvDTEProject)
+        {
+            string uniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
+
+            List<EnvDTEProject> dependentEnvDTEProjects;
+            if (!dependentEnvDTEProjectDictionary.TryGetValue(uniqueName, out dependentEnvDTEProjects))
+            {
+                dependentEnvDTEProjects = new List<EnvDTEProject>();
+                dependentEnvDTEProjectDictionary[uniqueName] = dependentEnvDTEProjects;
+            }
+            dependentEnvDTEProjects.Add(dependentEnvDTEProject);
         }
 
         #region IVsSelectionEvents implementation

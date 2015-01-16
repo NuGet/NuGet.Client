@@ -37,6 +37,7 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.Build" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>False</SpecificVersion>
@@ -86,7 +87,7 @@
     </Reference>
     <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116033604\lib\net45\NuGet.PackageManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116200032\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -98,7 +99,7 @@
     </Reference>
     <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116033604\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116200032\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -140,9 +141,16 @@
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />
     <Compile Include="ProjectSystems\WixProjectSystem.cs" />
+    <Compile Include="Runtime\AssemblyBinding.cs" />
+    <Compile Include="Runtime\BindingRedirectManager.cs" />
+    <Compile Include="Runtime\BindingRedirectResolver.cs" />
+    <Compile Include="Runtime\IAssembly.cs" />
+    <Compile Include="Runtime\RemoteAssembly.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
+    <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
     <Compile Include="Utility\PathUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
+    <Compile Include="Utility\RuntimeHelpers.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
@@ -155,7 +163,6 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="Utility\ExceptionHelper.cs" />
-    <Compile Include="Utility\FileSystemUtility.cs" />
     <Compile Include="Utility\MicrosoftBuildEvaluationProjectUtility.cs" />
     <Compile Include="Utility\ServiceLocator.cs" />
     <Compile Include="Utility\NuGetVSConstants.cs" />
