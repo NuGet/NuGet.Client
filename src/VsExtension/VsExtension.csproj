@@ -179,7 +179,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client, Version=1.1.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -227,7 +227,7 @@
     </Reference>
     <Reference Include="NuGet.PackageManagement.PowerShellCmdlets, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.1.0.0-pre-20150115092313\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.1.0.0-pre-20150115233649\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

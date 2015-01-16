@@ -23,7 +23,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private static readonly object _initScriptsLock = new object();
         private readonly string _name;
         private readonly IRunspaceManager _runspaceManager;
-        private readonly PackageSourceProvider _packageSourceProvider;
+        private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISolutionManager _solutionManager;
         private readonly ISettings _settings;
 
@@ -44,7 +44,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _runspaceManager = runspaceManager;
 
             // TODO: Take these as ctor arguments
-            _packageSourceProvider = ServiceLocator.GetInstance<PackageSourceProvider>();
+            _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
 
             _name = name;
@@ -390,7 +390,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 if (string.IsNullOrEmpty(activePackageSourceName))
                 {
-                    PackageSource[] packageSources = _packageSourceProvider.LoadPackageSources().ToArray();
+                    PackageSource[] packageSources = _sourceRepositoryProvider.GetRepositories().Select(v => v.PackageSource).ToArray();
                     if (packageSources.Length == 1)
                     {
                         //_packageSourceProvider.ActivePackageSource = packageSources[0];
@@ -433,7 +433,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public string[] GetPackageSources()
         {
             // Starting NuGet 3.0 RC, AggregateSource will not be displayed in the Package source dropdown box of PowerShell console.
-            return _packageSourceProvider.LoadPackageSources().Select(ps => ps.Name).ToArray();
+            return _sourceRepositoryProvider.GetRepositories().Select(ps => ps.PackageSource.Name).ToArray();
         }
 
         public string DefaultProject
