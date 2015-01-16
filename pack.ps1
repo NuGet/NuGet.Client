@@ -1,6 +1,6 @@
 param (
     [string]$PushTarget,
-    [ValidateSet("debug", "release")][string]$Configuration="debug",
+    [ValidateSet("debug", "release")][string]$Configuration="release",
     [switch]$SkipTests,
     [switch]$SkipBuild,
     [string]$PFXPath,
