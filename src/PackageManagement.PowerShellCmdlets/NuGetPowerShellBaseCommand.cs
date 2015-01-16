@@ -24,6 +24,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// </summary>
     public abstract class NuGetPowerShellBaseCommand : PSCmdlet, INuGetProjectContext, IErrorHandler
     {
+        private PackageManagementContext _packageManagementContext;
         private ISourceRepositoryProvider _resourceRepositoryProvider;
         private ISolutionManager _solutionManager;
         private readonly IHttpClientEvents _httpClientEvents;
@@ -32,8 +33,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public NuGetPowerShellBaseCommand()
         {
-            _resourceRepositoryProvider = (ISourceRepositoryProvider)GetMemberValueFromHostPrivateData("_sourceRepositoryProvider");
-            _solutionManager = (ISolutionManager)GetMemberValueFromHostPrivateData("_solutionManager");
+            _packageManagementContext = (PackageManagementContext)GetPropertyValueFromHostPrivateData("PackageManagementContext");
+            _resourceRepositoryProvider = _packageManagementContext.SourceRepositoryProvider;
+            _solutionManager = _packageManagementContext.VsSolutionManager;
         }
 
         public NuGetPackageManager PackageManager
@@ -133,13 +135,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             PSPropertyInfo propertyInfo = this.Host.PrivateData.Properties[typeName];
             object obj = propertyInfo.Value;
-            return obj;
-        }
-
-        private object GetMemberValueFromHostPrivateData(string typeName)
-        {
-            PSMemberInfo memberInfo = this.Host.PrivateData.Members[typeName];
-            object obj = memberInfo.Value;
             return obj;
         }
 
