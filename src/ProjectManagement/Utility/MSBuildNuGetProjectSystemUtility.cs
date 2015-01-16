@@ -347,6 +347,7 @@ namespace NuGet.ProjectManagement
                 {
                     System.Threading.Thread.Sleep(100);
                 }
+                msBuildNuGetProjectSystem.RemoveFile(path);
 
                 msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
             }
