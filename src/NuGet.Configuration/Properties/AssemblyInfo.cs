@@ -6,8 +6,8 @@ using System.Resources;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 // Project-specific attributes
-[assembly: AssemblyTitle("NuGet.Configuration")]
-[assembly: AssemblyDescription("NuGet.Configuration implements NuGet's configuration settings")]
+[assembly: AssemblyTitle("NuGet's client configuration settings implementation.")]
+[assembly: AssemblyDescription("NuGet's client configuration settings implementation.")]
 
 // Common attributes
 [assembly: AssemblyCompany("Outercurve Foundation")]
