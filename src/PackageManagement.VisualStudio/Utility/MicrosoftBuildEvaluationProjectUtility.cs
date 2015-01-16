@@ -38,36 +38,58 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        internal static void AddImportStatement(MicrosoftBuildEvaluationProject project, string targetsPath, ImportLocation location)
+        internal static void AddImportStatement(MicrosoftBuildEvaluationProject msBuildProject, string targetsPath, ImportLocation location)
         {
-            if (project.Xml.Imports == null ||
-                project.Xml.Imports.All(import => !targetsPath.Equals(import.Project, StringComparison.OrdinalIgnoreCase)))
+            if (msBuildProject.Xml.Imports == null ||
+                msBuildProject.Xml.Imports.All(import => !targetsPath.Equals(import.Project, StringComparison.OrdinalIgnoreCase)))
             {
-                ProjectImportElement pie = project.Xml.AddImport(targetsPath);
+                ProjectImportElement pie = msBuildProject.Xml.AddImport(targetsPath);
                 pie.Condition = "Exists('" + targetsPath + "')";
                 if (location == ImportLocation.Top)
                 {
                     // There's no public constructor to create a ProjectImportElement directly.
                     // So we have to cheat by adding Import at the end, then remove it and insert at the beginning
                     pie.Parent.RemoveChild(pie);
-                    project.Xml.InsertBeforeChild(pie, project.Xml.FirstChild);
+                    msBuildProject.Xml.InsertBeforeChild(pie, msBuildProject.Xml.FirstChild);
                 }
 
-                AddEnsureImportedTarget(project, targetsPath);
-                project.ReevaluateIfNecessary();
+                AddEnsureImportedTarget(msBuildProject, targetsPath);
+                msBuildProject.ReevaluateIfNecessary();
             }
         }
 
-        private static void AddEnsureImportedTarget(MicrosoftBuildEvaluationProject buildProject, string targetsPath)
+        /// <summary>
+        /// Removes the Import element from the project file.
+        /// </summary>
+        /// <param name="msBuildProject">The project file.</param>
+        /// <param name="targetsPath">The path to the imported file.</param>
+        internal static void RemoveImportStatement(MicrosoftBuildEvaluationProject msBuildProject, string targetsPath)
+        {
+            if (msBuildProject.Xml.Imports != null)
+            {
+                // search for this import statement and remove it
+                var importElement = msBuildProject.Xml.Imports.FirstOrDefault(
+                    import => targetsPath.Equals(import.Project, StringComparison.OrdinalIgnoreCase));
+
+                if (importElement != null)
+                {
+                    importElement.Parent.RemoveChild(importElement);
+                    RemoveEnsureImportedTarget(msBuildProject, targetsPath);
+                    msBuildProject.ReevaluateIfNecessary();
+                }
+            }
+        }
+
+        private static void AddEnsureImportedTarget(MicrosoftBuildEvaluationProject msBuildProject, string targetsPath)
         {
             // get the target
-            var targetElement = buildProject.Xml.Targets.FirstOrDefault(
+            var targetElement = msBuildProject.Xml.Targets.FirstOrDefault(
                 target => target.Name.Equals(targetName, StringComparison.OrdinalIgnoreCase));
 
             // if the target does not exist, create the target
             if (targetElement == null)
             {
-                targetElement = buildProject.Xml.AddTarget(targetName);
+                targetElement = msBuildProject.Xml.AddTarget(targetName);
 
                 // PrepareForBuild is used here because BeforeBuild does not work for VC++ projects.
                 targetElement.BeforeTargets = "PrepareForBuild";
@@ -85,5 +107,28 @@ namespace NuGet.PackageManagement.VisualStudio
             errorTask.SetParameter("Text", errorText);
         }
 
+        private static void RemoveEnsureImportedTarget(MicrosoftBuildEvaluationProject msBuildProject, string targetsPath)
+        {
+            var targetElement = msBuildProject.Xml.Targets.FirstOrDefault(
+                target => string.Equals(target.Name, targetName, StringComparison.OrdinalIgnoreCase));
+            if (targetElement == null)
+            {
+                return;
+            }
+
+            string errorCondition = "!Exists('" + targetsPath + "')";
+            var taskElement = targetElement.Tasks.FirstOrDefault(
+                task => string.Equals(task.Condition, errorCondition, StringComparison.OrdinalIgnoreCase));
+            if (taskElement == null)
+            {
+                return;
+            }
+
+            taskElement.Parent.RemoveChild(taskElement);
+            if (targetElement.Tasks.Count == 0)
+            {
+                targetElement.Parent.RemoveChild(targetElement);
+            }
+        }
     }
 }

@@ -1010,6 +1010,11 @@ namespace NuGet.PackageManagement.VisualStudio
             MicrosoftBuildEvaluationProjectUtility.AddImportStatement(AsMSBuildProject(project), targetsPath, location);
         }
 
+        public static void RemoveImportStatement(EnvDTEProject project, string targetsPath)
+        {
+            MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(AsMSBuildProject(project), targetsPath);
+        }
+
         public static MicrosoftBuildEvaluationProject AsMSBuildProject(EnvDTEProject project)
         {
             return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(project.FullName).FirstOrDefault() ??

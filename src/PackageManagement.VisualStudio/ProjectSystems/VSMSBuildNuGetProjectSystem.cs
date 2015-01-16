@@ -351,7 +351,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void RemoveImport(string targetFullPath)
         {
-            throw new NotImplementedException();
+            if (String.IsNullOrEmpty(targetFullPath))
+            {
+                throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "targetPath");
+            }
+
+            string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(EnvDTEProjectUtility.GetFullPath(EnvDTEProject)), targetFullPath);
+            EnvDTEProjectUtility.RemoveImportStatement(EnvDTEProject, relativeTargetPath);
+
+            EnvDTEProjectUtility.Save(EnvDTEProject);
+
+            // notify the project system of the change
+            UpdateImportStamp(EnvDTEProject);
         }
 
         public virtual void RemoveReference(string name)
