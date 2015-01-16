@@ -55,7 +55,7 @@ TypesToProcess = @('NuGet.Types.ps1xml')
 FormatsToProcess = @('NuGet.Format.ps1xml')
 
 # Modules to import as nested modules of the module specified in ModuleToProcess
-NestedModules = @('NuGet.Client.VisualStudio.PowerShell.dll')
+NestedModules = @('NuGet.PackageManagement.PowerShellCmdlets.dll')
 
 # Functions to export from this module
 FunctionsToExport = @('Register-TabExpansion')

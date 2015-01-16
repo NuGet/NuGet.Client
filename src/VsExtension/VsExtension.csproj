@@ -90,6 +90,30 @@
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\Add-WrapperMembers.ps1">
+      <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Format.ps1xml">
+      <Link>Modules\NuGet\NuGet.Format.ps1xml</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.psd1">
+      <Link>Modules\NuGet\NuGet.psd1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\nuget.psm1">
+      <Link>Modules\NuGet\nuget.psm1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Types.ps1xml">
+      <Link>Modules\NuGet\NuGet.Types.ps1xml</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\Profile.ps1">
+      <Link>Modules\NuGet\Profile.ps1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Resources\nugetAbout.ico" />
