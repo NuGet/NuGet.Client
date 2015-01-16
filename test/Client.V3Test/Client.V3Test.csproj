@@ -37,24 +37,29 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Client.BaseTypes.0.2.0-pre-20150112215135\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Configuration">
-      <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50072141\lib\net45\NuGet.Configuration.dll</HintPath>
+    <Reference Include="NuGet.Configuration, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-rc\lib\net45\NuGet.Configuration.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Frameworks">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Frameworks.dll</HintPath>
+    <Reference Include="NuGet.Frameworks, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.Frameworks.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Packaging">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Packaging.dll</HintPath>
+    <Reference Include="NuGet.Packaging, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.Packaging.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.PackagingCore">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.PackagingCore.dll</HintPath>
+    <Reference Include="NuGet.PackagingCore, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.PackagingCore.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Resolver">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Resolver.dll</HintPath>
+    <Reference Include="NuGet.Resolver, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.Resolver.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Versioning, Version=1.0.6.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.6\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+    <Reference Include="NuGet.Versioning, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NuGet.Versioning.3.0.0-rc\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
