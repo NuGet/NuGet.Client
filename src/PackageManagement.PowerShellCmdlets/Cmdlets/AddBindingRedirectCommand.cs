@@ -14,10 +14,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         //private readonly IFileSystemProvider _fileSystemProvider;
         //private readonly IVsFrameworkMultiTargeting _frameworkMultiTargeting;
 
-        public AddBindingRedirectCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public AddBindingRedirectCommand()
+            : base()
         {
         }
 
@@ -42,7 +40,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // if no project specified, use default
             if (ProjectName == null)
             {
-                NuGetProject project = VSSolutionManager.DefaultNuGetProject;
+                NuGetProject project = VsSolutionManager.DefaultNuGetProject;
 
                 // if no default project (empty solution), throw terminating
                 if (project == null)
@@ -55,7 +53,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 // get matching projects, expanding wildcards
-                projects.AddRange(VSSolutionManager.GetProjects());
+                projects.AddRange(VsSolutionManager.GetProjects());
             }
 
             // Create a new app domain so we don't load the assemblies into the host app domain

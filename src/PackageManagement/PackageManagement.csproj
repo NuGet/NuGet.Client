@@ -88,6 +88,7 @@
     <Compile Include="IDE\IProductUpdateService.cs" />
     <Compile Include="IDE\ISolutionManager.cs" />
     <Compile Include="ISourceRepositoryProvider.cs" />
+    <Compile Include="PackageManagementContext.cs" />
     <Compile Include="Resolution\ResolverGather.cs" />
     <Compile Include="Resolution\SourceDependencyInfo.cs" />
     <Compile Include="Utility\NuGetEvent.cs" />

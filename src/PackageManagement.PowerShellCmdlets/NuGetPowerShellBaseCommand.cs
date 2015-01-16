@@ -24,32 +24,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// </summary>
     public abstract class NuGetPowerShellBaseCommand : PSCmdlet, INuGetProjectContext, IErrorHandler
     {
-        private Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] _resourceProviders;
+        private ISourceRepositoryProvider _resourceRepositoryProvider;
         private ISolutionManager _solutionManager;
         private readonly IHttpClientEvents _httpClientEvents;
-        //internal const string PSCommandsUserAgentClient = "NuGet VS PowerShell Console";
-        //private readonly Lazy<string> _psCommandsUserAgent = new Lazy<string>(
-        //    () => HttpUtility.CreateUserAgentString(PSCommandsUserAgentClient, VsVersionHelper.FullVsEdition));
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
 
-        public NuGetPowerShellBaseCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
+        public NuGetPowerShellBaseCommand()
         {
-            _resourceProviders = resourceProvider;
-            _solutionManager = solutionManager;
+            _resourceRepositoryProvider = (ISourceRepositoryProvider)GetMemberValueFromHostPrivateData("_sourceRepositoryProvider");
+            _solutionManager = (ISolutionManager)GetMemberValueFromHostPrivateData("_solutionManager");
         }
 
-        public NuGetPackageManager PackageManager { get; set; }
+        public NuGetPackageManager PackageManager
+        {
+            get
+            {
+                return new NuGetPackageManager(_resourceRepositoryProvider);
+            }
+        }
 
-        public SourceRepositoryProvider SourceRepositoryProvider { get; private set; }
-
-        public PackageSourceProvider PackageSourceProvider { get; set; }
-
-        public SourceRepository ActiveSourceRepository { get; set; }
-
-        public ISolutionManager VSSolutionManager
+        public ISolutionManager VsSolutionManager
         {
             get
             {
@@ -57,7 +52,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        public ISettings ConfigSettings { get; set; }
+        public PackageSourceProvider PackageSourceProvider
+        {
+            get
+            {
+                return new PackageSourceProvider(ConfigSettings);
+            }
+        }
+
+        public SourceRepository ActiveSourceRepository { get; set; }
+
+        public ISettings ConfigSettings
+        {
+            get
+            {
+                return new Settings(Environment.ExpandEnvironmentVariables("systemdrive"));
+            }
+        }
 
         public NuGetProject Project { get; set; }
 
@@ -97,38 +108,56 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
         }
 
-        protected void GetSourceRepositoryProvider(string sourceUrl = null)
+        protected void GetActiveSourceRepository(string source = null)
         {
-            ConfigSettings = Settings.LoadDefaultSettings(Environment.ExpandEnvironmentVariables("%systemdrive%"), null, null);
-            PackageSourceProvider = new PackageSourceProvider(ConfigSettings);
-            SourceRepositoryProvider = new SourceRepositoryProvider(PackageSourceProvider, _resourceProviders);
-            if (!string.IsNullOrEmpty(sourceUrl))
+            if (string.IsNullOrEmpty(source))
             {
-                PackageSource source = new PackageSource(sourceUrl);
-                ActiveSourceRepository = new SourceRepository(source, _resourceProviders);
+                source = (string)GetPropertyValueFromHostPrivateData("ActivePackageSource");
             }
-            else
+
+            IEnumerable<SourceRepository> repoes = _resourceRepositoryProvider.GetRepositories();
+            if (!string.IsNullOrEmpty(source))
             {
-                IEnumerable<SourceRepository> repoes = SourceRepositoryProvider.GetRepositories();
+                ActiveSourceRepository = repoes
+                    .Where(p => string.Equals(p.PackageSource.Name, source, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(p.PackageSource.Source, source, StringComparison.OrdinalIgnoreCase))
+                        .FirstOrDefault();
+            }
+            else 
+            {
                 ActiveSourceRepository = repoes.FirstOrDefault();
             }
+        }
+
+        private object GetPropertyValueFromHostPrivateData(string typeName)
+        {
+            PSPropertyInfo propertyInfo = this.Host.PrivateData.Properties[typeName];
+            object obj = propertyInfo.Value;
+            return obj;
+        }
+
+        private object GetMemberValueFromHostPrivateData(string typeName)
+        {
+            PSMemberInfo memberInfo = this.Host.PrivateData.Members[typeName];
+            object obj = memberInfo.Value;
+            return obj;
         }
 
         protected void GetNuGetProject(string projectName = null)
         {
             if (string.IsNullOrEmpty(projectName))
             {
-                Project = VSSolutionManager.DefaultNuGetProject;
+                Project = _solutionManager.DefaultNuGetProject;
             }
             else
             {
-                Project = VSSolutionManager.GetNuGetProject(projectName);
+                Project = _solutionManager.GetNuGetProject(projectName);
             }
         }
 
         protected void CheckForSolutionOpen()
         {
-            if (!VSSolutionManager.IsSolutionOpen)
+            if (!_solutionManager.IsSolutionOpen)
             {
                 ErrorHandler.ThrowSolutionNotOpenTerminatingError();
             }

@@ -24,10 +24,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private const int DefaultFirstValue = 50;
         private bool _enablePaging;
 
-        public GetPackageCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public GetPackageCommand()
+            : base()
         {
         }
 
@@ -89,13 +87,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
             CollapseVersions = !AllVersions.IsPresent && ListAvailable;
-            GetSourceRepositoryProvider(Source);
-            PackageManager = new NuGetPackageManager(SourceRepositoryProvider);
+            GetActiveSourceRepository(Source);
 
             base.Preprocess();
             if (string.IsNullOrEmpty(ProjectName))
             {
-                Projects = VSSolutionManager.GetProjects().ToList();
+                Projects = VsSolutionManager.GetProjects().ToList();
             }
             else
             {

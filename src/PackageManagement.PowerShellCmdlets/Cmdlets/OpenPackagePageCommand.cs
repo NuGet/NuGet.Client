@@ -15,10 +15,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsCommon.Open, "PackagePage", DefaultParameterSetName = ParameterAttribute.AllParameterSets, SupportsShouldProcess = true)]
     public class OpenPackagePageCommand : NuGetPowerShellBaseCommand
     {
-        public OpenPackagePageCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public OpenPackagePageCommand()
+            : base()
         {
         }
 
@@ -47,7 +45,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            GetSourceRepositoryProvider(Source);
+            GetActiveSourceRepository(Source);
             base.Preprocess();
         }
 

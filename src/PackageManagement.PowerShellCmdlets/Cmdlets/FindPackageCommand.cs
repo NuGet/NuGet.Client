@@ -19,10 +19,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private const int MaxReturnedPackages = 30;
 
-        public FindPackageCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public FindPackageCommand()
+            : base()
         {
         }
 
@@ -73,8 +71,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Version = string.Empty;
             }
 
-            GetSourceRepositoryProvider(Source);
-            PackageManager = new NuGetPackageManager(SourceRepositoryProvider);
+            GetActiveSourceRepository(Source);
             base.Preprocess();
         }
 

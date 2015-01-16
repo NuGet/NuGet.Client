@@ -18,10 +18,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private const string ParameterSetByName = "ByName";
         private const string ParameterSetAllProjects = "AllProjects";
 
-        public GetProjectCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public GetProjectCommand()
+            : base()
         {
         }
 
@@ -46,7 +44,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             
             if (All.IsPresent)
             {
-                IEnumerable<NuGetProject> projects = VSSolutionManager.GetProjects();
+                IEnumerable<NuGetProject> projects = VsSolutionManager.GetProjects();
                 WriteObject(projects, enumerateCollection: true);
             }
             else

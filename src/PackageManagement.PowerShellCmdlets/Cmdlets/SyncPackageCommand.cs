@@ -18,10 +18,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private ResolutionContext _context;
 
-        public SyncPackageCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public SyncPackageCommand()
+            : base()
         {
         }
 
@@ -30,7 +28,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void Preprocess()
         {
             base.Preprocess();
-            Projects = VSSolutionManager.GetProjects().ToList();
+            Projects = VsSolutionManager.GetProjects().ToList();
         }
 
         protected override void ProcessRecordCore()
