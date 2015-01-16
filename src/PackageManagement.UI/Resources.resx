@@ -402,4 +402,13 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ShowDetails" xml:space="preserve">
     <value>Show Details</value>
   </data>
+  <data name="Checkbox_ProjectSelection" xml:space="preserve">
+    <value>{0} projects</value>
+  </data>
+  <data name="Text_ShowAll" xml:space="preserve">
+    <value>Show all</value>
+  </data>
+  <data name="Link_LearnAboutOptions" xml:space="preserve">
+    <value>Learn about Options</value>
+  </data>
 </root>

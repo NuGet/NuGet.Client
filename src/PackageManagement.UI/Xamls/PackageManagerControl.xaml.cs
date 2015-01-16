@@ -37,6 +37,8 @@ namespace NuGet.PackageManagement.UI
         private IVsWindowSearchHost _windowSearchHost;
         private IVsWindowSearchHostFactory _windowSearchHostFactory;
 
+        private DetailControlModel _detailModel;
+
         public PackageManagerModel Model { get; private set; }
 
         public PackageManagerControl(PackageManagerModel model)
@@ -47,6 +49,15 @@ namespace NuGet.PackageManagement.UI
         public PackageManagerControl(PackageManagerModel model, IVsWindowSearchHostFactory searchFactory)
         {
             Model = model;
+            if (Model.Context.Projects.Count() == 1)
+            {
+                _detailModel = new PackageDetailControlModel(Model.Context.Projects);
+            }
+            else
+            {
+                _detailModel = new PackageSolutionDetailControlModel(Model.Context.Projects);
+            }
+
             InitializeComponent();
 
             _windowSearchHostFactory = searchFactory;
@@ -176,26 +187,27 @@ namespace NuGet.PackageManagement.UI
 
         private void SetTitle()
         {
-            List<string> projectNames = new List<string>();
-
-            foreach (var project in Model.Context.Projects)
+            if (Model.Context.Projects.Count() > 1)
             {
-                string s = null;
-                if (project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out s))
-                {
-                    projectNames.Add(s);
-                }
-                else
-                {
-                    // TODO: Localize
-                    projectNames.Add("Unknown");
-                }
+                _label.Text = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resx.Resources.Label_PackageManager,
+                    "!!!solution");
             }
+            else
+            {
+                var project = Model.Context.Projects.First();
+                string projectName = null;
+                if (!project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out projectName))
+                {
+                    projectName = "unknown";
+                }
 
-            _label.Text = string.Format(
-                CultureInfo.CurrentCulture,
-                Resx.Resources.Label_PackageManager,
-                String.Join(", ", projectNames));
+                _label.Text = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resx.Resources.Label_PackageManager,
+                    projectName);
+            }
         }
 
         private void InitSourceRepoList()
@@ -299,30 +311,11 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 _packageDetail.Visibility = Visibility.Visible;
-
-                DetailControlModel newModel;
-                //if (Target.IsSolution)
-                //{
-                //    newModel = new PackageSolutionDetailControlModel(
-                //        (VsSolution)Target,
-                //        selectedPackage);
-                //}
-
-                // project level model
-                // TODO: pass in the list instead of the first one
-                newModel = new PackageDetailControlModel(
-                        Model.Context.Projects,
-                        selectedPackage);
-
-                var oldModel = _packageDetail.DataContext as DetailControlModel;
-                if (oldModel != null)
-                {
-                    newModel.Options = oldModel.Options;
-                }
-                _packageDetail.DataContext = newModel;
+                _detailModel.SetCurrentPackage(selectedPackage);
+                _packageDetail.DataContext = _detailModel;
                 _packageDetail.ScrollToHome();
 
-                await newModel.LoadPackageMetadaAsync(await _activeSource.GetResourceAsync<UIMetadataResource>(), CancellationToken.None);
+                await _detailModel.LoadPackageMetadaAsync(await _activeSource.GetResourceAsync<UIMetadataResource>(), CancellationToken.None);
             }
         }
 

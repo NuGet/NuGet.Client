@@ -24,5 +24,14 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
         }
+        private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
+        {
+            Hyperlink hyperlink = e.OriginalSource as Hyperlink;
+            if (hyperlink != null && hyperlink.NavigateUri != null)
+            {
+                UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
+                e.Handled = true;
+            }
+        }
     }
 }

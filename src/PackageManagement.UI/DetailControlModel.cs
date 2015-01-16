@@ -18,20 +18,28 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal abstract class DetailControlModel : INotifyPropertyChanged
     {
-        protected IEnumerable<NuGetProject> _projects;
+        protected IEnumerable<NuGetProject> _nugetProjects;
+        
+        // all versions of the _searchResultPackage
         protected List<NuGetVersion> _allPackages;
+
         protected SearchResultPackageMetadata _searchResultPackage;
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
-        public DetailControlModel(
-            IEnumerable<NuGetProject> projects,
-            SearchResultPackageMetadata searchResultPackage)
+        public DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
         {
-            _projects = projects;
-            _searchResultPackage = searchResultPackage;
-            _allPackages = new List<NuGetVersion>(searchResultPackage.Versions);
+            _nugetProjects = nugetProjects;
             _options = new UI.Options();
+        }
+
+        public virtual void SetCurrentPackage(SearchResultPackageMetadata searchResultPackage)
+        {
+            _searchResultPackage = searchResultPackage;
+            OnPropertyChanged("Id");
+            OnPropertyChanged("IconUrl");
+
+            _allPackages = new List<NuGetVersion>(searchResultPackage.Versions);
             CreateActions();
         }
 
@@ -42,7 +50,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _projects.SelectMany(p => p.GetInstalledPackages()).Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                return _nugetProjects.SelectMany(p => p.GetInstalledPackages()).Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
             }
         }
 
@@ -266,13 +274,9 @@ namespace NuGet.PackageManagement.UI
 
         protected abstract void OnSelectedVersionChanged();
 
-        public bool IsSolution
+        public abstract bool IsSolution
         {
-            get
-            {
-                // TODO: allow solution level
-                return false;
-            }
+            get;
         }
 
         private Options _options;

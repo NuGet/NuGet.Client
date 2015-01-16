@@ -39,12 +39,12 @@
                         MinHeight="32"
                         Margin="0,8">
                 <Image
-                    Source="{Binding Path=IconUrl}"
+                    Source="{Binding Path=IconUrl,TargetNullValue={StaticResource BitmapImage_DefaultIcon}}"
                     Margin="0,0,8,0"
                     Height="32"
                     Width="32"
-                    RenderOptions.BitmapScalingMode="HighQuality"
-                    Visibility="{Binding Path=IconUrl, Converter={StaticResource IconUrlToVisibilityConverter}}" />
+                    Style="{StaticResource PackageIconImageStyle}"
+                    RenderOptions.BitmapScalingMode="HighQuality" />
                 <TextBlock
                     Text="{Binding Path=Id}"
                     FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
@@ -54,29 +54,12 @@
             <Tools:ActionsAndVersions Grid.Row="1"  Margin="0,8" />
 
             <!-- Project list -->
-            <StackPanel Grid.Row="2"
-                        Orientation="Vertical"
-                        Margin="0,12,0,8"
-                        Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}">
-                <TextBlock
-                    Text="{x:Static resx:Resources.Label_Projects}" />
-                <ItemsControl
-                    ItemsSource="{Binding Path=Projects}"
-                    IsTabStop="False" >
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <CheckBox
-                                Content="{Binding}"
-                                Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-                                Margin="16,8,0,0"
-                                VerticalContentAlignment="Center"
-                                IsChecked="{Binding Path=Selected}"
-                                IsEnabled="{Binding Path=Enabled}" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-
+            <Tools:ProjectList
+                x:Name="_projectList"
+                Grid.Row="2"
+                Margin="0,12,0,8"
+                Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}" />
+            
             <!-- Installed Version  -->
             <StackPanel Grid.Row="2"
                         Margin="0,12,0,8"

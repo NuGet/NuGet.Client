@@ -37,7 +37,8 @@
     <Target Name="RestorePackages">
         <ItemGroup>
             <!-- Package sources used to restore packages. By default will used the registered sources under %APPDATA%\NuGet\NuGet.Config -->
-            <PackageSource Include="https://www.nuget.org/api/v2" />
+            <PackageSource Include="$(NUGET_LOCAL_SOURCE)" Condition="'$(NUGET_LOCAL_SOURCE)' != ''" />
+			<PackageSource Include="https://www.nuget.org/api/v2" />
             <PackageSource Include="https://www.myget.org/F/nugetbuild/" />
         </ItemGroup>
         <PropertyGroup>
@@ -85,5 +86,5 @@
       <MSBuild Projects="@(SolutionFile)" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis)" />
     </Target>
 
-    <Target Name="Build" DependsOnTargets="Clean;CheckForMultipleSolutions;RestorePackages;BuildSln;ReportFxCopResults;RunTests" />
+    <Target Name="Build" DependsOnTargets="CheckForMultipleSolutions;RestorePackages;BuildSln;ReportFxCopResults;RunTests" />
 </Project>
