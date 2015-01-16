@@ -93,7 +93,14 @@ if (!$Version) {
 
     if (!$Stable)
     {
-        $version += "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
+        # prerelease labels can have a max length of 20
+        $now = [System.DateTime]::UtcNow
+        $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
+
+        if ($Configuration -eq "debug")
+        {
+            $version += "-d"
+        }
     }
 }
 
