@@ -3,14 +3,14 @@
   <metadata>
     <id>NuGet.Packaging</id>
     <version>1.0.0-overrideme</version>
-    <title>NuGet.Packaging</title>
+    <title>NuGet's implementation for reading nupkg package and nuspec package specification files.</title>
     <authors>NuGet</authors>
     <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.Packaging/</projectUrl>
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Tools for reading nupkg and nuspec files</description>
+    <description>NuGet's implementation for reading nupkg package and nuspec package specification files.</description>
     <tags>nupkg packaging nuspec</tags>
   </metadata>
   <files>

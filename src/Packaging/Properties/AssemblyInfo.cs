@@ -4,8 +4,8 @@ using System.Resources;
 using System.Runtime.CompilerServices;
 
 // Project-specific attributes
-[assembly: AssemblyTitle("NuGet.Packaging")]
-[assembly: AssemblyDescription("Tools for reading nupkg and nuspec files")]
+[assembly: AssemblyTitle("NuGet's implementation for reading nupkg package and nuspec package specification files.")]
+[assembly: AssemblyDescription("NuGet's implementation for reading nupkg package and nuspec package specification files.")]
 
 // Common attributes
 [assembly: AssemblyCompany("Outercurve Foundation")]
