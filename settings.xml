@@ -1,5 +1,5 @@
 <nupkgs>
-	<nupkg id="NuGet.Protocol.V2V3">
+	<nupkg id="NuGet.Protocol">
 		<csprojPath>\src\NuGet.Client.V3\Client.V3.csproj</csprojPath>
 		<dllName>NuGet.Client.dll</dllName>
 	</nupkg>
