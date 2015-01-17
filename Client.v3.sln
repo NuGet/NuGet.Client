@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.V3", "src\NuGet.Client.v3\Client.V3.csproj", "{72B86845-F376-4884-A0F2-AD3473CCEBED}"
 EndProject
@@ -25,9 +25,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Client.V2", "src\NuGe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Client.V2.VisualStudio", "src\NuGet.Client.V2.VisualStudio\NuGet.Client.V2.VisualStudio.csproj", "{876B40BE-A94E-4C26-BE0A-DC7C09AA5194}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protocol.Types", "Protocol.Types", "{3786116A-1322-4F74-ADCA-F4F0D7F66ECB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Protocol.Types", "NuGet.Protocol.Types", "{3786116A-1322-4F74-ADCA-F4F0D7F66ECB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protocol.V2V3", "Protocol.V2V3", "{30E864FC-9CF4-49E3-AF6E-EC19C69206C6}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Protocol", "NuGet.Protocol", "{30E864FC-9CF4-49E3-AF6E-EC19C69206C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolTypesTest", "test\ProtocolTypesTest\ProtocolTypesTest.csproj", "{E0D91F16-E309-47C0-9262-A67579BD8072}"
 EndProject

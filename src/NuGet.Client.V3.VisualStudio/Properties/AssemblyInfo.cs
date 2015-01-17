@@ -1,11 +1,23 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using System.Resources;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
+// Project-specific attributes
 [assembly: AssemblyTitle("NuGet.Client.V3.VisualStudio")]
-[assembly: AssemblyDescription("Contains V3 implementation of resources that are specific to visual studio (UI/Powershell) scenarios.")]
-[assembly: AssemblyVersion("0.2.0.0")]
-[assembly: AssemblyInformationalVersion("0.2.0-alpha")]
+[assembly: AssemblyDescription("NuGet's Visual Studio scenario resource client for API v3")]
+
+// Common attributes
+[assembly: AssemblyCompany("Outercurve Foundation")]
+[assembly: AssemblyProduct("NuGet")]
+[assembly: AssemblyCopyright("Copyright Outercurve Foundation. All rights reserved.")]
+
+[assembly: NeutralResourcesLanguage("en-US")]
+[assembly: CLSCompliant(true)]
+
+// When built on the build server, the NuGet release version is specified by the build.
+// When built locally, the NuGet release version is the values specified in this file.
+#if !FIXED_ASSEMBLY_VERSION
+[assembly: AssemblyVersion("3.0.0.0")]
+[assembly: AssemblyInformationalVersion("3.0.0-rc")]
+#endif

@@ -3,12 +3,15 @@
   <metadata>
     <id>NuGet.Protocol.Types</id>
     <version>1.0.0-changeme</version>
-    <title>NuGet.Protocol.Types</title>
+    <title>NuGet's protocol client types</title>
     <authors>NuGet</authors>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.Protocol/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>NuGet v3.0.0 core protocol types</description>
-    <projectUrl>https://github.com/NuGet/NuGet.Client.V3/</projectUrl>
+    <description>NuGet's protocol-level base types used for connecting to API v2 and API v3 repositories.</description>
+    <tags>nuget protocol client</tags>
   </metadata>
    <files>
 	<file src="..\NuGet.Client.VisualStudio\bin\$configuration$\NuGet.Client.VisualStudio.dll" target="lib/net45" />

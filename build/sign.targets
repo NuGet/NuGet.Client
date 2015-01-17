@@ -2,5 +2,6 @@
   <PropertyGroup Condition="Exists($(NUGET_PFX_PATH))">
 	<SignAssembly>true</SignAssembly>
 	<AssemblyOriginatorKeyFile>$(NUGET_PFX_PATH)</AssemblyOriginatorKeyFile>
+    <DelaySign>$(NUGET_DELAYSIGN)</DelaySign>
   </PropertyGroup>
 </Project>
