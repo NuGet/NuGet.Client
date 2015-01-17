@@ -1,20 +1,19 @@
-﻿using NuGet.Frameworks;
+﻿using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Frameworks;
+using NuGet.ProjectManagement;
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using EnvDTEProject = EnvDTE.Project;
+using EnvDTEProjectItems = EnvDTE.ProjectItems;
+using EnvDTEProperty = EnvDTE.Property;
 using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
 using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectItem;
-using EnvDTEProject = EnvDTE.Project;
-using EnvDTEProperty = EnvDTE.Property;
-using EnvDTEProjectItem = EnvDTE.ProjectItem;
-using EnvDTEProjectItems = EnvDTE.ProjectItems;
-using Microsoft.VisualStudio.Shell;
-using NuGet.ProjectManagement;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio;
-using System.IO.Compression;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -36,6 +35,9 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProject = envDTEProject;
             ProjectFullPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
             NuGetProjectContext = nuGetProjectContext;
+
+            // TODO: Consider passing it to the constructor instead of getting from every project system instance
+            ScriptExecutor = ServiceLocator.GetInstanceSafe<IScriptExecutor>();
         }
 
         public EnvDTEProject EnvDTEProject
@@ -49,6 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio
             get;
             private set;
         }
+
+        private IScriptExecutor ScriptExecutor { get; set; }
 
         public string ProjectFullPath
         {
@@ -519,10 +523,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if(!BindingRedirectsRelatedInitialized)
             {
-                var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+                var solutionManager = ServiceLocator.GetInstanceSafe<ISolutionManager>();
                 VSSolutionManager = (solutionManager != null) ? (solutionManager as VSSolutionManager) : null;
 
-                //VSFrameworkMultiTargeting = ServiceLocator.GetInstance<IVsFrameworkMultiTargeting>();
+                VSFrameworkMultiTargeting = ServiceLocator.GetInstanceSafe<IVsFrameworkMultiTargeting>();
             }
         }
         #endregion
@@ -530,7 +534,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void ExecuteScript(ZipArchive zipArchive, string scriptArchiveEntryFullName)
         {
-            throw new NotImplementedException();
+            if(ScriptExecutor != null)
+            {
+                ScriptExecutor.Execute(zipArchive, scriptArchiveEntryFullName, EnvDTEProject, NuGetProjectContext);
+            }
         }
     }
 }

@@ -132,6 +132,7 @@
     <Compile Include="CommonResources.cs" />
     <Compile Include="IDE\EnvDTEProjectCache.cs" />
     <Compile Include="IDE\EnvDTEProjectName.cs" />
+    <Compile Include="IDE\IScriptExecutor.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="ProjectSystems\CpsProjectSystem.cs" />

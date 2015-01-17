@@ -33,6 +33,18 @@ namespace NuGet.PackageManagement.VisualStudio
             private set;
         }
 
+        public static TService GetInstanceSafe<TService>() where TService : class
+        {
+            try
+            {
+                return GetInstance<TService>();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public static TService GetInstance<TService>() where TService : class
         {
             // Special case IServiceProvider
