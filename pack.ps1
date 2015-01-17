@@ -132,20 +132,24 @@ if (!$SkipBuild)
         }
     }
 
+    if ($PushTarget)
+    {
+        Write-Host "Updating package references for our own packages"
+        & nuget.exe update Client.v3 -source "$PushTarget"
+    }
+
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
     Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
 }
 
-# When building the full stack, update our dependencies on our own packages
-if ($PushTarget) {
-    & nuget.exe update Client.v3.sln -source "$PushTarget"
-}
-
 Pack("NuGet.Protocol.Types")
 
-# Now update the dependency on the NuGet.Protocol.Types package that we just produced
-$localNupkgs = Join-Path "." "nupkgs" -resolve
-& nuget.exe update Client.v3.sln -id "NuGet.Protocol.Types" -source "$localNupkgs"
+if (!$SkipBuild)
+{
+    Write-Host "Updating the package reference to NuGet.Protocol.Types"
+    $localNupkgs = Join-Path "." "nupkgs" -resolve
+    & nuget.exe update Client.v3.sln -id "NuGet.Protocol.Types" -source "$localNupkgs"
+}
 
 Pack("NuGet.Protocol")
