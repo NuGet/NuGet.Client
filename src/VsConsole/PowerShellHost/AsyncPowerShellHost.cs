@@ -18,6 +18,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         protected override bool ExecuteHost(string fullCommand, string command, params object[] inputs)
         {
             SetSyncModeOnHost(false);
+            base.SetPackageManagementContextOnHost();
+
             try
             {
                 Pipeline pipeline = Runspace.InvokeAsync(fullCommand, inputs, true, (sender, e) =>

@@ -22,6 +22,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     {
         private static readonly object _initScriptsLock = new object();
         private readonly string _name;
+        private readonly PackageManagementContext _packageManagementContext;
         private readonly IRunspaceManager _runspaceManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISolutionManager _solutionManager;
@@ -46,6 +47,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // TODO: Take these as ctor arguments
             _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            _packageManagementContext = new PackageManagementContext(_sourceRepositoryProvider, _solutionManager);
 
             _name = name;
             IsCommandEnabled = true;
@@ -328,6 +330,23 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 else
                 {
                     property.Value = isSync;
+                }
+            }
+        }
+
+        protected void SetPackageManagementContextOnHost()
+        {
+            if (_nugetHost != null)
+            {
+                PSPropertyInfo property = _nugetHost.PrivateData.Properties["PackageManagementContext"];
+                if (property == null)
+                {
+                    property = new PSNoteProperty("PackageManagementContext", _packageManagementContext);
+                    _nugetHost.PrivateData.Properties.Add(property);
+                }
+                else
+                {
+                    property.Value = _packageManagementContext;
                 }
             }
         }

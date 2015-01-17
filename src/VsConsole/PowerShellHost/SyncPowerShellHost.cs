@@ -14,6 +14,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         protected override bool ExecuteHost(string fullCommand, string command, params object[] inputs)
         {
             SetSyncModeOnHost(true);
+            base.SetPackageManagementContextOnHost();
+
             try
             {
                 Runspace.Invoke(fullCommand, inputs, true);

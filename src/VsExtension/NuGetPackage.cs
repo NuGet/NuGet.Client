@@ -494,8 +494,9 @@ namespace NuGetVSExtension
             var uiController = uiFactory.Create(new [] { nugetProject } );
 
             var model = new PackageManagerModel(uiController, uiContext);
+            var control = new PackageManagerControl(model);
 
-            var windowPane = new PackageManagerWindowPane(model);
+            var windowPane = new PackageManagerWindowPane(control);
             var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
             var ppunkDocData = Marshal.GetIUnknownForObject(model);
             var guidEditorType = Guid.Empty;
@@ -553,7 +554,7 @@ namespace NuGetVSExtension
 
                 string errorMessage = String.IsNullOrEmpty(projectName)
                     ? Resources.NoProjectSelected
-                    : String.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, projectName);
+                    : String.Format(CultureInfo.CurrentCulture, NuGet.PackageManagement.VisualStudio.Strings.DTE_ProjectUnsupported, projectName);
 
                 MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
             }

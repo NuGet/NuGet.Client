@@ -247,15 +247,15 @@
     </Reference>
     <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150115084136\lib\net45\NuGet.PackageManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116234205\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.PowerShellCmdlets, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.1.0.0-pre-20150115233649\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.1.0.0-pre-20150116235400\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.UI.1.0.0-pre-20150115092013\lib\net45\NuGet.PackageManagement.UI.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.UI.1.0.0-pre-20150117000710\lib\net45\NuGet.PackageManagement.UI.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -267,7 +267,7 @@
     </Reference>
     <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150115084136\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116234205\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
