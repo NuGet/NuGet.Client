@@ -10,6 +10,7 @@
              Name="MyToolWindow">
     <Grid>
         <StackPanel Orientation="Vertical">
+            <Button Content="_Clear_All" Click="ClearAll"  Width="50" Height="30" Name="button0"/>
             <TextBox Name="AddPackageId" Margin="10" Height="30" HorizontalAlignment="Center">jQuery</TextBox>
             <TextBox Name="AddPackageVersion" Margin="10" Height="30" HorizontalAlignment="Center">1.8.2</TextBox>
             <Button Content="_AddPackage_Into_Startup_NuGetProject" Click="AddPackage" Width="300" Height="30" Name="button1"/>

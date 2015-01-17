@@ -26,13 +26,12 @@ namespace NuGet.PackageManagement_TestVSExtension
         }
 
         private void Init()
-        {
-            Logger.Text = String.Empty;
+        {            
             if (_initNeeded)
             {
                 _initNeeded = false;
-                SolutionManager = new VSSolutionManager();
-                //SolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+                //SolutionManager = new VSSolutionManager();
+                SolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
                 MyControlNuGetProjectContext = new MyControlNuGetProjectContext(this);
             }
         }
@@ -110,6 +109,14 @@ namespace NuGet.PackageManagement_TestVSExtension
         {
             const string MachineCachePath = @"C:\Users\daravind\AppData\Local\NuGet\Cache";
             return System.IO.Path.Combine(MachineCachePath, packageIdentity.Id + "." + packageIdentity.Version + ".nupkg");
+        }
+
+        private void ClearAll(object sender, RoutedEventArgs e)
+        {
+            Logger.Text = String.Empty;
+            AddPackageId.Text = String.Empty;
+            AddPackageVersion.Text = String.Empty;
+            RemovePackageId.Text = String.Empty;
         }
     }
 
