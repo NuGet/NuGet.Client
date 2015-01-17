@@ -150,10 +150,20 @@ function BuildAndPack([string]$Id)
 
 BuildAndPack("NuGet.Protocol.Types")
 
-if (!$SkipBuild -And $PushTarget)
+if (!$SkipBuild)
 {
     Write-Host "Updating the NuGet.Protocol.Types package reference for NuGet.Protocol"
-    & nuget.exe update "Client.v3.sln" -id "NuGet.Protocol.Types" -source "$PushTarget" -repositoryPath ".\packages"
+
+    if ($PushTarget)
+    {
+        $updateSource = $PushTarget
+    }
+    else
+    {
+        $updateSource = Join-Path "." "nupkgs" -resolve
+    }
+
+    & nuget.exe update "Client.v3.sln" -id "NuGet.Protocol.Types" -source "$updateSource" -repositoryPath ".\packages"
 }
 
 BuildAndPack("NuGet.Protocol")
