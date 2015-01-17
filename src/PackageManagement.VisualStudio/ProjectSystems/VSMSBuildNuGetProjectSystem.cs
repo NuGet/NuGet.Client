@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
+using System.IO.Compression;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -525,5 +526,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
         #endregion
+
+
+        public void ExecuteScript(ZipArchive zipArchive, string scriptArchiveEntryFullName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

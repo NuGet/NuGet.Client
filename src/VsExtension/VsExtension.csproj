@@ -207,27 +207,27 @@
     </Reference>
     <Reference Include="NuGet.Client, Version=1.1.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150115031815\lib\net45\NuGet.Client.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150116093855\lib\net45\NuGet.Client.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.BaseTypes, Version=0.3.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.Types.0.3.0-pre-20150115030521\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.Types.0.3.0-pre-20150116084609\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.V2, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150115031815\lib\net45\NuGet.Client.V2.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150116093855\lib\net45\NuGet.Client.V2.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.V2.VisualStudio, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150115031815\lib\net45\NuGet.Client.V2.VisualStudio.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150116093855\lib\net45\NuGet.Client.V2.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.V3.VisualStudio, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150115031815\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150116093855\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.VisualStudio, Version=0.2.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.Types.0.3.0-pre-20150115030521\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.Types.0.3.0-pre-20150116084609\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -239,7 +239,7 @@
     </Reference>
     <Reference Include="NuGet.Data, Version=1.0.1.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150115031815\lib\net45\NuGet.Data.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.V2V3.1.1.0-pre-20150116093855\lib\net45\NuGet.Data.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Frameworks, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -247,15 +247,15 @@
     </Reference>
     <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116234205\lib\net45\NuGet.PackageManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150117061140\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.PowerShellCmdlets, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.1.0.0-pre-20150116235400\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.1.0.0-pre-20150117062856-d\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.UI.1.0.0-pre-20150117000710\lib\net45\NuGet.PackageManagement.UI.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.UI.1.0.0-pre-20150117062417\lib\net45\NuGet.PackageManagement.UI.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -267,7 +267,7 @@
     </Reference>
     <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150116234205\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150117061140\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
