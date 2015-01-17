@@ -223,6 +223,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid!! Could not find a folder under artifact type &apos;{0}&apos;, so cannot request for artifacts specific to target framework &apos;{1}&apos;.
+        /// </summary>
+        public static string NoFolderSpecificToTargetFxFound {
+            get {
+                return ResourceManager.GetString("NoFolderSpecificToTargetFxFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists in folder &apos;{1}&apos;.
         /// </summary>
         public static string PackageAlreadyExistsInFolder {

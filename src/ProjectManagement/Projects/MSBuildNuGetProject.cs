@@ -215,6 +215,20 @@ namespace NuGet.ProjectManagement
 
             // Step-8: Add packages.config to MSBuildNuGetProject
             MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+
+            // Step-9: Execute powershell script - install.ps1      
+            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
+            FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework,
+                toolItemGroups, altDirSeparator: true);
+            if(MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
+            {
+                string installPS1ArchiveEntryFullName = compatibleToolItemsGroup.Items.Where(p =>
+                    p.EndsWith(Path.AltDirectorySeparatorChar + PowerShellScripts.Install)).FirstOrDefault();
+                if(!String.IsNullOrEmpty(installPS1ArchiveEntryFullName))
+                {
+                    MSBuildNuGetProjectSystem.ExecuteScript(zipArchive, installPS1ArchiveEntryFullName);
+                }
+            }
             return true;
         }
 
@@ -318,9 +332,23 @@ namespace NuGet.ProjectManagement
                 }
 
                 // Step-6.5: Remove binding redirects. This is a no-op
+
+                // Step-7: Execute powershell script - uninstall.ps1
+                IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
+                FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework,
+                    toolItemGroups, altDirSeparator: true);
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
+                {
+                    string uninstallPS1ArchiveEntryFullName = compatibleToolItemsGroup.Items.Where(p =>
+                        p.EndsWith(Path.AltDirectorySeparatorChar + PowerShellScripts.Uninstall)).FirstOrDefault();
+                    if (!String.IsNullOrEmpty(uninstallPS1ArchiveEntryFullName))
+                    {
+                        MSBuildNuGetProjectSystem.ExecuteScript(zipArchive, uninstallPS1ArchiveEntryFullName);
+                    }
+                }
             }
 
-            // Step-7: Uninstall package from the folderNuGetProject
+            // Step-8: Uninstall package from the folderNuGetProject
             FolderNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
 
             return true;
@@ -373,6 +401,13 @@ namespace NuGet.ProjectManagement
                 { "configSections" , (parent, element) => parent.AddFirst(element) }
             };
         }
+    }
+
+    public static class PowerShellScripts
+    {
+        public static readonly string Install = "install.ps1";
+        public static readonly string Uninstall = "uninstall.ps1";
+        public static readonly string Init = "init.ps1";
     }
 
     public static class Constants

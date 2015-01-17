@@ -44,16 +44,16 @@ namespace NuGet.PackageManagement
 
         private HttpClient HttpClient { get; set; }
 
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, ISolutionManager solutionManager)
             : this(sourceRepositoryProvider, new HttpClient(new WebRequestHandler()
             {
                 CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default)
-            })) {}
+            }), solutionManager) { }
 
         /// <summary>
         /// Creates a NuGetPackageManager for a given <param name="sourceRepositoryProvider"></param> and <param name="httpClient"></param>
         /// </summary>
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient/*, IPackageResolver packageResolver */)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient, ISolutionManager solutionManager/*, IPackageResolver packageResolver */)
         {
             if (sourceRepositoryProvider == null)
             {
