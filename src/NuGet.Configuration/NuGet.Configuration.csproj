@@ -66,6 +66,9 @@
       <LastGenOutput>NuGet.Configuration.Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="NuGet.Configuration.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\build\sign.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
