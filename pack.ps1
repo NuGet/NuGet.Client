@@ -119,7 +119,7 @@ if ((Test-Path nupkgs) -eq 0) {
 }
 
 # Pack
-.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -build -OutputDirectory nupkgs -version $version
+.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
 
 # Find the path of the nupkg we just built
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
@@ -129,7 +129,7 @@ Write-Host $nupkgPath -ForegroundColor Cyan
 if (!$Stable -And !$NoLock)
 {
     Write-Host "Locking dependencies down"
-    .\tools\NupkgLock\NupkgLock.exe "NuGet.Packaging.nuspec" $nupkgPath
+    .\tools\NupkgLock\NupkgLock.exe "$Id.nuspec" $nupkgPath
 }
 
 if ($PushTarget)
