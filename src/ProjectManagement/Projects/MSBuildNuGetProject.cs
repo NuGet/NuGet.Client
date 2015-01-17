@@ -52,9 +52,9 @@ namespace NuGet.ProjectManagement
         private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
             new Dictionary<FileTransformExtensions, IPackageFileTransformer>() 
         {
-            //{ new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
-            { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() }
-            //{ new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
+            { new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
+            { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() },
+            { new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
         };
 
         public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFullPath)
@@ -199,10 +199,16 @@ namespace NuGet.ProjectManagement
             // Step-6.4: Add Build imports
             if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
             {
-                throw new NotImplementedException("Build files are not implemented");
+                foreach(var buildImportFile in compatibleBuildFilesGroup.Items)
+                {
+                    string fullImportFilePath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), buildImportFile);
+                    MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
+                        fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
+                }
             }
             
-            // Step-6.5: Execute powershell script
+            // Step-6.5: Add binding redirects. Project system is supposed to check if binding redirects are needed and add as needed
+            MSBuildNuGetProjectSystem.AddBindingRedirects();
 
             // Step-7: Install package to PackagesConfigNuGetProject
             PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
@@ -289,11 +295,7 @@ namespace NuGet.ProjectManagement
                     }
                 }
 
-                // Step-6.2: Remove framework references
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
-                {
-                    throw new NotImplementedException("Removing framework references is not implemented since one needs to check all the packages");
-                }
+                // Step-6.2: Framework references are never removed. This is a no-op
 
                 // Step-6.3: Remove content files
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
@@ -308,17 +310,19 @@ namespace NuGet.ProjectManagement
                 // Step-6.4: Remove build imports
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
                 {
-                    throw new NotImplementedException();
+                    foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
+                    {
+                        string fullImportFilePath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), buildImportFile);
+                        MSBuildNuGetProjectSystem.RemoveImport(fullImportFilePath);
+                    }
                 }
 
-                // Step-6.5: Execute powershell script
-
+                // Step-6.5: Remove binding redirects. This is a no-op
             }
 
             // Step-7: Uninstall package from the folderNuGetProject
             FolderNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
 
-            // Step-8: 
             return true;
         }
 

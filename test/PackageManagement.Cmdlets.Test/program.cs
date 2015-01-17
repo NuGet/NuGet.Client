@@ -10,6 +10,7 @@ using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Text;
+using Test.Utility;
 
 namespace PackageManagement.Cmdlets.Test
 {
@@ -75,7 +76,8 @@ namespace PackageManagement.Cmdlets.Test
             testCommand.Parameters.Add("Id", parameters[0]);
             testCommand.Parameters.Add("Version", parameters[1]);
             // Add as a test hook to pass in the provider
-            testCommand.Parameters.Add("Provider", provider);
+            testCommand.Parameters.Add("SourceRepositoryProvider", provider);
+            testCommand.Parameters.Add("VsSolutionManager", new TestSolutionManager());
 
             // Add out-string
             ps.Commands.AddCommand("Out-String");

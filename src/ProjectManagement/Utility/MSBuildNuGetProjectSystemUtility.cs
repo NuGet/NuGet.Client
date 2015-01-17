@@ -204,7 +204,7 @@ namespace NuGet.ProjectManagement
 
                                 try
                                 {
-                                    var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceAltDirSeparatorWithDirSeparator(file));
+                                    var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceDirSeparatorWithAltDirSeparator(file));
                                     transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
                                 }
                                 catch (Exception e)
@@ -221,12 +221,12 @@ namespace NuGet.ProjectManagement
                     }
 
 
-                    //// If the directory is empty then delete it
-                    //if (!project.GetFilesSafe(directory).Any() &&
-                    //    !project.GetDirectoriesSafe(directory).Any())
-                    //{
-                    //    project.DeleteDirectorySafe(directory, recursive: false);
-                    //}
+                    // If the directory is empty then delete it
+                    if (!GetFilesSafe(msBuildNuGetProjectSystem, directory).Any() &&
+                        !GetDirectoriesSafe(msBuildNuGetProjectSystem, directory).Any())
+                    {
+                        DeleteDirectorySafe(msBuildNuGetProjectSystem, directory, recursive: false);
+                    }
                 }
                 finally
                 {
@@ -235,7 +235,31 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        internal static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        {
+            return GetFilesSafe(msBuildNuGetProjectSystem, path, "*.*");
+        }
+
+        public static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter)
+        {
+            try
+            {
+                return GetFiles(msBuildNuGetProjectSystem, path, filter, recursive: false);
+            }
+            catch (Exception e)
+            {
+                msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+            }
+
+            return Enumerable.Empty<string>();
+        }
+
+        public static IEnumerable<string> GetFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter, bool recursive)
+        {
+            return FileSystemUtility.GetFiles(msBuildNuGetProjectSystem.ProjectFullPath, path, filter, recursive);
+        }
+
+        public static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             // Only delete the file if it exists and the checksum is the same
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
@@ -253,12 +277,82 @@ namespace NuGet.ProjectManagement
             }
         }
 
+        public static IEnumerable<string> GetDirectoriesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        {
+            try
+            {
+                return GetDirectories(msBuildNuGetProjectSystem, path);
+            }
+            catch (Exception e)
+            {
+                msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+            }
+
+            return Enumerable.Empty<string>();
+        }
+
+        public static IEnumerable<string> GetDirectories(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        {
+            try
+            {
+                path = PathUtility.EnsureTrailingSlash(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path));
+                if (!Directory.Exists(path))
+                {
+                    return Enumerable.Empty<string>();
+                }
+                return Directory.EnumerateDirectories(path)
+                                .Select(p => p.Substring(msBuildNuGetProjectSystem.ProjectFullPath.Length).TrimStart(Path.DirectorySeparatorChar));
+            }
+            catch (UnauthorizedAccessException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            return Enumerable.Empty<string>();
+        }
+
         private static bool ContentEquals(string path, Func<Stream> streamFactory)
         {
             using (Stream stream = streamFactory(),
                 fileStream = File.OpenRead(path))
             {
                 return stream.ContentEquals(fileStream);
+            }
+        }
+
+        public static void DeleteDirectorySafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
+        {
+            PerformSafeAction(() => DeleteDirectory(msBuildNuGetProjectSystem, path, recursive), msBuildNuGetProjectSystem.NuGetProjectContext);
+        }
+
+        public static void DeleteDirectory(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
+        {
+            var fullPath = Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path);
+            if (!Directory.Exists(fullPath))
+            {
+                return;
+            }
+
+            try
+            {
+                Directory.Delete(fullPath, recursive);
+
+                // The directory is not guaranteed to be gone since there could be
+                // other open handles. Wait, up to half a second, until the directory is gone.
+                for (int i = 0; Directory.Exists(fullPath) && i < 5; ++i)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                msBuildNuGetProjectSystem.RemoveFile(path);
+
+                msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
+            }
+            catch (DirectoryNotFoundException)
+            {
             }
         }
 

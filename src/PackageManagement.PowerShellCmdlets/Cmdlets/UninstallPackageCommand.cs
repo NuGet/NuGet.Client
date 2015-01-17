@@ -10,10 +10,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private ResolutionContext _context;
 
-        public UninstallPackageCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider,
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public UninstallPackageCommand()
+            : base()
         {
         }
 
@@ -35,8 +33,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            GetSourceRepositoryProvider();
-            PackageManager = new NuGetPackageManager(SourceRepositoryProvider);
+            GetActiveSourceRepository();
             GetNuGetProject();
             base.Preprocess();
         }

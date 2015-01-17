@@ -12,11 +12,11 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Transforms the file
         /// </summary>
-        void TransformFile(ZipArchiveEntry packageFile, string targetPath, IMSBuildNuGetProjectSystem projectSystem);
+        void TransformFile(ZipArchiveEntry packageFile, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem);
 
         /// <summary>
         /// Reverses the transform
         /// </summary>
-        void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem projectSystem);
+        void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem);
     }
 }

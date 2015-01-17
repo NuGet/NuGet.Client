@@ -24,10 +24,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private DependencyBehavior _updateVersionEnum;
         private NuGetVersion _nugetVersion;
 
-        public UpdatePackageCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider,
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public UpdatePackageCommand()
+            : base()
         {
         }
 
@@ -84,7 +82,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.Preprocess();
             if (_projectSpecified)
             {
-                Projects = VSSolutionManager.GetProjects().ToList();
+                Projects = VsSolutionManager.GetProjects().ToList();
             }
             else
             {

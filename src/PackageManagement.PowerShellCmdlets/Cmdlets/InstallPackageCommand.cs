@@ -31,10 +31,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private NuGetVersion _nugetVersion;
         private bool _versionSpecifiedPrerelease;
 
-        public InstallPackageCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider, 
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public InstallPackageCommand()
+            : base()
         {
             _isNetworkAvailable = isNetworkAvailable();
         }

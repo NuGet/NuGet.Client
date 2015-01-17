@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Web.XmlTransform">
+      <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Frameworks, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150109221036\lib\net45\NuGet.Frameworks.dll</HintPath>
@@ -65,6 +68,8 @@
     <Compile Include="FileModifiers\FileTransformExtensions.cs" />
     <Compile Include="FileModifiers\IPackageFileTransformer.cs" />
     <Compile Include="FileModifiers\Preprocessor.cs" />
+    <Compile Include="FileModifiers\XdtTransformer.cs" />
+    <Compile Include="FileModifiers\XmlTransformer.cs" />
     <Compile Include="INuGetProjectContext.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Projects\MSBuildNuGetProject.cs" />
@@ -77,11 +82,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utility\CollectionsUtility.cs" />
+    <Compile Include="Utility\FileSystemUtility.cs" />
+    <Compile Include="Utility\HashCodeCombiner.cs" />
     <Compile Include="Utility\MSBuildNuGetProjectSystemUtility.cs" />
+    <Compile Include="Utility\PathUtility.cs" />
     <Compile Include="Utility\StreamUtility.cs" />
     <Compile Include="Utility\Token.cs" />
     <Compile Include="Utility\Tokenizer.cs" />
     <Compile Include="Utility\InternalZipFileInfo.cs" />
+    <Compile Include="Utility\XElementExtensions.cs" />
+    <Compile Include="Utility\XmlUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -89,7 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>

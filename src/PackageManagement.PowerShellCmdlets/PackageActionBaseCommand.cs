@@ -9,10 +9,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageActionBaseCommand : NuGetPowerShellBaseCommand
     {
-        public PackageActionBaseCommand(
-            Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] resourceProvider,
-            ISolutionManager solutionManager)
-            : base(resourceProvider, solutionManager)
+        public PackageActionBaseCommand()
+            : base()
         {
         }
 
@@ -57,8 +55,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            GetSourceRepositoryProvider(Source);
-            PackageManager = new NuGetPackageManager(SourceRepositoryProvider);
+            GetActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
             base.Preprocess();

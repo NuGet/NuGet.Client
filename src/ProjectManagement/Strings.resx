@@ -135,8 +135,14 @@
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
   </data>
+  <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
+    <value>Value must be greater than or equal to {0}</value>
+  </data>
   <data name="ContentFilesShouldNotBeTargetFrameworkSpecific" xml:space="preserve">
     <value>Content files should not be target framework specific, whereas, '{0}' is</value>
+  </data>
+  <data name="Debug_RemovedFolder" xml:space="preserve">
+    <value>Removed folder '{0}'.</value>
   </data>
   <data name="Debug_TargetFrameworkInfo" xml:space="preserve">
     <value>&gt;&gt; {0} are being added from '{1}'{2}</value>
@@ -212,5 +218,8 @@
   </data>
   <data name="Warning_FileModified" xml:space="preserve">
     <value>Skipping '{0}' because it was modified.</value>
+  </data>
+  <data name="XdtError" xml:space="preserve">
+    <value>An error occurred while applying transformation to '{0}' in project '{1}'</value>
   </data>
 </root>
