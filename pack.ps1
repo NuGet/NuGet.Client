@@ -34,6 +34,12 @@ if (!$SkipBuild)
         }
     }
 
+    if ($PushTarget)
+    {
+        Write-Host "Updating package references for our own packages"
+        & nuget.exe update Packaging.sln -source "$PushTarget"
+    }
+
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
     Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
