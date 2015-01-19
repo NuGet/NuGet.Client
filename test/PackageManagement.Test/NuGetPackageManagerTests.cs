@@ -484,6 +484,57 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManInstallPackageWhichUsesExistingDependency()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var resolutionContext = new ResolutionContext();
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+            var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+            var projectA = testSolutionManager.AddNewMSBuildProject();
+            var packageIdentity0 = PackageWithDependents[0];
+            var packageIdentity1 = PackageWithDependents[1];
+            var packageIdentity2 = PackageWithDependents[2];
+            var packageIdentity3 = PackageWithDependents[3];
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
+                resolutionContext, testNuGetProjectContext);
+
+            // Assert
+            var projectAInstalled = projectA.GetInstalledPackages().ToList();
+            Assert.Equal(2, projectAInstalled.Count);
+            Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
+            Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
+            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
+            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+
+            // Main Act
+            await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
+                resolutionContext, testNuGetProjectContext);
+
+            // Assert
+            projectAInstalled = projectA.GetInstalledPackages().ToList();
+            Assert.Equal(3, projectAInstalled.Count);
+            Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
+            Assert.Equal(packageIdentity2, projectAInstalled[2].PackageIdentity);
+            Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
+            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
+            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
+            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
+        }
+
+
+        [Fact]
         public async Task TestPacManUninstallWithRemoveDependencies()
         {
             // Arrange

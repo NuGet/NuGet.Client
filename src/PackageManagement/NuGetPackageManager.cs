@@ -210,7 +210,7 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallPackage, packageIdentity);
             var newPackagesToUninstall = oldListOfInstalledPackages
                 .Where(op => newListOfInstalledPackages
-                    .Where(np => op.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase)).Any());
+                    .Where(np => op.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) && !op.Version.Equals(np.Version)).Any());
             var newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
 
             List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
@@ -287,24 +287,14 @@ namespace NuGet.PackageManagement
             return nuGetProjectActions;
         }
 
-        private List<PackageIdentity> GetPackagesToBeUninstalled(IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable, PackageReference packageReference)
-        {
-
-        }
-
         private List<PackageIdentity> GetPackageDependents(IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable, PackageIdentity packageIdentity)
         {
-            List<PackageIdentity> dependents = new List<PackageIdentity>();
-            foreach (var dependencyInfo in dependencyInfoEnumerable)
+            var dependentsDict = UninstallResolver.GetPackageDependents(dependencyInfoEnumerable, new PackageIdentity[] { packageIdentity });
+            if(dependentsDict.Count > 0)
             {
-                if(dependencyInfo.Dependencies.Where(pd =>
-                    pd.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase) && pd.VersionRange.Satisfies(packageIdentity.Version)).Any())
-                {
-                    dependents.Add(new PackageIdentity(dependencyInfo.Id, dependencyInfo.Version));
-                }
+                return dependentsDict[packageIdentity];
             }
-
-            return dependents;
+            return new List<PackageIdentity>();
         }
 
         private InvalidOperationException CreatePackageHasDependentsException(PackageIdentity packageIdentity,
