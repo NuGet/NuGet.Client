@@ -106,6 +106,24 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to uninstall &apos;{0}&apos; because &apos;{1}&apos; depends on it..
+        /// </summary>
+        internal static string PackageHasDependent {
+            get {
+                return ResourceManager.GetString("PackageHasDependent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to uninstall &apos;{0}&apos; because &apos;{1}&apos; depend on it..
+        /// </summary>
+        internal static string PackageHasDependents {
+            get {
+                return ResourceManager.GetString("PackageHasDependents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; to be uninstalled could not be found in project &apos;{1}&apos;.
         /// </summary>
         internal static string PackageToBeUninstalledCouldNotBeFound {
@@ -147,6 +165,15 @@ namespace NuGet.PackageManagement {
         internal static string ResolvingActionsToUninstallPackage {
             get {
                 return ResourceManager.GetString("ResolvingActionsToUninstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to locate the solution directory. Please ensure that the solution has been saved..
+        /// </summary>
+        internal static string SolutionDirectoryNotAvailable {
+            get {
+                return ResourceManager.GetString("SolutionDirectoryNotAvailable", resourceCulture);
             }
         }
         

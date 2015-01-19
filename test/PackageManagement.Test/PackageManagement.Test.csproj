@@ -56,9 +56,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150115030027\lib\net45\NuGet.Frameworks.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.PackageManagement">
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150117061140\lib\net45\NuGet.PackageManagement.dll</HintPath>
-    </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150115030027\lib\net45\NuGet.Packaging.dll</HintPath>
@@ -66,9 +63,6 @@
     <Reference Include="NuGet.PackagingCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150115030027\lib\net45\NuGet.PackagingCore.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.ProjectManagement">
-      <HintPath>..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150117061140\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -107,6 +101,14 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\PackageManagement\PackageManagement.csproj">
+      <Project>{1cb46687-b482-4f64-869a-ed5280badeb4}</Project>
+      <Name>PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ProjectManagement\ProjectManagement.csproj">
+      <Project>{fcd39e83-d8de-4401-ab12-d824ac2fe07b}</Project>
+      <Name>ProjectManagement</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
       <Project>{8010a76a-cb15-4484-8f9b-d523fbc34dfa}</Project>
       <Name>Test.Utility</Name>

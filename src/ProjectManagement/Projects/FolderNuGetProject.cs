@@ -80,30 +80,7 @@ namespace NuGet.ProjectManagement
 
         public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
-            if(packageIdentity == null)
-            {
-                throw new ArgumentNullException("packageIdentity");
-            }
-
-            if(nuGetProjectContext == null)
-            {
-                throw new ArgumentNullException("nuGetProjectContext");
-            }
-
-            // TODO: Handle removing of satellite files from the runtime package also
-
-            // 1. Check if the Package exists at root, if not, return false
-            if (!PackageExistsInProject(packageIdentity))
-            {
-                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExistInFolder, packageIdentity, Root);
-                return false;
-            }
-
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovingPackageFromFolder, packageIdentity, Root);
-            // 2. Delete the package folder and files from the root directory of this FileSystemNuGetProject
-            // Remember that the following code may throw System.UnauthorizedAccessException
-            Directory.Delete(PackagePathResolver.GetInstallPath(packageIdentity), recursive: true);
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromFolder, packageIdentity, Root);
+            // No-op: There is no uninstall on a folder NuGetProject
             return true;
         }
 
@@ -112,7 +89,8 @@ namespace NuGet.ProjectManagement
         /// </summary>
         private bool PackageExistsInProject(PackageIdentity packageIdentity)
         {
-            string packageFileFullPath = Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity), PackagePathResolver.GetPackageFileName(packageIdentity));
+            string packageFileFullPath = Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
+                PackagePathResolver.GetPackageFileName(packageIdentity));
             return File.Exists(packageFileFullPath);
         }
     }

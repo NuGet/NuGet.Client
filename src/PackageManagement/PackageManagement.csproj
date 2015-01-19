@@ -106,6 +106,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utility\PackagesFolderPathUtility.cs" />
     <Compile Include="Utility\UriHelper.cs" />
   </ItemGroup>
   <ItemGroup>

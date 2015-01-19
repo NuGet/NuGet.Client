@@ -91,5 +91,11 @@ namespace Test.Utility
         }
 
         public event EventHandler SolutionOpened;
+
+
+        public IEnumerable<NuGetProject> GetNuGetProjects()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
