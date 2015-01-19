@@ -47,11 +47,11 @@ namespace NuGet.PackageManagement
 
         private ISettings Settings { get; set; }
 
-        private string PackagesFolderPath { get; set; }
+        public string PackagesFolderPath { get; set; }
 
-        private PackagePathResolver PackagePathResolver { get; set; }
+        public PackagePathResolver PackagePathResolver { get; set; }
 
-        private SourceRepository PackagesFolderSourceRepository { get; set; }
+        public SourceRepository PackagesFolderSourceRepository { get; set; }
 
         private HttpClient HttpClient { get; set; }
         
@@ -277,9 +277,6 @@ namespace NuGet.PackageManagement
                 throw CreatePackageHasDependentsException(packageIdentity, packageDependents);
             }
 
-            // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
-            // based on newPackages obtained in Step-2 and project.GetInstalledPackages
-
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToUninstallPackage, packageIdentity);
             // TODO:
 
@@ -288,6 +285,11 @@ namespace NuGet.PackageManagement
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
             return nuGetProjectActions;
+        }
+
+        private List<PackageIdentity> GetPackagesToBeUninstalled(IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable, PackageReference packageReference)
+        {
+
         }
 
         private List<PackageIdentity> GetPackageDependents(IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable, PackageIdentity packageIdentity)
