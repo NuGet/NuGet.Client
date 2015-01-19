@@ -58,7 +58,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // this is used by the functional tests
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-            var packageManager = new NuGetPackageManager(sourceRepositoryProvider, solutionManager);
+            var packageManager = new NuGetPackageManager(sourceRepositoryProvider);
             //var packageManagerFactory = ServiceLocator.GetInstance<IPackageManagerFactory>();
             var pmfTuple = Tuple.Create<string, object>("packageManagerFactory", packageManager);
 
