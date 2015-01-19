@@ -46,7 +46,6 @@ function BuildAndPack([string]$Id)
             Write-Host "Now, building again to consume the updated packages"
             Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
         }
-
     }
 
     # assembly containing the release file version to use for the package
