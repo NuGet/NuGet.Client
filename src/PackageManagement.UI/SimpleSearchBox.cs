@@ -5,19 +5,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
 {
     public sealed class SimpleSearchBox : TextBox, IVsWindowSearchHost
     {
+        private PackageManagerControl _control;
+
         public SimpleSearchBox()
         {
+            this.KeyDown += SimpleSearchBox_KeyDown;
+        }
 
+        private void SimpleSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                _control.Search(this.Text.Trim());
+            }
+        }
+
+        public void SetupSearch(IVsWindowSearch pWindowSearch)
+        {
+            _control = pWindowSearch as PackageManagerControl;
         }
 
         public void Activate()
         {
-            throw new NotImplementedException();
+            this.Focus();
         }
 
         public string HelpTopic
@@ -71,7 +87,7 @@ namespace NuGet.PackageManagement.UI
 
         public void SearchAsync(IVsSearchQuery pSearchQuery)
         {
-            throw new NotImplementedException();
+            _control.CreateSearch(0, pSearchQuery, null);
         }
 
         public IVsWindowSearchEvents SearchEvents
@@ -97,11 +113,6 @@ namespace NuGet.PackageManagement.UI
         public IVsSearchTask SearchTask
         {
             get { throw new NotImplementedException(); }
-        }
-
-        public void SetupSearch(IVsWindowSearch pWindowSearch)
-        {
-
         }
 
         public void TerminateSearch()

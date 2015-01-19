@@ -75,6 +75,8 @@ namespace NuGet.ProjectManagement
                                         FrameworkSpecificGroup frameworkSpecificGroup,
                                         IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
+            var packageTargetFramework = NuGetFramework.Parse(frameworkSpecificGroup.TargetFramework);
+
             // Content files are maintained with AltDirectorySeparatorChar
             List<string> packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
 
@@ -94,7 +96,7 @@ namespace NuGet.ProjectManagement
                         continue;
                     }
 
-                    var effectivePathForContentFile = GetEffectivePathForContentFile(msBuildNuGetProjectSystem.TargetFramework, zipArchiveEntry.FullName);
+                    var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, zipArchiveEntry.FullName);
 
                     // Resolve the target path
                     IPackageFileTransformer installTransformer;

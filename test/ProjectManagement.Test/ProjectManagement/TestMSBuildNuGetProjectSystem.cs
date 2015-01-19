@@ -3,6 +3,7 @@ using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,16 +16,22 @@ namespace Test.Utility
         public Dictionary<string, string> References { get; private set; }
         public HashSet<string> FrameworkReferences { get; private set; }
         public HashSet<string> Files { get; private set; }
+        public HashSet<string> Imports { get; private set; }
+        public Dictionary<string, int> ScriptsExecuted { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
-        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext, string projectFullPath = null)
+        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext,
+            string projectFullPath = null, string projectName = null)
         {
             TargetFramework = targetFramework;
             References = new Dictionary<string, string>();
             FrameworkReferences = new HashSet<string>();
             Files = new HashSet<string>();
+            Imports = new HashSet<string>();
             NuGetProjectContext = nuGetProjectContext;
             ProjectFullPath = String.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
+            ScriptsExecuted = new Dictionary<string, int>();
+            ProjectName = projectName ?? TestProjectName;
         }
 
         public void AddFile(string path, Stream stream)
@@ -49,7 +56,7 @@ namespace Test.Utility
 
         public void AddImport(string targetFullPath, ImportLocation location)
         {
-            throw new NotImplementedException();
+            Imports.Add(targetFullPath);
         }
 
         public void AddReference(string referencePath)
@@ -80,7 +87,8 @@ namespace Test.Utility
 
         public string ProjectName
         {
-            get { return TestProjectName; }
+            get;
+            private set;
         }
 
         public bool ReferenceExists(string name)
@@ -90,7 +98,7 @@ namespace Test.Utility
 
         public void RemoveImport(string targetFullPath)
         {
-            throw new NotImplementedException();
+            Imports.Remove(targetFullPath);
         }
 
         public void RemoveReference(string name)
@@ -141,6 +149,24 @@ namespace Test.Utility
         public void AddBindingRedirects()
         {
             // No-op
+        }
+
+
+        public void ExecuteScript(ZipArchive zipArchive, string scriptArchiveEntryFullName)
+        {
+            var zipArchiveEntry = zipArchive.GetEntry(scriptArchiveEntryFullName);
+            if(zipArchiveEntry == null)
+            {
+                throw new InvalidOperationException(scriptArchiveEntryFullName + " was not found in the zipArchive. Could not execute PS script");
+            }
+
+            int runCount;
+            if(!ScriptsExecuted.TryGetValue(scriptArchiveEntryFullName, out runCount))
+            {
+                ScriptsExecuted.Add(scriptArchiveEntryFullName, 0);
+            }
+
+            ScriptsExecuted[scriptArchiveEntryFullName]++;
         }
     }
 }

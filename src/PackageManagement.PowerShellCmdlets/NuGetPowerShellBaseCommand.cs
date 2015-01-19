@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                return new NuGetPackageManager(_resourceRepositoryProvider);
+                return new NuGetPackageManager(_resourceRepositoryProvider, _solutionManager);
             }
         }
 

@@ -242,11 +242,14 @@ namespace NuGet.PackageManagement.UI
                 // load up the full details for each version
                 var metadata = await metadataResource.GetMetadata(ids, true, false, token);
 
-                foreach (var item in metadata)
+                if (metadata != null)
                 {
-                    if (!dict.ContainsKey(item.Identity.Version))
+                    foreach (var item in metadata)
                     {
-                        dict.Add(item.Identity.Version, new DetailedPackageMetadata(item));
+                        if (!dict.ContainsKey(item.Identity.Version))
+                        {
+                            dict.Add(item.Identity.Version, new DetailedPackageMetadata(item));
+                        }
                     }
                 }
             }

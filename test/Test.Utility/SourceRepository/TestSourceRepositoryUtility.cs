@@ -12,6 +12,8 @@ namespace Test.Utility
 {
     public class TestSourceRepositoryUtility
     {
+        private static PackageSource V2PackageSource = new PackageSource("https://www.nuget.org/api/v2", "v2");
+        private static PackageSource V3PackageSource = new PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3");
         public TestSourceRepositoryUtility() {}
 
         [ImportMany]
@@ -30,9 +32,19 @@ namespace Test.Utility
 
         public static SourceRepositoryProvider CreateV3OnlySourceRepositoryProvider()
         {
+            return CreateSourceRepositoryProvider(new List<PackageSource>() { V3PackageSource });
+        }
+
+        public static SourceRepositoryProvider CreateV2OnlySourceRepositoryProvider()
+        {
+            return CreateSourceRepositoryProvider(new List<PackageSource>() { V2PackageSource });
+        }
+
+        public static SourceRepositoryProvider CreateSourceRepositoryProvider(IEnumerable<PackageSource> packageSources)
+        {
             var thisUtility = new TestSourceRepositoryUtility();
             var container = thisUtility.Initialize();
-            var packageSourceProvider = new V3OnlyPackageSourceProvider();
+            var packageSourceProvider = new TestPackageSourceProvider(packageSources);
 
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, thisUtility.ResourceProviders);
             return sourceRepositoryProvider;
@@ -42,9 +54,13 @@ namespace Test.Utility
     /// <summary>
     /// Provider that only returns V3 as a source
     /// </summary>
-    class V3OnlyPackageSourceProvider : IPackageSourceProvider
+    class TestPackageSourceProvider : IPackageSourceProvider
     {
-
+        private IEnumerable<PackageSource> PackageSources { get; set; }
+        public TestPackageSourceProvider(IEnumerable<PackageSource> packageSources)
+        {
+            PackageSources = packageSources;
+        }
         public void DisablePackageSource(PackageSource source)
         {
             throw new NotImplementedException();
@@ -57,7 +73,7 @@ namespace Test.Utility
 
         public IEnumerable<PackageSource> LoadPackageSources()
         {
-            return new List<PackageSource>() { new PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3") };
+            return PackageSources;
         }
 
         public event EventHandler PackageSourcesSaved;

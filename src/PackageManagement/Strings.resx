@@ -129,8 +129,17 @@
   <data name="InstallingPackage" xml:space="preserve">
     <value>Installing package '{0}' to project</value>
   </data>
+  <data name="InvalidNullSettingsOperation" xml:space="preserve">
+    <value>'{0}' cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to '%AppData%\NuGet\NuGet.config'</value>
+  </data>
   <data name="NoLatestVersionFound" xml:space="preserve">
     <value>No latest version found for the 'packageId' for the given source repositories and resolution context</value>
+  </data>
+  <data name="PackageHasDependent" xml:space="preserve">
+    <value>Unable to uninstall '{0}' because '{1}' depends on it.</value>
+  </data>
+  <data name="PackageHasDependents" xml:space="preserve">
+    <value>Unable to uninstall '{0}' because '{1}' depend on it.</value>
   </data>
   <data name="PackageToBeUninstalledCouldNotBeFound" xml:space="preserve">
     <value>Package '{0}' to be uninstalled could not be found in project '{1}'</value>
@@ -146,6 +155,9 @@
   </data>
   <data name="ResolvingActionsToUninstallPackage" xml:space="preserve">
     <value>Resolving actions to uninstall package '{0}'</value>
+  </data>
+  <data name="SolutionDirectoryNotAvailable" xml:space="preserve">
+    <value>Unable to locate the solution directory. Please ensure that the solution has been saved.</value>
   </data>
   <data name="UnableToGatherDependencyInfo" xml:space="preserve">
     <value>Unable to gather dependencies information for package '{0}'</value>

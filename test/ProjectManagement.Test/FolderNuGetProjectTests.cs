@@ -45,36 +45,6 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestFolderNuGetProjectInstallAndUninstall()
-        {
-            // Arrange
-            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
-            var randomTestSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
-            var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            var randomTestDestinationPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
-            var packageInstallPath = folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
-            var nupkgFilePath = Path.Combine(packageInstallPath, folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
-            var testNuGetProjectContext = new TestNuGetProjectContext();
-            using (var packageStream = packageFileInfo.OpenRead())
-            {
-                // Act
-                folderNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
-            }
-
-            // Assert
-            Assert.True(File.Exists(nupkgFilePath));
-
-            // Now, test uninstall
-            // Act
-            folderNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
-            Assert.True(!Directory.Exists(packageInstallPath));
-
-            // Clean-up
-            TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
-        }
-
-        [Fact]
         public void TestFolderNuGetProjectMetadata()
         {
             // Arrange

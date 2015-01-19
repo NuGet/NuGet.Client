@@ -12,32 +12,37 @@ namespace Test.Utility
 {
     public class TestSolutionManager : ISolutionManager
     {
-        private List<NuGetProject> msbuildNuGetProjects;
+        private List<NuGetProject> NuGetProjects { get; set; }
+        public string SolutionDirectory { get; private set; }
+        private const string PackagesFolder = "packages";
 
         public TestSolutionManager()
         {
-            NuGetProject projectA = CreateNewMSBuildProject();
-            NuGetProject projectB = CreateNewMSBuildProject();
-            msbuildNuGetProjects = new List<NuGetProject>() { projectA, projectB };
+            SolutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+            NuGetProjects = new List<NuGetProject>();
         }
 
-        private NuGetProject CreateNewMSBuildProject()
+        public NuGetProject AddNewMSBuildProject(NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
         {
-            var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var packagesFolder = Path.Combine(SolutionDirectory, PackagesFolder);
+            var projectName = Guid.NewGuid().ToString();
+            var projectFullPath = Path.Combine(SolutionDirectory, projectName);
+            Directory.CreateDirectory(projectFullPath);
+            var packagesConfigPath = Path.Combine(projectFullPath, packagesConfigName ?? "packages.config");
 
-            var projectTargetFramework = NuGetFramework.Parse("net45");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-            NuGetProject project = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
-            return project;
+            projectTargetFramework = projectTargetFramework ?? NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext(),
+                projectFullPath, projectName);
+            NuGetProject nuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, packagesConfigPath);
+            NuGetProjects.Add(nuGetProject);
+            return nuGetProject;
         }
 
         public NuGetProject DefaultNuGetProject
         {
             get
             {
-                return msbuildNuGetProjects.FirstOrDefault();
+                return NuGetProjects.FirstOrDefault();
             }
         }
 
@@ -55,7 +60,7 @@ namespace Test.Utility
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
-            return msbuildNuGetProjects.
+            return NuGetProjects.
                 Where(p => string.Equals(nuGetProjectSafeName, p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
         }
@@ -65,17 +70,16 @@ namespace Test.Utility
             return nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
         }
 
-        public IEnumerable<NuGetProject> GetProjects()
+        public IEnumerable<NuGetProject> GetNuGetProjects()
         {
-            return msbuildNuGetProjects;
+            return NuGetProjects;
         }
 
         public bool IsSolutionOpen
         {
             get
             {
-                bool isOpen = msbuildNuGetProjects != null;
-                return isOpen;
+                return NuGetProjects.Count > 0;
             }
         }
 
@@ -84,11 +88,6 @@ namespace Test.Utility
         public event EventHandler SolutionClosed;
 
         public event EventHandler SolutionClosing;
-
-        public string SolutionDirectory
-        {
-            get { return TestFilesystemUtility.CreateRandomTestFolder(); }
-        }
 
         public event EventHandler SolutionOpened;
     }

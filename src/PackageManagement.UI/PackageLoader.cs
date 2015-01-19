@@ -13,6 +13,7 @@ using NuGet.Client;
 using NuGet.Frameworks;
 using System.Runtime.Versioning;
 using NuGet.PackagingCore;
+using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -78,16 +79,77 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<IEnumerable<UISearchMetadata>> Search(int startIndex, CancellationToken ct)
         {
+            List<UISearchMetadata> results = new List<UISearchMetadata>();
+
+            // show only the installed packages
             if (_option.Filter == Filter.Installed)
             {
-                // TODO: filter packges by the query
-                throw new NotImplementedException();
+                // TODO: get metadata from packages folder instead
+                Dictionary<PackageIdentity, List<string>> byId = new Dictionary<PackageIdentity, List<string>>(); 
+
+                foreach (var project in _projects)
+                {
+                    string name = string.Empty;
+                    project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out name);
+
+                    foreach (var package in project.GetInstalledPackages())
+                    {
+                        List<string> list = null;
+
+                        if (!byId.TryGetValue(package.PackageIdentity, out list))
+                        {
+                            list = new List<string>();
+                            byId.Add(package.PackageIdentity, list);
+                        }
+
+                        list.Add(name);
+                    }
+                }
+
+                // create metadata
+                foreach (var id in byId.Keys.OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
+                {
+                    string summary = String.Join(", ", byId[id].Where(e => !String.IsNullOrEmpty(e)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+
+                    results.Add(new UISearchMetadata(id, summary, null, new NuGetVersion[] { id.Version }, null));
+                }
             }
+            // installed packages with updates
             else if (_option.Filter == Filter.UpdatesAvailable)
             {
-                // TODO: filter packges by the query
-                throw new NotImplementedException();
+                var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+
+                if (metadataResource == null)
+                {
+                    return Enumerable.Empty<UISearchMetadata>();
+                }
+
+                var installedPackages = _projects.SelectMany(e => e.GetInstalledPackages())
+                    .Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer)
+                    .OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var package in installedPackages)
+                {
+                    // only release packages respect the prerel option
+                    bool includePre = _option.IncludePrerelease || package.Version.IsPrerelease;
+
+                    var data = await metadataResource.GetMetadata(package.Id, includePre, false, ct);
+                    var highest = data.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
+
+                    if (highest != null)
+                    {
+                        if (VersionComparer.VersionRelease.Compare(package.Version, highest.Identity.Version) < 0)
+                        {
+                            var allVersions = data.Select(e => e.Identity.Version).OrderByDescending(e => e, VersionComparer.VersionRelease);
+
+                            string summary = String.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
+
+                            results.Add(new UISearchMetadata(highest.Identity, summary, highest.IconUrl, allVersions, highest));
+                        }
+                    }
+                }
             }
+            // normal search
             else
             {
                 var searchResource = await _sourceRepository.GetResourceAsync<UISearchResource>();
@@ -100,30 +162,38 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     var searchFilter = new SearchFilter();
-                    searchFilter.IncludePrerelease = _option.IncludePrerelease;     
+                    searchFilter.IncludePrerelease = _option.IncludePrerelease;
                     var frameworks = new List<string>();
-                    foreach (var project in _projects)
-                    {
-                        NuGetFramework framework = project.GetMetadata<NuGetFramework>("TargetFramework");
 
-                        if (framework != null && framework.IsSpecificFramework)
-                        {
-                            frameworks.Add(NuGetFramework.Parse(framework.DotNetFrameworkName).GetShortFolderName());
-                        }
-                    }
+                    // TODO: re-enable this once the V3 server supports full framework names
+                    //foreach (var project in _projects)
+                    //{
+                    //    NuGetFramework framework = project.GetMetadata<NuGetFramework>("TargetFramework");
+
+                    //    if (framework != null && framework.IsSpecificFramework)
+                    //    {
+                    //        frameworks.Add(framework.DotNetFrameworkName);
+                    //    }
+                    //}
+
                     searchFilter.SupportedFrameworks = frameworks;
-                    return await searchResource.Search(
+
+                    results.AddRange(await searchResource.Search(
                         _searchText,
                         searchFilter,
                         startIndex,
                         _pageSize,
-                        ct);
+                        ct));
                 }
             }
+
+            return results;
         }
 
         public async Task<LoadResult> LoadItems(int startIndex, CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
+
             // Load up the packages from the project for the package status
             // TODO: move this somewhere else? refresh it?
             if (!_installedPackagesLoaded)

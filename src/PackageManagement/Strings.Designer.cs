@@ -97,11 +97,38 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to &apos;%AppData%\NuGet\NuGet.config&apos;.
+        /// </summary>
+        internal static string InvalidNullSettingsOperation {
+            get {
+                return ResourceManager.GetString("InvalidNullSettingsOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No latest version found for the &apos;packageId&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {
             get {
                 return ResourceManager.GetString("NoLatestVersionFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to uninstall &apos;{0}&apos; because &apos;{1}&apos; depends on it..
+        /// </summary>
+        internal static string PackageHasDependent {
+            get {
+                return ResourceManager.GetString("PackageHasDependent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to uninstall &apos;{0}&apos; because &apos;{1}&apos; depend on it..
+        /// </summary>
+        internal static string PackageHasDependents {
+            get {
+                return ResourceManager.GetString("PackageHasDependents", resourceCulture);
             }
         }
         
@@ -147,6 +174,15 @@ namespace NuGet.PackageManagement {
         internal static string ResolvingActionsToUninstallPackage {
             get {
                 return ResourceManager.GetString("ResolvingActionsToUninstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to locate the solution directory. Please ensure that the solution has been saved..
+        /// </summary>
+        internal static string SolutionDirectoryNotAvailable {
+            get {
+                return ResourceManager.GetString("SolutionDirectoryNotAvailable", resourceCulture);
             }
         }
         

@@ -1,4 +1,5 @@
 ﻿using NuGet.Client;
+using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,10 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <returns></returns>
         IEnumerable<SourceRepository> GetRepositories();
+
+        /// <summary>
+        /// Create a repository for one time use.
+        /// </summary>
+        SourceRepository CreateRepository(PackageSource source);
     }
 }

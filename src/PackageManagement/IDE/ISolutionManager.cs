@@ -1,4 +1,6 @@
-﻿using NuGet.ProjectManagement;
+﻿using NuGet.Configuration;
+using NuGet.Packaging;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +17,11 @@ namespace NuGet.PackageManagement
         event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
         string SolutionDirectory { get; }
-        string DefaultNuGetProjectName { get; set; }
+        string DefaultNuGetProjectName { get; }
         NuGetProject DefaultNuGetProject { get; }
         bool IsSolutionOpen { get; }
 
-        IEnumerable<NuGetProject> GetProjects();
+        IEnumerable<NuGetProject> GetNuGetProjects();
 
         /// <summary>
         /// Get the safe name of the specified project which guarantees not to conflict with other projects.
