@@ -352,21 +352,15 @@ namespace ProjectManagement.Test
             // Check that the transform is applied properly
             using(var streamReader = new StreamReader(Path.Combine(randomProjectFolderPath, "web.config")))
             {
-                var output = streamReader.ReadToEnd();
-                var expected = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <system.webServer>
-      <modules>
-        <add name=""MyOldModule"" type=""Sample.MyOldModule"" />
-      <add name=""MyNewModule"" type=""Sample.MyNewModule"" /></modules>
-    </system.webServer>
-</configuration>
-";
-
-                var outputCleaned = Regex.Replace(Regex.Replace(output, @"^\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
-                var expectedCleaned = Regex.Replace(Regex.Replace(expected, @"^\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
-
-                Assert.Equal(expectedCleaned, outputCleaned);
+                AssertEqualExceptWhitespaceAndLineEndings(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                    <configuration>
+                        <system.webServer>
+                          <modules>
+                            <add name=""MyOldModule"" type=""Sample.MyOldModule"" />
+                          <add name=""MyNewModule"" type=""Sample.MyNewModule"" /></modules>
+                        </system.webServer>
+                    </configuration>
+                    ", streamReader.ReadToEnd());
             }
 
             // Clean-up
@@ -436,7 +430,7 @@ namespace ProjectManagement.Test
             // Check that the transform is applied properly
             using (var streamReader = new StreamReader(Path.Combine(randomProjectFolderPath, "web.config")))
             {
-                Assert.Equal(@"
+                AssertEqualExceptWhitespaceAndLineEndings(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <system.web>
         <compilation baz=""test"" debug=""true"" targetFramework=""4.0"" />
@@ -457,7 +451,7 @@ namespace ProjectManagement.Test
             // Check that the transform is applied properly
             using (var streamReader = new StreamReader(Path.Combine(randomProjectFolderPath, "web.config")))
             {
-                Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                AssertEqualExceptWhitespaceAndLineEndings(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <system.web>
         <compilation baz=""test"" />
@@ -696,5 +690,13 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
         #endregion
+
+        static void AssertEqualExceptWhitespaceAndLineEndings(string expected, string actual)
+        {
+            expected = Regex.Replace(Regex.Replace(expected, @"^\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
+            actual = Regex.Replace(Regex.Replace(actual, @"^\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
+
+            Assert.Equal(expected, actual);
+        }
     }
 }
