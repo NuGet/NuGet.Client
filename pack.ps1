@@ -151,7 +151,7 @@ BuildAndPack("NuGet.PackageManagement")
 
 if (!$SkipBuild)
 {
-    Write-Host "Updating the NuGet.PackageManagement package reference for NuGet.PackageManagement.PowerShellCmdlets"
+    Write-Host "Updating the NuGet.PackageManagement package reference for NuGet.PackageManagement.PowerShellCmdlets and NuGet.PackageManagement.UI"
 
     if ($PushTarget)
     {
@@ -166,3 +166,4 @@ if (!$SkipBuild)
 }
 
 BuildAndPack("NuGet.PackageManagement.PowerShellCmdlets")
+BuildAndPack("NuGet.PackageManagement.UI")
