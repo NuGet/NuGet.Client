@@ -97,6 +97,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to &apos;%AppData%\NuGet\NuGet.config&apos;.
+        /// </summary>
+        internal static string InvalidNullSettingsOperation {
+            get {
+                return ResourceManager.GetString("InvalidNullSettingsOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No latest version found for the &apos;packageId&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {

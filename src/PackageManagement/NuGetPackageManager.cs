@@ -61,6 +61,7 @@ namespace NuGet.PackageManagement
         public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient = null)
         {
             InitializeMandatory(sourceRepositoryProvider, httpClient);
+            InitializePackagesFolderInfo(null, null);
         }
 
         /// <summary>
@@ -81,6 +82,7 @@ namespace NuGet.PackageManagement
             Settings = settings;
             SolutionManager = solutionManager;
 
+            InitializePackagesFolderInfo(null, null);
             SolutionManager.SolutionOpened += InitializePackagesFolderInfo;
             SolutionManager.SolutionClosed += InitializePackagesFolderInfo;
         }
@@ -245,7 +247,7 @@ namespace NuGet.PackageManagement
         {
             if(SolutionManager == null)
             {
-                throw new ArgumentException("Uninstall is not supported when SolutionManager is not available");
+                throw new ArgumentException("Uninstall is not supported when SolutionManager is not available. This will be fixed");
             }
 
             // Step-0: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
@@ -265,10 +267,11 @@ namespace NuGet.PackageManagement
 
             // TODO: IncludePrerelease is a big question mark
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackages.Select(pr => pr.PackageIdentity),
-                packageReferenceTargetFramework, includePrerelease: true);
+                packageReferenceTargetFramework, includePrerelease: false);
 
             // Step-2 : Determine if the package can be uninstalled based on the metadata resources
-            var packageDependents = GetPackageDependents(dependencyInfoFromPackagesFolder, packageIdentity);
+            var packageDependents = dependencyInfoFromPackagesFolder != null ?
+                GetPackageDependents(dependencyInfoFromPackagesFolder, packageIdentity) : null;
             if (packageDependents != null && packageDependents.Count > 0)
             {
                 throw CreatePackageHasDependentsException(packageIdentity, packageDependents);
@@ -321,8 +324,15 @@ namespace NuGet.PackageManagement
             NuGetFramework nuGetFramework,
             bool includePrerelease)
         {
-            var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DepedencyInfoResource>();
-            return await dependencyInfoResource.ResolvePackages(packageIdentities, nuGetFramework, includePrerelease);
+            try
+            {
+                var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DepedencyInfoResource>();
+                return await dependencyInfoResource.ResolvePackages(packageIdentities, nuGetFramework, includePrerelease);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -432,7 +442,7 @@ namespace NuGet.PackageManagement
             // 1. Check if the Package exists at root, if not, return false
             if (!PackageExistsInPackagesFolder(packageIdentity))
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.PackageDoesNotExistInFolder, packageIdentity);
+                nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.PackageDoesNotExistInFolder, packageIdentity, PackagesFolderPath);
                 return false;
             }
 

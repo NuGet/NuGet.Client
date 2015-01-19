@@ -129,6 +129,9 @@
   <data name="InstallingPackage" xml:space="preserve">
     <value>Installing package '{0}' to project</value>
   </data>
+  <data name="InvalidNullSettingsOperation" xml:space="preserve">
+    <value>'{0}' cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to '%AppData%\NuGet\NuGet.config'</value>
+  </data>
   <data name="NoLatestVersionFound" xml:space="preserve">
     <value>No latest version found for the 'packageId' for the given source repositories and resolution context</value>
   </data>

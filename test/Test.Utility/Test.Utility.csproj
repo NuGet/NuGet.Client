@@ -114,12 +114,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ProjectManagement.Test\ProjectManagement\TestMSBuildNuGetProjectSystem.cs">
+      <Link>ProjectManagement\TestMSBuildNuGetProjectSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\ProjectManagement.Test\ProjectManagement\TestNuGetProjectContext.cs">
+      <Link>ProjectManagement\TestNuGetProjectContext.cs</Link>
+    </Compile>
     <Compile Include="ExceptionAssert.cs" />
-    <Compile Include="ProjectManagement\TestNuGetProjectContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceRepository\TestSourceRepositoryUtility.cs" />
     <Compile Include="TestFilesystemUtility.cs" />
-    <Compile Include="ProjectManagement\TestMSBuildNuGetProjectSystem.cs" />
     <Compile Include="TestPackages.cs" />
     <Compile Include="TestSolutionManager.cs" />
   </ItemGroup>

@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement
             {
                 return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
             }
-            return path;
+            return Path.Combine(solutionManager.SolutionDirectory, String.IsNullOrEmpty(path) ? DefaultRepositoryPath : path);
         }
     }
 }

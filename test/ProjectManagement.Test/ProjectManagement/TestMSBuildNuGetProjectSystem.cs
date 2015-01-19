@@ -20,7 +20,8 @@ namespace Test.Utility
         public Dictionary<string, int> ScriptsExecuted { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
-        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext, string projectFullPath = null)
+        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext,
+            string projectFullPath = null, string projectName = null)
         {
             TargetFramework = targetFramework;
             References = new Dictionary<string, string>();
@@ -30,6 +31,7 @@ namespace Test.Utility
             NuGetProjectContext = nuGetProjectContext;
             ProjectFullPath = String.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
             ScriptsExecuted = new Dictionary<string, int>();
+            ProjectName = projectName ?? TestProjectName;
         }
 
         public void AddFile(string path, Stream stream)
@@ -85,7 +87,8 @@ namespace Test.Utility
 
         public string ProjectName
         {
-            get { return TestProjectName; }
+            get;
+            private set;
         }
 
         public bool ReferenceExists(string name)
