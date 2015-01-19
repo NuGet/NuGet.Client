@@ -24,7 +24,7 @@ namespace NuGet.Client.V2
                 {
                     return !File.Exists(url.LocalPath);
                 }
-                var result = await GetContent(url);              
+                var result = await GetContent(url);
 
                 if (result!= null && result.IndexOf("Packages", StringComparison.OrdinalIgnoreCase) != -1)
                 {
@@ -34,7 +34,6 @@ namespace NuGet.Client.V2
                 {
                     return false;
                 }
-                          
         }
 
         public static IPackageRepository GetV2SourceRepository(Configuration.PackageSource source)
@@ -54,7 +53,7 @@ namespace NuGet.Client.V2
                     {
                         httpReq.UserAgent = _userAgent;
                     }
-                };               
+                };
             }
             return repo;
         }

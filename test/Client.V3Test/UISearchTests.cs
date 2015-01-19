@@ -14,6 +14,27 @@ namespace Client.V3Test
     {
 
         [Fact]
+        public async Task UISearch_Default()
+        {
+            var resource = await SourceRepository.GetResourceAsync<UISearchResource>();
+
+            var filter = new SearchFilter();
+            filter.IncludePrerelease = false;
+
+            var results = (await resource.Search(string.Empty, filter, 0, 10, CancellationToken.None)).ToList();
+
+            Assert.Equal(10, results.Count);
+            Assert.Equal("EntityFramework", results[0].Identity.Id);
+            Assert.True(results[0].Versions.Count() > 3);
+
+            Assert.Equal("Newtonsoft.Json", results[1].Identity.Id);
+            Assert.Equal("jQuery", results[2].Identity.Id);
+
+            // Null for now
+            //Assert.True(first.LatestPackageMetadata.Description.Length > 10);
+        }
+
+        [Fact]
         public async Task UISearch_Basic()
         {
             var resource = await SourceRepository.GetResourceAsync<UISearchResource>();
@@ -21,15 +42,13 @@ namespace Client.V3Test
             var filter = new SearchFilter();
             filter.IncludePrerelease = false;
 
-            var results = await resource.Search("elmah", filter, 0, 10, CancellationToken.None);
+            var results = (await resource.Search("elmah", filter, 0, 10, CancellationToken.None)).ToList();
 
-            var first = results.First();
-
-            Assert.Equal("elmah", first.Identity.Id);
 
             Assert.Equal(10, results.Count());
 
-            Assert.True(first.Versions.Count() > 3);
+            Assert.Equal("elmah", results[0].Identity.Id);
+            Assert.True(results[0].Versions.Count() > 3);
 
             // Null for now
             //Assert.True(first.LatestPackageMetadata.Description.Length > 10);
