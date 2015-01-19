@@ -129,10 +129,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonResources.cs" />
+    <Compile Include="ConfigurationDefaults.cs" />
+    <Compile Include="EnvironmentVariableWrapper.cs" />
     <Compile Include="IDE\EnvDTEProjectCache.cs" />
     <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
+    <Compile Include="IEnvironmentVariableReader.cs" />
+    <Compile Include="IOptionsPageActivator.cs" />
+    <Compile Include="OptionsPage.cs" />
+    <Compile Include="OptionsPageActivator.cs" />
+    <Compile Include="PackageRestoreConsent.cs" />
+    <Compile Include="ProductUpdate\IProductUpdateSettings.cs" />
+    <Compile Include="ProductUpdate\VsProductUpdateSettings.cs" />
     <Compile Include="ProjectSystems\CpsProjectSystem.cs" />
     <Compile Include="ProjectSystems\FSharpProjectSystem.cs" />
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
@@ -146,9 +155,19 @@
     <Compile Include="Runtime\BindingRedirectResolver.cs" />
     <Compile Include="Runtime\IAssembly.cs" />
     <Compile Include="Runtime\RemoteAssembly.cs" />
+    <Compile Include="Setting\ISettingsManager.cs" />
+    <Compile Include="Setting\ISettingsStore.cs" />
+    <Compile Include="Setting\IWritableSettingsStore.cs" />
+    <Compile Include="Setting\SettingsManagerBase.cs" />
+    <Compile Include="Setting\SettingsManagerWrapper.cs" />
+    <Compile Include="Setting\SettingsStoreWrapper.cs" />
+    <Compile Include="Setting\WritableSettingsStoreWrapper.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
+    <Compile Include="Utility\MessageHelper.cs" />
+    <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\PathUtility.cs" />
+    <Compile Include="Utility\PathValidator.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />

@@ -157,5 +157,25 @@ namespace NuGet.PackageManagement.VisualStudio
                 return "'" + path + "'";
             }
         }
+
+        public static string SafeTrim(string value)
+        {
+            return value == null ? null : value.Trim();
+        }
+
+        public static string GetCanonicalPath(string path)
+        {
+            if (PathValidator.IsValidLocalPath(path) || (PathValidator.IsValidUncPath(path)))
+            {
+                return Path.GetFullPath(EnsureTrailingSlash(path));
+            }
+            if (PathValidator.IsValidUrl(path))
+            {
+                var url = new Uri(path);
+                // return canonical representation of Uri
+                return url.AbsoluteUri;
+            }
+            return path;
+        }
     }
 }

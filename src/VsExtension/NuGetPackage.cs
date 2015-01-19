@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Client.VisualStudio;
 using NuGet.PackageManagement.UI;
 //*** using NuGet.Options;
-using NuGet.VisualStudio;
+//using NuGet.VisualStudio;
 //*** using NuGet.VisualStudio11;
 using NuGetConsole;
 using NuGetConsole.Implementation;
