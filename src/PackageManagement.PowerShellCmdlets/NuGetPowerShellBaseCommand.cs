@@ -29,6 +29,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ISolutionManager _solutionManager;
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
+        private ISettings _settings;
         private bool _overwriteAll, _ignoreAll;
 
         public NuGetPowerShellBaseCommand()
@@ -42,7 +43,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                return new NuGetPackageManager(_resourceRepositoryProvider, _solutionManager);
+                return new NuGetPackageManager(_resourceRepositoryProvider, _settings, _solutionManager);
             }
         }
 

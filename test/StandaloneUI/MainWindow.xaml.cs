@@ -27,7 +27,7 @@ namespace StandaloneUI
         public IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _resourceProviders;
 
         [Import]
-        public NuGet.Configuration.ISettings _settings;
+        public ISettings _settings;
 
         //[Import]
         public INuGetUIContextFactory _contextFactory;
