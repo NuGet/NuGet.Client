@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void Preprocess()
         {
             base.Preprocess();
-            Projects = VsSolutionManager.GetProjects().ToList();
+            Projects = VsSolutionManager.GetNuGetProjects().ToList();
         }
 
         protected override void ProcessRecordCore()

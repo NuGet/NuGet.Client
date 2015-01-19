@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 // get matching projects, expanding wildcards
-                projects.AddRange(VsSolutionManager.GetProjects());
+                projects.AddRange(VsSolutionManager.GetNuGetProjects());
             }
 
             // Create a new app domain so we don't load the assemblies into the host app domain

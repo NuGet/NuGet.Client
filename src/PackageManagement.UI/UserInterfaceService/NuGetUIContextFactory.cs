@@ -1,4 +1,5 @@
 ﻿using NuGet.Client;
+using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace NuGet.PackageManagement.UI
         private readonly ISolutionManager _solutionManager;
         private readonly IPackageRestoreManager _restoreManager;
         private readonly IOptionsPageActivator _optionsPage;
+        private readonly ISettings _settings;
 
         /// <summary>
         /// Non-MEF constructor
@@ -29,10 +31,11 @@ namespace NuGet.PackageManagement.UI
         }
 
         [ImportingConstructor]
-        public NuGetUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider, [Import]ISolutionManager solutionManager)
+        public NuGetUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider, [Import]ISolutionManager solutionManager, [Import]ISettings settings)
         {
             _repositoryProvider = repositoryProvider;
             _solutionManager = solutionManager;
+            _settings = settings;
         }
 
         public INuGetUIContext Create(IEnumerable<NuGetProject> projects)
@@ -42,7 +45,7 @@ namespace NuGet.PackageManagement.UI
                 throw new ArgumentNullException("projects");
             }
 
-            NuGetPackageManager packageManager = new NuGetPackageManager(_repositoryProvider, _solutionManager);
+            NuGetPackageManager packageManager = new NuGetPackageManager(_repositoryProvider, _settings, _solutionManager);
             UIActionEngine actionEngine = new UIActionEngine(_repositoryProvider, packageManager);
 
             return new NuGetUIContext(_repositoryProvider, _solutionManager, packageManager, actionEngine, _restoreManager, _optionsPage, projects);

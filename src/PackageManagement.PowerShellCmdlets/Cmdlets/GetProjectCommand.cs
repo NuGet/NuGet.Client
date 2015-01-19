@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             
             if (All.IsPresent)
             {
-                IEnumerable<NuGetProject> projects = VsSolutionManager.GetProjects();
+                IEnumerable<NuGetProject> projects = VsSolutionManager.GetNuGetProjects();
                 WriteObject(projects, enumerateCollection: true);
             }
             else

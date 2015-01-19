@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.Preprocess();
             if (_projectSpecified)
             {
-                Projects = VsSolutionManager.GetProjects().ToList();
+                Projects = VsSolutionManager.GetNuGetProjects().ToList();
             }
             else
             {
