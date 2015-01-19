@@ -11,7 +11,7 @@
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet's implementation for reading nupkg package and nuspec package specification files.</description>
-    <tags>nupkg packaging nuspec</tags>
+    <tags>nuget packaging package nupkg nuspec</tags>
   </metadata>
   <files>
 	<file src="..\Core\bin\$configuration$\NuGet.PackagingCore.dll" target="lib/net45" />
