@@ -266,16 +266,12 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, packageReferenceTargetFramework);
 
             // TODO: IncludePrerelease is a big question mark
-            var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackages.Select(pr => pr.PackageIdentity),
+            var installedPackageIdentities = installedPackages.Select(pr => pr.PackageIdentity);
+            var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
                 packageReferenceTargetFramework, includePrerelease: false);
 
             // Step-2 : Determine if the package can be uninstalled based on the metadata resources
-            var packageDependents = dependencyInfoFromPackagesFolder != null ?
-                GetPackageDependents(dependencyInfoFromPackagesFolder, packageIdentity) : null;
-            if (packageDependents != null && packageDependents.Count > 0)
-            {
-                throw CreatePackageHasDependentsException(packageIdentity, packageDependents);
-            }
+            UninstallResolver.GetPackagesToBeUninstalled(packageIdentity, dependencyInfoFromPackagesFolder, installedPackageIdentities, resolutionContext);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToUninstallPackage, packageIdentity);
             // TODO:
@@ -285,31 +281,6 @@ namespace NuGet.PackageManagement
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
             return nuGetProjectActions;
-        }
-
-        private List<PackageIdentity> GetPackageDependents(IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable, PackageIdentity packageIdentity)
-        {
-            var dependentsDict = UninstallResolver.GetPackageDependents(dependencyInfoEnumerable, new PackageIdentity[] { packageIdentity });
-            if(dependentsDict.Count > 0)
-            {
-                return dependentsDict[packageIdentity];
-            }
-            return new List<PackageIdentity>();
-        }
-
-        private InvalidOperationException CreatePackageHasDependentsException(PackageIdentity packageIdentity,
-            List<PackageIdentity> packageDependents)
-        {
-            if (packageDependents.Count == 1)
-            {
-                return new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
-                       Strings.PackageHasDependent, packageIdentity, packageDependents[0]));
-            }
-
-            return new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
-                        Strings.PackageHasDependents, packageIdentity, String.Join(", ",
-                        packageDependents.Select(d => d.ToString()))));
-
         }
 
         private async Task<IEnumerable<PackageDependencyInfo>> GetDependencyInfoFromPackagesFolder(IEnumerable<PackageIdentity> packageIdentities,
