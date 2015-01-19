@@ -3,13 +3,15 @@
   <metadata>
     <id>NuGet.PackageManagement</id>
     <version>1.0.0-overrideme</version>
-    <title>NuGet.PackageManagement</title>
+    <title>NuGet's core package management features</title>
     <authors>NuGet</authors>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.PackageManagement/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Package manifest reading and writing</description>
-    <tags>nuspec nupkg</tags>
+    <description>NuGet's core package management features</description>
+    <tags>nuget package management manifest</tags>
   </metadata>
   <files>
 	<file src="..\ProjectManagement\bin\$configuration$\NuGet.ProjectManagement.dll" target="lib/net45" />

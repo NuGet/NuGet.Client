@@ -3,12 +3,13 @@
   <metadata>
     <id>NuGet.PackageManagement.PowerShellCmdlets</id>
     <version>1.0.0-overrideme</version>
-    <title>NuGet.PackageManagement.PowerShellCmdlets</title>
+    <title>NuGet's PowerShell Cmdlets for the Visual Studio client</title>
     <authors>NuGet</authors>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.PackageManagement/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>nuget powershell cmdlets</description>
-    <tags>nuget powershell cmdlets</tags>
+    <description>NuGet's PowerShell Cmdlets for the Visual Studio client</description>
   </metadata>
 </package>
