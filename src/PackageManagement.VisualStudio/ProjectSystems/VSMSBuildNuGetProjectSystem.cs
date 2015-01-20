@@ -186,7 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProjectUtility.GetReferences(EnvDTEProject).Add(name);
         }
 
-        public void AddImport(string targetFullPath, ImportLocation location)
+        public virtual void AddImport(string targetFullPath, ImportLocation location)
         {
             if (String.IsNullOrEmpty(targetFullPath))
             {
@@ -354,7 +354,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
-        public void RemoveImport(string targetFullPath)
+        public virtual void RemoveImport(string targetFullPath)
         {
             if (String.IsNullOrEmpty(targetFullPath))
             {
@@ -470,7 +470,7 @@ namespace NuGet.PackageManagement.VisualStudio
                      fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase));
         }
 
-        public string ResolvePath(string path)
+        public virtual string ResolvePath(string path)
         {
             return path;
         }
