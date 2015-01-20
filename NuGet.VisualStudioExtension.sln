@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.TestVSExt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Options", "src\Options\Options.csproj", "{53AB7187-CDF3-48B5-B90E-8919D3CB904D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Coverage|Any CPU = Coverage|Any CPU
@@ -146,6 +148,16 @@ Global
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Coverage|Any CPU.ActiveCfg = Coverage|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Coverage|Any CPU.Build.0 = Coverage|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Mono Debug|Any CPU.ActiveCfg = Mono Debug|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Mono Debug|Any CPU.Build.0 = Mono Debug|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Mono Release|Any CPU.ActiveCfg = Mono Release|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Mono Release|Any CPU.Build.0 = Mono Release|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

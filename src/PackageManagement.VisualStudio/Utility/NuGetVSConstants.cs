@@ -1,3 +1,4 @@
+using System;
 namespace NuGet.PackageManagement.VisualStudio
 {
     internal static class NuGetVSConstants
@@ -38,5 +39,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // HResults
         internal const int S_OK = 0;
+
+        //Settings
+        internal const string ConfigSetting = "config";
+
+        //
+        public static readonly Guid GUID_VSStandardCommandSet97;
     }
 }

@@ -146,9 +146,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+
     <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>PackageManagement.PowerShellCmdlets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Options\Options.csproj">
+      <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
+      <Name>Options</Name>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
