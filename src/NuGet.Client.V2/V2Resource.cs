@@ -13,16 +13,16 @@ namespace NuGet.Client.V2
     /// </summary>
     public class V2Resource : INuGetResource
     {
-        private IPackageRepository _v2Client;              
+        private IPackageRepository _v2Client;
       
-        public V2Resource(V2Resource resource)            
+        public V2Resource(V2Resource resource)
         {
-            _v2Client = resource.V2Client;           
+            _v2Client = resource.V2Client;
         }
 
         public V2Resource(IPackageRepository repo)
         {
-            _v2Client = repo;           
+            _v2Client = repo;
         }
 
         public IPackageRepository V2Client
@@ -31,6 +31,6 @@ namespace NuGet.Client.V2
             {
                 return _v2Client;
             }
-        }       
+        }
     }
 }

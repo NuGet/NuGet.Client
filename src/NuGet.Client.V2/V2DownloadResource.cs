@@ -64,9 +64,25 @@ namespace NuGet.Client.V2
             }
         }
 
-        public override async Task<Stream> GetStream(PackageIdentity identity, System.Threading.CancellationToken token)
+        public override async Task<Stream> GetStream(PackageIdentity identity, CancellationToken token)
         {
-            throw new NotImplementedException();
+            Stream result = null;
+
+            SemanticVersion version = null;
+            
+            if (identity.Version != null)
+            {
+                SemanticVersion.TryParse(identity.Version.ToNormalizedString(), out version);
+            }
+
+            var package = V2Client.FindPackage(identity.Id, version);
+
+            if (package != null)
+            {
+                result = package.GetStream();
+            }
+
+            return result;
         }
     }
 }

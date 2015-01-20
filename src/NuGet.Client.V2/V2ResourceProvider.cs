@@ -19,7 +19,7 @@ namespace NuGet.Client.V2
                     if (V2Utilities.IsV2(source.PackageSource).Result)
                     {
                         // Get a IPackageRepo object and add it to the cache.
-                        repo = V2Utilities.GetV2SourceRepository(source.PackageSource);                       
+                        repo = V2Utilities.GetV2SourceRepository(source.PackageSource);
                     }
                     else
                     {

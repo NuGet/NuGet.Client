@@ -30,7 +30,7 @@ namespace NuGet.Client
 
 
         /// <summary>
-        /// Find all packages with the given name
+        /// Find all packages with the given name and their dependencies
         /// </summary>
         public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token);
     }
