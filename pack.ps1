@@ -10,44 +10,8 @@ param (
     [switch]$NoLock
 )
 
-function BuildAndPack([string]$Id)
+function Pack([string]$Id)
 {
-    # build
-    if (!$SkipBuild)
-    {
-        if ($SkipTests)
-        {
-            $env:DisableRunningUnitTests="true"
-        }
-        else
-        {
-            $env:DisableRunningUnitTests="false"
-        }
-
-        if ($PFXPath)
-        {
-            $env:NUGET_PFX_PATH=$PFXPath
-
-            if ($DelaySign)
-            {
-                $env:NUGET_DELAYSIGN="true"
-            }
-        }
-
-        Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
-        Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
-        Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
-
-        if ($PushTarget)
-        {
-            Write-Host "Updating package references for our own packages"
-            & .\.nuget\nuget.exe update Client.v3.sln -source "$PushTarget"
-
-            Write-Host "Now, building again to consume the updated packages"
-            Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
-        }
-    }
-
     # assembly containing the release file version to use for the package
     $workingDir = (Get-Item -Path ".\" -Verbose).FullName;
 
@@ -147,22 +111,46 @@ function BuildAndPack([string]$Id)
     }
 }
 
-BuildAndPack("NuGet.Protocol.Types")
-
+# build
 if (!$SkipBuild)
 {
-    Write-Host "Updating the NuGet.Protocol.Types package reference for NuGet.Protocol"
-
-    if ($PushTarget)
+    if ($SkipTests)
     {
-        $updateSource = $PushTarget
+        $env:DisableRunningUnitTests="true"
     }
     else
     {
-        $updateSource = Join-Path "." "nupkgs" -resolve
+        $env:DisableRunningUnitTests="false"
     }
 
-    & nuget.exe update "Client.v3.sln" -id "NuGet.Protocol.Types" -source "$updateSource" -repositoryPath ".\packages"
+    if ($PFXPath)
+    {
+        $env:NUGET_PFX_PATH=$PFXPath
+
+        if ($DelaySign)
+        {
+            $env:NUGET_DELAYSIGN="true"
+        }
+    }
+
+    if ($PushTarget)
+    {
+        & nuget restore Client.v3.sln -source "$PushTarget"
+    }
+
+    Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
+    Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
+    Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
+
+    if ($PushTarget)
+    {
+        Write-Host "Updating package references for our own packages"
+        & .\.nuget\nuget.exe update Client.v3.sln -source "$PushTarget"
+
+        Write-Host "Now, building again to consume the updated packages"
+        Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
+    }
 }
 
-BuildAndPack("NuGet.Protocol")
+Pack("NuGet.Protocol.Types")
+Pack("NuGet.Protocol")
