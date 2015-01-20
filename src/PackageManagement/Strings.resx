@@ -136,7 +136,7 @@
     <value>'{0}' cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to '%AppData%\NuGet\NuGet.config'</value>
   </data>
   <data name="NoLatestVersionFound" xml:space="preserve">
-    <value>No latest version found for the 'packageId' for the given source repositories and resolution context</value>
+    <value>No latest version found for the '{0}' for the given source repositories and resolution context</value>
   </data>
   <data name="NoNuGetProjectWithSpecifiedName" xml:space="preserve">
     <value>No NuGetProject is available with specified name '{0}'</value>
@@ -144,11 +144,17 @@
   <data name="NuGetProjectDoesNotHaveName" xml:space="preserve">
     <value>NuGetProject does not have 'Name' set in metadata. It should be set and it should be unique</value>
   </data>
+  <data name="PackageCouldNotBeInstalled" xml:space="preserve">
+    <value>Package '{0}' could not be installed</value>
+  </data>
   <data name="PackageHasDependent" xml:space="preserve">
     <value>Unable to uninstall '{0}' because '{1}' depends on it.</value>
   </data>
   <data name="PackageHasDependents" xml:space="preserve">
     <value>Unable to uninstall '{0}' because '{1}' depend on it.</value>
+  </data>
+  <data name="PackageNotFound" xml:space="preserve">
+    <value>Package '{0}' is not found</value>
   </data>
   <data name="PackageToBeUninstalledCouldNotBeFound" xml:space="preserve">
     <value>Package '{0}' to be uninstalled could not be found in project '{1}'</value>

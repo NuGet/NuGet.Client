@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No latest version found for the &apos;packageId&apos; for the given source repositories and resolution context.
+        ///   Looks up a localized string similar to No latest version found for the &apos;{0}&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {
             get {
@@ -142,6 +142,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; could not be installed.
+        /// </summary>
+        internal static string PackageCouldNotBeInstalled {
+            get {
+                return ResourceManager.GetString("PackageCouldNotBeInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to uninstall &apos;{0}&apos; because &apos;{1}&apos; depends on it..
         /// </summary>
         internal static string PackageHasDependent {
@@ -156,6 +165,15 @@ namespace NuGet.PackageManagement {
         internal static string PackageHasDependents {
             get {
                 return ResourceManager.GetString("PackageHasDependents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; is not found.
+        /// </summary>
+        internal static string PackageNotFound {
+            get {
+                return ResourceManager.GetString("PackageNotFound", resourceCulture);
             }
         }
         
