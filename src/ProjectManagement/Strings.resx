@@ -141,6 +141,12 @@
   <data name="ContentFilesShouldNotBeTargetFrameworkSpecific" xml:space="preserve">
     <value>Content files should not be target framework specific, whereas, '{0}' is</value>
   </data>
+  <data name="Debug_RemovedFile" xml:space="preserve">
+    <value>Removed file '{0}'.</value>
+  </data>
+  <data name="Debug_RemovedFileFromFolder" xml:space="preserve">
+    <value>Removed file '{0}' to folder '{1}'.</value>
+  </data>
   <data name="Debug_RemovedFolder" xml:space="preserve">
     <value>Removed folder '{0}'.</value>
   </data>
