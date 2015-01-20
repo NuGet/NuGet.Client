@@ -126,6 +126,10 @@
       <Project>{72b86845-f376-4884-a0f2-ad3473ccebed}</Project>
       <Name>Client.V3</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\NuGet.Client.VisualStudio\NuGet.Client.VisualStudio.csproj">
+      <Project>{2de18bab-dda1-4f71-9000-641198758399}</Project>
+      <Name>NuGet.Client.VisualStudio</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

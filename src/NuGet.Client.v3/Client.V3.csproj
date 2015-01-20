@@ -119,6 +119,10 @@
       <Project>{05b640ad-133d-4b36-8df0-036323d7873e}</Project>
       <Name>NuGet.Client.BaseTypes</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.Client.VisualStudio\NuGet.Client.VisualStudio.csproj">
+      <Project>{2de18bab-dda1-4f71-9000-641198758399}</Project>
+      <Name>NuGet.Client.VisualStudio</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />

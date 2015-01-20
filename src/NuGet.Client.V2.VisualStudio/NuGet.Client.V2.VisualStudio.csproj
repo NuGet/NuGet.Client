@@ -97,6 +97,10 @@
       <Project>{82621397-b9ed-4a5b-872f-b08ed7e7efdb}</Project>
       <Name>NuGet.Client.V2</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.Client.VisualStudio\NuGet.Client.VisualStudio.csproj">
+      <Project>{2de18bab-dda1-4f71-9000-641198758399}</Project>
+      <Name>NuGet.Client.VisualStudio</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\build\sign.targets" />
