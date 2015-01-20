@@ -40,9 +40,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NuGet.Packaging.1.0.0-pre-20150115030027\lib\net45\NuGet.Frameworks.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.PackageManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150117061140\lib\net45\NuGet.PackageManagement.dll</HintPath>
+    <Reference Include="NuGet.PackageManagement">
+      <HintPath>..\..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150119215026\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -52,9 +51,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NuGet.Packaging.1.0.0-pre-20150115030027\lib\net45\NuGet.PackagingCore.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.ProjectManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150117061140\lib\net45\NuGet.ProjectManagement.dll</HintPath>
+    <Reference Include="NuGet.ProjectManagement">
+      <HintPath>..\..\..\packages\NuGet.PackageManagement.1.0.0-pre-20150119215026\lib\net45\NuGet.ProjectManagement.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

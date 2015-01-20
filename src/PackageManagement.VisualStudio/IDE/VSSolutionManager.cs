@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
             throw new NotImplementedException();
         }
 
-        public IEnumerable<NuGetProject> GetProjects()
+        public IEnumerable<NuGetProject> GetNuGetProjects()
         {
             return GetEnvDTEProjects().Select(p => VSNuGetProjectFactory.GetNuGetProject(p, ToBeDeletedNuGetProjectContext));
         }
