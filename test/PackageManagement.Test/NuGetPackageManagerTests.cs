@@ -1,4 +1,5 @@
-﻿using NuGet.Frameworks;
+﻿using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.PackagingCore;

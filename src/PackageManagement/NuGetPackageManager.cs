@@ -52,15 +52,17 @@ namespace NuGet.PackageManagement
         public PackagePathResolver PackagePathResolver { get; set; }
 
         public SourceRepository PackagesFolderSourceRepository { get; set; }
-
-        private HttpClient HttpClient { get; set; }
-        
+      
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, string packagesFolderPath, HttpClient httpClient = null)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, string packagesFolderPath)
         {
-            InitializeMandatory(sourceRepositoryProvider, httpClient);
+            InitializeMandatory(sourceRepositoryProvider);
+            if(packagesFolderPath == null)
+            {
+                throw new ArgumentNullException("packagesFolderPath");
+            }
             PackagesFolderPath = packagesFolderPath;
             InitializePackagesFolderInfo();
         }
@@ -68,16 +70,17 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager with a mandatory SolutionManager lke VS
         /// </summary>
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager, HttpClient httpClient = null/*, IPackageResolver packageResolver */)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager/*, IPackageResolver packageResolver */)
         {
-            InitializeMandatory(sourceRepositoryProvider, httpClient);
-            if(solutionManager == null)
-            {
-                throw new ArgumentNullException("solutionManager");
-            }
+            InitializeMandatory(sourceRepositoryProvider);
             if (settings == null)
             {
                 throw new ArgumentNullException("settings");
+            }
+
+            if(solutionManager == null)
+            {
+                throw new ArgumentNullException("solutionManager");
             }
 
             Settings = settings;
@@ -87,7 +90,7 @@ namespace NuGet.PackageManagement
             InitializePackagesFolderInfo();
         }
 
-        private void InitializeMandatory(ISourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient)
+        private void InitializeMandatory(ISourceRepositoryProvider sourceRepositoryProvider)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -95,14 +98,6 @@ namespace NuGet.PackageManagement
             }
 
             SourceRepositoryProvider = sourceRepositoryProvider;
-            if (httpClient == null)
-            {
-                httpClient = new HttpClient(new WebRequestHandler()
-                {
-                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default)
-                });
-            }
-            HttpClient = httpClient;
         }
 
         private void InitializePackagesFolderInfo()
@@ -240,6 +235,10 @@ namespace NuGet.PackageManagement
                 else
                 {
                     var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
+                    if(sourceRepository == null)
+                    {
+                        throw new InvalidOperationException(String.Format(Strings.PackageNotFound, packageIdentity));
+                    }
                     nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository));
                 }
             }
@@ -255,7 +254,7 @@ namespace NuGet.PackageManagement
         private static async Task<SourceRepository> GetSourceRepository(PackageIdentity packageIdentity, IEnumerable<SourceRepository> sourceRepositories)
         {
             Uri downloadUrl;
-            foreach(var sourceRepository in sourceRepositories)
+            foreach (var sourceRepository in sourceRepositories)
             {
                 try
                 {
@@ -269,7 +268,7 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            throw new InvalidOperationException(String.Format(Strings.PackageCouldNotBeInstalled, packageIdentity));
+            return null;
         }
 
         /// <summary>
@@ -347,11 +346,33 @@ namespace NuGet.PackageManagement
                 {
                     using (var targetPackageStream = new MemoryStream())
                     {
-                        await PackageDownloader.GetPackageStream(HttpClient, nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream);
+                        await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream);
                         ExecuteInstall(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext);
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// RestorePackage is only allowed on a folderNuGetProject. In most cases, one will simply use the packagesFolderPath from NuGetPackageManager
+        /// to create a folderNuGetProject before calling into this method
+        /// </summary>
+        public async Task<bool> RestorePackage(FolderNuGetProject folderNuGetProject, PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        {
+            var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
+            if(sourceRepository == null)
+            {
+                return false;
+            }
+
+            using (var targetPackageStream = new MemoryStream())
+            {
+                await PackageDownloader.GetPackageStream(sourceRepository, packageIdentity, targetPackageStream);
+                folderNuGetProject.InstallPackage(packageIdentity, targetPackageStream, nuGetProjectContext);
+            }
+
+            return true;
         }
 
         private void ExecuteInstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)

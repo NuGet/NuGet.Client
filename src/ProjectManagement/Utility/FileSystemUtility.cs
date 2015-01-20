@@ -107,5 +107,33 @@ namespace NuGet.ProjectManagement
 
             return Enumerable.Empty<string>();
         }
+
+        public static void DeleteFile(string root, string path, INuGetProjectContext nuGetProjectContext)
+        {
+            if (!FileExists(root, path))
+            {
+                return;
+            }
+
+            try
+            {
+                path = GetFullPath(root, path);
+                MakeWriteable(path);
+                File.Delete(path);
+                string folderPath = Path.GetDirectoryName(path);
+                if (!String.IsNullOrEmpty(folderPath))
+                {
+                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
+                }
+                else
+                {
+                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(path));
+                }
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+        }
     }
 }
