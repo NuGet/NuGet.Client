@@ -5,10 +5,10 @@
     <version>1.0.0-overrideme</version>
     <title>NuGet's PowerShell Cmdlets for the Visual Studio client</title>
     <authors>NuGet</authors>
-    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
+    <copyright>Copyright 2015 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
-    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.PackageManagement/master/LICENSE</licenseUrl>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/nuget_release_eula.htm</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet's PowerShell Cmdlets for the Visual Studio client</description>
   </metadata>
