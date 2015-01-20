@@ -84,9 +84,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDE\SimpleSolutionManager.cs" />
     <Compile Include="IDE\IPackageRestoreManagercs.cs" />
     <Compile Include="IDE\IProductUpdateService.cs" />
     <Compile Include="IDE\ISolutionManager.cs" />
+    <Compile Include="IDE\PackageRestoreManager.cs" />
     <Compile Include="ISourceRepositoryProvider.cs" />
     <Compile Include="PackageManagementContext.cs" />
     <Compile Include="Resolution\ResolverGather.cs" />

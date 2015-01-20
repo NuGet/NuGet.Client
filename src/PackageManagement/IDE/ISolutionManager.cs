@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement
         event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
         string SolutionDirectory { get; }
-        string DefaultNuGetProjectName { get; }
+        string DefaultNuGetProjectName { get; set; }
         NuGetProject DefaultNuGetProject { get; }
         bool IsSolutionOpen { get; }
 
