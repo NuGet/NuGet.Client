@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.ProjectManagement;
+using System;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement
@@ -31,6 +32,8 @@ namespace NuGet.PackageManagement
         /// Restores the missing packages for the current solution.
         /// </summary>
         Task RestoreMissingPackages();
+
+        Task RestoreMissingPackages(NuGetProject nuGetProject);
     }
 
     public class PackagesMissingStatusEventArgs : EventArgs

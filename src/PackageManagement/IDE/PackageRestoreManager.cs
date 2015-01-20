@@ -202,7 +202,10 @@ namespace NuGet.PackageManagement
         public async virtual Task RestoreMissingPackages()
         {
             var missingPackages = GetMissingPackagesForSolution();
-            await RestoreMissingPackages(missingPackages);
+            if(missingPackages.Count > 0)
+            {
+                await RestoreMissingPackages(missingPackages);
+            }            
         }
 
         /// <summary>
@@ -213,7 +216,10 @@ namespace NuGet.PackageManagement
         public async virtual Task RestoreMissingPackages(NuGetProject nuGetProject)
         {
             var missingPackages = GetMissingPackagesForProject(nuGetProject);
-            await RestoreMissingPackages(missingPackages);
+            if (missingPackages.Count > 0)
+            {
+                await RestoreMissingPackages(missingPackages);
+            }
         }
 
         public async virtual Task RestoreMissingPackages(HashSet<PackageReference> missingPackages)
