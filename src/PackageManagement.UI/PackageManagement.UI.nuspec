@@ -5,7 +5,7 @@
     <version>1.0.0-overrideme</version>
     <title>NuGet's Package Management UI for Visual Studio</title>
     <authors>NuGet</authors>
-    <copyright>Copyright 2015 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.</copyright>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.Protocol/</projectUrl>
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE</licenseUrl>

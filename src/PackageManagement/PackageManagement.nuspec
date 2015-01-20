@@ -5,7 +5,7 @@
     <version>1.0.0-overrideme</version>
     <title>NuGet's core package management features</title>
     <authors>NuGet</authors>
-    <copyright>Copyright 2015 Microsoft. NuGet is made possible by the Outercurve Foundation's open source project.</copyright>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
     <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
     <licenseUrl>http://www.microsoft.com/web/webpi/eula/nuget_release_eula.htm</licenseUrl>

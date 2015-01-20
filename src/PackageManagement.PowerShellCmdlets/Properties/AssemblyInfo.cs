@@ -8,9 +8,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyDescription("NuGet's PowerShell Cmdlets for the Visual Studio client")]
 
 // Common attributes
-[assembly: AssemblyCompany("Microsoft Corporation")]
+[assembly: AssemblyCompany("Outercurve Foundation")]
 [assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("Copyright 2015 Microsoft. NuGet is made possible by the Microsoft Corporation's open source project.")]
+[assembly: AssemblyCopyright("Copyright Outercurve Foundation. All rights reserved.")]
 
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: CLSCompliant(true)]
