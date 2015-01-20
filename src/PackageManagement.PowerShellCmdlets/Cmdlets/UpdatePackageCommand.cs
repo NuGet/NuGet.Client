@@ -16,6 +16,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public class UpdatePackageCommand : PackageActionBaseCommand
     {
         private ResolutionContext _context;
+        private UninstallationContext _uninstallcontext;
         private string _id;
         private string _projectName;
         private bool _idSpecified;
@@ -164,7 +165,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
                     foreach (PackageReference package in installedPackages)
                     {
-                        InstallPackageByIdentity(project, package.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true);
+                        InstallPackageByIdentity(project, package.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true, UninstallContext);
                     }
                 }
             }
@@ -181,7 +182,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        InstallPackageByIdentity(project, installedPackage.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true);
+                        InstallPackageByIdentity(project, installedPackage.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true, UninstallContext);
                     }
                 }
             }
@@ -225,8 +226,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get
             {
                 bool allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
-                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false, Reinstall.IsPresent, false);
+                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false);
                 return _context;
+            }
+        }
+
+        /// <summary>
+        /// Uninstall Resolution Context for the command
+        /// </summary>
+        public UninstallationContext UninstallContext
+        {
+            get
+            {
+                _uninstallcontext = new UninstallationContext(false, Reinstall.IsPresent);
+                return _uninstallcontext;
             }
         }
     }

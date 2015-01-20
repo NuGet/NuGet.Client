@@ -159,7 +159,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected void UninstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview)
+        protected void UninstallPackageById(NuGetProject project, string packageId, UninstallationContext resolutionContext, INuGetProjectContext projectContext, bool isPreview)
         {
             if (isPreview)
             {
