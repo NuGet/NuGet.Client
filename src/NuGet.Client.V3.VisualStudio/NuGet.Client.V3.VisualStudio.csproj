@@ -36,12 +36,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Client.BaseTypes">
-      <HintPath>..\..\packages\NuGet.Protocol.Types.3.0.0-rc\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Client.VisualStudio">
-      <HintPath>..\..\packages\NuGet.Protocol.Types.3.0.0-rc\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
-    </Reference>
     <Reference Include="NuGet.Configuration">
       <HintPath>..\..\packages\NuGet.Configuration.3.0.0-rc\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
@@ -109,6 +103,10 @@
     <ProjectReference Include="..\DataClient\Data.csproj">
       <Project>{7e69cb0e-4819-45fe-ab28-11efb81f81c0}</Project>
       <Name>Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.Client.BaseTypes\NuGet.Client.BaseTypes.csproj">
+      <Project>{05b640ad-133d-4b36-8df0-036323d7873e}</Project>
+      <Name>NuGet.Client.BaseTypes</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Client.v3\Client.V3.csproj">
       <Project>{72b86845-f376-4884-a0f2-ad3473ccebed}</Project>
