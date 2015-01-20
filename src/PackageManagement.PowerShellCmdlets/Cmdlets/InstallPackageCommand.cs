@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            FallbackToCacheIfNeccessary();
+            //FallbackToCacheIfNeccessary();
             ParseUserInputForId();
             ParseUserInputForVersion();
             base.Preprocess();

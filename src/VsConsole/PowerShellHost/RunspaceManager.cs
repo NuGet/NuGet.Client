@@ -9,6 +9,7 @@ using Microsoft.PowerShell;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
 using System.Reflection;
+using NuGet.Configuration;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -58,12 +59,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // this is used by the functional tests
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-            var packageManager = new NuGetPackageManager(sourceRepositoryProvider);
+            var settings = ServiceLocator.GetInstance<ISettings>();
             var sourceRepoTuple = Tuple.Create<string, object>("SourceRepositoryProvider", sourceRepositoryProvider);
             var solutionManagerTuple = Tuple.Create<string, object>("VsSolutionManager", solutionManager);
-            var packageManagerTuple = Tuple.Create<string, object>("NuGetPackageManager", packageManager);
 
-            Tuple<string, object>[] privateData = new Tuple<string, object>[] { sourceRepoTuple, solutionManagerTuple, packageManagerTuple };
+            Tuple<string, object>[] privateData = new Tuple<string, object>[] { sourceRepoTuple, solutionManagerTuple  };
 
             var host = new NuGetPSHost(hostName, privateData)
             {
