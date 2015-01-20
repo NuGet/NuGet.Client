@@ -30,8 +30,6 @@ namespace NuGet.Options
 
         internal void OnActivated()
         {
-            //browsePackageCacheButton.Enabled = clearPackageCacheButton.Enabled = Directory.Exists(MachineCache.Default.Source);
-
             if (!_initialized)
             {
                 var packageRestoreConsent = new PackageRestoreConsent(_settings);
@@ -61,16 +59,12 @@ namespace NuGet.Options
 
         private void OnClearPackageCacheClick(object sender, EventArgs e)
         {
-            //MachineCache.Default.Clear();
-            //MessageHelper.ShowInfoMessage(Resources.ShowInfo_ClearPackageCache, Resources.ShowWarning_Title);
+           //not implement now
         }
 
         private void OnBrowsePackageCacheClick(object sender, EventArgs e)
         {
-            //if (Directory.Exists(MachineCache.Default.Source))
-            //{
-            //    Process.Start(MachineCache.Default.Source);
-            //}
+          //not impement now
         }
 
         private void packageRestoreConsentCheckBox_CheckedChanged(object sender, EventArgs e)
