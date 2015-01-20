@@ -176,7 +176,7 @@ namespace NuGet.PackageManagement.UI
                     //    }
                     //}
 
-                    searchFilter.SupportedFrameworks = frameworks;
+                    searchFilter.SupportedFrameworks = new string[0]; // !!! frameworks;
 
                     results.AddRange(await searchResource.Search(
                         _searchText,
@@ -219,12 +219,6 @@ namespace NuGet.PackageManagement.UI
                 searchResultPackage.Id = package.Identity.Id;
                 searchResultPackage.Version = package.Identity.Version;
                 searchResultPackage.IconUrl = package.IconUrl;
-
-                //if (searchResultPackage.IconUrl == null)
-                //{
-                //    // use the default
-                //    searchResultPackage.IconUrl = new Uri("https://nuget.org/Content/Images/packageDefaultIcon.png");
-                //}
 
                 // get other versions
                 var versionList = package.Versions.ToList();

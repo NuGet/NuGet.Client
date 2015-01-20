@@ -63,4 +63,50 @@ namespace StandaloneUI
             throw new NotImplementedException();
         }
     }
+
+    public class MySolutionManager : NuGet.PackageManagement.ISolutionManager
+    {
+        public NuGet.ProjectManagement.NuGetProject DefaultNuGetProject
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string DefaultNuGetProjectName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public NuGet.ProjectManagement.NuGetProject GetNuGetProject(string nuGetProjectSafeName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetNuGetProjectSafeName(NuGet.ProjectManagement.NuGetProject nuGetProject)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<NuGet.ProjectManagement.NuGetProject> GetNuGetProjects()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsSolutionOpen
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public event EventHandler<NuGet.PackageManagement.NuGetProjectEventArgs> NuGetProjectAdded;
+
+        public event EventHandler SolutionClosed;
+
+        public event EventHandler SolutionClosing;
+
+        public string SolutionDirectory
+        {
+            get { return @"c:\temp"; }
+        }
+
+        public event EventHandler SolutionOpened;
+    }
 }

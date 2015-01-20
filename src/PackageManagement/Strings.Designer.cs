@@ -61,6 +61,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Another NuGetProject with the same name &apos;{0}&apos; exists in solution.
+        /// </summary>
+        internal static string AnotherNuGetProjectWithSameNameExistsInSolution {
+            get {
+                return ResourceManager.GetString("AnotherNuGetProjectWithSameNameExistsInSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attempting to gather dependencies information for package &apos;{0}&apos; to install on project targeting &apos;{1}&apos;.
         /// </summary>
         internal static string AttemptingToGatherDependencyInfo {
@@ -106,11 +115,38 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No latest version found for the &apos;packageId&apos; for the given source repositories and resolution context.
+        ///   Looks up a localized string similar to No latest version found for the &apos;{0}&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {
             get {
                 return ResourceManager.GetString("NoLatestVersionFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No NuGetProject is available with specified name &apos;{0}&apos;.
+        /// </summary>
+        internal static string NoNuGetProjectWithSpecifiedName {
+            get {
+                return ResourceManager.GetString("NoNuGetProjectWithSpecifiedName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGetProject does not have &apos;Name&apos; set in metadata. It should be set and it should be unique.
+        /// </summary>
+        internal static string NuGetProjectDoesNotHaveName {
+            get {
+                return ResourceManager.GetString("NuGetProjectDoesNotHaveName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; could not be installed.
+        /// </summary>
+        internal static string PackageCouldNotBeInstalled {
+            get {
+                return ResourceManager.GetString("PackageCouldNotBeInstalled", resourceCulture);
             }
         }
         
@@ -129,6 +165,15 @@ namespace NuGet.PackageManagement {
         internal static string PackageHasDependents {
             get {
                 return ResourceManager.GetString("PackageHasDependents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; is not found.
+        /// </summary>
+        internal static string PackageNotFound {
+            get {
+                return ResourceManager.GetString("PackageNotFound", resourceCulture);
             }
         }
         
@@ -183,6 +228,15 @@ namespace NuGet.PackageManagement {
         internal static string SolutionDirectoryNotAvailable {
             get {
                 return ResourceManager.GetString("SolutionDirectoryNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall is not supported when SolutionManager is not available.
+        /// </summary>
+        internal static string SolutionManagerNotAvailableForUninstall {
+            get {
+                return ResourceManager.GetString("SolutionManagerNotAvailableForUninstall", resourceCulture);
             }
         }
         

@@ -50,15 +50,19 @@ namespace StandaloneUI
             var repositoryProvider = new SourceRepositoryProvider(_resourceProviders, _settings);
 
             var projectMetadata = new Dictionary<string, object>();
-            projectMetadata.Add(NuGetProjectMetadataKeys.Name, "Test Project");
+            projectMetadata.Add(NuGetProjectMetadataKeys.Name, "Project 1");
             projectMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net45"));
+            NuGetProject project = new PackagesConfigNuGetProject(@"C:\temp\test\packages.config", projectMetadata);
 
-            NuGetProject project = new PackagesConfigNuGetProject(@"C:\Users\juste\Documents\Visual Studio 2013\Projects\ConsoleApplication2\ConsoleApplication2\packages.config", projectMetadata);
-            var projects = new NuGetProject[] { project };
+            var projectMetadata2 = new Dictionary<string, object>();
+            projectMetadata2.Add(NuGetProjectMetadataKeys.Name, "Project 2 ");
+            projectMetadata2.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net45"));
+            NuGetProject project2 = new PackagesConfigNuGetProject(@"C:\temp\test\packages2.config", projectMetadata2);
 
+            var projects = new NuGetProject[] { project, project2 };
+            
             //var uiContext = _contextFactory.Create(projects);
-
-            _contextFactory = new NuGetUIContextFactory(repositoryProvider);
+            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), new DefaultSettings());
             var context = _contextFactory.Create(projects);
             var uiController = _uiServiceFactory.Create(projects);
 

@@ -34,7 +34,7 @@
       <HintPath>..\..\packages\NuGet.Frameworks.1.0.0-master-43260049\lib\portable-net45+win\NuGet.Frameworks.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43250244\lib\portable-net45+win\NuGet.Packaging.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-pre-20150120004808\lib\portable-net45+win\NuGet.Packaging.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Versioning">
       <HintPath>..\..\packages\NuGet.Versioning.1.0.3-master-43232045\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>

@@ -45,4 +45,22 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <Style x:Key="PackageIconImageStyle" TargetType="{x:Type Image}">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="StretchDirection" Value="DownOnly" />
+        <Setter Property="Stretch" Value="Fill" />
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="ImageFailed">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Source" FillBehavior="HoldEnd">
+                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{StaticResource BitmapImage_DefaultIcon}">
+                            </DiscreteObjectKeyFrame>
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EmptyNuGetProjectContext.cs" />
     <Compile Include="FileConflictAction.cs" />
     <Compile Include="FileModifiers\FileTransformExtensions.cs" />
     <Compile Include="FileModifiers\IPackageFileTransformer.cs" />

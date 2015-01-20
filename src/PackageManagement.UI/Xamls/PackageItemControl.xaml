@@ -9,13 +9,18 @@
              MinHeight="80"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
-        <ui:PackageStatusToInstallImageVisibilityConverter x:Key="PackageStatusToInstallImageVisibilityConverter" />
-        <ui:PackageStatusToUpdateImageVisibilityConverter x:Key="PackageStatusToUpdateImageVisibilityConverter" />
-        <ui:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <Style x:Key="TooltipStyle" TargetType="{x:Type TextBlock}">
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="MaxWidth" Value="300" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <ui:PackageStatusToInstallImageVisibilityConverter x:Key="PackageStatusToInstallImageVisibilityConverter" />
+            <ui:PackageStatusToUpdateImageVisibilityConverter x:Key="PackageStatusToUpdateImageVisibilityConverter" />
+            <ui:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <Style x:Key="TooltipStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="MaxWidth" Value="300" />
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Border
             BorderThickness="0,0,0,1"
@@ -36,10 +41,11 @@
                 </Grid.RowDefinitions>
                 <Image
                     Grid.Row="0"
-                    Source="{Binding IconUrl}"
+                    Source="{Binding IconUrl,TargetNullValue={StaticResource BitmapImage_DefaultIcon}}"
                     Height="32"
                     Width="32"
-                    RenderOptions.BitmapScalingMode="HighQuality"                    
+                    RenderOptions.BitmapScalingMode="HighQuality"
+                    Style="{StaticResource PackageIconImageStyle}"
                     VerticalAlignment="Top"
                     Margin="0,0,16,0" />
 

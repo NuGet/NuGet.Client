@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class PackageManagerWindowPane : WindowPane
+    public class PackageManagerWindowPane : WindowPane, IVsWindowFrameNotify3
     {
         private PackageManagerControl _content;
 
@@ -66,6 +67,32 @@ namespace NuGet.PackageManagement.UI
             {
                 base.Dispose(disposing);
             }
+        }
+
+        public int OnClose(ref uint pgrfSaveOptions)
+        {
+            pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
+            return Microsoft.VisualStudio.VSConstants.S_OK;
+        }
+
+        public int OnDockableChange(int fDockable, int x, int y, int w, int h)
+        {
+            return Microsoft.VisualStudio.VSConstants.S_OK;
+        }
+
+        public int OnMove(int x, int y, int w, int h)
+        {
+            return Microsoft.VisualStudio.VSConstants.S_OK;
+        }
+
+        public int OnShow(int fShow)
+        {
+            return Microsoft.VisualStudio.VSConstants.S_OK;
+        }
+
+        public int OnSize(int x, int y, int w, int h)
+        {
+            return Microsoft.VisualStudio.VSConstants.S_OK;
         }
     }
 }

@@ -10,16 +10,25 @@ using NuGet.PackagingCore;
 
 namespace NuGet.PackageManagement.UI
 {
-    // The DataContext of the PackageDetail control is this class
-    // It has two mode: Project, or Solution
+    // used to manage packages in one project.
     internal class PackageDetailControlModel : DetailControlModel
     {
         public PackageDetailControlModel(
-            IEnumerable<NuGetProject> projects,
-            SearchResultPackageMetadata searchResultPackage)
-            : base(projects, searchResultPackage)
+            IEnumerable<NuGetProject> nugetProjects)
+            : base(nugetProjects)
         {
+            Debug.Assert(nugetProjects.Count() == 1);
+        }
+
+        public override void SetCurrentPackage(SearchResultPackageMetadata searchResultPackage)
+        {
+            base.SetCurrentPackage(searchResultPackage);
             UpdateInstalledVersion();
+        }
+
+        public override bool IsSolution
+        {
+            get { return false; }
         }
 
         private void UpdateInstalledVersion()
