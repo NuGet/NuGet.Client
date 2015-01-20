@@ -59,10 +59,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider);
-            //var packageManagerFactory = ServiceLocator.GetInstance<IPackageManagerFactory>();
-            var pmfTuple = Tuple.Create<string, object>("packageManagerFactory", packageManager);
+            var sourceRepoTuple = Tuple.Create<string, object>("SourceRepositoryProvider", sourceRepositoryProvider);
+            var solutionManagerTuple = Tuple.Create<string, object>("VsSolutionManager", solutionManager);
+            var packageManagerTuple = Tuple.Create<string, object>("NuGetPackageManager", packageManager);
 
-            Tuple<string, object>[] privateData = new Tuple<string, object>[] { pmfTuple };
+            Tuple<string, object>[] privateData = new Tuple<string, object>[] { sourceRepoTuple, solutionManagerTuple, packageManagerTuple };
 
             var host = new NuGetPSHost(hostName, privateData)
             {

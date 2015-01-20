@@ -22,7 +22,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     {
         private static readonly object _initScriptsLock = new object();
         private readonly string _name;
-        private readonly PackageManagementContext _packageManagementContext;
+        private PackageManagementContext _packageManagementContext;
         private readonly IRunspaceManager _runspaceManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISolutionManager _solutionManager;
@@ -475,11 +475,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             if (_projectSafeNames != null && selectedIndex >= 0 && selectedIndex < _projectSafeNames.Length)
             {
-                _solutionManager.DefaultNuGetProjectName = _projectSafeNames[selectedIndex];
+                //_solutionManager.DefaultNuGetProjectName = _projectSafeNames[selectedIndex];
             }
             else
             {
-                _solutionManager.DefaultNuGetProjectName = null;
+                //_solutionManager.DefaultNuGetProjectName = null;
             }
         }
 
@@ -487,7 +487,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             Debug.Assert(_solutionManager != null);
 
-            var allProjects = _solutionManager.GetProjects();
+            var allProjects = _solutionManager.GetNuGetProjects();
             _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();
             var displayNames = allProjects.Select(p => p.GetMetadata<string>(NuGetProjectMetadataKeys.Name)).ToArray();
             Array.Sort(displayNames, _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
@@ -533,5 +533,18 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
         #endregion
+
+
+        public PackageManagementContext PackageManagementContext
+        {
+            get
+            {
+                return _packageManagementContext;
+            }
+            set
+            {
+                _packageManagementContext = value;
+            }
+        }
     }
 }

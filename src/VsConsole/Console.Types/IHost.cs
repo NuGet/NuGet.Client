@@ -1,3 +1,4 @@
+using NuGet.PackageManagement;
 using System;
 
 namespace NuGetConsole
@@ -47,6 +48,8 @@ namespace NuGetConsole
         void Abort();
 
         string ActivePackageSource { get; set; }
+
+        PackageManagementContext PackageManagementContext { get; set; }
 
         string[] GetPackageSources();
 

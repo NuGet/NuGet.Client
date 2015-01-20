@@ -1,3 +1,4 @@
+using NuGet.PackageManagement;
 using System;
 
 namespace NuGetConsole.Host.PowerShellProvider
@@ -73,6 +74,18 @@ namespace NuGetConsole.Host.PowerShellProvider
 
         public void SetDefaultRunspace()
         {
+        }
+
+
+        public PackageManagementContext PackageManagementContext
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+            }
         }
     }
 }
