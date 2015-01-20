@@ -79,6 +79,7 @@ namespace NuGetVSExtension
         {
             ServiceLocator.InitializePackageServiceProvider(this);
             _projectToToolWindowId = new Dictionary<Project, int>();
+            StandaloneSwitch.IsRunningStandalone = false;
         }
 
         private IVsMonitorSelection VsMonitorSelection
@@ -495,8 +496,8 @@ namespace NuGetVSExtension
             var uiController = uiFactory.Create(new [] { nugetProject } );
 
             var model = new PackageManagerModel(uiController, uiContext);
-            var control = new PackageManagerControl(model);
-
+            var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
+            var control = new PackageManagerControl(model, vsWindowSearchHostfactory);
             var windowPane = new PackageManagerWindowPane(control);
             var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
             var ppunkDocData = Marshal.GetIUnknownForObject(model);
@@ -606,11 +607,9 @@ namespace NuGetVSExtension
             }
         }
 
-        /* ****
         private IVsWindowFrame CreateDocWindowForSolution()
         {
             // TODO: Need to wait until solution is loaded
-
             IVsWindowFrame windowFrame = null;
             IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
             IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
@@ -618,25 +617,34 @@ namespace NuGetVSExtension
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
-            var context = ServiceLocator.GetInstance<VsPackageManagerContext>();
-            var currentSolution = context.GetCurrentSolution();
-            if (!currentSolution.Projects.Any())
+            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            var projects = solutionManager.GetNuGetProjects();
+            if (!projects.Any())
             {
                 // there are no supported projects.
-                MessageHelper.ShowWarningMessage(VsResources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
-                return windowFrame;
+                // TODO: MessageHelper.ShowWarningMessage(
+                //    Resx.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
+                return null;
             }
 
-            var myDoc = new PackageManagerModel(context.SourceManager, currentSolution);
-            var NewEditor = new PackageManagerWindowPane(myDoc, ServiceLocator.GetInstance<IUserInterfaceService>());
-            var ppunkDocView = Marshal.GetIUnknownForObject(NewEditor);
-            var ppunkDocData = Marshal.GetIUnknownForObject(myDoc);
-            var guidEditorType = PackageManagerEditorFactory.EditorFactoryGuid;
+            var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
+            var uiContext = uiContextFactory.Create(projects);
+
+            var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
+            var uiController = uiFactory.Create(projects);
+
+            var model = new PackageManagerModel(uiController, uiContext);
+            var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
+            var control = new PackageManagerControl(model, vsWindowSearchHostfactory);
+            var windowPane = new PackageManagerWindowPane(control);
+            var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
+            var ppunkDocData = Marshal.GetIUnknownForObject(model);
+            var guidEditorType = Guid.Empty;
             var guidCommandUI = Guid.Empty;
             var caption = String.Format(
                 CultureInfo.CurrentCulture,
-                Resx.Resources.Label_NuGetWindowCaption,
-                myDoc.Target.Name);
+                Resx.Label_NuGetWindowCaption,
+                " !!!solution!!!");
             var documentName = _dte.Solution.FullName;
             int hr = uiShell.CreateDocumentWindow(
                 windowFlags,
@@ -656,11 +664,9 @@ namespace NuGetVSExtension
             ErrorHandler.ThrowOnFailure(hr);
             return windowFrame;
         }
-        */
 
         private void ShowManageLibraryPackageForSolutionDialog(object sender, EventArgs e)
         {
-            /* ***
             var windowFrame = FindExistingSolutionWindowFrame();
             if (windowFrame == null)
             {
@@ -681,7 +687,7 @@ namespace NuGetVSExtension
                 Search(windowFrame, searchText);
 
                 windowFrame.Show();
-            } */
+            }
         }
 
         // Gets the package manager control hosted in the window frame.

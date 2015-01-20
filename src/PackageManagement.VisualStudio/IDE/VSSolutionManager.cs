@@ -431,6 +431,13 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         #endregion 
+    
+
+        public INuGetProjectContext NuGetProjectContext
+        {
+            get;
+            set;
+        }
     }
 
     internal class ToBeDeletedNuGetProjectContext : INuGetProjectContext
