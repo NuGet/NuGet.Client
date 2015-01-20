@@ -41,7 +41,7 @@ function BuildAndPack([string]$Id)
         if ($PushTarget)
         {
             Write-Host "Updating package references for our own packages"
-            & .\.nuget\nuget.exe update Client.v3.sln -source "$PushTarget"
+            & .\.nuget\nuget.exe update PackageManagement.sln -source "$PushTarget"
 
             Write-Host "Now, building again to consume the updated packages"
             Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
