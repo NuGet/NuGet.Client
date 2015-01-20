@@ -263,8 +263,9 @@ namespace NuGet.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
             // Main Act
+            var uninstallationContext = new UninstallationContext();
             await nuGetPackageManager.UninstallPackageAsync(msBuildNuGetProject, packageIdentity.Id,
-                resolutionContext, testNuGetProjectContext);
+                uninstallationContext, testNuGetProjectContext);
 
             // Assert
             // Check that the packages.config file exists after the installation
@@ -325,8 +326,9 @@ namespace NuGet.Test
             Exception exception = null;
             try
             {
+                var uninstallationContext = new UninstallationContext();
                 await nuGetPackageManager.UninstallPackageAsync(msBuildNuGetProject, "jQuery",
-                        resolutionContext, testNuGetProjectContext);
+                        uninstallationContext, testNuGetProjectContext);
             }
             catch(InvalidOperationException ex)
             {
@@ -376,8 +378,9 @@ namespace NuGet.Test
             Assert.Equal(1, projectBInstalled.Count);
 
             // Main Act
+            var uninstallationContext = new UninstallationContext();
             await nuGetPackageManager.UninstallPackageAsync(projectA, packageIdentity.Id,
-                resolutionContext, testNuGetProjectContext);
+                uninstallationContext, testNuGetProjectContext);
 
             // Assert
             projectAInstalled = projectA.GetInstalledPackages().ToList();
@@ -584,8 +587,9 @@ namespace NuGet.Test
             Exception exception = null;
             try
             {
+                var uninstallationContext = new UninstallationContext(removeDependencies: true);
                 await nuGetPackageManager.UninstallPackageAsync(projectA, packageIdentity2.Id,
-            new ResolutionContext(DependencyBehavior.Lowest, false, true), testNuGetProjectContext);
+            uninstallationContext, testNuGetProjectContext);
             }
             catch (InvalidOperationException ex)
             {
@@ -649,8 +653,9 @@ namespace NuGet.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
             // Main Act
+            var uninstallationContext = new UninstallationContext(removeDependencies: false, forceRemove: true);
             await nuGetPackageManager.UninstallPackageAsync(msBuildNuGetProject, "jQuery",
-                        new ResolutionContext(DependencyBehavior.Lowest, false, false, true), testNuGetProjectContext);
+                        uninstallationContext, testNuGetProjectContext);
 
             // Assert
             // Check that the packages.config file exists after the installation

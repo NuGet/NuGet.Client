@@ -20,6 +20,7 @@ namespace Test.Utility
         {
             SolutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
             NuGetProjects = new List<NuGetProject>();
+            NuGetProjectContext = new TestNuGetProjectContext();
         }
 
         public NuGetProject AddNewMSBuildProject(NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
@@ -81,6 +82,12 @@ namespace Test.Utility
             {
                 return NuGetProjects.Count > 0;
             }
+        }
+
+        public INuGetProjectContext NuGetProjectContext
+        {
+            get;
+            set;
         }
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;

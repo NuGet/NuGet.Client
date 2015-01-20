@@ -19,10 +19,11 @@ namespace NuGet.PackageManagement
 
         protected Dictionary<string, NuGetProject> NuGetProjects { get; set; }
 
-        public SimpleSolutionManager(string solutionDirectory)
+        public SimpleSolutionManager(string solutionDirectory, INuGetProjectContext nuGetProjectContext = null)
         {
             SolutionDirectory = solutionDirectory;
             NuGetProjects = new Dictionary<string, NuGetProject>();
+            NuGetProjectContext = nuGetProjectContext ?? new EmptyNuGetProjectContext();
         }
 
         public string SolutionDirectory
@@ -99,6 +100,13 @@ namespace NuGet.PackageManagement
             }
 
             return nuGetProjectName;
+        }
+
+
+        public INuGetProjectContext NuGetProjectContext
+        {
+            get;
+            set;
         }
     }
 }

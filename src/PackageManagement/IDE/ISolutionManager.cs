@@ -20,6 +20,7 @@ namespace NuGet.PackageManagement
         string DefaultNuGetProjectName { get; set; }
         NuGetProject DefaultNuGetProject { get; }
         bool IsSolutionOpen { get; }
+        INuGetProjectContext NuGetProjectContext { get; set; }
 
         IEnumerable<NuGetProject> GetNuGetProjects();
 

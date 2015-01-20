@@ -45,18 +45,18 @@ namespace NuGet.PackageManagement
         }
 
         public static ICollection<PackageIdentity> GetPackagesToBeUninstalled(PackageIdentity packageIdentity, IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable,
-            IEnumerable<PackageIdentity> installedPackages, ResolutionContext resolutionContext)
+            IEnumerable<PackageIdentity> installedPackages, UninstallationContext uninstallationContext)
         {
             IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict;
             var dependentsDict = GetPackageDependents(dependencyInfoEnumerable, installedPackages, out dependenciesDict);
             HashSet<PackageIdentity> packagesMarkedForUninstall = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
 
-            GetPackagesToBeUninstalled(packageIdentity, dependentsDict, dependenciesDict, resolutionContext, ref packagesMarkedForUninstall);
+            GetPackagesToBeUninstalled(packageIdentity, dependentsDict, dependenciesDict, uninstallationContext, ref packagesMarkedForUninstall);
             return packagesMarkedForUninstall;
         }
 
         public static void GetPackagesToBeUninstalled(PackageIdentity packageIdentity, IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependentsDict,
-            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict, ResolutionContext resolutionContext, ref HashSet<PackageIdentity> packagesMarkedForUninstall)
+            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict, UninstallationContext uninstallationContext, ref HashSet<PackageIdentity> packagesMarkedForUninstall)
         {            
             // Step-1: Check if package is already marked for uninstall. If so, do nothing and return
             if(packagesMarkedForUninstall.Contains(packageIdentity))
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement
                 List<PackageIdentity> dependentsNotMarkedForUninstallation = dependents.Where(d => !packagesMarkedForUninstallLocalVariable.Contains(d)).ToList();
 
                 // Step-2.2: If yes for Step-2.1 and 'ForceRemove' is set to false, throw InvalidOperationException using CreatePackageHasDependentsException
-                if (dependentsNotMarkedForUninstallation.Count > 0 && !resolutionContext.ForceRemove)
+                if (dependentsNotMarkedForUninstallation.Count > 0 && !uninstallationContext.ForceRemove)
                 {
                     throw CreatePackageHasDependentsException(packageIdentity, dependentsNotMarkedForUninstallation);
                 }
@@ -84,12 +84,12 @@ namespace NuGet.PackageManagement
 
             // Step-4: If 'RemoveDependencies' is marked to true and package has dependencies, Walk recursively
             HashSet<PackageIdentity> dependencies;
-            if(resolutionContext.RemoveDependencies && dependenciesDict.TryGetValue(packageIdentity, out dependencies) && dependencies != null)
+            if(uninstallationContext.RemoveDependencies && dependenciesDict.TryGetValue(packageIdentity, out dependencies) && dependencies != null)
             {
                 // Package has dependencies
                 foreach (var dependency in dependencies)
                 {
-                    GetPackagesToBeUninstalled(dependency, dependentsDict, dependentsDict, resolutionContext, ref packagesMarkedForUninstall);
+                    GetPackagesToBeUninstalled(dependency, dependentsDict, dependentsDict, uninstallationContext, ref packagesMarkedForUninstall);
                 }
             }
         }

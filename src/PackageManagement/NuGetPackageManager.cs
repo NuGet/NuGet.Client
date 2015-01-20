@@ -58,10 +58,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient = null)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, string packagesFolderPath, HttpClient httpClient = null)
         {
             InitializeMandatory(sourceRepositoryProvider, httpClient);
-            InitializePackagesFolderInfo(null, null);
+            PackagesFolderPath = packagesFolderPath;
+            InitializePackagesFolderInfo();
         }
 
         /// <summary>
@@ -82,9 +83,8 @@ namespace NuGet.PackageManagement
             Settings = settings;
             SolutionManager = solutionManager;
 
-            InitializePackagesFolderInfo(null, null);
-            SolutionManager.SolutionOpened += InitializePackagesFolderInfo;
-            SolutionManager.SolutionClosed += InitializePackagesFolderInfo;
+            PackagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
+            InitializePackagesFolderInfo();
         }
 
         private void InitializeMandatory(ISourceRepositoryProvider sourceRepositoryProvider, HttpClient httpClient)
@@ -105,9 +105,8 @@ namespace NuGet.PackageManagement
             HttpClient = httpClient;
         }
 
-        private void InitializePackagesFolderInfo(object sender, EventArgs e)
-        {
-            PackagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
+        private void InitializePackagesFolderInfo()
+        {            
             PackagePathResolver = new PackagePathResolver(PackagesFolderPath);
             PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(new PackageSource(PackagesFolderPath));
         }
@@ -143,10 +142,10 @@ namespace NuGet.PackageManagement
             await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
         }
 
-        public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
         {
             // Step-1 : Call PreviewUninstallPackagesAsync to get all the nuGetProjectActions
-            var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext);
+            var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, uninstallationContext, nuGetProjectContext);
 
             // Step-2 : Execute all the nuGetProjectActions
             await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
@@ -176,6 +175,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
+            List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
             var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
             // Step-1 : Get metadata resources using gatherer
             var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
@@ -212,8 +212,7 @@ namespace NuGet.PackageManagement
                 .Where(op => newListOfInstalledPackages
                     .Where(np => op.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) && !op.Version.Equals(np.Version)).Any());
             var newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
-
-            List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
+            
             foreach (PackageIdentity newPackageToUninstall in newPackagesToUninstall)
             {
                 nuGetProjectActions.Add(NuGetProjectAction.CreateUninstallProjectAction(newPackageToUninstall));
@@ -241,13 +240,13 @@ namespace NuGet.PackageManagement
 
         /// <summary>
         /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall <param name="packageId"></param> into <param name="nuGetProject"></param>
-        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
+        /// <param name="uninstallationContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
         {
             if(SolutionManager == null)
             {
-                throw new ArgumentException("Uninstall is not supported when SolutionManager is not available. This will be fixed");
+                throw new InvalidOperationException(Strings.SolutionManagerNotAvailableForUninstall);
             }
 
             // Step-0: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
@@ -271,7 +270,7 @@ namespace NuGet.PackageManagement
                 packageReferenceTargetFramework, includePrerelease: false);
 
             // Step-2 : Determine if the package can be uninstalled based on the metadata resources
-            UninstallResolver.GetPackagesToBeUninstalled(packageIdentity, dependencyInfoFromPackagesFolder, installedPackageIdentities, resolutionContext);
+            UninstallResolver.GetPackagesToBeUninstalled(packageIdentity, dependencyInfoFromPackagesFolder, installedPackageIdentities, uninstallationContext);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToUninstallPackage, packageIdentity);
             // TODO:

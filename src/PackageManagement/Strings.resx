@@ -168,6 +168,9 @@
   <data name="SolutionDirectoryNotAvailable" xml:space="preserve">
     <value>Unable to locate the solution directory. Please ensure that the solution has been saved.</value>
   </data>
+  <data name="SolutionManagerNotAvailableForUninstall" xml:space="preserve">
+    <value>Uninstall is not supported when SolutionManager is not available</value>
+  </data>
   <data name="UnableToGatherDependencyInfo" xml:space="preserve">
     <value>Unable to gather dependencies information for package '{0}'</value>
   </data>

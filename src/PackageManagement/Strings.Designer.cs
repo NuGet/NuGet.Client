@@ -214,6 +214,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Uninstall is not supported when SolutionManager is not available.
+        /// </summary>
+        internal static string SolutionManagerNotAvailableForUninstall {
+            get {
+                return ResourceManager.GetString("SolutionManagerNotAvailableForUninstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to gather dependencies information for package &apos;{0}&apos;.
         /// </summary>
         internal static string UnableToGatherDependencyInfo {
