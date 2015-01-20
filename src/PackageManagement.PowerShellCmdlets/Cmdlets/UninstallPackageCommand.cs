@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsLifecycle.Uninstall, "Package")]
     public class UninstallPackageCommand : NuGetPowerShellBaseCommand
     {
-        private ResolutionContext _context;
+        private UninstallationContext _context;
 
         public UninstallPackageCommand()
             : base()
@@ -52,11 +52,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Resolution Context for the command
         /// </summary>
-        public ResolutionContext ResolutionContext
+        public UninstallationContext ResolutionContext
         {
             get
             {
-                _context = new ResolutionContext(DependencyBehavior.Lowest, false, RemoveDependencies.IsPresent, Force.IsPresent, false);
+                _context = new UninstallationContext(RemoveDependencies.IsPresent, Force.IsPresent);
                 return _context;
             }
         }

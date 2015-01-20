@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false, false, false);
+                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false);
                 return _context;
             }
         }

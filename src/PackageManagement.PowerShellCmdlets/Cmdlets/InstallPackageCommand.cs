@@ -20,6 +20,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public class InstallPackageCommand : PackageActionBaseCommand
     {
         private ResolutionContext _context;
+        private UninstallationContext _uninstallcontext;
         private SourceRepository _currentSource = null;
         private bool _readFromPackagesConfig;
         private bool _readFromDirectPackagePath;
@@ -56,7 +57,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SubscribeToProgressEvents();
             foreach (PackageIdentity identity in identities)
             {
-                InstallPackageByIdentity(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent);
+                InstallPackageByIdentity(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent, UninstallContext);
             }
             UnsubscribeFromProgressEvents();
         }
@@ -274,8 +275,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get
             {
                 bool allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
-                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false, Force.IsPresent, false);
+                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false);
                 return _context;
+            }
+        }
+
+        /// <summary>
+        /// Uninstall Resolution Context for the command
+        /// </summary>
+        public UninstallationContext UninstallContext
+        {
+            get
+            {
+                _uninstallcontext = new UninstallationContext(false, Force.IsPresent);
+                return _uninstallcontext;
             }
         }
 

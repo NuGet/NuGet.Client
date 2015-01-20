@@ -61,13 +61,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.Preprocess();
         }
 
-        protected void InstallPackageByIdentity(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false)
+        protected void InstallPackageByIdentity(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false,  UninstallationContext uninstallContext = null)
         {
             if (isPreview)
             {
                 if (isForce)
                 {
-                    PackageManager.PreviewUninstallPackageAsync(project, identity.Id, resolutionContext, projectContext).Wait();
+                    PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext).Wait();
                 }
                 PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
             }
@@ -75,19 +75,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (isForce)
                 {
-                    PackageManager.UninstallPackageAsync(project, identity.Id, resolutionContext, projectContext).Wait();
+                    PackageManager.UninstallPackageAsync(project, identity.Id, uninstallContext, projectContext).Wait();
                 }
                 PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
             }
         }
 
-        protected void InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false)
+        protected void InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
             if (isPreview)
             {
                 if (isForce)
                 {
-                    PackageManager.PreviewUninstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+                    PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext).Wait();
                 }
                 PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
             }
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (isForce)
                 {
-                    PackageManager.UninstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+                    PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext).Wait();
                 }
                 PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
             }
