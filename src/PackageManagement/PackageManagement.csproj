@@ -21,7 +21,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn></NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -94,7 +95,6 @@
     <Compile Include="Resolution\ResolverGather.cs" />
     <Compile Include="Resolution\SourceDependencyInfo.cs" />
     <Compile Include="Resolution\UninstallResolver.cs" />
-    <Compile Include="Settings\NullSettings.cs" />
     <Compile Include="Utility\ExceptionUtility.cs" />
     <Compile Include="Utility\NuGetEvent.cs" />
     <Compile Include="Utility\NuGetEventTrigger.cs" />

@@ -1,6 +1,7 @@
 ﻿using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
@@ -21,11 +22,16 @@ namespace NuGet.PackageManagement
         protected SourceRepositoryProvider SourceRepositoryProvider { get; set; }
         protected ISolutionManager SolutionManager { get; set; }
         protected ISettings Settings { get; set; }
-        public PackageRestoreManager(SourceRepositoryProvider sourceRepositoryProvider, ISolutionManager solutionManager, ISettings settings)
+        public PackageRestoreManager(SourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
         {
             if(sourceRepositoryProvider == null)
             {
                 throw new ArgumentNullException("sourceRepositoryProvider");
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException("settings");
             }
 
             if(solutionManager == null)
@@ -33,10 +39,10 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("solutionManager");
             }
 
-            if(settings == null)
-            {
-                throw new ArgumentNullException("settings");
-            }
+            SourceRepositoryProvider = sourceRepositoryProvider;
+            Settings = settings;
+            SolutionManager = solutionManager;
+
 
             SolutionManager.NuGetProjectAdded += OnNuGetProjectAdded;
             SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
@@ -102,52 +108,123 @@ namespace NuGet.PackageManagement
             // This method is called by both Solution Opened and Solution Closed event handlers.
             // In the case of Solution Closed event, the _solutionManager.IsSolutionOpen is false,
             // and so we won't do the unnecessary work of checking for package references.
-            bool missing = SolutionManager.IsSolutionOpen && GetMissingPackagesCore().Any();
+            bool missing = SolutionManager.IsSolutionOpen && GetMissingPackagesForSolution().Any();
             PackagesMissingStatusChanged(this, new PackagesMissingStatusEventArgs(missing));
         }
 
-        private IEnumerable<PackageReference> GetMissingPackagesCore()
+        /// <summary>
+        ///  Gets the missing packages for the entire solution
+        /// </summary>
+        /// <returns></returns>
+        public HashSet<PackageReference> GetMissingPackagesForSolution()
+        {
+            var uniquePackageReferencesFromSolution = GetPackageReferencesFromSolution();
+            return GetMissingPackages(uniquePackageReferencesFromSolution);
+        }
+
+        /// <summary>
+        /// Gets the missing packages for the project
+        /// </summary>
+        /// <param name="nuGetProject"></param>
+        /// <returns></returns>
+        public HashSet<PackageReference> GetMissingPackagesForProject(NuGetProject nuGetProject)
+        {
+            var uniquePackageReferencesFromProject = nuGetProject.GetInstalledPackages();
+            return GetMissingPackages(uniquePackageReferencesFromProject);
+        }
+
+
+        /// <summary>
+        /// Gets the missing packages corresponding to uniquePackageReferences
+        /// </summary>
+        /// <param name="uniquePackageReferences"></param>
+        /// <returns></returns>
+        public HashSet<PackageReference> GetMissingPackages(IEnumerable<PackageReference> uniquePackageReferences)
         {
             try
             {
+                var missingPackages = new HashSet<PackageReference>(new PackageReferenceComparer());
                 var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
                 var packagesFolderPackagePathResolver = nuGetPackageManager.PackagePathResolver;
-                var allPackageReferences = GetAllPackageReferences(SolutionManager);
-                return allPackageReferences.Where(pr => !PackageExistsInPackagesFolder(packagesFolderPackagePathResolver, pr));
+                var missingPackagesEnumerable =
+                    uniquePackageReferences.Where(pr => !PackageExistsInPackagesFolder(packagesFolderPackagePathResolver, pr));
+                foreach(var package in missingPackagesEnumerable)
+                {
+                    missingPackages.Add(package);
+                }
+
+                return missingPackages;
             }
             catch (Exception)
             {
                 // if an exception happens during the check, assume no missing packages and move on.
                 // TODO : Write to NuGetProjectContext
-                return Enumerable.Empty<PackageReference>();
+                return new HashSet<PackageReference>(new PackageReferenceComparer());
             }
         }
 
-        private IEnumerable<PackageReference> GetAllPackageReferences(ISolutionManager solutionManager)
+        public IEnumerable<PackageReference> GetPackageReferencesFromSolution()
         {
-            List<PackageReference> allPackageReferences = new List<PackageReference>();
+            List<PackageReference> packageReferences = new List<PackageReference>();
             foreach(var nuGetProject in SolutionManager.GetNuGetProjects())
             {
-                allPackageReferences.AddRange(nuGetProject.GetInstalledPackages());
+                packageReferences.AddRange(nuGetProject.GetInstalledPackages());
             }
 
-            return allPackageReferences;
+            return packageReferences;
+        }
+
+        private class PackageReferenceComparer : IEqualityComparer<PackageReference>
+        {
+            private PackageIdentityComparer _packageIdentityComparer = new PackageIdentityComparer();
+            public bool Equals(PackageReference x, PackageReference y)
+            {
+                return _packageIdentityComparer.Equals(x.PackageIdentity, y.PackageIdentity);
+            }
+
+            public int GetHashCode(PackageReference obj)
+            {
+                return _packageIdentityComparer.GetHashCode(obj.PackageIdentity);
+            }
         }
 
         private bool PackageExistsInPackagesFolder(PackagePathResolver packagesFolderPackagePathResolver, PackageReference packageReference)
         {
-            return File.Exists(packagesFolderPackagePathResolver.GetPackageFileName(packageReference.PackageIdentity));
+            var packageFilePath = Path.Combine(packagesFolderPackagePathResolver.GetInstallPath(packageReference.PackageIdentity),
+                packagesFolderPackagePathResolver.GetPackageFileName(packageReference.PackageIdentity));
+            return File.Exists(packageFilePath);
         }
 
+        /// <summary>
+        /// Restores missing packages for the entire solution
+        /// </summary>
+        /// <returns></returns>
         public async virtual Task RestoreMissingPackages()
+        {
+            var missingPackages = GetMissingPackagesForSolution();
+            await RestoreMissingPackages(missingPackages);
+        }
+
+        /// <summary>
+        /// Restore missing packages for a project in the solution
+        /// </summary>
+        /// <param name="nuGetProject"></param>
+        /// <returns></returns>
+        public async virtual Task RestoreMissingPackages(NuGetProject nuGetProject)
+        {
+            var missingPackages = GetMissingPackagesForProject(nuGetProject);
+            await RestoreMissingPackages(missingPackages);
+        }
+
+        public async virtual Task RestoreMissingPackages(HashSet<PackageReference> missingPackages)
         {
             var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
             var folderNuGetProject = new FolderNuGetProject(nuGetPackageManager.PackagesFolderPath);
-            var resolutionContext = new ResolutionContext(Resolver.DependencyBehavior.Ignore, includePrelease: true);
-            var missingPackages = GetMissingPackagesCore();
-            await Task.WhenAll(missingPackages.Select(missingPackageReference =>
-                nuGetPackageManager.InstallPackageAsync(folderNuGetProject, missingPackageReference.PackageIdentity,
-                resolutionContext, SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext())));
+
+            // TODO: Update this to use the locked version
+            await Task.WhenAll(missingPackages.Select(missingPackage =>
+                nuGetPackageManager.RestorePackage(folderNuGetProject, missingPackage.PackageIdentity,
+                SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext())));
         }
     }
 }
