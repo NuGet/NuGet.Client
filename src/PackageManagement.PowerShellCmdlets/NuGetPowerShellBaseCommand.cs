@@ -5,8 +5,6 @@ using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
-using NuGetConsole;
-using NuGetConsole.Host.PowerShell.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -33,14 +31,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
         internal const string PowerConsoleHostName = "Package Manager Host";
-        private IHost host;
 
         public NuGetPowerShellBaseCommand()
         {
-            this.host = PowerShellHostService.CreateHost(PowerConsoleHostName, false);
-            _packageManagementContext = this.host.PackageManagementContext;
-            _resourceRepositoryProvider = _packageManagementContext.SourceRepositoryProvider;
-            _solutionManager = _packageManagementContext.VsSolutionManager;
         }
 
         public NuGetPackageManager PackageManager
@@ -113,13 +106,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual void Preprocess()
         {
+            _packageManagementContext = (PackageManagementContext)GetPropertyValueFromHost("PackageManagementContext");
+            if (_packageManagementContext != null)
+            {
+                _resourceRepositoryProvider = _packageManagementContext.SourceRepositoryProvider;
+                _solutionManager = _packageManagementContext.VsSolutionManager;
+            }
         }
 
         protected void GetActiveSourceRepository(string source = null)
         {
             if (string.IsNullOrEmpty(source))
             {
-                source = this.host.ActivePackageSource;
+                source = (string)GetPropertyValueFromHost("ActivePackageSource");
             }
 
             IEnumerable<SourceRepository> repoes = _resourceRepositoryProvider.GetRepositories();
@@ -260,10 +259,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     return false;
                 }
 
-                PSObject privateData = Host.PrivateData;
-                var syncModeProp = privateData.Properties["IsSyncMode"];
-                return syncModeProp != null && (bool)syncModeProp.Value;
+                var syncModeProp = GetPropertyValueFromHost("IsSyncMode");
+                return syncModeProp != null && (bool)syncModeProp;
             }
+        }
+
+        private object GetPropertyValueFromHost(string propertyName)
+        {
+            PSObject privateData = Host.PrivateData;
+            var propertyInfo = privateData.Properties[propertyName];
+            if (propertyInfo != null)
+            {
+                return propertyInfo.Value;
+            }
+            return null;
         }
 
         protected override void BeginProcessing()

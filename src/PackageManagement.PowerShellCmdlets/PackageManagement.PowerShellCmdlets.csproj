@@ -146,10 +146,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
-      <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
-      <Name>Console.Types</Name>
-    </ProjectReference>
     <ProjectReference Include="..\VsConsole\PowerShellHost\PowerShellHost.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>PowerShellHost</Name>

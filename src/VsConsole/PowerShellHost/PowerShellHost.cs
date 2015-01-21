@@ -50,11 +50,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // TODO: Take these as ctor arguments
             _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            _settings = ServiceLocator.GetInstance<ISettings>();
             _packageManagementContext = new PackageManagementContext(_sourceRepositoryProvider, _solutionManager);
 
             _name = name;
             IsCommandEnabled = true;
-            _settings = ServiceLocator.GetInstance<ISettings>();
         }
 
         protected Pipeline ExecutingPipeline { get; set; }
@@ -354,6 +354,23 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
 
+        protected void SetActivePackageSourceOnHost()
+        {
+            if (_nugetHost != null)
+            {
+                PSPropertyInfo property = _nugetHost.PrivateData.Properties["ActivePackageSource"];
+                if (property == null)
+                {
+                    property = new PSNoteProperty("ActivePackageSource", ActivePackageSource);
+                    _nugetHost.PrivateData.Properties.Add(property);
+                }
+                else
+                {
+                    property.Value = _activePackageSource;
+                }
+            }
+        }
+
         public void SetDefaultRunspace()
         {
             Runspace.MakeDefault();
@@ -478,11 +495,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             if (_projectSafeNames != null && selectedIndex >= 0 && selectedIndex < _projectSafeNames.Length)
             {
-                //_solutionManager.DefaultNuGetProjectName = _projectSafeNames[selectedIndex];
+                _solutionManager.DefaultNuGetProjectName = _projectSafeNames[selectedIndex];
             }
             else
             {
-                //_solutionManager.DefaultNuGetProjectName = null;
+                _solutionManager.DefaultNuGetProjectName = null;
             }
         }
 

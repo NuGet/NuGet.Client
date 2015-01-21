@@ -38,10 +38,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
+            Preprocess();
+
             CheckForSolutionOpen();
 
-            Preprocess();
-            
             if (All.IsPresent)
             {
                 IEnumerable<NuGetProject> projects = VsSolutionManager.GetNuGetProjects();

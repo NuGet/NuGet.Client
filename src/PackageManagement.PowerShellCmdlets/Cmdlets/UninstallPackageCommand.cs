@@ -33,16 +33,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
+            base.Preprocess();
             GetActiveSourceRepository();
             GetNuGetProject();
-            base.Preprocess();
         }
 
         protected override void ProcessRecordCore()
         {
-            CheckForSolutionOpen();
-
             Preprocess();
+
+            CheckForSolutionOpen();
 
             SubscribeToProgressEvents();
             UninstallPackageById(Project, Id, ResolutionContext, this, WhatIf.IsPresent);
