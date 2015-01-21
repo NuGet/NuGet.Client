@@ -27,6 +27,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISolutionManager _solutionManager;
         private readonly ISettings _settings;
+        private const string activePackageSourceKey = "activePackageSource";
+        private const string packageSourceKey = "packageSources";
+        private string _activePackageSource;
 
         private IConsole _activeConsole;
         private RunspaceDispatcher _runspace;
@@ -400,41 +403,27 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             get
             {
                 Debug.Assert(_settings != null);
-                if (_settings == null)
+                _activePackageSource = string.Empty;
+
+                if (_settings != null)
                 {
-                    return "api.nuget.org";
+                    var activePackageKeyValue = _settings.GetSettingValues(activePackageSourceKey);
+                    if (activePackageKeyValue != null && activePackageKeyValue.Any())
+                    {
+                        _activePackageSource = activePackageKeyValue[0].Key;
+                    }
                 }
 
-                string activePackageSourceName = _settings.GetValue("configuration", "activePackageSource", false);
-
-                if (string.IsNullOrEmpty(activePackageSourceName))
+                if (string.IsNullOrEmpty(_activePackageSource) && _sourceRepositoryProvider != null)
                 {
                     PackageSource[] packageSources = _sourceRepositoryProvider.GetRepositories().Select(v => v.PackageSource).ToArray();
-                    if (packageSources.Length == 1)
-                    {
-                        //_packageSourceProvider.ActivePackageSource = packageSources[0];
-                        return packageSources[0].Name;
-                    }
+                    return packageSources[0].Name;
                 }
                 else
                 {
-                    PackageSource activePackageSource = new PackageSource(activePackageSourceName);
+                    PackageSource activePackageSource = new PackageSource(_activePackageSource);
                     return activePackageSource == null ? null : activePackageSource.Name;
                 }
-
-                return null;
-                //if (activePackageSource.IsAggregate())
-                //{
-                // Starting from 2.7, we will not show the All option if there's only one package source.
-                // Hence, if All is the active package source in that case, we set the sole package source as active,
-                // and save it to settings
-                //    PackageSource[] packageSources = _packageSourceProvider.LoadPackageSources().ToArray();
-                //    if (packageSources.Length == 1)
-                //    {
-                //        //_packageSourceProvider.ActivePackageSource = packageSources[0];
-                //        return packageSources[0].Name;
-                //    }
-                //}
             }
             set
             {
@@ -442,10 +431,22 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     throw new ArgumentNullException("value");
                 }
+                else
+                {
+                    _activePackageSource = value;
+                    if (_settings != null)
+                    {
+                        var match = _settings.GetSettingValues(packageSourceKey)
+                            .Where(p => string.Equals(p.Key, _activePackageSource, StringComparison.OrdinalIgnoreCase))
+                            .FirstOrDefault();
 
-                //_packageSourceProvider.ActivePackageSource =
-                //    _packageSourceProvider.LoadPackageSources().FirstOrDefault(
-                //        ps => ps.Name.Equals(value, StringComparison.OrdinalIgnoreCase));
+                        if (match != null)
+                        {
+                            var pair = new KeyValuePair<string, string>(match.Key, match.Value);
+                            _settings.SetValues(activePackageSourceKey, new List<KeyValuePair<string, string>>() { pair });
+                        }
+                    }
+                }
             }
         }
 
