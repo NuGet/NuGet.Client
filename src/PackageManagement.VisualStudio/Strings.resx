@@ -156,4 +156,13 @@
   <data name="Error_FailedToCreateParentFolder" xml:space="preserve">
     <value>Failed to create parent folder for file '{0}' in project {1}.</value>
   </data>
+  <data name="FailedToRemoveReference" xml:space="preserve">
+    <value>Case insensitive search for reference '{0}', to be removed, returned more than 1 match. Request could not be performed.</value>
+  </data>
+  <data name="Warning_FailedToFindMatchForRemoveReference" xml:space="preserve">
+    <value>Failed to find match for removing reference '{0}'.</value>
+  </data>
+  <data name="Warning_NoExactMatchForReference" xml:space="preserve">
+    <value>No exact match found for removing reference '{0}'. Trying No No exact match found for removing reference '{0}'. Trying case-insensitive search...-</value>
+  </data>
 </root>

@@ -15,5 +15,16 @@ namespace NuGet.PackageManagement.VisualStudio
             : base(envDTEProject, nuGetProjectContext)
         {
         }
+
+        public override bool IsSupportedFile(string path)
+        {
+            string fileName = Path.GetFileName(path);
+            if (fileName.Equals("app.config", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return base.IsSupportedFile(path);
+        }
     }
 }

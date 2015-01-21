@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
             private set;
         }
 
-        public string ProjectName
+        public virtual string ProjectName
         {
             get
             {
@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public bool ReferenceExists(string name)
+        public virtual bool ReferenceExists(string name)
         {
             try
             {
@@ -438,12 +438,12 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
 
-        public bool FileExistsInProject(string path)
+        public virtual bool FileExistsInProject(string path)
         {
             return EnvDTEProjectUtility.ContainsFile(EnvDTEProject, path);
         }
 
-        public dynamic GetPropertyValue(string propertyName)
+        public virtual dynamic GetPropertyValue(string propertyName)
         {
             try
             {
@@ -460,7 +460,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
-        public bool IsSupportedFile(string path)
+        public virtual bool IsSupportedFile(string path)
         {
             string fileName = Path.GetFileName(path);
 
