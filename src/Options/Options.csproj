@@ -18,8 +18,9 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="NuGet.Configuration">
-      <HintPath>..\..\packages\NuGet.Configuration.1.0.0-pre-20150120213154\lib\net45\NuGet.Configuration.dll</HintPath>
+    <Reference Include="NuGet.Configuration, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-rc\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.VisualStudio">
       <HintPath>..\..\..\NuGet.VisualStudioExtension\src\PackageManagement.VisualStudio\bin\Debug\NuGet.PackageManagement.VisualStudio.dll</HintPath>

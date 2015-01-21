@@ -175,7 +175,9 @@ namespace NuGet.VisualStudio
                     depBehavior = DependencyBehavior.Ignore;
                 }
 
-                ResolutionContext resolution = new ResolutionContext(depBehavior, true, false, false, false);
+                bool includePrerelease = false;
+
+                ResolutionContext resolution = new ResolutionContext(depBehavior, includePrerelease, false);
 
                 NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, _settings, _solutionManager);
 

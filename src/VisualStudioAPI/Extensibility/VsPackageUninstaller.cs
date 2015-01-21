@@ -46,11 +46,11 @@ namespace NuGet.VisualStudio
                     .Where(p => StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(p), project.UniqueName))
                     .SingleOrDefault();
 
-                ResolutionContext resolution = new ResolutionContext(DependencyBehavior.Lowest, false, removeDependencies, false, false);
+                UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
                 INuGetProjectContext projectContext = new VSAPIProjectContext();
 
                 // uninstall the package
-                packageManager.UninstallPackageAsync(nuGetProject, packageId, resolution, projectContext).Wait();
+                packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext).Wait();
             }
             finally
             {

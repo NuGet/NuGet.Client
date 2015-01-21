@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.ProjectManagement;
+using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
@@ -25,6 +26,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
 
         public Task RestoreMissingPackages()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public Task RestoreMissingPackages(NuGetProject nuGetProject)
         {
             throw new NotImplementedException();
         }
