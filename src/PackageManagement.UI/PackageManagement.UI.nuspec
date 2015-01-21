@@ -11,5 +11,8 @@
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet's Package Management UI for Visual Studio</description>
+    <dependencies>
+      <dependency id="NuGet.PackageManagement" version="3.0.0-rc" />
+    </dependencies>
   </metadata>
 </package>

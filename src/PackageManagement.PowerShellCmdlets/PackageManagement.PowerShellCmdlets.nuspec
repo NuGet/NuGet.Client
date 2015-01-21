@@ -11,5 +11,8 @@
     <licenseUrl>http://www.microsoft.com/web/webpi/eula/nuget_release_eula.htm</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet's PowerShell Cmdlets for the Visual Studio client</description>
+    <dependencies>
+      <dependency id="NuGet.PackageManagement" version="3.0.0-rc" />
+    </dependencies>
   </metadata>
 </package>
