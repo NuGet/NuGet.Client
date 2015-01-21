@@ -142,10 +142,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
-      <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
-      <Name>PackageManagement.PowerShellCmdlets</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Options\Options.csproj">
       <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
       <Name>Options</Name>
@@ -257,6 +253,10 @@
     <Reference Include="NuGet.PackageManagement, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.PackageManagement.3.0.0-rc\lib\net45\NuGet.PackageManagement.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.PackageManagement.PowerShellCmdlets, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.3.0.0-rc\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackageManagement.UI, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

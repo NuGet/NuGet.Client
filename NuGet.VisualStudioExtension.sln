@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.VisualStudio", "src\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
@@ -25,9 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3EF356B5-E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.TestVSExtension", "test\PackageManagement.TestVSExtension\PackageManagement.TestVSExtension.csproj", "{9713B86C-A35A-4417-A681-466F87544DB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Options", "src\Options\Options.csproj", "{53AB7187-CDF3-48B5-B90E-8919D3CB904D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudioAPI", "src\VisualStudioAPI\VisualStudioAPI.csproj", "{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F8E28958-E4EE-4A70-B079-D041CC3ABCE9}"
@@ -146,16 +145,6 @@ Global
 		{9713B86C-A35A-4417-A681-466F87544DB6}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{9713B86C-A35A-4417-A681-466F87544DB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9713B86C-A35A-4417-A681-466F87544DB6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Coverage|Any CPU.Build.0 = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Mono Release|Any CPU.Build.0 = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Coverage|Any CPU.ActiveCfg = Coverage|Any CPU
 		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Coverage|Any CPU.Build.0 = Coverage|Any CPU
 		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
