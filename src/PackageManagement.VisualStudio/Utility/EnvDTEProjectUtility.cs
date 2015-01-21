@@ -21,6 +21,9 @@ using Microsoft.VisualStudio.Shell;
 using VsWebSite;
 using NuGet.ProjectManagement;
 using System.Runtime.Versioning;
+using System.Runtime.CompilerServices;
+using Microsoft.VisualStudio.Project.Designers;
+using Microsoft.VisualStudio.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -1026,6 +1029,37 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullPath = FileSystemUtility.GetFullPath(GetFullPath(project), project.FullName);
             FileSystemUtility.MakeWriteable(project.FullName);
             project.Save();
+        }
+
+        // This method should only be called in VS 2012
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void DoWorkInWriterLock(EnvDTEProject project, Action<MicrosoftBuildEvaluationProject> action)
+        {
+            IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
+            if (context == null)
+            {
+                IVsHierarchy hierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                context = hierarchy as IVsBrowseObjectContext;
+            }
+
+            if (context != null)
+            {
+                var service = context.UnconfiguredProject.ProjectService.Services.DirectAccessService;
+                if (service != null)
+                {
+                    // This has to run on Main thread, otherwise it will dead-lock (for C++ projects at least)
+                    ThreadHelper.Generic.Invoke(() =>
+                        service.Write(
+                            context.UnconfiguredProject.FullPath,
+                            dwa =>
+                            {
+                                MicrosoftBuildEvaluationProject buildProject = dwa.GetProject(context.UnconfiguredProject.Services.SuggestedConfiguredProject);
+                                action(buildProject);
+                            },
+                            ProjectAccess.Read | ProjectAccess.Write)
+                    );
+                }
+            }
         }
         #endregion
     }

@@ -160,6 +160,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Case insensitive search for reference &apos;{0}&apos;, to be removed, returned more than 1 match. Request could not be performed..
+        /// </summary>
+        public static string FailedToRemoveReference {
+            get {
+                return ResourceManager.GetString("FailedToRemoveReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
         /// </summary>
         public static string PathToExistingFileNotPresent {
@@ -169,11 +178,29 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to find match for removing reference &apos;{0}&apos;..
+        /// </summary>
+        public static string Warning_FailedToFindMatchForRemoveReference {
+            get {
+                return ResourceManager.GetString("Warning_FailedToFindMatchForRemoveReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; already exists. Skipping....
         /// </summary>
         public static string Warning_FileAlreadyExists {
             get {
                 return ResourceManager.GetString("Warning_FileAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No exact match found for removing reference &apos;{0}&apos;. Trying No No exact match found for removing reference &apos;{0}&apos;. Trying case-insensitive search...-.
+        /// </summary>
+        public static string Warning_NoExactMatchForReference {
+            get {
+                return ResourceManager.GetString("Warning_NoExactMatchForReference", resourceCulture);
             }
         }
     }

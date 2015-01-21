@@ -18,6 +18,14 @@ namespace NuGet.PackageManagement.VisualStudio
             : base(envDTEProject, nuGetProjectContext)
         {
         }
+
+        public override string ProjectName
+        {
+            get
+            {
+                return EnvDTEProjectUtility.GetName(EnvDTEProject);
+            }
+        }
        
         public override void AddFile(string path, Stream stream)
         {
@@ -58,6 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
+
     }
 
 
