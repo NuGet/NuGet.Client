@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.UI
             _packageManager = packageManager;
             _uiActionEngine = uiActionEngine;
             _packageManager = packageManager;
+            _packageRestoreManager = packageRestoreManager;
             _optionsPageActivator = optionsPageActivator;
             _projects = projects.ToArray();
         }

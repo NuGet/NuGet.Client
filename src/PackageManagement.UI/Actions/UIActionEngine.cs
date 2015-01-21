@@ -198,11 +198,14 @@ namespace NuGet.PackageManagement.UI
 
                     var sourceResults = await metadataResource.GetMetadata(toFind, true, true, token);
 
-                    foreach (var package in sourceResults)
+                    if (sourceResults != null)
                     {
-                        if (toFind.Remove(package.Identity))
+                        foreach (var package in sourceResults)
                         {
-                            results.Add(package);
+                            if (toFind.Remove(package.Identity))
+                            {
+                                results.Add(package);
+                            }
                         }
                     }
                 }

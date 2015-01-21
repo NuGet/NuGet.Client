@@ -12,6 +12,7 @@ using System.Linq;
 using NuGet.ProjectManagement;
 using NuGet.Frameworks;
 using System.Diagnostics;
+using Test.Utility;
 
 namespace StandaloneUI
 {
@@ -48,21 +49,17 @@ namespace StandaloneUI
             Width = 1000;
 
             var repositoryProvider = new SourceRepositoryProvider(_resourceProviders, _settings);
+            var settings = new DefaultSettings();
 
-            var projectMetadata = new Dictionary<string, object>();
-            projectMetadata.Add(NuGetProjectMetadataKeys.Name, "Project 1");
-            projectMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net45"));
-            NuGetProject project = new PackagesConfigNuGetProject(@"C:\temp\test\packages.config", projectMetadata);
+            var testSolutionManager = new TestSolutionManager(@"c:\temp\test");
+            var projectA = testSolutionManager.AddNewMSBuildProject("projectA");
+            var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
+            var projects = new NuGetProject[] { projectA, projectB };            
 
-            var projectMetadata2 = new Dictionary<string, object>();
-            projectMetadata2.Add(NuGetProjectMetadataKeys.Name, "Project 2 ");
-            projectMetadata2.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net45"));
-            NuGetProject project2 = new PackagesConfigNuGetProject(@"C:\temp\test\packages2.config", projectMetadata2);
-
-            var projects = new NuGetProject[] { project, project2 };
+            var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
             
             //var uiContext = _contextFactory.Create(projects);
-            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), new DefaultSettings(), null);
+            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), settings, packageRestoreManager);
             var context = _contextFactory.Create(projects);
             var uiController = _uiServiceFactory.Create(projects);
 

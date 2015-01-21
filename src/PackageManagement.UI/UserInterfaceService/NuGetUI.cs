@@ -62,10 +62,17 @@ namespace NuGet.PackageManagement.UI
 
         public void LaunchNuGetOptionsDialog()
         {
-            UIDispatcher.Invoke(() =>
-                {
-                    _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null);
-                });
+            if (_context != null && _context.OptionsPageActivator != null)
+            {
+                UIDispatcher.Invoke(() =>
+                    {
+                        _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null);
+                    });
+            }
+            else
+            {
+                MessageBox.Show("Options dialog is not available in the standalone UI");
+            }
         }
 
 

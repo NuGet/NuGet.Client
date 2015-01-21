@@ -64,28 +64,28 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
+        private async void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
             ShowProgressUI();
-            RestorePackages();
+            await RestorePackages();
         }
 
-        private void RestorePackages()
+        private async System.Threading.Tasks.Task RestorePackages()
         {
             TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-            _packageRestoreManager.RestoreMissingPackages().ContinueWith(
-                task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        Exception baseException = task.Exception.GetBaseException();
-                        ShowErrorUI(baseException.Message);
-                        //ExceptionHelper.WriteToActivityLog(baseException);
-                    }
+            try
+            {
+                await _packageRestoreManager.RestoreMissingPackages();
+                // Check for missing packages again
+                _packageRestoreManager.CheckForMissingPackages();
+            }
+            catch (Exception ex)
+            {
+                ShowErrorUI(ex.Message);
+                //ExceptionHelper.WriteToActivityLog(baseException);
+            }
 
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
-                }, 
-                uiScheduler);
+            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
         }
 
         private void ResetUI()

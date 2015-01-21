@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement
 
             if (latestVersion == null)
             {
-                throw new InvalidOperationException(Strings.NoLatestVersionFound);
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.UnknownPackage, packageId));
             }
 
             // Step-2 : Call InstallPackage(project, packageIdentity)
@@ -171,11 +171,11 @@ namespace NuGet.PackageManagement
             // TODO: these sources should be ordered
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
-            try
+            var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            if (resolutionContext.DependencyBehavior != DependencyBehavior.Ignore)
             {
-                var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-                if (resolutionContext.DependencyBehavior != DependencyBehavior.Ignore)
-                {                    
+                try
+                {
                     var packagesToInstall = new List<PackageIdentity>() { packageIdentity };
                     // Step-1 : Get metadata resources using gatherer
                     var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
@@ -229,19 +229,15 @@ namespace NuGet.PackageManagement
                         nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
-                    if(sourceRepository == null)
-                    {
-                        throw new InvalidOperationException(String.Format(Strings.PackageNotFound, packageIdentity));
-                    }
-                    nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository));
+                    throw new InvalidOperationException(String.Format(Strings.PackageCouldNotBeInstalled, packageIdentity), ex);
                 }
             }
-            catch (Exception ex)
+            else
             {
-                throw new InvalidOperationException(String.Format(Strings.PackageCouldNotBeInstalled, packageIdentity), ex);
+                var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
+                nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository));
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToInstallPackage, packageIdentity);
@@ -250,22 +246,28 @@ namespace NuGet.PackageManagement
 
         private static async Task<SourceRepository> GetSourceRepository(PackageIdentity packageIdentity, IEnumerable<SourceRepository> sourceRepositories)
         {
-            Uri downloadUrl;
             foreach (var sourceRepository in sourceRepositories)
             {
                 try
                 {
-                    var downloadResource = sourceRepository.GetResource<DownloadResource>();
-                    downloadUrl = await downloadResource.GetDownloadUrl(packageIdentity);
-                    return sourceRepository;
+                    var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>();
+                    if(downloadResource == null)
+                    {
+                        continue;
+                    }
+
+                    var downloadUrl = await downloadResource.GetDownloadUrl(packageIdentity);
+                    if(downloadUrl != null)
+                    {
+                        return sourceRepository;
+                    }
                 }
                 catch (Exception)
                 {
-                    downloadUrl = null;
                 }
             }
 
-            return null;
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.UnknownPackageSpecificVersion, packageIdentity.Id, packageIdentity.Version));
         }
 
         /// <summary>
@@ -358,10 +360,6 @@ namespace NuGet.PackageManagement
         {
             var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
             var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
-            if(sourceRepository == null)
-            {
-                return false;
-            }
 
             using (var targetPackageStream = new MemoryStream())
             {

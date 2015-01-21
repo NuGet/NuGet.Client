@@ -184,6 +184,10 @@
       <Project>{fcd39e83-d8de-4401-ab12-d824ac2fe07b}</Project>
       <Name>ProjectManagement</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
+      <Project>{8010a76a-cb15-4484-8f9b-d523fbc34dfa}</Project>
+      <Name>Test.Utility</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="NuGet.Core.dll">

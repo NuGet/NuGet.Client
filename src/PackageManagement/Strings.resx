@@ -183,4 +183,10 @@
   <data name="UnableToResolveDependencyInfo" xml:space="preserve">
     <value>Unable to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
   </data>
+  <data name="UnknownPackage" xml:space="preserve">
+    <value>Unable to find package '{0}'</value>
+  </data>
+  <data name="UnknownPackageSpecificVersion" xml:space="preserve">
+    <value>Unable to find version '{1}' of package '{0}'.</value>
+  </data>
 </root>

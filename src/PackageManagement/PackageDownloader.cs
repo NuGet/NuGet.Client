@@ -27,7 +27,12 @@ namespace NuGet.PackageManagement
                 // Step-1 : Get the download stream for packageIdentity
                 Stream downloadStream = await GetDownloadStream(sourceRepository, packageIdentity);
 
-                // Step-2: Copy download stream to targetPackageStream
+                if(downloadStream == null)
+                {
+                    return false;
+                }
+
+                // Step-2: Copy download stream to targetPackageStream if it is not null
                 await downloadStream.CopyToAsync(targetPackageStream);
                 return true;
             }
