@@ -443,6 +443,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         if (match != null)
                         {
                             var pair = new KeyValuePair<string, string>(match.Key, match.Value);
+                            _settings.DeleteSection(activePackageSourceKey);
                             _settings.SetValues(activePackageSourceKey, new List<KeyValuePair<string, string>>() { pair });
                         }
                     }

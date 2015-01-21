@@ -318,7 +318,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void WriteLine(string message = null)
         {
-            Console.WriteLine(message);
             if (Host == null)
             {
                 // Host is null when running unit tests. Simply return in this case
@@ -359,14 +358,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             progressRecord.CurrentOperation = operation;
             progressRecord.PercentComplete = percentComplete;
 
-            Console.WriteLine(string.Format("{0} {1} {2}", progressRecord.Activity, progressRecord.CurrentOperation, progressRecord.StatusDescription));
             WriteProgress(progressRecord);
         }
 
         private void OnProgressAvailable(object sender, ProgressEventArgs e)
         {
             WriteProgress(ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete);
-            Console.WriteLine(string.Format("{0} {1} {2}", ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete));
         }
 
         protected void SubscribeToProgressEvents()
@@ -387,24 +384,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual void LogCore(MessageLevel level, string formattedMessage)
         {
-            switch (level)
+            // Temporary hack for working around the PSInvalidOperationException
+            // The WriteObject and WriteError methods cannot be called from outside the overrides 
+            // of the BeginProcessing, ProcessRecord, and EndProcessing methods, and they can only be called from within the same thread.
+            try
             {
-                case MessageLevel.Debug:
-                    WriteVerbose(formattedMessage);
-                    break;
+                switch (level)
+                {
+                    case MessageLevel.Debug:
+                        WriteVerbose(formattedMessage);
+                        break;
 
-                case MessageLevel.Warning:
-                    WriteWarning(formattedMessage);
-                    break;
+                    case MessageLevel.Warning:
+                        WriteWarning(formattedMessage);
+                        break;
 
-                case MessageLevel.Info:
-                    WriteLine(formattedMessage);
-                    break;
+                    case MessageLevel.Info:
+                        WriteLine(formattedMessage);
+                        break;
 
-                case MessageLevel.Error:
-                    WriteError(formattedMessage);
-                    break;
+                    case MessageLevel.Error:
+                        WriteError(formattedMessage);
+                        break;
+                }
             }
+            catch (PSInvalidOperationException) { }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This exception is passed to PowerShell. We really don't care about the type of exception here.")]
@@ -414,7 +418,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 WriteError(new Exception(message));
             }
-            Console.WriteLine(message);
         }
 
         protected void WriteError(Exception exception)
