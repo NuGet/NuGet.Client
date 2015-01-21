@@ -62,7 +62,7 @@ namespace StandaloneUI
             var projects = new NuGetProject[] { project, project2 };
             
             //var uiContext = _contextFactory.Create(projects);
-            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), new DefaultSettings());
+            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), new DefaultSettings(), null);
             var context = _contextFactory.Create(projects);
             var uiController = _uiServiceFactory.Create(projects);
 
