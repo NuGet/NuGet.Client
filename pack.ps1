@@ -1,6 +1,6 @@
 param (
     [switch]$Push, 
-    [ValidateSet("debug", "release")][string]$Configuration="debug", 
+    [ValidateSet("debug", "release")][string]$Configuration="release", 
     [switch]$SkipTests, 
     [switch]$SkipBuild, 
     [string]$PFXPath,
@@ -53,13 +53,14 @@ $snPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft SDKs\Windows\v8.1A\bin\N
 Start-Process $snPath "-Tp $primaryAssemblyPath" -Wait -NoNewWindow
 
 # find the current git branch
-$gitBranch = "ci"
+# 20150107 hardcoding to master to make things easier
+$gitBranch = "master"
 
-git branch | foreach {
-    if ($_ -match "^\*(.*)") {
-        $gitBranch = $matches[1].Trim()
-    }
-}
+#git branch | foreach {
+#    if ($_ -match "^\*(.*)") {
+#        $gitBranch = $matches[1].Trim()
+#    }
+#}
 
 # prerelease labels can have a max length of 20
 # shorten the branch to 8 chars if needed
@@ -84,7 +85,14 @@ $version = $version.TrimEnd('0').TrimEnd('.')
 
 if (!$Stable)
 {
-    $version += "-" + $gitBranch + "-" + $now.ToString("yyyy")[3] + $now.DayOfYear.ToString("000") + $now.ToString("HHmm")
+    # prerelease labels can have a max length of 20
+    $now = [System.DateTime]::UtcNow
+    $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
+
+    if ($Configuration -eq "debug")
+    {
+        $version += "-d"
+    }
 }
 
 Write-Host "Package version: $version" -ForegroundColor Cyan
@@ -95,12 +103,18 @@ if ((Test-Path nupkgs) -eq 0) {
 }
 
 # Pack
-.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -build -OutputDirectory nupkgs -version $version
+.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
 
 # Find the path of the nupkg we just built
 $nupkgPath = Get-ChildItem .\nupkgs -filter "*$version.nupkg" | % { $_.FullName }
 
 Write-Host $nupkgPath -ForegroundColor Cyan
+
+if (!$Stable -And !$NoLock)
+{
+    Write-Host "Locking dependencies down"
+    .\tools\NupkgLock\NupkgLock.exe "$Id.nuspec" $nupkgPath
+}
 
 if ($Push)
 {
