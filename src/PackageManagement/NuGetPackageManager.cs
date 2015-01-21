@@ -47,11 +47,9 @@ namespace NuGet.PackageManagement
 
         private ISettings Settings { get; set; }
 
-        public string PackagesFolderPath { get; set; }
+        private FolderNuGetProject PackagesFolderNuGetProject { get; set; }
 
-        public PackagePathResolver PackagePathResolver { get; set; }
-
-        public SourceRepository PackagesFolderSourceRepository { get; set; }
+        private SourceRepository PackagesFolderSourceRepository { get; set; }
       
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
@@ -63,8 +61,8 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException("packagesFolderPath");
             }
-            PackagesFolderPath = packagesFolderPath;
-            InitializePackagesFolderInfo();
+
+            InitializePackagesFolderInfo(packagesFolderPath);
         }
 
         /// <summary>
@@ -86,8 +84,7 @@ namespace NuGet.PackageManagement
             Settings = settings;
             SolutionManager = solutionManager;
 
-            PackagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
-            InitializePackagesFolderInfo();
+            InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings));
         }
 
         private void InitializeMandatory(ISourceRepositoryProvider sourceRepositoryProvider)
@@ -100,10 +97,10 @@ namespace NuGet.PackageManagement
             SourceRepositoryProvider = sourceRepositoryProvider;
         }
 
-        private void InitializePackagesFolderInfo()
-        {            
-            PackagePathResolver = new PackagePathResolver(PackagesFolderPath);
-            PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(new PackageSource(PackagesFolderPath));
+        private void InitializePackagesFolderInfo(string packagesFolderPath)
+        {
+            PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath);
+            PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(new PackageSource(packagesFolderPath));
         }
 
         /// <summary>
@@ -357,7 +354,7 @@ namespace NuGet.PackageManagement
         /// RestorePackage is only allowed on a folderNuGetProject. In most cases, one will simply use the packagesFolderPath from NuGetPackageManager
         /// to create a folderNuGetProject before calling into this method
         /// </summary>
-        public async Task<bool> RestorePackage(FolderNuGetProject folderNuGetProject, PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        public async Task<bool> RestorePackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
             var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
             var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
@@ -369,10 +366,15 @@ namespace NuGet.PackageManagement
             using (var targetPackageStream = new MemoryStream())
             {
                 await PackageDownloader.GetPackageStream(sourceRepository, packageIdentity, targetPackageStream);
-                folderNuGetProject.InstallPackage(packageIdentity, targetPackageStream, nuGetProjectContext);
+                PackagesFolderNuGetProject.InstallPackage(packageIdentity, targetPackageStream, nuGetProjectContext);
             }
 
             return true;
+        }
+
+        public bool PackageExistsInPackagesFolder(PackageIdentity packageIdentity)
+        {
+            return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
         private void ExecuteInstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
@@ -457,28 +459,18 @@ namespace NuGet.PackageManagement
             // TODO: Handle removing of satellite files from the runtime package also
 
             // 1. Check if the Package exists at root, if not, return false
-            if (!PackageExistsInPackagesFolder(packageIdentity))
+            if (!PackagesFolderNuGetProject.PackageExists(packageIdentity))
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.PackageDoesNotExistInFolder, packageIdentity, PackagesFolderPath);
+                nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.PackageDoesNotExistInFolder, packageIdentity, PackagesFolderNuGetProject.Root);
                 return false;
             }
 
-            nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovingPackageFromFolder, packageIdentity, PackagesFolderPath);
+            nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovingPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             // 2. Delete the package folder and files from the root directory of this FileSystemNuGetProject
             // Remember that the following code may throw System.UnauthorizedAccessException
-            Directory.Delete(PackagePathResolver.GetInstallPath(packageIdentity), recursive: true);
-            nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovedPackageFromFolder, packageIdentity, PackagesFolderPath);
+            Directory.Delete(PackagesFolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), recursive: true);
+            nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovedPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             return true;
-        }
-
-        /// <summary>
-        /// A package is considered to exist in FileSystemNuGetProject, if the 'nupkg' file is present where expected
-        /// </summary>
-        private bool PackageExistsInPackagesFolder(PackageIdentity packageIdentity)
-        {
-            string packageFileFullPath = Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
-                PackagePathResolver.GetPackageFileName(packageIdentity));
-            return File.Exists(packageFileFullPath);
         }
 
         private async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext)

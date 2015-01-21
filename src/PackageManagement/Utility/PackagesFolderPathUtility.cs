@@ -25,6 +25,11 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(Strings.SolutionDirectoryNotAvailable);
             }
 
+            return GetPackagesFolderPath(solutionManager.SolutionDirectory, settings);
+        }
+
+        public static string GetPackagesFolderPath(string solutionDirectory, ISettings settings)
+        {
             if (settings == null)
             {
                 throw new ArgumentNullException("settings");
@@ -35,7 +40,7 @@ namespace NuGet.PackageManagement
             {
                 return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
             }
-            return Path.Combine(solutionManager.SolutionDirectory, String.IsNullOrEmpty(path) ? DefaultRepositoryPath : path);
+            return Path.Combine(solutionDirectory, String.IsNullOrEmpty(path) ? DefaultRepositoryPath : path);
         }
     }
 }

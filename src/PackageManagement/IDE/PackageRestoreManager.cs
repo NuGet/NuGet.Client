@@ -134,20 +134,20 @@ namespace NuGet.PackageManagement
         }
 
 
-        /// <summary>
-        /// Gets the missing packages corresponding to uniquePackageReferences
-        /// </summary>
-        /// <param name="uniquePackageReferences"></param>
-        /// <returns></returns>
         public HashSet<PackageReference> GetMissingPackages(IEnumerable<PackageReference> uniquePackageReferences)
+        {
+            var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
+            return GetMissingPackages(nuGetPackageManager, uniquePackageReferences);
+        }
+
+        public static HashSet<PackageReference> GetMissingPackages(NuGetPackageManager nuGetPackageManager,
+            IEnumerable<PackageReference> uniquePackageReferences)
         {
             try
             {
-                var missingPackages = new HashSet<PackageReference>(new PackageReferenceComparer());
-                var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
-                var packagesFolderPackagePathResolver = nuGetPackageManager.PackagePathResolver;
+                var missingPackages = new HashSet<PackageReference>(new PackageReferenceComparer());                
                 var missingPackagesEnumerable =
-                    uniquePackageReferences.Where(pr => !PackageExistsInPackagesFolder(packagesFolderPackagePathResolver, pr));
+                    uniquePackageReferences.Where(pr => !nuGetPackageManager.PackageExistsInPackagesFolder(pr.PackageIdentity));
                 foreach(var package in missingPackagesEnumerable)
                 {
                     missingPackages.Add(package);
@@ -172,20 +172,6 @@ namespace NuGet.PackageManagement
             }
 
             return packageReferences;
-        }
-
-        private class PackageReferenceComparer : IEqualityComparer<PackageReference>
-        {
-            private PackageIdentityComparer _packageIdentityComparer = new PackageIdentityComparer();
-            public bool Equals(PackageReference x, PackageReference y)
-            {
-                return _packageIdentityComparer.Equals(x.PackageIdentity, y.PackageIdentity);
-            }
-
-            public int GetHashCode(PackageReference obj)
-            {
-                return _packageIdentityComparer.GetHashCode(obj.PackageIdentity);
-            }
         }
 
         private bool PackageExistsInPackagesFolder(PackagePathResolver packagesFolderPackagePathResolver, PackageReference packageReference)
@@ -225,12 +211,17 @@ namespace NuGet.PackageManagement
         public async virtual Task RestoreMissingPackages(HashSet<PackageReference> missingPackages)
         {
             var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
-            var folderNuGetProject = new FolderNuGetProject(nuGetPackageManager.PackagesFolderPath);
+            await RestoreMissingPackages(nuGetPackageManager, missingPackages, SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext());
+        }
 
+        public static async Task RestoreMissingPackages(NuGetPackageManager nuGetPackageManager,
+            HashSet<PackageReference> missingPackages,
+            INuGetProjectContext nuGetProjectContext)
+        {
             // TODO: Update this to use the locked version
             await Task.WhenAll(missingPackages.Select(missingPackage =>
-                nuGetPackageManager.RestorePackage(folderNuGetProject, missingPackage.PackageIdentity,
-                SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext())));
+                nuGetPackageManager.RestorePackage(missingPackage.PackageIdentity,
+                nuGetProjectContext)));
         }
     }
 }

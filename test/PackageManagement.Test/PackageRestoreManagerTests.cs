@@ -129,7 +129,6 @@ namespace NuGet.Test
             var resolutionContext = new ResolutionContext();
 
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
-            var packagePathResolver = nuGetPackageManager.PackagePathResolver;
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
                 resolutionContext, new TestNuGetProjectContext());
@@ -138,20 +137,17 @@ namespace NuGet.Test
 
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
-            Assert.True(File.Exists(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity),
-                packagePathResolver.GetPackageFileName(packageIdentity))));
+            Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(packageIdentity));
 
             // Delete packages folder
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
-            Assert.False(File.Exists(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity),
-                packagePathResolver.GetPackageFileName(packageIdentity))));
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
             await packageRestoreManager.RestoreMissingPackages();
 
-            Assert.True(File.Exists(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity),
-                packagePathResolver.GetPackageFileName(packageIdentity))));
+            Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
         }
     }
 }

@@ -13,7 +13,7 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public class FolderNuGetProject : NuGetProject
     {
-        private string Root { get; set; }
+        public string Root { get; set; }
         public PackagePathResolver PackagePathResolver { get; private set; }
         /// <summary>
         /// PackageSaveMode may be set externally for change in behavior
@@ -64,7 +64,7 @@ namespace NuGet.ProjectManagement
             }
 
             // 1. Check if the Package already exists at root, if so, return false
-            if (PackageExistsInProject(packageIdentity))
+            if (PackageExists(packageIdentity))
             {
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
                 return false;
@@ -87,7 +87,7 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// A package is considered to exist in FileSystemNuGetProject, if the 'nupkg' file is present where expected
         /// </summary>
-        private bool PackageExistsInProject(PackageIdentity packageIdentity)
+        public bool PackageExists(PackageIdentity packageIdentity)
         {
             string packageFileFullPath = Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
                 PackagePathResolver.GetPackageFileName(packageIdentity));
