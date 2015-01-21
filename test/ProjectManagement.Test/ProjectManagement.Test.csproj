@@ -12,7 +12,7 @@
     <AssemblyName>ProjectManagement.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>2e3ed0cb</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>1e9fb40d</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
