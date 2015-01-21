@@ -1,5 +1,5 @@
 param (
-    [string]$PushTarget,
+    [string]$PushTarget=$env:NUGET_PUSH_TARGET,
     [ValidateSet("debug", "release")][string]$Configuration="release",
     [switch]$SkipTests,
     [switch]$SkipBuild,
@@ -32,11 +32,6 @@ if (!$SkipBuild)
         {
             $env:NUGET_DELAYSIGN="true"
         }
-    }
-
-    if ($PushTarget)
-    {
-        & nuget restore -source "$PushTarget"
     }
 
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
