@@ -36,13 +36,21 @@ if (!$SkipBuild)
 
     if ($PushTarget)
     {
-        Write-Host "Updating package references for our own packages"
-        & nuget.exe update Packaging.sln -source "$PushTarget"
+        & nuget restore -source "$PushTarget"
     }
 
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
     Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
+
+    if ($PushTarget)
+    {
+        Write-Host "Updating package references for our own packages"
+        & .\.nuget\nuget.exe update Packaging.sln -source "$PushTarget"
+
+        Write-Host "Now, building again to consume the updated packages"
+        Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
+    }
 }
 
 # assembly containing the release file version to use for the package
