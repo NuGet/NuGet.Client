@@ -87,11 +87,6 @@
     <Compile Include="Resolution\ResolverGather.cs" />
     <Compile Include="Resolution\SourceDependencyInfo.cs" />
     <Compile Include="Resolution\UninstallResolver.cs" />
-    <Compile Include="Strings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
     <Compile Include="Utility\ExceptionUtility.cs" />
     <Compile Include="Utility\NuGetEvent.cs" />
     <Compile Include="Utility\NuGetEventTrigger.cs" />
