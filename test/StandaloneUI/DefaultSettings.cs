@@ -108,5 +108,30 @@ namespace StandaloneUI
         }
 
         public event EventHandler SolutionOpened;
+
+
+        string NuGet.PackageManagement.ISolutionManager.DefaultNuGetProjectName
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public NuGet.ProjectManagement.INuGetProjectContext NuGetProjectContext
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }
