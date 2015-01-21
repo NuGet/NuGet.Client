@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio;
+﻿using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
@@ -432,6 +433,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             }
             catch (NotImplementedException)
+            {
+
+            }
+            catch (RuntimeBinderException)
             {
 
             }
