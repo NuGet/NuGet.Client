@@ -365,7 +365,33 @@ namespace NuGet.Configuration
 
         public void SetValues(string section, IList<KeyValuePair<string, string>> values)
         {
-            throw new NotImplementedException();
+            // machine wide settings cannot be changed.
+            if (IsMachineWideSettings)
+            {
+                if (_next == null)
+                {
+                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                }
+
+                _next.SetValues(section, values);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+            }
+            if (values == null)
+            {
+                throw new ArgumentNullException("values");
+            }
+
+            var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
+            foreach (var kvp in values)
+            {
+                SetValueInternal(sectionElement, kvp.Key, kvp.Value);
+            }
+            Save();
         }
 
         public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
