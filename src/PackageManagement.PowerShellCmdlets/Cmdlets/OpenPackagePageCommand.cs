@@ -45,8 +45,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            GetActiveSourceRepository(Source);
             base.Preprocess();
+            GetActiveSourceRepository(Source);
         }
 
         protected override void ProcessRecordCore()

@@ -84,19 +84,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
+            base.Preprocess();
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
             CollapseVersions = !AllVersions.IsPresent && ListAvailable;
             GetActiveSourceRepository(Source);
+            GetNuGetProject(ProjectName);
 
-            base.Preprocess();
             if (string.IsNullOrEmpty(ProjectName))
             {
                 Projects = VsSolutionManager.GetNuGetProjects().ToList();
             }
             else
             {
-                GetNuGetProject(ProjectName);
                 Projects = new List<NuGetProject>() { Project };
             }
         }
