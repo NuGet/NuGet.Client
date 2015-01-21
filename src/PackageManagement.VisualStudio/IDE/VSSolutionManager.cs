@@ -107,6 +107,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             EnvDTEProject envDTEProject = GetEnvDTEProject(nuGetProjectSafeName);
             Debug.Assert(envDTEProject != null, "Invalid default project");
+            if (VSNuGetProjectFactory == null)
+            {
+                VSNuGetProjectFactory = new VSNuGetProjectFactory();
+            }
             return VSNuGetProjectFactory.GetNuGetProject(envDTEProject, ToBeDeletedNuGetProjectContext);
         }
 
