@@ -79,6 +79,7 @@
     <Reference Include="NuGet.Core">
       <HintPath>..\..\packages\Nuget.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Private>True</Private>
+      <Aliases>nugetcore</Aliases>
     </Reference>
     <Reference Include="NuGet.Data">
       <HintPath>..\..\packages\NuGet.Protocol.3.0.0-rc\lib\net45\NuGet.Data.dll</HintPath>

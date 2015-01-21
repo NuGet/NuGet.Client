@@ -81,6 +81,7 @@
     </Reference>
     <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <Aliases>nugetcore</Aliases>
     </Reference>
     <Reference Include="NuGet.Data">
       <HintPath>..\..\packages\NuGet.Protocol.3.0.0-rc\lib\net45\NuGet.Data.dll</HintPath>
