@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _uninstallcontext = new UninstallationContext(false, Reinstall.IsPresent);
+                _uninstallcontext = new UninstallationContext(false , Reinstall.IsPresent);
                 return _uninstallcontext;
             }
         }

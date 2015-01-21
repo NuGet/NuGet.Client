@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            FallbackToCacheIfNeccessary();
+            //FallbackToCacheIfNeccessary();
             ParseUserInputForId();
             ParseUserInputForVersion();
             base.Preprocess();
@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private IEnumerable<PackageIdentity> GetPackageIdentities()
         {
             IEnumerable<PackageIdentity> identityList = Enumerable.Empty<PackageIdentity>();
-
+            
             if (_readFromPackagesConfig)
             {
                 identityList = CreatePackageIdentitiesFromPackagesConfig();

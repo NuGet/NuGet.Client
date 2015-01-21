@@ -49,19 +49,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         protected override void ProcessRecordCore()
         {
-            CheckForSolutionOpen();
             Preprocess();
+            CheckForSolutionOpen();
         }
 
         protected override void Preprocess()
         {
+            base.Preprocess();
             GetActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
-            base.Preprocess();
         }
 
-        protected void InstallPackageByIdentity(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
+        protected void InstallPackageByIdentity(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false,  UninstallationContext uninstallContext = null)
         {
             if (isPreview)
             {

@@ -31,9 +31,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            CheckForSolutionOpen();
-
             Preprocess();
+
+            CheckForSolutionOpen();
 
             var projects = new List<NuGetProject>();
 

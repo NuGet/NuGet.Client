@@ -59,6 +59,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
+            base.Preprocess();
+
             // Since this is used for intellisense, we need to limit the number of packages that we return. Otherwise,
             // typing InstallPackage TAB would download the entire feed.
             First = MaxReturnedPackages;
@@ -72,7 +74,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             GetActiveSourceRepository(Source);
-            base.Preprocess();
         }
 
         protected override void ProcessRecordCore()
