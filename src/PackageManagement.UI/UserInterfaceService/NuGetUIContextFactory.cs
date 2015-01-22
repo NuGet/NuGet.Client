@@ -31,13 +31,17 @@ namespace NuGet.PackageManagement.UI
         }
 
         [ImportingConstructor]
-        public NuGetUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider, [Import]ISolutionManager solutionManager,
-            [Import]ISettings settings, [Import]IPackageRestoreManager packageRestoreManager)
+        public NuGetUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider, 
+            [Import]ISolutionManager solutionManager,
+            [Import]ISettings settings, 
+            [Import]IPackageRestoreManager packageRestoreManager,
+            [Import]IOptionsPageActivator optionsPage)
         {
             _repositoryProvider = repositoryProvider;
             _solutionManager = solutionManager;
             _settings = settings;
             _restoreManager = packageRestoreManager;
+            _optionsPage = optionsPage;
         }
 
         public INuGetUIContext Create(IEnumerable<NuGetProject> projects)

@@ -1,10 +1,7 @@
-﻿using NuGet.ProjectManagement;
-using System;
-using System.Linq;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -35,6 +32,12 @@ namespace NuGet.PackageManagement.UI
             {
                 return _context;
             }
+        }
+
+        public string SolutionName
+        {
+            get;
+            set;
         }
 
         public INuGetUI UIController

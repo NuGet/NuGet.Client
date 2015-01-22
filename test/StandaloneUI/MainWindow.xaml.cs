@@ -38,9 +38,10 @@ namespace StandaloneUI
         public MainWindow()
         {
             InitializeComponent();
+            CreatePackageManagerControl();
         }
 
-        private void Grid_Initialized(object sender, EventArgs e)
+        private void CreatePackageManagerControl()
         {
             _container = Initialize();
 
@@ -57,16 +58,20 @@ namespace StandaloneUI
             var projects = new NuGetProject[] { projectA, projectB };            
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
-            
-            //var uiContext = _contextFactory.Create(projects);
-            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), settings, packageRestoreManager);
+            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), 
+                settings, 
+                packageRestoreManager: packageRestoreManager,
+                optionsPage: null);
             var context = _contextFactory.Create(projects);
-            var uiController = _uiServiceFactory.Create(projects);
+            var uiController = new StandaloneNuGetUI(
+                _uiServiceFactory.Create(
+                    projects,
+                    context,
+                    new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer))));
 
             PackageManagerModel model = new PackageManagerModel(uiController, context);
-
+            model.SolutionName = "test solution";
             PackageManagerControl control = new PackageManagerControl(model);
-
             layoutGrid.Children.Add(control);
         }
 

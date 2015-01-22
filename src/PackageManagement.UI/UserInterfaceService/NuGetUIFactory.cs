@@ -20,9 +20,12 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public INuGetUI Create(IEnumerable<NuGetProject> projects)
+        public INuGetUI Create(
+            IEnumerable<NuGetProject> projects, 
+            INuGetUIContext uiContext, 
+            NuGetUIProjectContext uiProjectContext)
         {
-            return new NuGetUI(null, projects);
+            return new NuGetUI(uiContext, projects, uiProjectContext);
         }
     }
 }

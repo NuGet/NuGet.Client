@@ -1,16 +1,10 @@
-﻿using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
     public interface INuGetUIFactory
     {
-
-        INuGetUI Create(IEnumerable<NuGetProject> projects);
-
+        INuGetUI Create(IEnumerable<NuGetProject> projects, INuGetUIContext uiContext, NuGetUIProjectContext uiProjectContext);
     }
 }

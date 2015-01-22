@@ -155,24 +155,27 @@ namespace NuGet.PackageManagement.UI
         protected async Task<IEnumerable<PreviewResult>> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
         {
             List<PreviewResult> results = new List<PreviewResult>();
-
-            foreach (var actionTuple in projectActions)
+            var actionsByProject = projectActions.GroupBy(action => action.Item1);
+            foreach (var actions in actionsByProject)
             {
                 List<PackageIdentity> added = new List<PackageIdentity>();
                 List<PackageIdentity> deleted = new List<PackageIdentity>();
                 List<PackageIdentity> unchanged = new List<PackageIdentity>();
                 List<UpdatePreviewResult> updated = new List<UpdatePreviewResult>();
 
-                if (actionTuple.Item2.NuGetProjectActionType == NuGetProjectActionType.Install)
+                foreach (var actionTuple in actions)
                 {
-                    added.Add(actionTuple.Item2.PackageIdentity);
-                }
-                else
-                {
-                    deleted.Add(actionTuple.Item2.PackageIdentity);
+                    if (actionTuple.Item2.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    {
+                        added.Add(actionTuple.Item2.PackageIdentity);
+                    }
+                    else
+                    {
+                        deleted.Add(actionTuple.Item2.PackageIdentity);
+                    }
                 }
 
-                PreviewResult result = new PreviewResult(actionTuple.Item1, added, deleted, unchanged, updated);
+                PreviewResult result = new PreviewResult(actions.Key, added, deleted, unchanged, updated);
                 results.Add(result);
             }
 

@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<UpdatePreviewResult> updated)
         {
             string s = null;
-            if (target.TryGetMetadata<string>("ProjectName", out s))
+            if (target.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out s))
             {
                 Name = s;
             }

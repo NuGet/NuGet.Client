@@ -16,14 +16,17 @@ namespace NuGet.PackageManagement.UI
     public class NuGetUI : INuGetUI
     {
         private readonly INuGetUIContext _context;
-
-        private ProgressDialog _progressDialog;
+        private NuGetUIProjectContext _uiProjectContext;
         private readonly NuGetProject[] _projects;
 
-        public NuGetUI(INuGetUIContext context, IEnumerable<NuGetProject> projects)
+        public NuGetUI(
+            INuGetUIContext context, 
+            IEnumerable<NuGetProject> projects, 
+            NuGetUIProjectContext projectContext)
         {
             _context = context;
             _projects = projects.ToArray();
+            _uiProjectContext = projectContext;
         }
 
         public bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages)
@@ -68,13 +71,12 @@ namespace NuGet.PackageManagement.UI
                     {
                         _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null);
                     });
-            }
+           }
             else
             {
                 MessageBox.Show("Options dialog is not available in the standalone UI");
             }
         }
-
 
         public bool PromptForPreviewAcceptance(IEnumerable<PreviewResult> actions)
         {
@@ -90,41 +92,25 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
+        // TODO: rename is to Start
         public void ShowProgressDialog(DependencyObject ownerWindow)
         {
-            Debug.Assert(_progressDialog == null, "Progress dialog is already up");
-
-            if (_progressDialog == null)
-            {
-                UIDispatcher.Invoke(() =>
-                    {
-                        _progressDialog = new ProgressDialog();
-
-                        _progressDialog.Owner = Window.GetWindow(ownerWindow);
-                        _progressDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                        _progressDialog.FileConflictAction = FileConflictAction;
-                        _progressDialog.Show();
-                    });
+            _uiProjectContext.Start();
+            _uiProjectContext.FileConflictAction = FileConflictAction;
             }
-        }
 
+        // TODO: rename is to End
         public void CloseProgressDialog()
         {
-            if (_progressDialog != null)
-            {
-                UIDispatcher.Invoke(() =>
-                    {
-                        _progressDialog.Close();
-                        _progressDialog = null;
-                    });
+            _uiProjectContext.End();
             }
-        }
 
+        // TODO: rename it
         public INuGetProjectContext ProgressWindow
         {
             get
             {
-                return _progressDialog;
+                return _uiProjectContext;
             }
         }
 
@@ -300,4 +286,90 @@ namespace NuGet.PackageManagement.UI
         }
     }
 
+    // TODO: move to separate file
+    public interface INuGetUILogger
+    {
+        void Log(MessageLevel level, string message, params object[] args);
+
+        void Start();
+
+        void End();
+    }
+
+    // TODO: move to separate file
+    public class NuGetUIProjectContext : INuGetProjectContext
+    {
+        public FileConflictAction FileConflictAction
+        {
+            get;
+            set;
+        }
+
+        private readonly Dispatcher _uiDispatcher;
+        private readonly INuGetUILogger _logger;
+
+        public NuGetUIProjectContext(INuGetUILogger logger)
+        {
+            _logger = logger;
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
+        }
+
+        public void Log(MessageLevel level, string message, params object[] args)
+        {
+            _logger.Log(level, message, args);
+        }
+
+        public FileConflictAction ShowFileConflictResolution(string message)
+        {
+            if (!_uiDispatcher.CheckAccess())
+            {
+                object result = _uiDispatcher.Invoke(
+                    new Func<string, FileConflictAction>(ShowFileConflictResolution),
+                    message);
+                return (FileConflictAction)result;
+            }
+
+            var fileConflictDialog = new FileConflictDialog()
+            {
+                Question = message
+            };
+
+            if (fileConflictDialog.ShowModal() == true)
+            {
+                return fileConflictDialog.UserSelection;
+            }
+            else
+            {
+                return FileConflictAction.IgnoreAll;
+            }
+        }
+
+        public FileConflictAction ResolveFileConflict(string message)
+        {
+            if (FileConflictAction == FileConflictAction.PromptUser)
+            {
+                var resolution = ShowFileConflictResolution(message);
+
+                if (resolution == FileConflictAction.IgnoreAll ||
+                    resolution == FileConflictAction.OverwriteAll)
+                {
+                    FileConflictAction = resolution;
+                }
+                return resolution;
+            }
+
+            return FileConflictAction;
+        }
+
+        // called when user clicks the action button
+        public void Start()
+        {
+            _logger.Start();
+        }
+
+        internal void End()
+        {
+            _logger.End();
+        }
+    }
 }

@@ -192,7 +192,7 @@ namespace NuGet.PackageManagement.UI
                 _label.Text = string.Format(
                     CultureInfo.CurrentCulture,
                     Resx.Resources.Label_PackageManager,
-                    "!!!solution");
+                    Model.SolutionName);
             }
             else
             {

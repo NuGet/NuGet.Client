@@ -24,6 +24,7 @@ namespace NuGet.PackageManagement.UI
         public DetailControl()
         {
             InitializeComponent();
+            _projectList.MaxHeight = _self.FontSize * 15;
             this.DataContextChanged += PackageSolutionDetailControl_DataContextChanged;
         }
 
@@ -75,14 +76,23 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void ActionButtonClicked(object sender, RoutedEventArgs e)
+        private async void ActionButtonClicked(object sender, RoutedEventArgs e)
         {
             var action = GetUserAction();
-            WaitCallback callback = new WaitCallback(async (obj) => 
-                await Control.Model.Context.UIActionEngine.PerformAction(Control.Model.UIController, action, this, CancellationToken.None));
-
-            // Run the action using the UIActionEngine on a background thread
-            ThreadPool.QueueUserWorkItem(callback, this);
+            Control.IsEnabled = false;
+            try
+            {
+                await Task.Run(() =>
+                    Control.Model.Context.UIActionEngine.PerformAction(
+                        Control.Model.UIController,
+                        action,
+                        this,
+                        CancellationToken.None));
+            }
+            finally
+            {
+                Control.IsEnabled = true;
+            }
         }
 
         /// <summary>

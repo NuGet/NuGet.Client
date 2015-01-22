@@ -106,12 +106,33 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                // create metadata
-                foreach (var id in byId.Keys.OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
-                {
-                    string summary = String.Join(", ", byId[id].Where(e => !String.IsNullOrEmpty(e)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+                var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
 
-                    results.Add(new UISearchMetadata(id, summary, null, new NuGetVersion[] { id.Version }, null));
+                // fetch metadata of packages in parallel
+                var tasks = new List<Task<UISearchMetadata>>();
+                foreach (var identity in byId.Keys.OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
+                {
+                    var task = Task.Run(
+                        async () =>
+                        {
+                            string summary = String.Join(", ", byId[identity].Where(e => !String.IsNullOrEmpty(e))
+                                .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+                            var metadata = await metadataResource.GetMetadata(
+                                identity.Id, 
+                                _option.IncludePrerelease, 
+                                false, 
+                                ct);
+                            var versions = metadata.Select(m => m.Identity.Version)
+                                .OrderByDescending(v => v);
+                            return new UISearchMetadata(identity, summary, null, versions, null);
+                        });
+                    tasks.Add(task);
+                }
+
+                await Task.WhenAll(tasks.ToArray());
+                foreach (var task in tasks)
+                {
+                    results.Add(task.Result);
                 }
             }
             // installed packages with updates
