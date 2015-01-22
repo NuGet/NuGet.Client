@@ -10,6 +10,7 @@ using System.Globalization;
 using NuGet.PackagingCore;
 using NuGet.Frameworks;
 using System.Runtime.Versioning;
+using System.Threading;
 
 namespace NuGet.Client.V2
 {
@@ -26,48 +27,51 @@ namespace NuGet.Client.V2
         {
             V2Client = resource.V2Client;
         }
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, Frameworks.NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, Frameworks.NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
         {
             List<Tuple<string,IVersionSpec>> packageVersions = new List<Tuple<string,IVersionSpec>>();
             packageVersions.Add(new Tuple<string,IVersionSpec>(packageId,new VersionSpec()));
             return GetFlattenedDependencyTree(packageVersions, new List<PackageDependencyInfo>().AsEnumerable(), projectFramework, includePrerelease, token);
         }
 
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, Frameworks.NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, Frameworks.NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
         {
             List<Tuple<string, IVersionSpec>> packageVersions = packages.Select(item => GetIdAndVersionSpec(item)).ToList();
             return GetFlattenedDependencyTree(packageVersions, new PackageDependencyInfo[0], projectFramework, includePrerelease, token);
         }
 
-     
-
         #region PrivateHelpers
-        private IEnumerable<PackageDependencyInfo> GetFlattenedDependencyTree(IEnumerable<Tuple<string, IVersionSpec>> packages, IEnumerable<PackageDependencyInfo> dependencyInfoList, Frameworks.NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
+        private IEnumerable<PackageDependencyInfo> GetFlattenedDependencyTree(IEnumerable<Tuple<string, IVersionSpec>> packages, IEnumerable<PackageDependencyInfo> dependencyInfoList, NuGetFramework projectFramework, bool includePrerelease, System.Threading.CancellationToken token)
         {
-               List<PackageDependencyInfo> packageDependencyInfo = dependencyInfoList.ToList();
-                foreach (var package in packages)
+            // TODO: add caching here
+
+            FrameworkReducer frameworkReducer = new FrameworkReducer();
+
+            List<PackageDependencyInfo> packageDependencyInfo = dependencyInfoList.ToList();
+
+            // TODO: Combine this into the smallest set of calls
+            foreach (var package in packages)
+            {
+                IEnumerable<IPackage> packageVersions = V2Client.FindPackages(package.Item1, package.Item2, includePrerelease, false);
+                foreach (var packageVersion in packageVersions)
                 {
-                       IEnumerable<IPackage> packageVersions = V2Client.FindPackages(package.Item1,package.Item2,includePrerelease,false);
-                       foreach (var packageVersion in packageVersions)
-                       {
-                           PackageIdentity identity = new PackageIdentity(packageVersion.Id, NuGetVersion.Parse(packageVersion.Version.ToString()));
-                           if (packageVersion.DependencySets != null && packageVersion.DependencySets.Count() > 0)
-                           {
-                               FrameworkReducer frameworkReducer = new FrameworkReducer();
-                               NuGetFramework nearestFramework = frameworkReducer.GetNearest(projectFramework, packageVersion.DependencySets.Select(e => GetNuGetFramework(e)));
-                               IEnumerable<PackageDependency> dependencies = packageVersion.DependencySets.Where(e => (GetNuGetFramework(e).Equals(nearestFramework))).FirstOrDefault().Dependencies;                               
-                               packageDependencyInfo.Add(new PackageDependencyInfo(identity, dependencies.Select(item => GetNuGetPackagingCorePackageDependency(item))));
-                               List<Tuple<string, IVersionSpec>> dependentPackages = dependencies.Select(item => GetIdAndVersionSpec(item)).ToList();
-                               packageDependencyInfo.AddRange(GetFlattenedDependencyTree(dependentPackages, packageDependencyInfo, projectFramework, includePrerelease, token));
-                           }
-                           else
-                           {
-                               packageDependencyInfo.Add(new PackageDependencyInfo(identity, null));
-                           }
-                       }
-                      
+                    PackageIdentity identity = new PackageIdentity(packageVersion.Id, NuGetVersion.Parse(packageVersion.Version.ToString()));
+                    if (packageVersion.DependencySets != null && packageVersion.DependencySets.Count() > 0)
+                    {
+                        NuGetFramework nearestFramework = frameworkReducer.GetNearest(projectFramework, packageVersion.DependencySets.Select(e => GetNuGetFramework(e)));
+                        IEnumerable<PackageDependency> dependencies = packageVersion.DependencySets.Where(e => (GetNuGetFramework(e).Equals(nearestFramework))).FirstOrDefault().Dependencies;
+                        packageDependencyInfo.Add(new PackageDependencyInfo(identity, dependencies.Select(item => GetNuGetPackagingCorePackageDependency(item))));
+                        List<Tuple<string, IVersionSpec>> dependentPackages = dependencies.Select(item => GetIdAndVersionSpec(item)).ToList();
+                        packageDependencyInfo.AddRange(GetFlattenedDependencyTree(dependentPackages, packageDependencyInfo, projectFramework, includePrerelease, token));
+                    }
+                    else
+                    {
+                        packageDependencyInfo.Add(new PackageDependencyInfo(identity, null));
+                    }
                 }
-            packageDependencyInfo =  packageDependencyInfo.Distinct().ToList();
+            }
+
+            packageDependencyInfo = packageDependencyInfo.Distinct().ToList();
             return packageDependencyInfo;
         }
 
@@ -94,6 +98,7 @@ namespace NuGet.Client.V2
             VersionRange versionRange = dependency.VersionSpec == null ? null : VersionRange.Parse(dependency.VersionSpec.ToString());
             return new NuGet.PackagingCore.PackageDependency(id, versionRange);
         }
+
         #endregion PrivateHelpers
     }
 }

@@ -45,8 +45,11 @@ namespace NuGet.Client.V2
                 {
                     try
                     {
+                        var task = Task.Run(async () => await V2Utilities.IsV2(source.PackageSource));
+                        task.Wait();
+
                         // if it's not in cache, then check if it is V2.
-                        if (V2Utilities.IsV2(source.PackageSource).Result)
+                        if (task.Result)
                         {
                             // Get a IPackageRepo object and add it to the cache.
                             repo = V2Utilities.GetV2SourceRepository(source.PackageSource);
