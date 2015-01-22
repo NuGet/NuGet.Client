@@ -382,6 +382,17 @@ namespace NuGet.PackageManagement.VisualStudio
             string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
             if (targetFrameworkMoniker != null)
             {
+                var framework = NuGetFramework.Parse(targetFrameworkMoniker);
+                //if the framework is .net core 4.5.1 return windows 8.1
+                if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore) && framework.Version.Equals(System.Version.Parse("4.5.1.0"))) 
+                {
+                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, System.Version.Parse("8.1"), framework.Profile, framework.Platform, framework.PlatformVersion);
+                }
+                //if the framework is .net core 4.5 return 8.0
+                if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore) && framework.Version.Equals(System.Version.Parse("4.5.0.0")))
+                {
+                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, System.Version.Parse("8.0"), framework.Profile, framework.Platform, framework.PlatformVersion);
+                }
                 return NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
