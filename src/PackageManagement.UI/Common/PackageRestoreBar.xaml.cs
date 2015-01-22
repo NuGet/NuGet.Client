@@ -82,7 +82,6 @@ namespace NuGet.PackageManagement.UI
             catch (Exception ex)
             {
                 ShowErrorUI(ex.Message);
-                //ExceptionHelper.WriteToActivityLog(baseException);
             }
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);

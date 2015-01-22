@@ -19,10 +19,10 @@ namespace NuGet.PackageManagement
         protected const string NuGetBuildPackageName = "NuGet.Build";
         protected const string NuGetCommandLinePackageName = "NuGet.CommandLine";
 
-        protected SourceRepositoryProvider SourceRepositoryProvider { get; set; }
+        protected ISourceRepositoryProvider SourceRepositoryProvider { get; set; }
         protected ISolutionManager SolutionManager { get; set; }
         protected ISettings Settings { get; set; }
-        public PackageRestoreManager(SourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
+        public PackageRestoreManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
         {
             if(sourceRepositoryProvider == null)
             {
