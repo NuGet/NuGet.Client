@@ -36,13 +36,13 @@ namespace NuGet.Client.V2.VisualStudio
             foreach (var identity in packages)
             {
                 var semver = new SemanticVersion(identity.Version.ToNormalizedString());
-                var package = V2Client.FindPackage(identity.Id, semver);
+                var package = await Task.Run(() => V2Client.FindPackage(identity.Id, semver));
 
                 // Sometimes, V2 APIs seem to fail to return a value for Packages(Id=,Version=) requests...
 
                 if (package == null)
                 {
-                    var packagesList = V2Client.FindPackagesById(identity.Id);
+                    var packagesList = await Task.Run(() => V2Client.FindPackagesById(identity.Id));
                     package = packagesList.FirstOrDefault(p => Equals(p.Version, semver));
                 }
 
