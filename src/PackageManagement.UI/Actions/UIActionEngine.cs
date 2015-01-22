@@ -4,6 +4,7 @@ using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -128,20 +129,39 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(IEnumerable<NuGetProject> targets, UserAction action,
+        protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(IEnumerable<NuGetProject> targets, UserAction userAction,
             FileConflictAction conflictActionItem, INuGetProjectContext projectContext, CancellationToken token)
-        {
-            ResolutionContext resolutionContext = new ResolutionContext(DependencyBehavior.Lowest);
+        {            
 
             List<Tuple<NuGetProject, NuGetProjectAction>> results = new List<Tuple<NuGetProject, NuGetProjectAction>>();
 
-            foreach (var target in targets)
+            Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
+            if(userAction.Action == NuGetProjectActionType.Install)
             {
-                var actions = await _packageManager.PreviewInstallPackageAsync(target, action.PackageIdentity, resolutionContext, projectContext);
-
-                foreach (var targetAction in actions)
+                Debug.Assert(userAction.PackageIdentity != null, "Package identity cannot be null when installing a package");
+                ResolutionContext resolutionContext = new ResolutionContext(DependencyBehavior.Lowest);
+                foreach(var target in targets)
                 {
-                    results.Add(new Tuple<NuGetProject, NuGetProjectAction>(target, targetAction));
+                    IEnumerable<NuGetProjectAction> actions;
+                    actions = await _packageManager.PreviewInstallPackageAsync(target, userAction.PackageIdentity, resolutionContext, projectContext);
+                    results.AddRange(actions.Select(a => new Tuple<NuGetProject, NuGetProjectAction>(target, a)));
+                }
+            }
+            else
+            {
+                UninstallationContext uninstallationContext = new UninstallationContext();
+                foreach (var target in targets)
+                {
+                    IEnumerable<NuGetProjectAction> actions;
+                    if (userAction.PackageIdentity != null)
+                    {
+                        actions = await _packageManager.PreviewUninstallPackageAsync(target, userAction.PackageIdentity, uninstallationContext, projectContext);
+                    }
+                    else
+                    {
+                        actions = await _packageManager.PreviewUninstallPackageAsync(target, userAction.PackageId, uninstallationContext, projectContext);
+                    }
+                    results.AddRange(actions.Select(a => new Tuple<NuGetProject, NuGetProjectAction>(target, a)));
                 }
             }
 

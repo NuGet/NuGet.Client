@@ -59,12 +59,13 @@ namespace NuGet.PackageManagement.UI
         {
             var model = (DetailControlModel)DataContext;
             var action = model.SelectedAction == NuGet.PackageManagement.UI.Resources.Action_Uninstall ?
-                PackageActionType.Uninstall :
-                PackageActionType.Install;
+                NuGetProjectActionType.Uninstall :
+                NuGetProjectActionType.Install;
 
             return new UserAction(
                 action,
-                new PackageIdentity(model.Id, model.SelectedVersion.Version));
+                model.Id,
+                model.SelectedVersion != null ? model.SelectedVersion.Version : null);
         }
 
         public void Refresh()

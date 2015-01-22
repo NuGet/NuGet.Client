@@ -58,7 +58,7 @@ namespace StandaloneUI
             var projects = new NuGetProject[] { projectA, projectB };            
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
-            _contextFactory = new NuGetUIContextFactory(repositoryProvider, new MySolutionManager(), 
+            _contextFactory = new NuGetUIContextFactory(repositoryProvider, testSolutionManager, 
                 settings, 
                 packageRestoreManager: packageRestoreManager,
                 optionsPage: null);

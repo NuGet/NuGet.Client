@@ -276,12 +276,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
         {
-            if(SolutionManager == null)
-            {
-                throw new InvalidOperationException(Strings.SolutionManagerNotAvailableForUninstall);
-            }
-
-            // Step-0: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
+            // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
             var installedPackages = nuGetProject.GetInstalledPackages();
             PackageReference packageReference = installedPackages
                 .Where(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
@@ -291,13 +286,42 @@ namespace NuGet.PackageManagement
                     packageId, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
 
+            return await PreviewUninstallPackageAsyncPrivate(nuGetProject, packageReference, uninstallationContext, nuGetProjectContext);
+        }
+
+        /// <summary>
+        /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall <param name="packageId"></param> into <param name="nuGetProject"></param>
+        /// <param name="uninstallationContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
+        /// </summary>
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
+        {
+            // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
+            var installedPackages = nuGetProject.GetInstalledPackages();
+            PackageReference packageReference = installedPackages
+                .Where(pr => pr.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
+            if (packageReference == null || packageReference.PackageIdentity == null)
+            {
+                throw new ArgumentException(String.Format(Strings.PackageToBeUninstalledCouldNotBeFound,
+                    packageIdentity.Id, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+            }
+
+            return await PreviewUninstallPackageAsyncPrivate(nuGetProject, packageReference, uninstallationContext, nuGetProjectContext);
+        }
+
+        private async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageReference packageReference, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
+        {
+            if(SolutionManager == null)
+            {
+                throw new InvalidOperationException(Strings.SolutionManagerNotAvailableForUninstall);
+            }
+
             // Step-1 : Get the metadata resources from "packages" folder or custom repository path
             var packageIdentity = packageReference.PackageIdentity;
             var packageReferenceTargetFramework = packageReference.TargetFramework;
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, packageReferenceTargetFramework);
 
             // TODO: IncludePrerelease is a big question mark
-            var installedPackageIdentities = installedPackages.Select(pr => pr.PackageIdentity);
+            var installedPackageIdentities = nuGetProject.GetInstalledPackages().Select(pr => pr.PackageIdentity);
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
                 packageReferenceTargetFramework, includePrerelease: false);
 

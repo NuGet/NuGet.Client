@@ -150,8 +150,6 @@
     <Compile Include="Models\DetailedPackageMetadata.cs" />
     <Compile Include="Models\PackageDependencyMetadata.cs" />
     <Compile Include="Options.cs" />
-    <Compile Include="PackageAction.cs" />
-    <Compile Include="PackageActionType.cs" />
     <Compile Include="PackageDetailControlModel.cs" />
     <Compile Include="PackageLoader.cs" />
     <Compile Include="PackageManagerControlCommands.cs" />

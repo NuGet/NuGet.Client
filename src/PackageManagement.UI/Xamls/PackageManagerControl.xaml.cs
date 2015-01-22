@@ -414,18 +414,6 @@ namespace NuGet.PackageManagement.UI
             return status;
         }
 
-        /// <summary>
-        /// Shows the preveiw window for the actions.
-        /// </summary>
-        /// <param name="actions">actions to preview.</param>
-        /// <returns>True if nuget should continue to perform the actions. Otherwise false.</returns>
-        private bool PreviewActions(IEnumerable<PackageAction> actions)
-        {
-            var w = new PreviewWindow();
-            w.DataContext = new PreviewWindowModel(Enumerable.Empty<PreviewResult>());
-            return w.ShowModal() == true;
-        }
-
         private void _searchControl_SearchStart(object sender, EventArgs e)
         {
             if (!_initialized)
