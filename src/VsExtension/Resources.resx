@@ -120,8 +120,14 @@
   <data name="CanNotCreateWindow" xml:space="preserve">
     <value>Can not create tool window.</value>
   </data>
+  <data name="DialogTitle" xml:space="preserve">
+    <value>NuGet Package Manager</value>
+  </data>
   <data name="ErrorDialogBoxTitle" xml:space="preserve">
     <value>Operation failed</value>
+  </data>
+  <data name="ErrorOccurredRestoringPackages" xml:space="preserve">
+    <value>Error occurred while restoring NuGet packages: {0}</value>
   </data>
   <data name="ManagePackageForSolutionLabel" xml:space="preserve">
     <value>Manage NuGet Packages for &amp;Solution...</value>
@@ -131,6 +137,9 @@
   </data>
   <data name="NoProjectSelected" xml:space="preserve">
     <value>No project is selected for this operation.</value>
+  </data>
+  <data name="NothingToRestore" xml:space="preserve">
+    <value>All packages are already installed and there is nothing to restore.</value>
   </data>
   <data name="NuGetSearchProvider_CategoryShortcut" xml:space="preserve">
     <value>nuget</value>
@@ -143,5 +152,14 @@
   </data>
   <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
     <value>Search Online for NuGet Packages matching '{0}'</value>
+  </data>
+  <data name="PackageRestoreFinished" xml:space="preserve">
+    <value>NuGet package restore finished.</value>
+  </data>
+  <data name="PackageRestoreFinishedWithError" xml:space="preserve">
+    <value>NuGet package restore failed.</value>
+  </data>
+  <data name="RestoringPackages" xml:space="preserve">
+    <value>Restoring NuGet packages...</value>
   </data>
 </root>

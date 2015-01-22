@@ -28,9 +28,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private ISolutionManager SolutionManager { get; set; }
 
-        public void CheckForMissingPackages()
+        public override void RaisePackagesMissingEventForSolution()
         {
-            base.CheckForMissingPackages();
+            base.RaisePackagesMissingEventForSolution();
         }
 
         public void EnableCurrentSolutionForRestore(bool fromActivation)
@@ -45,20 +45,22 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
 
-        public async Task RestoreMissingPackages()
+        public override async Task<bool> RestoreMissingPackagesInSolution()
         {
             try
             {
-                await base.RestoreMissingPackages();
+                return await base.RestoreMissingPackagesInSolution();
             }
             catch (Exception ex)
             {
                 ExceptionHelper.WriteToActivityLog(ex);
             }
+
+            return false;
         }
 
 
-        public async Task RestoreMissingPackages(NuGetProject nuGetProject)
+        public override async Task<bool> RestoreMissingPackages(NuGetProject nuGetProject)
         {
             try
             {
@@ -68,13 +70,15 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ExceptionHelper.WriteToActivityLog(ex);
             }
+
+            return false;
         }
 
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            CheckForMissingPackages();
+            RaisePackagesMissingEventForSolution();
         }
 
         private void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
@@ -85,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 //EnablePackageRestore(e.Project, _packageManagerFactory.CreatePackageManager());
             }
 
-            CheckForMissingPackages();
+            RaisePackagesMissingEventForSolution();
         }
     }
 }

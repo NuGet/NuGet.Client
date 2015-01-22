@@ -45,6 +45,9 @@ namespace NuGetVSExtension
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string)]
     [FontAndColorsRegistration(
         "Package Manager Console",
         NuGetConsole.Implementation.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
@@ -172,6 +175,12 @@ namespace NuGetVSExtension
             }
         }
 
+        private OnBuildPackageRestorer OnBuildPackageRestorer
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -238,6 +247,8 @@ namespace NuGetVSExtension
             {
                 DeleteOnRestart.DeleteMarkedPackageDirectories();
             } */
+
+            OnBuildPackageRestorer = new OnBuildPackageRestorer(PackageRestoreManager, this);
         }
 
         private void AddMenuCommandHandlers()

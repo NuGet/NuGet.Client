@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio
         {
             NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
 
-            _restoreManager.RestoreMissingPackages().Wait();
+            _restoreManager.RestoreMissingPackagesInSolution().Wait();
         }
     }
 }
