@@ -31,7 +31,7 @@
     <Reference Include="NuGet.Client.VisualStudio">
       <HintPath>..\..\packages\NuGet.Protocol.Types.3.0.0-rc\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Configuration, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Configuration">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Configuration.3.0.0-rc\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
