@@ -19,10 +19,11 @@ namespace Client.V3Test
         {
             var resource = await SourceRepository.GetResourceAsync<UIMetadataResource>();
 
-            var result = (await resource.GetMetadata(new PackageIdentity("newtonsoft.json", new NuGetVersion(6, 0, 4)), false, false, CancellationToken.None)).Single();
+            var result = await resource.GetMetadata("newtonsoft.json", false, false, CancellationToken.None);
+            var package = result.FirstOrDefault(p => p.Identity.Version == new NuGetVersion(6, 0, 4));
 
-            Assert.False(result.RequireLicenseAcceptance);
-            Assert.True(result.Description.Length > 0);
+            Assert.False(package.RequireLicenseAcceptance);
+            Assert.True(package.Description.Length > 0);
         }
 
         [Fact]
@@ -30,9 +31,9 @@ namespace Client.V3Test
         {
             var resource = await SourceRepository.GetResourceAsync<UIMetadataResource>();
 
-            var result = (await resource.GetMetadata(new PackageIdentity("alsfkjadlsfkjasdflkasdfkllllllllk", new NuGetVersion(6, 0, 4)), false, false, CancellationToken.None)).SingleOrDefault();
+            var result = await resource.GetMetadata("alsfkjadlsfkjasdflkasdfkllllllllk", false, false, CancellationToken.None);
 
-            Assert.Null(result);
+            Assert.False(result.Any());
         }
     }
 }

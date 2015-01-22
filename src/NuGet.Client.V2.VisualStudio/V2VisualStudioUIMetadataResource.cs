@@ -30,33 +30,6 @@ namespace NuGet.Client.V2.VisualStudio
             return V2Client.FindPackagesById(packageId).Select(p => GetVisualStudioUIPackageMetadata(p));
         }
 
-        public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackagingCore.PackageIdentity> packages, bool includePrerelease, bool includeUnlisted, CancellationToken token)
-        {
-            List<UIPackageMetadata> packageMetadataList = new List<Client.VisualStudio.UIPackageMetadata>();
-            foreach (var identity in packages)
-            {
-                var semver = new SemanticVersion(identity.Version.ToNormalizedString());
-                var package = await Task.Run(() => V2Client.FindPackage(identity.Id, semver));
-
-                // Sometimes, V2 APIs seem to fail to return a value for Packages(Id=,Version=) requests...
-
-                if (package == null)
-                {
-                    var packagesList = await Task.Run(() => V2Client.FindPackagesById(identity.Id));
-                    package = packagesList.FirstOrDefault(p => Equals(p.Version, semver));
-                }
-
-                // If still null, fail
-                if (package == null)
-                {
-                    return null;
-                }
-
-                packageMetadataList.Add(GetVisualStudioUIPackageMetadata(package));
-            }
-            return packageMetadataList.AsEnumerable();
-        }
-
         private static UIPackageMetadata GetVisualStudioUIPackageMetadata(IPackage package)
         {
             NuGetVersion Version = NuGetVersion.Parse(package.Version.ToString());          

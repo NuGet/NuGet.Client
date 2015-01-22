@@ -79,8 +79,11 @@ namespace V2V3ResourcesTest
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
             UIMetadataResource resource = repo.GetResource<UIMetadataResource>();
-            Assert.True(resource != null);          
-            UIPackageMetadata packageMetadata = (await resource.GetMetadata(new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("4.0.0-beta1")), true, true, CancellationToken.None)).SingleOrDefault();
+            Assert.True(resource != null);   
+            var result = await resource.GetMetadata("Microsoft.AspNet.Razor", true, true, CancellationToken.None);
+            UIPackageMetadata packageMetadata = result.FirstOrDefault(
+                p => p.Identity.Version == new NuGetVersion("4.0.0-beta1"));
+
             Assert.True(packageMetadata.HasDependencies.Equals(true));
             Assert.True(packageMetadata.DependencySets.Count() == 1);
             Assert.True(packageMetadata.DependencySets.First().Dependencies.Count().Equals(12));
@@ -225,8 +228,9 @@ namespace V2V3ResourcesTest
 
            UIMetadataResource uiMetadataResource = repo.GetResource<UIMetadataResource>();
            Assert.True(uiMetadataResource != null);
-           IEnumerable<UIPackageMetadata> packageMetadata = (await uiMetadataResource.GetMetadata(new PackageIdentity(packageId, new NuGetVersion(version)), true, true, CancellationToken.None));
-           Assert.True(packageMetadata == null || packageMetadata.Count() == 0);
+
+           var result = await uiMetadataResource.GetMetadata(packageId, true, true, CancellationToken.None);
+           Assert.False(result.Any());
 
            DepedencyInfoResource resource = repo.GetResource<DepedencyInfoResource>();
            //Check if we are able to obtain a resource

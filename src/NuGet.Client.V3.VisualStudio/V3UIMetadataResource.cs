@@ -25,23 +25,6 @@ namespace NuGet.Client.V3.VisualStudio
             _client = client;
         }
 
-        public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackageIdentity> packages, bool includePrerelease, bool includeUnlisted, CancellationToken token)
-        {
-            List<UIPackageMetadata> results = new List<UIPackageMetadata>();
-
-            foreach (var package in packages)
-            {
-                JObject metadata = await _regResource.GetPackageMetadata(package, token);
-
-                if (metadata != null)
-                {
-                    results.Add(GetVisualstudioPackageMetadata(metadata));
-                }
-            }
-
-            return results;
-        }
-
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             IEnumerable<JObject> metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, token);
