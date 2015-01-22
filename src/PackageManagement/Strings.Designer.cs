@@ -223,6 +223,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restoring NuGet package {0}..
+        /// </summary>
+        internal static string RestoringPackage {
+            get {
+                return ResourceManager.GetString("RestoringPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to locate the solution directory. Please ensure that the solution has been saved..
         /// </summary>
         internal static string SolutionDirectoryNotAvailable {

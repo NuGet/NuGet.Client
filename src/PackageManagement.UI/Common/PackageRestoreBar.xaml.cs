@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.UI
             if (_packageRestoreManager != null)
             {
                 // when the control is first loaded, check for missing packages
-                _packageRestoreManager.CheckForMissingPackages();
+                _packageRestoreManager.RaisePackagesMissingEventForSolution();
             }
         }
 
@@ -75,9 +75,9 @@ namespace NuGet.PackageManagement.UI
             TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             try
             {
-                await _packageRestoreManager.RestoreMissingPackages();
+                await _packageRestoreManager.RestoreMissingPackagesInSolution();
                 // Check for missing packages again
-                _packageRestoreManager.CheckForMissingPackages();
+                _packageRestoreManager.RaisePackagesMissingEventForSolution();
             }
             catch (Exception ex)
             {

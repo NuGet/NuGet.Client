@@ -49,7 +49,7 @@ namespace NuGet.Test
             
             // Act            
             var packageReferencesFromSolution = packageRestoreManager.GetPackageReferencesFromSolution().ToList();
-            var missingPackagesFromSolution = packageRestoreManager.GetMissingPackagesForSolution();
+            var missingPackagesFromSolution = packageRestoreManager.GetMissingPackagesInSolution().ToList();
 
             Assert.Equal(2, packageReferencesFromSolution.Count);
             Assert.Equal(0, missingPackagesFromSolution.Count);
@@ -58,9 +58,9 @@ namespace NuGet.Test
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
             packageReferencesFromSolution = packageRestoreManager.GetPackageReferencesFromSolution().ToList();
-            missingPackagesFromSolution = packageRestoreManager.GetMissingPackagesForSolution();
+            missingPackagesFromSolution = packageRestoreManager.GetMissingPackagesInSolution().ToList();
             Assert.Equal(2, packageReferencesFromSolution.Count);
-            Assert.Equal(1, missingPackagesFromSolution.Count);
+            Assert.Equal(2, missingPackagesFromSolution.Count);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace NuGet.Test
             };
 
             // Act
-            packageRestoreManager.CheckForMissingPackages();
+            packageRestoreManager.RaisePackagesMissingEventForSolution();
 
             // Assert
             Assert.Equal(1, packagesMissingEventCount);
@@ -107,7 +107,7 @@ namespace NuGet.Test
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
             // Act
-            packageRestoreManager.CheckForMissingPackages();
+            packageRestoreManager.RaisePackagesMissingEventForSolution();
 
             // Assert
             Assert.Equal(2, packagesMissingEventCount);
@@ -145,7 +145,7 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackages();
+            await packageRestoreManager.RestoreMissingPackagesInSolution();
 
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
         }

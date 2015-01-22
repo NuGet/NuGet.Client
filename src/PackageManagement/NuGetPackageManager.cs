@@ -382,6 +382,12 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<bool> RestorePackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
         {
+            if(PackageExistsInPackagesFolder(packageIdentity))
+            {
+                return false;
+            }
+
+            nuGetProjectContext.Log(MessageLevel.Info, String.Format(Strings.RestoringPackage, packageIdentity));
             var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
             var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
 

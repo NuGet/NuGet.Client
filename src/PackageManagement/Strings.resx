@@ -171,6 +171,9 @@
   <data name="ResolvingActionsToUninstallPackage" xml:space="preserve">
     <value>Resolving actions to uninstall package '{0}'</value>
   </data>
+  <data name="RestoringPackage" xml:space="preserve">
+    <value>Restoring NuGet package {0}.</value>
+  </data>
   <data name="SolutionDirectoryNotAvailable" xml:space="preserve">
     <value>Unable to locate the solution directory. Please ensure that the solution has been saved.</value>
   </data>

@@ -1,5 +1,7 @@
-﻿using NuGet.ProjectManagement;
+﻿using NuGet.Packaging;
+using NuGet.ProjectManagement;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement
@@ -26,14 +28,22 @@ namespace NuGet.PackageManagement
         /// Checks the current solution if there is any package missing.
         /// </summary>
         /// <returns></returns>
-        void CheckForMissingPackages();
+        void RaisePackagesMissingEventForSolution();
 
         /// <summary>
-        /// Restores the missing packages for the current solution.
+        /// Restores the missing packages for the current solution. Returns true if atleast one package was restored
         /// </summary>
-        Task RestoreMissingPackages();
+        Task<bool> RestoreMissingPackagesInSolution();
 
-        Task RestoreMissingPackages(NuGetProject nuGetProject);
+        /// <summary>
+        /// Restores the missing packages for a project. Returns true if atleast one package was restored
+        /// </summary>
+        Task<bool> RestoreMissingPackages(NuGetProject nuGetProject);
+
+        /// <summary>
+        /// Restores the passed in missing packages. Returns true if atleast one package was restored
+        /// </summary>
+        Task<bool> RestoreMissingPackages(IEnumerable<PackageReference> packageReferences);
     }
 
     public class PackagesMissingStatusEventArgs : EventArgs
