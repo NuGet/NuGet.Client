@@ -80,6 +80,7 @@
     <Compile Include="MEFAttributes\NuGetResourceProviderMetadata.cs" />
     <Compile Include="Resources\SimpleSearchMetadata.cs" />
     <Compile Include="Resources\SimpleSearchResource.cs" />
+    <Compile Include="Resources\UnzippedPackageResource.cs" />
     <Compile Include="SearchFilter.cs" />
     <Compile Include="SourceRepository.cs" />
     <Compile Include="UserAgentUtil.cs" />

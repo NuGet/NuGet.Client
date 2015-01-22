@@ -1,8 +1,10 @@
-﻿using NuGet.Versioning;
+﻿using NuGet.PackagingCore;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V2
@@ -14,17 +16,18 @@ namespace NuGet.Client.V2
         {
             V2Client = repo;
         }
-         public V2MetadataResource(V2Resource resource)
+
+        public V2MetadataResource(V2Resource resource)
         {
             V2Client = resource.V2Client;
         }     
 
-        public override async Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, CancellationToken token)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, System.Threading.CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             List<KeyValuePair<string, NuGetVersion>> results = new List<KeyValuePair<string, NuGetVersion>>();
             foreach (var id in packageIds)
@@ -43,6 +46,23 @@ namespace NuGet.Client.V2
                     }
             }
             return results.AsEnumerable();
+        }
+
+        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        {
+            return V2Client.FindPackagesById(packageId).Where(p => includeUnlisted || p.Listed)
+                .Select(p => new NuGetVersion(p.Version.Version, p.Version.SpecialVersion))
+                .Where(v => includePrerelease || !v.IsPrerelease).ToArray();
+        }
+
+        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
+        {
+            return V2Client.Exists(identity.Id, SemanticVersion.Parse(identity.Version.ToNormalizedString()));
+        }
+
+        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        {
+            return V2Client.Exists(packageId);
         }
     }
 }

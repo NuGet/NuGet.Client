@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
+using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -66,6 +67,44 @@ namespace NuGet.Client
         {
             await Task.Delay(1);
             throw new NotImplementedException();
+        }
+
+        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
+        {
+            // TODO: get the url and just check the headers?
+            var metadata = await _regResource.GetPackageMetadata(identity, token);
+
+            // TODO: listed check
+            return metadata != null;
+        }
+
+        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        {
+            var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, token);
+
+            return entries != null && entries.Any();
+        }
+
+        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        {
+            List<NuGetVersion> results = new List<NuGetVersion>();
+
+            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, token);
+
+            foreach (var catalogEntry in entries)
+            {
+                NuGetVersion version = null;
+
+                if (catalogEntry["version"] != null && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
+                {
+                    if (includePrerelease || !version.IsPrerelease)
+                    {
+                        results.Add(version);
+                    }
+                }
+            }
+
+            return results;
         }
     }
 }
