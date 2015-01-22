@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client
 {
 
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(HttpHandlerResource), "V3HttpHandlerResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V3HttpHandlerResourceProvider : INuGetResourceProvider
     {

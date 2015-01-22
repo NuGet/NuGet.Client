@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client.V2.VisualStudio
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(PSSearchResource), "V2PSSearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2PSSearchResourceProvider : V2ResourceProvider
     {

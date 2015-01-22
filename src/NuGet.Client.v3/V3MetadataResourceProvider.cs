@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(MetadataResource), "V3MetadataResourceProvider", "V2MetadataResourceProvider")]
     public class V3MetadataResourceProvider : INuGetResourceProvider
     {

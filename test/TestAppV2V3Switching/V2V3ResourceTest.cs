@@ -242,11 +242,19 @@ namespace V2V3ResourcesTest
         {
             try
             {
-            IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers = container.GetExports<INuGetResourceProvider, INuGetResourceProviderMetadata>();           
-            Assert.True(providers.Count() > 0);
-            NuGet.Configuration.PackageSource source = new NuGet.Configuration.PackageSource(SourceUrl, "mysource", true);
-            SourceRepository repo = new SourceRepository(source, providers);
-            return repo;
+                IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers = container.GetExports<INuGetResourceProvider, INuGetResourceProviderMetadata>();
+
+                StringBuilder sb = new StringBuilder();
+
+                foreach (var provider in providers)
+                {
+                    sb.AppendLine(provider.Metadata.ResourceType.ToString());
+                }
+
+                Assert.True(providers.Count() > 0);
+                NuGet.Configuration.PackageSource source = new NuGet.Configuration.PackageSource(SourceUrl, "mysource", true);
+                SourceRepository repo = new SourceRepository(source, providers);
+                return repo;
             }
             catch (Exception e)
             {

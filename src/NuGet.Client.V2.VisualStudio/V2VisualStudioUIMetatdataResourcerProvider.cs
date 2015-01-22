@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace NuGet.Client.V2.VisualStudio
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(UIMetadataResource))]
     public class V2UIMetadataResourceProvider : V2ResourceProvider
     {

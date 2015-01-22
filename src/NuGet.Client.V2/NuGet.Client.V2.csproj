@@ -80,6 +80,9 @@
     <Compile Include="V2DownloadResourceProvider.cs" />
     <Compile Include="V2MetadataResource.cs" />
     <Compile Include="V2MetadataResourceProvider.cs" />
+    <Compile Include="V2PackageRepositoryResource.cs" />
+    <Compile Include="V2PackageRepositoryResourceProvider.cs" />
+    <Compile Include="V2PackageSource.cs" />
     <Compile Include="V2Resource.cs" />
     <Compile Include="V2ResourceProvider.cs" />
     <Compile Include="V2SimpleSearchResource.cs" />

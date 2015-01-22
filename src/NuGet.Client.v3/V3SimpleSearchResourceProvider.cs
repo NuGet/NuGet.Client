@@ -10,7 +10,7 @@ namespace NuGet.Client
     /// <summary>
     /// V3 Simple search resource aimed at command line searches
     /// </summary>
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(SimpleSearchResource), "V3SimpleSearchResourceProvider", "V2SimpleSearchResourceProvider")]
     public class V3SimpleSearchResourceProvider : INuGetResourceProvider
     {

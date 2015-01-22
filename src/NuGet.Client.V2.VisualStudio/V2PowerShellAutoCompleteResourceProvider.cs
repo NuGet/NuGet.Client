@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace NuGet.Client.V2.VisualStudio
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(PSAutoCompleteResource), "V2PowerShellAutoCompleteResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2PowerShellAutoCompleteResourceProvider : V2ResourceProvider
     {

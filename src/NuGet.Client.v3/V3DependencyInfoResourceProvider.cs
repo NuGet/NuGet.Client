@@ -12,7 +12,7 @@ namespace NuGet.Client
     /// <summary>
     /// Retrieves all dependency info for the package resolver.
     /// </summary>
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(DepedencyInfoResource), "V3DependencyInfoResourceProvider", "V2DependencyInfoResourceProvider")]
     public class V3DependencyInfoResourceProvider : INuGetResourceProvider
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client.V2
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(SimpleSearchResource), "V2SimpleSearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2SimpleSearchResourceProvider : V2ResourceProvider
     {

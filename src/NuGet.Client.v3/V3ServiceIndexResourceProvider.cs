@@ -16,7 +16,7 @@ namespace NuGet.Client
     /// Retrieves and caches service index.json files
     /// V3ServiceIndexResource stores the json, all work is done in the provider
     /// </summary>
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(V3ServiceIndexResource), "V3ServiceIndexResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V3ServiceIndexResourceProvider : INuGetResourceProvider
     {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client.V3.VisualStudio
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(UISearchResource), "V3UISearchResourceProvider", "V2UISearchResourceProvider")]
     public class V3UISearchResourceProvider : INuGetResourceProvider
     {

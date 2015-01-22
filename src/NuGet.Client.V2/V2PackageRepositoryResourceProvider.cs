@@ -12,8 +12,7 @@ namespace NuGet.Client.V2
     /// <summary>
     /// Creates/caches IPackageRepositories
     /// </summary>
-    [Export(typeof(INuGetResourceProvider))]
-    [NuGetResourceProviderMetadata(typeof(MetadataResource), "V2PackageRepositoryResourceProvider", NuGetResourceProviderPositions.Last)]
+    [NuGetResourceProviderMetadata(typeof(V2PackageRepositoryResource), "V2PackageRepositoryResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2PackageRepositoryResourceProvider : INuGetResourceProvider
     {
         // TODO: make these weak references

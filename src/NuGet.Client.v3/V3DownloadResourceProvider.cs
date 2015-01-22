@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(DownloadResource), "V3DownloadResourceProvider", "V2DownloadResourceProvider")]
     public class V3DownloadResourceProvider : INuGetResourceProvider
     {

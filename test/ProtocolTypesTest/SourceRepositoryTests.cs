@@ -12,6 +12,55 @@ namespace ProtocolTypesTest
     public class SourceRepositoryTests
     {
         [Fact]
+        public void SourceRepository_Counts()
+        {
+            PackageSource source = new PackageSource("http://source");
+
+            var A = new TestProvider(null);
+            var B = new TestProvider(null);
+            var C = new TestProvider(null);
+
+            var A2 = new TestProvider(null);
+            var B2 = new TestProvider(null);
+            var C2 = new TestProvider(null);
+
+            List<KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>> providers = new List<KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>>()
+            {
+                new KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>(new NuGetResourceProviderMetadata(typeof(TestResource), "A", NuGetResourceProviderPositions.First), A),
+                new KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>(new NuGetResourceProviderMetadata(typeof(TestResource), "B"), B),
+                new KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>(new NuGetResourceProviderMetadata(typeof(TestResource), "C", NuGetResourceProviderPositions.Last), C),
+
+                new KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>(new NuGetResourceProviderMetadata(typeof(TestResource), "A2", "A"), A2),
+                new KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>(new NuGetResourceProviderMetadata(typeof(TestResource), "B2", "B"), B2),
+                new KeyValuePair<INuGetResourceProviderMetadata, INuGetResourceProvider>(new NuGetResourceProviderMetadata(typeof(TestResource), "C2", "C"), C2),
+            };
+
+            SourceRepository repo = new SourceRepository(source, providers);
+
+            // verify order - work backwards
+            Assert.Null(repo.GetResource<TestResource>());
+
+            C.Data = "C";
+            Assert.Equal("C", repo.GetResource<TestResource>().Data);
+
+            C2.Data = "C2";
+            Assert.Equal("C2", repo.GetResource<TestResource>().Data);
+
+            B.Data = "B";
+            Assert.Equal("B", repo.GetResource<TestResource>().Data);
+
+            B.Data = "B2";
+            Assert.Equal("B2", repo.GetResource<TestResource>().Data);
+
+            A.Data = "A";
+            Assert.Equal("A", repo.GetResource<TestResource>().Data);
+
+            A2.Data = "A2";
+            Assert.Equal("A2", repo.GetResource<TestResource>().Data);
+        }
+
+
+        [Fact]
         public void SourceRepository_EmptyType()
         {
             PackageSource source = new PackageSource("http://source");

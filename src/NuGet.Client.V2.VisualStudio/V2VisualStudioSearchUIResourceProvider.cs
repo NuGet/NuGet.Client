@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace NuGet.Client.V2.VisualStudio
 {
-    [Export(typeof(INuGetResourceProvider))]
+    
     [NuGetResourceProviderMetadata(typeof(UISearchResource), "V2UISearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2UISearchResourceProvider : V2ResourceProvider
     {
