@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.Options

@@ -132,4 +132,16 @@
   <data name="NoProjectSelected" xml:space="preserve">
     <value>No project is selected for this operation.</value>
   </data>
+  <data name="NuGetSearchProvider_CategoryShortcut" xml:space="preserve">
+    <value>nuget</value>
+  </data>
+  <data name="NuGetSearchProvider_Description" xml:space="preserve">
+    <value>Search NuGet packages</value>
+  </data>
+  <data name="NuGetSearchProvider_DisplayText" xml:space="preserve">
+    <value>NuGet Packages</value>
+  </data>
+  <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
+    <value>Search Online for NuGet Packages matching '{0}'</value>
+  </data>
 </root>

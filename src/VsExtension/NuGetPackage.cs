@@ -42,7 +42,7 @@ namespace NuGetVSExtension
         Orientation = ToolWindowOrientation.Right)]
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)] 
-    //[ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
+    [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
     [FontAndColorsRegistration(
@@ -74,6 +74,8 @@ namespace NuGetVSExtension
         private NuGet.Configuration.IMachineWideSettings _machineWideSettings;
 
         private Dictionary<Project, int> _projectToToolWindowId;
+
+        private NuGetUIProjectContext _uiProjectContext;
 
         public NuGetPackage()
         {
@@ -225,6 +227,8 @@ namespace NuGetVSExtension
                     PackageRestoreManager.EnableCurrentSolutionForRestore(fromActivation: false);
                 }
             }
+
+            _uiProjectContext = new NuGetUIProjectContext(new OutputConsoleLogger());
 
             /* ****
             // when NuGet loads, if the current solution has some package
@@ -396,8 +400,8 @@ namespace NuGetVSExtension
                     }
                    
                     var existingProject = projects.First();
-                    var uniqueName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                    if (String.Equals(uniqueName, project.UniqueName, StringComparison.OrdinalIgnoreCase))
+                    var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                    if (String.Equals(projectName, project.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         return windowFrame;
                     }
@@ -493,7 +497,7 @@ namespace NuGetVSExtension
             var uiContext = uiContextFactory.Create(new [] { nugetProject });
 
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-            var uiController = uiFactory.Create(new [] { nugetProject } );
+            var uiController = uiFactory.Create(new [] { nugetProject }, uiContext, _uiProjectContext);
 
             var model = new PackageManagerModel(uiController, uiContext);
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
@@ -631,9 +635,11 @@ namespace NuGetVSExtension
             var uiContext = uiContextFactory.Create(projects);
 
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-            var uiController = uiFactory.Create(projects);
+            var uiController = uiFactory.Create(projects, uiContext, _uiProjectContext);
 
+            var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
             var model = new PackageManagerModel(uiController, uiContext);
+            model.SolutionName = solutionName;
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             var control = new PackageManagerControl(model, vsWindowSearchHostfactory);
             var windowPane = new PackageManagerWindowPane(control);
@@ -644,7 +650,7 @@ namespace NuGetVSExtension
             var caption = String.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Label_NuGetWindowCaption,
-                " !!!solution!!!");
+                solutionName);
             var documentName = _dte.Solution.FullName;
             int hr = uiShell.CreateDocumentWindow(
                 windowFlags,
@@ -785,12 +791,12 @@ namespace NuGetVSExtension
 
         private void ShowPackageSourcesOptionPage(object sender, EventArgs args)
         {
-            //*** ShowOptionPageSafe(typeof(PackageSourceOptionsPage));
+            ShowOptionPageSafe(typeof(PackageSourceOptionsPage));
         }
 
         private void ShowGeneralSettingsOptionPage(object sender, EventArgs args)
         {
-            //*** ShowOptionPageSafe(typeof(GeneralOptionPage));
+            ShowOptionPageSafe(typeof(GeneralOptionPage));
         }
 
         private void ShowOptionPageSafe(Type optionPageType)
@@ -834,12 +840,10 @@ namespace NuGetVSExtension
 
         public dynamic CreateExtensionInstance(ref Guid extensionPoint, ref Guid instance)
         {
-            /* ***
             if (instance == typeof(NuGetSearchProvider).GUID)
             {
                 return new NuGetSearchProvider(_mcs, _managePackageDialogCommand, _managePackageForSolutionDialogCommand);
             }
-            */
             return null; 
         }
 
