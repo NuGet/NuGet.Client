@@ -68,6 +68,8 @@ namespace NuGetVSExtension
         private IVsMonitorSelection _vsMonitorSelection;
         private bool? _isVisualizerSupported;
         private IPackageRestoreManager _packageRestoreManager;
+        private ISourceRepositoryProvider _sourceRepositoryProvider;
+        private ISettings _settings;
         private ISolutionManager _solutionManager;
         //*** private IDeleteOnRestartManager _deleteOnRestart;
         private OleMenuCommand _managePackageDialogCommand;
@@ -129,6 +131,32 @@ namespace NuGetVSExtension
                     Debug.Assert(_packageRestoreManager != null);
                 }
                 return _packageRestoreManager;
+            }
+        }
+
+        private ISourceRepositoryProvider SourceRepositoryProvider
+        {
+            get
+            {
+                if(_settings == null)
+                {
+                    _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+                    Debug.Assert(_sourceRepositoryProvider != null);
+                }
+                return _sourceRepositoryProvider;
+            }
+        }
+
+        private ISettings Settings
+        {
+            get
+            {
+                if (_settings == null)
+                {
+                    _settings = ServiceLocator.GetInstance<ISettings>();
+                    Debug.Assert(_settings != null);
+                }
+                return _settings;
             }
         }
 
@@ -212,12 +240,6 @@ namespace NuGetVSExtension
 
             string dir = _solutionManager == null ? null : _solutionManager.SolutionDirectory;
 
-            NuGet.Configuration.ISettings settings = NuGet.Configuration.Settings.LoadDefaultSettings(
-                dir,
-                null,
-                MachineWideSettings);
-            var packageSourceProvider = new NuGet.Configuration.PackageSourceProvider(settings);
-
             // when NuGet loads, if the current solution has package
             // restore mode enabled, we make sure every thing is set up correctly.
             // For example, projects which were added outside of VS need to have
@@ -248,6 +270,10 @@ namespace NuGetVSExtension
                 DeleteOnRestart.DeleteMarkedPackageDirectories();
             } */
 
+            // NOTE: Don't use the exported IPackageRestoreManager for OnBuildPackageRestorer. Exported IPackageRestoreManager also uses 'PackageRestoreManager'
+            //       but, overrides RestoreMissingPackages to catch the exceptions. OnBuildPackageRestorer needs to catch the exception by itself to populate error list window
+            //       Exported IPackageRestoreManager is used by UI manual restore, Powershell manual restore and by VS extensibility package restore
+            // var packageRestoreManagerForOnBuildPackageRestorer = new PackageRestoreManager(SourceRepositoryProvider, Settings, SolutionManager);
             OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this);
         }
 

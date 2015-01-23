@@ -28,11 +28,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private ISolutionManager SolutionManager { get; set; }
 
-        public override void RaisePackagesMissingEventForSolution()
-        {
-            base.RaisePackagesMissingEventForSolution();
-        }
-
         public void EnableCurrentSolutionForRestore(bool fromActivation)
         {
             throw new NotImplementedException();
@@ -45,40 +40,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
 
-        public override async Task<bool> RestoreMissingPackagesInSolution()
-        {
-            try
-            {
-                return await base.RestoreMissingPackagesInSolution();
-            }
-            catch (Exception ex)
-            {
-                ExceptionHelper.WriteToActivityLog(ex);
-            }
-
-            return false;
-        }
-
-
-        public override async Task<bool> RestoreMissingPackages(NuGetProject nuGetProject)
-        {
-            try
-            {
-                return await base.RestoreMissingPackages(nuGetProject);
-            }
-            catch (Exception ex)
-            {
-                ExceptionHelper.WriteToActivityLog(ex);
-            }
-
-            return false;
-        }
-
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            RaisePackagesMissingEventForSolution();
+            base.RaisePackagesMissingEventForSolution();
         }
 
         private void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
@@ -89,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 //EnablePackageRestore(e.Project, _packageManagerFactory.CreatePackageManager());
             }
 
-            RaisePackagesMissingEventForSolution();
+            base.RaisePackagesMissingEventForSolution();
         }
     }
 }

@@ -14,6 +14,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
 
 namespace NuGetVSExtension
 {
@@ -198,15 +200,31 @@ namespace NuGetVSExtension
 
         private async System.Threading.Tasks.Task RestorePackagesInProject(NuGetProject nuGetProject)
         {
+            var projectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
             bool hasMissingPackages = false;
             try
             {
                 hasMissingPackages = await PackageRestoreManager.RestoreMissingPackages(nuGetProject);
                 WriteLine(hasMissingPackages, error: false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                var exceptionMessage = _msBuildOutputVerbosity >= (int)VerbosityLevel.Detailed ?
+                    ex.ToString() :
+                    ex.Message;
+                var message = String.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.PackageRestoreFailedForProject, projectName,
+                    exceptionMessage);
+                WriteLine(VerbosityLevel.Quiet, message);
+                ActivityLog.LogError(LogEntrySource, message);
+                ShowError(_errorListProvider, TaskErrorCategory.Error,
+                    TaskPriority.High, message, hierarchyItem: null);
                 WriteLine(hasMissingPackages, error: true);
+            }
+            finally
+            {
+                WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
             }
         }
 
@@ -321,6 +339,31 @@ namespace NuGetVSExtension
             {
                 return 0;
             }
+        }
+
+        private static void ShowError(ErrorListProvider errorListProvider, TaskErrorCategory errorCategory, TaskPriority priority, string errorText, IVsHierarchy hierarchyItem)
+        {
+            ErrorTask retargetErrorTask = new ErrorTask();
+            retargetErrorTask.Text = errorText;
+            retargetErrorTask.ErrorCategory = errorCategory;
+            retargetErrorTask.Category = TaskCategory.BuildCompile;
+            retargetErrorTask.Priority = priority;
+            retargetErrorTask.HierarchyItem = hierarchyItem;
+            errorListProvider.Tasks.Add(retargetErrorTask);
+            errorListProvider.BringToFront();
+            errorListProvider.ForceShowErrors();
+        }
+
+        /// <summary>
+        /// Gets the path to .nuget folder present in the solution
+        /// </summary>
+        /// <param name="solution">Solution from which .nuget folder's path is obtained</param>
+        private static string GetNuGetSolutionFolder(Solution solution)
+        {
+            Debug.Assert(solution != null);
+            string solutionFilePath = (string)solution.Properties.Item("Path").Value;
+            string solutionDirectory = Path.GetDirectoryName(solutionFilePath);
+            return Path.Combine(solutionDirectory, NuGetVSConstants.NuGetSolutionSettingsFolder);
         }
 
         public void Dispose()
