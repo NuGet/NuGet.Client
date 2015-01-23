@@ -371,5 +371,14 @@ namespace NuGet.PackageManagement.UI
                 UpdateProjectList();
             }
         }
+
+        public override IEnumerable<NuGetProject> SelectedProjects
+        {
+            get
+            {
+                return _allProjects.Where(p => p.Selected)
+                    .Select(p => p.NuGetProject);
+            }
+        }
     }
 }

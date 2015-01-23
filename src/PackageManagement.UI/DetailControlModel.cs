@@ -33,6 +33,10 @@ namespace NuGet.PackageManagement.UI
             _options = new UI.Options();
         }
 
+        abstract public IEnumerable<NuGetProject> SelectedProjects
+        {
+            get;
+        }
         public virtual void SetCurrentPackage(SearchResultPackageMetadata searchResultPackage)
         {
             _searchResultPackage = searchResultPackage;

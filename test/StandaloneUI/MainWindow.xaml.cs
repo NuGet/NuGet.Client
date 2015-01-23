@@ -55,7 +55,7 @@ namespace StandaloneUI
             var testSolutionManager = new TestSolutionManager(@"c:\temp\test");
             var projectA = testSolutionManager.AddNewMSBuildProject("projectA");
             var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
-            var projects = new NuGetProject[] { projectA, projectB };            
+            var projects = new NuGetProject[] { projectA };            
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
             _contextFactory = new NuGetUIContextFactory(repositoryProvider, testSolutionManager, 
@@ -64,9 +64,8 @@ namespace StandaloneUI
                 optionsPage: null);
             var context = _contextFactory.Create(projects);
             var uiController = _uiServiceFactory.Create(
-                    projects,
-                    context,
-                    new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer)));
+                context,
+                new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer)));
 
             PackageManagerModel model = new PackageManagerModel(uiController, context);
             model.SolutionName = "test solution";

@@ -17,15 +17,12 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly INuGetUIContext _context;
         private NuGetUIProjectContext _uiProjectContext;
-        private readonly NuGetProject[] _projects;
 
         public NuGetUI(
             INuGetUIContext context, 
-            IEnumerable<NuGetProject> projects, 
             NuGetUIProjectContext projectContext)
         {
             _context = context;
-            _projects = projects.ToArray();
             _uiProjectContext = projectContext;
         }
 
@@ -125,7 +122,17 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _projects;
+                var projects = Enumerable.Empty<NuGetProject>();
+                if (DetailControl != null)
+                {
+                    UIDispatcher.Invoke(() =>
+                    {
+                        var model = (DetailControlModel)DetailControl.DataContext;
+                        projects = model.SelectedProjects;
+                    });
+                }
+
+                return projects;
             }
         }
 

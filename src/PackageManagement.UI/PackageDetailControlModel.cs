@@ -155,5 +155,13 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged("InstalledVersion");
             }
         }
+
+        public override IEnumerable<NuGetProject> SelectedProjects
+        {
+            get
+            {
+                return _nugetProjects;
+            }
+        }
     }
 }

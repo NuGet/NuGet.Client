@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Refresh()
         {
-            var model = (DetailControlModel)DataContext;
+            var model = DataContext as DetailControlModel;
             if (model != null)
             {
                 model.Refresh();
