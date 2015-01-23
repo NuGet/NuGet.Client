@@ -47,9 +47,9 @@ namespace NuGet.PackageManagement
 
         private ISettings Settings { get; set; }
 
-        private FolderNuGetProject PackagesFolderNuGetProject { get; set; }
+        public FolderNuGetProject PackagesFolderNuGetProject { get; set; }
 
-        private SourceRepository PackagesFolderSourceRepository { get; set; }
+        public SourceRepository PackagesFolderSourceRepository { get; set; }
       
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
