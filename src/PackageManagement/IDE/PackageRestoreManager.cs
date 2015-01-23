@@ -109,7 +109,11 @@ namespace NuGet.PackageManagement
             // In the case of Solution Closed event, the _solutionManager.IsSolutionOpen is false,
             // and so we won't do the unnecessary work of checking for package references.
             bool missing = SolutionManager.IsSolutionOpen && GetMissingPackagesInSolution().Any();
-            PackagesMissingStatusChanged(this, new PackagesMissingStatusEventArgs(missing));
+
+            if (PackagesMissingStatusChanged != null)
+            {
+                PackagesMissingStatusChanged(this, new PackagesMissingStatusEventArgs(missing));
+            }
         }
 
         /// <summary>
@@ -122,10 +126,15 @@ namespace NuGet.PackageManagement
             return GetMissingPackages(packageReferencesFromSolution);
         }
 
-        public IEnumerable<PackageReference> GetMissingPackages(IEnumerable<PackageReference> uniquePackageReferences)
+        public IEnumerable<PackageReference> GetMissingPackages(NuGetProject nuGetProject)
+        {
+            return GetMissingPackages(nuGetProject.GetInstalledPackages());
+        }
+
+        public IEnumerable<PackageReference> GetMissingPackages(IEnumerable<PackageReference> packageReferences)
         {
             var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
-            return GetMissingPackages(nuGetPackageManager, uniquePackageReferences);
+            return GetMissingPackages(nuGetPackageManager, packageReferences);
         }
 
         public static IEnumerable<PackageReference> GetMissingPackages(NuGetPackageManager nuGetPackageManager,
@@ -133,7 +142,8 @@ namespace NuGet.PackageManagement
         {
             try
             {
-                return packageReferences.Where(pr => !nuGetPackageManager.PackageExistsInPackagesFolder(pr.PackageIdentity));
+                return new HashSet<PackageReference>(packageReferences.Where(pr => !nuGetPackageManager.PackageExistsInPackagesFolder(pr.PackageIdentity)),
+                    new PackageReferenceComparer());
             }
             catch (Exception)
             {
@@ -192,12 +202,14 @@ namespace NuGet.PackageManagement
             }
 
             var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
-            return await RestoreMissingPackages(nuGetPackageManager, packageReferences, SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext());
+            return await RestoreMissingPackages(nuGetPackageManager, packageReferences,
+                SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext(), PackageRestoredEvent);
         }
 
         public static async Task<bool> RestoreMissingPackages(NuGetPackageManager nuGetPackageManager,
             IEnumerable<PackageReference> packageReferences,
-            INuGetProjectContext nuGetProjectContext)
+            INuGetProjectContext nuGetProjectContext,
+            EventHandler<PackageRestoredEventArgs> packageRestoredEvent = null)
         {
             if(nuGetPackageManager == null)
             {
@@ -221,10 +233,27 @@ namespace NuGet.PackageManagement
 
             // TODO: Update this to use the locked version
             bool[] results = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
-                nuGetPackageManager.RestorePackage(uniqueMissingPackage.PackageIdentity,
-                nuGetProjectContext)));
+                RestorePackage(nuGetPackageManager, uniqueMissingPackage.PackageIdentity, nuGetProjectContext, packageRestoredEvent)));
 
             return results.Any(r => r);
         }
+
+        private static async Task<bool> RestorePackage(NuGetPackageManager nuGetPackageManager,
+            PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            EventHandler<PackageRestoredEventArgs> packageRestoredEvent)
+        {
+            bool restored = await nuGetPackageManager.RestorePackage(packageIdentity, nuGetProjectContext);
+            // At this point, it is guaranteed that package restore did not fail
+            if(packageRestoredEvent != null)
+            {
+                packageRestoredEvent(null, new PackageRestoredEventArgs(packageIdentity, restored));
+            }
+
+            return restored;
+        }
+
+
+        public event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
     }
 }

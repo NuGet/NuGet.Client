@@ -60,7 +60,53 @@ namespace NuGet.Test
             packageReferencesFromSolution = packageRestoreManager.GetPackageReferencesFromSolution().ToList();
             missingPackagesFromSolution = packageRestoreManager.GetMissingPackagesInSolution().ToList();
             Assert.Equal(2, packageReferencesFromSolution.Count);
-            Assert.Equal(2, missingPackagesFromSolution.Count);
+            Assert.Equal(1, missingPackagesFromSolution.Count);
+        }
+
+        [Fact]
+        public async Task TestPackageRestoredEvent()
+        {
+            // Arrange
+            var testSolutionManager = new TestSolutionManager();
+            var projectA = testSolutionManager.AddNewMSBuildProject();
+            var projectB = testSolutionManager.AddNewMSBuildProject();
+
+            var packageIdentity = Packages[0];
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSettings = NullSettings.Instance;
+            var resolutionContext = new ResolutionContext();
+
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+
+            await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
+                resolutionContext, new TestNuGetProjectContext());
+            await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
+                resolutionContext, new TestNuGetProjectContext());
+
+            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var restoredPackages = new List<PackageIdentity>();
+            packageRestoreManager.PackageRestoredEvent += delegate(object sender, PackageRestoredEventArgs args)
+            {
+                if(args.Restored)
+                {
+                    restoredPackages.Add(args.Package);
+                }
+            };
+
+
+            Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(packageIdentity));
+
+            // Delete packages folder
+            Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
+
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
+
+            // Act
+            await packageRestoreManager.RestoreMissingPackagesInSolution();
+
+            Assert.Equal(1, restoredPackages.Count);
+            Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
         }
 
         [Fact]
