@@ -18,6 +18,7 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="PackageManagement.VisualStudio" Path="|PackageManagement.VisualStudio|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Client.BaseTypes.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Client.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Client.V2.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.UI.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Client.V2.VisualStudio.dll" />
