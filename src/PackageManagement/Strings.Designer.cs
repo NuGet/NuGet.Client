@@ -70,11 +70,20 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempting to gather dependencies information for package &apos;{0}&apos; to install on project targeting &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Attempting to gather dependencies information for package &apos;{0}&apos; with respect to project targeting &apos;{1}&apos;.
         /// </summary>
         internal static string AttemptingToGatherDependencyInfo {
             get {
                 return ResourceManager.GetString("AttemptingToGatherDependencyInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempting to gather dependencies information for multiple packages with respect to project targeting &apos;{0}&apos;.
+        /// </summary>
+        internal static string AttemptingToGatherDependencyInfoForMultiplePackages {
+            get {
+                return ResourceManager.GetString("AttemptingToGatherDependencyInfoForMultiplePackages", resourceCulture);
             }
         }
         
@@ -84,6 +93,15 @@ namespace NuGet.PackageManagement {
         internal static string AttemptingToResolveDependencies {
             get {
                 return ResourceManager.GetString("AttemptingToResolveDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempting to resolve dependencies for multiple packages.
+        /// </summary>
+        internal static string AttemptingToResolveDependenciesForMultiplePackages {
+            get {
+                return ResourceManager.GetString("AttemptingToResolveDependenciesForMultiplePackages", resourceCulture);
             }
         }
         
@@ -115,6 +133,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest.
+        /// </summary>
+        internal static string MultiplePackageInstallOrUpdateHasToBeAnUpdate {
+            get {
+                return ResourceManager.GetString("MultiplePackageInstallOrUpdateHasToBeAnUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No latest version found for the &apos;{0}&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {
@@ -138,6 +165,15 @@ namespace NuGet.PackageManagement {
         internal static string NuGetProjectDoesNotHaveName {
             get {
                 return ResourceManager.GetString("NuGetProjectDoesNotHaveName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One or more packages not found.
+        /// </summary>
+        internal static string OneOrMorePackagesNotFound {
+            get {
+                return ResourceManager.GetString("OneOrMorePackagesNotFound", resourceCulture);
             }
         }
         
@@ -178,6 +214,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Packages could not be installed.
+        /// </summary>
+        internal static string PackagesCouldNotBeInstalled {
+            get {
+                return ResourceManager.GetString("PackagesCouldNotBeInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; to be uninstalled could not be found in project &apos;{1}&apos;.
         /// </summary>
         internal static string PackageToBeUninstalledCouldNotBeFound {
@@ -210,6 +255,15 @@ namespace NuGet.PackageManagement {
         internal static string ResolvingActionsToInstallPackage {
             get {
                 return ResourceManager.GetString("ResolvingActionsToInstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolving actions install multiple packages.
+        /// </summary>
+        internal static string ResolvingActionsToInstallPackageForMultiplePackages {
+            get {
+                return ResourceManager.GetString("ResolvingActionsToInstallPackageForMultiplePackages", resourceCulture);
             }
         }
         
@@ -259,11 +313,29 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to gather dependencies information for multiple packages.
+        /// </summary>
+        internal static string UnableToGatherDependencyInfoForMultiplePackages {
+            get {
+                return ResourceManager.GetString("UnableToGatherDependencyInfoForMultiplePackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to resolve dependencies for package &apos;{0}&apos; with DependencyBehavior &apos;{1}&apos;.
         /// </summary>
         internal static string UnableToResolveDependencyInfo {
             get {
                 return ResourceManager.GetString("UnableToResolveDependencyInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to resolve dependencies for multiple packages.
+        /// </summary>
+        internal static string UnableToResolveDependencyInfoForMultiplePackages {
+            get {
+                return ResourceManager.GetString("UnableToResolveDependencyInfoForMultiplePackages", resourceCulture);
             }
         }
         

@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement
         /// Gather depedency info from multiple sources
         /// </summary>
         public static async Task<IEnumerable<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context, 
-            PackageIdentity package, 
+            IEnumerable<PackageIdentity> targets, 
             NuGetFramework targetFramework, 
             IEnumerable<SourceRepository> sources,
             CancellationToken token)
@@ -43,8 +43,6 @@ namespace NuGet.PackageManagement
             // a resource may be null, if it is exclude this source from the gather
             List<Tuple<SourceRepository, DepedencyInfoResource>> dependencyResources =
                 sources.Select(s => new Tuple<SourceRepository, DepedencyInfoResource>(s, s.GetResource<DepedencyInfoResource>())).Where(t => t.Item2 != null).ToList();
-
-            PackageIdentity[] targets = new PackageIdentity[] { package };
 
             // track which sources have been searched for each package id
             Dictionary<SourceRepository, HashSet<string>> sourceToPackageIdsChecked = new Dictionary<SourceRepository, HashSet<string>>();
@@ -62,8 +60,20 @@ namespace NuGet.PackageManagement
                 foundIds.UnionWith(targets.Select(e => e.Id));
 
                 // get package info from the source
-                IEnumerable<PackageDependencyInfo> packages = 
-                    await resourceTuple.Item2.ResolvePackages(targets, targetFramework, context.IncludePrerelease);
+                IEnumerable<PackageDependencyInfo> packages;
+                if(targets.Any(t => t.Version == null))
+                {
+                    var packagesList = new List<PackageDependencyInfo>();
+                    foreach(var target in targets)
+                    {
+                        packagesList.AddRange(await resourceTuple.Item2.ResolvePackages(target.Id, targetFramework, context.IncludePrerelease, CancellationToken.None));
+                    }
+                    packages = packagesList;
+                }
+                else
+                {
+                    packages = await resourceTuple.Item2.ResolvePackages(targets, targetFramework, context.IncludePrerelease);
+                }
 
                 ProcessResults(combinedResults, resourceTuple.Item1, foundIds, packages);
             }

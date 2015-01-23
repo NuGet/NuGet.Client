@@ -121,7 +121,7 @@
     <value>Another NuGetProject with the same name '{0}' exists in solution</value>
   </data>
   <data name="AttemptingToGatherDependencyInfo" xml:space="preserve">
-    <value>Attempting to gather dependencies information for package '{0}' to install on project targeting '{1}'</value>
+    <value>Attempting to gather dependencies information for package '{0}' with respect to project targeting '{1}'</value>
   </data>
   <data name="AttemptingToResolveDependencies" xml:space="preserve">
     <value>Attempting to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
@@ -134,6 +134,9 @@
   </data>
   <data name="InvalidNullSettingsOperation" xml:space="preserve">
     <value>'{0}' cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to '%AppData%\NuGet\NuGet.config'</value>
+  </data>
+  <data name="MultiplePackageInstallOrUpdateHasToBeAnUpdate" xml:space="preserve">
+    <value>When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest</value>
   </data>
   <data name="NoLatestVersionFound" xml:space="preserve">
     <value>No latest version found for the '{0}' for the given source repositories and resolution context</value>
@@ -155,6 +158,9 @@
   </data>
   <data name="PackageNotFound" xml:space="preserve">
     <value>Package '{0}' is not found</value>
+  </data>
+  <data name="PackagesCouldNotBeInstalled" xml:space="preserve">
+    <value>Packages could not be installed</value>
   </data>
   <data name="PackageToBeUninstalledCouldNotBeFound" xml:space="preserve">
     <value>Package '{0}' to be uninstalled could not be found in project '{1}'</value>
@@ -191,5 +197,23 @@
   </data>
   <data name="UnknownPackageSpecificVersion" xml:space="preserve">
     <value>Unable to find version '{1}' of package '{0}'.</value>
+  </data>
+  <data name="AttemptingToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
+    <value>Attempting to gather dependencies information for multiple packages with respect to project targeting '{0}'</value>
+  </data>
+  <data name="AttemptingToResolveDependenciesForMultiplePackages" xml:space="preserve">
+    <value>Attempting to resolve dependencies for multiple packages</value>
+  </data>
+  <data name="OneOrMorePackagesNotFound" xml:space="preserve">
+    <value>One or more packages not found</value>
+  </data>
+  <data name="ResolvingActionsToInstallPackageForMultiplePackages" xml:space="preserve">
+    <value>Resolving actions install multiple packages</value>
+  </data>
+  <data name="UnableToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
+    <value>Unable to gather dependencies information for multiple packages</value>
+  </data>
+  <data name="UnableToResolveDependencyInfoForMultiplePackages" xml:space="preserve">
+    <value>Unable to resolve dependencies for multiple packages</value>
   </data>
 </root>

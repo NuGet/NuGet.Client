@@ -25,6 +25,7 @@ namespace NuGet.Test
             ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
 
             PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
 
             NuGetFramework framework = NuGetFramework.Parse("net451");
 
@@ -53,7 +54,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
 
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, target, framework, repos, CancellationToken.None);
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, framework, repos, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -74,6 +75,7 @@ namespace NuGet.Test
             ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
 
             PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
 
             NuGetFramework framework = NuGetFramework.Parse("net451");
 
@@ -102,7 +104,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
 
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, target, framework, repos, CancellationToken.None);
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, framework, repos, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -123,6 +125,7 @@ namespace NuGet.Test
             ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
 
             PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
 
             NuGetFramework framework = NuGetFramework.Parse("net451");
 
@@ -150,7 +153,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
 
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, target, framework, repos, CancellationToken.None);
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, framework, repos, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
