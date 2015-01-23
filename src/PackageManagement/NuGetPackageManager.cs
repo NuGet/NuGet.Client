@@ -401,16 +401,13 @@ namespace NuGet.PackageManagement
             // TODO: IncludePrerelease is a big question mark
             var installedPackageIdentities = nuGetProject.GetInstalledPackages().Select(pr => pr.PackageIdentity);
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
-                packageReferenceTargetFramework, includePrerelease: false);
-
-            // Step-2 : Determine if the package can be uninstalled based on the metadata resources
-            UninstallResolver.GetPackagesToBeUninstalled(packageIdentity, dependencyInfoFromPackagesFolder, installedPackageIdentities, uninstallationContext);
+                packageReferenceTargetFramework, includePrerelease: true);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToUninstallPackage, packageIdentity);
-            // TODO:
+            // Step-2 : Determine if the package can be uninstalled based on the metadata resources
+            var packagesToBeUninstalled = UninstallResolver.GetPackagesToBeUninstalled(packageIdentity, dependencyInfoFromPackagesFolder, installedPackageIdentities, uninstallationContext);
 
-            // TODO: Stuff here
-            var nuGetProjectActions = new NuGetProjectAction[] { NuGetProjectAction.CreateUninstallProjectAction(packageIdentity) };
+            var nuGetProjectActions = packagesToBeUninstalled.Select(p => NuGetProjectAction.CreateUninstallProjectAction(p));
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
             return nuGetProjectActions;

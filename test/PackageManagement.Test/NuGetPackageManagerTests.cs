@@ -350,6 +350,75 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManPreviewUninstallDependencyPackage()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var resolutionContext = new ResolutionContext();
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var packageIdentity = PackageWithDependents[2];
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
+                resolutionContext, testNuGetProjectContext);
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            Assert.Equal(2, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[1].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
+            Assert.Equal(PackageWithDependents[0], packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+
+            // Main Act
+            Exception exception = null;
+            try
+            {
+                var uninstallationContext = new UninstallationContext();
+                var packageActions = await nuGetPackageManager.PreviewUninstallPackageAsync(msBuildNuGetProject, "jQuery",
+                        uninstallationContext, testNuGetProjectContext);
+            }
+            catch (InvalidOperationException ex)
+            {
+                exception = ex;
+            }
+            catch (AggregateException ex)
+            {
+                exception = ExceptionUtility.Unwrap(ex);
+            }
+
+            Assert.NotNull(exception);
+            Assert.True(exception is InvalidOperationException);
+            Assert.Equal("Unable to uninstall 'jQuery.1.4.4' because 'jQuery.Validation.1.13.1' depends on it.",
+                exception.Message);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
         public async Task TestPacManUninstallPackageOnMultipleProjects()
         {
             // Arrange
@@ -537,9 +606,56 @@ namespace NuGet.Test
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
         }
 
+        [Fact]
+        public async Task TestPacManPreviewUninstallWithRemoveDependencies()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var resolutionContext = new ResolutionContext();
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+            var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+            var projectA = testSolutionManager.AddNewMSBuildProject();
+            var packageIdentity0 = PackageWithDependents[0];
+            var packageIdentity1 = PackageWithDependents[1];
+            var packageIdentity2 = PackageWithDependents[2];
+            var packageIdentity3 = PackageWithDependents[3];
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
+                resolutionContext, testNuGetProjectContext);
+
+            // Assert
+            var projectAInstalled = projectA.GetInstalledPackages().ToList();
+            Assert.Equal(2, projectAInstalled.Count);
+            Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
+            Assert.Equal(packageIdentity2, projectAInstalled[1].PackageIdentity);
+            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
+
+            // Main Act
+            var uninstallationContext = new UninstallationContext(removeDependencies: true);
+            var packageActions = (await nuGetPackageManager.PreviewUninstallPackageAsync(projectA,
+                packageIdentity2.Id, uninstallationContext, testNuGetProjectContext)).ToList();
+
+            Assert.Equal(2, packageActions.Count);
+            Assert.Equal(packageIdentity2, packageActions[0].PackageIdentity);
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[0].NuGetProjectActionType);
+            Assert.Null(packageActions[0].SourceRepository);
+            Assert.Equal(packageIdentity0, packageActions[1].PackageIdentity);
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[1].NuGetProjectActionType);
+            Assert.Null(packageActions[1].SourceRepository);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
+        }
 
         [Fact]
-        public async Task TestPacManUninstallWithRemoveDependencies()
+        public async Task TestPacManUninstallWithRemoveDependenciesWithVDependency()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
