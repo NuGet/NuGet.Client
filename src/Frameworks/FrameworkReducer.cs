@@ -61,8 +61,10 @@ namespace NuGet.Frameworks
 
                 if (reduced.Length > 1 && reduced.All(f => f.IsPCL))
                 {
-                    // TODO: find the nearest matching PCL
-                    throw new NotImplementedException();
+                    // TODO: improve this
+
+                    // For now just find the compatible PCL with the fewest frameworks
+                    reduced = reduced.OrderBy(e => e.Profile.Split('+').Length).ThenBy(e => e.Profile.Length).ToArray();
                 }
 
                 if (reduced.Length > 1)
