@@ -1,9 +1,9 @@
-﻿using NuGet.Client;
-using NuGet.PackagingCore;
+﻿using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using System;
 using System.Management.Automation;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -61,43 +61,43 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             DetermineFileConflictAction();
         }
 
-        protected void InstallPackageByIdentity(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false,  UninstallationContext uninstallContext = null)
+        protected async Task InstallPackageByIdentityAsync(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
             if (isPreview)
             {
                 if (isForce)
                 {
-                    PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext).Wait();
+                    await PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext);
                 }
-                PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
+                await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext);
             }
             else
             {
                 if (isForce)
                 {
-                    PackageManager.UninstallPackageAsync(project, identity.Id, uninstallContext, projectContext).Wait();
+                    await PackageManager.UninstallPackageAsync(project, identity.Id, uninstallContext, projectContext);
                 }
-                PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext).Wait();
+                await PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext);
             }
         }
 
-        protected void InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
+        protected async Task InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
             if (isPreview)
             {
                 if (isForce)
                 {
-                    PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext).Wait();
+                    await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext);
                 }
-                PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+                await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext);
             }
             else
             {
                 if (isForce)
                 {
-                    PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext).Wait();
+                    await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext);
                 }
-                PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+                await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext);
             }
         }
 

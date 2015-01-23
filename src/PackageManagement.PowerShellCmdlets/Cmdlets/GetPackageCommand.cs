@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.Client.VisualStudio;
+﻿using NuGet.Client.VisualStudio;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;

@@ -55,11 +55,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             IEnumerable<PackageIdentity> identities = GetPackageIdentities();
 
             SubscribeToProgressEvents();
-            foreach (PackageIdentity identity in identities)
-            {
-                InstallPackageByIdentity(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent, UninstallContext);
-            }
+            InstallPackages(identities);
+            WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();
+        }
+
+        private async void InstallPackages(IEnumerable<PackageIdentity> identities)
+        {
+            try
+            {
+                foreach (PackageIdentity identity in identities)
+                {
+                    await InstallPackageByIdentityAsync(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent, UninstallContext);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogCore(MessageLevel.Error, ex.Message);
+            }
+            completeEvent.Set();
         }
 
         private static bool isNetworkAvailable()

@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.Client.VisualStudio;
+﻿using NuGet.Client.VisualStudio;
 using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;

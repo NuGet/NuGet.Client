@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
+using System.Runtime.CompilerServices;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -31,9 +32,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            Preprocess();
-
             CheckForSolutionOpen();
+
+            Preprocess();
 
             var projects = new List<NuGetProject>();
 

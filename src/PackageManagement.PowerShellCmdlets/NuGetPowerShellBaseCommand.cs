@@ -24,6 +24,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// </summary>
     public abstract class NuGetPowerShellBaseCommand : PSCmdlet, INuGetProjectContext, IErrorHandler
     {
+        #region Members
         private PackageManagementContext _packageManagementContext;
         private ISourceRepositoryProvider _resourceRepositoryProvider;
         private ISolutionManager _solutionManager;
@@ -31,12 +32,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
         internal const string PowerConsoleHostName = "Package Manager Host";
+        #endregion
 
         public NuGetPowerShellBaseCommand()
         {
         }
 
-        public NuGetPackageManager PackageManager
+        #region Properties
+        protected NuGetPackageManager PackageManager
         {
             get
             {
@@ -44,7 +47,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        public ISolutionManager VsSolutionManager
+        protected ISolutionManager VsSolutionManager
         {
             get
             {
@@ -52,7 +55,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        public PackageSourceProvider PackageSourceProvider
+        protected PackageSourceProvider PackageSourceProvider
         {
             get
             {
@@ -60,9 +63,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        public SourceRepository ActiveSourceRepository { get; set; }
+        protected SourceRepository ActiveSourceRepository { get; set; }
 
-        public ISettings ConfigSettings
+        protected ISettings ConfigSettings
         {
             get
             {
@@ -70,9 +73,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        public NuGetProject Project { get; set; }
+        protected NuGetProject Project { get; set; }
 
-        public FileConflictAction? ConflictAction { get; set; }
+        protected FileConflictAction? ConflictAction { get; set; }
+
+        internal bool IsSyncMode
+        {
+            get
+            {
+                if (Host == null || Host.PrivateData == null)
+                {
+                    return false;
+                }
+
+                var syncModeProp = GetPropertyValueFromHost("IsSyncMode");
+                return syncModeProp != null && (bool)syncModeProp;
+            }
+        }
+
+        protected IErrorHandler ErrorHandler
+        {
+            get
+            {
+                return this;
+            }
+        }
+        #endregion
 
         internal void Execute()
         {
@@ -100,7 +126,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by NuGetBaseCmdlet.
+        /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by NuGetPowerShellBaseCommand.
         /// </summary>
         protected abstract void ProcessRecordCore();
 
@@ -114,6 +140,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        #region Cmdlets base APIs
         protected void GetActiveSourceRepository(string source = null)
         {
             if (string.IsNullOrEmpty(source))
@@ -155,15 +182,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected void UninstallPackageById(NuGetProject project, string packageId, UninstallationContext resolutionContext, INuGetProjectContext projectContext, bool isPreview)
+        protected async Task UninstallPackageByIdAsync(NuGetProject project, string packageId, UninstallationContext uninstallContext, INuGetProjectContext projectContext, bool isPreview)
         {
             if (isPreview)
             {
-                PackageManager.PreviewUninstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+                await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext);
             }
             else
             {
-                PackageManager.UninstallPackageAsync(project, packageId, resolutionContext, projectContext).Wait();
+                await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext);
             }
         }
 
@@ -241,40 +268,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             WriteObject(identities);
         }
+        #endregion
 
-        protected IErrorHandler ErrorHandler
-        {
-            get
-            {
-                return this;
-            }
-        }
-
-        internal bool IsSyncMode
-        {
-            get
-            {
-                if (Host == null || Host.PrivateData == null)
-                {
-                    return false;
-                }
-
-                var syncModeProp = GetPropertyValueFromHost("IsSyncMode");
-                return syncModeProp != null && (bool)syncModeProp;
-            }
-        }
-
-        private object GetPropertyValueFromHost(string propertyName)
-        {
-            PSObject privateData = Host.PrivateData;
-            var propertyInfo = privateData.Properties[propertyName];
-            if (propertyInfo != null)
-            {
-                return propertyInfo.Value;
-            }
-            return null;
-        }
-
+        #region Processing
         protected override void BeginProcessing()
         {
             if (_httpClientEvents != null)
@@ -302,8 +298,54 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             //HttpUtility.SetUserAgent(e.Request, _psCommandsUserAgent.Value);
         }
 
-        #region Logging
-        void IErrorHandler.HandleError(ErrorRecord errorRecord, bool terminating)
+        private void OnProgressAvailable(object sender, ProgressEventArgs e)
+        {
+            WriteProgress(ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete);
+        }
+
+        protected void SubscribeToProgressEvents()
+        {
+            if (!IsSyncMode && _httpClientEvents != null)
+            {
+                _httpClientEvents.ProgressAvailable += OnProgressAvailable;
+            }
+        }
+
+        protected void UnsubscribeFromProgressEvents()
+        {
+            if (_httpClientEvents != null)
+            {
+                _httpClientEvents.ProgressAvailable -= OnProgressAvailable;
+            }
+        }
+
+        private ProgressRecordCollection ProgressRecordCache
+        {
+            get
+            {
+                if (_progressRecordCache == null)
+                {
+                    _progressRecordCache = new ProgressRecordCollection();
+                }
+
+                return _progressRecordCache;
+            }
+        }
+
+        private object GetPropertyValueFromHost(string propertyName)
+        {
+            PSObject privateData = Host.PrivateData;
+            var propertyInfo = privateData.Properties[propertyName];
+            if (propertyInfo != null)
+            {
+                return propertyInfo.Value;
+            }
+            return null;
+        }
+        #endregion
+
+        #region Implementing IErrorHandler
+        public void HandleError(ErrorRecord errorRecord, bool terminating)
         {
             if (terminating)
             {
@@ -315,7 +357,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        void IErrorHandler.HandleException(Exception exception, bool terminating,
+        public void HandleException(Exception exception, bool terminating,
             string errorId, ErrorCategory category, object target)
         {
             exception = ExceptionUtility.Unwrap(exception);
@@ -323,6 +365,57 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var error = new ErrorRecord(exception, errorId, category, target);
 
             ErrorHandler.HandleError(error, terminating: terminating);
+        }
+
+        public void WriteProjectNotFoundError(string projectName, bool terminating)
+        {
+            var notFoundException =
+                new ItemNotFoundException(
+                    String.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.Cmdlet_ProjectNotFound, projectName));
+
+            ErrorHandler.HandleError(
+                new ErrorRecord(
+                    notFoundException,
+                    NuGetErrorId.ProjectNotFound, // This is your locale-agnostic error id.
+                    ErrorCategory.ObjectNotFound,
+                    projectName),
+                    terminating: terminating);
+        }
+
+        public void ThrowSolutionNotOpenTerminatingError()
+        {
+            ErrorHandler.HandleException(
+                new InvalidOperationException(Resources.Cmdlet_NoSolution),
+                terminating: true,
+                errorId: NuGetErrorId.NoActiveSolution,
+                category: ErrorCategory.InvalidOperation);
+        }
+
+        public void ThrowNoCompatibleProjectsTerminatingError()
+        {
+            ErrorHandler.HandleException(
+                new InvalidOperationException(Resources.Cmdlet_NoCompatibleProjects),
+                terminating: true,
+                errorId: NuGetErrorId.NoCompatibleProjects,
+                category: ErrorCategory.InvalidOperation);
+        }
+        #endregion
+
+        #region Logging
+        [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This exception is passed to PowerShell. We really don't care about the type of exception here.")]
+        protected void WriteError(string message)
+        {
+            if (!String.IsNullOrEmpty(message))
+            {
+                WriteError(new Exception(message));
+            }
+        }
+
+        protected void WriteError(Exception exception)
+        {
+            ErrorHandler.HandleException(exception, terminating: false);
         }
 
         protected void WriteLine(string message = null)
@@ -370,127 +463,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             WriteProgress(progressRecord);
         }
 
-        private void OnProgressAvailable(object sender, ProgressEventArgs e)
-        {
-            WriteProgress(ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete);
-        }
-
-        protected void SubscribeToProgressEvents()
-        {
-            if (!IsSyncMode && _httpClientEvents != null)
-            {
-                _httpClientEvents.ProgressAvailable += OnProgressAvailable;
-            }
-        }
-
-        protected void UnsubscribeFromProgressEvents()
-        {
-            if (_httpClientEvents != null)
-            {
-                _httpClientEvents.ProgressAvailable -= OnProgressAvailable;
-            }
-        }
-
-        protected virtual void LogCore(MessageLevel level, string formattedMessage)
-        {
-            // Temporary hack for working around the PSInvalidOperationException
-            // The WriteObject and WriteError methods cannot be called from outside the overrides 
-            // of the BeginProcessing, ProcessRecord, and EndProcessing methods, and they can only be called from within the same thread.
-            try
-            {
-                switch (level)
-                {
-                    case MessageLevel.Debug:
-                        WriteVerbose(formattedMessage);
-                        break;
-
-                    case MessageLevel.Warning:
-                        WriteWarning(formattedMessage);
-                        break;
-
-                    case MessageLevel.Info:
-                        WriteLine(formattedMessage);
-                        break;
-
-                    case MessageLevel.Error:
-                        WriteError(formattedMessage);
-                        break;
-                }
-            }
-            catch (PSInvalidOperationException) { }
-        }
-
-        [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This exception is passed to PowerShell. We really don't care about the type of exception here.")]
-        protected void WriteError(string message)
-        {
-            if (!String.IsNullOrEmpty(message))
-            {
-                WriteError(new Exception(message));
-            }
-        }
-
-        protected void WriteError(Exception exception)
-        {
-            ErrorHandler.HandleException(exception, terminating: false);
-        }
-
-        private ProgressRecordCollection ProgressRecordCache
-        {
-            get
-            {
-                if (_progressRecordCache == null)
-                {
-                    _progressRecordCache = new ProgressRecordCollection();
-                }
-
-                return _progressRecordCache;
-            }
-        }
-
-        void IErrorHandler.WriteProjectNotFoundError(string projectName, bool terminating)
-        {
-            var notFoundException =
-                new ItemNotFoundException(
-                    String.Format(
-                        CultureInfo.CurrentCulture,
-                        Resources.Cmdlet_ProjectNotFound, projectName));
-
-            ErrorHandler.HandleError(
-                new ErrorRecord(
-                    notFoundException,
-                    NuGetErrorId.ProjectNotFound, // This is your locale-agnostic error id.
-                    ErrorCategory.ObjectNotFound,
-                    projectName),
-                    terminating: terminating);
-        }
-
-        void IErrorHandler.ThrowSolutionNotOpenTerminatingError()
-        {
-            ErrorHandler.HandleException(
-                new InvalidOperationException(Resources.Cmdlet_NoSolution),
-                terminating: true,
-                errorId: NuGetErrorId.NoActiveSolution,
-                category: ErrorCategory.InvalidOperation);
-        }
-
-        void IErrorHandler.ThrowNoCompatibleProjectsTerminatingError()
-        {
-            ErrorHandler.HandleException(
-                new InvalidOperationException(Resources.Cmdlet_NoCompatibleProjects),
-                terminating: true,
-                errorId: NuGetErrorId.NoCompatibleProjects,
-                category: ErrorCategory.InvalidOperation);
-        }
-
-        #endregion Logging
-
-        void INuGetProjectContext.Log(MessageLevel level, string message, params object[] args)
-        {
-            string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
-            LogCore(level, formattedMessage);
-        }
-
-        FileConflictAction INuGetProjectContext.ResolveFileConflict(string message)
+        public FileConflictAction ResolveFileConflict(string message)
         {
             if (_overwriteAll)
             {
@@ -537,6 +510,66 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             return FileConflictAction.Ignore;
         }
+
+        public void Log(MessageLevel level, string message, params object[] args)
+        {
+            string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
+            lock (this)
+            {
+                logQueue.Add(Tuple.Create(level, formattedMessage));
+            }
+            queueSemaphone.Release();
+        }
+
+        protected virtual void LogCore(MessageLevel level, string formattedMessage)
+        {
+            switch (level)
+            {
+                case MessageLevel.Debug:
+                    WriteVerbose(formattedMessage);
+                    break;
+
+                case MessageLevel.Warning:
+                    WriteWarning(formattedMessage);
+                    break;
+
+                case MessageLevel.Info:
+                    WriteLine(formattedMessage);
+                    break;
+
+                case MessageLevel.Error:
+                    WriteError(formattedMessage);
+                    break;
+            }
+        }
+
+        protected void WaitAndLogFromMessageQueue()
+        {
+            while (true)
+            {
+                int index = WaitHandle.WaitAny(new WaitHandle[] { completeEvent, queueSemaphone });
+                if (index == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    lock (this)
+                    {
+                        var messageFromQueue = logQueue.First();
+                        logQueue.RemoveAt(0);
+                        LogCore(messageFromQueue.Item1, messageFromQueue.Item2);
+                    }
+                }
+            }
+        }
+
+        protected List<Tuple<MessageLevel, string>> logQueue = new List<Tuple<MessageLevel, string>>();
+
+        protected ManualResetEvent completeEvent = new ManualResetEvent(false);
+
+        protected Semaphore queueSemaphone = new Semaphore(0, Int32.MaxValue);
+        #endregion
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>

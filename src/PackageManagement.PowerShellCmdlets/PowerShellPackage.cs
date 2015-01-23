@@ -40,6 +40,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     case VersionType.latest:
                         {
                             NuGetVersion nVersion = data.Version;
+                            if (nVersion == null)
+                            {
+                                nVersion = data.Versions.OrderByDescending(v => v).FirstOrDefault();
+                            }
                             package.Version = new List<NuGetVersion>() { nVersion };
                         }
                         break;

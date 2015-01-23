@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.Frameworks;
+﻿using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
@@ -117,7 +116,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                     IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
                     IEnumerable<PackageIdentity> remoteUpdates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
-                    ExecuteUpdates(remoteUpdates, project);
+                    UpdatePackages(remoteUpdates, project);
+                    WaitAndLogFromMessageQueue();
                 }
             }
             else
@@ -143,12 +143,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             }
 
                             PackageIdentity update = new PackageIdentity(Id, _nugetVersion);
-                            InstallPackageByIdentity(project, update, ResolutionContext, this, WhatIf.IsPresent);
+                            List<PackageIdentity> identities = new List<PackageIdentity>() { update };
+                            UpdatePackages(identities, project);
                         }
                         else
                         {
                             IEnumerable<PackageIdentity> remoteUpdates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
-                            ExecuteUpdates(remoteUpdates, project);
+                            UpdatePackages(remoteUpdates, project);
+                            WaitAndLogFromMessageQueue();
                         }
                     }
                 }
@@ -163,10 +165,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 foreach (NuGetProject project in Projects)
                 {
                     IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
-                    foreach (PackageReference package in installedPackages)
-                    {
-                        InstallPackageByIdentity(project, package.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true, UninstallContext);
-                    }
+                    UpdatePackages(installedPackages.Select(v => v.PackageIdentity), project);
+                    WaitAndLogFromMessageQueue();
                 }
             }
             else
@@ -182,18 +182,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        InstallPackageByIdentity(project, installedPackage.PackageIdentity, ResolutionContext, this, WhatIf.IsPresent, true, UninstallContext);
+                        List<PackageIdentity> identities = new List<PackageIdentity>() { installedPackage.PackageIdentity };
+                        UpdatePackages(identities, project);
+                        WaitAndLogFromMessageQueue();
                     }
                 }
             }
         }
 
-        private void ExecuteUpdates(IEnumerable<PackageIdentity> updates, NuGetProject nuGetProject)
+        private async void UpdatePackages(IEnumerable<PackageIdentity> identities, NuGetProject project)
         {
-            foreach (PackageIdentity identity in updates)
+            try
             {
-                InstallPackageByIdentity(nuGetProject, identity, ResolutionContext, this, WhatIf.IsPresent);
+                foreach (PackageIdentity identity in identities)
+                {
+                    await InstallPackageByIdentityAsync(project, identity, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                }
             }
+            catch (Exception ex)
+            {
+                LogCore(MessageLevel.Error, ex.Message);
+            }
+            completeEvent.Set();
         }
 
         private void ParseUserInputForVersion()
