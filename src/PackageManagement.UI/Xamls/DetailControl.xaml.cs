@@ -108,24 +108,6 @@ namespace NuGet.PackageManagement.UI
             return w.ShowModal() == true;
         }
 
-        public FileConflictAction FileConflictAction
-        {
-            get
-            {
-                var model = (DetailControlModel)DataContext;
-                return model.Options.SelectedFileConflictAction.Action;
-            }
-        }
-
-        public bool DisplayPreviewWindow
-        {
-            get
-            {
-                var model = (DetailControlModel)DataContext;
-                return model.Options.ShowPreviewWindow;
-            }
-        }
-
         public PackageManagerControl Control
         {
             get

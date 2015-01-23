@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.UI
         {
             _uiProjectContext.Start();
             _uiProjectContext.FileConflictAction = FileConflictAction;
-            }
+        }
 
         // TODO: rename is to End
         public void CloseProgressDialog()
@@ -132,7 +132,8 @@ namespace NuGet.PackageManagement.UI
                 {
                     UIDispatcher.Invoke(() =>
                     {
-                        result = DetailControl.DisplayPreviewWindow;
+                        var model = (DetailControlModel)DetailControl.DataContext;
+                        result = model.Options.ShowPreviewWindow;
                     });
                 }
 
@@ -150,10 +151,64 @@ namespace NuGet.PackageManagement.UI
                 {
                     UIDispatcher.Invoke(() =>
                     {
-                        result = DetailControl.FileConflictAction;
+                        var model = (DetailControlModel)DetailControl.DataContext;
+                        result = model.Options.SelectedFileConflictAction.Action;
                     });
                 }
 
+                return result;
+            }
+        }
+
+        public Resolver.DependencyBehavior DependencyBehavior
+        {
+            get
+            {
+                var result = Resolver.DependencyBehavior.Lowest;
+
+                if (DetailControl != null)
+                {
+                    UIDispatcher.Invoke(() =>
+                    {
+                        var model = (DetailControlModel)DetailControl.DataContext;
+                        result = model.Options.SelectedDependencyBehavior.Behavior;
+                    });
+                }
+
+                return result;
+            }
+        }
+
+        public bool RemoveDependencies
+        {
+            get
+            {
+                bool result = false;
+                if (DetailControl != null)
+                {
+                    UIDispatcher.Invoke(() =>
+                    {
+                        var model = (DetailControlModel)DetailControl.DataContext;
+                        result = model.Options.RemoveDependencies;
+                    });
+                }
+                return result;
+            }
+        }
+
+        public bool ForceRemove
+        {
+            get
+            {
+                bool result = false;
+                if (DetailControl != null)
+                {
+                    UIDispatcher.Invoke(() =>
+                    {
+                        var model = (DetailControlModel)DetailControl.DataContext;
+                        result = model.Options.ForceRemove;
+                    });
+                }
                 return result;
             }
         }

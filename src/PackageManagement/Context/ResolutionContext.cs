@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement
         public ResolutionContext(
             DependencyBehavior dependencyBehavior = Resolver.DependencyBehavior.Lowest,
             bool includePrelease = false,
-            bool includeUnlisted = false)
+            bool includeUnlisted = true)
         {
             DependencyBehavior = dependencyBehavior;
             IncludePrerelease = includePrelease;

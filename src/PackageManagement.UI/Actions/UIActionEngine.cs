@@ -41,7 +41,14 @@ namespace NuGet.PackageManagement.UI
 
                 var projects = uiService.Projects;
 
-                IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActions(projects, userAction, uiService.FileConflictAction, uiService.ProgressWindow, token);
+                IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActions(
+                    projects, 
+                    userAction,
+                    removeDependencies: uiService.RemoveDependencies,
+                    forceRemove: uiService.ForceRemove,
+                    dependencyBehavior: uiService.DependencyBehavior, 
+                    projectContext: uiService.ProgressWindow, 
+                    token: token);
                 IEnumerable<PreviewResult> results = await GetPreviewResults(actions);
 
                 // preview window
@@ -134,8 +141,14 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(IEnumerable<NuGetProject> targets, UserAction userAction,
-            FileConflictAction conflictActionItem, INuGetProjectContext projectContext, CancellationToken token)
+        protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(
+            IEnumerable<NuGetProject> targets, 
+            UserAction userAction,
+            bool removeDependencies,
+            bool forceRemove,
+            DependencyBehavior dependencyBehavior, 
+            INuGetProjectContext projectContext, 
+            CancellationToken token)
         {
             List<Tuple<NuGetProject, NuGetProjectAction>> results = new List<Tuple<NuGetProject, NuGetProjectAction>>();
 
@@ -143,7 +156,7 @@ namespace NuGet.PackageManagement.UI
             if (userAction.Action == NuGetProjectActionType.Install)
             {
                 Debug.Assert(userAction.PackageIdentity != null, "Package identity cannot be null when installing a package");
-                ResolutionContext resolutionContext = new ResolutionContext(DependencyBehavior.Lowest);
+                ResolutionContext resolutionContext = new ResolutionContext(dependencyBehavior);
                 foreach (var target in targets)
                 {
                     IEnumerable<NuGetProjectAction> actions;
@@ -153,7 +166,10 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                UninstallationContext uninstallationContext = new UninstallationContext();
+                UninstallationContext uninstallationContext = new UninstallationContext(
+                    removeDependencies: removeDependencies,
+                    forceRemove: forceRemove);
+
                 foreach (var target in targets)
                 {
                     IEnumerable<NuGetProjectAction> actions;

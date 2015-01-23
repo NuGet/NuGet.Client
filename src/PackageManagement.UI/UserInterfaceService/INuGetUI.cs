@@ -78,5 +78,11 @@ namespace NuGet.PackageManagement.UI
         void RefreshPackageStatus();
 
         SourceRepository ActiveSource { get; }
+
+        bool RemoveDependencies { get; }
+
+        bool ForceRemove { get; }
+
+        Resolver.DependencyBehavior DependencyBehavior { get; }
     }
 }
