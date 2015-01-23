@@ -534,7 +534,7 @@ namespace NuGetVSExtension
             var uiContext = uiContextFactory.Create(new [] { nugetProject });
 
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-            var uiController = uiFactory.Create(new [] { nugetProject }, uiContext, _uiProjectContext);
+            var uiController = uiFactory.Create(uiContext, _uiProjectContext);
 
             var model = new PackageManagerModel(uiController, uiContext);
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
@@ -672,7 +672,7 @@ namespace NuGetVSExtension
             var uiContext = uiContextFactory.Create(projects);
 
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-            var uiController = uiFactory.Create(projects, uiContext, _uiProjectContext);
+            var uiController = uiFactory.Create(uiContext, _uiProjectContext);
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
             var model = new PackageManagerModel(uiController, uiContext);
