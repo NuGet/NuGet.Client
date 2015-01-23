@@ -277,5 +277,24 @@ namespace NuGet.Test
 
             Assert.Equal(NuGetFramework.AnyFramework, result);
         }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestAzureRepro()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net40"),
+                NuGetFramework.Parse("portable-net45+wp8+win8+wpa"),
+                NuGetFramework.Parse("sl4")
+            };
+
+            NuGetFramework projectFramework = NuGetFramework.Parse("net45");
+
+            var result = reducer.GetNearest(projectFramework, frameworks);
+
+            Assert.Equal("net4", result.GetShortFolderName());
+        }
     }
 }

@@ -70,6 +70,10 @@ namespace NuGet.Frameworks
                     // just take the first one by rev alphabetical order if we can't narrow it down at all
                     nearest = reduced.OrderByDescending(f => f.Framework, StringComparer.OrdinalIgnoreCase).ThenBy(f => f.GetHashCode()).First();
                 }
+                else if (reduced.Length == 1)
+                {
+                    nearest = reduced.Single();
+                }
             }
             else if (reduced.Length == 1)
             {
