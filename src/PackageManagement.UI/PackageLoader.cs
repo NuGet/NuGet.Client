@@ -137,24 +137,41 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        // Get the list of latest versions of installed packages.
-        private IEnumerable<PackageIdentity> GetLatestInstalledPackages()
+        /// <summary>
+        /// Returns the grouped list of installed packages.
+        /// </summary>
+        /// <param name="latest">If true, the latest version is returned. Otherwise, the oldest 
+        /// version is returned.</param>
+        /// <returns></returns>
+        private IEnumerable<PackageIdentity> GetInstalledPackages(bool latest)
         {
             Dictionary<string, PackageIdentity> installedPackages = new Dictionary<string, PackageIdentity>(
                 StringComparer.OrdinalIgnoreCase);
             foreach (var project in _projects)
             {
-                string name = string.Empty;
-                project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out name);
-
                 foreach (var package in project.GetInstalledPackages())
                 {
+                    if (!_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
+                    {
+                        continue;
+                    }
+
                     PackageIdentity p;
                     if (installedPackages.TryGetValue(package.PackageIdentity.Id, out p))
                     {
-                        if (p.Version < package.PackageIdentity.Version)
+                        if (latest)
                         {
-                            installedPackages[package.PackageIdentity.Id] = package.PackageIdentity;
+                            if (p.Version < package.PackageIdentity.Version)
+                            {
+                                installedPackages[package.PackageIdentity.Id] = package.PackageIdentity;
+                            }
+                        }
+                        else
+                        {
+                            if (p.Version > package.PackageIdentity.Version)
+                            {
+                                installedPackages[package.PackageIdentity.Id] = package.PackageIdentity;
+                            }
                         }
                     }
                     else
@@ -169,9 +186,9 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<IEnumerable<UISearchMetadata>> SearchInstalled(int startIndex, CancellationToken ct)
         {
-            var installedPackages = GetLatestInstalledPackages();
+            var installedPackages = GetInstalledPackages(latest: true);
             List<UISearchMetadata> results = new List<UISearchMetadata>();
-            UIMetadataResource localResource = await _packageManager.PackagesFolderSourceRepository
+            var localResource = await _packageManager.PackagesFolderSourceRepository
                 .GetResourceAsync<UIMetadataResource>();
 
             var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
@@ -245,10 +262,7 @@ namespace NuGet.PackageManagement.UI
                 return Enumerable.Empty<UISearchMetadata>();
             }
 
-            var installedPackages = _projects.SelectMany(e => e.GetInstalledPackages())
-                .Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer)
-                .OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase);
-
+            var installedPackages = GetInstalledPackages(latest: false);
             foreach (var package in installedPackages)
             {
                 // only release packages respect the prerel option
@@ -285,6 +299,11 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var package in _projects.SelectMany(p => p.GetInstalledPackages()))
                 {
+                    if (!_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
+                    {
+                        continue;
+                    }
+
                     _installedPackages.Add(package.PackageIdentity);
                     _installedPackageIds.Add(package.PackageIdentity.Id);
                 }

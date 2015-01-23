@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// This control is used as list items in the package list. Its DataContext is 
-    /// a UiSearchResultPackage.
+    /// SearchResultPackageMetadata.
     /// </summary>
     public partial class PackageItemControl : UserControl
     {

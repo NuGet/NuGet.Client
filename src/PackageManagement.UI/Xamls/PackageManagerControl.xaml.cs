@@ -164,25 +164,14 @@ namespace NuGet.PackageManagement.UI
 
         private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
-            // PackageRestoreManager fires this event even when solution is closed.
+            // TODO: PackageRestoreManager fires this event even when solution is closed.
             // Don't do anything if solution is closed.
-            //if (!Target.IsAvailable)
-            //{
-            //    return;
-            //}
-
-            //if (!e.PackagesMissing)
-            //{
-            //    // packages are restored. Update the UI
-            //    if (Target.IsSolution)
-            //    {
-            //        // TODO: update UI here
-            //    }
-            //    else
-            //    {
-            //        // TODO: update UI here
-            //    }
-            //}
+            if (!e.PackagesMissing)
+            {
+                // packages are restored. refresh the UI
+                UpdatePackageStatus();
+                _packageDetail.Refresh();
+            }
         }
 
         private void SetTitle()

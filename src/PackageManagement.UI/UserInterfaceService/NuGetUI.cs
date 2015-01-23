@@ -86,20 +86,27 @@ namespace NuGet.PackageManagement.UI
             {
                 var w = new PreviewWindow();
                 w.DataContext = new PreviewWindowModel(actions);
+
+                if (StandaloneSwitch.IsRunningStandalone && DetailControl != null)
+                {
+                    Window win = Window.GetWindow(DetailControl);
+                    w.Owner = win;
+                }
+
                 result = w.ShowModal() == true;
             });
 
             return result;
         }
 
-        // TODO: rename is to Start
+        // TODO: rename it to something like Start
         public void ShowProgressDialog(DependencyObject ownerWindow)
         {
             _uiProjectContext.Start();
             _uiProjectContext.FileConflictAction = FileConflictAction;
         }
 
-        // TODO: rename is to End
+        // TODO: rename it to something like End
         public void CloseProgressDialog()
         {
             _uiProjectContext.End();
