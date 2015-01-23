@@ -10,6 +10,18 @@ namespace NuGet.Frameworks
     {
         public bool Equals(NuGetFramework x, NuGetFramework y)
         {
+            // both are null
+            if (x == null && y == null)
+            {
+                return true;
+            }
+
+            // only one is null
+            if (x == null || y == null)
+            {
+                return false;
+            }
+
             return StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile);
         }
 
