@@ -41,6 +41,7 @@ namespace NuGet.PackageManagement.UI
         private HashSet<PackageIdentity> _installedPackages;
         private HashSet<string> _installedPackageIds;
         private bool _installedPackagesLoaded = false;
+        private NuGetPackageManager _packageManager;
 
         private PackageLoaderOption _option;
 
@@ -53,9 +54,14 @@ namespace NuGet.PackageManagement.UI
         // The magic unpublished date is 1900-01-01T00:00:00
         public static readonly DateTimeOffset Unpublished = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8));
 
-        public PackageLoader(PackageLoaderOption option, IEnumerable<NuGetProject> projects, SourceRepository sourceRepository, string searchText)
+        public PackageLoader(PackageLoaderOption option, 
+            NuGetPackageManager packageManager,
+            IEnumerable<NuGetProject> projects, 
+            SourceRepository sourceRepository, 
+            string searchText)
         {
             _sourceRepository = sourceRepository;
+            _packageManager = packageManager;
             _projects = projects.ToArray();
             _option = option;
             _searchText = searchText;
@@ -80,99 +86,19 @@ namespace NuGet.PackageManagement.UI
         private async Task<IEnumerable<UISearchMetadata>> Search(int startIndex, CancellationToken ct)
         {
             List<UISearchMetadata> results = new List<UISearchMetadata>();
-
-            // show only the installed packages
+            
             if (_option.Filter == Filter.Installed)
             {
-                // TODO: get metadata from packages folder instead
-                Dictionary<PackageIdentity, List<string>> byId = new Dictionary<PackageIdentity, List<string>>(); 
-
-                foreach (var project in _projects)
-                {
-                    string name = string.Empty;
-                    project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out name);
-
-                    foreach (var package in project.GetInstalledPackages())
-                    {
-                        List<string> list = null;
-
-                        if (!byId.TryGetValue(package.PackageIdentity, out list))
-                        {
-                            list = new List<string>();
-                            byId.Add(package.PackageIdentity, list);
-                        }
-
-                        list.Add(name);
-                    }
-                }
-
-                var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
-
-                // fetch metadata of packages in parallel
-                var tasks = new List<Task<UISearchMetadata>>();
-                foreach (var identity in byId.Keys.OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
-                {
-                    var task = Task.Run(
-                        async () =>
-                        {
-                            string summary = String.Join(", ", byId[identity].Where(e => !String.IsNullOrEmpty(e))
-                                .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
-                            var metadata = await metadataResource.GetMetadata(
-                                identity.Id, 
-                                _option.IncludePrerelease, 
-                                false, 
-                                ct);
-                            var versions = metadata.Select(m => m.Identity.Version)
-                                .OrderByDescending(v => v);
-                            return new UISearchMetadata(identity, summary, null, versions, null);
-                        });
-                    tasks.Add(task);
-                }
-
-                await Task.WhenAll(tasks.ToArray());
-                foreach (var task in tasks)
-                {
-                    results.Add(task.Result);
-                }
+                // show only the installed packages
+                return await SearchInstalled(startIndex, ct);
             }
-            // installed packages with updates
             else if (_option.Filter == Filter.UpdatesAvailable)
             {
-                var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
-
-                if (metadataResource == null)
-                {
-                    return Enumerable.Empty<UISearchMetadata>();
-                }
-
-                var installedPackages = _projects.SelectMany(e => e.GetInstalledPackages())
-                    .Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer)
-                    .OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase);
-
-                foreach (var package in installedPackages)
-                {
-                    // only release packages respect the prerel option
-                    bool includePre = _option.IncludePrerelease || package.Version.IsPrerelease;
-
-                    var data = await metadataResource.GetMetadata(package.Id, includePre, false, ct);
-                    var highest = data.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
-
-                    if (highest != null)
-                    {
-                        if (VersionComparer.VersionRelease.Compare(package.Version, highest.Identity.Version) < 0)
-                        {
-                            var allVersions = data.Select(e => e.Identity.Version).OrderByDescending(e => e, VersionComparer.VersionRelease);
-
-                            string summary = String.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
-
-                            results.Add(new UISearchMetadata(highest.Identity, summary, highest.IconUrl, allVersions, highest));
-                        }
-                    }
-                }
-            }
-            // normal search
+                return await SearchUpdates(startIndex, ct);
+            }            
             else
             {
+                // normal search
                 var searchResource = await _sourceRepository.GetResourceAsync<UISearchResource>();
 
                 // search in source
@@ -205,6 +131,142 @@ namespace NuGet.PackageManagement.UI
                         startIndex,
                         _pageSize,
                         ct));
+                }
+            }
+
+            return results;
+        }
+
+        // Get the list of latest versions of installed packages.
+        private IEnumerable<PackageIdentity> GetLatestInstalledPackages()
+        {
+            Dictionary<string, PackageIdentity> installedPackages = new Dictionary<string, PackageIdentity>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var project in _projects)
+            {
+                string name = string.Empty;
+                project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out name);
+
+                foreach (var package in project.GetInstalledPackages())
+                {
+                    PackageIdentity p;
+                    if (installedPackages.TryGetValue(package.PackageIdentity.Id, out p))
+                    {
+                        if (p.Version < package.PackageIdentity.Version)
+                        {
+                            installedPackages[package.PackageIdentity.Id] = package.PackageIdentity;
+                        }
+                    }
+                    else
+                    {
+                        installedPackages[package.PackageIdentity.Id] = package.PackageIdentity;
+                    }
+                }
+            }
+
+            return installedPackages.Values;
+        }
+
+        private async Task<IEnumerable<UISearchMetadata>> SearchInstalled(int startIndex, CancellationToken ct)
+        {
+            var installedPackages = GetLatestInstalledPackages();
+            List<UISearchMetadata> results = new List<UISearchMetadata>();
+            UIMetadataResource localResource = await _packageManager.PackagesFolderSourceRepository
+                .GetResourceAsync<UIMetadataResource>();
+
+            var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+            var tasks = new List<Task<UISearchMetadata>>();
+            foreach (var identity in installedPackages)
+            {
+                var task = Task.Run(
+                    async () =>
+                    {
+                        UIPackageMetadata packageMetadata = null;
+                        if (localResource != null)
+                        {
+                            // try get metadata from local resource
+                            var localMetadata = await localResource.GetMetadata(identity.Id,
+                                includePrerelease: true,
+                                includeUnlisted: true,
+                                token: ct);
+                            packageMetadata = localMetadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
+                        }
+
+                        var metadata = await metadataResource.GetMetadata(
+                            identity.Id,
+                            _option.IncludePrerelease,
+                            false,
+                            ct);
+                        var versions = metadata.Select(m => m.Identity.Version)
+                            .OrderByDescending(v => v);
+                        if (packageMetadata == null)
+                        {
+                            // package metadata can't be found in local resource. Try find it in remote resource.
+                            packageMetadata = metadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
+                        }
+
+                        string summary = string.Empty;
+                        if (packageMetadata != null)
+                        {
+                            summary = packageMetadata.Summary;
+                            if (String.IsNullOrEmpty(summary))
+                            {
+                                summary = packageMetadata.Description;
+                            }
+                        }
+
+                        return new UISearchMetadata(
+                            identity, 
+                            summary: summary,
+                            iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
+                            versions: versions,
+                            latestPackageMetadata: packageMetadata);
+                    });
+                tasks.Add(task);
+            }
+
+            await Task.WhenAll(tasks.ToArray());
+            foreach (var task in tasks)
+            {
+                results.Add(task.Result);
+            }
+
+            return results;
+        }
+
+        // Search in installed packages that have updates available
+        private async Task<IEnumerable<UISearchMetadata>> SearchUpdates(int startIndex, CancellationToken ct)
+        {
+            List<UISearchMetadata> results = new List<UISearchMetadata>();
+            var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+
+            if (metadataResource == null)
+            {
+                return Enumerable.Empty<UISearchMetadata>();
+            }
+
+            var installedPackages = _projects.SelectMany(e => e.GetInstalledPackages())
+                .Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer)
+                .OrderBy(e => e.Id, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var package in installedPackages)
+            {
+                // only release packages respect the prerel option
+                bool includePre = _option.IncludePrerelease || package.Version.IsPrerelease;
+
+                var data = await metadataResource.GetMetadata(package.Id, includePre, false, ct);
+                var highest = data.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
+
+                if (highest != null)
+                {
+                    if (VersionComparer.VersionRelease.Compare(package.Version, highest.Identity.Version) < 0)
+                    {
+                        var allVersions = data.Select(e => e.Identity.Version).OrderByDescending(e => e, VersionComparer.VersionRelease);
+
+                        string summary = String.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
+
+                        results.Add(new UISearchMetadata(highest.Identity, summary, highest.IconUrl, allVersions, highest));
+                    }
                 }
             }
 

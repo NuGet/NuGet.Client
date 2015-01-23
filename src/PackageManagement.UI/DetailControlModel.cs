@@ -236,28 +236,16 @@ namespace NuGet.PackageManagement.UI
 
         public async Task LoadPackageMetadaAsync(UIMetadataResource metadataResource, CancellationToken token)
         {
-            List<PackageIdentity> ids = new List<PackageIdentity>();
-
-            foreach (var version in _versions.Where(e => e != null))
-            {
-                ids.Add(new PackageIdentity(Id, version.Version));
-            }
-
             var dict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
-
             if (metadataResource != null)
             {
                 // load up the full details for each version
-                var metadata = await metadataResource.GetMetadata(ids, true, false, token);
-
-                if (metadata != null)
+                var metadata = await metadataResource.GetMetadata(Id, true, false, token);
+                foreach (var item in metadata)
                 {
-                    foreach (var item in metadata)
+                    if (!dict.ContainsKey(item.Identity.Version))
                     {
-                        if (!dict.ContainsKey(item.Identity.Version))
-                        {
-                            dict.Add(item.Identity.Version, new DetailedPackageMetadata(item));
-                        }
+                        dict.Add(item.Identity.Version, new DetailedPackageMetadata(item));                    
                     }
                 }
             }

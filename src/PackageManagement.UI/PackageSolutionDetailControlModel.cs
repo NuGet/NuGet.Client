@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.UI
             if (SelectedAction == Resources.Action_Consolidate ||
                 SelectedAction == Resources.Action_Uninstall)
             {
-                _versions = Projects.Select(project => GetInstalledPackage(project.NuGetProject, Id))
+                _versions = _allProjects.Select(project => GetInstalledPackage(project.NuGetProject, Id))
                     .Where(package => package != null)
                     .OrderByDescending(p => p.PackageIdentity.Version)
                     .Select(package => new VersionForDisplay(package.PackageIdentity.Version, string.Empty))

@@ -1,15 +1,14 @@
-﻿using NuGet.Client.VisualStudio;
-using NuGet.PackagingCore;
-using NuGet.ProjectManagement;
-using NuGet.Resolver;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using NuGet.Client.VisualStudio;
+using NuGet.PackagingCore;
+using NuGet.ProjectManagement;
+using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -42,27 +41,8 @@ namespace NuGet.PackageManagement.UI
 
                 var projects = uiService.Projects;
 
-                // get metadata for license check
-                HashSet<PackageIdentity> licenseCheck = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-
                 IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActions(projects, userAction, uiService.FileConflictAction, uiService.ProgressWindow, token);
                 IEnumerable<PreviewResult> results = await GetPreviewResults(actions);
-
-                // find all the packages that might need a license acceptance
-                foreach (var result in results)
-                {
-                    foreach (var pkg in result.Added)
-                    {
-                        licenseCheck.Add(pkg);
-                    }
-
-                    foreach (var pkg in result.Updated)
-                    {
-                        licenseCheck.Add(pkg.New);
-                    }
-                }
-
-                IEnumerable<UIPackageMetadata> licenseMetadata = await GetPackageMetadata(licenseCheck, token);
 
                 // preview window
                 if (uiService.DisplayPreviewWindow)
@@ -77,19 +57,10 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                // show license agreement
-                if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
+                bool accepted = await CheckLicenseAcceptance(uiService, results, token);
+                if (!accepted)
                 {
-                    var licenseInfoItems = licenseMetadata.Where(p => p.RequireLicenseAcceptance).Select(e => new PackageLicenseInfo(e.Identity.Id, e.LicenseUrl, e.Authors));
-
-                    bool acceptLicense = false;
-
-                    acceptLicense = uiService.PromptForLicenseAcceptance(licenseInfoItems);
-
-                    if (!acceptLicense)
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 if (!token.IsCancellationRequested)
@@ -109,6 +80,40 @@ namespace NuGet.PackageManagement.UI
             {
                 uiService.CloseProgressDialog();
             }
+        }
+
+        // Returns false if user doesn't accept license agreements.
+        private async Task<bool> CheckLicenseAcceptance(
+            INuGetUI uiService,
+            IEnumerable<PreviewResult> results,
+            CancellationToken token)
+        {
+            // find all the packages that might need a license acceptance
+            HashSet<PackageIdentity> licenseCheck = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+            foreach (var result in results)
+            {
+                foreach (var pkg in result.Added)
+                {
+                    licenseCheck.Add(pkg);
+                }
+
+                foreach (var pkg in result.Updated)
+                {
+                    licenseCheck.Add(pkg.New);
+                }
+            }
+            IEnumerable<UIPackageMetadata> licenseMetadata = await GetPackageMetadata(licenseCheck, token);
+
+            // show license agreement
+            if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
+            {
+                var licenseInfoItems = licenseMetadata
+                    .Where(p => p.RequireLicenseAcceptance)
+                    .Select(e => new PackageLicenseInfo(e.Identity.Id, e.LicenseUrl, e.Authors));
+                return uiService.PromptForLicenseAcceptance(licenseInfoItems);
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -131,16 +136,15 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(IEnumerable<NuGetProject> targets, UserAction userAction,
             FileConflictAction conflictActionItem, INuGetProjectContext projectContext, CancellationToken token)
-        {            
-
+        {
             List<Tuple<NuGetProject, NuGetProjectAction>> results = new List<Tuple<NuGetProject, NuGetProjectAction>>();
 
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
-            if(userAction.Action == NuGetProjectActionType.Install)
+            if (userAction.Action == NuGetProjectActionType.Install)
             {
                 Debug.Assert(userAction.PackageIdentity != null, "Package identity cannot be null when installing a package");
                 ResolutionContext resolutionContext = new ResolutionContext(DependencyBehavior.Lowest);
-                foreach(var target in targets)
+                foreach (var target in targets)
                 {
                     IEnumerable<NuGetProjectAction> actions;
                     actions = await _packageManager.PreviewInstallPackageAsync(target, userAction.PackageIdentity, resolutionContext, projectContext);
@@ -167,7 +171,6 @@ namespace NuGet.PackageManagement.UI
 
             return results;
         }
-
 
         /// <summary>
         /// Convert NuGetProjectActions into PreviewResult types
@@ -209,37 +212,48 @@ namespace NuGet.PackageManagement.UI
         {
             var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
-            HashSet<PackageIdentity> toFind = new HashSet<PackageIdentity>(packages, PackageIdentity.Comparer);
-
             List<UIPackageMetadata> results = new List<UIPackageMetadata>();
-
-            foreach (var source in sources)
+            foreach (var package in packages)
             {
-                if (toFind.Count > 0)
+                var metadata = await GetPackageMetadata(sources, package, token);
+                if (metadata == null)
                 {
-                    var metadataResource = source.GetResource<UIMetadataResource>();
-
-                    var sourceResults = await metadataResource.GetMetadata(toFind, true, true, token);
-
-                    if (sourceResults != null)
-                    {
-                        foreach (var package in sourceResults)
-                        {
-                            if (toFind.Remove(package.Identity))
-                            {
-                                results.Add(package);
-                            }
-                        }
-                    }
+                    throw new InvalidOperationException(
+                        string.Format("Unable to find metadata of {0}", package));
                 }
-            }
 
-            if (toFind.Count > 0)
-            {
-                throw new Exception("Unable to find packages");
+                results.Add(metadata);
             }
 
             return results;
+        }
+
+        private async Task<UIPackageMetadata> GetPackageMetadata(
+            IEnumerable<Client.SourceRepository> sources, 
+            PackageIdentity package, 
+            CancellationToken token)
+        {
+            foreach (var source in sources)
+            {
+                var metadataResource = source.GetResource<UIMetadataResource>();
+                if (metadataResource == null)
+                {
+                    continue;
+                }
+
+                var r = await metadataResource.GetMetadata(
+                    package.Id, 
+                    includePrerelease:true, 
+                    includeUnlisted:true,
+                    token: token);
+                var packageMetadata = r.FirstOrDefault(p => p.Identity.Version == package.Version);
+                if (packageMetadata != null)
+                {
+                    return packageMetadata;
+                }
+            }
+
+            return null;
         }
     }
 }

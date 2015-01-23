@@ -280,6 +280,7 @@ namespace NuGet.PackageManagement.UI
 
                 var loader = new PackageLoader(
                     option,
+                    Model.Context.PackageManager,
                     Model.Context.Projects,
                     _activeSource,
                     searchText);

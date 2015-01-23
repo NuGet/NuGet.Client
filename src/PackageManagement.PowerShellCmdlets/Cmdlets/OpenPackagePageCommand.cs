@@ -56,21 +56,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 UIMetadataResource resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
-                IEnumerable<UIPackageMetadata> metadata = Enumerable.Empty<UIPackageMetadata>();
-                if (string.IsNullOrEmpty(Version))
-                {
-                    Task<IEnumerable<UIPackageMetadata>> task = resource.GetMetadata(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
-                    metadata = task.Result;
-                }
-                else
+                Task<IEnumerable<UIPackageMetadata>> task = resource.GetMetadata(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
+                var metadata = task.Result;
+                if (!string.IsNullOrEmpty(Version))
                 {
                     NuGetVersion nVersion;
                     bool success = NuGetVersion.TryParse(Version, out nVersion);
                     if (success)
                     {
-                        PackageIdentity identity = new PackageIdentity(Id, nVersion);
-                        Task<IEnumerable<UIPackageMetadata>> task = resource.GetMetadata(identity, IncludePrerelease.IsPresent, false, CancellationToken.None);
-                        metadata = task.Result;
+                        metadata = metadata.Where(p => p.Identity.Version == nVersion);
                     }
                 }
                 package = metadata.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
