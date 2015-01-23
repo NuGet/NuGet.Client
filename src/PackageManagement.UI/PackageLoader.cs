@@ -186,7 +186,9 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<IEnumerable<UISearchMetadata>> SearchInstalled(int startIndex, CancellationToken ct)
         {
-            var installedPackages = GetInstalledPackages(latest: true);
+            var installedPackages = GetInstalledPackages(latest: true)
+                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1);
+
             List<UISearchMetadata> results = new List<UISearchMetadata>();
             var localResource = await _packageManager.PackagesFolderSourceRepository
                 .GetResourceAsync<UIMetadataResource>();
@@ -262,7 +264,8 @@ namespace NuGet.PackageManagement.UI
                 return Enumerable.Empty<UISearchMetadata>();
             }
 
-            var installedPackages = GetInstalledPackages(latest: false);
+            var installedPackages = GetInstalledPackages(latest: false)
+                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1);
             foreach (var package in installedPackages)
             {
                 // only release packages respect the prerel option

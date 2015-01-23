@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.UI
 
         public IVsSearchQuery SearchQuery
         {
-            get { return new SimpleSearchQuery(); }
+            get { return new SimpleSearchQuery(this.Text); }
         }
 
         public IVsSearchQueryParser SearchQueryParser
@@ -122,6 +122,11 @@ namespace NuGet.PackageManagement.UI
 
         internal class SimpleSearchQuery : IVsSearchQuery
         {
+            public SimpleSearchQuery(string searchString)
+            {
+                SearchString = searchString;
+            }
+
             public uint GetTokens(uint dwMaxTokens, IVsSearchToken[] rgpSearchTokens)
             {
                 throw new NotImplementedException();
@@ -134,7 +139,8 @@ namespace NuGet.PackageManagement.UI
 
             public string SearchString
             {
-                get { return string.Empty; }
+                get;
+                private set;
             }
         }
     }
