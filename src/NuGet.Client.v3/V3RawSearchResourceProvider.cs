@@ -25,8 +25,7 @@ namespace NuGet.Client
 
             if (serviceIndex != null)
             {
-                // TODO: take this work around out and use _serviceIndex.Index["SearchQueryService"] - this is just because the package hasn't been updated yet!
-                var endpoints = serviceIndex.Index["resources"].Where(j => ((string)j["@type"]) == "SearchQueryService").Select(o => o["@id"].ToObject<Uri>()).ToArray();
+                var endpoints = serviceIndex["SearchQueryService"].ToArray();
 
                 if (endpoints.Length > 0)
                 {

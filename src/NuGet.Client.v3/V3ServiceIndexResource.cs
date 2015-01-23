@@ -50,7 +50,13 @@ namespace NuGet.Client
         {
             get
             {
-                return Index["resources"].Where(j => ((string)j["@type"]) == type).Select(o => o["@id"].ToObject<Uri>()).ToList();
+                return Index["resources"]
+                    .Where(j =>
+                        (j["@type"].Type == JTokenType.Array
+                            ? j["@type"].Any(v => (string)v == type)
+                            : ((string)j["@type"]) == type))
+                    .Select(o => o["@id"].ToObject<Uri>())
+                    .ToList();
             }
         }
     }

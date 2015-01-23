@@ -24,7 +24,7 @@ namespace NuGet.Client
 
             if (serviceIndex != null)
             {
-                Uri baseUrl = serviceIndex.Index["resources"].Where(j => ((string)j["@type"]) == "RegistrationsBaseUrl").Select(o => o["@id"].ToObject<Uri>()).FirstOrDefault();
+                Uri baseUrl = serviceIndex["RegistrationsBaseUrl"].FirstOrDefault();
 
                 DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
 

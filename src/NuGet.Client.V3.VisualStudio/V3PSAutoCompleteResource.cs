@@ -29,7 +29,7 @@ namespace NuGet.Client.V3.VisualStudio
 
         public override async Task<IEnumerable<string>> IdStartsWith(string packageIdPrefix, bool includePrerelease, CancellationToken token)
         {
-            Uri searchUrl = _serviceIndex.Index["resources"].Where(j => ((string)j["@type"]) == "SearchAutocompleteService").Select(o => o["@id"].ToObject<Uri>()).FirstOrDefault();
+            Uri searchUrl = _serviceIndex["SearchAutocompleteService"].FirstOrDefault();
 
             if (searchUrl == null)
             {
