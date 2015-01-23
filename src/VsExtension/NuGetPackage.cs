@@ -248,7 +248,7 @@ namespace NuGetVSExtension
                 DeleteOnRestart.DeleteMarkedPackageDirectories();
             } */
 
-            OnBuildPackageRestorer = new OnBuildPackageRestorer(PackageRestoreManager, this);
+            OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this);
         }
 
         private void AddMenuCommandHandlers()

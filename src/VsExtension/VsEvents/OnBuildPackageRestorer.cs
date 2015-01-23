@@ -3,14 +3,21 @@ using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.ProjectManagement;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.PackagingCore;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace NuGetVSExtension
 {
-    public sealed class OnBuildPackageRestorer
+    internal sealed class OnBuildPackageRestorer
     {
         private const string LogEntrySource = "NuGet PackageRestorer";
 
@@ -30,7 +37,15 @@ namespace NuGetVSExtension
 
         private IVsThreadedWaitDialog2 _waitDialog;
 
+        private ConcurrentBag<PackageIdentity> RestoredPackages { get; set; }
+
         private IPackageRestoreManager PackageRestoreManager { get; set; }
+
+        private ISolutionManager SolutionManager { get; set; }
+
+        private int TotalCount { get; set; }
+
+        private int CurrentCount;
 
         enum VerbosityLevel
         {
@@ -41,17 +56,22 @@ namespace NuGetVSExtension
             Diagnostic = 4
         };
 
-        public OnBuildPackageRestorer(IPackageRestoreManager packageRestoreManager, IServiceProvider serviceProvider)
+        internal OnBuildPackageRestorer(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager, IServiceProvider serviceProvider)
         {
+            SolutionManager = solutionManager;
+
             PackageRestoreManager = packageRestoreManager;
+            PackageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
+            RestoredPackages = new ConcurrentBag<PackageIdentity>();
+
             _dte = ServiceLocator.GetInstance<DTE>();
-            _errorListProvider = new ErrorListProvider(serviceProvider);
             _buildEvents = _dte.Events.BuildEvents;
             _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
             _solutionEvents = _dte.Events.SolutionEvents;
-            _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;   
-        }
+            _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
 
+            _errorListProvider = new ErrorListProvider(serviceProvider);
+        }
 
         OutputWindowPane GetBuildOutputPane()
         {
@@ -114,6 +134,25 @@ namespace NuGetVSExtension
             }
         }
 
+        private void PackageRestoreManager_PackageRestored(object sender, PackageRestoredEventArgs args)
+        {
+            PackageIdentity packageIdentity = args.Package;
+            RestoredPackages.Add(packageIdentity);
+            if (args.Restored)
+            {
+                bool canceled = false;
+                Interlocked.Increment(ref CurrentCount);
+                _waitDialog.UpdateProgress(
+                    String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity.ToString()),
+                    String.Empty,
+                    szStatusBarText: null,
+                    iCurrentStep: CurrentCount,
+                    iTotalSteps: TotalCount,
+                    fDisableCancel: false,
+                    pfCanceled: out canceled);
+            }
+        }
+
         private async System.Threading.Tasks.Task RestorePackagesOrCheckForMissingPackages(vsBuildScope scope)
         {
             _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
@@ -133,15 +172,14 @@ namespace NuGetVSExtension
                         fShowMarqueeProgress: true);
                 if (IsConsentGranted())
                 {
-                    bool hasMissingPackages = false;
-                    try
+                    if(scope == vsBuildScope.vsBuildScopeSolution || scope == vsBuildScope.vsBuildScopeBatch || scope == vsBuildScope.vsBuildScopeProject)
                     {
-                        hasMissingPackages = await PackageRestoreManager.RestoreMissingPackagesInSolution();
-                        WriteLine(hasMissingPackages, error: false);
+                        TotalCount = PackageRestoreManager.GetMissingPackagesInSolution().ToList().Count;
+                        await System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject)));
                     }
-                    catch (Exception)
+                    else
                     {
-                        WriteLine(hasMissingPackages, error: true);
+                        throw new NotImplementedException();
                     }
                     PackageRestoreManager.RaisePackagesMissingEventForSolution();
                 }
@@ -155,6 +193,20 @@ namespace NuGetVSExtension
                 int canceled;
                 _waitDialog.EndWaitDialog(out canceled);
                 _waitDialog = null;
+            }
+        }
+
+        private async System.Threading.Tasks.Task RestorePackagesInProject(NuGetProject nuGetProject)
+        {
+            bool hasMissingPackages = false;
+            try
+            {
+                hasMissingPackages = await PackageRestoreManager.RestoreMissingPackages(nuGetProject);
+                WriteLine(hasMissingPackages, error: false);
+            }
+            catch (Exception)
+            {
+                WriteLine(hasMissingPackages, error: true);
             }
         }
 

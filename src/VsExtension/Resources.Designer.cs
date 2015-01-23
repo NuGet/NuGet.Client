@@ -187,6 +187,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restored NuGet package {0}..
+        /// </summary>
+        internal static string RestoredPackage {
+            get {
+                return ResourceManager.GetString("RestoredPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages....
         /// </summary>
         internal static string RestoringPackages {

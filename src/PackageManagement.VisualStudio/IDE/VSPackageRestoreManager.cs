@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             try
             {
-                await base.RestoreMissingPackages(nuGetProject);
+                return await base.RestoreMissingPackages(nuGetProject);
             }
             catch (Exception ex)
             {
