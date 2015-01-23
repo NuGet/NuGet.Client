@@ -39,8 +39,6 @@ namespace NuGetVSExtension
 
         private IVsThreadedWaitDialog2 _waitDialog;
 
-        private ConcurrentBag<PackageIdentity> RestoredPackages { get; set; }
-
         private IPackageRestoreManager PackageRestoreManager { get; set; }
 
         private ISolutionManager SolutionManager { get; set; }
@@ -48,6 +46,8 @@ namespace NuGetVSExtension
         private int TotalCount { get; set; }
 
         private int CurrentCount;
+
+        private int WaitDialogUpdateGate = 0;
 
         enum VerbosityLevel
         {
@@ -64,7 +64,6 @@ namespace NuGetVSExtension
 
             PackageRestoreManager = packageRestoreManager;
             PackageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
-            RestoredPackages = new ConcurrentBag<PackageIdentity>();
 
             _dte = ServiceLocator.GetInstance<DTE>();
             _buildEvents = _dte.Events.BuildEvents;
@@ -136,22 +135,34 @@ namespace NuGetVSExtension
             }
         }
 
+        /// <summary>
+        /// This event could be raised from multiple threads. Only perform thread-safe operations
+        /// </summary>
         private void PackageRestoreManager_PackageRestored(object sender, PackageRestoredEventArgs args)
         {
             PackageIdentity packageIdentity = args.Package;
-            RestoredPackages.Add(packageIdentity);
             if (args.Restored)
             {
                 bool canceled = false;
                 Interlocked.Increment(ref CurrentCount);
-                _waitDialog.UpdateProgress(
-                    String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity.ToString()),
-                    String.Empty,
-                    szStatusBarText: null,
-                    iCurrentStep: CurrentCount,
-                    iTotalSteps: TotalCount,
-                    fDisableCancel: false,
-                    pfCanceled: out canceled);
+                
+                // The rate at which the packages are restored is much higher than the rate at which a wait dialog can be updated
+                // And, this event is raised by multiple threads
+                // So, only try to update the wait dialog if an update is not already in progress. Use the int 'WaitDialogUpdateGate' for this purpose
+                // Always, set it to 1 below and gets its old value. If the old value is 0, go and update, otherwise, bail
+                if (Interlocked.Equals(Interlocked.Exchange(ref WaitDialogUpdateGate, 1), 0))
+                {
+                    _waitDialog.UpdateProgress(
+                        String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity.ToString()),
+                        String.Empty,
+                        szStatusBarText: null,
+                        iCurrentStep: CurrentCount,
+                        iTotalSteps: TotalCount,
+                        fDisableCancel: false,
+                        pfCanceled: out canceled);
+
+                    Interlocked.Exchange(ref WaitDialogUpdateGate, 0);
+                }
             }
         }
 
