@@ -199,6 +199,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             TaskScheduler.Default);
                     };
                     _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                    _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectory();
                 }
                 catch (Exception ex)
                 {
