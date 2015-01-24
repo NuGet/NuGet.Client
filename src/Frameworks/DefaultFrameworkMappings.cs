@@ -163,6 +163,16 @@ namespace NuGet.Frameworks
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
                                                     new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(0, 0)),
                                                     new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1))),
+
+                        // aspnet <-> aspnet50
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(0, 0)),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(5, 0))),
+
+                        // aspnetcore <-> aspnetcore50
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(0, 0)),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(5, 0))),
                     };
                 }
 

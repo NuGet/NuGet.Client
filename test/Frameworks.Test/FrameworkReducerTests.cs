@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Extensions;
 
 namespace NuGet.Test
 {
@@ -295,6 +296,34 @@ namespace NuGet.Test
             var result = reducer.GetNearest(projectFramework, frameworks);
 
             Assert.Equal("net4", result.GetShortFolderName());
+        }
+
+        [Theory]
+        [InlineData("aspnet50", "aspnetcore50")]
+        [InlineData("aspnet50", "aspnet50")]
+        [InlineData("aspnet50", "aspnet5")]
+        [InlineData("aspnet50", "aspnet")]
+        [InlineData("aspnet", "aspnet50")]
+        [InlineData("aspnet", "aspnetcore50")]
+        [InlineData("aspnet", "aspnetcore")]
+        [InlineData("aspnet", "net45")]
+        [InlineData("aspnet", "net5")]
+        [InlineData("aspnetcore", "netcore5")]
+        [InlineData("aspnetcore50", "netcore451")]
+        public void FrameworkReducer_GetNearestAsp(string project, string framework)
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse(framework),
+            };
+
+            NuGetFramework projectFramework = NuGetFramework.Parse(project);
+
+            var result = reducer.GetNearest(projectFramework, frameworks);
+
+            Assert.True(NuGetFramework.Parse(framework).Equals(result));
         }
     }
 }
