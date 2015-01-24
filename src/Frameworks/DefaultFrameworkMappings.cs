@@ -201,6 +201,15 @@ namespace NuGet.Frameworks
                     {
                         // .NETCore is a subset of the .NET framework
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.FrameworkIdentifiers.Net),
+
+                        // .NET is a subset of the desktop ASP.NET framework, should this be a target platform instead?
+                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.FrameworkIdentifiers.AspNet),
+
+                        // ASP.NET Core is a subset of the ASP.NET framework
+                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.FrameworkIdentifiers.AspNet),
+
+                        // .NET Core is a subset of the ASP.NET Core framework
+                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.FrameworkIdentifiers.AspNetCore),
                     };
                 }
 

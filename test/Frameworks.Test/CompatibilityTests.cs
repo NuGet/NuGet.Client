@@ -100,6 +100,13 @@ namespace NuGet.Test
         [Theory]
         [InlineData("net45", "native")]
         [InlineData("net", "native")]
+        [InlineData("aspnet", "aspnetcore")]
+        [InlineData("aspnet5", "aspnetcore5")]
+        [InlineData("aspnet50", "net45")]
+        [InlineData("aspnet50", "netcore45")]
+        [InlineData("aspnet50", "native")]
+        [InlineData("aspnetcore50", "netcore45")]
+        [InlineData("aspnetcore50", "native")]
         public void Compatibility_OneWayMappings(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);
