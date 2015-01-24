@@ -63,7 +63,6 @@ namespace NuGetVSExtension
             SolutionManager = solutionManager;
 
             PackageRestoreManager = packageRestoreManager;
-            PackageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
 
             _dte = ServiceLocator.GetInstance<DTE>();
             _buildEvents = _dte.Events.BuildEvents;
@@ -100,6 +99,7 @@ namespace NuGetVSExtension
             try
             {
                 _errorListProvider.Tasks.Clear();
+                PackageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
 
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
@@ -132,6 +132,10 @@ namespace NuGetVSExtension
                 }
                 WriteLine(VerbosityLevel.Quiet, message);
                 ActivityLog.LogError(LogEntrySource, message);
+            }
+            finally
+            {
+                PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
             }
         }
 
