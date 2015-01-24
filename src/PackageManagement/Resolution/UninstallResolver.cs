@@ -49,49 +49,81 @@ namespace NuGet.PackageManagement
         {
             IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict;
             var dependentsDict = GetPackageDependents(dependencyInfoEnumerable, installedPackages, out dependenciesDict);
-            HashSet<PackageIdentity> packagesMarkedForUninstall = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+            HashSet<PackageIdentity> packagesMarkedForUninstall =
+                MarkPackagesToBeUninstalled(packageIdentity, dependenciesDict, dependentsDict, uninstallationContext);
 
-            GetPackagesToBeUninstalled(packageIdentity, dependentsDict, dependenciesDict, uninstallationContext, ref packagesMarkedForUninstall);
+            CheckIfPackageCanBeUninstalled(packageIdentity, dependenciesDict, dependentsDict, uninstallationContext, packagesMarkedForUninstall);
             return packagesMarkedForUninstall;
         }
 
-        public static void GetPackagesToBeUninstalled(PackageIdentity packageIdentity, IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependentsDict,
-            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict, UninstallationContext uninstallationContext, ref HashSet<PackageIdentity> packagesMarkedForUninstall)
-        {            
-            // Step-1: Check if package is already marked for uninstall. If so, do nothing and return
-            if(packagesMarkedForUninstall.Contains(packageIdentity))
-            {
-                return;
-            }
-
-            // Step-2: Check if the package has dependents
+        private static void CheckIfPackageCanBeUninstalled(PackageIdentity packageIdentity,
+            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict,
+            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependentsDict,
+            UninstallationContext uninstallationContext,
+            HashSet<PackageIdentity> packagesMarkedForUninstall)
+        {
             HashSet<PackageIdentity> dependents;
             if (dependentsDict.TryGetValue(packageIdentity, out dependents) && dependents != null)
             {
-                // Step-2.1: Check if the package to be uninstalled has any dependents which are not marked for uninstallation
-                HashSet<PackageIdentity> packagesMarkedForUninstallLocalVariable = packagesMarkedForUninstall;
-                List<PackageIdentity> dependentsNotMarkedForUninstallation = dependents.Where(d => !packagesMarkedForUninstallLocalVariable.Contains(d)).ToList();
-
-                // Step-2.2: If yes for Step-2.1 and 'ForceRemove' is set to false, throw InvalidOperationException using CreatePackageHasDependentsException
-                if (dependentsNotMarkedForUninstallation.Count > 0 && !uninstallationContext.ForceRemove)
+                if (!uninstallationContext.ForceRemove)
                 {
-                    throw CreatePackageHasDependentsException(packageIdentity, dependentsNotMarkedForUninstallation);
+                    var unMarkedDependents = dependents.Where(d => !packagesMarkedForUninstall.Contains(d)).ToList();
+                    if (unMarkedDependents.Count > 0)
+                    {
+                        throw CreatePackageHasDependentsException(packageIdentity, unMarkedDependents);
+                    }
                 }
             }
 
-            // Step-3: At this point, package can be uninstalled for sure. Mark it for uninstallation. In Step-4, we will check if the dependencies can be too as needed
-            packagesMarkedForUninstall.Add(packageIdentity);
-
-            // Step-4: If 'RemoveDependencies' is marked to true and package has dependencies, Walk recursively
             HashSet<PackageIdentity> dependencies;
-            if(uninstallationContext.RemoveDependencies && dependenciesDict.TryGetValue(packageIdentity, out dependencies) && dependencies != null)
+            if (uninstallationContext.RemoveDependencies && dependenciesDict.TryGetValue(packageIdentity, out dependencies) && dependencies != null)
             {
-                // Package has dependencies
-                foreach (var dependency in dependencies)
+                foreach(var dependency in dependencies)
                 {
-                    GetPackagesToBeUninstalled(dependency, dependentsDict, dependentsDict, uninstallationContext, ref packagesMarkedForUninstall);
+                    CheckIfPackageCanBeUninstalled(dependency,
+                        dependenciesDict,
+                        dependentsDict,
+                        uninstallationContext,
+                        packagesMarkedForUninstall);
                 }
             }
+        }
+
+        private static HashSet<PackageIdentity> MarkPackagesToBeUninstalled(PackageIdentity packageIdentity,
+            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict,
+            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependentsDict,
+            UninstallationContext uninstallationContext)
+        {
+            Queue<PackageIdentity> breathFirstSearchQueue = new Queue<PackageIdentity>();
+            List<PackageIdentity> markedPackages = new List<PackageIdentity>();
+
+            breathFirstSearchQueue.Enqueue(packageIdentity);
+
+            while(breathFirstSearchQueue.Count > 0)
+            {
+                PackageIdentity headPackage = breathFirstSearchQueue.Dequeue();
+                markedPackages.Add(headPackage);
+
+                HashSet<PackageIdentity> dependencies;
+                if(uninstallationContext.RemoveDependencies && dependenciesDict.TryGetValue(headPackage, out dependencies) && dependencies != null)
+                {
+                    foreach(var dependency in dependencies)
+                    {
+                        if (markedPackages.Contains(dependency))
+                        {
+                            // Put it back at the end
+                            markedPackages.Remove(dependency);
+                            markedPackages.Add(dependency);
+                        }
+                        else
+                        {
+                            breathFirstSearchQueue.Enqueue(dependency);
+                        }
+                    }
+                }                
+            }
+
+            return new HashSet<PackageIdentity>(markedPackages, PackageIdentity.Comparer);
         }
 
         private static InvalidOperationException CreatePackageHasDependentsException(PackageIdentity packageIdentity,

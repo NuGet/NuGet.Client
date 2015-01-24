@@ -33,6 +33,16 @@ namespace NuGet.Test
             new PackageIdentity("jQuery", new NuGetVersion("1.6.4")),
             new PackageIdentity("jQuery.Validation", new NuGetVersion("1.13.1")),
             new PackageIdentity("jQuery.UI.Combined", new NuGetVersion("1.11.2")),
+        };
+
+        private List<PackageIdentity> PackageWithDeepDependency = new List<PackageIdentity>()
+        {
+            new PackageIdentity("Newtonsoft.Json", new NuGetVersion("5.0.8")),
+            new PackageIdentity("System.Spatial", new NuGetVersion("5.6.2")),
+            new PackageIdentity("Microsoft.Data.Edm", new NuGetVersion("5.6.2")),
+            new PackageIdentity("Microsoft.Data.OData", new NuGetVersion("5.6.2")),
+            new PackageIdentity("Microsoft.Data.Services.Client", new NuGetVersion("5.6.2")),
+            new PackageIdentity("Microsoft.WindowsAzure.ConfigurationManager" , new NuGetVersion("1.8.0.0")),
             new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.0")),
         };
 
@@ -1005,7 +1015,7 @@ namespace NuGet.Test
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
-            var packageIdentity = PackageWithDependents[4]; // WindowsAzure.Storage.4.3.0
+            var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
 
             // Pre-Assert
             // Check that the packages.config file does not exist
@@ -1024,9 +1034,114 @@ namespace NuGet.Test
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
             packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
-            Assert.Equal(1, packagesInPackagesConfig.Count);
-            Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            Assert.Equal(7, packagesInPackagesConfig.Count);
+            var installedPackages = PackageWithDeepDependency.OrderBy(f => f.Id).ToList();
+            for (int i = 0; i < 7; i++)
+            {
+                Assert.Equal(installedPackages[i], packagesInPackagesConfig[i].PackageIdentity);
+                Assert.Equal(projectTargetFramework, packagesInPackagesConfig[i].TargetFramework);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManPreviewInstallPackageWithDeepDependency()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Act
+            var packageActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, packageIdentity,
+                new ResolutionContext(), new TestNuGetProjectContext())).ToList();
+
+            // Assert
+            Assert.Equal(7, packageActions.Count);
+            var soleSourceRepository = sourceRepositoryProvider.GetRepositories().Single();
+            for (int i = 0; i < 7; i++)
+            {
+                Assert.True(PackageWithDeepDependency[i].Equals(packageActions[i].PackageIdentity));
+                Assert.Equal(NuGetProjectActionType.Install, packageActions[i].NuGetProjectActionType);
+                Assert.Equal(soleSourceRepository.PackageSource.Source,
+                    packageActions[i].SourceRepository.PackageSource.Source);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManPreviewUninstallPackageWithDeepDependency()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var packageIdentity = PackageWithDeepDependency[6]; // WindowsAzure.Storage.4.3.0
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
+                new ResolutionContext(), new TestNuGetProjectContext());
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            Assert.Equal(7, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[6].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[6].TargetFramework);
+
+            // Main Act
+            var packageActions = (await nuGetPackageManager.PreviewUninstallPackageAsync(msBuildNuGetProject, PackageWithDeepDependency[6],
+                new UninstallationContext(removeDependencies: true), new TestNuGetProjectContext())).ToList();
+            Assert.Equal(7, packageActions.Count);
+            var soleSourceRepository = sourceRepositoryProvider.GetRepositories().Single();
+            for (int i = 0; i < 7; i++)
+            {
+                Assert.True(PackageWithDeepDependency[6-i].Equals(packageActions[i].PackageIdentity));
+                Assert.Equal(NuGetProjectActionType.Install, packageActions[i].NuGetProjectActionType);
+                Assert.Equal(soleSourceRepository.PackageSource.Source,
+                    packageActions[i].SourceRepository.PackageSource.Source);
+            }
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
