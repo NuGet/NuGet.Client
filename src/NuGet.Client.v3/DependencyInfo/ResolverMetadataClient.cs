@@ -5,6 +5,7 @@ using NuGet.Versioning;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -110,6 +111,7 @@ namespace NuGet.Client.DependencyInfo
 
         public static async Task<RegistrationInfo> GetRegistrationInfo(HttpClient httpClient, Uri registrationUri, VersionRange range, NuGetFramework projectTargetFramework, ConcurrentDictionary<Uri, JObject> sessionCache = null)
         {
+            NuGetFrameworkFullComparer frameworkComparer = new NuGetFrameworkFullComparer();
             FrameworkReducer frameworkReducer = new FrameworkReducer();
             JObject index = await LoadResource(httpClient, registrationUri, sessionCache);
 
@@ -192,18 +194,24 @@ namespace NuGet.Client.DependencyInfo
 
                             var targetFramework = frameworkReducer.GetNearest(projectTargetFramework, depFrameworks);
 
-                            foreach (JObject dependencyGroupObj in dependencyGroupsArray)
+                            // If no frameworks are compatible we just ignore them - Should this be an exception?
+                            if (targetFramework != null)
                             {
-                                if (GetFramework(dependencyGroupObj).Equals(targetFramework))
+                                foreach (JObject dependencyGroupObj in dependencyGroupsArray)
                                 {
-                                    foreach (JObject dependencyObj in dependencyGroupObj["dependencies"])
-                                    {
-                                        DependencyInfo dependencyInfo = new DependencyInfo();
-                                        dependencyInfo.Id = dependencyObj["id"].ToString();
-                                        dependencyInfo.Range = Utils.CreateVersionRange((string)dependencyObj["range"], range.IncludePrerelease);
-                                        dependencyInfo.RegistrationUri = dependencyObj["registration"].ToObject<Uri>();
+                                    NuGetFramework currentFramework = GetFramework(dependencyGroupObj);
 
-                                        packageInfo.Dependencies.Add(dependencyInfo);
+                                    if (frameworkComparer.Equals(currentFramework, targetFramework))
+                                    {
+                                        foreach (JObject dependencyObj in dependencyGroupObj["dependencies"])
+                                        {
+                                            DependencyInfo dependencyInfo = new DependencyInfo();
+                                            dependencyInfo.Id = dependencyObj["id"].ToString();
+                                            dependencyInfo.Range = Utils.CreateVersionRange((string)dependencyObj["range"], range.IncludePrerelease);
+                                            dependencyInfo.RegistrationUri = dependencyObj["registration"].ToObject<Uri>();
+
+                                            packageInfo.Dependencies.Add(dependencyInfo);
+                                        }
                                     }
                                 }
                             }
