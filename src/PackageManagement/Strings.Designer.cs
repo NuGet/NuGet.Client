@@ -250,20 +250,20 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Resolving actions install multiple packages.
+        /// </summary>
+        internal static string ResolvingActionsToInstallOrUpdateMultiplePackages {
+            get {
+                return ResourceManager.GetString("ResolvingActionsToInstallOrUpdateMultiplePackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resolving actions to install package &apos;{0}&apos;.
         /// </summary>
         internal static string ResolvingActionsToInstallPackage {
             get {
                 return ResourceManager.GetString("ResolvingActionsToInstallPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Resolving actions install multiple packages.
-        /// </summary>
-        internal static string ResolvingActionsToInstallPackageForMultiplePackages {
-            get {
-                return ResourceManager.GetString("ResolvingActionsToInstallPackageForMultiplePackages", resourceCulture);
             }
         }
         

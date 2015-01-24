@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement
         }
 
         // TODO: HACK: Copy-pasted PreviewInstallPackageAsync here. Need to refactor later
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(NuGetProject nuGetProject, IEnumerable<string> packageIds, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdateProjectPackagesAsync(NuGetProject nuGetProject, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
         {
             List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
             // TODO: these sources should be ordered
@@ -175,7 +175,8 @@ namespace NuGet.PackageManagement
             try
             {
                 // Step-1 : Create packageIdentities with version as null (HACK) TODO: Need to parallelize this later
-                var packagesToInstall = packageIds.Select(i => new PackageIdentity(i, null));
+                var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
+                var packagesToInstall = nuGetProject.GetInstalledPackages().Select(pr => new PackageIdentity(pr.PackageIdentity.Id, null));
 
                 // Step-2 : Call GatherPackagePackageDependencyInfo to get all the metadata
                 
@@ -189,8 +190,7 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException(Strings.UnableToGatherDependencyInfoForMultiplePackages);
                 }
 
-                // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
-                var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
+                // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages                
                 // TODO: Consider using IPackageResolver once it is extensible
                 var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement
                 // based on newPackages obtained in Step-2 and project.GetInstalledPackages
                 var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallPackage);
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallOrUpdateMultiplePackages);
                 var newPackagesToUninstall = oldListOfInstalledPackages
                     .Where(op => newListOfInstalledPackages
                         .Where(np => op.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) && !op.Version.Equals(np.Version)).Any());

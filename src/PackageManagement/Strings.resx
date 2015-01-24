@@ -207,7 +207,7 @@
   <data name="OneOrMorePackagesNotFound" xml:space="preserve">
     <value>One or more packages not found</value>
   </data>
-  <data name="ResolvingActionsToInstallPackageForMultiplePackages" xml:space="preserve">
+  <data name="ResolvingActionsToInstallOrUpdateMultiplePackages" xml:space="preserve">
     <value>Resolving actions install multiple packages</value>
   </data>
   <data name="UnableToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
