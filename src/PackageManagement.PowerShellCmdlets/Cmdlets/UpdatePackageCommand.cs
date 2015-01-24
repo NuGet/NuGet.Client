@@ -21,6 +21,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private bool _idSpecified;
         private bool _projectSpecified;
         private bool _versionSpecifiedPrerelease;
+        private bool _allowPrerelease;
         private DependencyBehavior _updateVersionEnum;
         private NuGetVersion _nugetVersion;
 
@@ -108,16 +109,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private void PerformPackageUpdates()
         {
-            // Update All
+            // Update-Package without ID specified
             if (!_idSpecified)
             {
                 foreach (NuGetProject project in Projects)
                 {
                     string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                     IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
-                    IEnumerable<PackageIdentity> remoteUpdates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
-                    UpdatePackages(remoteUpdates, project);
-                    WaitAndLogFromMessageQueue();
+                    IEnumerable<PackageIdentity> updates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
+                    if (updates.Any())
+                    {
+                        UpdatePackages(updates, project);
+                        WaitAndLogFromMessageQueue();
+                    }
+                    else
+                    {
+                        LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                    }
                 }
             }
             else
@@ -126,6 +134,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                     PackageReference installedPackage = Project.GetInstalledPackages().Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    IEnumerable<PackageReference> installedPackages = new List<PackageReference>() { installedPackage };
+                    IEnumerable<PackageIdentity> updates = Enumerable.Empty<PackageIdentity>();
 
                     // If package Id exists in Packages folder but is not actually installed to the current project, throw.
                     if (installedPackage == null)
@@ -134,24 +144,34 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        List<PackageReference> installedPackages = new List<PackageReference>() { installedPackage };
                         if (!string.IsNullOrEmpty(Version))
                         {
+                            // If Highest/HighestMinor/HighestPatch/Lowest is given after -version switch
                             if (IsVersionEnum)
                             {
-                                _nugetVersion = PowerShellCmdletsUtility.GetUpdateVersionForDependentPackage(ActiveSourceRepository, installedPackage.PackageIdentity, project, _updateVersionEnum, IncludePrerelease.IsPresent);
+                                updates = GetPackageUpdates(installedPackages, project, _allowPrerelease, false, null, true, _updateVersionEnum);
                             }
-
-                            PackageIdentity update = new PackageIdentity(Id, _nugetVersion);
-                            List<PackageIdentity> identities = new List<PackageIdentity>() { update };
-                            UpdatePackages(identities, project);
+                            // If a NuGetVersion format is given after -version switch
+                            else
+                            {
+                                updates = GetPackageUpdates(installedPackages, project, _allowPrerelease, false, Version);
+                            }
                         }
+                        // Find the latest update from server
                         else
                         {
-                            IEnumerable<PackageIdentity> remoteUpdates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
-                            UpdatePackages(remoteUpdates, project);
-                            WaitAndLogFromMessageQueue();
+                            updates = GetPackageUpdates(installedPackages, project, _allowPrerelease, Safe.IsPresent);
                         }
+                    }
+
+                    if (updates.Any())
+                    {
+                        UpdatePackages(updates, project);
+                        WaitAndLogFromMessageQueue();
+                    }
+                    else
+                    {
+                        LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
                     }
                 }
             }
@@ -159,7 +179,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private void PerformPackageReinstalls()
         {
-            // Reinstall All
+            // Update-Package -reinstall
             if (!_idSpecified)
             {
                 foreach (NuGetProject project in Projects)
@@ -235,8 +255,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                bool allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
-                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false);
+                _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
+                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false);
                 return _context;
             }
         }

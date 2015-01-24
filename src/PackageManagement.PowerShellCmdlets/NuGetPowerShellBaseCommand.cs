@@ -4,6 +4,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
+using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -182,7 +183,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected async Task UninstallPackageByIdAsync(NuGetProject project, string packageId, UninstallationContext uninstallContext, INuGetProjectContext projectContext, bool isPreview)
+        protected async Task UninstallPackageByIdAsync(NuGetProject project, string packageId, UninstallationContext uninstallContext, 
+            INuGetProjectContext projectContext, bool isPreview)
         {
             if (isPreview)
             {
@@ -194,7 +196,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks, bool includePrerelease, int skip, int take)
+        protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks, 
+            bool includePrerelease, int skip, int take)
         {
             SearchFilter searchfilter = new SearchFilter();
             searchfilter.IncludePrerelease = includePrerelease;
@@ -207,7 +210,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return packages;
         }
 
-        protected Dictionary<PSSearchMetadata, NuGetVersion> GetPackageUpdatesFromRemoteSource(IEnumerable<PackageReference> installedPackages, IEnumerable<string> targetFrameworks, bool includePrerelease, int skip = 0, int take = 30)
+        protected Dictionary<PSSearchMetadata, NuGetVersion> GetPackageUpdatesFromRemoteSource(IEnumerable<PackageReference> installedPackages,
+            IEnumerable<string> targetFrameworks, bool includePrerelease, int skip = 0, int take = 30)
         {
             Dictionary<PSSearchMetadata, NuGetVersion> updates = new Dictionary<PSSearchMetadata, NuGetVersion>();
 
@@ -221,22 +225,36 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return updates;
         }
 
-        protected IEnumerable<PackageIdentity> GetPackageUpdates(IEnumerable<PackageReference> installedPackages, NuGetProject project, bool includePrerelease, bool isSafe)
+        protected IEnumerable<PackageIdentity> GetPackageUpdates(IEnumerable<PackageReference> installedPackages, NuGetProject project, 
+            bool includePrerelease, bool isSafe, string version = null, bool isEnum = false, DependencyBehavior dependencyEnum = DependencyBehavior.Lowest)
         {
             List<PackageIdentity> updates = new List<PackageIdentity>();
 
             foreach (PackageReference package in installedPackages)
             {
                 PackageIdentity identity;
-                if (!isSafe)
+                if (isSafe)
                 {
-                    identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease);
+                    identity = PowerShellCmdletsUtility.GetSafePackageIdentityForId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease, package.PackageIdentity.Version);
+                }
+                else if (isEnum)
+                {
+                    identity = PowerShellCmdletsUtility.GetUpdateForPackageByDependencyEnum(ActiveSourceRepository, package.PackageIdentity, project, dependencyEnum, includePrerelease);
+                }
+                else if (!string.IsNullOrEmpty(version))
+                {
+                    NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(version);
+                    identity = new PackageIdentity(package.PackageIdentity.Id, nVersion);
                 }
                 else
                 {
-                    identity = PowerShellCmdletsUtility.GetSafeVersionForPackageId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease, package.PackageIdentity.Version);
+                    identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease);
                 }
-                updates.Add(identity);
+                // Only add to the package updates list if version is higher than the current installed version.
+                if (identity.Version > package.PackageIdentity.Version)
+                {
+                    updates.Add(identity);
+                }
             }
 
             return updates;

@@ -127,7 +127,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return result.Versions;
         }
 
-        public static PackageIdentity GetSafeVersionForPackageId(SourceRepository sourceRepository, string packageId, NuGetProject project, bool includePrerelease, NuGetVersion nugetVersion)
+        public static PackageIdentity GetSafePackageIdentityForId(SourceRepository sourceRepository, string packageId, NuGetProject project, bool includePrerelease, NuGetVersion nugetVersion)
         {
             // Continue to get the latest version when above condition is not met.
             IEnumerable<NuGetVersion> allVersions = Enumerable.Empty<NuGetVersion>();
@@ -172,7 +172,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="updateVersion"></param>
         /// <param name="includePrerelease"></param>
         /// <returns></returns>
-        public static NuGetVersion GetUpdateVersionForDependentPackage(SourceRepository sourceRepository, PackageIdentity identity, NuGetProject project, DependencyBehavior updateVersion, bool includePrerelease)
+        public static PackageIdentity GetUpdateForPackageByDependencyEnum(SourceRepository sourceRepository, PackageIdentity identity, NuGetProject project, DependencyBehavior updateVersion, bool includePrerelease)
         {
             if (identity == null)
             {
@@ -182,14 +182,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             IEnumerable<NuGetVersion> allVersions = GetAllVersionsForPackageId(sourceRepository, identity.Id, project, includePrerelease);
             // Find all versions that are higher than the package's current version
             allVersions = allVersions.Where(p => p > identity.Version).OrderByDescending(v => v);
+            NuGetVersion nVersion = null;
 
             if (updateVersion == DependencyBehavior.Lowest)
             {
-                return allVersions.LastOrDefault();
+                nVersion = allVersions.LastOrDefault();
             }
             else if (updateVersion == DependencyBehavior.Highest)
             {
-                return allVersions.FirstOrDefault();
+                nVersion = allVersions.FirstOrDefault();
             }
             else if (updateVersion == DependencyBehavior.HighestPatch)
             {
@@ -197,9 +198,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                              group p by new { p.Version.Major, p.Version.Minor } into g
                              orderby g.Key.Major, g.Key.Minor
                              select g;
-                return (from p in groups.First()
-                        orderby p.Version descending
-                        select p).FirstOrDefault();
+                nVersion = (from p in groups.First()
+                            orderby p.Version descending
+                            select p).FirstOrDefault();
             }
             else if (updateVersion == DependencyBehavior.HighestMinor)
             {
@@ -207,12 +208,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                              group p by new { p.Version.Major } into g
                              orderby g.Key.Major
                              select g;
-                return (from p in groups.First()
-                        orderby p.Version descending
-                        select p).FirstOrDefault();
+                nVersion = (from p in groups.First()
+                            orderby p.Version descending
+                            select p).FirstOrDefault();
             }
 
-            throw new ArgumentOutOfRangeException("updateVersion");
+            if (nVersion != null)
+            {
+                return new PackageIdentity(identity.Id, nVersion);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("updateVersion");
+            }
         }
     }
 }

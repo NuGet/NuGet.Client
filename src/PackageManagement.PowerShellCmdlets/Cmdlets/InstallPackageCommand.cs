@@ -31,6 +31,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private string _cacheStatusMessage = String.Empty;
         private NuGetVersion _nugetVersion;
         private bool _versionSpecifiedPrerelease;
+        private bool _allowPrerelease;
 
         public InstallPackageCommand()
             : base()
@@ -188,7 +189,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, Id, Project, IncludePrerelease.IsPresent);
+                identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, Id, Project, _allowPrerelease);
             }
             return new List<PackageIdentity>() { identity };
         }
@@ -288,8 +289,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                bool allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
-                _context = new ResolutionContext(GetDependencyBehavior(), allowPrerelease, false);
+                _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
+                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false);
                 return _context;
             }
         }
