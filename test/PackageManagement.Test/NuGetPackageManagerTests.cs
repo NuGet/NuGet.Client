@@ -1135,14 +1135,20 @@ namespace NuGet.Test
                 new UninstallationContext(removeDependencies: true), new TestNuGetProjectContext())).ToList();
             Assert.Equal(7, packageActions.Count);
             var soleSourceRepository = sourceRepositoryProvider.GetRepositories().Single();
-            for (int i = 0; i < 7; i++)
-            {
-                Assert.True(PackageWithDeepDependency[6-i].Equals(packageActions[i].PackageIdentity));
-                Assert.Equal(NuGetProjectActionType.Install, packageActions[i].NuGetProjectActionType);
-                Assert.Equal(soleSourceRepository.PackageSource.Source,
-                    packageActions[i].SourceRepository.PackageSource.Source);
-            }
-
+            Assert.True(PackageWithDeepDependency[6].Equals(packageActions[0].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[0].NuGetProjectActionType);
+            Assert.True(PackageWithDeepDependency[0].Equals(packageActions[1].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[1].NuGetProjectActionType);
+            Assert.True(PackageWithDeepDependency[4].Equals(packageActions[2].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[2].NuGetProjectActionType);
+            Assert.True(PackageWithDeepDependency[3].Equals(packageActions[3].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[3].NuGetProjectActionType);
+            Assert.True(PackageWithDeepDependency[5].Equals(packageActions[4].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[4].NuGetProjectActionType);
+            Assert.True(PackageWithDeepDependency[1].Equals(packageActions[5].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[5].NuGetProjectActionType);
+            Assert.True(PackageWithDeepDependency[2].Equals(packageActions[6].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[6].NuGetProjectActionType);
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
         }
