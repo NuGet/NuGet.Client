@@ -568,18 +568,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 int index = WaitHandle.WaitAny(new WaitHandle[] { completeEvent, queueSemaphone });
                 if (index == 0)
                 {
+                    int count = logQueue.Count;
+                    if (count != 0)
+                    {
+                        for (int i = 0; i < count; i++)
+                        {
+                            LogFromMessageQueue();
+                        }
+                    }
                     break;
                 }
                 else
                 {
                     lock (this)
                     {
-                        var messageFromQueue = logQueue.First();
-                        logQueue.RemoveAt(0);
-                        LogCore(messageFromQueue.Item1, messageFromQueue.Item2);
+                        LogFromMessageQueue();
                     }
                 }
             }
+        }
+
+        private void LogFromMessageQueue()
+        {
+            var messageFromQueue = logQueue.First();
+            logQueue.RemoveAt(0);
+            LogCore(messageFromQueue.Item1, messageFromQueue.Item2);
         }
 
         protected List<Tuple<MessageLevel, string>> logQueue = new List<Tuple<MessageLevel, string>>();
