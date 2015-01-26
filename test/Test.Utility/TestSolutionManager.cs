@@ -97,6 +97,10 @@ namespace Test.Utility
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
+
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
+
         public event EventHandler SolutionClosed;
 
         public event EventHandler SolutionClosing;

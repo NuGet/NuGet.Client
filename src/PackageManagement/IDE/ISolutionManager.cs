@@ -15,6 +15,8 @@ namespace NuGet.PackageManagement
         event EventHandler SolutionClosing;
         event EventHandler SolutionClosed;
         event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
+        event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
+        event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
 
         string SolutionDirectory { get; }
         string DefaultNuGetProjectName { get; set; }

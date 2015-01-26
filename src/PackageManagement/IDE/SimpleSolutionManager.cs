@@ -16,6 +16,8 @@ namespace NuGet.PackageManagement
         public event EventHandler SolutionClosed;
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
 
         protected Dictionary<string, NuGetProject> NuGetProjects { get; set; }
 
@@ -101,7 +103,6 @@ namespace NuGet.PackageManagement
 
             return nuGetProjectName;
         }
-
 
         public INuGetProjectContext NuGetProjectContext
         {
