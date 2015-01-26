@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PackageSource\IPackageSourceProvider.cs" />
+    <Compile Include="PackageSource\NuGetConstants.cs" />
     <Compile Include="PackageSource\PackageSource.cs" />
     <Compile Include="PackageSource\PackageSourceProvider.cs" />
     <Compile Include="Settings\IMachineWideSettings.cs" />

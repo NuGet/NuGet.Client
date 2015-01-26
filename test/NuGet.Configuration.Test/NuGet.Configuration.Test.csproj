@@ -35,12 +35,16 @@
     <Reference Include="Ionic.Zip">
       <HintPath>..\..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="NuGet.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2e465378e3b1a8dd, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Configuration.1.0.0-master-50072141\lib\net45\NuGet.Configuration.dll</HintPath>
+      <HintPath>..\..\src\NuGet.Configuration\obj\Debug\NuGet.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Frameworks">
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.Frameworks.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Frameworks.Fakes">
+      <HintPath>FakesAssemblies\NuGet.Frameworks.Fakes.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging">
       <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.Packaging.dll</HintPath>
@@ -72,11 +76,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PackageServiceProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsTests.cs" />
+    <Compile Include="TestUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Fakes Include="Fakes\NuGet.Frameworks.fakes" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
