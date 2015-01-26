@@ -13,7 +13,7 @@ using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class WebSiteProjectSystem : VSMSBuildNuGetProjectSystem
+    public class WebSiteProjectSystem : WebProjectSystem
     {
         private const string RootNamespace = "RootNamespace";
         private const string AppCodeFolder = "App_Code";

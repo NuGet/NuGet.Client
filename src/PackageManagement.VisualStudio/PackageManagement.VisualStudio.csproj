@@ -153,6 +153,7 @@
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\NativeProjectSystem.cs" />
+    <Compile Include="ProjectSystems\WebProjectSystem.cs" />
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />
     <Compile Include="ProjectSystems\WixProjectSystem.cs" />
