@@ -88,5 +88,10 @@ namespace NuGet.PackageManagement
                 }
             }
         }
+
+        public IPackageSourceProvider PackageSourceProvider
+        {
+            get { return _packageSourceProvider; }
+        }
     }
 }

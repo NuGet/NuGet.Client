@@ -12,8 +12,8 @@ namespace Test.Utility
 {
     public class TestSourceRepositoryUtility
     {
-        private static PackageSource V2PackageSource = new PackageSource("https://www.nuget.org/api/v2", "v2");
-        private static PackageSource V3PackageSource = new PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3");
+        public static PackageSource V2PackageSource = new PackageSource("https://www.nuget.org/api/v2/", "v2");
+        public static PackageSource V3PackageSource = new PackageSource("https://api.nuget.org/v3/index.json", "v3");
         public TestSourceRepositoryUtility() {}
 
         [ImportMany]
@@ -49,12 +49,21 @@ namespace Test.Utility
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, thisUtility.ResourceProviders);
             return sourceRepositoryProvider;
         }
+
+        public static SourceRepositoryProvider CreateSourceRepositoryProvider(IPackageSourceProvider packageSourceProvider)
+        {
+            var thisUtility = new TestSourceRepositoryUtility();
+            var container = thisUtility.Initialize();
+
+            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, thisUtility.ResourceProviders);
+            return sourceRepositoryProvider;
+        }
     }
 
     /// <summary>
     /// Provider that only returns V3 as a source
     /// </summary>
-    class TestPackageSourceProvider : IPackageSourceProvider
+    public class TestPackageSourceProvider : IPackageSourceProvider
     {
         private IEnumerable<PackageSource> PackageSources { get; set; }
         public TestPackageSourceProvider(IEnumerable<PackageSource> packageSources)
@@ -63,7 +72,7 @@ namespace Test.Utility
         }
         public void DisablePackageSource(PackageSource source)
         {
-            throw new NotImplementedException();
+            source.IsEnabled = false;
         }
 
         public bool IsPackageSourceEnabled(PackageSource source)
@@ -80,8 +89,31 @@ namespace Test.Utility
 
         public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
-            throw new NotImplementedException();
+            PackageSources = sources;
+            if(PackageSourcesSaved != null)
+            {
+                PackageSourcesSaved(this, null);
+            }
         }
     }
 
+    public static class TestPackageSourceSettings
+    {
+        public static string TempPackageSourceContents =
+            @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='nuget.org' value='https://www.nuget.org/api/v2/' />
+  </packageSources>
+</configuration>";
+
+        public static string CreateAndGetSettingFilePath()
+        {
+            var tempFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var fileName = "nuget.config";
+
+            File.WriteAllText(Path.Combine(tempFolder, fileName), TempPackageSourceContents);
+            return tempFolder;
+        }
+    }
 }

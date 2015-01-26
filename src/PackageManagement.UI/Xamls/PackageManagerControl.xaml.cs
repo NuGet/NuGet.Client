@@ -88,6 +88,8 @@ namespace NuGet.PackageManagement.UI
             {
                 controller.PackageManagerControl = this;
             }
+
+            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesSaved += Sources_PackageSourcesChanged;
         }
 
         private IEnumerable<SourceRepository> EnabledSources

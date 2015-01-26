@@ -23,5 +23,10 @@ namespace NuGet.PackageManagement
         /// Create a repository for one time use.
         /// </summary>
         SourceRepository CreateRepository(PackageSource source);
+
+        /// <summary>
+        /// Gets the package source provider
+        /// </summary>
+        IPackageSourceProvider PackageSourceProvider { get; }
     }
 }
