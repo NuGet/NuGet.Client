@@ -11,6 +11,7 @@ using System.Windows.Forms.VisualStyles;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 
 
@@ -38,16 +39,21 @@ namespace NuGet.Options
         //}
 
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
-            :this(new PackageSourceProvider(ServiceLocator.GetInstance<ISettings>()), serviceProvider)
+            :this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
         {
 
         }
-        public PackageSourcesOptionsControl(IPackageSourceProvider packageSourceProvider, IServiceProvider serviceProvider)
+        public PackageSourcesOptionsControl(ISourceRepositoryProvider sourceRepositoryProvider, IServiceProvider serviceProvider)
         {
             InitializeComponent();
 
+            if(sourceRepositoryProvider == null)
+            {
+                throw new ArgumentNullException("sourceRepositoryProvider");
+            }
+
             _serviceProvider = serviceProvider;
-            _packageSourceProvider = packageSourceProvider;
+            _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
             SetupEventHandlers();
 
             UpdateDPI();

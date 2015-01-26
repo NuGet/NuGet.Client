@@ -46,8 +46,10 @@ namespace NuGetVSExtension
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string)]
+    // Don't auto load on project retargeting and upgrade events from this VS package
+    // They get loaded on visual studio open
+    //[ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
+    //[ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string)]
     [FontAndColorsRegistration(
         "Package Manager Console",
         NuGetConsole.Implementation.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
