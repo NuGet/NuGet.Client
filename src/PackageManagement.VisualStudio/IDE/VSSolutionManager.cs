@@ -68,9 +68,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
-            //_solutionEvents.ProjectAdded += OnProjectAdded;
-            //_solutionEvents.ProjectRemoved += OnProjectRemoved;
-            //_solutionEvents.ProjectRenamed += OnProjectRenamed;
+            _solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
+            _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
+            _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
             // Run the init on another thread to avoid an endless loop of SolutionManager -> Project System -> VSPackageManager -> SolutionManager
             ThreadPool.QueueUserWorkItem(new WaitCallback(Init));
@@ -142,6 +142,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
 
         public event EventHandler SolutionClosed;
 
@@ -266,6 +268,55 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        private void OnEnvDTEProjectRenamed(EnvDTEProject envDTEProject, string oldName)
+        {
+            if (!String.IsNullOrEmpty(oldName))
+            {
+                EnsureNuGetAndEnvDTEProjectCache();
+
+                if(EnvDTEProjectUtility.IsSupported(envDTEProject))
+                {
+                    RemoveEnvDTEProjectFromCache(oldName);
+                    AddEnvDTEProjectToCache(envDTEProject);
+                    NuGetProject nuGetProject;
+                    NuGetAndEnvDTEProjectCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+
+                    if (NuGetProjectRenamed != null)
+                    {
+                        NuGetProjectRenamed(this, new NuGetProjectEventArgs(nuGetProject));
+                    }
+                }
+            }
+        }
+
+        private void OnEnvDTEProjectRemoved(EnvDTEProject envDTEProject)
+        {
+            RemoveEnvDTEProjectFromCache(envDTEProject.FullName);
+            NuGetProject nuGetProject;
+            NuGetAndEnvDTEProjectCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+
+            if (NuGetProjectRemoved != null)
+            {
+                NuGetProjectRemoved(this, new NuGetProjectEventArgs(nuGetProject));
+            }
+        }
+
+        private void OnEnvDTEProjectAdded(EnvDTEProject envDTEProject)
+        {
+            if (EnvDTEProjectUtility.IsSupported(envDTEProject) && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject))
+            {
+                EnsureNuGetAndEnvDTEProjectCache();
+                AddEnvDTEProjectToCache(envDTEProject);
+                NuGetProject nuGetProject;
+                NuGetAndEnvDTEProjectCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+
+                if (NuGetProjectAdded != null)
+                {
+                    NuGetProjectAdded(this, new NuGetProjectEventArgs(nuGetProject));
+                }
+            }
+        }
+
         private void SetDefaultProjectName()
         {
             // when a new solution opens, we set its startup project as the default project in NuGet Console
@@ -296,7 +347,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 var allEnvDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte.Solution);
                 foreach (EnvDTEProject envDTEProject in allEnvDTEProjects)
                 {
-                    var uniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
                     AddEnvDTEProjectToCache(envDTEProject);
                 }
             }
@@ -319,6 +369,35 @@ namespace NuGet.PackageManagement.VisualStudio
                 DefaultNuGetProjectName = oldEnvDTEProjectName != null ?
                                      oldEnvDTEProjectName.CustomUniqueName :
                                      newEnvDTEProjectName.ShortName;
+            }
+        }
+
+        private void RemoveEnvDTEProjectFromCache(string name)
+        {
+            // Do nothing if the cache hasn't been set up
+            if (NuGetAndEnvDTEProjectCache == null)
+            {
+                return;
+            }
+
+            EnvDTEProjectName envDTEProjectName;
+            NuGetAndEnvDTEProjectCache.TryGetNuGetProjectName(name, out envDTEProjectName);
+
+            // Remove the project from the cache
+            NuGetAndEnvDTEProjectCache.RemoveProject(name);
+
+            if (!NuGetAndEnvDTEProjectCache.Contains(DefaultNuGetProjectName))
+            {
+                DefaultNuGetProjectName = null;
+            }
+
+            // for LightSwitch project, the main project is not added to _projectCache, but it is called on removal. 
+            // in that case, projectName is null.
+            if (envDTEProjectName != null &&
+                envDTEProjectName.CustomUniqueName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase) &&
+                !NuGetAndEnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName))
+            {
+                DefaultNuGetProjectName = envDTEProjectName.ShortName;
             }
         }
 

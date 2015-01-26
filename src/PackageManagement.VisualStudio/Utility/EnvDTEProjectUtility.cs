@@ -371,6 +371,18 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProject.Kind == null || UnsupportedProjectTypes.Contains(envDTEProject.Kind);
         }
 
+        public static bool IsParentProjectExplicitlyUnsupported(EnvDTEProject envDTEProject)
+        {
+            if (envDTEProject.ParentProjectItem == null || envDTEProject.ParentProjectItem.ContainingProject == null)
+            {
+                // this project is not a child of another project
+                return false;
+            }
+
+            EnvDTEProject parentEnvDTEProject = envDTEProject.ParentProjectItem.ContainingProject;
+            return IsExplicitlyUnsupported(parentEnvDTEProject);
+        }
+
         public static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(EnvDTEProject envDTEproject)
         {
             return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(envDTEproject.FullName).FirstOrDefault() ??
