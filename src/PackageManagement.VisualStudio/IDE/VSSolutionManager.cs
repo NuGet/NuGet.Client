@@ -30,9 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly uint _solutionLoadedUICookie;
         private readonly IVsSolution _vsSolution;
         private bool _initNeeded;
-        private EnvDTEProjectCache EnvDTEProjectCache { get; set; }
-        private VSNuGetProjectFactory VSNuGetProjectFactory { get; set; }
-        private ToBeDeletedNuGetProjectContext ToBeDeletedNuGetProjectContext { get; set; }
+        private NuGetAndEnvDTEProjectCache NuGetAndEnvDTEProjectCache { get; set; }
 
         public VSSolutionManager()
             : this(
@@ -76,8 +74,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Run the init on another thread to avoid an endless loop of SolutionManager -> Project System -> VSPackageManager -> SolutionManager
             ThreadPool.QueueUserWorkItem(new WaitCallback(Init));
-            VSNuGetProjectFactory = new VSNuGetProjectFactory();
-            ToBeDeletedNuGetProjectContext = new ToBeDeletedNuGetProjectContext();
         }
 
         public NuGetProject DefaultNuGetProject
@@ -88,7 +84,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     return null;
                 }
-                return GetNuGetProjectFromProjectSafeName(DefaultNuGetProjectName);
+                NuGetProject defaultNuGetProject;
+                NuGetAndEnvDTEProjectCache.TryGetNuGetProject(DefaultNuGetProjectName, out defaultNuGetProject);
+                return defaultNuGetProject;
             }
         }
 
@@ -100,34 +98,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
-            return GetNuGetProjectFromProjectSafeName(nuGetProjectSafeName);
-        }
-
-        private NuGetProject GetNuGetProjectFromProjectSafeName(string nuGetProjectSafeName)
-        {
-            EnvDTEProject envDTEProject = GetEnvDTEProject(nuGetProjectSafeName);
-            Debug.Assert(envDTEProject != null, "Invalid default project");
-            if (VSNuGetProjectFactory == null)
-            {
-                VSNuGetProjectFactory = new VSNuGetProjectFactory();
-            }
-            return VSNuGetProjectFactory.GetNuGetProject(envDTEProject, ToBeDeletedNuGetProjectContext);
-        }
-
-        private EnvDTEProject GetEnvDTEProject(string projectSafeName)
-        {
-            if (IsSolutionOpen)
-            {
-                EnsureEnvDTEProjectCache();
-
-                EnvDTEProject envDTEProject;
-                if (EnvDTEProjectCache.TryGetProject(projectSafeName, out envDTEProject))
-                {
-                    return envDTEProject;
-                }
-            }
-
-            return null;
+            NuGetProject nuGetProject;
+            NuGetAndEnvDTEProjectCache.TryGetNuGetProject(nuGetProjectSafeName, out nuGetProject);
+            return nuGetProject;
         }
 
         public string GetNuGetProjectSafeName(NuGetProject nuGetProject)
@@ -137,15 +110,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<NuGetProject> GetNuGetProjects()
         {
-            return GetEnvDTEProjects().Select(p => VSNuGetProjectFactory.GetNuGetProject(p, ToBeDeletedNuGetProjectContext));
+            if(IsSolutionOpen)
+            {
+                EnsureNuGetAndEnvDTEProjectCache();
+                return NuGetAndEnvDTEProjectCache.GetNuGetProjects();
+            }
+
+            return Enumerable.Empty<NuGetProject>();
         }
 
         internal IEnumerable<EnvDTEProject> GetEnvDTEProjects()
         {
             if(IsSolutionOpen)
             {
-                EnsureEnvDTEProjectCache();
-                return EnvDTEProjectCache.GetProjects();
+                EnsureNuGetAndEnvDTEProjectCache();
+                return NuGetAndEnvDTEProjectCache.GetEnvDTEProjects();
             }
 
             return Enumerable.Empty<EnvDTEProject>();
@@ -260,7 +239,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            EnsureEnvDTEProjectCache();
+            EnsureNuGetAndEnvDTEProjectCache();
             SetDefaultProjectName();
             if (SolutionOpened != null)
             {
@@ -279,8 +258,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private void OnBeforeClosing()
         {
             DefaultNuGetProjectName = null;
-            EnvDTEProjectCache = null;
-            VSNuGetProjectFactory = null;
+            NuGetAndEnvDTEProjectCache.Clear();
+            NuGetAndEnvDTEProjectCache = null;
             if (SolutionClosing != null)
             {
                 SolutionClosing(this, EventArgs.Empty);
@@ -298,9 +277,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!String.IsNullOrEmpty(startupProjectName))
                 {
                     EnvDTEProjectName envDTEProjectName;
-                    if (EnvDTEProjectCache.TryGetProjectName(startupProjectName, out envDTEProjectName))
+                    if (NuGetAndEnvDTEProjectCache.TryGetNuGetProjectName(startupProjectName, out envDTEProjectName))
                     {
-                        DefaultNuGetProjectName = EnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName) ?
+                        DefaultNuGetProjectName = NuGetAndEnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName) ?
                                              envDTEProjectName.CustomUniqueName :
                                              envDTEProjectName.ShortName;
                     }
@@ -308,11 +287,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void EnsureEnvDTEProjectCache()
+        private void EnsureNuGetAndEnvDTEProjectCache()
         {
-            if (IsSolutionOpen && EnvDTEProjectCache == null)
+            if (IsSolutionOpen && NuGetAndEnvDTEProjectCache == null)
             {
-                EnvDTEProjectCache = new EnvDTEProjectCache();
+                NuGetAndEnvDTEProjectCache = new NuGetAndEnvDTEProjectCache(this);
 
                 var allEnvDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte.Solution);
                 foreach (EnvDTEProject envDTEProject in allEnvDTEProjects)
@@ -330,9 +309,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
             EnvDTEProjectName oldEnvDTEProjectName;
-            EnvDTEProjectCache.TryGetProjectNameByShortName(EnvDTEProjectUtility.GetName(envDTEProject), out oldEnvDTEProjectName);
+            NuGetAndEnvDTEProjectCache.TryGetProjectNameByShortName(EnvDTEProjectUtility.GetName(envDTEProject), out oldEnvDTEProjectName);
 
-            EnvDTEProjectName newEnvDTEProjectName = EnvDTEProjectCache.AddProject(envDTEProject);
+            EnvDTEProjectName newEnvDTEProjectName = NuGetAndEnvDTEProjectCache.AddProject(envDTEProject);
 
             if (String.IsNullOrEmpty(DefaultNuGetProjectName) ||
                 newEnvDTEProjectName.ShortName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase))
@@ -441,20 +420,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get;
             set;
-        }
-    }
-
-    internal class ToBeDeletedNuGetProjectContext : INuGetProjectContext
-    {
-
-        public void Log(MessageLevel level, string message, params object[] args)
-        {
-            
-        }
-
-        public FileConflictAction ResolveFileConflict(string message)
-        {
-            return FileConflictAction.IgnoreAll;
         }
     }
 }

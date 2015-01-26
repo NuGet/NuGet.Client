@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.ProjectManagement;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnvDTEProject = EnvDTE.Project;
@@ -8,8 +9,10 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// Cache that stores project based on multiple names. i.e. EnvDTEProject can be retrieved by name (if non conflicting), unique name and custom unique name.
     /// </summary>
-    internal class EnvDTEProjectCache
+    internal class NuGetAndEnvDTEProjectCache
     {
+        private VSNuGetProjectFactory VSNuGetProjectFactory { get; set; }
+        private readonly Dictionary<EnvDTEProjectName, NuGetProject> _nuGetProjectCache = new Dictionary<EnvDTEProjectName, NuGetProject>();
         // Mapping from project name structure to project instance
         private readonly Dictionary<EnvDTEProjectName, EnvDTEProject> _envDTEProjectCache = new Dictionary<EnvDTEProjectName, EnvDTEProject>();
 
@@ -19,19 +22,22 @@ namespace NuGet.PackageManagement.VisualStudio
         // We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<EnvDTEProjectName>> _shortNameCache = new Dictionary<string, HashSet<EnvDTEProjectName>>(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>
-        /// Finds a project by short name, unique name or custom unique name.
-        /// </summary>
-        /// <param name="name">name of the project to retrieve.</param>
-        /// <param name="project">project instance</param>
-        /// <returns>true if the project with the specified name is cached.</returns>
-        public bool TryGetProject(string name, out EnvDTEProject project)
+        public NuGetAndEnvDTEProjectCache(ISolutionManager solutionManager)
         {
-            project = null;
+            if(solutionManager == null)
+            {
+                throw new ArgumentNullException("solutionManager");
+            }
+            VSNuGetProjectFactory = new VSNuGetProjectFactory(solutionManager);
+        }
+
+        public bool TryGetNuGetProject(string name, out NuGetProject nuGetProject)
+        {
+            nuGetProject = null;
             // First try to find the project name in one of the dictionaries. Then locate the project for that name.
-            EnvDTEProjectName EnvDTEProjectName;
-            return TryGetProjectName(name, out EnvDTEProjectName) &&
-                   _envDTEProjectCache.TryGetValue(EnvDTEProjectName, out project);
+            EnvDTEProjectName envDTEProjectName;
+            return TryGetNuGetProjectName(name, out envDTEProjectName) &&
+                _nuGetProjectCache.TryGetValue(envDTEProjectName, out nuGetProject);
         }
 
         /// <summary>
@@ -40,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="name">name of the project</param>
         /// <param name="EnvDTEProjectName">project name instance</param>
         /// <returns>true if the project name with the specified name is found.</returns>
-        public bool TryGetProjectName(string name, out EnvDTEProjectName EnvDTEProjectName)
+        public bool TryGetNuGetProjectName(string name, out EnvDTEProjectName EnvDTEProjectName)
         {
             return _projectNamesCache.TryGetValue(name, out EnvDTEProjectName) ||
                    TryGetProjectNameByShortName(name, out EnvDTEProjectName);
@@ -73,10 +79,15 @@ namespace NuGet.PackageManagement.VisualStudio
                    _shortNameCache.ContainsKey(name);
         }
 
+        public IEnumerable<NuGetProject> GetNuGetProjects()
+        {
+            return _nuGetProjectCache.Values;
+        }
+
         /// <summary>
         /// Returns all cached projects.
         /// </summary>
-        public IEnumerable<EnvDTEProject> GetProjects()
+        public IEnumerable<EnvDTEProject> GetEnvDTEProjects()
         {
             return _envDTEProjectCache.Values;
         }
@@ -120,6 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Add the entry mapping project name to the actual project
             _envDTEProjectCache[EnvDTEProjectName] = project;
+            _nuGetProjectCache[EnvDTEProjectName] = VSNuGetProjectFactory.CreateNuGetProject(project);
 
             return EnvDTEProjectName;
         }
@@ -163,18 +175,18 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Removes a project from the short name cache.
         /// </summary>
-        /// <param name="EnvDTEProjectName">The short name of the project.</param>
-        private void RemoveShortName(EnvDTEProjectName EnvDTEProjectName)
+        /// <param name="envDTEProjectName">The short name of the project.</param>
+        private void RemoveShortName(EnvDTEProjectName envDTEProjectName)
         {
             HashSet<EnvDTEProjectName> projectNames;
-            if (_shortNameCache.TryGetValue(EnvDTEProjectName.ShortName, out projectNames))
+            if (_shortNameCache.TryGetValue(envDTEProjectName.ShortName, out projectNames))
             {
-                projectNames.Remove(EnvDTEProjectName);
+                projectNames.Remove(envDTEProjectName);
 
                 // Remove the item from the dictionary if we've removed the last project
                 if (projectNames.Count == 0)
                 {
-                    _shortNameCache.Remove(EnvDTEProjectName.ShortName);
+                    _shortNameCache.Remove(envDTEProjectName.ShortName);
                 }
             }
         }
@@ -182,12 +194,21 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Removes a project from the project name dictionary.
         /// </summary>
-        private void RemoveProjectName(EnvDTEProjectName EnvDTEProjectName)
+        private void RemoveProjectName(EnvDTEProjectName envDTEProjectName)
         {
-            _projectNamesCache.Remove(EnvDTEProjectName.CustomUniqueName);
-            _projectNamesCache.Remove(EnvDTEProjectName.UniqueName);
-            _projectNamesCache.Remove(EnvDTEProjectName.FullName);
-            _envDTEProjectCache.Remove(EnvDTEProjectName);
+            _projectNamesCache.Remove(envDTEProjectName.CustomUniqueName);
+            _projectNamesCache.Remove(envDTEProjectName.UniqueName);
+            _projectNamesCache.Remove(envDTEProjectName.FullName);
+            _envDTEProjectCache.Remove(envDTEProjectName);
+            _nuGetProjectCache.Remove(envDTEProjectName);
+        }
+
+        public void Clear()
+        {
+            _nuGetProjectCache.Clear();
+            _envDTEProjectCache.Clear();
+            _projectNamesCache.Clear();
+            _shortNameCache.Clear();
         }
     }
 

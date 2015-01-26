@@ -58,6 +58,14 @@ namespace NuGet.VisualStudio
             return _repositories;
         }
 
+        public IPackageSourceProvider PackageSourceProvider
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         /// <summary>
         /// Gets the folder location where packages have been laid down for the specified extension.
         /// </summary>

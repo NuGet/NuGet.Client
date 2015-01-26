@@ -138,7 +138,7 @@
     <Compile Include="CommonResources.cs" />
     <Compile Include="ConfigurationDefaults.cs" />
     <Compile Include="EnvironmentVariableWrapper.cs" />
-    <Compile Include="IDE\EnvDTEProjectCache.cs" />
+    <Compile Include="IDE\NuGetAndEnvDTEProjectCache.cs" />
     <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\IScriptExecutor.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />

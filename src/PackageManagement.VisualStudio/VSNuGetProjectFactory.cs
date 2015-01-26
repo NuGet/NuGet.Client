@@ -14,75 +14,45 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class VSNuGetProjectFactory
     {
-        IDictionary<string, NuGetProject> VSNuGetProjects = new Dictionary<string, NuGetProject>();
+        private ISolutionManager SolutionManager { get; set; }
+        private ISettings Settings { get; set; }
+        private EmptyNuGetProjectContext EmptyNuGetProjectContext { get; set; }
 
         // TODO: Add ISettings, ISolutionManager, IDeleteOnRestartManager, VsPackageInstallerEvents and IVsFrameworkMultiTargeting to constructor
-        public VSNuGetProjectFactory()
-        {
-        }
+        public VSNuGetProjectFactory(ISolutionManager solutionManager)
+            : this(solutionManager, ServiceLocator.GetInstance<ISettings>()) { }
 
-        private ISettings Settings { get; set;}
-
-        public NuGetProject GetNuGetProject(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+        public VSNuGetProjectFactory(ISolutionManager solutionManager, ISettings settings)
         {
-            var envDTEProjectUniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
-            NuGetProject nuGetProject = null;
-            if(!VSNuGetProjects.TryGetValue(envDTEProjectUniqueName, out nuGetProject))
+            if(solutionManager == null)
             {
-                nuGetProject = CreateNuGetProject(envDTEProject, nuGetProjectContext);
-                VSNuGetProjects[envDTEProjectUniqueName] = nuGetProject;
+                throw new ArgumentNullException("solutionManager");
             }
-            return nuGetProject;
+
+            if(settings == null)
+            {
+                throw new ArgumentNullException("settings");
+            }
+
+            SolutionManager = solutionManager;
+            Settings = settings;
+            EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         }
 
-        private NuGetProject CreateNuGetProject(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+        public NuGetProject CreateNuGetProject(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext = null)
         {
+            if(nuGetProjectContext == null)
+            {
+                nuGetProjectContext = EmptyNuGetProjectContext;
+            }
+
             var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
-            var folderNuGetProjectFullPath = GetPackagesDirectoryFullPath(envDTEProject);
+            var folderNuGetProjectFullPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
             // TODO: Handle non-default packages.config name
             var packagesConfigFullPath = Path.Combine(EnvDTEProjectUtility.GetFullPath(envDTEProject), "packages.config");
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath, packagesConfigFullPath);
 
             return msBuildNuGetProject;
-        }
-
-        private string GetPackagesDirectoryFullPath(EnvDTEProject envDTEProject)
-        {
-            string solutionFilePath = GetSolutionFilePath(envDTEProject.DTE);
-            string repositoryPath = GetRepositoryPath();
-            return Path.Combine(Path.GetDirectoryName(solutionFilePath), repositoryPath);
-        }
-
-        private string GetRepositoryPath()
-        {
-            // TODO: Change this to get the 'repositoryPath' from settings
-            return "packages";
-        }
-
-        private string GetSolutionFilePath(EnvDTE.DTE dte)
-        {
-            // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
-            // available if the solution is just being created
-            string solutionFilePath = null;
-
-            EnvDTEProperty property = dte.Solution.Properties.Item("Path");
-            if (property == null)
-            {
-                return null;
-            }
-            try
-            {
-                // When using a temporary solution, (such as by saying File -> New File), querying this value throws.
-                // Since we wouldn't be able to do manage any packages at this point, we return null. Consumers of this property typically 
-                // use a String.IsNullOrEmpty check either way, so it's alright.
-                solutionFilePath = (string)property.Value;
-            }
-            catch (COMException)
-            {
-                return null;
-            }
-
-            return solutionFilePath;
         }
     }
 }
