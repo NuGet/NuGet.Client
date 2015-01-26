@@ -19,7 +19,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private ResolutionContext _context;
         private UninstallationContext _uninstallcontext;
-        private SourceRepository _currentSource = null;
         private bool _readFromPackagesConfig;
         private bool _readFromDirectPackagePath;
         private NuGetVersion _nugetVersion;
@@ -68,7 +67,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ex.Message);
             }
             completeEvent.Set();
         }

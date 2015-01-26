@@ -171,7 +171,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
                     }
                 }
             }

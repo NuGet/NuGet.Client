@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ex.Message);
             }
             completeEvent.Set();
         }
