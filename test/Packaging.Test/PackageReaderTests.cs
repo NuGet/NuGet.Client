@@ -41,37 +41,37 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
-        public void PackageReader_ContentFilesInSubFolder()
-        {
-            var zip = TestPackages.GetZip(TestPackages.GetLegacyContentPackage());
+        //[Fact]
+        //public void PackageReader_ContentFilesInSubFolder()
+        //{
+        //    var zip = TestPackages.GetZip(TestPackages.GetLegacyContentPackage());
 
-            using (PackageReader reader = new PackageReader(zip))
-            {
-                var groups = reader.GetComponentTree().GetPaths();
-                var group = groups.Single();
-                var prop = group.Properties.Single() as KeyValueTreeProperty;
+        //    using (PackageReader reader = new PackageReader(zip))
+        //    {
+        //        var groups = reader.GetComponentTree().GetPaths();
+        //        var group = groups.Single();
+        //        var prop = group.Properties.Single() as KeyValueTreeProperty;
 
-                Assert.Equal("any", prop.Value);
-                Assert.Equal(group.Items.Count(), 3);
-            }
-        }
+        //        Assert.Equal("any", prop.Value);
+        //        Assert.Equal(group.Items.Count(), 3);
+        //    }
+        //}
 
-        // TODO: This behavior might be a breaking change from NuGet legacy
-        [Fact]
-        public void PackageReader_IgnoreSubFolders()
-        {
-            var zip = TestPackages.GetZip(TestPackages.GetLibSubFolderPackage());
+        //// TODO: This behavior might be a breaking change from NuGet legacy
+        //[Fact]
+        //public void PackageReader_IgnoreSubFolders()
+        //{
+        //    var zip = TestPackages.GetZip(TestPackages.GetLibSubFolderPackage());
 
-            using (PackageReader reader = new PackageReader(zip))
-            {
-                var groups = reader.GetComponentTree().GetPaths();
-                var group = groups.First();
-                var prop = group.Properties.Single() as KeyValueTreeProperty;
+        //    using (PackageReader reader = new PackageReader(zip))
+        //    {
+        //        var groups = reader.GetComponentTree().GetPaths();
+        //        var group = groups.First();
+        //        var prop = group.Properties.Single() as KeyValueTreeProperty;
 
-                Assert.Equal("net40", prop.Value);
-                Assert.Equal(group.Items.Count(), 1);
-            }
-        }
+        //        Assert.Equal("net40", prop.Value);
+        //        Assert.Equal(group.Items.Count(), 1);
+        //    }
+        //}
     }
 }

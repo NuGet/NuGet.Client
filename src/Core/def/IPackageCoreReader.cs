@@ -12,6 +12,6 @@ namespace NuGet.PackagingCore
     {
         PackageIdentity GetIdentity();
 
-        ComponentTree GetComponentTree();
+        // TODO: add dependency info
     }
 }
