@@ -57,21 +57,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             searchfilter.IncludePrerelease = includePrerelease;
             searchfilter.SupportedFrameworks = targetFrameworks;
             searchfilter.IncludeDelisted = false;
-            // TODO: Reverse the workaround for the bug in MetadataResource. 
-            //MetadataResource resource = sourceRepository.GetResource<MetadataResource>();
-            UIMetadataResource resource = sourceRepository.GetResource<UIMetadataResource>();
+            MetadataResource resource = sourceRepository.GetResource<MetadataResource>();
             PackageIdentity identity = null;
 
             try
             {
-                //Task<NuGetVersion> task = resource.GetLatestVersion(packageId, includePrerelease, false, CancellationToken.None);
-                //NuGetVersion latestVersion = task.Result;
-                var task = resource.GetMetadata(packageId, includePrerelease, false, CancellationToken.None);
-                UIPackageMetadata metadata = task.Result
-                    .Where(p => string.Equals(p.Identity.Id, packageId, StringComparison.OrdinalIgnoreCase))
-                    .OrderByDescending(v => v.Identity.Version)
-                    .FirstOrDefault();
-                identity = metadata.Identity;
+                Task<NuGetVersion> task = resource.GetLatestVersion(packageId, includePrerelease, false, CancellationToken.None);
+                NuGetVersion latestVersion = task.Result;
+                identity = new PackageIdentity(packageId, latestVersion);
             }
             catch (Exception)
             {

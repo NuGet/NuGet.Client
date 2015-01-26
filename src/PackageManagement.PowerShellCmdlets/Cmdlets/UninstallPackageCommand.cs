@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Resolution Context for the command
+        /// Uninstallation Context for Uninstall-Package command
         /// </summary>
         public UninstallationContext UninstallContext
         {

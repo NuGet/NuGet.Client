@@ -6,12 +6,10 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Text;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -24,19 +22,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private SourceRepository _currentSource = null;
         private bool _readFromPackagesConfig;
         private bool _readFromDirectPackagePath;
-        private bool _isHttp;
-        private bool _isNetworkAvailable;
-        private string _fallbackToLocalCacheMessge = Resources.Cmdlet_FallbackToCache;
-        private string _localCacheFailureMessage = Resources.Cmdlet_LocalCacheFailure;
-        private string _cacheStatusMessage = String.Empty;
         private NuGetVersion _nugetVersion;
         private bool _versionSpecifiedPrerelease;
         private bool _allowPrerelease;
+        private bool _isHttp;
 
         public InstallPackageCommand()
             : base()
         {
-            _isNetworkAvailable = isNetworkAvailable();
         }
 
         [Parameter]
@@ -44,7 +37,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            //FallbackToCacheIfNeccessary();
             ParseUserInputForId();
             ParseUserInputForVersion();
             base.Preprocess();
@@ -61,6 +53,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UnsubscribeFromProgressEvents();
         }
 
+        /// <summary>
+        /// Install packages from the list of identities.
+        /// </summary>
+        /// <param name="identities"></param>
         private async void InstallPackages(IEnumerable<PackageIdentity> identities)
         {
             try
@@ -75,54 +71,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 LogCore(MessageLevel.Error, ex.Message);
             }
             completeEvent.Set();
-        }
-
-        private static bool isNetworkAvailable()
-        {
-            return NetworkInterface.GetIsNetworkAvailable();
-        }
-
-        private void FallbackToCacheIfNeccessary()
-        {
-            /**** Fallback to Cache logic***/
-            //1. Check if there is any http source (in active sources or Source switch)
-            //2. Check if any one of the UNC or local sources is available (in active sources)
-            //3. If none of the above is true, fallback to cache
-
-            //Check if any of the active package source is available. This function will return true if there is any http source in active sources
-            //For http sources, we will continue and fallback to cache at a later point if the resource is unavailable
-
-            if (String.IsNullOrEmpty(Source))
-            {
-                bool isAnySourceAvailable = false;
-                _currentSource = ActiveSourceRepository;
-                isAnySourceAvailable = UriHelper.IsAnySourceAvailable(PackageSourceProvider, _isNetworkAvailable);
-
-                //if no local or UNC source is available or no source is http, fallback to local cache
-                if (!isAnySourceAvailable)
-                {
-                    //Source = NuGet.MachineCache.Default.Source;
-                    Source = Path.Combine(Environment.ExpandEnvironmentVariables("appdata"), @"..\Local\NuGet\Cache");
-                    CacheStatusMessage(_currentSource.PackageSource.Name, Source);
-                }
-            }
-
-            //At this point, Source might be value from -Source switch or NuGet Local Cache
-            /**** End of Fallback to Cache logic ***/
-        }
-
-        private void CacheStatusMessage(object currentSource, string cacheSource)
-        {
-            if (!String.IsNullOrEmpty(cacheSource))
-            {
-                _cacheStatusMessage = String.Format(CultureInfo.CurrentCulture, _fallbackToLocalCacheMessge, currentSource, Source);
-            }
-            else
-            {
-                _cacheStatusMessage = String.Format(CultureInfo.CurrentCulture, _localCacheFailureMessage, currentSource);
-            }
-
-            LogCore(MessageLevel.Warning, String.Format(CultureInfo.CurrentCulture, _cacheStatusMessage, ActiveSourceRepository.PackageSource, Source));
         }
 
         /// <summary>
@@ -143,7 +91,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (UriHelper.IsHttpSource(Id))
                     {
                         _isHttp = true;
-                        //Source = NuGet.MachineCache.Default.Source;
                         Source = Path.Combine(Environment.ExpandEnvironmentVariables("appdata"), @"..\Local\NuGet\Cache");
                     }
                     else
@@ -156,7 +103,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Returns single package identity for resolver when Id is specified
+        /// Returns list of package identities for Package Manager
         /// </summary>
         /// <returns></returns>
         private IEnumerable<PackageIdentity> GetPackageIdentities()
@@ -180,6 +127,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return identityList;
         }
 
+        /// <summary>
+        /// Get the package identity to be installed based on package Id and Version
+        /// </summary>
+        /// <returns></returns>
         private IEnumerable<PackageIdentity> GetPackageIdentity()
         {
             PackageIdentity identity = null;
@@ -240,6 +191,44 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return identities;
         }
 
+        // TODO: Fix the logic here.
+        private IEnumerable<PackageIdentity> CreatePackageIdentityFromNupkgPath()
+        {
+            PackageIdentity identity = null;
+
+            try
+            {
+                // Example: install-package2 https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+                if (_isHttp)
+                {
+                    PackageIdentity packageIdentity = ParsePackageIdentityFromHttpSource(Id);
+                    Uri downloadUri = new Uri(Id);
+                    using (var targetPackageStream = new MemoryStream())
+                    {
+                        GetActiveSourceRepository(Id);
+                        PackageDownloader.GetPackageStream(ActiveSourceRepository, packageIdentity, targetPackageStream).Wait();
+                    }
+                }
+                else
+                {
+                    // Example: install-package2 c:\temp\packages\jQuery.1.10.2.nupkg
+                    string fullPath = Path.GetFullPath(Id);
+                    //package = new OptimizedZipPackage(fullPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log(MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
+            }
+
+            return new List<PackageIdentity>() { identity };
+        }
+
+        /// <summary>
+        /// Parse package identity from the http source, such as https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+        /// </summary>
+        /// <param name="sourceUrl"></param>
+        /// <returns></returns>
         private PackageIdentity ParsePackageIdentityFromHttpSource(string sourceUrl)
         {
             if (!string.IsNullOrEmpty(sourceUrl))
@@ -270,6 +259,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return null;
         }
 
+        /// <summary>
+        /// Parse user input for -Version switch.
+        /// If Version is given as prerelease versions, automatically append -Prerelease
+        /// </summary>
         private void ParseUserInputForVersion()
         {
             if (!string.IsNullOrEmpty(Version))
@@ -283,7 +276,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Resolution Context for the command
+        /// Resolution Context for Install-Package command
         /// </summary>
         public ResolutionContext ResolutionContext
         {
@@ -296,7 +289,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Uninstall Resolution Context for the command
+        /// Uninstall Resolution Context for Install-Package -Force command
         /// </summary>
         public UninstallationContext UninstallContext
         {

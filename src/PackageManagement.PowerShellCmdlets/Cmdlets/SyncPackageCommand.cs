@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Resolution Context for the command
+        /// Resolution Context for Sync-Package command
         /// </summary>
         public ResolutionContext ResolutionContext
         {

@@ -196,6 +196,35 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Get the list of installed packages based on Filter, Skip and First parameters
+        /// </summary>
+        /// <returns></returns>
+        protected Dictionary<NuGetProject, IEnumerable<PackageReference>> GetInstalledPackages(IEnumerable<NuGetProject> projects, 
+            string filter, int skip, int take)
+        {
+            Dictionary<NuGetProject, IEnumerable<PackageReference>> installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
+
+            foreach (NuGetProject project in projects)
+            {
+                IEnumerable<PackageReference> packageRefs = project.GetInstalledPackages();
+                // Filter the results by string
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    packageRefs = packageRefs.Where(p => p.PackageIdentity.Id.StartsWith(filter, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Skip and then take
+                packageRefs = packageRefs.Skip(skip);
+                if (take != 0)
+                {
+                    packageRefs = packageRefs.Take(take);
+                }
+                installedPackages.Add(project, packageRefs);
+            }
+            return installedPackages;
+        }
+
         protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks, 
             bool includePrerelease, int skip, int take)
         {

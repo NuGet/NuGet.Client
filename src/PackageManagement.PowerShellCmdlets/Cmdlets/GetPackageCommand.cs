@@ -104,11 +104,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
-            // If Remote & Updates set of parameters are not specified
+            // If Remote & Updates set of parameters are not specified, list the installed package.
             if (!UseRemoteSource)
             {
-                IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
-                WritePackages(installedPackages);
+                Dictionary<NuGetProject, IEnumerable<PackageReference>> packagesToDisplay = GetInstalledPackages(Projects, Filter, Skip, First);
+                WriteInstalledPackages(packagesToDisplay);
             }
             else
             {
@@ -150,6 +150,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         WriteUpdatePackagesFromRemoteSource(remoteUpdates);
                     }
                 }
+            }
+        }
+
+        private void WriteInstalledPackages(Dictionary<NuGetProject, IEnumerable<PackageReference>> dictionary)
+        {
+            // Get the PowerShellPackageWithProjectView
+            var view = PowerShellPackageWithProject.GetPowerShellPackageView(dictionary);
+            if (!view.Any())
+            {
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
+            }
+            else
+            {
+                WriteObject(view, enumerateCollection: true);
             }
         }
 

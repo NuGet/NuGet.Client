@@ -249,7 +249,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Resolution Context for the command
+        /// Resolution Context for Update-Package command
         /// </summary>
         public ResolutionContext ResolutionContext
         {
@@ -262,7 +262,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Uninstall Resolution Context for the command
+        /// Uninstallation Context for Update-Package -Reinstall command
         /// </summary>
         public UninstallationContext UninstallContext
         {
