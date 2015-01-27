@@ -5,13 +5,14 @@ using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Collections;
 
 namespace NuGet.Frameworks
 {
     /// <summary>
     /// A portable implementation of the .NET FrameworkName type with added support for NuGet folder names.
     /// </summary>
-    public partial class NuGetFramework : IEquatable<NuGetFramework>, IEqualityComparer<NuGetFramework>
+    public partial class NuGetFramework : IEquatable<NuGetFramework>
     {
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
@@ -425,14 +426,9 @@ namespace NuGet.Frameworks
             return Comparer.Equals(this, other);
         }
 
-        public bool Equals(NuGetFramework x, NuGetFramework y)
+        public override int GetHashCode()
         {
-            return Comparer.Equals(x, y);
-        }
-
-        public int GetHashCode(NuGetFramework obj)
-        {
-            return Comparer.GetHashCode(obj);
+            return Comparer.GetHashCode(this);
         }
     }
 }
