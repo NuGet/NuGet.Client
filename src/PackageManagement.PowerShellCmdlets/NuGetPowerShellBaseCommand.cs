@@ -201,19 +201,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected async Task UninstallPackageByIdAsync(NuGetProject project, string packageId, UninstallationContext uninstallContext, 
-            INuGetProjectContext projectContext, bool isPreview)
-        {
-            if (isPreview)
-            {
-                await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext);
-            }
-            else
-            {
-                await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext);
-            }
-        }
-
         /// <summary>
         /// Get the list of installed packages based on Filter, Skip and First parameters
         /// </summary>

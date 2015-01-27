@@ -1,6 +1,7 @@
 ﻿using NuGet.ProjectManagement;
 using System;
 using System.Management.Automation;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -65,6 +66,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             finally
             {
                 completeEvent.Set();
+            }
+        }
+
+        /// <summary>
+        /// Uninstall package by Id
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="packageId"></param>
+        /// <param name="uninstallContext"></param>
+        /// <param name="projectContext"></param>
+        /// <param name="isPreview"></param>
+        /// <returns></returns>
+        protected async Task UninstallPackageByIdAsync(NuGetProject project, string packageId, UninstallationContext uninstallContext, INuGetProjectContext projectContext, bool isPreview)
+        {
+            if (isPreview)
+            {
+                await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext);
+            }
+            else
+            {
+                await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext);
             }
         }
 

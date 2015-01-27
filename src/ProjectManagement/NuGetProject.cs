@@ -80,5 +80,6 @@ namespace NuGet.ProjectManagement
     {
         public const string Name = "Name";
         public const string TargetFramework = "TargetFramework";
+        public const string FullPath = "FullPath";
     }
 }

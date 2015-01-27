@@ -61,6 +61,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             DetermineFileConflictAction();
         }
 
+        /// <summary>
+        /// Install package by Identity
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="identity"></param>
+        /// <param name="resolutionContext"></param>
+        /// <param name="projectContext"></param>
+        /// <param name="isPreview"></param>
+        /// <param name="isForce"></param>
+        /// <param name="uninstallContext"></param>
+        /// <returns></returns>
         protected async Task InstallPackageByIdentityAsync(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
             if (isPreview)
@@ -81,6 +92,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Install package by Id
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="packageId"></param>
+        /// <param name="resolutionContext"></param>
+        /// <param name="projectContext"></param>
+        /// <param name="isPreview"></param>
+        /// <param name="isForce"></param>
+        /// <param name="uninstallContext"></param>
+        /// <returns></returns>
         protected async Task InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
             if (isPreview)
@@ -101,6 +123,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Determine file confliction action based on user input
+        /// </summary>
         private void DetermineFileConflictAction()
         {
             if (FileConflictAction != null)
@@ -109,6 +134,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Determine DependencyBehavior based on user input
+        /// </summary>
+        /// <returns></returns>
         protected virtual DependencyBehavior GetDependencyBehavior()
         {
             if (IgnoreDependencies.IsPresent)
@@ -125,6 +154,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Get the value of DependencyBehavior from NuGet.Config file
+        /// </summary>
+        /// <returns></returns>
         protected DependencyBehavior GetDependencyBehaviorFromConfig()
         {
             string dependencySetting = ConfigSettings.GetValue("config", "dependencyversion");

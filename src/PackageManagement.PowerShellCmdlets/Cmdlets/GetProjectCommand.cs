@@ -32,6 +32,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void Preprocess()
         {
             base.Preprocess();
+            GetNuGetProject();
         }
 
         protected override void ProcessRecordCore()
@@ -43,12 +44,58 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (All.IsPresent)
             {
                 IEnumerable<NuGetProject> projects = VsSolutionManager.GetNuGetProjects();
-                WriteObject(projects, enumerateCollection: true);
+                IEnumerable<PowerShellProject> psProjects = GetPSProjectRepresentation(projects);
+                WriteObject(psProjects, enumerateCollection: true);
             }
             else
             {
-                WriteObject(Project);
+                PowerShellProject psProject = GetPSProjectRepresentation(Project);
+                WriteObject(psProject);
             }
         }
+
+        /// <summary>
+        /// Get the list of PowerShell project representation
+        /// Used by Get-Project -All command
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
+        private IEnumerable<PowerShellProject> GetPSProjectRepresentation(IEnumerable<NuGetProject> projects)
+        {
+            List<PowerShellProject> psProjectList = new List<PowerShellProject>();
+            foreach (NuGetProject project in projects)
+            {
+                PowerShellProject psProj = GetPSProjectRepresentation(project);
+                psProjectList.Add(psProj);
+            }
+            return psProjectList;
+        }
+
+        /// <summary>
+        /// Get the PowerShell project representation
+        /// Used by Get-Project command
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        private PowerShellProject GetPSProjectRepresentation(NuGetProject project)
+        {
+            PowerShellProject psProject = new PowerShellProject();
+            psProject.ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            psProject.TargetFramework = project.GetMetadata<string>(NuGetProjectMetadataKeys.TargetFramework);
+            psProject.FullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
+            return psProject;
+        }
+    }
+
+    /// <summary>
+    /// Represent powershell project format
+    /// </summary>
+    internal class PowerShellProject
+    {
+        public string ProjectName { get; set; }
+
+        public string TargetFramework { get; set; }
+
+        public string FullPath { get; set; }
     }
 }
