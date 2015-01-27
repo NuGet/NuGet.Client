@@ -153,6 +153,11 @@
   <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
     <value>Search Online for NuGet Packages matching '{0}'</value>
   </data>
+  <data name="PackageNotRestoredBecauseOfNoConsent" xml:space="preserve">
+    <value>One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'. 
+
+Missing packages: {0}</value>
+  </data>
   <data name="PackageRestoreFailedForProject" xml:space="preserve">
     <value>NuGet Package restore failed for project {0}: {1}.</value>
   </data>

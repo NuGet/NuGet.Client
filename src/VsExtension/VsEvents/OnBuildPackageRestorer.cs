@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using NuGet.Configuration;
+using NuGet.Packaging;
 
 namespace NuGetVSExtension
 {
@@ -205,7 +207,16 @@ namespace NuGetVSExtension
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    _waitDialog.StartWaitDialog(
+                                    Resources.DialogTitle,
+                                    Resources.RestoringPackages,
+                                    String.Empty,
+                                    varStatusBmpAnim: null,
+                                    szStatusBarText: null,
+                                    iDelayToShowDialog: 0,
+                                    fIsCancelable: true,
+                                    fShowMarqueeProgress: true);
+                    CheckForMissingPackages(PackageRestoreManager.GetMissingPackagesInSolution().ToList());
                 }
             }
             finally
@@ -213,6 +224,21 @@ namespace NuGetVSExtension
                 int canceled;
                 _waitDialog.EndWaitDialog(out canceled);
                 _waitDialog = null;
+            }
+        }
+
+        /// <summary>
+        /// Checks if there are missing packages that should be restored. If so, a warning will 
+        /// be added to the error list.
+        /// </summary>
+        private void CheckForMissingPackages(List<PackageReference> missingPackages)
+        {
+            if (missingPackages.Count > 0)
+            {
+                var errorText = String.Format(CultureInfo.CurrentCulture,
+                    Resources.PackageNotRestoredBecauseOfNoConsent,
+                    String.Join(", ", missingPackages.Select(p => p.ToString())));
+                ShowError(_errorListProvider, TaskErrorCategory.Error, TaskPriority.High, errorText, hierarchyItem: null);
             }
         }
 
@@ -267,10 +293,9 @@ namespace NuGetVSExtension
         /// <returns>True if the package restore user consent is granted.</returns>
         private static bool IsConsentGranted()
         {
-            return true;
-            //var settings = ServiceLocator.GetInstance<ISettings>();
-            //var packageRestoreConsent = new PackageRestoreConsent(settings);
-            //return packageRestoreConsent.IsGranted;
+            var settings = ServiceLocator.GetInstance<ISettings>();
+            var packageRestoreConsent = new PackageRestoreConsent(settings);
+            return packageRestoreConsent.IsGranted;
         }
 
         /// <summary>
@@ -279,10 +304,9 @@ namespace NuGetVSExtension
         /// <returns>True if automatic package restore on build is enabled.</returns>
         private static bool IsAutomatic()
         {
-            return true;
-            //var settings = ServiceLocator.GetInstance<ISettings>();
-            //var packageRestoreConsent = new PackageRestoreConsent(settings);
-            //return packageRestoreConsent.IsAutomatic;
+            var settings = ServiceLocator.GetInstance<ISettings>();
+            var packageRestoreConsent = new PackageRestoreConsent(settings);
+            return packageRestoreConsent.IsAutomatic;
         }
 
         /// <summary>
