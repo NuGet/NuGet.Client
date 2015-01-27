@@ -4,8 +4,10 @@ using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Resolver
@@ -18,6 +20,7 @@ namespace NuGet.Resolver
     {
         private DependencyBehavior _dependencyBehavior;
         private HashSet<PackageIdentity> _installedPackages;
+        private HashSet<string> _newPackageIds;
 
         /// <summary>
         /// Core package resolver
@@ -28,18 +31,60 @@ namespace NuGet.Resolver
             _dependencyBehavior = dependencyBehavior;
         }
 
-        public IEnumerable<PackageIdentity> Resolve(IEnumerable<PackageIdentity> targets, IEnumerable<PackageDependencyInfo> availablePackages)
+        public IEnumerable<PackageIdentity> Resolve(IEnumerable<PackageIdentity> targets, IEnumerable<PackageDependencyInfo> availablePackages, CancellationToken token)
         {
-            return Resolve(targets, availablePackages, null);
+            return Resolve(targets, availablePackages, Enumerable.Empty<PackageReference>(), token);
         }
 
-        public IEnumerable<PackageIdentity> Resolve(IEnumerable<PackageIdentity> targets, IEnumerable<PackageDependencyInfo> availablePackages, IEnumerable<PackageReference> installedPackages)
+        public IEnumerable<PackageIdentity> Resolve(IEnumerable<string> targets, IEnumerable<PackageDependencyInfo> availablePackages, CancellationToken token)
+        {
+            return Resolve(targets, availablePackages, Enumerable.Empty<PackageReference>(), token);
+        }
+
+        public IEnumerable<PackageIdentity> Resolve(IEnumerable<string> targets, IEnumerable<PackageDependencyInfo> availablePackages, IEnumerable<PackageReference> installedPackages, CancellationToken token)
+        {
+            return Resolve(targets.Select(id => new PackageIdentity(id, null)), availablePackages, installedPackages, token);
+        }
+
+        public IEnumerable<PackageIdentity> Resolve(IEnumerable<PackageIdentity> targets, IEnumerable<PackageDependencyInfo> availablePackages, IEnumerable<PackageReference> installedPackages, CancellationToken token)
         {
             if (installedPackages != null)
             {
                 _installedPackages = new HashSet<PackageIdentity>(installedPackages.Select(e => e.PackageIdentity), PackageIdentity.Comparer);
             }
 
+            // find the list of new packages to add
+            _newPackageIds = new HashSet<string>(targets.Select(e => e.Id).Except(_installedPackages.Select(e => e.Id), StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+
+
+            // validation 
+            foreach (var target in targets)
+            {
+                if (!availablePackages.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, target.Id)))
+                {
+                    throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentUICulture, Strings.MissingDependencyInfo, target.Id));
+                }
+            }
+
+            // validation 
+            foreach (var installed in _installedPackages)
+            {
+                if (!availablePackages.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, installed.Id)))
+                {
+                    throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentUICulture, Strings.MissingDependencyInfo, installed.Id));
+                }
+            }
+
+            // TODO: this will be removed later when the interface changes
+            foreach (var installed in _installedPackages)
+            {
+                if (!targets.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, installed.Id)))
+                {
+                    throw new NuGetResolverInputException("Installed packages should be passed as targets");
+                }
+            }
+
+            // Solve
             var solver = new CombinationSolver<ResolverPackage>();
 
             CompareWrapper<ResolverPackage> comparer = new CompareWrapper<ResolverPackage>(Compare);
@@ -93,11 +138,9 @@ namespace NuGet.Resolver
 
                 return sortedSolution.ToArray();
             }
-            else
-            {
-                // no solution was found
-                return null;
-            }
+
+            // no solution found
+            throw new NuGetResolverConstraintException(Strings.NoSolution);
         }
 
         private IEnumerable<ResolverPackage> TopologicalSort(IEnumerable<ResolverPackage> nodes)
@@ -177,6 +220,14 @@ namespace NuGet.Resolver
 
             var xv = x.Version;
             var yv = y.Version;
+
+            DependencyBehavior packageBehavior = _dependencyBehavior;
+
+            // for new packages use the highest version
+            if (_newPackageIds.Contains(x.Id))
+            {
+                packageBehavior = DependencyBehavior.Highest;
+            }
 
             switch (_dependencyBehavior)
             {

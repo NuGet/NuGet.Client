@@ -9,6 +9,7 @@ using NuGet.PackagingCore;
 using NuGet.Versioning;
 using NuGet.Test;
 using NuGet.Packaging;
+using System.Threading;
 
 namespace NuGet.ResolverTest
 {
@@ -27,7 +28,7 @@ namespace NuGet.ResolverTest
             };
 
             var resolver = new PackageResolver(DependencyBehavior.Ignore);
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository).ToDictionary(p => p.Id);
+            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(1, packages.Count());
@@ -56,7 +57,7 @@ namespace NuGet.ResolverTest
             };
 
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository).ToDictionary(p => p.Id);
+            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count());
@@ -98,7 +99,7 @@ namespace NuGet.ResolverTest
 
             // Act
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var solution = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository).ToArray();
+            var solution = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
 
             // Assert
@@ -148,9 +149,13 @@ namespace NuGet.ResolverTest
                 new PackageReference(new PackageIdentity("C", NuGetVersion.Parse("1.0")), null),
             };
 
+            List<PackageIdentity> targets = new List<PackageIdentity>();
+            targets.Add(target);
+            targets.AddRange(install.Select(e => e.PackageIdentity));
+
             // Act
             var resolver = new PackageResolver(DependencyBehavior.HighestMinor);
-            var solution = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, install).ToArray();
+            var solution = resolver.Resolve(targets, sourceRepository, install, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
 
             // Assert
@@ -182,7 +187,7 @@ namespace NuGet.ResolverTest
 
             // Act
             var resolver = new PackageResolver(DependencyBehavior.HighestPatch);
-            var solution = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository).ToArray();
+            var solution = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
 
             // Assert
@@ -218,7 +223,7 @@ namespace NuGet.ResolverTest
             // Act
             var resolver = new PackageResolver(DependencyBehavior.HighestMinor);
 
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository).ToDictionary(p => p.Id);
+            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count);
@@ -257,7 +262,7 @@ namespace NuGet.ResolverTest
             // Act
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
 
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository).ToDictionary(p => p.Id);
+            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(2, packages.Count);
@@ -291,7 +296,7 @@ namespace NuGet.ResolverTest
 
             // Act
             var resolver = new PackageResolver(DependencyBehavior.HighestPatch);
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository).ToDictionary(p => p.Id);
+            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count);
@@ -341,7 +346,7 @@ namespace NuGet.ResolverTest
             possible.Add(target);
 
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var solution = resolver.Resolve(new ResolverPackage[] { target }, possible).ToList();
+            var solution = resolver.Resolve(new ResolverPackage[] { target }, possible, CancellationToken.None).ToList();
 
             Assert.Equal(2, solution.Count());
         }
@@ -356,7 +361,7 @@ namespace NuGet.ResolverTest
 
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
 
-            var solution = resolver.Resolve(new ResolverPackage[] { target }, possible);
+            var solution = resolver.Resolve(new ResolverPackage[] { target }, possible, CancellationToken.None);
 
             Assert.Equal(0, solution.Count());
         }
