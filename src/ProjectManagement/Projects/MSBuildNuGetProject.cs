@@ -124,7 +124,7 @@ namespace NuGet.ProjectManagement
             packageStream.Seek(0, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
             PackageReader packageReader = new PackageReader(zipArchive);
-            IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
+            IEnumerable<FrameworkSpecificGroup> referenceItemGroups = packageReader.GetReferenceItems();
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
             IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
             IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
@@ -132,8 +132,8 @@ namespace NuGet.ProjectManagement
             // Step-3: Get the most compatible items groups for all items groups
             bool hasCompatibleItems = false;
 
-            FrameworkSpecificGroup compatibleLibItemsGroup =
-                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, libItemGroups);
+            FrameworkSpecificGroup compatibleReferenceItemsGroup =
+                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, referenceItemGroups);
             FrameworkSpecificGroup compatibleFrameworkReferencesGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, frameworkReferenceGroups);
             FrameworkSpecificGroup compatibleContentFilesGroup =
@@ -141,7 +141,7 @@ namespace NuGet.ProjectManagement
             FrameworkSpecificGroup compatibleBuildFilesGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, buildFileGroups);
 
-            hasCompatibleItems = MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup) ||
+            hasCompatibleItems = MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
@@ -159,19 +159,19 @@ namespace NuGet.ProjectManagement
 
             // Step-6: MSBuildNuGetProjectSystem operations
             // Step-6.1: Add references to project
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
             {
-                foreach (var libItem in compatibleLibItemsGroup.Items)
+                foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
                 {
-                    if (IsAssemblyReference(libItem))
+                    if (IsAssemblyReference(referenceItem))
                     {
-                        var libItemFullPath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), libItem);
-                        var libAssemblyName = Path.GetFileName(libItem);
-                        if (MSBuildNuGetProjectSystem.ReferenceExists(libAssemblyName))
+                        var referenceItemFullPath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), referenceItem);
+                        var referenceName = Path.GetFileName(referenceItem);
+                        if (MSBuildNuGetProjectSystem.ReferenceExists(referenceName))
                         {
-                            MSBuildNuGetProjectSystem.RemoveReference(libAssemblyName);
+                            MSBuildNuGetProjectSystem.RemoveReference(referenceName);
                         }
-                        MSBuildNuGetProjectSystem.AddReference(libItemFullPath);
+                        MSBuildNuGetProjectSystem.AddReference(referenceItemFullPath);
                     }
                 }
             }
@@ -283,14 +283,14 @@ namespace NuGet.ProjectManagement
                 var zipArchive = new ZipArchive(packageStream);
                 var packageReader = new PackageReader(zipArchive);
 
-                IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
+                IEnumerable<FrameworkSpecificGroup> referenceItemGroups = packageReader.GetReferenceItems();
                 IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
                 IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
                 IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
 
                 // Step-3: Get the most compatible items groups for all items groups
-                FrameworkSpecificGroup compatibleLibItemsGroup =
-                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, libItemGroups);
+                FrameworkSpecificGroup compatibleReferenceItemsGroup =
+                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, referenceItemGroups);
                 FrameworkSpecificGroup compatibleFrameworkReferencesGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, frameworkReferenceGroups);
                 FrameworkSpecificGroup compatibleContentFilesGroup =
@@ -311,9 +311,9 @@ namespace NuGet.ProjectManagement
 
                 // Step-6: Uninstall package from the msbuild project
                 // Step-6.1: Remove references
-                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup))
+                if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
                 {
-                    foreach (var item in compatibleLibItemsGroup.Items)
+                    foreach (var item in compatibleReferenceItemsGroup.Items)
                     {
                         if (IsAssemblyReference(item))
                         {
@@ -369,9 +369,9 @@ namespace NuGet.ProjectManagement
         }
 
         private void LogTargetFrameworkInfo(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
-            FrameworkSpecificGroup libItemsGroup, FrameworkSpecificGroup contentItemsGroup, FrameworkSpecificGroup buildFilesGroup)
+            FrameworkSpecificGroup referenceItemsGroup, FrameworkSpecificGroup contentItemsGroup, FrameworkSpecificGroup buildFilesGroup)
         {
-            if(libItemsGroup.Items.Any() || contentItemsGroup.Items.Any() || buildFilesGroup.Items.Any())
+            if(referenceItemsGroup.Items.Any() || contentItemsGroup.Items.Any() || buildFilesGroup.Items.Any())
             {
                 string shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
                 nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
