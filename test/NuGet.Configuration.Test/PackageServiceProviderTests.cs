@@ -45,7 +45,7 @@ namespace NuGet.Configuration.Test
             string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
             File.Create(nugetConfigFilePath).Close();
 
-            string enabledReplacement = @"<add key='nuget.org(v3)' value='https://api.nuget.org/v3/index.json/' />";
+            string enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
@@ -88,7 +88,7 @@ namespace NuGet.Configuration.Test
             File.Create(nugetConfigFilePath).Close();
 
             string randomURL = "https://www.somerandomURL.com/";
-            string enabledReplacement = @"<add key='nuget.org(v3)' value='"+ randomURL + "' />";
+            string enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='"+ randomURL + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
@@ -127,8 +127,8 @@ namespace NuGet.Configuration.Test
             
 
             string randomURL = "https://www.somerandomURL.com/";
-            string enabledReplacement = @"<add key='nuget.org(v3)' value='https://api.nuget.org/v3/index.json/' />";
-            enabledReplacement = enabledReplacement + @"<add key='nuget.org' value='" + randomURL + "' />";
+            string enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
+            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.V2FeedName + "' value='" + randomURL + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
@@ -169,8 +169,8 @@ namespace NuGet.Configuration.Test
             string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
             File.Create(nugetConfigFilePath).Close();
 
-            string enabledReplacement = @"<add key='anotherName' value='https://api.nuget.org/v3/index.json/' />";
-            enabledReplacement = enabledReplacement + @"<add key='nuget.org' value='https://www.nuget.org/api/v2/' />";
+            string enabledReplacement = @"<add key='anotherName' value='" + NuGetConstants.V3FeedUrl + "' />";
+            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
             
@@ -212,8 +212,8 @@ namespace NuGet.Configuration.Test
             string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
             File.Create(nugetConfigFilePath).Close();
 
-            string enabledReplacement = @"<add key='nuget.org(v3)' value='https://api.nuget.org/v3/index.json/' />";
-            enabledReplacement = enabledReplacement + @"<add key='anotherName' value='https://www.nuget.org/api/v2/' />";
+            string enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
+            enabledReplacement = enabledReplacement + @"<add key='anotherName' value='" + NuGetConstants.V2FeedUrl + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
@@ -255,7 +255,7 @@ namespace NuGet.Configuration.Test
             string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
             File.Create(nugetConfigFilePath).Close();
 
-            string enabledReplacement = @"<add key='nuget.org' value='https://www.nuget.org/api/v2/' />";
+            string enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 

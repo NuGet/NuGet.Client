@@ -28,8 +28,8 @@ namespace NuGet.Configuration
         /// Creates a new PackageSourceProvider instance.
         /// </summary>
         /// <param name="settings">Specifies the settings file to use to read package sources.</param>
-        /// <param name="providerDefaultSources">Specifies the default sources to be used as per the PackageSourceProvider. These are always loaded
-        /// Default Feeds from PackageSourceProvider are generally the feeds from the NuGet Client like the NuGetOfficialFeed from the Visual Studio client for NuGet</param>
+        /// <param name="providerDefaultPrimarySources">The primary default sources you would like to use</param>
+        /// <param name="providerDefaultSecondarySources">The secondary default sources you would like to use</param>
         public PackageSourceProvider(ISettings settings, IEnumerable<PackageSource> providerDefaultPrimarySources, IEnumerable<PackageSource> providerDefaultSecondarySources)
             : this(settings, providerDefaultPrimarySources, providerDefaultSecondarySources, migratePackageSources: null)
         {
@@ -252,11 +252,12 @@ namespace NuGet.Configuration
 
         private List<PackageSource> GetPackageSourcesToBeAdded(List<PackageSource> loadedPackageSources, IEnumerable<PackageSource> allDefaultPackageSources, bool checkSecondary)
         {
-            // There are 4 different cases to consider for default package sources
-            // Case 1. Default Package Source is already present matching both feed source and the feed name
-            // Case 2. Default Package Source is already present matching feed source but with a different feed name. DO NOTHING
-            // Case 3. Default Package Source is not present, but there is another feed source with the same feed name. Override that feed entirely
-            // Case 4. Default Package Source is not present, simply, add it
+            // There are 4 different cases to consider for primary/ secondary package sources
+            // Case 1. primary/ secondary Package Source is already present matching both feed source and the feed name. Set IsOfficial to true
+            // Case 2. primary/ secondary Package Source is already present matching feed source but with a different feed name. DO NOTHING
+            // Case 3. primary/ secondary Package Source is not present, but there is another feed source with the same feed name. Override that feed entirely
+            // Case 4. primary/ secondary Package Source is not present, simply, add it. In addition, if Primary is getting added 
+            // for the first time, promote Primary to Enabled and demote secondary to disabled, if it is already enabled
 
             var defaultPackageSourcesToBeAdded = new List<PackageSource>();
             foreach (PackageSource packageSource in allDefaultPackageSources)
