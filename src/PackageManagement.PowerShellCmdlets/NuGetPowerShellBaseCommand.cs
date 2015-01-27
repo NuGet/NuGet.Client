@@ -215,7 +215,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
                 // Skip and then take
-                packageRefs = packageRefs.Skip(skip);
+                if (skip != 0)
+                {
+                    packageRefs = packageRefs.Skip(skip);
+                }
                 if (take != 0)
                 {
                     packageRefs = packageRefs.Take(take);

@@ -165,11 +165,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var view = PowerShellInstalledPackage.GetPowerShellPackageView(dictionary);
             if (view.Any())
             {
-                Log(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
+                WriteObject(view, enumerateCollection: true);
             }
             else
             {
-                WriteObject(view, enumerateCollection: true);
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
             }
         }
 
@@ -184,15 +184,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // and will be replaced by Find-Package [-Id] 
             VersionType versionType;
             string message;
-            if (!CollapseVersions)
-            {
-                versionType = VersionType.all;
-                message = "Find-Package [-Id] -ListAll";
-            }
-            else
+            if (CollapseVersions)
             {
                 versionType = VersionType.latest;
                 message = "Find-Package [-Id]";
+            }
+            else
+            {
+                versionType = VersionType.all;
+                message = "Find-Package [-Id] -ListAll";
             }
 
             // Output list of PowerShellPackages
@@ -241,13 +241,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void WriteUpdatePackagesFromRemoteSource(Dictionary<PSSearchMetadata, NuGetVersion> packagesToDisplay, NuGetProject project)
         {
             VersionType versionType;
-            if (!CollapseVersions)
+            if (CollapseVersions)
             {
-                versionType = VersionType.updates;
+                versionType = VersionType.latest;
             }
             else
             {
-                versionType = VersionType.latest;
+                versionType = VersionType.updates;
             }
             WritePackages(packagesToDisplay, versionType, project);
         }

@@ -62,7 +62,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Log(MessageLevel.Error, ex.Message);
             }
-            completeEvent.Set();
+            finally
+            {
+                completeEvent.Set();
+            }
         }
 
         /// <summary>
