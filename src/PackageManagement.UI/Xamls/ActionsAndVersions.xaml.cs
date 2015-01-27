@@ -31,6 +31,9 @@ namespace NuGet.PackageManagement.UI
             dataTrigger.Value = null;
             dataTrigger.Setters.Add(new Setter(ComboBoxItem.TemplateProperty, this.FindResource("SeparatorControlTemplate")));
 
+            // make sure the separator can't be selected thru keyboard navigation.
+            dataTrigger.Setters.Add(new Setter(UIElement.IsEnabledProperty, false));
+
             var style = new Style(typeof(ComboBoxItem), _versions.ItemContainerStyle);
             style.Triggers.Add(dataTrigger);
             _versions.ItemContainerStyle = style;
