@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// This command lists the available packages which are either from a package source or installed in the current solution.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Package", DefaultParameterSetName = ParameterAttribute.AllParameterSets)]
-    [OutputType(typeof(PowerShellPackage))]
+    [OutputType(typeof(PowerShellRemotePackage))]
     public class GetPackageCommand : NuGetPowerShellBaseCommand
     {
         private const int DefaultFirstValue = 50;
@@ -90,6 +90,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             GetActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
 
+            // When ProjectName is not specified, get all of the projects in the solution
             if (string.IsNullOrEmpty(ProjectName))
             {
                 Projects = VsSolutionManager.GetNuGetProjects().ToList();
@@ -127,7 +128,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Filter = string.Empty;
                 }
 
-                // Find avaiable packages from the online sources and not taking targetframeworks into account. 
+                // Find avaiable packages from the current source and not taking targetframeworks into account. 
                 if (UseRemoteSourceOnly)
                 {
                     IEnumerable<PSSearchMetadata> remotePackages = GetPackagesFromRemoteSource(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, Skip, First);
@@ -138,6 +139,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         WriteMoreRemotePackagesWithPaging(remotePackages);
                     }
                 }
+                // Get package udpates from the current source and taking targetframeworks into account.
                 else
                 {
                     CheckForSolutionOpen();
@@ -147,17 +149,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                         IEnumerable<PackageReference> installedPackages = project.GetInstalledPackages();
                         Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent, Skip, First);
-                        WriteUpdatePackagesFromRemoteSource(remoteUpdates);
+                        WriteUpdatePackagesFromRemoteSource(remoteUpdates, project);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Output installed packages to the project(s)
+        /// </summary>
+        /// <param name="dictionary"></param>
         private void WriteInstalledPackages(Dictionary<NuGetProject, IEnumerable<PackageReference>> dictionary)
         {
             // Get the PowerShellPackageWithProjectView
-            var view = PowerShellPackageWithProject.GetPowerShellPackageView(dictionary);
-            if (!view.Any())
+            var view = PowerShellInstalledPackage.GetPowerShellPackageView(dictionary);
+            if (view.Any())
             {
                 Log(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
             }
@@ -167,6 +173,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Output packages found from the current remote source
+        /// </summary>
+        /// <param name="packages"></param>
+        /// <param name="outputWarning"></param>
         private void WritePackagesFromRemoteSource(IEnumerable<PSSearchMetadata> packages, bool outputWarning = false)
         {
             // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
@@ -193,6 +204,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             WritePackages(packages, versionType);
         }
 
+        /// <summary>
+        /// Output packages found from the current remote source with specified page size
+        /// e.g. Get-Package -ListAvailable -PageSize 20
+        /// </summary>
+        /// <param name="packagesToDisplay"></param>
         private void WriteMoreRemotePackagesWithPaging(IEnumerable<PSSearchMetadata> packagesToDisplay)
         {
             // Display more packages with paging
@@ -218,7 +234,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        private void WriteUpdatePackagesFromRemoteSource(Dictionary<PSSearchMetadata, NuGetVersion> packagesToDisplay)
+        /// <summary>
+        /// Output package updates to current project(s) found from the current remote source
+        /// </summary>
+        /// <param name="packagesToDisplay"></param>
+        private void WriteUpdatePackagesFromRemoteSource(Dictionary<PSSearchMetadata, NuGetVersion> packagesToDisplay, NuGetProject project)
         {
             VersionType versionType;
             if (!CollapseVersions)
@@ -229,7 +249,42 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 versionType = VersionType.latest;
             }
-            WritePackages(packagesToDisplay, versionType);
+            WritePackages(packagesToDisplay, versionType, project);
+        }
+
+        private void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType)
+        {
+            var view = PowerShellRemotePackage.GetPowerShellPackageView(packages, versionType);
+            if (view.Any())
+            {
+                WriteObject(view, enumerateCollection: true);
+            }
+            else
+            {
+                LogCore(MessageLevel.Info, Resources.Cmdlet_GetPackageNoPackageFound);
+            }
+        }
+
+        private void WritePackages(Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates, VersionType versionType, NuGetProject project)
+        {
+            List<PowerShellUpdatePackage> view = new List<PowerShellUpdatePackage>();
+            foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> pair in remoteUpdates)
+            {
+                PowerShellUpdatePackage package = PowerShellUpdatePackage.GetPowerShellPackageUpdateView(pair.Key, pair.Value, versionType, project);
+                if (package.Version.Any())
+                {
+                    view.Add(package);
+                }
+            }
+
+            if (view.Any())
+            {
+                WriteObject(view, enumerateCollection: true);
+            }
+            else
+            {
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+            }
         }
 
         private int AskToContinueDisplayPackages()

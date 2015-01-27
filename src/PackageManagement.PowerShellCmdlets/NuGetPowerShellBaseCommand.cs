@@ -288,33 +288,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             return updates;
         }
-
-        protected void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType)
-        {
-            var view = PowerShellPackage.GetPowerShellPackageView(packages, versionType);
-            WriteObject(view, enumerateCollection: true);
-        }
-
-        protected void WritePackages(Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates, VersionType versionType)
-        {
-            List<PowerShellPackage> view = new List<PowerShellPackage>();
-            foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> pair in remoteUpdates)
-            {
-                PowerShellPackage package = PowerShellPackage.GetPowerShellPackageView(pair.Key, pair.Value, versionType);
-                view.Add(package);
-            }
-            WriteObject(view, enumerateCollection: true);
-        }
-
-        protected void WritePackages(IEnumerable<PackageReference> installedPackages)
-        {
-            List<PackageIdentity> identities = new List<PackageIdentity>();
-            foreach (PackageReference package in installedPackages)
-            {
-                identities.Add(package.PackageIdentity);
-            }
-            WriteObject(identities);
-        }
         #endregion
 
         #region Processing

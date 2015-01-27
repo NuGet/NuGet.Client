@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Install packages from the list of identities.
+        /// Async call for install packages from the list of identities.
         /// </summary>
         /// <param name="identities"></param>
         private async void InstallPackages(IEnumerable<PackageIdentity> identities)

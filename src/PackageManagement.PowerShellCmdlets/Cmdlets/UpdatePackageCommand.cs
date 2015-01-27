@@ -107,6 +107,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UnsubscribeFromProgressEvents();
         }
 
+        /// <summary>
+        /// Perform package updates
+        /// </summary>
         private void PerformPackageUpdates()
         {
             // Update-Package without ID specified
@@ -124,7 +127,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
                     }
                 }
             }
@@ -177,6 +180,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Performs package reinstall
+        /// </summary>
         private void PerformPackageReinstalls()
         {
             // Update-Package -reinstall
@@ -210,6 +216,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Async call for Update packages from the list of identities
+        /// </summary>
+        /// <param name="identities"></param>
+        /// <param name="project"></param>
         private async void UpdatePackages(IEnumerable<PackageIdentity> identities, NuGetProject project)
         {
             try
@@ -221,11 +232,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ex.Message);
             }
             completeEvent.Set();
         }
 
+        /// <summary>
+        /// Parse user input for -Version switch
+        /// </summary>
         private void ParseUserInputForVersion()
         {
             if (!string.IsNullOrEmpty(Version))

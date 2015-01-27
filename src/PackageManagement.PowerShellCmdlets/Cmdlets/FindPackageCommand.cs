@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// FindPackage is identical to GetPackage except that FindPackage filters packages only by Id and does not consider description or tags.
     /// </summary>
     [Cmdlet(VerbsCommon.Find, "Package")]
-    [OutputType(typeof(PowerShellPackage))]
+    [OutputType(typeof(PowerShellRemotePackage))]
     public class FindPackageCommand : NuGetPowerShellBaseCommand
     {
         private const int MaxReturnedPackages = 30;
@@ -81,11 +81,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>();
             Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
             IEnumerable<string> packageIds = task.Result;
-            PowerShellPackage package = new PowerShellPackage();
+            PowerShellRemotePackage package = new PowerShellRemotePackage();
 
             if (!ExactMatch.IsPresent)
             {
-                List<PowerShellPackage> packages = new List<PowerShellPackage>();
+                List<PowerShellRemotePackage> packages = new List<PowerShellRemotePackage>();
                 foreach (string id in packageIds)
                 {
                     Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);

@@ -49,6 +49,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UnsubscribeFromProgressEvents();
         }
 
+        /// <summary>
+        /// Async call for uninstall a package from the current project
+        /// </summary>
         private async void UnInstallPackage()
         {
             try

@@ -40,6 +40,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UnsubscribeFromProgressEvents();
         }
 
+        /// <summary>
+        /// Async call for sync package to the version installed to the specified or current project.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <param name="identity"></param>
         private async void SyncPackages(IEnumerable<NuGetProject> projects, PackageIdentity identity)
         {
             try
