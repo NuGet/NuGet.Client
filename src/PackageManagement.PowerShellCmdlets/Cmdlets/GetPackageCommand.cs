@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.Preprocess();
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
-            CollapseVersions = !AllVersions.IsPresent && ListAvailable;
+            CollapseVersions = !AllVersions.IsPresent;
             GetActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
 

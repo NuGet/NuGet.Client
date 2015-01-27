@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     case VersionType.all:
                         {
-                            package.Version = data.Versions.ToList();
+                            package.Version = data.Versions.OrderByDescending(v => v).ToList();
                         }
                         break;
                     case VersionType.latest:
@@ -82,12 +82,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             {
                                 nVersion = data.Versions.OrderByDescending(v => v).FirstOrDefault();
                             }
-                            package.Version = new List<NuGetVersion>() { nVersion };
-                        }
-                        break;
-                    case VersionType.updates:
-                        {
-                            NuGetVersion nVersion = data.Version;
                             package.Version = new List<NuGetVersion>() { nVersion };
                         }
                         break;
@@ -130,7 +124,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 case VersionType.updates:
                     {
-                        package.Version = data.Versions.Where(p => p > version).ToList();
+                        package.Version = data.Versions.Where(p => p > version).OrderByDescending(v => v).ToList();
                     }
                     break;
                 case VersionType.latest:
