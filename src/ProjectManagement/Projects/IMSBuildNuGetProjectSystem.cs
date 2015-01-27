@@ -33,7 +33,7 @@ namespace NuGet.ProjectManagement
         string ResolvePath(string path);
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
-        void ExecuteScript(ZipArchive zipArchive, string scriptArchiveEntryFullName);
+        void ExecuteScript(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject);
 
         // LIKELY, THERE HAS TO MORE STUFF HERE like 'IsSupportedFile' and 'IsBindingRedirectsEnabled'
         // IMO, there are hacks introduced to special case based on project systems like 'websites' and 'silverlight'

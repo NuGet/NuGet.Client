@@ -578,7 +578,7 @@ namespace ProjectManagement.Test
 
         #region Powershell tests
         [Fact]
-        public void TestMSBuildNuGetProjectPSInstall()
+        public void TestMSBuildNuGetProjectPSInstallAndInit()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -617,9 +617,12 @@ namespace ProjectManagement.Test
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
             // Check that the ps script install.ps1 has been executed
-            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
-            Assert.Equal("tools/net45/install.ps1", msBuildNuGetProjectSystem.ScriptsExecuted.Keys.First());
-            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted.Values.First());
+            var keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
+            Assert.Equal(2, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
+            Assert.Equal("tools\\init.ps1", keys[0]);
+            Assert.Equal("tools\\net45\\install.ps1", keys[1]);
+            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
+            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
@@ -665,9 +668,12 @@ namespace ProjectManagement.Test
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
             // Check that the ps script install.ps1 has been executed
-            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
-            Assert.Equal("tools/net45/install.ps1", msBuildNuGetProjectSystem.ScriptsExecuted.Keys.First());
-            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted.Values.First());
+            var keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
+            Assert.Equal(2, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
+            Assert.Equal("tools\\init.ps1", keys[0]);
+            Assert.Equal("tools\\net45\\install.ps1", keys[1]);
+            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
+            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
 
             // Main Act
             msBuildNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
@@ -679,12 +685,14 @@ namespace ProjectManagement.Test
             packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             // Check that the ps script install.ps1 has been executed
-            Assert.Equal(2, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
-            var keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
-            Assert.Equal("tools/net45/install.ps1", keys[0]);
-            Assert.Equal("tools/net45/uninstall.ps1", keys[1]);
+            Assert.Equal(3, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
+            keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
+            Assert.Equal("tools\\init.ps1", keys[0]);
+            Assert.Equal("tools\\net45\\install.ps1", keys[1]);
+            Assert.Equal("tools\\net45\\uninstall.ps1", keys[2]);
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
+            Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[2]]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);

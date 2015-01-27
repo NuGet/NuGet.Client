@@ -218,15 +218,28 @@ namespace NuGet.ProjectManagement
 
             // Step-9: Execute powershell script - install.ps1      
             IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
+            string packageInstallPath = FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
+            FrameworkSpecificGroup anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
+            if(anyFrameworkToolsGroup != null)
+            {
+                string initPS1RelativePath = anyFrameworkToolsGroup.Items.Where(p =>
+                    p.StartsWith(PowerShellScripts.InitPS1RelativePath)).FirstOrDefault();
+                if (!String.IsNullOrEmpty(initPS1RelativePath))
+                {
+                    initPS1RelativePath = MSBuildNuGetProjectSystemUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
+                    MSBuildNuGetProjectSystem.ExecuteScript(packageInstallPath, initPS1RelativePath, zipArchive, this);
+                }
+            }
+
             FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework,
-                toolItemGroups, altDirSeparator: true);
+                toolItemGroups);
             if(MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
             {
-                string installPS1ArchiveEntryFullName = compatibleToolItemsGroup.Items.Where(p =>
-                    p.EndsWith(Path.AltDirectorySeparatorChar + PowerShellScripts.Install)).FirstOrDefault();
-                if(!String.IsNullOrEmpty(installPS1ArchiveEntryFullName))
-                {
-                    MSBuildNuGetProjectSystem.ExecuteScript(zipArchive, installPS1ArchiveEntryFullName);
+                string installPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
+                    p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install)).FirstOrDefault();
+                if(!String.IsNullOrEmpty(installPS1RelativePath))
+                {                    
+                    MSBuildNuGetProjectSystem.ExecuteScript(packageInstallPath, installPS1RelativePath, zipArchive, this);
                 }
             }
             return true;
@@ -336,14 +349,15 @@ namespace NuGet.ProjectManagement
                 // Step-7: Execute powershell script - uninstall.ps1
                 IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
                 FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework,
-                    toolItemGroups, altDirSeparator: true);
+                    toolItemGroups);
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
                 {
-                    string uninstallPS1ArchiveEntryFullName = compatibleToolItemsGroup.Items.Where(p =>
-                        p.EndsWith(Path.AltDirectorySeparatorChar + PowerShellScripts.Uninstall)).FirstOrDefault();
-                    if (!String.IsNullOrEmpty(uninstallPS1ArchiveEntryFullName))
+                    string uninstallPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
+                        p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall)).FirstOrDefault();
+                    if (!String.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
-                        MSBuildNuGetProjectSystem.ExecuteScript(zipArchive, uninstallPS1ArchiveEntryFullName);
+                        string packageInstallPath = FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
+                        MSBuildNuGetProjectSystem.ExecuteScript(packageInstallPath, uninstallPS1RelativePath, zipArchive, this);
                     }
                 }
             }
@@ -408,6 +422,7 @@ namespace NuGet.ProjectManagement
         public static readonly string Install = "install.ps1";
         public static readonly string Uninstall = "uninstall.ps1";
         public static readonly string Init = "init.ps1";
+        public static readonly string InitPS1RelativePath = Constants.ToolsDirectory + Path.AltDirectorySeparatorChar + Init;
     }
 
     public static class Constants

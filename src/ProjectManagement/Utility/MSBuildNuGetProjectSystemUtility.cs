@@ -18,10 +18,10 @@ namespace NuGet.ProjectManagement
             bool altDirSeparator = false)
         {
             FrameworkReducer reducer = new FrameworkReducer();
-            NuGetFramework mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => NuGetFramework.Parse(i.TargetFramework)));
+            NuGetFramework mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => i.TargetFramework));
             if (mostCompatibleFramework != null)
             {
-                IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => NuGetFramework.Parse(i.TargetFramework).Equals(mostCompatibleFramework));
+                IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => i.TargetFramework.Equals(mostCompatibleFramework));
                 var mostCompatibleGroup = mostCompatibleGroups.FirstOrDefault();
                 if (IsValid(mostCompatibleGroup))
                 {
@@ -75,7 +75,7 @@ namespace NuGet.ProjectManagement
                                         FrameworkSpecificGroup frameworkSpecificGroup,
                                         IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
-            var packageTargetFramework = NuGetFramework.Parse(frameworkSpecificGroup.TargetFramework);
+            var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
 
             // Content files are maintained with AltDirectorySeparatorChar
             List<string> packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
@@ -137,7 +137,7 @@ namespace NuGet.ProjectManagement
                                             FrameworkSpecificGroup frameworkSpecificGroup,
                                             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
-            var packageTargetFramework = NuGetFramework.Parse(frameworkSpecificGroup.TargetFramework);
+            var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
             IPackageFileTransformer transformer;
             var directoryLookup = frameworkSpecificGroup.Items.ToLookup(
                 p => Path.GetDirectoryName(ResolveTargetPath(msBuildNuGetProjectSystem,

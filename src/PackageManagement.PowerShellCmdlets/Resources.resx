@@ -270,4 +270,7 @@
   <data name="UnknownPackageSpecificVersion" xml:space="preserve">
     <value>Unable to find version '{1}' of package '{0}'.</value>
   </data>
+  <data name="ExecutingScript" xml:space="preserve">
+    <value>Executing script file '{0}'</value>
+  </data>
 </root>

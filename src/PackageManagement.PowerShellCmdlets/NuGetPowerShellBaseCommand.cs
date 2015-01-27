@@ -7,6 +7,7 @@ using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -15,6 +16,7 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
+using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,7 +25,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// This command process the specified package against the specified project.
     /// </summary>
-    public abstract class NuGetPowerShellBaseCommand : PSCmdlet, INuGetProjectContext, IErrorHandler
+    public abstract class NuGetPowerShellBaseCommand : PSCmdlet, IPSNuGetProjectContext, IErrorHandler
     {
         #region Members
         private PackageManagementContext _packageManagementContext;
@@ -114,6 +116,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 ProcessRecordCore();
+                if(ScriptsPath != null)
+                {
+                    foreach(var fullPath in ScriptsPath)
+                    {
+                        string command = "& " + PathUtility.EscapePSPath(fullPath) + " $__rootPath $__toolsPath $__package $__project";
+                        LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullPath));
+
+                        InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
+                    }
+
+                    // clear temp variables
+                    SessionState.PSVariable.Remove("__rootPath");
+                    SessionState.PSVariable.Remove("__toolsPath");
+                    SessionState.PSVariable.Remove("__package");
+                    SessionState.PSVariable.Remove("__project");
+                }
             }
             catch (Exception ex)
             {
@@ -296,6 +314,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         #region Processing
         protected override void BeginProcessing()
         {
+            IsExecuting = true;
+            ScriptsPath = null;
+            ScriptsPath = new ConcurrentQueue<string>();
             if (_httpClientEvents != null)
             {
                 _httpClientEvents.SendingRequest += OnSendingRequest;
@@ -304,12 +325,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void StopProcessing()
         {
+            IsExecuting = false;
             UnsubscribeEvents();
             base.StopProcessing();
         }
 
         protected void UnsubscribeEvents()
         {
+            IsExecuting = false;
             if (_httpClientEvents != null)
             {
                 _httpClientEvents.SendingRequest -= OnSendingRequest;
@@ -606,6 +629,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected Semaphore queueSemaphone = new Semaphore(0, Int32.MaxValue);
         #endregion
+
+        public bool IsExecuting
+        {
+            get;
+            private set;
+        }
+
+        public PSCmdlet CurrentPSCmdlet
+        {
+            get { return this; }
+        }
+
+        public ConcurrentQueue<string> ScriptsPath
+        {
+            get;
+            private set;
+        }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>
@@ -614,5 +654,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             return item.ActivityId;
         }
+    }
+
+    public interface IPSNuGetProjectContext : INuGetProjectContext
+    {
+        bool IsExecuting { get; }
+        PSCmdlet CurrentPSCmdlet { get; }
+        ConcurrentQueue<string> ScriptsPath { get; }
     }
 }

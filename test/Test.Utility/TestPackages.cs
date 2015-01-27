@@ -100,6 +100,7 @@ namespace Test.Utility
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("lib/net45", new byte[] { 0 });
+            zipFile.AddEntry("tools/init.ps1", new byte[] { 0 });
             zipFile.AddEntry("tools/net45/install.ps1", new byte[] { 0 });
             zipFile.AddEntry("tools/net45/uninstall.ps1", new byte[] { 0 });
             SetSimpleNuspec(zipFile, packageId, packageVersion);

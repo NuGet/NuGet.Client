@@ -152,21 +152,21 @@ namespace Test.Utility
         }
 
 
-        public void ExecuteScript(ZipArchive zipArchive, string scriptArchiveEntryFullName)
+        public void ExecuteScript(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject)
         {
-            var zipArchiveEntry = zipArchive.GetEntry(scriptArchiveEntryFullName);
-            if(zipArchiveEntry == null)
+            var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
+            if(!File.Exists(scriptFullPath))
             {
-                throw new InvalidOperationException(scriptArchiveEntryFullName + " was not found in the zipArchive. Could not execute PS script");
+                throw new InvalidOperationException(scriptRelativePath + " was not found. Could not execute PS script");
             }
 
             int runCount;
-            if(!ScriptsExecuted.TryGetValue(scriptArchiveEntryFullName, out runCount))
+            if (!ScriptsExecuted.TryGetValue(scriptRelativePath, out runCount))
             {
-                ScriptsExecuted.Add(scriptArchiveEntryFullName, 0);
+                ScriptsExecuted.Add(scriptRelativePath, 0);
             }
 
-            ScriptsExecuted[scriptArchiveEntryFullName]++;
+            ScriptsExecuted[scriptRelativePath]++;
         }
     }
 }
