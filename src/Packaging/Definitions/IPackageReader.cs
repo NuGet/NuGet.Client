@@ -32,9 +32,14 @@ namespace NuGet.Packaging
         IEnumerable<FrameworkSpecificGroup> GetContentItems();
 
         /// <summary>
-        /// Returns lib items + filtering based on the nuspec.
+        /// Returns all lib items without any filtering. Use GetReferenceItems for the filtered list.
         /// </summary>
         IEnumerable<FrameworkSpecificGroup> GetLibItems();
+
+        /// <summary>
+        /// Returns lib items + filtering based on the nuspec and other NuGet rules.
+        /// </summary>
+        IEnumerable<FrameworkSpecificGroup> GetReferenceItems();
 
         /// <summary>
         /// Returns package dependencies.

@@ -11,7 +11,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A portable implementation of the .NET FrameworkName type with added support for NuGet folder names.
     /// </summary>
-    public partial class NuGetFramework : IEquatable<NuGetFramework>
+    public partial class NuGetFramework : IEquatable<NuGetFramework>, IEqualityComparer<NuGetFramework>
     {
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
@@ -423,6 +423,16 @@ namespace NuGet.Frameworks
         public bool Equals(NuGetFramework other)
         {
             return Comparer.Equals(this, other);
+        }
+
+        public bool Equals(NuGetFramework x, NuGetFramework y)
+        {
+            return Comparer.Equals(x, y);
+        }
+
+        public int GetHashCode(NuGetFramework obj)
+        {
+            return Comparer.GetHashCode(obj);
         }
     }
 }

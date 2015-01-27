@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.Frameworks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,24 +9,35 @@ namespace NuGet.Packaging
 {
     public class FrameworkSpecificGroup
     {
-        private readonly string _targetFramework;
+        private readonly NuGetFramework _targetFramework;
         private readonly IEnumerable<string> _items;
 
         public FrameworkSpecificGroup(string targetFramework, IEnumerable<string> items)
         {
             if (String.IsNullOrEmpty(targetFramework))
             {
-                _targetFramework = PackagingConstants.AnyFramework;
+                _targetFramework = NuGetFramework.AnyFramework;
             }
             else
             {
-                _targetFramework = targetFramework;
+                _targetFramework = NuGetFramework.Parse(targetFramework);
             }
 
             _items = items;
         }
 
-        public string TargetFramework
+        public FrameworkSpecificGroup(NuGetFramework targetFramework, IEnumerable<string> items)
+        {
+            if (targetFramework == null)
+            {
+                throw new ArgumentException("framework");
+            }
+
+            _targetFramework = targetFramework;
+            _items = items;
+        }
+
+        public NuGetFramework TargetFramework
         {
             get
             {
