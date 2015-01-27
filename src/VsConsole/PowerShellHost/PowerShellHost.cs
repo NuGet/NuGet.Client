@@ -55,6 +55,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             _name = name;
             IsCommandEnabled = true;
+            _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesSaved += PackageSourceProvider_PackageSourcesSaved;
         }
 
         protected Pipeline ExecutingPipeline { get; set; }
@@ -436,7 +437,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 if (string.IsNullOrEmpty(_activePackageSource) && _sourceRepositoryProvider != null)
                 {
-                    PackageSource[] packageSources = _sourceRepositoryProvider.GetRepositories().Select(v => v.PackageSource).ToArray();
+                    PackageSource[] packageSources = _sourceRepositoryProvider.GetRepositories().Select(v => v.PackageSource).Where(p => p.IsEnabled).ToArray();
                     return packageSources[0].Name;
                 }
                 else
@@ -474,8 +475,49 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public string[] GetPackageSources()
         {
             // Starting NuGet 3.0 RC, AggregateSource will not be displayed in the Package source dropdown box of PowerShell console.
-            string[] sources = _sourceRepositoryProvider.GetRepositories().Select(ps => ps.PackageSource.Name).ToArray();
+            string[] sources = _sourceRepositoryProvider.GetRepositories()
+                .Where(p => p.PackageSource.IsEnabled)
+                .Select(ps => ps.PackageSource.Name)
+                .ToArray();
             return sources;
+        }
+
+        private void PackageSourceProvider_PackageSourcesSaved(object sender, EventArgs e)
+        {
+            string oldActiveSource = this.ActivePackageSource;
+            SetNewActiveSource(oldActiveSource);
+        }
+
+        private void SetNewActiveSource(string oldActiveSource)
+        {
+            var allEnabledSources = GetPackageSources();
+            if (!allEnabledSources.Any())
+            {
+                ActivePackageSource = string.Empty;
+            }
+            else
+            {
+                if (oldActiveSource == null)
+                {
+                    // use the first enabled source as the active source
+                    ActivePackageSource = allEnabledSources.First();
+                }
+                else
+                {
+                    var s = allEnabledSources.FirstOrDefault(p => StringComparer.CurrentCultureIgnoreCase.Equals(p, oldActiveSource));
+                    if (s == null)
+                    {
+                        // the old active source does not exist any more. In this case, 
+                        // use the first eneabled source as the active source.
+                        ActivePackageSource = allEnabledSources.First();
+                    }
+                    else
+                    {
+                        // the old active source still exists. Keep it as the active source.
+                        ActivePackageSource = s;
+                    }
+                }
+            }
         }
 
         public string DefaultProject
