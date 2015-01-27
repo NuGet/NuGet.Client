@@ -3,6 +3,7 @@ using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
+using NuGetConsole.Implementation.PowerConsole;
 using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
@@ -29,6 +30,13 @@ namespace NuGetConsole
             {
                 return _host.Value;
             }
+        }
+
+        [Import]
+        public IPowerConsoleWindow PowerConsoleWindow
+        {
+            get;
+            set;
         }
 
         [Import]
@@ -71,19 +79,18 @@ namespace NuGetConsole
                     //logger.Log(MessageLevel.Debug, NuGetResources.Debug_TargetFrameworkInfo_PowershellScripts,
                     //    Path.GetDirectoryName(scriptFile.Path), VersionUtility.GetTargetFrameworkLogString(scriptFile.TargetFramework));
                 }
-
                 string toolsPath = Path.GetDirectoryName(fullScriptPath);
-                string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
+                string command = "$__pc_args=@(); $input|%{$__pc_args+=$_}; & "
+                    + NuGet.PackageManagement.VisualStudio.PathUtility.EscapePSPath(fullScriptPath)
+                    + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0";
 
-                // logging to both the Output window and progress window.
-                nuGetProjectContext.Log(MessageLevel.Info, logMessage);
+                object[] inputs = new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject };
 
                 IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
-                if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting && psNuGetProjectContext.CurrentPSCmdlet != null)
+                if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting
+                    && psNuGetProjectContext.CurrentPSCmdlet != null && psNuGetProjectContext.ScriptsPath != null)
                 {
-                    var currentPSCmdlet = psNuGetProjectContext.CurrentPSCmdlet;
-                    // This means that we are executing script in the powershell console
-                    var psVariable = currentPSCmdlet.SessionState.PSVariable;
+                    var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
 
                     // set temp variables to pass to the script
                     psVariable.Set("__rootPath", packageInstallPath);
@@ -91,22 +98,16 @@ namespace NuGetConsole
                     psVariable.Set("__package", packageZipArchive);
                     psVariable.Set("__project", envDTEProject);
 
-                    string command = "& " + NuGet.PackageManagement.VisualStudio.PathUtility.EscapePSPath(fullScriptPath) + " $__rootPath $__toolsPath $__package $__project";
-
-                    currentPSCmdlet.InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
-
-                    // clear temp variables
-                    psVariable.Remove("__rootPath");
-                    psVariable.Remove("__toolsPath");
-                    psVariable.Remove("__package");
-                    psVariable.Remove("__project");
+                    psNuGetProjectContext.ScriptsPath.Enqueue(fullScriptPath);
                 }
                 else
                 {
+                    string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
+
+                    // logging to both the Output window and progress window.
+                    nuGetProjectContext.Log(MessageLevel.Info, logMessage);
                     IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
-                    Host.Execute(console,
-                        "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + NuGet.PackageManagement.VisualStudio.PathUtility.EscapePSPath(fullScriptPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0",
-                        new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject });
+                    Host.Execute(console, command, inputs);
                 }
 
                 return true;
