@@ -11,6 +11,7 @@ using System.Linq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
+using NuGet.Client;
 
 namespace NuGet.VisualStudio
 {

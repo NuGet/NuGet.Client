@@ -1,4 +1,5 @@
-﻿using NuGet.Configuration;
+﻿using NuGet.Client;
+using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using System;
 using System.ComponentModel.Composition;

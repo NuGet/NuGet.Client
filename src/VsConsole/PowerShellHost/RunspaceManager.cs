@@ -10,6 +10,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
 using System.Reflection;
 using NuGet.Configuration;
+using NuGet.Client;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

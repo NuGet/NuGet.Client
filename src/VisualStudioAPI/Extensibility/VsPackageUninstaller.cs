@@ -7,6 +7,7 @@ using NuGet.PackageManagement;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
+using NuGet.Client;
 
 namespace NuGet.VisualStudio
 {

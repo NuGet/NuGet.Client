@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Client;
 
 
 namespace NuGet.Options

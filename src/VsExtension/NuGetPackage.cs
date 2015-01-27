@@ -23,6 +23,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Configuration;
 using NuGet.Options;
+using NuGet.Client;
 
 namespace NuGetVSExtension
 {
