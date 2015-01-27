@@ -38,15 +38,6 @@ namespace NuGet.Client
         }
 
         /// <summary>
-        /// Constructor with static sources and the default settings
-        /// </summary>
-        public SourceRepositoryProvider(IEnumerable<PackageSource> sources, IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders)
-            : this(new PackageSourceProvider(NullSettings.Instance, sources), resourceProviders)
-        {
-
-        }
-
-        /// <summary>
         /// Non-MEF constructor
         /// </summary>
         public SourceRepositoryProvider(IPackageSourceProvider packageSourceProvider, IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders)
