@@ -36,9 +36,6 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProject = envDTEProject;
             ProjectFullPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
             NuGetProjectContext = nuGetProjectContext;
-
-            // TODO: Consider passing it to the constructor instead of getting from every project system instance
-            ScriptExecutor = ServiceLocator.GetInstanceSafe<IScriptExecutor>();
         }
 
         public EnvDTEProject EnvDTEProject
@@ -53,7 +50,18 @@ namespace NuGet.PackageManagement.VisualStudio
             private set;
         }
 
-        private IScriptExecutor ScriptExecutor { get; set; }
+        private IScriptExecutor _scriptExecutor;
+        private IScriptExecutor ScriptExecutor
+        {
+            get
+            {
+                if(_scriptExecutor == null)
+                {
+                    _scriptExecutor = ServiceLocator.GetInstanceSafe<IScriptExecutor>();
+                }
+                return _scriptExecutor;
+            }
+        }
 
         public string ProjectFullPath
         {
@@ -536,12 +544,11 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         #endregion
 
-
-        public void ExecuteScript(ZipArchive zipArchive, string scriptArchiveEntryFullName)
+        public void ExecuteScript(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject)
         {
-            if(ScriptExecutor != null)
+            if (ScriptExecutor != null)
             {
-                ScriptExecutor.Execute(zipArchive, scriptArchiveEntryFullName, EnvDTEProject, NuGetProjectContext);
+                ScriptExecutor.Execute(packageInstallPath, scriptRelativePath, packageZipArchive, EnvDTEProject, nuGetProject, NuGetProjectContext);
             }
         }
     }

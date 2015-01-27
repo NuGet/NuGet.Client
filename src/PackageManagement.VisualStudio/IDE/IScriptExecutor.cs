@@ -11,6 +11,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public interface IScriptExecutor
     {
-        bool Execute(ZipArchive zipArchive, string scriptArchiveEntryFullName, EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext);
+        bool Execute(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, EnvDTEProject envDTEProject, NuGetProject nuGetProject, INuGetProjectContext nuGetProjectContext);
     }
 }

@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Console_InitializeHostFails" xml:space="preserve">
+    <value>Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</value>
+  </data>
+  <data name="ExecutingScript" xml:space="preserve">
+    <value>Executing script file '{0}'...</value>
+  </data>
   <data name="OutputConsolePaneName" xml:space="preserve">
     <value>Package Manager</value>
   </data>

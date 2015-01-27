@@ -115,7 +115,7 @@ namespace NuGetVSExtension
             {
                 if (_consoleStatus == null)
                 {
-                    _consoleStatus = new PrivateConsoleStatus(); // ServiceLocator.GetInstance<IConsoleStatus>();
+                    _consoleStatus = ServiceLocator.GetInstanceSafe<IConsoleStatus>();
                     Debug.Assert(_consoleStatus != null);
                 }
 
@@ -892,23 +892,5 @@ namespace NuGetVSExtension
             _dteEvents = null;
         }
 
-        // TO BE DELETED to bring in Powershell Console
-        private sealed class PrivateConsoleStatus : IConsoleStatus
-        {
-            public bool IsBusy
-            {
-                get;
-                private set;
-            }
-        }
-    }
-
-    public interface IConsoleStatus
-    {
-
-        /// <summary>
-        /// Returns whether the console is busy executing a command.
-        /// </summary>
-        bool IsBusy { get; }
     }
 }
