@@ -14,12 +14,13 @@ namespace NuGet.Configuration
         private const string PasswordToken = "Password";
         private const string ClearTextPasswordToken = "ClearTextPassword";
         private ISettings Settings { get; set; }
-        private readonly IEnumerable<PackageSource> _providerDefaultSources;
+        private readonly IEnumerable<PackageSource> _providerDefaultPrimarySources;
+        private readonly IEnumerable<PackageSource> _providerDefaultSecondarySources;
         private readonly IDictionary<PackageSource, PackageSource> _migratePackageSources;
         private readonly IEnumerable<PackageSource> _configurationDefaultSources;
 
         public PackageSourceProvider(ISettings settings)
-            : this(settings, providerDefaultSources: null)
+            : this(settings, providerDefaultPrimarySources: null, providerDefaultSecondarySources: null)
         {
         }
 
@@ -27,24 +28,26 @@ namespace NuGet.Configuration
         /// Creates a new PackageSourceProvider instance.
         /// </summary>
         /// <param name="settings">Specifies the settings file to use to read package sources.</param>
-        /// <param name="providerDefaultSources">Specifies the default sources to be used as per the PackageSourceProvider. These are always loaded
-        /// Default Feeds from PackageSourceProvider are generally the feeds from the NuGet Client like the NuGetOfficialFeed from the Visual Studio client for NuGet</param>
-        public PackageSourceProvider(ISettings settings, IEnumerable<PackageSource> providerDefaultSources)
-            : this(settings, providerDefaultSources, migratePackageSources: null)
+        /// <param name="providerDefaultPrimarySources">The primary default sources you would like to use</param>
+        /// <param name="providerDefaultSecondarySources">The secondary default sources you would like to use</param>
+        public PackageSourceProvider(ISettings settings, IEnumerable<PackageSource> providerDefaultPrimarySources, IEnumerable<PackageSource> providerDefaultSecondarySources)
+            : this(settings, providerDefaultPrimarySources, providerDefaultSecondarySources, migratePackageSources: null)
         {
         }
 
         public PackageSourceProvider(
             ISettings settings,
-            IEnumerable<PackageSource> providerDefaultSources,
+            IEnumerable<PackageSource> providerDefaultPrimarySources,
+            IEnumerable<PackageSource> providerDefaultSecondarySources,
             IDictionary<PackageSource, PackageSource> migratePackageSources)
-            : this(settings, providerDefaultSources, migratePackageSources, /* ConfigurationDefaults.Instance.DefaultPackageSources */ null)
+            : this(settings, providerDefaultPrimarySources, providerDefaultSecondarySources, migratePackageSources, /* ConfigurationDefaults.Instance.DefaultPackageSources */ null)
         {
         }
 
         internal PackageSourceProvider(
             ISettings settingsManager,
-            IEnumerable<PackageSource> providerDefaultSources,
+            IEnumerable<PackageSource> providerDefaultPrimarySources,
+            IEnumerable<PackageSource> providerDefaultSecondarySources,
             IDictionary<PackageSource, PackageSource> migratePackageSources,
             IEnumerable<PackageSource> configurationDefaultSources)
         {
@@ -53,7 +56,8 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException("settingsManager");
             }
             Settings = settingsManager;
-            _providerDefaultSources = providerDefaultSources ?? Enumerable.Empty<PackageSource>();
+            _providerDefaultPrimarySources = providerDefaultPrimarySources ?? Enumerable.Empty<PackageSource>();
+            _providerDefaultSecondarySources = providerDefaultSecondarySources ?? Enumerable.Empty<PackageSource>();
             _migratePackageSources = migratePackageSources;
             _configurationDefaultSources = configurationDefaultSources ?? Enumerable.Empty<PackageSource>();
         }
@@ -65,7 +69,7 @@ namespace NuGet.Configuration
         public IEnumerable<PackageSource> LoadPackageSources()
         {
             var sources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var settingsValue = new List<SettingValue>();           
+            var settingsValue = new List<SettingValue>();
             IList<SettingValue> values = Settings.GetSettingValues(PackageSourcesSectionName);
             var machineWideSourcesCount = 0;
 
@@ -230,20 +234,30 @@ namespace NuGet.Configuration
 
         private void SetDefaultPackageSources(List<PackageSource> loadedPackageSources, int machineWideSourcesCount)
         {
-            // There are 4 different cases to consider for default package sources
-            // Case 1. Default Package Source is already present matching both feed source and the feed name
-            // Case 2. Default Package Source is already present matching feed source but with a different feed name. DO NOTHING
-            // Case 3. Default Package Source is not present, but there is another feed source with the same feed name. Override that feed entirely
-            // Case 4. Default Package Source is not present, simply, add it
+            var defaultPackageSourcesToBeAdded = new List<PackageSource>();
 
-            IEnumerable<PackageSource> allDefaultPackageSources = _configurationDefaultSources;
-
-            if (allDefaultPackageSources == null || !allDefaultPackageSources.Any<PackageSource>())
+            if (_configurationDefaultSources == null || !_configurationDefaultSources.Any<PackageSource>())
             {
                 // Update provider default sources and use provider default sources since _configurationDefaultSources is empty
                 UpdateProviderDefaultSources(loadedPackageSources);
-                allDefaultPackageSources = _providerDefaultSources;
+                defaultPackageSourcesToBeAdded = GetPackageSourcesToBeAdded(loadedPackageSources, _providerDefaultPrimarySources, true);
+                defaultPackageSourcesToBeAdded = defaultPackageSourcesToBeAdded.Concat(GetPackageSourcesToBeAdded(loadedPackageSources, _providerDefaultSecondarySources, false)).ToList();
             }
+            else
+            {
+                defaultPackageSourcesToBeAdded = GetPackageSourcesToBeAdded(loadedPackageSources, _configurationDefaultSources, false);
+            }
+            loadedPackageSources.InsertRange(loadedPackageSources.Count - machineWideSourcesCount, defaultPackageSourcesToBeAdded);
+        }
+
+        private List<PackageSource> GetPackageSourcesToBeAdded(List<PackageSource> loadedPackageSources, IEnumerable<PackageSource> allDefaultPackageSources, bool checkSecondary)
+        {
+            // There are 4 different cases to consider for primary/ secondary package sources
+            // Case 1. primary/ secondary Package Source is already present matching both feed source and the feed name. Set IsOfficial to true
+            // Case 2. primary/ secondary Package Source is already present matching feed source but with a different feed name. DO NOTHING
+            // Case 3. primary/ secondary Package Source is not present, but there is another feed source with the same feed name. Override that feed entirely
+            // Case 4. primary/ secondary Package Source is not present, simply, add it. In addition, if Primary is getting added 
+            // for the first time, promote Primary to Enabled and demote secondary to disabled, if it is already enabled
 
             var defaultPackageSourcesToBeAdded = new List<PackageSource>();
             foreach (PackageSource packageSource in allDefaultPackageSources)
@@ -273,21 +287,45 @@ namespace NuGet.Configuration
                     {
                         // Case 4: Default package source is not present. Add it to the temp list. Later, the temp listed is inserted above the machine wide sources
                         defaultPackageSourcesToBeAdded.Add(packageSource);
+                        packageSource.IsOfficial = true;
+
+                        //Since this is 'Primary was not present' case, we want to promote primary and demote secondary source
+                        if (checkSecondary)
+                        {
+                            foreach (PackageSource secondaryPacakgeSource in _providerDefaultSecondarySources)
+                            {
+                                int secondarySourceIndex = loadedPackageSources.FindIndex(p => p.Source.Equals(secondaryPacakgeSource.Source, StringComparison.OrdinalIgnoreCase));
+                                if ((secondarySourceIndex != -1) && (loadedPackageSources[secondarySourceIndex].IsEnabled))
+                                {
+                                    loadedPackageSources[secondarySourceIndex].IsEnabled = false;
+                                    packageSource.IsEnabled = true;
+                                }
+                            }
+                        }
+
                     }
+
                 }
             }
-            loadedPackageSources.InsertRange(loadedPackageSources.Count - machineWideSourcesCount, defaultPackageSourcesToBeAdded);
+            return defaultPackageSourcesToBeAdded;
         }
 
         private void UpdateProviderDefaultSources(List<PackageSource> loadedSources)
         {
-            // If there are NO other non-machine wide sources, providerDefaultSource should be enabled
-            bool areProviderDefaultSourcesEnabled = loadedSources.Count == 0 || loadedSources.Where(p => !p.IsMachineWide).Count() == 0;
+            // If there are NO other non-machine wide sources, providerDefaultPrimarySource should be enabled
+            bool areProviderDefaultSourcesEnabled = loadedSources.Count == 0 || loadedSources.Where(p => !p.IsMachineWide).Count() == 0
+                                                    || loadedSources.Where(p => p.IsEnabled).Count() == 0;
 
-            foreach (PackageSource packageSource in _providerDefaultSources)
+            foreach (PackageSource packageSource in _providerDefaultPrimarySources)
             {
-                packageSource.IsEnabled = areProviderDefaultSourcesEnabled;
+                packageSource.IsEnabled = (areProviderDefaultSourcesEnabled == true) ? areProviderDefaultSourcesEnabled : packageSource.IsEnabled;
                 packageSource.IsOfficial = true;
+            }
+
+            //Mark secondary sources as official but not enable them
+            foreach (PackageSource secondaryPackageSource in _providerDefaultSecondarySources)
+            {
+                secondaryPackageSource.IsOfficial = true;
             }
         }
 
