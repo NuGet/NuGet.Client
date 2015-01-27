@@ -200,6 +200,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     };
                     _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
                     _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectory();
+                    _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectory();
+                    _solutionManager.NuGetProjectRemoved += (o, e) => UpdateWorkingDirectory();
                 }
                 catch (Exception ex)
                 {
