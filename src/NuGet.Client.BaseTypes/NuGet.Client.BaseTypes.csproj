@@ -7,7 +7,7 @@
     <ProjectGuid>{05B640AD-133D-4B36-8DF0-036323D7873E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGet.Client.BaseTypes</RootNamespace>
+    <RootNamespace>NuGet.Client</RootNamespace>
     <AssemblyName>NuGet.Client.BaseTypes</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -68,6 +68,7 @@
     <Compile Include="INuGetMessageHandlerProvider.cs" />
     <Compile Include="INuGetResource.cs" />
     <Compile Include="INuGetResourceProvider.cs" />
+    <Compile Include="ISourceRepositoryProvider.cs" />
     <Compile Include="MEFAttributes\INuGetResourceProviderMetadata.cs" />
     <Compile Include="NuGetResourceProviderPositions.cs" />
     <Compile Include="ProviderComparer.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Resources\UnzippedPackageResource.cs" />
     <Compile Include="SearchFilter.cs" />
     <Compile Include="SourceRepository.cs" />
+    <Compile Include="SourceRepositoryProvider.cs" />
     <Compile Include="UserAgentUtil.cs" />
   </ItemGroup>
   <ItemGroup>
