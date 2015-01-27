@@ -1,4 +1,5 @@
-﻿using NuGet.Configuration;
+﻿using NuGet.Client;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using System;
 using System.Management.Automation;

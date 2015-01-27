@@ -82,7 +82,6 @@
     <Compile Include="IDE\IProductUpdateService.cs" />
     <Compile Include="IDE\ISolutionManager.cs" />
     <Compile Include="IDE\PackageRestoreManager.cs" />
-    <Compile Include="ISourceRepositoryProvider.cs" />
     <Compile Include="Context\PackageManagementContext.cs" />
     <Compile Include="Resolution\ResolverGather.cs" />
     <Compile Include="Resolution\SourceDependencyInfo.cs" />
@@ -97,7 +96,6 @@
     <Compile Include="Context\ResolutionContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SourceRepositoryProvider.cs" />
     <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

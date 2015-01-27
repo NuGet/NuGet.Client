@@ -9,6 +9,7 @@ using NuGet.Client.VisualStudio;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
+using NuGet.Client;
 
 namespace NuGet.PackageManagement.UI
 {

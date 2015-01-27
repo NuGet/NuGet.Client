@@ -16,6 +16,7 @@ using NuGet.Versioning;
 using NuGet.Resolver;
 using NuGet.Packaging;
 using System.Diagnostics;
+using System.Threading;
 
 namespace ResolverTestApp
 {
@@ -83,7 +84,7 @@ namespace ResolverTestApp
 
             // find the best set to install
             PackageResolver resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var toInstall = resolver.Resolve(new PackageIdentity[] { target }, packages, installed);
+            var toInstall = resolver.Resolve(new PackageIdentity[] { target }, packages, installed, CancellationToken.None);
 
             timer.Stop();
             Console.WriteLine("Resolve time: " + timer.Elapsed);
