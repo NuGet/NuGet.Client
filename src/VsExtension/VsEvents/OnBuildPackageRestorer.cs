@@ -178,27 +178,30 @@ namespace NuGetVSExtension
 
             try
             {
-                _waitDialog.StartWaitDialog(
-                        Resources.DialogTitle,
-                        Resources.RestoringPackages,
-                        String.Empty,
-                        varStatusBmpAnim: null,
-                        szStatusBarText: null,
-                        iDelayToShowDialog: 0,
-                        fIsCancelable: true,
-                        fShowMarqueeProgress: true);
                 if (IsConsentGranted())
                 {
-                    if(scope == vsBuildScope.vsBuildScopeSolution || scope == vsBuildScope.vsBuildScopeBatch || scope == vsBuildScope.vsBuildScopeProject)
+                    if (scope == vsBuildScope.vsBuildScopeSolution || scope == vsBuildScope.vsBuildScopeBatch || scope == vsBuildScope.vsBuildScopeProject)
                     {
                         TotalCount = PackageRestoreManager.GetMissingPackagesInSolution().ToList().Count;
-                        await System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject)));
+                        if (TotalCount > 0)
+                        {
+                            _waitDialog.StartWaitDialog(
+                                    Resources.DialogTitle,
+                                    Resources.RestoringPackages,
+                                    String.Empty,
+                                    varStatusBmpAnim: null,
+                                    szStatusBarText: null,
+                                    iDelayToShowDialog: 0,
+                                    fIsCancelable: true,
+                                    fShowMarqueeProgress: true);
+                            await System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject)));
+                            PackageRestoreManager.RaisePackagesMissingEventForSolution();
+                        }
                     }
                     else
                     {
                         throw new NotImplementedException();
                     }
-                    PackageRestoreManager.RaisePackagesMissingEventForSolution();
                 }
                 else
                 {
