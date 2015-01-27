@@ -86,7 +86,11 @@
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content-->
-    <Content Include="Resources\nuget_32.png">
+    <Content Include="Resources\nuget_256.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\nuget_96.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
