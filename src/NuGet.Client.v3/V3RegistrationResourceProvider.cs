@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -17,23 +18,24 @@ namespace NuGet.Client
    
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             V3RegistrationResource regResource = null;
-            var serviceIndex = source.GetResource<V3ServiceIndexResource>();
+            var serviceIndex = await source.GetResourceAsync<V3ServiceIndexResource>(token);
 
             if (serviceIndex != null)
             {
                 Uri baseUrl = serviceIndex["RegistrationsBaseUrl"].FirstOrDefault();
 
-                DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
+
+                DataClient client = new DataClient(messageHandlerResource.MessageHandler);
 
                 // construct a new resource
                 regResource = new V3RegistrationResource(client, baseUrl);
             }
 
-            resource = regResource;
-            return resource != null;
+            return new Tuple<bool, INuGetResource>(regResource != null, regResource);
         }
     }
 }

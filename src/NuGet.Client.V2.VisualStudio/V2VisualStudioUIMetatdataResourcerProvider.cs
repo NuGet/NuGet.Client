@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.Composition;
 using NuGet.Client.VisualStudio;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System;
+using System.Threading;
 
 namespace NuGet.Client.V2.VisualStudio
 {
@@ -8,33 +11,23 @@ namespace NuGet.Client.V2.VisualStudio
     [NuGetResourceProviderMetadata(typeof(UIMetadataResource))]
     public class V2UIMetadataResourceProvider : V2ResourceProvider
     {
-        private readonly ConcurrentDictionary<Configuration.PackageSource, UIMetadataResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, UIMetadataResource>();
+        private readonly ConcurrentDictionary<Configuration.PackageSource, V2UIMetadataResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, V2UIMetadataResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            UIMetadataResource v2UIMetadataResource;
-            if (!_cache.TryGetValue(source.PackageSource, out v2UIMetadataResource))
+            V2UIMetadataResource resource = null;
+            if (!_cache.TryGetValue(source.PackageSource, out resource))
             {
-                if (base.TryCreate(source, out resource))
-                {
+                var v2repo = await GetRepository(source, token);
 
-                    v2UIMetadataResource = new V2UIMetadataResource((V2Resource)resource);
-                    _cache.TryAdd(source.PackageSource, v2UIMetadataResource);
-                    resource = v2UIMetadataResource;
-                    return true;
-                }
-                else
+                if (v2repo != null)
                 {
-                    resource = null;
-                    return false;
-                }               
+                    resource = new V2UIMetadataResource(v2repo);
+                    _cache.TryAdd(source.PackageSource, resource);
+                }
             }
-            else
-            {
-                resource = v2UIMetadataResource;
-                return true;
-                
-            }
+
+            return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
 }

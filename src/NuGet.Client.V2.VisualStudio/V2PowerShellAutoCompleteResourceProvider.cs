@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.Composition;
 using NuGet.Client.VisualStudio;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System;
+using System.Threading;
 
 namespace NuGet.Client.V2.VisualStudio
 {
@@ -8,33 +11,23 @@ namespace NuGet.Client.V2.VisualStudio
     [NuGetResourceProviderMetadata(typeof(PSAutoCompleteResource), "V2PowerShellAutoCompleteResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2PowerShellAutoCompleteResourceProvider : V2ResourceProvider
     {
-        private readonly ConcurrentDictionary<Configuration.PackageSource, PSAutoCompleteResource> _cache = new ConcurrentDictionary<Configuration.PackageSource,PSAutoCompleteResource>();
+        private readonly ConcurrentDictionary<Configuration.PackageSource, V2PowerShellAutoCompleteResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, V2PowerShellAutoCompleteResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            PSAutoCompleteResource v2PowerShellAutoCompleteResource;
-            if (!_cache.TryGetValue(source.PackageSource, out v2PowerShellAutoCompleteResource))
+            V2PowerShellAutoCompleteResource resource = null;
+            if (!_cache.TryGetValue(source.PackageSource, out resource))
             {
-                if (base.TryCreate(source, out resource))
-                {
+                var v2repo = await GetRepository(source, token);
 
-                    v2PowerShellAutoCompleteResource = new V2PowerShellAutoCompleteResource((V2Resource)resource);
-                    _cache.TryAdd(source.PackageSource, v2PowerShellAutoCompleteResource);
-                    resource = v2PowerShellAutoCompleteResource;
-                    return true;
-                }
-                else
+                if (v2repo != null)
                 {
-                    resource = null;
-                    return false;
+                    resource = new V2PowerShellAutoCompleteResource(v2repo);
+                    _cache.TryAdd(source.PackageSource, resource);
                 }
             }
-            else
-            {
-                resource = v2PowerShellAutoCompleteResource;
-                return true;
-                
-            }
+
+            return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
 }

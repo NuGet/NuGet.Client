@@ -8,6 +8,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -28,7 +29,7 @@ namespace NuGet.Client
         }
 
         // TODO: refresh the file when it gets old
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             V3ServiceIndexResource index = null;
 
@@ -40,9 +41,11 @@ namespace NuGet.Client
                 // check the cache before downloading the file
                 if (!_cache.TryGetValue(url, out index))
                 {
-                    DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+                    var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                    JObject json = client.GetJObject(new Uri(url));
+                    DataClient client = new DataClient(messageHandlerResource.MessageHandler);
+
+                    JObject json = await client.GetJObjectAsync(new Uri(url), token);
 
                     if (json != null)
                     {
@@ -64,8 +67,7 @@ namespace NuGet.Client
                 _cache.TryAdd(url, index);
             }
 
-            resource = index;
-            return resource != null;
+            return new Tuple<bool, INuGetResource>(index != null, index);
         }
     }
 }

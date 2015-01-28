@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -19,13 +20,12 @@ namespace NuGet.Client
 
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             // Everyone gets a dataclient
+            var curResource = new V3HttpHandlerResource(DataClient.DefaultHandler);
 
-            resource = new V3HttpHandlerResource(DataClient.DefaultHandler);
-
-            return true;
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
     }
 }

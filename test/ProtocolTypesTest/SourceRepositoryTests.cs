@@ -215,16 +215,14 @@ namespace ProtocolTypesTest
                 Data = data;
             }
 
-            public bool TryCreate(SourceRepository source, out INuGetResource resource)
+            public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, System.Threading.CancellationToken token)
             {
                 if (Data != null)
                 {
-                    resource = new TestResource(Data);
-                    return true;
+                    return new Tuple<bool, INuGetResource>(true, new TestResource(Data));
                 }
 
-                resource = null;
-                return false;
+                return new Tuple<bool, INuGetResource>(false, null);
             }
         }
 

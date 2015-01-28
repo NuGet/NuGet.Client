@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V2
@@ -12,36 +13,27 @@ namespace NuGet.Client.V2
     /// <summary>
     /// Resource provider for V2 download.
     /// </summary>
-    
     [NuGetResourceProviderMetadata(typeof(DownloadResource), "V2DownloadResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2DownloadResourceProvider : V2ResourceProvider
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, DownloadResource> _cache = new ConcurrentDictionary<Configuration.PackageSource,DownloadResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            DownloadResource v2DownloadResource;
+            DownloadResource v2DownloadResource = null;
+
             if (!_cache.TryGetValue(source.PackageSource, out v2DownloadResource))
             {
-                if (base.TryCreate(source, out resource))
-                {
+                var v2repo = await GetRepository(source, token);
 
-                    v2DownloadResource = new V2DownloadResource((V2Resource)resource);
-                    _cache.TryAdd(source.PackageSource, v2DownloadResource);
-                    resource = v2DownloadResource;
-                    return true;
-                }
-                else
+                if (v2repo != null)
                 {
-                    resource = null;
-                    return false;
-                }              
+                    v2DownloadResource = new V2DownloadResource(v2repo);
+                    _cache.TryAdd(source.PackageSource, v2DownloadResource);
+                }
             }
-            else
-            {
-                resource = v2DownloadResource;
-                return true;    
-            } 
+
+            return new Tuple<bool, INuGetResource>(v2DownloadResource != null, v2DownloadResource);
         }
     }
 }

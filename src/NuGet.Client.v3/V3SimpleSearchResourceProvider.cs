@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -22,19 +23,18 @@ namespace NuGet.Client
 
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             V3SimpleSearchResource curResource = null;
 
-            var rawSearch = source.GetResource<V3RawSearchResource>();
+            var rawSearch = await source.GetResourceAsync<V3RawSearchResource>(token);
 
             if (rawSearch != null && rawSearch is V3RawSearchResource)
             {
                 curResource = new V3SimpleSearchResource(rawSearch);
             }
 
-            resource = curResource;
-            return curResource != null;
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
     }
 }

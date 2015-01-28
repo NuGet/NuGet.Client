@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V2
@@ -14,30 +15,21 @@ namespace NuGet.Client.V2
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, MetadataResource> _cache = new ConcurrentDictionary<Configuration.PackageSource,MetadataResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            MetadataResource v2MetadataResource;
-            if (!_cache.TryGetValue(source.PackageSource, out v2MetadataResource))
+            MetadataResource resource;
+            if (!_cache.TryGetValue(source.PackageSource, out resource))
             {
-                if (base.TryCreate(source, out resource))
-                {
+                var v2repo = await GetRepository(source, token);
 
-                    v2MetadataResource = new V2MetadataResource((V2Resource)resource);
-                    _cache.TryAdd(source.PackageSource, v2MetadataResource);
-                    resource = v2MetadataResource;
-                    return true;
-                }
-                else
+                if (v2repo != null)
                 {
-                    resource = null;
-                    return false;
-                }               
+                    resource = new V2MetadataResource(v2repo);
+                    _cache.TryAdd(source.PackageSource, resource);
+                }
             }
-            else
-            {
-                resource = v2MetadataResource;
-                return true;
-            } 
+
+            return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
 }

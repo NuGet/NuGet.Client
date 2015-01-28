@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V3.VisualStudio
@@ -27,20 +28,19 @@ namespace NuGet.Client.V3.VisualStudio
             _client = client;
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             V3UIMetadataResource curResource = null;
 
-            if (source.GetResource<V3ServiceIndexResource>() != null)
+            if (await source.GetResourceAsync<V3ServiceIndexResource>(token) != null)
             {
-                var regResource = source.GetResource<V3RegistrationResource>();
+                var regResource = await source.GetResourceAsync<V3RegistrationResource>();
 
                 // construct a new resource
                 curResource = new V3UIMetadataResource(_client, regResource);
             }
 
-            resource = curResource;
-            return resource != null;
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V2
@@ -14,30 +15,21 @@ namespace NuGet.Client.V2
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, DepedencyInfoResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, DepedencyInfoResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            DepedencyInfoResource v2DependencyInfoResource;
+            DepedencyInfoResource v2DependencyInfoResource = null;
             if (!_cache.TryGetValue(source.PackageSource, out v2DependencyInfoResource))
             {
-                if (base.TryCreate(source, out resource))
-                {
+                var v2repo = await GetRepository(source, token);
 
-                    v2DependencyInfoResource = new V2DependencyInfoResource((V2Resource)resource);
-                    _cache.TryAdd(source.PackageSource, v2DependencyInfoResource);
-                    resource = v2DependencyInfoResource;
-                    return true;
-                }
-                else
+                if (v2repo != null)
                 {
-                    resource = null;
-                    return false;
+                    v2DependencyInfoResource = new V2DependencyInfoResource(v2repo);
+                    _cache.TryAdd(source.PackageSource, v2DependencyInfoResource);
                 }
             }
-            else
-            {
-                resource = v2DependencyInfoResource;
-                return true;
-            }
+
+            return Tuple.Create<bool, INuGetResource>(v2DependencyInfoResource != null, v2DependencyInfoResource);
         }
     }
 }

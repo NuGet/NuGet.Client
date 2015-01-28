@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -21,28 +22,29 @@ namespace NuGet.Client
             _cache = new ConcurrentDictionary<PackageSource, DownloadResource>();
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            DownloadResource downloadResource = null;
+            DownloadResource curResource = null;
 
-            var serviceIndex = source.GetResource<V3ServiceIndexResource>();
+            var serviceIndex = await source.GetResourceAsync<V3ServiceIndexResource>(token);
 
             if (serviceIndex != null)
             {
-                if (!_cache.TryGetValue(source.PackageSource, out downloadResource))
+                if (!_cache.TryGetValue(source.PackageSource, out curResource))
                 {
-                    var registrationResource = source.GetResource<V3RegistrationResource>();
+                    var registrationResource = await source.GetResourceAsync<V3RegistrationResource>(token);
 
-                    DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+                    var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                    downloadResource = new V3DownloadResource(client, registrationResource);
+                    DataClient client = new DataClient(messageHandlerResource.MessageHandler);
 
-                    _cache.TryAdd(source.PackageSource, downloadResource);
+                    curResource = new V3DownloadResource(client, registrationResource);
+
+                    _cache.TryAdd(source.PackageSource, curResource);
                 }
             }
 
-            resource = downloadResource;
-            return downloadResource != null;
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
     }
 }

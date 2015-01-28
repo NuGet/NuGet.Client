@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -17,22 +18,21 @@ namespace NuGet.Client
 
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             V3MetadataResource curResource = null;
-            V3RegistrationResource regResource = source.GetResource<V3RegistrationResource>();
+            V3RegistrationResource regResource = await source.GetResourceAsync<V3RegistrationResource>(token);
 
             if (regResource != null)
             {
-                DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
+
+                DataClient client = new DataClient(messageHandlerResource.MessageHandler);
 
                 curResource = new V3MetadataResource(client, regResource);
             }
 
-            resource = curResource;
-            return resource != null;
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
     }
-
-
 }

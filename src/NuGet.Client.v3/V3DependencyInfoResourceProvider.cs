@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -21,22 +22,23 @@ namespace NuGet.Client
 
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            DepedencyInfoResource dependencyInfoResource = null;
+            DepedencyInfoResource curResource = null;
 
-            if (source.GetResource<V3ServiceIndexResource>() != null)
+            if (await source.GetResourceAsync<V3ServiceIndexResource>(token) != null)
             {
-                DataClient client = new DataClient(source.GetResource<HttpHandlerResource>().MessageHandler);
+                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                var regResource = source.GetResource<V3RegistrationResource>();
+                DataClient client = new DataClient(messageHandlerResource.MessageHandler);
+
+                var regResource = await source.GetResourceAsync<V3RegistrationResource>(token);
 
                 // construct a new resource
-                dependencyInfoResource = new V3DependencyInfoResource(client, regResource);
+                curResource = new V3DependencyInfoResource(client, regResource);
             }
 
-            resource = dependencyInfoResource;
-            return resource != null;
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
     }
 }

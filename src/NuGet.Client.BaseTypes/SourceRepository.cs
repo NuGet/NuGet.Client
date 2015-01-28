@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
@@ -73,6 +74,39 @@ namespace NuGet.Client
         /// <returns>Null if the resource does not exist</returns>
         public virtual T GetResource<T>()
         {
+            return GetResource<T>(CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Returns a resource from the SourceRepository if it exists.
+        /// </summary>
+        /// <typeparam name="T">Expected resource type</typeparam>
+        /// <returns>Null if the resource does not exist</returns>
+        public virtual T GetResource<T>(CancellationToken token)
+        {
+            Task<T> task = GetResourceAsync<T>(token);
+            task.Wait();
+
+            return task.Result;
+        }
+
+        /// <summary>
+        /// Returns a resource from the SourceRepository if it exists.
+        /// </summary>
+        /// <typeparam name="T">Expected resource type</typeparam>
+        /// <returns>Null if the resource does not exist</returns>
+        public virtual async Task<T> GetResourceAsync<T>()
+        {
+            return await GetResourceAsync<T>(CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Returns a resource from the SourceRepository if it exists.
+        /// </summary>
+        /// <typeparam name="T">Expected resource type</typeparam>
+        /// <returns>Null if the resource does not exist</returns>
+        public virtual async Task<T> GetResourceAsync<T>(CancellationToken token) 
+        {
             Type resourceType = typeof(T);
             INuGetResource resource = null;
 
@@ -82,8 +116,12 @@ namespace NuGet.Client
             {
                 foreach (var provider in possible)
                 {
-                    if (provider.Value.TryCreate(this, out resource))
+                    Tuple<bool, INuGetResource> result = await provider.Value.TryCreate(this, token);
+
+                    if (result.Item1)
                     {
+                        resource = result.Item2;
+
                         // found
                         break;
                     }
@@ -91,16 +129,6 @@ namespace NuGet.Client
             }
 
             return resource == null ? default(T) : (T)resource;
-        }
-
-        /// <summary>
-        /// Returns a resource from the SourceRepository if it exists.
-        /// </summary>
-        /// <typeparam name="T">Expected resource type</typeparam>
-        /// <returns>Null if the resource does not exist</returns>
-        public virtual async Task<T> GetResourceAsync<T>() 
-        {
-            return await Task.Run(() => GetResource<T>());
         }
 
         /// <summary>

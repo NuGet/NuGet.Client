@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.Composition;
 using NuGet.Client.VisualStudio;
 using System.Collections.Concurrent;
+using System;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace NuGet.Client.V2.VisualStudio
 {
@@ -8,32 +11,23 @@ namespace NuGet.Client.V2.VisualStudio
     [NuGetResourceProviderMetadata(typeof(UISearchResource), "V2UISearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2UISearchResourceProvider : V2ResourceProvider
     {
-        private readonly ConcurrentDictionary<Configuration.PackageSource, UISearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource,UISearchResource>();
+        private readonly ConcurrentDictionary<Configuration.PackageSource, V2UISearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, V2UISearchResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            UISearchResource v2UISearchResource;
-            if (!_cache.TryGetValue(source.PackageSource, out v2UISearchResource))
+            V2UISearchResource resource = null;
+            if (!_cache.TryGetValue(source.PackageSource, out resource))
             {
-                if (base.TryCreate(source, out resource))
-                {
+                var v2repo = await GetRepository(source, token);
 
-                    v2UISearchResource = new V2UISearchResource((V2Resource)resource);
-                    _cache.TryAdd(source.PackageSource, v2UISearchResource);
-                    resource = v2UISearchResource;
-                    return true;
-                }
-                else
+                if (v2repo != null)
                 {
-                    resource = null;
-                    return false;
+                    resource = new V2UISearchResource(v2repo);
+                    _cache.TryAdd(source.PackageSource, resource);
                 }
             }
-            else
-            {
-                resource = v2UISearchResource;
-                return true;                
-            }
+
+            return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
 }

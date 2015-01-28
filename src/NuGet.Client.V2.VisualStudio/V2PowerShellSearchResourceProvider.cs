@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V2.VisualStudio
@@ -15,30 +16,20 @@ namespace NuGet.Client.V2.VisualStudio
     {
         private readonly ConcurrentDictionary<Configuration.PackageSource, PSSearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, PSSearchResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            PSSearchResource v2PSSearchResource;
-            if (!_cache.TryGetValue(source.PackageSource, out v2PSSearchResource))
+            PSSearchResource resource = null;
+            if (!_cache.TryGetValue(source.PackageSource, out resource))
             {
-                UISearchResource uiSearchResource = source.GetResource<UISearchResource>();
+                UISearchResource uiSearchResource = await source.GetResourceAsync<UISearchResource>(token);
                 if (uiSearchResource != null)
                 {
-                    v2PSSearchResource = new V2PowerShellSearchResource(uiSearchResource);
-                    _cache.TryAdd(source.PackageSource, v2PSSearchResource);
-                    resource = v2PSSearchResource;
-                    return true;
-                }
-                else
-                {
-                    resource = null;
-                    return false;
+                    resource = new V2PowerShellSearchResource(uiSearchResource);
+                    _cache.TryAdd(source.PackageSource, resource);
                 }
             }
-            else
-            {
-                resource = v2PSSearchResource;
-                return true;
-            }
+
+            return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
 }

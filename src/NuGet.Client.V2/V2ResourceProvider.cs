@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V2
@@ -9,18 +10,18 @@ namespace NuGet.Client.V2
     /// </summary>
     public abstract class V2ResourceProvider : INuGetResourceProvider
     {
-        public virtual bool TryCreate(SourceRepository source, out INuGetResource resource)
-        {
-            resource = null;
+        public abstract Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token);
 
-            var repositoryResource = source.GetResource<V2PackageRepositoryResource>();
+        protected async Task<V2Resource> GetRepository(SourceRepository source, CancellationToken token)
+        {
+            var repositoryResource = await source.GetResourceAsync<V2PackageRepositoryResource>(token);
 
             if (repositoryResource != null && repositoryResource.V2Client != null)
             {
-                resource = repositoryResource;
+                return repositoryResource;
             }
 
-            return resource != null;
+            return null;
         }
     }
 }

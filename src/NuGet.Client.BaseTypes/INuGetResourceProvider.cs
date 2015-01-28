@@ -1,4 +1,7 @@
-﻿
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace NuGet.Client
 {
     /// <summary>
@@ -16,9 +19,10 @@ namespace NuGet.Client
         /// <summary>
         /// Attempts to create a resource for this source.
         /// </summary>
+        /// <remarks>The provider may return true but null for the resource if the 
+        /// provider determines that it should not exist.</remarks>
         /// <param name="source">Source repository</param>
-        /// <param name="resource">Requested resource</param>
-        /// <returns>True if this provider handles the input source</returns>
-        bool TryCreate(SourceRepository source, out INuGetResource resource);
+        /// <returns>True if this provider handles the input source.</returns>
+        Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token);
     }
 }

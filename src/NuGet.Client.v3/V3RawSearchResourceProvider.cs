@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -18,10 +19,10 @@ namespace NuGet.Client
 
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             V3RawSearchResource curResource = null;
-            V3ServiceIndexResource serviceIndex = source.GetResource<V3ServiceIndexResource>();
+            V3ServiceIndexResource serviceIndex = await source.GetResourceAsync<V3ServiceIndexResource>();
 
             if (serviceIndex != null)
             {
@@ -29,15 +30,14 @@ namespace NuGet.Client
 
                 if (endpoints.Length > 0)
                 {
-                    HttpHandlerResource handler = source.GetResource<HttpHandlerResource>();
+                    var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
                     // construct a new resource
-                    curResource = new V3RawSearchResource(handler.MessageHandler, endpoints);
+                    curResource = new V3RawSearchResource(messageHandlerResource.MessageHandler, endpoints);
                 }
             }
 
-            resource = curResource;
-            return resource != null;
+            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
     }
 }

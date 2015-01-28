@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client.V2
@@ -12,32 +13,23 @@ namespace NuGet.Client.V2
     [NuGetResourceProviderMetadata(typeof(SimpleSearchResource), "V2SimpleSearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2SimpleSearchResourceProvider : V2ResourceProvider
     {
-        private readonly ConcurrentDictionary<Configuration.PackageSource, SimpleSearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, SimpleSearchResource>();
+        private readonly ConcurrentDictionary<Configuration.PackageSource, V2SimpleSearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, V2SimpleSearchResource>();
 
-        public override bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            SimpleSearchResource v2SimpleSearchResource;
-            if (!_cache.TryGetValue(source.PackageSource, out v2SimpleSearchResource))
+            V2SimpleSearchResource resource = null;
+            if (!_cache.TryGetValue(source.PackageSource, out resource))
             {
-                if (base.TryCreate(source, out resource))
-                {
+                var v2repo = await GetRepository(source, token);
 
-                    v2SimpleSearchResource = new V2SimpleSearchResource((V2Resource)resource);
-                    _cache.TryAdd(source.PackageSource, v2SimpleSearchResource);
-                    resource = v2SimpleSearchResource;
-                    return true;
-                }
-                else
+                if (v2repo != null)
                 {
-                    resource = null;
-                    return false;
+                    resource = new V2SimpleSearchResource(v2repo);
+                    _cache.TryAdd(source.PackageSource, resource);
                 }
             }
-            else
-            {
-                resource = v2SimpleSearchResource;
-                return true;
-            }
+
+            return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
 }
