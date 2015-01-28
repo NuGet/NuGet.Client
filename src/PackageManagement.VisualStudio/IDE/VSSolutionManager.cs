@@ -32,6 +32,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private bool _initNeeded;
         private NuGetAndEnvDTEProjectCache NuGetAndEnvDTEProjectCache { get; set; }
 
+        private ManualResetEvent _initFinished;
+
         public VSSolutionManager()
             : this(
                 ServiceLocator.GetInstance<DTE>(),
@@ -72,7 +74,9 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
-            // Run the init on another thread to avoid an endless loop of SolutionManager -> Project System -> VSPackageManager -> SolutionManager
+            // Run the init on another thread to avoid an endless loop of SolutionManager -> Project System -> VSPackageManager -> SolutionManager            
+            // TODO: fix the cyclic reference problem; then remove _initFinished.
+            _initFinished = new ManualResetEvent(false);
             ThreadPool.QueueUserWorkItem(new WaitCallback(Init));
         }
 
@@ -98,6 +102,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
+            // wait for Init() to finish so that NuGetAndEnvDTEProjectCache is created.
+            _initFinished.WaitOne();
+
             NuGetProject nuGetProject;
             NuGetAndEnvDTEProjectCache.TryGetNuGetProject(nuGetProjectSafeName, out nuGetProject);
             return nuGetProject;
@@ -407,11 +414,16 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (_initNeeded && _dte.Solution.IsOpen)
                 {
-                    InvokeOnUIThread(() => OnSolutionOpened());
+                    OnSolutionOpened();
                 }
             }
             catch (Exception)
             {
+            }
+            finally
+            {
+                // siginal that Init is finished
+                _initFinished.Set();
             }
         }
 

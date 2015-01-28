@@ -219,6 +219,7 @@ namespace NuGetVSExtension
         protected override void Initialize()
         {
             base.Initialize();
+            Styles.Initialize();
 
             // ***
             // VsNuGetDiagnostics.Initialize(

@@ -399,7 +399,7 @@ namespace NuGetConsole.Implementation
         /// <param name="consolePane"></param>
         private void PendingMoveFocus(FrameworkElement consolePane)
         {
-            if (consolePane.IsLoaded && consolePane.IsConnectedToPresentationSource())
+            if (consolePane.IsLoaded && PresentationSource.FromDependencyObject(consolePane) != null)
             {
                 PendingFocusPane = null;
                 MoveFocus(consolePane);

@@ -111,7 +111,7 @@ namespace NuGet.VisualStudio
             if (project == null)
             {
                 throw new ArgumentNullException("project");
-            }
+            }            
 
             if (packageVersions == null || packageVersions.IsEmpty())
             {
