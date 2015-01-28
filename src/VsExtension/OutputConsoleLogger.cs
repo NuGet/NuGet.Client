@@ -30,6 +30,7 @@ namespace NuGetVSExtension
 
         public void End()
         {
+            OutputConsole.WriteLine("========== Finished ==========");
         }
 
         public void Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args)
