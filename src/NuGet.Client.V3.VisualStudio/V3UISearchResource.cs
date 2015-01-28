@@ -20,11 +20,13 @@ namespace NuGet.Client.V3.VisualStudio
     public class V3UISearchResource : UISearchResource
     {
         private readonly V3RawSearchResource _searchResource;
+        private readonly UIMetadataResource _metadataResource;
 
-        public V3UISearchResource(V3RawSearchResource searchResource)
+        public V3UISearchResource(V3RawSearchResource searchResource, UIMetadataResource metadataResource)
             : base()
         {
             _searchResource = searchResource;
+            _metadataResource = metadataResource;
         }
 
         public override async Task<IEnumerable<UISearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
@@ -35,18 +37,16 @@ namespace NuGet.Client.V3.VisualStudio
 
             foreach (JObject searchResultJson in searchResultJsonObjects)
             {
-                var processed = ProcessSearchResult(searchResultJson);
-
-                visualStudioUISearchResults.Add(GetVisualStudioUISearchResult(processed, filters.IncludePrerelease));
+                 visualStudioUISearchResults.Add(await GetVisualStudioUISearchResult(searchResultJson, filters.IncludePrerelease, cancellationToken));
             }
 
             return visualStudioUISearchResults;
         }
 
-        private UISearchMetadata GetVisualStudioUISearchResult(JObject package, bool includePrerelease)
+        private async Task<UISearchMetadata> GetVisualStudioUISearchResult(JObject package, bool includePrerelease, CancellationToken token)
         {
             string id = package.Value<string>(Properties.PackageId);
-            NuGetVersion version = NuGetVersion.Parse(package.Value<string>(Properties.LatestVersion));
+            NuGetVersion version = NuGetVersion.Parse(package.Value<string>(Properties.Version));
 
             PackageIdentity topPackage = new PackageIdentity(id, version);
 
@@ -90,25 +90,73 @@ namespace NuGet.Client.V3.VisualStudio
                 summary = package.Value<string>(Properties.Description);
             }
 
-            UISearchMetadata searchResult = new UISearchMetadata(topPackage, summary, iconUrl, nuGetVersions, null);
+            // retrieve metadata for the top package
+            UIPackageMetadata metadata = null;
+
+            V3UIMetadataResource v3metadataRes = _metadataResource as V3UIMetadataResource;
+
+            // for v3 just parse the data from the search results
+            if (v3metadataRes != null)
+            {
+                metadata = v3metadataRes.ParseMetadata(package);
+            }
+
+            // if we do not have a v3 metadata resource, request it using whatever is available
+            if (metadata == null)
+            {
+                metadata = await _metadataResource.GetMetadata(topPackage, token);
+            }
+
+            UISearchMetadata searchResult = new UISearchMetadata(topPackage, summary, iconUrl, nuGetVersions, metadata);
             return searchResult;
         }
 
-        private JObject ProcessSearchResult(JObject result)
+        /// <summary>
+        /// Returns a field value or the empty string. Arrays will become comma delimited strings.
+        /// </summary>
+        private static string GetField(JObject json, string property)
         {
-            // Get the registration
-            // TODO: check that all required items are coming back
-            // result = (JObject)(await _client.Ensure(result, ResultItemRequiredProperties));
+            JToken value = json[property];
 
-            var searchResult = new JObject();
-            searchResult["id"] = result["id"];
-            searchResult[Properties.LatestVersion] = result[Properties.Version];
-            searchResult[Properties.Versions] = result[Properties.Versions];
-            searchResult[Properties.Summary] = result[Properties.Summary];
-            searchResult[Properties.Description] = result[Properties.Description];
-            searchResult[Properties.IconUrl] = result[Properties.IconUrl];
-            return searchResult;
+            if (value == null)
+            {
+                return string.Empty;
+            }
+
+            JArray array = value as JArray;
+
+            if (array != null)
+            {
+                return String.Join(", ", array.Select(e => e.ToString()));
+            }
+
+            return value.ToString();
         }
+
+        private static int GetInt(JObject json, string property)
+        {
+            JToken value = json[property];
+
+            if (value == null)
+            {
+                return 0;
+            }
+
+            return value.ToObject<int>();
+        }
+
+        private static DateTimeOffset? GetDateTime(JObject json, string property)
+        {
+            JToken value = json[property];
+
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value.ToObject<DateTimeOffset>();
+        }
+
 
         private Uri GetUri(JObject json, string property)
         {

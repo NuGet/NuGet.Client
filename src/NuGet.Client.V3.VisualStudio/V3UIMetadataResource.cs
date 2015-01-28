@@ -25,13 +25,33 @@ namespace NuGet.Client.V3.VisualStudio
             _client = client;
         }
 
+        public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackageIdentity> packages, CancellationToken token)
+        {
+            List<UIPackageMetadata> results = new List<UIPackageMetadata>();
+
+            // group by id to optimize
+            foreach (var group in packages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
+            {
+                var versions = group.OrderBy(e => e.Version, VersionComparer.VersionRelease);
+
+                // find the range of versions we need
+                VersionRange range = new VersionRange(versions.First().Version, true, versions.Last().Version, true, true);
+
+                IEnumerable<JObject> metadataList = await _regResource.GetPackageMetadata(group.Key, range, true, true, token);
+
+                results.AddRange(metadataList.Select(item => ParseMetadata(item)));
+            }
+
+            return results;
+        }
+
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             IEnumerable<JObject> metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, token);
-            return metadataList.Select(item => GetVisualstudioPackageMetadata(item));
+            return metadataList.Select(item => ParseMetadata(item));
         }
 
-        private UIPackageMetadata GetVisualstudioPackageMetadata(JObject metadata)
+        public UIPackageMetadata ParseMetadata(JObject metadata)
         {
 
             NuGetVersion Version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
@@ -45,12 +65,12 @@ namespace NuGet.Client.V3.VisualStudio
             string id = metadata.Value<string>(Properties.PackageId);
             string Summary = metadata.Value<string>(Properties.Summary);
             string Description = metadata.Value<string>(Properties.Description);
-            string Authors = metadata.Value<string>(Properties.Authors);
-            string Owners = metadata.Value<string>(Properties.Owners);
+            string Authors = GetField(metadata, Properties.Authors);
+            string Owners = GetField(metadata, Properties.Owners);
             Uri IconUrl = GetUri(metadata, Properties.IconUrl);
             Uri LicenseUrl = GetUri(metadata, Properties.LicenseUrl);
             Uri ProjectUrl = GetUri(metadata, Properties.ProjectUrl);
-            string Tags = String.Join(" ", (metadata.Value<JArray>(Properties.Tags) ?? Enumerable.Empty<JToken>()).Select(t => t.ToString()));
+            string Tags = GetField(metadata, Properties.Tags);
             int DownloadCount = metadata.Value<int>(Properties.DownloadCount);
             IEnumerable<UIPackageDependencySet> DependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
             bool requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
@@ -60,6 +80,29 @@ namespace NuGet.Client.V3.VisualStudio
 
             return new UIPackageMetadata(new PackageIdentity(id, Version), Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, DownloadCount, Published, DependencySets, HasDependencies, requireLicenseAcceptance);
         }
+
+        /// <summary>
+        /// Returns a field value or the empty string. Arrays will become comma delimited strings.
+        /// </summary>
+        private static string GetField(JObject json, string property)
+        {
+            JToken value = json[property];
+
+            if (value == null)
+            {
+                return string.Empty;
+            }
+
+            JArray array = value as JArray;
+
+            if (array != null)
+            {
+                return String.Join(", ", array.Select(e => e.ToString()));
+            }
+
+            return value.ToString();
+        }
+
         private Uri GetUri(JObject json, string property)
         {
             if (json[property] == null)

@@ -20,9 +20,41 @@ namespace NuGet.Client.V2.VisualStudio
     public class V2UIMetadataResource :  UIMetadataResource
     {
         private readonly IPackageRepository V2Client;
-        public V2UIMetadataResource(V2Resource resource)            
+        public V2UIMetadataResource(V2Resource resource)
         {
             V2Client = resource.V2Client;
+        }
+
+        public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackageIdentity> packages, CancellationToken token)
+        {
+            List<UIPackageMetadata> results = new List<UIPackageMetadata>();
+
+            foreach (var group in packages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
+            {
+                if (group.Count() == 1)
+                {
+                    // optimization for a single package
+                    var package = group.Single();
+
+                    IPackage result = V2Client.FindPackage(package.Id, SemanticVersion.Parse(package.Version.ToString()));
+
+                    if (result != null)
+                    {
+                        results.Add(GetVisualStudioUIPackageMetadata(result));
+                    }
+                }
+                else
+                {
+                    // batch mode
+                    var foundPackages = V2Client.FindPackagesById(group.Key)
+                        .Where(p => group.Any(e => VersionComparer.VersionRelease.Equals(e.Version, NuGetVersion.Parse(p.Version.ToString()))))
+                        .Select(p => GetVisualStudioUIPackageMetadata(p));
+
+                    results.AddRange(foundPackages);
+                }
+            }
+
+            return results;
         }
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
@@ -30,9 +62,9 @@ namespace NuGet.Client.V2.VisualStudio
             return V2Client.FindPackagesById(packageId).Select(p => GetVisualStudioUIPackageMetadata(p));
         }
 
-        private static UIPackageMetadata GetVisualStudioUIPackageMetadata(IPackage package)
+        internal static UIPackageMetadata GetVisualStudioUIPackageMetadata(IPackage package)
         {
-            NuGetVersion Version = NuGetVersion.Parse(package.Version.ToString());          
+            NuGetVersion Version = NuGetVersion.Parse(package.Version.ToString());
             DateTimeOffset? Published = package.Published;
             string Summary = package.Summary;
             string Description = package.Description;
@@ -69,8 +101,5 @@ namespace NuGet.Client.V2.VisualStudio
              fxName = NuGetFramework.Parse(dependencySet.TargetFramework.FullName);            
             return new UIPackageDependencySet(fxName, visualStudioUIPackageDependencies);
         }
-
-
-      
     }
 }

@@ -36,8 +36,9 @@ namespace NuGet.Client.V3.VisualStudio
             if (serviceIndex != null)
             {
                 var rawSearch = await source.GetResourceAsync<V3RawSearchResource>(token);
+                var metadataResource = await source.GetResourceAsync<UIMetadataResource>(token);
 
-                curResource = new V3UISearchResource(rawSearch);
+                curResource = new V3UISearchResource(rawSearch, metadataResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

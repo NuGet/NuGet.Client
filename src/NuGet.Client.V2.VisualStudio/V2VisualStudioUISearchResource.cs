@@ -12,7 +12,7 @@ namespace NuGet.Client.V2.VisualStudio
     public class V2UISearchResource : UISearchResource
     {
         private readonly IPackageRepository V2Client;
-        public V2UISearchResource(V2Resource resource)            
+        public V2UISearchResource(V2Resource resource)
         {
             V2Client = resource.V2Client;
         }
@@ -26,12 +26,12 @@ namespace NuGet.Client.V2.VisualStudio
             return await GetSearchResultsForVisualStudioUI(searchTerm, filters, skip, take, cancellationToken);
         }
 
-        private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUI(string searchTerm, SearchFilter filters, int skip, int take, System.Threading.CancellationToken cancellationToken)
+        private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUI(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
             var query = V2Client.Search(
                 searchTerm,
                 filters.SupportedFrameworks,
-                filters.IncludePrerelease);                 
+                filters.IncludePrerelease);
 
             // V2 sometimes requires that we also use an OData filter for latest/latest prerelease version
             if (filters.IncludePrerelease)
@@ -83,7 +83,7 @@ namespace NuGet.Client.V2.VisualStudio
 
             Uri iconUrl = package.IconUrl;
             PackageIdentity identity = new PackageIdentity(id, version);
-            UISearchMetadata searchMetaData = new UISearchMetadata(identity, summary, iconUrl, nuGetVersions, null);
+            UISearchMetadata searchMetaData = new UISearchMetadata(identity, summary, iconUrl, nuGetVersions, V2UIMetadataResource.GetVisualStudioUIPackageMetadata(package));
             return searchMetaData;
         }
       
