@@ -16,6 +16,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             SetSyncModeOnHost(true);
             base.SetPackageManagementContextOnHost();
             base.SetActivePackageSourceOnHost();
+            base.SetDTEContextOnHost();
 
             try
             {

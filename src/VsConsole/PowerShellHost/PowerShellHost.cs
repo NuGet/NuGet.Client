@@ -1,3 +1,9 @@
+using EnvDTE;
+using NuGet.Client;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,12 +15,6 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet;
-using NuGet.PackageManagement;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Configuration;
-using NuGet.ProjectManagement;
-using NuGet.Client;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -30,6 +30,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string activePackageSourceKey = "activePackageSource";
         private const string packageSourceKey = "packageSources";
         private string _activePackageSource;
+        private DTE _dte;
 
         private IConsole _activeConsole;
         private RunspaceDispatcher _runspace;
@@ -51,6 +52,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             _settings = ServiceLocator.GetInstance<ISettings>();
+            _dte = ServiceLocator.GetInstance<DTE>();
             _packageManagementContext = new PackageManagementContext(_sourceRepositoryProvider, _solutionManager);
 
             _name = name;
@@ -371,6 +373,23 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 else
                 {
                     property.Value = _activePackageSource;
+                }
+            }
+        }
+
+        protected void SetDTEContextOnHost()
+        {
+            if (_nugetHost != null)
+            {
+                PSPropertyInfo property = _nugetHost.PrivateData.Properties["DTE"];
+                if (property == null)
+                {
+                    property = new PSNoteProperty("DTE", _dte);
+                    _nugetHost.PrivateData.Properties.Add(property);
+                }
+                else
+                {
+                    property.Value = _dte;
                 }
             }
         }
