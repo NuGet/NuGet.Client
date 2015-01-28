@@ -100,8 +100,15 @@ namespace NuGet.PackageManagement.UI
 
     public static class Styles
     {
-        static Style _themedComboStyle = Application.Current.FindResource(
-                new ComponentResourceKey(typeof(Microsoft.VisualStudio.ExtensionsExplorer.UI.AutomationComboBox), "ThemedComboBoxStyle")) as Style;
+        public static void Initialize()
+        {
+            var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
+            var comboBoxType = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.AutomationComboBox");
+            _themedComboStyle = Application.Current.FindResource(
+                new ComponentResourceKey(comboBoxType, "ThemedComboBoxStyle")) as Style;
+        }
+
+        private static Style _themedComboStyle;
 
         public static Style ThemedComboStyle 
         {
