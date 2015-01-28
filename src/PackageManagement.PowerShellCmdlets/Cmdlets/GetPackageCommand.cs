@@ -146,9 +146,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     foreach (NuGetProject project in Projects)
                     {
-                        string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
+                        IEnumerable<string> frameworks = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project);
                         IEnumerable<PackageReference> installedPackages = project.GetInstalledPackages();
-                        Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, new List<string> { framework }, IncludePrerelease.IsPresent, Skip, First);
+                        Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, frameworks, IncludePrerelease.IsPresent, Skip, First);
                         WriteUpdatePackagesFromRemoteSource(remoteUpdates, project);
                     }
                 }

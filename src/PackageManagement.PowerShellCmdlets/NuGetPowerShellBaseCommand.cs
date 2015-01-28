@@ -1,6 +1,7 @@
 ﻿using NuGet.Client;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
@@ -160,6 +161,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         #region Cmdlets base APIs
+        /// <summary>
+        /// Get the active source repository for PowerShell cmdlets, which is passed in by the host.
+        /// </summary>
+        /// <param name="source"></param>
         protected void GetActiveSourceRepository(string source = null)
         {
             if (string.IsNullOrEmpty(source))
@@ -171,16 +176,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (!string.IsNullOrEmpty(source))
             {
                 ActiveSourceRepository = repoes
-                    .Where(p => string.Equals(p.PackageSource.Name, source, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(p.PackageSource.Source, source, StringComparison.OrdinalIgnoreCase))
-                        .FirstOrDefault();
+                    .Where(p => p.PackageSource.IsEnabled && (StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Name, source) ||
+                    StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Source, source)))
+                    .FirstOrDefault();
             }
+            // If source is still null, return the first one from the available repositories.
             else 
             {
                 ActiveSourceRepository = repoes.FirstOrDefault();
             }
         }
 
+        /// <summary>
+        /// Get the default NuGet Project
+        /// </summary>
+        /// <param name="projectName"></param>
         protected void GetNuGetProject(string projectName = null)
         {
             if (string.IsNullOrEmpty(projectName))
@@ -193,6 +203,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Check if solution is open. If not, throw terminating error
+        /// </summary>
         protected void CheckForSolutionOpen()
         {
             if (!_solutionManager.IsSolutionOpen)
@@ -202,7 +215,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get the list of installed packages based on Filter, Skip and First parameters
+        /// Get the list of installed packages based on Filter, Skip and First parameters. Used for Get-Package.
         /// </summary>
         /// <returns></returns>
         protected Dictionary<NuGetProject, IEnumerable<PackageReference>> GetInstalledPackages(IEnumerable<NuGetProject> projects, 
@@ -233,6 +246,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return installedPackages;
         }
 
+        /// <summary>
+        /// Get list of packages from the remote package source. Used for Get-Package -ListAvailable.
+        /// </summary>
+        /// <param name="packageId"></param>
+        /// <param name="targetFrameworks"></param>
+        /// <param name="includePrerelease"></param>
+        /// <param name="skip"></param>
+        /// <param name="take"></param>
+        /// <returns></returns>
         protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks, 
             bool includePrerelease, int skip, int take)
         {
@@ -247,6 +269,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return packages;
         }
 
+        /// <summary>
+        /// Get list of package updates that are installed to a project. Used for Get-Package -Updates.
+        /// </summary>
+        /// <param name="installedPackages"></param>
+        /// <param name="targetFrameworks"></param>
+        /// <param name="includePrerelease"></param>
+        /// <param name="skip"></param>
+        /// <param name="take"></param>
+        /// <returns></returns>
         protected Dictionary<PSSearchMetadata, NuGetVersion> GetPackageUpdatesFromRemoteSource(IEnumerable<PackageReference> installedPackages,
             IEnumerable<string> targetFrameworks, bool includePrerelease, int skip = 0, int take = 30)
         {
@@ -262,6 +293,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return updates;
         }
 
+        /// <summary>
+        /// Get list of package updates that are installed to a project. Used for Update-Package -Version.
+        /// </summary>
+        /// <param name="installedPackages"></param>
+        /// <param name="project"></param>
+        /// <param name="includePrerelease"></param>
+        /// <param name="isSafe"></param>
+        /// <param name="version"></param>
+        /// <param name="isEnum"></param>
+        /// <param name="dependencyEnum"></param>
+        /// <returns></returns>
         protected IEnumerable<PackageIdentity> GetPackageUpdates(IEnumerable<PackageReference> installedPackages, NuGetProject project, 
             bool includePrerelease, bool isSafe, string version = null, bool isEnum = false, DependencyBehavior dependencyEnum = DependencyBehavior.Lowest)
         {

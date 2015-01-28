@@ -117,7 +117,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (NuGetProject project in Projects)
                 {
-                    string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                     IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
                     IEnumerable<PackageIdentity> updates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
                     if (updates.Any())
@@ -135,7 +134,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (NuGetProject project in Projects)
                 {
-                    string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
                     PackageReference installedPackage = Project.GetInstalledPackages().Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     IEnumerable<PackageReference> installedPackages = new List<PackageReference>() { installedPackage };
                     IEnumerable<PackageIdentity> updates = Enumerable.Empty<PackageIdentity>();

@@ -42,6 +42,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
+        /// Get project's target frameworks
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetProjectTargetFrameworks(NuGetProject project)
+        {
+            List<string> frameworks = new List<string>();
+            NuGetFramework nugetFramework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            if (nugetFramework != null && !nugetFramework.IsSpecificFramework)
+            {
+                string framework = nugetFramework.DotNetFrameworkName;
+                frameworks.Add(framework);
+            }
+            return frameworks;
+        }
+
+        /// <summary>
         /// Get latest package identity for specified package Id.
         /// </summary>
         /// <param name="packageId"></param>
@@ -51,8 +68,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         public static PackageIdentity GetLatestPackageIdentityForId(SourceRepository sourceRepository, string packageId, NuGetProject project, bool includePrerelease)
         {
-            string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
-            List<string> targetFrameworks = new List<string>() { framework };
+            IEnumerable<string> targetFrameworks = GetProjectTargetFrameworks(project);
             SearchFilter searchfilter = new SearchFilter();
             searchfilter.IncludePrerelease = includePrerelease;
             searchfilter.SupportedFrameworks = targetFrameworks;
@@ -89,8 +105,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         public static IEnumerable<NuGetVersion> GetAllVersionsForPackageId(SourceRepository sourceRepository, string packageId, NuGetProject project, bool includePrerelease)
         {
-            string framework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
-            List<string> targetFrameworks = new List<string>() { framework };
+            IEnumerable<string> targetFrameworks = GetProjectTargetFrameworks(project);
             SearchFilter searchfilter = new SearchFilter();
             searchfilter.IncludePrerelease = includePrerelease;
             searchfilter.SupportedFrameworks = targetFrameworks;

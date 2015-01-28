@@ -1,7 +1,7 @@
-﻿using NuGet.Frameworks;
-using NuGet.ProjectManagement;
+﻿using NuGet.ProjectManagement;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Management.Automation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             PowerShellProject psProject = new PowerShellProject();
             psProject.ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-            psProject.TargetFramework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework).Framework;
+            psProject.TargetFramework = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project).FirstOrDefault();
             psProject.FullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
             return psProject;
         }
