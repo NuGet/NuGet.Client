@@ -88,7 +88,7 @@
 
             <TextBlock Grid.Row="4" Grid.Column="1">
                 <Hyperlink
-                    NavigateUri="http://docs.nuget.org/InstallOptions"
+                    NavigateUri="http://docs.nuget.org/consume/package-manager-ui#install-options"
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
                     <Run Text="{x:Static resx:Resources.Link_LearnAboutOptions}" />
@@ -122,7 +122,7 @@
 
             <TextBlock Grid.Row="4" Grid.Column="1">
                 <Hyperlink
-                    NavigateUri="http://docs.nuget.org/UninstallOptions"
+                    NavigateUri="http://docs.nuget.org/consume/package-manager-ui#uninstall-options"
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
                     <Run Text="{x:Static resx:Resources.Link_LearnAboutOptions}" />
