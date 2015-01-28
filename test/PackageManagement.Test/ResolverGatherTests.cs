@@ -203,6 +203,11 @@ namespace NuGet.Test
             var nuGetResource = new TestDependencyInfo(Packages);
             return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
         }
+
+        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>

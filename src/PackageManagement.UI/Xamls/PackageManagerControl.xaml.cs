@@ -59,6 +59,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             InitializeComponent();
+            SetStyles();
 
             _windowSearchHostFactory = searchFactory;
             if (_windowSearchHostFactory != null)
@@ -90,6 +91,17 @@ namespace NuGet.PackageManagement.UI
             }
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesSaved += Sources_PackageSourcesChanged;
+        }
+
+        private void SetStyles()
+        {
+            if (StandaloneSwitch.IsRunningStandalone)
+            {
+                return;
+            }
+            
+            _sourceRepoList.Style = Styles.ThemedComboStyle;
+            _filter.Style = Styles.ThemedComboStyle;
         }
 
         private IEnumerable<SourceRepository> EnabledSources
@@ -503,7 +515,10 @@ namespace NuGet.PackageManagement.UI
 
         public void ProvideSearchSettings(IVsUIDataSource pSearchSettings)
         {
-            var settings = (SearchSettingsDataSource)pSearchSettings;
+            // pSearchSettings is of type SearchSettingsDataSource. We use dynamic here
+            // so that the code can be run on both dev12 & dev14. If we use the type directly,
+            // there will be type mismatch error.
+            dynamic settings = pSearchSettings;
             settings.ControlMinWidth = (uint)_searchControlParent.MinWidth;
             settings.ControlMaxWidth = uint.MaxValue;
             settings.SearchWatermark = GetSearchText();

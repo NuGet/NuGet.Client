@@ -4,8 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:tp="clr-namespace:Microsoft.VisualStudio.ExtensionsExplorer.UI;assembly=Microsoft.VisualStudio.ExtensionsExplorer.UI"
+             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"             
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -62,6 +61,7 @@
                 Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
                 Text="{x:Static resx:Resources.Label_DependencyBehavior}" />
             <ComboBox
+                x:Name="_dependencyBehaviors"
                 Grid.Row="0"
                 Grid.Column="1"
                 HorizontalAlignment="Left"
@@ -69,7 +69,7 @@
                 MinWidth="150"
                 ItemsSource="{Binding Path=Options.DependencyBehaviors}"
                 SelectedItem="{Binding Path=Options.SelectedDependencyBehavior}"
-                Style="{Binding Converter={StaticResource StyleKeyConverter}, ConverterParameter={StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type tp:AutomationComboBox}, ResourceId=ThemedComboBoxStyle}}}" />
+                />
 
             <TextBlock
                 Grid.Row="2" Grid.Column="0"
@@ -78,13 +78,14 @@
                 Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
                 Text="{x:Static resx:Resources.Label_FileConflictAction}" />
             <ComboBox
+                x:Name="_fileConflictActions"
                 Grid.Row="2" Grid.Column="1"
                 MinHeight="22"
                 MinWidth="150"
                 HorizontalAlignment="Left"
                 ItemsSource="{Binding Path=Options.FileConflictActions}"
                 SelectedItem="{Binding Path=Options.SelectedFileConflictAction}"
-                Style="{Binding Converter={StaticResource StyleKeyConverter}, ConverterParameter={StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type tp:AutomationComboBox}, ResourceId=ThemedComboBoxStyle}}}" />
+                />
 
             <TextBlock Grid.Row="4" Grid.Column="1">
                 <Hyperlink

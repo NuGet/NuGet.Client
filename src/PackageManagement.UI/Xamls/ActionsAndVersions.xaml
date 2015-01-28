@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:Tools="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:tp="clr-namespace:Microsoft.VisualStudio.ExtensionsExplorer.UI;assembly=Microsoft.VisualStudio.ExtensionsExplorer.UI"
+             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"             
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              Background="{DynamicResource {x:Static resx:Brushes.HeaderBackground}}"
              Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
@@ -39,13 +38,13 @@
             FontWeight="Bold"
             Text="{x:Static resx:Resources.Label_Action}" />
         <ComboBox
+            x:Name="_actions"
             Grid.Row="3"
-            Grid.Column="0"
+            Grid.Column="0"            
             MinWidth="150"
             MinHeight="22"
             ItemsSource="{Binding Path=Actions}"
-            SelectedItem="{Binding Path=SelectedAction}"
-            Style="{Binding Converter={StaticResource StyleKeyConverter}, ConverterParameter={StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type tp:AutomationComboBox}, ResourceId=ThemedComboBoxStyle}}}" />
+            SelectedItem="{Binding Path=SelectedAction}" />
 
         <TextBlock
             Grid.Row="0"
@@ -57,8 +56,7 @@
             Grid.Row="3"
             Grid.Column="2"
             MinWidth="150"
-            MinHeight="22"
-            Style="{Binding Converter={StaticResource StyleKeyConverter}, ConverterParameter={StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type tp:AutomationComboBox}, ResourceId=ThemedComboBoxStyle}}}"
+            MinHeight="22"            
             ItemsSource="{Binding Path=Versions}"
             SelectedItem="{Binding Path=SelectedVersion}" />
     </Grid>

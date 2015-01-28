@@ -23,7 +23,20 @@ namespace NuGet.PackageManagement.UI
         public OptionsControl()
         {
             InitializeComponent();
+            SetStyles();
         }
+
+        private void SetStyles()
+        {
+            if (StandaloneSwitch.IsRunningStandalone)
+            {
+                return;
+            }
+
+            _dependencyBehaviors.Style = Styles.ThemedComboStyle;
+            _fileConflictActions.Style = Styles.ThemedComboStyle;
+        }
+
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
             Hyperlink hyperlink = e.OriginalSource as Hyperlink;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
@@ -93,6 +94,20 @@ namespace NuGet.PackageManagement.UI
                 {
                     return Microsoft.VisualStudio.PlatformUI.ProgressBarColors.IndicatorFillBrushKey;
                 }
+            }
+        }
+    }
+
+    public static class Styles
+    {
+        static Style _themedComboStyle = Application.Current.FindResource(
+                new ComponentResourceKey(typeof(Microsoft.VisualStudio.ExtensionsExplorer.UI.AutomationComboBox), "ThemedComboBoxStyle")) as Style;
+
+        public static Style ThemedComboStyle 
+        {
+            get
+            {
+                return _themedComboStyle;
             }
         }
     }

@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:Tools="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:tp="clr-namespace:Microsoft.VisualStudio.ExtensionsExplorer.UI;assembly=Microsoft.VisualStudio.ExtensionsExplorer.UI"
              Background="{DynamicResource {x:Static resx:Brushes.HeaderBackground}}"
              Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
              x:Name="_self"
@@ -58,7 +57,7 @@
                         MinHeight="22"
                         Grid.Column="1"
                         SelectionChanged="_sourceRepoList_SelectionChanged"
-                        Style="{Binding Converter={StaticResource StyleKeyConverter}, ConverterParameter={StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type tp:AutomationComboBox}, ResourceId=ThemedComboBoxStyle}}}" />
+                        />
 
                     <TextBlock
                         Grid.Column="2"
@@ -75,7 +74,7 @@
                         MinWidth="130"
                         MinHeight="22"
                         SelectionChanged="_filter_SelectionChanged"
-                        Style="{Binding Converter={StaticResource StyleKeyConverter}, ConverterParameter={StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type tp:AutomationComboBox}, ResourceId=ThemedComboBoxStyle}}}" />
+                        />
 
                     <CheckBox 
                         x:Name="_checkboxPrerelease"
