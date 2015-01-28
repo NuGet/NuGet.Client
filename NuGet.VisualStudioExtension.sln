@@ -36,6 +36,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F8E289
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudioAPITests", "test\VisualStudioAPITests\VisualStudioAPITests.csproj", "{8724F1D1-63C4-47D6-B3C4-B8AC3FB757D3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functional", "functional", "{72887A16-F39B-4B21-9B76-33AE5004DE0B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "framework", "framework", "{CB95A418-1524-48D7-96F5-3A3E733E41CC}"
+	ProjectSection(SolutionItems) = preProject
+		test\EndToEnd\assert.ps1 = test\EndToEnd\assert.ps1
+		test\EndToEnd\nuget.assert.ps1 = test\EndToEnd\nuget.assert.ps1
+		test\EndToEnd\NuGet.Tests.psm1 = test\EndToEnd\NuGet.Tests.psm1
+		test\EndToEnd\utility.ps1 = test\EndToEnd\utility.ps1
+		test\EndToEnd\vs.ps1 = test\EndToEnd\vs.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83AEE32C-FFCC-43A6-898B-D7DF81774C25}"
+	ProjectSection(SolutionItems) = preProject
+		test\EndToEnd\tests\install.ps1 = test\EndToEnd\tests\install.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Coverage|Any CPU = Coverage|Any CPU
@@ -182,5 +198,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9713B86C-A35A-4417-A681-466F87544DB6} = {3EF356B5-E2D3-45E3-B515-99F4611ACBDA}
 		{8724F1D1-63C4-47D6-B3C4-B8AC3FB757D3} = {3EF356B5-E2D3-45E3-B515-99F4611ACBDA}
+		{72887A16-F39B-4B21-9B76-33AE5004DE0B} = {3EF356B5-E2D3-45E3-B515-99F4611ACBDA}
+		{CB95A418-1524-48D7-96F5-3A3E733E41CC} = {72887A16-F39B-4B21-9B76-33AE5004DE0B}
+		{83AEE32C-FFCC-43A6-898B-D7DF81774C25} = {72887A16-F39B-4B21-9B76-33AE5004DE0B}
 	EndGlobalSection
 EndGlobal
