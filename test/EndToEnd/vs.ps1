@@ -168,6 +168,16 @@ function New-Project {
            }
     }
 
+    # At this point, we could not find a matching project. This may be because it is a website
+    if ($TemplateName -eq "EmptyWeb")
+    {
+        foreach($dteProject in $dte.Solution.Projects) {
+               if($ProjectName.StartsWith($dteProject.Name)) {
+                    return $dteProject
+               }
+        }
+    }
+
     return $null
 }
 

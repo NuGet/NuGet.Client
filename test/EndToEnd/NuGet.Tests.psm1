@@ -197,7 +197,7 @@ function global:Run-Test {
             $context = New-Object PSObject -Property $values
 
             # Some tests are flaky. We give failed tests another chance to succeed.
-            for ($counter = 0; $counter -le 1; $counter++)
+            for ($counter = 0; $counter -le 0; $counter++)
             {
                 if ($counter -eq 1)
                 {
