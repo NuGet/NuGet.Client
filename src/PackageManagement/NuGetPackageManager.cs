@@ -105,7 +105,8 @@ namespace NuGet.PackageManagement
         /// Installs the latest version of the given <param name="packageId"></param> to NuGetProject <param name="nuGetProject"></param>
         /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
             // Step-1 : Get latest version for packageId
             var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext);
@@ -116,17 +117,20 @@ namespace NuGet.PackageManagement
             }
 
             // Step-2 : Call InstallPackageAsync(project, packageIdentity)
-            await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext, nuGetProjectContext);
+            await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
+                nuGetProjectContext, primarySourceRepository, secondarySources);
         }
 
         /// <summary>
         /// Installs given <param name="packageIdentity"></param> to NuGetProject <param name="nuGetProject"></param>
         /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
             // Step-1 : Call PreviewInstallPackageAsync to get all the nuGetProjectActions
-            var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext);
+            var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
+                nuGetProjectContext, primarySourceRepository, secondarySources);
 
             // Step-2 : Execute all the nuGetProjectActions
             await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
@@ -145,7 +149,9 @@ namespace NuGet.PackageManagement
         /// Gives the preview as a list of NuGetProjectActions that will be performed to install <param name="packageId"></param> into <param name="nuGetProject"></param>
         /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, string packageId,
+            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
             if (nuGetProject == null)
             {
@@ -175,10 +181,13 @@ namespace NuGet.PackageManagement
             }
 
             // Step-2 : Call InstallPackage(project, packageIdentity)
-            return await PreviewInstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext, nuGetProjectContext);
+            return await PreviewInstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
+                nuGetProjectContext, primarySourceRepository, secondarySources);
         }
 
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(IEnumerable<string> packagesToInstall, NuGetProject nuGetProject, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(IEnumerable<string> packagesToInstall, NuGetProject nuGetProject,
+            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
             if (packagesToInstall == null)
             {
@@ -205,18 +214,26 @@ namespace NuGet.PackageManagement
 
             // Note: resolver needs all the installed packages as targets too. And, metadata should be gathered for the installed packages as well
             var packageTargetsForResolver = new HashSet<PackageIdentity>(oldListOfInstalledPackages.Select(p => new PackageIdentity(p.Id, null)), PackageIdentity.Comparer);
-            foreach (var packageToInstall in packagesToInstall)
+            var packageIdentitiesToInstall = new List<PackageIdentity>();
+            foreach (var packageIdToInstall in packagesToInstall)
             {
-                packageTargetsForResolver.Add(new PackageIdentity(packageToInstall, null));
+                var packageIdentityToInstall = new PackageIdentity(packageIdToInstall, null);
+                packageIdentitiesToInstall.Add(packageIdentityToInstall);
+                packageTargetsForResolver.Add(packageIdentityToInstall);
             }
 
             return await PreviewUpdatePackagesAsyncPrivate(packageTargetsForResolver,
+                packageIdentitiesToInstall,
                 nuGetProject,
                 resolutionContext,
-                nuGetProjectContext);
+                nuGetProjectContext,
+                primarySourceRepository,
+                secondarySources);
         }
 
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(IEnumerable<PackageIdentity> packagesToInstall, NuGetProject nuGetProject, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(IEnumerable<PackageIdentity> packagesToInstall, NuGetProject nuGetProject,
+            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
             if(packagesToInstall == null)
             {
@@ -253,17 +270,28 @@ namespace NuGet.PackageManagement
                 packageTargetsForResolver.Add(packageToInstall);
             }
 
+            if (secondarySources == null)
+            {
+                secondarySources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            }
+
             return await PreviewUpdatePackagesAsyncPrivate(packageTargetsForResolver,
+                packagesToInstall,
                 nuGetProject,
                 resolutionContext,
-                nuGetProjectContext);
+                nuGetProjectContext,
+                primarySourceRepository,
+                secondarySources);
         }
 
         // TODO: HACK: Copy-pasted PreviewInstallPackageAsync here. Need to refactor later
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsyncPrivate(IEnumerable<PackageIdentity> packageTargetsForResolver,
+            IEnumerable<PackageIdentity> packagesToInstall,
             NuGetProject nuGetProject,
             ResolutionContext resolutionContext,
-            INuGetProjectContext nuGetProjectContext)
+            INuGetProjectContext nuGetProjectContext,
+            SourceRepository primarySourceRepository,
+            IEnumerable<SourceRepository> secondarySources)
         {
             if(packageTargetsForResolver == null)
             {
@@ -285,6 +313,11 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
+            if(secondarySources == null)
+            {
+                throw new ArgumentNullException("secondarySources");
+            }
+
             var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
@@ -292,17 +325,20 @@ namespace NuGet.PackageManagement
             // TODO: these sources should be ordered
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
-            // Always have to add the packages folder as the primary repository so that dependency info for an installed package that is unlisted from the server is still available :(
-            var effectiveSources = new List<SourceRepository>() { PackagesFolderSourceRepository };
-            effectiveSources.AddRange(SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled));
+            var effectiveSources = GetEffectiveSources(primarySourceRepository, secondarySources);
 
             try
             {
                 // Step-1 : Get metadata resources using gatherer
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
-                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext, packageTargetsForResolver,
-                    targetFramework, effectiveSources, CancellationToken.None);
+                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
+                    packagesToInstall,
+                    primarySourceRepository,
+                    packageTargetsForResolver,
+                    targetFramework,
+                    effectiveSources,
+                    CancellationToken.None);
 
                 if (!availablePackageDependencyInfoWithSourceSet.Any())
                 {
@@ -361,7 +397,22 @@ namespace NuGet.PackageManagement
         /// Gives the preview as a list of NuGetProjectActions that will be performed to install <param name="packageIdentity"></param> into <param name="nuGetProject"></param>
         /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
+        {
+            if(secondarySources == null)
+            {
+                secondarySources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            }
+
+            return await PreviewInstallPackageAsyncPrivate(nuGetProject, packageIdentity, resolutionContext,
+                nuGetProjectContext, primarySourceRepository, secondarySources);
+        }
+
+        private async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources)
         {
             if(nuGetProject == null)
             {
@@ -383,6 +434,16 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
+            if (primarySourceRepository == null)
+            {
+                throw new ArgumentNullException("primarySourceRepository");
+            }
+
+            if(secondarySources == null)
+            {
+                throw new ArgumentNullException("secondarySources");
+            }
+
             var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
             if(oldListOfInstalledPackages.Any(p => p.Equals(packageIdentity)))
@@ -396,9 +457,7 @@ namespace NuGet.PackageManagement
             // TODO: these sources should be ordered
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
-            // Always have to add the packages folder as the primary repository so that dependency info for an installed package that is unlisted from the server is still available :(
-            var effectiveSources = new List<SourceRepository>() { PackagesFolderSourceRepository };
-            effectiveSources.AddRange(SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled));
+            var effectiveSources = GetEffectiveSources(primarySourceRepository, secondarySources);
             
             if (resolutionContext.DependencyBehavior != DependencyBehavior.Ignore)
             {
@@ -416,8 +475,16 @@ namespace NuGet.PackageManagement
                     // Step-1 : Get metadata resources using gatherer
                     var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, targetFramework);
-                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext, packageTargetsForResolver,
-                        targetFramework, effectiveSources, CancellationToken.None);
+
+                    var primaryPackages = new List<PackageIdentity>() { packageIdentity };
+
+                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
+                        primaryPackages,
+                        primarySourceRepository,
+                        packageTargetsForResolver,
+                        targetFramework,
+                        effectiveSources,
+                        CancellationToken.None);
 
                     if (!availablePackageDependencyInfoWithSourceSet.Any())
                     {
@@ -752,6 +819,16 @@ namespace NuGet.PackageManagement
             }
 
             return latestVersionFromDifferentRepositories.Count == 0 ? null : latestVersionFromDifferentRepositories.Max<NuGetVersion>();
+        }
+
+        private IEnumerable<SourceRepository> GetEffectiveSources(SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources)
+        {
+            // Always have to add the packages folder as the primary repository so that
+            // dependency info for an installed package that is unlisted from the server is still available :(
+            var effectiveSources = new List<SourceRepository>() { primarySourceRepository, PackagesFolderSourceRepository };
+            effectiveSources.AddRange(secondarySources);
+
+            return new HashSet<SourceRepository>(effectiveSources, new SourceRepositoryComparer());
         }
     }
 

@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     await PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext);
                 }
-                await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext);
+                await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository);
             }
             else
             {
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     await PackageManager.UninstallPackageAsync(project, identity.Id, uninstallContext, projectContext);
                 }
-                await PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext);
+                await PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository);
             }
         }
 
@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext);
                 }
-                await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext);
+                await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository);
             }
             else
             {
@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext);
                 }
-                await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext);
+                await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository);
             }
         }
 

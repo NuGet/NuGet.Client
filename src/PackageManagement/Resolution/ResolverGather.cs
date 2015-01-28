@@ -17,6 +17,51 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class ResolverGather
     {
+        public static async Task<HashSet<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext resolutionContext,
+            IEnumerable<PackageIdentity> primaryPackages,
+            SourceRepository primarySource,
+            IEnumerable<PackageIdentity> packageTargetsForResolver,
+            NuGetFramework targetFramework,
+            IEnumerable<SourceRepository> allSources,
+            CancellationToken token)
+        {
+            var primaryDependencyInfoResource = primarySource.GetResource<DepedencyInfoResource>();
+            IEnumerable<PackageDependencyInfo> primaryRepoPackageDependencyInfo;
+            try
+            {
+                primaryRepoPackageDependencyInfo = await primaryDependencyInfoResource.ResolvePackages(primaryPackages,
+            targetFramework, resolutionContext.IncludePrerelease);
+            }
+            catch (Exception)
+            {
+                primaryRepoPackageDependencyInfo = null;
+            }
+
+            var packageWithNoDependencyInfoInPrimary = (primaryPackages.Where(p => !primaryRepoPackageDependencyInfo
+                .Any(pdi => new PackageIdentity(pdi.Id, pdi.Version).Equals(p)))).FirstOrDefault();
+
+            if(packageWithNoDependencyInfoInPrimary != null)
+            {
+                throw new InvalidOperationException(String.Format(Strings.PackageNotFound, packageWithNoDependencyInfoInPrimary));
+            }
+
+            var primaryPackageDependencyInfoWithSourceSet =
+                new HashSet<SourceDependencyInfo>(primaryRepoPackageDependencyInfo.Select(pdi => new SourceDependencyInfo(pdi, primarySource)),
+                    PackageIdentity.Comparer);
+
+            var allAvailablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext, packageTargetsForResolver,
+                targetFramework, allSources, CancellationToken.None);
+
+            foreach(var item in allAvailablePackageDependencyInfoWithSourceSet)
+            {
+                // The following operation ensures that primary source wins in case of conflict
+                primaryPackageDependencyInfoWithSourceSet.Add(item);
+            }
+
+            return primaryPackageDependencyInfoWithSourceSet;
+        }
+
+
         // Packages may have dependencies that span repositories
         // Example:
         // Repo 1:  A   C   E
@@ -30,7 +75,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Gather depedency info from multiple sources
         /// </summary>
-        public static async Task<IEnumerable<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context, 
+        public static async Task<HashSet<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
             IEnumerable<PackageIdentity> targets, 
             NuGetFramework targetFramework, 
             IEnumerable<SourceRepository> sources,

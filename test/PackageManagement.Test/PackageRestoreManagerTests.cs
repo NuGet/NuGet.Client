@@ -80,9 +80,9 @@ namespace NuGet.Test
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
             await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
 
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var restoredPackages = new List<PackageIdentity>();
@@ -177,9 +177,9 @@ namespace NuGet.Test
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
             await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
 
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 

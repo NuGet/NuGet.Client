@@ -43,6 +43,7 @@ namespace NuGet.PackageManagement.UI
                 var projects = uiService.Projects;
 
                 IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActions(
+                    uiService,
                     projects, 
                     userAction,
                     removeDependencies: uiService.RemoveDependencies,
@@ -143,6 +144,7 @@ namespace NuGet.PackageManagement.UI
         /// Return the resolve package actions
         /// </summary>
         protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(
+            INuGetUI uiService,
             IEnumerable<NuGetProject> targets, 
             UserAction userAction,
             bool removeDependencies,
@@ -161,7 +163,8 @@ namespace NuGet.PackageManagement.UI
                 foreach (var target in targets)
                 {
                     IEnumerable<NuGetProjectAction> actions;
-                    actions = await _packageManager.PreviewInstallPackageAsync(target, userAction.PackageIdentity, resolutionContext, projectContext);
+                    actions = await _packageManager.PreviewInstallPackageAsync(target, userAction.PackageIdentity,
+                        resolutionContext, projectContext, uiService.ActiveSource);
                     results.AddRange(actions.Select(a => new Tuple<NuGetProject, NuGetProjectAction>(target, a)));
                 }
             }
