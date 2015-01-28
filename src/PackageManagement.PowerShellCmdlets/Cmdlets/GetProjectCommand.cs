@@ -1,4 +1,5 @@
-﻿using NuGet.ProjectManagement;
+﻿using EnvDTE;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,11 +12,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// which is used for tab expansion.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Project", DefaultParameterSetName = ParameterSetByName)]
-    [OutputType(typeof(NuGetProject))]
+    [OutputType(typeof(Project))]
     public class GetProjectCommand : NuGetPowerShellBaseCommand
     {
         private const string ParameterSetByName = "ByName";
         private const string ParameterSetAllProjects = "AllProjects";
+        private DTE _dte;
 
         public GetProjectCommand()
             : base()
@@ -34,6 +36,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             base.Preprocess();
             GetNuGetProject();
+            _dte = (DTE)GetPropertyValueFromHost("DTE");
         }
 
         protected override void ProcessRecordCore()
@@ -44,59 +47,85 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (All.IsPresent)
             {
-                IEnumerable<NuGetProject> projects = VsSolutionManager.GetNuGetProjects();
-                IEnumerable<PowerShellProject> psProjects = GetPSProjectRepresentation(projects);
-                WriteObject(psProjects, enumerateCollection: true);
+                var projects = _dte.Solution.GetAllProjects();
+                WriteObject(projects, enumerateCollection: true);
             }
             else
             {
-                PowerShellProject psProject = GetPSProjectRepresentation(Project);
-                WriteObject(psProject);
+                // No name specified; return default project (if not null)
+                if (Name == null)
+                {
+                    string defaultProjectName = VsSolutionManager.DefaultNuGetProjectName;
+                    Project defaultProject = _dte.Solution.GetAllProjects()
+                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, defaultProjectName))
+                        .FirstOrDefault();
+                    if (defaultProject != null)
+                    {
+                        WriteObject(defaultProject);
+                    }
+                }
+                else
+                {
+                    // get all projects matching name(s) - handles wildcards
+                    WriteObject(GetProjectsByName(Name), enumerateCollection: true);
+                }
             }
         }
-
+        
         /// <summary>
-        /// Get the list of PowerShell project representation
-        /// Used by Get-Project -All command
+        /// Return all projects in the solution matching the provided names. Wildcards are supported.
+        /// This method will automatically generate error records for non-wildcarded project names that
+        /// are not found.
         /// </summary>
-        /// <param name="projects"></param>
-        /// <returns></returns>
-        private IEnumerable<PowerShellProject> GetPSProjectRepresentation(IEnumerable<NuGetProject> projects)
+        /// <param name="projectNames">An array of project names that may or may not include wildcards.</param>
+        /// <returns>Projects matching the project name(s) provided.</returns>
+        protected IEnumerable<Project> GetProjectsByName(string[] projectNames)
         {
-            List<PowerShellProject> psProjectList = new List<PowerShellProject>();
-            foreach (NuGetProject project in projects)
+            var allValidProjectNames = GetAllValidProjectNames().ToList();
+
+            foreach (string projectName in projectNames)
             {
-                PowerShellProject psProj = GetPSProjectRepresentation(project);
-                psProjectList.Add(psProj);
+                // if ctrl+c hit, leave immediately
+                if (Stopping)
+                {
+                    break;
+                }
+
+                // Treat every name as a wildcard; results in simpler code
+                var pattern = new WildcardPattern(projectName, WildcardOptions.IgnoreCase);
+
+                var matches = from s in allValidProjectNames
+                              where pattern.IsMatch(s)
+                              select _dte.Solution.GetAllProjects()
+                              .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, s) || StringComparer.OrdinalIgnoreCase.Equals(p.FullName, s))
+                              .FirstOrDefault();
+
+                int count = 0;
+                foreach (var project in matches)
+                {
+                    count++;
+                    yield return project;
+                }
+
+                // We only emit non-terminating error record if a non-wildcarded name was not found.
+                // This is consistent with built-in cmdlets that support wildcarded search.
+                // A search with a wildcard that returns nothing should not be considered an error.
+                if ((count == 0) && !WildcardPattern.ContainsWildcardCharacters(projectName))
+                {
+                    ErrorHandler.WriteProjectNotFoundError(projectName, terminating: false);
+                }
             }
-            return psProjectList;
         }
 
         /// <summary>
-        /// Get the PowerShell project representation
-        /// Used by Get-Project command
+        /// Return all possibly valid project names in the current solution. This includes all
+        /// unique names and safe names.
         /// </summary>
-        /// <param name="project"></param>
         /// <returns></returns>
-        private PowerShellProject GetPSProjectRepresentation(NuGetProject project)
+        protected IEnumerable<string> GetAllValidProjectNames()
         {
-            PowerShellProject psProject = new PowerShellProject();
-            psProject.ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-            psProject.TargetFramework = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project).FirstOrDefault();
-            psProject.FullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
-            return psProject;
+            var safeNames = _dte.Solution.GetAllProjects().Select(p => p.Name);
+            return safeNames;
         }
-    }
-
-    /// <summary>
-    /// Represent powershell project format
-    /// </summary>
-    internal class PowerShellProject
-    {
-        public string ProjectName { get; set; }
-
-        public string TargetFramework { get; set; }
-
-        public string FullPath { get; set; }
     }
 }

@@ -414,7 +414,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        private object GetPropertyValueFromHost(string propertyName)
+        protected object GetPropertyValueFromHost(string propertyName)
         {
             PSObject privateData = Host.PrivateData;
             var propertyInfo = privateData.Properties[propertyName];

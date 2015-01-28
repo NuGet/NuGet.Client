@@ -50,9 +50,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             List<string> frameworks = new List<string>();
             NuGetFramework nugetFramework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-            if (nugetFramework != null && !nugetFramework.IsSpecificFramework)
+            if (nugetFramework != null)
             {
-                string framework = nugetFramework.DotNetFrameworkName;
+                string framework = nugetFramework.ToString();
                 frameworks.Add(framework);
             }
             return frameworks;
