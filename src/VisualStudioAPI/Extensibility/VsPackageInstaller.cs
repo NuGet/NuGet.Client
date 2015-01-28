@@ -187,7 +187,8 @@ namespace NuGet.VisualStudio
                 // uninstall the package
                 foreach (PackageIdentity package in packages)
                 {
-                    packageManager.InstallPackageAsync(nuGetProject, package, resolution, _projectContext).Wait();
+                    // HACK: We need to update nuget package manager to always take in an IEnumerable of primary repositories
+                    packageManager.InstallPackageAsync(nuGetProject, package, resolution, _projectContext, repoProvider.GetRepositories().First()).Wait();
                 }
             }
             finally
