@@ -299,17 +299,15 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("aspnet50", "aspnetcore50")]
         [InlineData("aspnet50", "aspnet50")]
         [InlineData("aspnet50", "aspnet5")]
         [InlineData("aspnet50", "aspnet")]
         [InlineData("aspnet", "aspnet50")]
-        [InlineData("aspnet", "aspnetcore50")]
-        [InlineData("aspnet", "aspnetcore")]
         [InlineData("aspnet", "net45")]
-        [InlineData("aspnet", "net5")]
-        [InlineData("aspnetcore", "netcore5")]
-        [InlineData("aspnetcore50", "netcore451")]
+        [InlineData("aspnet", "net99")]
+        [InlineData("aspnet", "portable-net45+win8")]
+        [InlineData("aspnet", "portable-win8+net45")]
+        [InlineData("aspnet", "portable-win8+net45+sl4")]
         public void FrameworkReducer_GetNearestAsp(string project, string framework)
         {
             FrameworkReducer reducer = new FrameworkReducer();
@@ -324,6 +322,26 @@ namespace NuGet.Test
             var result = reducer.GetNearest(projectFramework, frameworks);
 
             Assert.True(NuGetFramework.Parse(framework).Equals(result));
+        }
+
+        [Theory]
+        [InlineData("aspnet", "aspnetcore")]
+        [InlineData("aspnetcore", "net45")]
+        [InlineData("aspnetcore", "portable-net403+win8")]
+        public void FrameworkReducer_GetNearestAspNeg(string project, string framework)
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse(framework),
+            };
+
+            NuGetFramework projectFramework = NuGetFramework.Parse(project);
+
+            var result = reducer.GetNearest(projectFramework, frameworks);
+
+            Assert.Null(result);
         }
     }
 }

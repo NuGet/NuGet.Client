@@ -211,15 +211,6 @@ namespace NuGet.Frameworks
                     {
                         // .NETCore is a subset of the .NET framework
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.FrameworkIdentifiers.Net),
-
-                        // .NET is a subset of the desktop ASP.NET framework, should this be a target platform instead?
-                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.FrameworkIdentifiers.AspNet),
-
-                        // ASP.NET Core is a subset of the ASP.NET framework
-                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.FrameworkIdentifiers.AspNet),
-
-                        // .NET Core is a subset of the ASP.NET Core framework
-                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.FrameworkIdentifiers.AspNetCore),
                     };
                 }
 
@@ -243,6 +234,30 @@ namespace NuGet.Frameworks
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)))),
+
+                        // aspnetcore projects support native references
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(0,0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(Int32.MaxValue,0))),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)))),
+
+                        // aspnet projects support native references
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(0,0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(Int32.MaxValue,0))),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)))),
+
+                        // aspnet projects support .NET 4.5 and up 
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(0,0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(Int32.MaxValue,0))),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4,5)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(Int32.MaxValue,0)))),
                     };
                 }
 
