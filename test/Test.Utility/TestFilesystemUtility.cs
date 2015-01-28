@@ -27,9 +27,17 @@ namespace Test.Utility
 
         private static void DeleteRandomTestFolder(string randomTestPath)
         {
-            if (Directory.Exists(randomTestPath))
+            try
             {
-                Directory.Delete(randomTestPath, recursive: true);
+                if (Directory.Exists(randomTestPath))
+                {
+                    Directory.Delete(randomTestPath, recursive: true);
+                }
+
+            }
+            catch (Exception)
+            {
+                // Ignore exception while deleting directories
             }
         }
     }

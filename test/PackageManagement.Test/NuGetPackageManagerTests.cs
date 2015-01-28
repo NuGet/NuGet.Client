@@ -1239,9 +1239,11 @@ namespace NuGet.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
             Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            var installedPackageIds = msBuildNuGetProject.GetInstalledPackages()
+                .Select(pr => pr.PackageIdentity.Id);
 
             // Main Act
-            var packageActions = (await nuGetPackageManager.PreviewUpdateProjectPackagesAsync(msBuildNuGetProject,
+            var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(installedPackageIds, msBuildNuGetProject,
                 new ResolutionContext(DependencyBehavior.Highest), new TestNuGetProjectContext())).ToList();
 
             // Assert
