@@ -11,24 +11,29 @@ function Get-SolutionPackage {
     $packages = Get-Package | ?{ $_.Id -eq $Id }
 
     if($Version) {
-        $actualVersion = [NuGet.SemanticVersion]::Parse($Version)
-        $packages = $packages | ?{[NuGet.SemanticVersion]::Parse($_.Version[0]) -eq $actualVersion }
+        $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
+        $packages = $packages | ?{[NuGet.Versioning.NuGetVersion]::Parse($_.Version[0]) -eq $actualVersion }
     }
     
     $packages
 }
 
-function Get-ProjectRepository {
+function Get-PackagesConfigNuGetProject {
     param(
         [parameter(Mandatory = $true)]
         $Project
     )
     
-    $packageManager = $host.PrivateData.packageManagerFactory.CreatePackageManager()    
-    $fileSystem = New-Object NuGet.PhysicalFileSystem((Get-ProjectDir $Project))
-    New-Object NuGet.PackageReferenceRepository($fileSystem, (Get-ProjectName $Project), $packageManager.LocalRepository)
+    $packagesConfigFile = (Join-Path (Get-ProjectDir $Project) packages.config)
+    $metadataDictionary = New-Object 'System.Collections.Generic.Dictionary[string,object]'
+    $targetFrameworkMoniker = $project.Properties.Item("TargetFrameworkMoniker").Value
+    $nuGetFramework = [NuGet.Frameworks.NuGetFramework]::Parse($targetFrameworkMoniker)
+    $metadataDictionary.Add('TargetFramework', $nuGetFramework)
+    $packagesConfigNuGetProject = New-Object NuGet.ProjectManagement.PackagesConfigNuGetProject($packagesConfigFile, $metadataDictionary)
+    return $packagesConfigNuGetProject
 }
 
+<#
 function Get-ProjectPackageReferences {
     param(
         [parameter(Mandatory = $true)]
@@ -48,6 +53,7 @@ function Get-ProjectPackageReferences {
 
     return ,$packageReferences
 }
+#>
 
 function Get-ProjectPackage {
     param(
@@ -58,13 +64,13 @@ function Get-ProjectPackage {
         [string]$Version
     )
     
-    $repository = Get-ProjectRepository $Project
+    $repository = Get-PackagesConfigNuGetProject $Project
         
     # We can't call the nuget methods since powershell gets confused with overload resolution
-    $packages = $repository.GetPackages() | ?{ $_.Id -eq $Id }    
+    $packages = $repository.GetInstalledPackages() | ?{ $_.PackageIdentity.Id -eq $Id }    
     
     if($Version) {
-        $actualVersion = [NuGet.SemanticVersion]::Parse($Version)
+        $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
         $packages = $packages | ?{ $_.Version -eq $actualVersion }
     }
     
@@ -116,15 +122,19 @@ function Assert-Package {
     # Check for the project item
     Assert-NotNull (Get-ProjectItem $Project $configName) "$configName does not exist in $projectName"
         
-    $repository = Get-ProjectRepository $Project
+    $packagesConfigNuGetProject = Get-PackagesConfigNuGetProject $Project
     
-    Assert-NotNull $repository "Unable to find the project repository"
+    Assert-NotNull $packagesConfigNuGetProject "Unable to find the project repository"
     
     if($Version) {
-        $actualVersion = [NuGet.SemanticVersion]::Parse($Version)
+        $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
+        $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $actualVersion)
+        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity -eq $packageIdentity }) "Package $Id $Version is referenced in $($Project.Name)"
     }
-    
-    Assert-NotNull ([NuGet.PackageRepositoryExtensions]::Exists($repository, $Id, $actualVersion)) "Package $Id $Version is not referenced in $projectName"
+    else
+    {
+        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is referenced in $($Project.Name)"
+    }    
 }
 
 function Assert-NoPackage {
@@ -145,17 +155,18 @@ function Assert-NoPackage {
     # Check for the project item
     # Assert-NotNull (Get-ProjectItem $Project packages.config) "packages.config does not exist in $($Project.Name)"
     
-    $repository = Get-ProjectRepository $Project
-    if (!$repository) 
+    $packagesConfigNuGetProject = Get-PackagesConfigNuGetProject $Project
+    if (!$packagesConfigNuGetProject) 
     {
         return
     }
     
     if($Version) {
-        $actualVersion = [NuGet.SemanticVersion]::Parse($Version)
+        $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
     }
     
-    Assert-False ([NuGet.PackageRepositoryExtensions]::Exists($repository, $Id, $actualVersion)) "Package $Id $Version is referenced in $($Project.Name)"
+    $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $Version)
+    Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity -eq $packageIdentity }) "Package $Id $Version is referenced in $($Project.Name)"
 }
 
 function Assert-SolutionPackage {
