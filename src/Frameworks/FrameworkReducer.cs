@@ -13,6 +13,7 @@ namespace NuGet.Frameworks
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly IFrameworkCompatibilityProvider _compat;
+        private readonly NuGetFrameworkFullComparer _fullComparer;
 
         /// <summary>
         /// Creates a FrameworkReducer using the default framework mappings.
@@ -30,6 +31,7 @@ namespace NuGet.Frameworks
         {
             _mappings = mappings;
             _compat = compat;
+            _fullComparer = new NuGetFrameworkFullComparer();
         }
 
         /// <summary>
@@ -48,38 +50,47 @@ namespace NuGet.Frameworks
                 possibleFrameworks = possibleFrameworks.Where(e => e != NuGetFramework.UnsupportedFramework);
             }
 
-            var compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
-            var reduced = ReduceUpwards(compatible).ToArray();
+            IEnumerable<NuGetFramework> compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
+            IEnumerable<NuGetFramework> reduced = ReduceUpwards(compatible);
 
-            if (reduced.Length > 1)
+            if (reduced.Count() > 1)
             {
                 // if we have a pcl and non-pcl mix, throw out the pcls
                 if (reduced.Any(f => f.IsPCL) && reduced.Any(f => !f.IsPCL))
                 {
-                    reduced = reduced.Where(f => !f.IsPCL).ToArray();
+                    reduced = reduced.Where(f => !f.IsPCL);
                 }
 
-                if (reduced.Length > 1 && reduced.All(f => f.IsPCL))
+                if (reduced.Count() > 1 && reduced.All(f => f.IsPCL))
                 {
                     // TODO: improve this
 
                     // For now just find the compatible PCL with the fewest frameworks
-                    reduced = reduced.OrderBy(e => e.Profile.Split('+').Length).ThenBy(e => e.Profile.Length).ToArray();
+                    reduced = reduced.OrderBy(e => e.Profile.Split('+').Length).ThenBy(e => e.Profile.Length);
                 }
 
-                if (reduced.Length > 1)
+                if (reduced.Count() > 1)
+                {
+                    // Prefer frameworks without profiles
+                    if (reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
+                    {
+                        reduced = reduced.Where(f => !f.HasProfile);
+                    }
+                }
+
+                if (reduced.Count() > 1)
                 {
                     // just take the first one by rev alphabetical order if we can't narrow it down at all
                     nearest = reduced.OrderByDescending(f => f.Framework, StringComparer.OrdinalIgnoreCase).ThenBy(f => f.GetHashCode()).First();
                 }
-                else if (reduced.Length == 1)
+                else if (reduced.Count() == 1)
                 {
                     nearest = reduced.Single();
                 }
             }
-            else if (reduced.Length == 1)
+            else if (reduced.Count() == 1)
             {
-                nearest = reduced[0];
+                nearest = reduced.Single();
             }
 
             return nearest;
@@ -156,7 +167,7 @@ namespace NuGet.Frameworks
         private IEnumerable<NuGetFramework> ReduceCore(IEnumerable<NuGetFramework> frameworks, Func<NuGetFramework, NuGetFramework, bool> isCompat)
         {
             // order first so we get consistent results for equivalent frameworks
-            NuGetFramework[] input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
+            NuGetFramework[] input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).Distinct(_fullComparer).ToArray();
 
             for (int i = 0; i < input.Length; i++)
             {
@@ -169,7 +180,7 @@ namespace NuGet.Frameworks
                     if (j != i)
                     {
                         NuGetFramework y = input[j];
-                        dupe = isCompat(x, y);
+                        dupe = isCompat(x, y) && !isCompat(y, x);
                     }
                 }
 

@@ -12,6 +12,56 @@ namespace NuGet.Test
     public class FrameworkReducerTests
     {
         [Fact]
+        public void FrameworkReducer_GetNearestEquivalent()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("net40");
+            var framework2 = NuGetFramework.Parse("net40-client");
+
+            var project = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(framework1, result);
+        }
+
+
+        [Fact]
+        public void FrameworkReducer_ReduceUpEquivalent()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("net40");
+            var framework2 = NuGetFramework.Parse("net40-client");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.ReduceUpwards(all).ToArray();
+
+            Assert.Equal(2, result.Length);
+            Assert.Equal(framework1, result.First());
+            Assert.Equal(framework2, result.Last());
+        }
+
+        [Fact]
+        public void FrameworkReducer_ReduceUpEqual()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("net40");
+            var framework2 = NuGetFramework.Parse("net40");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.ReduceUpwards(all);
+
+            Assert.Equal(framework2, result.Single());
+        }
+
+        [Fact]
         public void FrameworkReducer_ReduceDownPCL2()
         {
             FrameworkReducer reducer = new FrameworkReducer();
