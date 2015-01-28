@@ -55,5 +55,86 @@ namespace NuGet.Test
             Assert.Equal(fw1.GetHashCode(), fw2.GetHashCode());
             Assert.Equal(1, hashSet.Count);
         }
+
+        [Theory]
+        [InlineData("net45", "net450")]
+        [InlineData("net45", "net4.5.0")]
+        [InlineData("aspnetcore5", "aspnetcore500")]
+        [InlineData(".NETFramework, Version=v4.5", "net45")]
+        [InlineData("NETFramework, Version=v4.5", "net45")]
+        [InlineData("NETFramework, Version=v4.5", "net450")]
+        public void NuGetFramework_EqualityNormalization(string a, string b)
+        {
+            var fw1 = NuGetFramework.Parse(a);
+            var fw2 = NuGetFramework.Parse(b);
+            HashSet<NuGetFramework> hashSet = new HashSet<NuGetFramework>() { fw1, fw2 };
+
+            Assert.True(fw1.Equals(fw2));
+            Assert.True(fw2.Equals(fw1));
+            Assert.Equal(fw1.GetHashCode(), fw2.GetHashCode());
+            Assert.Equal(1, hashSet.Count);
+        }
+
+        [Fact]
+        public void NuGetFramework_EqualityMixed()
+        {
+            List<NuGetFramework> frameworks = new List<NuGetFramework>();
+            frameworks.Add(NuGetFramework.Parse("net45"));
+            frameworks.Add(NuGetFramework.Parse("net450"));
+            frameworks.Add(NuGetFramework.Parse("net4.5"));
+            frameworks.Add(NuGetFramework.Parse(".NETFramework, Version=v4.5"));
+            frameworks.Add(NuGetFramework.Parse(".NETFramework, Version=4.5"));
+            frameworks.Add(NuGetFramework.Parse("NETFramework, Version=v4.5"));
+            frameworks.Add(NuGetFramework.Parse("NETFramework, Version=v4.5"));
+
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5)));
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5), string.Empty));
+
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0)));
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0), string.Empty));
+
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0, 0)));
+            frameworks.Add(new NuGetFramework(".nETframework", new Version(4, 5, 0, 0), string.Empty));
+
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5), null, null, new Version(0, 0)));
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5), string.Empty, string.Empty, new Version(0, 0)));
+
+            foreach (var fw1 in frameworks)
+            {
+                foreach (var fw2 in frameworks)
+                {
+                    Assert.True(fw1.Equals(fw2), fw1.ToString() + " " + fw2.ToString());
+                    Assert.True(fw2.Equals(fw1), fw2.ToString() + " " + fw1.ToString());
+                    Assert.True(Object.Equals(fw1, fw2));
+                    Assert.True(Object.Equals(fw2, fw1));
+                }
+            }
+        }
+
+        [Fact]
+        public void NuGetFramework_EqualityMixed2()
+        {
+            List<NuGetFramework> frameworks = new List<NuGetFramework>();
+
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5), null));
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5), string.Empty));
+
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0), null));
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0), string.Empty));
+
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0, 0), null, new Version(0, 0)));
+            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0, 0), string.Empty));
+
+            foreach (var fw1 in frameworks)
+            {
+                foreach (var fw2 in frameworks)
+                {
+                    Assert.True(fw1.Equals(fw2), fw1.ToString() + " " + fw2.ToString());
+                    Assert.True(fw2.Equals(fw1), fw2.ToString() + " " + fw1.ToString());
+                    Assert.True(Object.Equals(fw1, fw2));
+                    Assert.True(Object.Equals(fw2, fw1));
+                }
+            }
+        }
     }
 }

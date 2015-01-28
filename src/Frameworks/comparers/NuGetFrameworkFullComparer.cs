@@ -29,7 +29,7 @@ namespace NuGet.Frameworks
                 && x.Version == y.Version
                 && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile)
                 && StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform)
-                && x.Version == y.Version;
+                && x.PlatformVersion == y.PlatformVersion;
         }
 
         public int GetHashCode(NuGetFramework obj)

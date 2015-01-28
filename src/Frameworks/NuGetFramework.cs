@@ -63,7 +63,7 @@ namespace NuGet.Frameworks
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = frameworkProfile ?? string.Empty;
             _platformIdentifier = platformIdentifier ?? string.Empty;
-            _platformVersion = platformVersion ?? _emptyVersion;
+            _platformVersion = platformVersion != null ? NormalizeVersion(platformVersion) : _emptyVersion;
         }
 
         /// <summary>
@@ -429,6 +429,20 @@ namespace NuGet.Frameworks
         public override int GetHashCode()
         {
             return Comparer.GetHashCode(this);
+        }
+
+        public override bool Equals(object obj)
+        {
+            NuGetFramework other = obj as NuGetFramework;
+
+            if (other != null)
+            {
+                return Equals(other);
+            }
+            else
+            {
+                return base.Equals(obj);
+            }
         }
     }
 }
