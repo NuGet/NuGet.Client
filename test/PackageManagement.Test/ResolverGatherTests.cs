@@ -198,10 +198,10 @@ namespace NuGet.Test
             Packages = packages;
         }
 
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
+        public Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            resource = new TestDependencyInfo(Packages);
-            return true;
+            var nuGetResource = new TestDependencyInfo(Packages);
+            return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
         }
     }
 

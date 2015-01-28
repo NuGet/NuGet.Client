@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void Preprocess()
         {
             base.Preprocess();
-            GetActiveSourceRepository();
+            UpdateActiveSourceRepository();
             GetNuGetProject();
         }
 

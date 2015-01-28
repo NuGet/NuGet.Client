@@ -165,7 +165,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the active source repository for PowerShell cmdlets, which is passed in by the host.
         /// </summary>
         /// <param name="source"></param>
-        protected void GetActiveSourceRepository(string source = null)
+        protected void UpdateActiveSourceRepository(string source = null)
         {
             if (string.IsNullOrEmpty(source))
             {
@@ -179,11 +179,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     .Where(p => p.PackageSource.IsEnabled && (StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Name, source) ||
                     StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Source, source)))
                     .FirstOrDefault();
-            }
-            // If source is still null, return the first one from the available repositories.
-            else 
-            {
-                ActiveSourceRepository = repoes.FirstOrDefault();
+
+                if(ActiveSourceRepository == null)
+                {
+                    try
+                    {
+                        ActiveSourceRepository = _resourceRepositoryProvider.CreateRepository(new PackageSource(source));
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
             }
         }
 

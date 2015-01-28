@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Version = string.Empty;
             }
 
-            GetActiveSourceRepository(Source);
+            UpdateActiveSourceRepository(Source);
         }
 
         protected override void ProcessRecordCore()

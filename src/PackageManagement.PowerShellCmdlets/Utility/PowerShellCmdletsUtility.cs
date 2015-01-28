@@ -80,17 +80,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Task<NuGetVersion> task = resource.GetLatestVersion(packageId, includePrerelease, false, CancellationToken.None);
                 NuGetVersion latestVersion = task.Result;
-                identity = new PackageIdentity(packageId, latestVersion);
+                if(latestVersion != null)
+                {
+                    identity = new PackageIdentity(packageId, latestVersion);
+                }                
             }
             catch (Exception)
             {
-                if (identity == null)
-                {
-                    throw new InvalidOperationException(
-                        String.Format(CultureInfo.CurrentCulture,
-                        Resources.UnknownPackage, packageId));
-                }
+                identity = null;
             }
+
+            if (identity == null)
+            {
+                throw new InvalidOperationException(
+                    String.Format(CultureInfo.CurrentCulture,
+                    Resources.UnknownPackage, packageId));
+            }
+
 
             return identity;
         }

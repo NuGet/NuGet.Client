@@ -39,6 +39,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             ParseUserInputForId();
             ParseUserInputForVersion();
             base.Preprocess();
+            // The following update to ActiveSourceRepository may get overwritten if the 'Id' was just a path to a nupkg
+            UpdateActiveSourceRepository(Source);
         }
 
         protected override void ProcessRecordCore()
@@ -207,7 +209,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Uri downloadUri = new Uri(Id);
                     using (var targetPackageStream = new MemoryStream())
                     {
-                        GetActiveSourceRepository(Id);
+                        UpdateActiveSourceRepository(Id);
                         PackageDownloader.GetPackageStream(ActiveSourceRepository, packageIdentity, targetPackageStream).Wait();
                     }
                 }

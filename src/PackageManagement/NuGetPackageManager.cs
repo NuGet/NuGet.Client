@@ -444,6 +444,11 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("secondarySources");
             }
 
+            if(packageIdentity.Version == null)
+            {
+                throw new ArgumentNullException("packageIdentity.Version");
+            }
+
             var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
             if(oldListOfInstalledPackages.Any(p => p.Equals(packageIdentity)))
@@ -578,6 +583,26 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
         {
+            if(nuGetProject == null)
+            {
+                throw new ArgumentNullException("nuGetProject");
+            }
+
+            if(packageId == null)
+            {
+                throw new ArgumentNullException("packageId");
+            }
+
+            if(uninstallationContext == null)
+            {
+                throw new ArgumentNullException("uninstallationContext");
+            }
+
+            if(nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException("nuGetProjectContext");
+            }
+
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
             var installedPackages = nuGetProject.GetInstalledPackages();
             PackageReference packageReference = installedPackages
@@ -597,6 +622,26 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
         {
+            if (nuGetProject == null)
+            {
+                throw new ArgumentNullException("nuGetProject");
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException("packageIdentity");
+            }
+
+            if (uninstallationContext == null)
+            {
+                throw new ArgumentNullException("uninstallationContext");
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException("nuGetProjectContext");
+            }
+
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
             var installedPackages = nuGetProject.GetInstalledPackages();
             PackageReference packageReference = installedPackages
