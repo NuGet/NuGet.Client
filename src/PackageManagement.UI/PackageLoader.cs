@@ -363,7 +363,7 @@ namespace NuGet.PackageManagement.UI
             return new LoadResult()
             {
                 Items = packages,
-                HasMoreItems = resultCount == _pageSize,
+                HasMoreItems = resultCount != 0,
                 NextStartIndex = startIndex + resultCount
             };
         }
