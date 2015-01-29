@@ -81,11 +81,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>();
             Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
             IEnumerable<string> packageIds = task.Result;
-            PowerShellRemotePackage package = new PowerShellRemotePackage();
+            IPowerShellPackage package = new PowerShellRemotePackage();
 
             if (!ExactMatch.IsPresent)
             {
-                List<PowerShellRemotePackage> packages = new List<PowerShellRemotePackage>();
+                List<IPowerShellPackage> packages = new List<IPowerShellPackage>();
                 foreach (string id in packageIds)
                 {
                     Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
@@ -125,14 +125,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    NuGetVersion nVersion;
-                    bool success = NuGetVersion.TryParse(Version, out nVersion);
-                    if (success)
-                    {
-                        NuGetVersion version = versions.Where(v => v == nVersion).FirstOrDefault();
-                        package.Version = new List<NuGetVersion>() { version };
-                        WriteObject(package);
-                    }
+                    NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
+                    NuGetVersion version = versions.Where(v => v == nVersion).FirstOrDefault();
+                    package.Version = new List<NuGetVersion>() { version };
+                    WriteObject(package);
                 }
             }
         }
