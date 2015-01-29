@@ -109,7 +109,7 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
             // Step-1 : Get latest version for packageId
-            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext);
+            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySourceRepository);
 
             if(latestVersion == null)
             {
@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
             // Step-1 : Get latest version for packageId
-            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext);
+            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySourceRepository);
 
             if (latestVersion == null)
             {
@@ -845,25 +845,21 @@ namespace NuGet.PackageManagement
             return true;
         }
 
-        private async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext)
+        private static async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext, SourceRepository primarySourceRepository)
         {
-            List<NuGetVersion> latestVersionFromDifferentRepositories = new List<NuGetVersion>();
-            foreach (var sourceRepository in SourceRepositoryProvider.GetRepositories())
+            var metadataResource = primarySourceRepository.GetResource<MetadataResource>();
+            if (metadataResource != null)
             {
-                var metadataResource = sourceRepository.GetResource<MetadataResource>();
-                if (metadataResource != null)
+                var latestVersionKeyPairList = await metadataResource.GetLatestVersions(new List<string>() { packageId },
+                    resolutionContext.IncludePrerelease, resolutionContext.IncludeUnlisted, CancellationToken.None);
+                if ((latestVersionKeyPairList == null || !latestVersionKeyPairList.Any()))
                 {
-                    var latestVersionKeyPairList = await metadataResource.GetLatestVersions(new List<string>() { packageId },
-                        resolutionContext.IncludePrerelease, resolutionContext.IncludeUnlisted, CancellationToken.None);
-                    if((latestVersionKeyPairList == null || !latestVersionKeyPairList.Any()))
-                    {
-                        continue;
-                    }
-                    latestVersionFromDifferentRepositories.Add(latestVersionKeyPairList.FirstOrDefault().Value);
+                    return null;
                 }
+                return latestVersionKeyPairList.FirstOrDefault().Value;
             }
 
-            return latestVersionFromDifferentRepositories.Count == 0 ? null : latestVersionFromDifferentRepositories.Max<NuGetVersion>();
+            return null;
         }
 
         private IEnumerable<SourceRepository> GetEffectiveSources(SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources)
