@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             CheckForSolutionOpen();
 
             SubscribeToProgressEvents();
-            UnInstallPackage();
+            Task uninstallTask = UnInstallPackage();
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();
         }
@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Async call for uninstall a package from the current project
         /// </summary>
-        private async void UnInstallPackage()
+        private async Task UnInstallPackage()
         {
             try
             {

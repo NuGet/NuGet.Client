@@ -1,5 +1,4 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
+﻿using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
@@ -8,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         if (actions.Any())
                         {
                             // Execute project actions by Package Manager
-                            ExecutePackageUpdates(actions, project);
+                            Task updatesTask = ExecutePackageUpdates(actions, project);
                             WaitAndLogFromMessageQueue();
                         }
                         else
@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             if (update != null)
                             {
                                 // Update by package identity
-                                UpdatePackageByIdentity(update, project);
+                                Task updateIdentityTask = UpdatePackageByIdentity(update, project);
                                 WaitAndLogFromMessageQueue();
                             }
                             else
@@ -187,12 +187,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             {
                                 // Update-Package Id -Reinstall
                                 PackageIdentity identity = installedPackage.PackageIdentity;
-                                UpdatePackageByIdentity(identity, project);
+                                Task updateIdentityTask = UpdatePackageByIdentity(identity, project);
                             }
                             else
                             {
                                 // Update-Package Id
-                                UpdatePackageById(project);
+                                Task updateIdTask = UpdatePackageById(project);
                             }
                             WaitAndLogFromMessageQueue();
                         }
@@ -206,7 +206,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="identities"></param>
         /// <param name="project"></param>
-        private async void ExecutePackageUpdates(IEnumerable<NuGetProjectAction> actions, NuGetProject project)
+        private async Task ExecutePackageUpdates(IEnumerable<NuGetProjectAction> actions, NuGetProject project)
         {
             try
             {
@@ -226,7 +226,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Async call for update a package by Identity.
         /// </summary>
         /// <param name="identities"></param>
-        private async void UpdatePackageByIdentity(PackageIdentity identity, NuGetProject project)
+        private async Task UpdatePackageByIdentity(PackageIdentity identity, NuGetProject project)
         {
             try
             {
@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Async call for update a package by Id.
         /// </summary>
         /// <param name="identities"></param>
-        private async void UpdatePackageById(NuGetProject project)
+        private async Task UpdatePackageById(NuGetProject project)
         {
             try
             {

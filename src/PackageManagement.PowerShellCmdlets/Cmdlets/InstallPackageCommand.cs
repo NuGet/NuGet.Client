@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.Packaging;
+﻿using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
@@ -11,6 +10,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -50,12 +50,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SubscribeToProgressEvents();
             if (!_readFromPackagesConfig && !_readFromDirectPackagePath && _nugetVersion == null)
             {
-                InstallPackageById();
+                Task idTask = InstallPackageById();
             }
             else
             {
                 IEnumerable<PackageIdentity> identities = GetPackageIdentities();
-                InstallPackages(identities);
+                Task identitiesTask = InstallPackages(identities);
             }
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();
@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Async call for install packages from the list of identities.
         /// </summary>
         /// <param name="identities"></param>
-        private async void InstallPackages(IEnumerable<PackageIdentity> identities)
+        private async Task InstallPackages(IEnumerable<PackageIdentity> identities)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Async call for install a package by Id.
         /// </summary>
         /// <param name="identities"></param>
-        private async void InstallPackageById()
+        private async Task InstallPackageById()
         {
             try
             {

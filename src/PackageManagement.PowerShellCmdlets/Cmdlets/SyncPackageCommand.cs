@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -35,7 +36,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PackageIdentity identity = GetPackageIdentity();
 
             SubscribeToProgressEvents();
-            SyncPackages(Projects, identity);
+            Task syncTask = SyncPackages(Projects, identity);
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();
         }
@@ -45,7 +46,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="projects"></param>
         /// <param name="identity"></param>
-        private async void SyncPackages(IEnumerable<NuGetProject> projects, PackageIdentity identity)
+        private async Task SyncPackages(IEnumerable<NuGetProject> projects, PackageIdentity identity)
         {
             try
             {
