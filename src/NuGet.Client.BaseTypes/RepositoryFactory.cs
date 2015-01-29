@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -19,7 +20,6 @@ namespace NuGet.Client
         // for self-composed scenarios
         private static CompositionContainer _container;
         private static IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _providers;
-        private static Lazy<ISettings> _settings;
 
         /// <summary>
         /// Compose an instance using the client assemblies in the same directory
@@ -29,7 +29,16 @@ namespace NuGet.Client
         {
             ComposeInstance();
 
-            return new SourceRepositoryProvider(_providers, _settings.Value);
+            return new SourceRepositoryProvider(_providers, Settings.LoadDefaultSettings(null, null, null));
+        }
+
+        /// <summary>
+        /// Compose an instance using the client assemblies in the same directory
+        /// Do NOT use this from inside the VS Extension!
+        /// </summary>
+        public static ISourceRepositoryProvider CreateProvider(IEnumerable<string> sources)
+        {
+            return CreateProvider(sources.Select(s => new PackageSource(s)));
         }
 
         /// <summary>
@@ -98,17 +107,27 @@ namespace NuGet.Client
             {
                 try
                 {
-                    string assemblyName = Assembly.GetEntryAssembly().FullName;
+                    var assem = Assembly.GetEntryAssembly();
+                    string path = null;
 
-                    var path = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    if (assem != null)
+                    {
+                        string assemblyName = assem.FullName;
 
-                    using (var catalog = new AggregateCatalog(new DirectoryCatalog(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "NuGet.*.dll")))
+                        path = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    }
+                    else
+                    {
+                        path = Path.GetDirectoryName((new System.Uri(Assembly.GetExecutingAssembly().CodeBase)).LocalPath);
+                    }
+
+                    using (var catalog = new AggregateCatalog(new DirectoryCatalog(path, "NuGet.*.dll")))
                     {
                         var container = new CompositionContainer(catalog);
                         _providers = container.GetExports<INuGetResourceProvider, INuGetResourceProviderMetadata>();
-                        _settings = container.GetExport<ISettings>();
                         _container = container;
                     }
+
                 }
                 catch (Exception ex)
                 {
