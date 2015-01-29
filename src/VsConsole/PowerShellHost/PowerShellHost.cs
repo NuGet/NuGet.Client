@@ -28,7 +28,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly ISolutionManager _solutionManager;
         private readonly ISettings _settings;
         private const string activePackageSourceKey = "activePackageSource";
+        private const string ActivePackageSourceKey = "ActivePackageSource";
         private const string packageSourceKey = "packageSources";
+        private const string SyncModeKey = "IsSyncMode";
+        private const string PackageManagementContextKey = "PackageManagementContext";
+        private const string DTEKey = "DTE";
         private string _activePackageSource;
         private DTE _dte;
 
@@ -326,70 +330,27 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             ComplexCommand.Clear();
         }
 
-        protected void SetSyncModeOnHost(bool isSync)
+        protected void SetPrivateDataOnHost(bool isSync)
         {
-            if (_nugetHost != null)
-            {
-                PSPropertyInfo property = _nugetHost.PrivateData.Properties["IsSyncMode"];
-                if (property == null)
-                {
-                    property = new PSNoteProperty("IsSyncMode", isSync);
-                    _nugetHost.PrivateData.Properties.Add(property);
-                }
-                else
-                {
-                    property.Value = isSync;
-                }
-            }
+            SetPropertyValueOnHost(SyncModeKey, isSync);
+            SetPropertyValueOnHost(PackageManagementContextKey, _packageManagementContext);
+            SetPropertyValueOnHost(ActivePackageSourceKey, ActivePackageSource);
+            SetPropertyValueOnHost(DTEKey, _dte);
         }
 
-        protected void SetPackageManagementContextOnHost()
+        private void SetPropertyValueOnHost(string propertyName, object value)
         {
             if (_nugetHost != null)
             {
-                PSPropertyInfo property = _nugetHost.PrivateData.Properties["PackageManagementContext"];
+                PSPropertyInfo property = _nugetHost.PrivateData.Properties[propertyName];
                 if (property == null)
                 {
-                    property = new PSNoteProperty("PackageManagementContext", _packageManagementContext);
+                    property = new PSNoteProperty(propertyName, value);
                     _nugetHost.PrivateData.Properties.Add(property);
                 }
                 else
                 {
-                    property.Value = _packageManagementContext;
-                }
-            }
-        }
-
-        protected void SetActivePackageSourceOnHost()
-        {
-            if (_nugetHost != null)
-            {
-                PSPropertyInfo property = _nugetHost.PrivateData.Properties["ActivePackageSource"];
-                if (property == null)
-                {
-                    property = new PSNoteProperty("ActivePackageSource", ActivePackageSource);
-                    _nugetHost.PrivateData.Properties.Add(property);
-                }
-                else
-                {
-                    property.Value = _activePackageSource;
-                }
-            }
-        }
-
-        protected void SetDTEContextOnHost()
-        {
-            if (_nugetHost != null)
-            {
-                PSPropertyInfo property = _nugetHost.PrivateData.Properties["DTE"];
-                if (property == null)
-                {
-                    property = new PSNoteProperty("DTE", _dte);
-                    _nugetHost.PrivateData.Properties.Add(property);
-                }
-                else
-                {
-                    property.Value = _dte;
+                    property.Value = value;
                 }
             }
         }
