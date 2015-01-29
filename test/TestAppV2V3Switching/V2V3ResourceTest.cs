@@ -114,6 +114,12 @@ namespace V2V3ResourcesTest
             //check if there is atleast one result which has Id exactly as the search terms.
             Assert.True(uiSearchResults.Any(p => p.Identity.Id.Equals(SearchTerm, StringComparison.OrdinalIgnoreCase)));
 
+            foreach (var result in uiSearchResults)
+            {
+                Assert.Equal(result.Identity.Id, result.LatestPackageMetadata.Identity.Id);
+                Assert.Equal(result.Identity.Version.ToNormalizedString(), result.LatestPackageMetadata.Identity.Version.ToNormalizedString());
+            }
+
             PSSearchResource psResource = repo.GetResource<PSSearchResource>();
             IEnumerable<PSSearchMetadata> psSearchResults =  await psResource.Search(SearchTerm, filter, 0, 100, new System.Threading.CancellationToken());
             SimpleSearchResource simpleSearch = repo.GetResource<SimpleSearchResource>();
