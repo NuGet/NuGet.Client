@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public SwitchParameter IncludePrerelease { get; set; }
 
         [Parameter]
-        public SwitchParameter ListAll { get; set; }
+        public SwitchParameter AllVersions { get; set; }
 
         /// <summary>
         /// Determines if an exact Id match would be performed with the Filter parameter. By default, FindPackage returns all packages that starts with the
@@ -81,19 +81,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>();
             Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
             IEnumerable<string> packageIds = task.Result;
-            IPowerShellPackage package = new PowerShellRemotePackage();
 
             if (!ExactMatch.IsPresent)
             {
                 List<IPowerShellPackage> packages = new List<IPowerShellPackage>();
                 foreach (string id in packageIds)
                 {
+                    IPowerShellPackage package = new PowerShellRemotePackage();
                     Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
                     List<NuGetVersion> versions = versionTask.Result.ToList();
                     package.Id = id;
-                    if (ListAll.IsPresent)
+                    if (AllVersions.IsPresent)
                     {
-                        package.Version = versions;
+                        package.Version = versions.OrderByDescending(v => v).ToList();
                     }
                     else
                     {
@@ -106,13 +106,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
+                IPowerShellPackage package = new PowerShellRemotePackage();
                 string packageId = task.Result.Where(p => string.Equals(p, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 package.Id = packageId;
                 Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(packageId, Version, IncludePrerelease.IsPresent, CancellationToken.None);
                 List<NuGetVersion> versions = versionTask.Result.ToList();
                 if (string.IsNullOrEmpty(Version))
                 {
-                    if (ListAll.IsPresent)
+                    if (AllVersions.IsPresent)
                     {
                         package.Version = versions;
                     }

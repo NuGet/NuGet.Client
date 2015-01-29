@@ -60,26 +60,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var metadata = task.Result;
                 if (!string.IsNullOrEmpty(Version))
                 {
-                    NuGetVersion nVersion;
-                    bool success = NuGetVersion.TryParse(Version, out nVersion);
-                    if (success)
-                    {
-                        metadata = metadata.Where(p => p.Identity.Version == nVersion);
-                    }
+                    NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
+                    metadata = metadata.Where(p => p.Identity.Version == nVersion);
                 }
                 package = metadata.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             }
             catch (Exception)
             {
-                // show appropriate error message depending on whether Version parameter is set.
-                if (string.IsNullOrEmpty(Version))
-                {
-                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdNotFound, Id));
-                }
-                else
-                {
-                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdAndVersionNotFound, Id, Version));
-                }
             }
 
             if (package != null)
@@ -110,6 +97,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_UrlMissing, Id + " " + Version));
+                }
+            }
+            else
+            {
+                // show appropriate error message depending on whether Version parameter is set.
+                if (string.IsNullOrEmpty(Version))
+                {
+                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdNotFound, Id));
+                }
+                else
+                {
+                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdAndVersionNotFound, Id, Version));
                 }
             }
         }
