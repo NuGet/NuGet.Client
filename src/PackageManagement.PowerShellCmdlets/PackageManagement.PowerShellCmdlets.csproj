@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\AddBindingRedirectCommand.cs" />
+    <Compile Include="IPowerShellPackage.cs" />
     <Compile Include="PackageActionBaseCommand.cs" />
     <Compile Include="Utility\ExceptionUtility.cs" />
     <Compile Include="Cmdlets\FindPackageCommand.cs" />

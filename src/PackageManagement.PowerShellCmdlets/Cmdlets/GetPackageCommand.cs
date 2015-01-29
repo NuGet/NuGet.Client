@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// This command lists the available packages which are either from a package source or installed in the current solution.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Package", DefaultParameterSetName = ParameterAttribute.AllParameterSets)]
-    [OutputType(typeof(PowerShellRemotePackage))]
+    [OutputType(typeof(IPowerShellPackage))]
     public class GetPackageCommand : NuGetPowerShellBaseCommand
     {
         private const int DefaultFirstValue = 50;

@@ -59,48 +59,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get latest package identity for specified package Id.
-        /// </summary>
-        /// <param name="packageId"></param>
-        /// <param name="project"></param>
-        /// <param name="includePrerelease"></param>
-        /// <param name="sourceRepository"></param>
-        /// <returns></returns>
-        public static PackageIdentity GetLatestPackageIdentityForId(SourceRepository sourceRepository, string packageId, NuGetProject project, bool includePrerelease)
-        {
-            IEnumerable<string> targetFrameworks = GetProjectTargetFrameworks(project);
-            SearchFilter searchfilter = new SearchFilter();
-            searchfilter.IncludePrerelease = includePrerelease;
-            searchfilter.SupportedFrameworks = targetFrameworks;
-            searchfilter.IncludeDelisted = false;
-            MetadataResource resource = sourceRepository.GetResource<MetadataResource>();
-            PackageIdentity identity = null;
-
-            try
-            {
-                Task<NuGetVersion> task = resource.GetLatestVersion(packageId, includePrerelease, false, CancellationToken.None);
-                NuGetVersion latestVersion = task.Result;
-                if(latestVersion != null)
-                {
-                    identity = new PackageIdentity(packageId, latestVersion);
-                }                
-            }
-            catch (Exception)
-            {
-                identity = null;
-            }
-
-            if (identity == null)
-            {
-                throw new InvalidOperationException(
-                    String.Format(CultureInfo.CurrentCulture,
-                    Resources.UnknownPackage, packageId));
-            }
-
-            return identity;
-        }
-
-        /// <summary>
         /// Get all versions for a specific package Id.
         /// </summary>
         /// <param name="sourceRepository"></param>

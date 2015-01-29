@@ -1,7 +1,6 @@
 ﻿using NuGet.Client;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
-using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
@@ -36,6 +35,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
         internal const string PowerConsoleHostName = "Package Manager Host";
+        internal const string ActivePackageSourceKey = "activePackageSource";
+        internal const string SyncModeKey = "IsSyncMode";
+        internal const string PackageManagementContextKey = "PackageManagementContext";
         #endregion
 
         public NuGetPowerShellBaseCommand()
@@ -90,7 +92,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     return false;
                 }
 
-                var syncModeProp = GetPropertyValueFromHost("IsSyncMode");
+                var syncModeProp = GetPropertyValueFromHost(SyncModeKey);
                 return syncModeProp != null && (bool)syncModeProp;
             }
         }
@@ -152,7 +154,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual void Preprocess()
         {
-            _packageManagementContext = (PackageManagementContext)GetPropertyValueFromHost("PackageManagementContext");
+            _packageManagementContext = (PackageManagementContext)GetPropertyValueFromHost(PackageManagementContextKey);
             if (_packageManagementContext != null)
             {
                 _resourceRepositoryProvider = _packageManagementContext.SourceRepositoryProvider;
@@ -169,7 +171,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (string.IsNullOrEmpty(source))
             {
-                source = (string)GetPropertyValueFromHost("ActivePackageSource");
+                source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
             }
 
             IEnumerable<SourceRepository> repoes = _resourceRepositoryProvider.GetRepositories();

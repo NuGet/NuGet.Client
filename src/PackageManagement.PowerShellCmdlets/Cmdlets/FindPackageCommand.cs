@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// FindPackage is identical to GetPackage except that FindPackage filters packages only by Id and does not consider description or tags.
     /// </summary>
     [Cmdlet(VerbsCommon.Find, "Package")]
-    [OutputType(typeof(PowerShellRemotePackage))]
+    [OutputType(typeof(IPowerShellPackage))]
     public class FindPackageCommand : NuGetPowerShellBaseCommand
     {
         private const int MaxReturnedPackages = 30;

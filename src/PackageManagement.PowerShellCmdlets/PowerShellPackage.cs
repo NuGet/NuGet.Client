@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// Represent the view of packages installed to project(s)
     /// </summary>
-    internal class PowerShellInstalledPackage
+    internal class PowerShellInstalledPackage : IPowerShellPackage
     {
         public string Id { get; set; }
 
@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// Represent packages found from the remote package source
     /// </summary>
-    internal class PowerShellRemotePackage
+    internal class PowerShellRemotePackage : IPowerShellPackage
     {
         public string Id { get; set; }
 
@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// Represent package updates found from the remote package source
     /// </summary>
-    internal class PowerShellUpdatePackage
+    internal class PowerShellUpdatePackage : IPowerShellPackage
     {
         public string Id { get; set; }
 
