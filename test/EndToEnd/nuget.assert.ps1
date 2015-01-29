@@ -129,11 +129,11 @@ function Assert-Package {
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
         $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $actualVersion)
-        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity -eq $packageIdentity }) "Package $Id $Version is referenced in $($Project.Name)"
+        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
     }
     else
     {
-        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is referenced in $($Project.Name)"
+        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
     }    
 }
 
