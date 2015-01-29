@@ -30,8 +30,7 @@ namespace NuGet.PackageManagement.UI
             Hyperlink hyperlink = (Hyperlink)sender;
             if (hyperlink != null && hyperlink.NavigateUri != null)
             {
-                throw new NotImplementedException();
-                //NuGet.VisualStudio.UriHelper.OpenExternalLink(hyperlink.NavigateUri);
+                UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
             }
         }
