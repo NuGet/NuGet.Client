@@ -258,7 +258,7 @@ namespace NuGet.Client.DependencyInfo
             {
                 return lower < preFilterRange.MaxVersion;
             }
-            return false;
+            return true;
         }
     }
 }
