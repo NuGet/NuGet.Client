@@ -28,40 +28,43 @@ namespace NuGet.Client.V2.VisualStudio
 
         private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUI(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
-            var query = V2Client.Search(
-                searchTerm,
-                filters.SupportedFrameworks,
-                filters.IncludePrerelease);
+            return await Task.Run(() =>
+                {
+                    var query = V2Client.Search(
+                        searchTerm,
+                        filters.SupportedFrameworks,
+                        filters.IncludePrerelease);
 
-            // V2 sometimes requires that we also use an OData filter for latest/latest prerelease version
-            if (filters.IncludePrerelease)
-            {
-                query = query.Where(p => p.IsAbsoluteLatestVersion);
-            }
-            else
-            {
-                query = query.Where(p => p.IsLatestVersion);
-            }
+                    // V2 sometimes requires that we also use an OData filter for latest/latest prerelease version
+                    if (filters.IncludePrerelease)
+                    {
+                        query = query.Where(p => p.IsAbsoluteLatestVersion);
+                    }
+                    else
+                    {
+                        query = query.Where(p => p.IsLatestVersion);
+                    }
 
-            if (V2Client is LocalPackageRepository)
-            {
-                // if the repository is a local repo, then query contains all versions of packages.
-                // we need to explicitly select the latest version.
-                query = query.OrderBy(p => p.Id)
-                    .ThenByDescending(p => p.Version)
-                    .GroupBy(p => p.Id)
-                    .Select(g => g.First());
-            }
+                    // execute the query
+                    var allPackages = query
+                        .Skip(skip)
+                        .Take(take)
+                        .ToList();
 
-            // Now apply skip and take and the rest of the party
-            return (IEnumerable<UISearchMetadata>)query
-                .Skip(skip)
-                .Take(take)
-                .ToList()
-                .AsParallel()
-                .AsOrdered()
-                .Select(p => CreatePackageSearchResult(p, cancellationToken))
-                .ToList();
+                    // Some V2 sources, e.g. NuGet.Server, local repository, the result contains all 
+                    // versions of each package. So we need to explicitly select the latest version
+                    // on the client side.
+                    var latestVersions = allPackages
+                        .OrderBy(p => p.Id)
+                        .ThenByDescending(p => p.Version)
+                        .GroupBy(p => p.Id)
+                        .Select(g => g.First());
+
+                    var result = latestVersions
+                        .Select(p => CreatePackageSearchResult(p, cancellationToken));
+
+                    return result;
+                });
         }
 
         private UISearchMetadata CreatePackageSearchResult(IPackage package, CancellationToken cancellationToken)
