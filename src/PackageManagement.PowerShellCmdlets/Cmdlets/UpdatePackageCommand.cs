@@ -125,15 +125,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     // Preview update actions
                     IEnumerable<NuGetProjectAction> actions = PackageManager.PreviewUpdatePackagesAsync(identitiesToUpdate, project, ResolutionContext, this, ActiveSourceRepository).Result;
-                    if (actions.Any())
+
+                    if (!WhatIf.IsPresent)
                     {
-                        // Execute project actions by Package Manager
-                        ExecutePackageUpdates(actions, project);
-                        WaitAndLogFromMessageQueue();
-                    }
-                    else
-                    {
-                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                        if (actions.Any())
+                        {
+                            // Execute project actions by Package Manager
+                            ExecutePackageUpdates(actions, project);
+                            WaitAndLogFromMessageQueue();
+                        }
+                        else
+                        {
+                            LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                        }
                     }
                 }
             }
@@ -174,7 +178,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             }
                             else
                             {
-                                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                                LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
                             }
                         }
                         else

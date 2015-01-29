@@ -305,7 +305,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get update identity for a package that is installed to a project. Used for Update-Package Id -Version.
         /// </summary>
-        /// <param name="installedPackages"></param>
+        /// <param name="installedPackage"></param>
         /// <param name="project"></param>
         /// <param name="includePrerelease"></param>
         /// <param name="isSafe"></param>
