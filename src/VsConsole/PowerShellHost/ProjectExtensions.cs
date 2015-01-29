@@ -1,6 +1,6 @@
 ﻿using System.Management.Automation;
 using EnvDTE;
-using NuGet.ProjectManagement;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -12,9 +12,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps")]
         public static string GetCustomUniqueName(PSObject psObject)
         {
-            //return NuGet.VisualStudio.ProjectExtensions.GetCustomUniqueName((NuGetProject)psObject.BaseObject);
-            NuGetProject project = (NuGetProject)psObject.BaseObject;
-            return project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            return EnvDTEProjectUtility.GetCustomUniqueName((EnvDTE.Project)psObject.BaseObject);
         }
     }
 }

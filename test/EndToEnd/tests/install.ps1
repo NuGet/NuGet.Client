@@ -151,7 +151,7 @@ function Test-PackageWithIncompatibleAssembliesRollsInstallBack {
     $p = New-WebApplication
 
     # Act & Assert
-    Assert-Throws { Install-Package BingMapAppSDK -Project $p.Name -Source $context.RepositoryPath } "Could not install package 'BingMapAppSDK 1.0.1011.1716'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.0', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.."
+    Assert-Throws { Install-Package BingMapAppSDK -Project $p.Name -Source $context.RepositoryPath } "Could not install package 'BingMapAppSDK 1.0.1011.1716'. You are trying to install this package into a project that targets '.NETFramework, Version=v4.0', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
     Assert-Null (Get-ProjectPackage $p BingMapAppSDK 1.0.1011.1716)
     Assert-Null (Get-SolutionPackage BingMapAppSDK 1.0.1011.1716)
 }
@@ -344,3 +344,171 @@ function Test-InstallCanPipeToFSharpProjects {
     Assert-Package $p elmah
     Assert-SolutionPackage elmah
 }
+
+function Test-PipingMultipleProjectsToInstall {
+    # Arrange
+    $projects = @((New-WebSite), (New-ClassLibrary), (New-WebApplication))
+
+Write-Host 'proejct creation successful'
+    # Act
+    $projects | Install-Package elmah
+
+Write-Host 'Installation successful'
+    # Assert
+    $projects | %{ Assert-Package $_ elmah }
+
+Write-Host 'Assertion successful'    
+}
+
+function Test-InstallPackageWithNestedContentFile {
+    param(
+        $context
+    )
+    # Arrange
+    $p = New-WpfApplication
+
+    # Act
+    Install-Package PackageWithNestedFile -Source $context.RepositoryRoot
+
+    $item = Get-ProjectItem $p TestMainWindow.xaml
+    Assert-NotNull $item
+    Assert-NotNull $item.ProjectItems.Item("TestMainWindow.xaml.cs")
+    Assert-Package $p PackageWithNestedFile 1.0
+    Assert-SolutionPackage PackageWithNestedFile 1.0
+}
+
+function Test-InstallPackageWithNestedAspxContentFiles {
+    param(
+        $context
+    )
+    # Arrange
+    $p = New-WebApplication
+
+    $files = @('Global.asax', 'Site.master', 'About.aspx')
+
+    # Act
+    Install-Package PackageWithNestedAspxFiles -Source $context.RepositoryRoot
+
+    # Assert
+    $files | %{ 
+        $item = Get-ProjectItem $p $_
+        Assert-NotNull $item
+        Assert-NotNull $item.ProjectItems.Item("$_.cs")
+    }
+
+    Assert-Package $p PackageWithNestedAspxFiles 1.0
+    Assert-SolutionPackage PackageWithNestedAspxFiles 1.0
+}
+
+function Test-InstallPackageWithNestedReferences {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-WebApplication
+    
+    # Act
+    Install-Package PackageWithNestedReferenceFolders -Source $context.RepositoryRoot
+
+    # Assert
+    Assert-Reference $p Ninject
+    Assert-Reference $p CommonServiceLocator.NinjectAdapter
+}
+
+function Test-InstallPackageWithUnsupportedReference {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-ClassLibrary
+    
+    # Act
+    Assert-Throws { Install-Package PackageWithUnsupportedReferences -Source $context.RepositoryRoot } "Could not install package 'PackageWithUnsupportedReferences 1.0'. You are trying to install this package into a project that targets '.NETFramework, Version=v4.0', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
+
+    # Assert    
+    Assert-Null (Get-ProjectPackage $p PackageWithUnsupportedReferences)
+    Assert-Null (Get-SolutionPackage PackageWithUnsupportedReferences)
+}
+
+function Test-InstallPackageWithExeReference {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-ClassLibrary
+    
+    # Act
+    Install-Package PackageWithExeReference -Source $context.RepositoryRoot
+    
+    # Assert    
+    Assert-Reference $p NuGet
+}
+
+function Test-InstallPackageWithResourceAssemblies {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-ClassLibrary
+    
+    # Act
+    Install-Package FluentValidation -Source $context.RepositoryPath
+    
+    # Assert
+    Assert-Reference $p FluentValidation
+    Assert-Null (Get-AssemblyReference $p FluentValidation.resources)
+}
+
+function Test-InstallPackageWithGacReferencesIntoMultipleProjectTypes {
+    param(
+        $context
+    )
+
+    # Arrange
+    $projects = @((New-ClassLibrary), (New-WebSite), (New-FSharpLibrary))
+    
+    # Act
+    $projects | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
+    
+    # Assert
+    $projects | %{ Assert-Reference $_ System.Web }
+    Assert-Reference $projects[1] System.Web
+}
+
+function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {   
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-WindowsPhoneClassLibrary
+    
+    # Act
+    $p | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
+    
+    # Assert
+    Assert-Reference $p Microsoft.Devices.Sensors
+}
+
+<#
+function Test-PackageWithClientProfileAndFullFrameworkPicksClient {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-ConsoleApplication
+
+    # Arrange
+    $p | Install-Package MyAwesomeLibrary -Source $context.RepositoryPath
+
+    # Assert
+    Assert-Reference $p MyAwesomeLibrary
+    $reference = Get-AssemblyReference $p MyAwesomeLibrary
+    Assert-True ($reference.Path.Contains("net40-client") -or ($reference.Path.Contains("net4-client"))) 
+}
+#>
