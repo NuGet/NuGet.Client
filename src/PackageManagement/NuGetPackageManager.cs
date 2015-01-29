@@ -420,6 +420,12 @@ namespace NuGet.PackageManagement
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
+            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject)
+            {
+                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySourceRepository);
+                return new NuGetProjectAction[] { action };
+            }
+
             if(secondarySources == null)
             {
                 secondarySources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
@@ -700,6 +706,12 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(Strings.SolutionManagerNotAvailableForUninstall);
             }
 
+            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject)
+            {
+                var action = NuGetProjectAction.CreateUninstallProjectAction(packageReference.PackageIdentity);
+                return new NuGetProjectAction[] { action };
+            }
+
             // Step-1 : Get the metadata resources from "packages" folder or custom repository path
             var packageIdentity = packageReference.PackageIdentity;
             var packageReferenceTargetFramework = packageReference.TargetFramework;
@@ -823,7 +835,8 @@ namespace NuGet.PackageManagement
             nuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
 
             // Step-3: Check if the package directory could be deleted
-            if(!PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, nuGetProjectContext))
+            if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject) &&
+                !PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, nuGetProjectContext))
             {
                 DeletePackageDirectory(packageIdentity, nuGetProjectContext);
             }

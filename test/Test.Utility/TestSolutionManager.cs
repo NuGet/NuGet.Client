@@ -1,19 +1,21 @@
-﻿using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using Test.Utility.ProjectManagement;
 
 namespace Test.Utility
 {
     public class TestSolutionManager : ISolutionManager
     {
         private List<NuGetProject> NuGetProjects { get; set; }
+
         public string SolutionDirectory { get; private set; }
+
         private const string PackagesFolder = "packages";
 
         public TestSolutionManager(string solutionDirectory = null)
@@ -25,7 +27,7 @@ namespace Test.Utility
 
         public NuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
         {
-            if(GetNuGetProject(projectName) != null)
+            if (GetNuGetProject(projectName) != null)
             {
                 throw new ArgumentException("Project with " + projectName + " already exists");
             }
@@ -42,6 +44,14 @@ namespace Test.Utility
             NuGetProject nuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, packagesConfigPath);
             NuGetProjects.Add(nuGetProject);
             return nuGetProject;
+        }
+
+        public NuGetProject AddProjectKProject(string projectName)
+        {
+            var testProjectKProject = new TestProjectKProject();
+            var nugetProject = new ProjectKNuGetProject(testProjectKProject, projectName);
+            NuGetProjects.Add(nugetProject);
+            return nugetProject;
         }
 
         public NuGetProject DefaultNuGetProject

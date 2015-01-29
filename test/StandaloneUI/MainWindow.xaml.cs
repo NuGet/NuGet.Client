@@ -53,9 +53,12 @@ namespace StandaloneUI
             var settings = new DefaultSettings();
 
             var testSolutionManager = new TestSolutionManager(@"c:\temp\test");
+            /*
             var projectA = testSolutionManager.AddNewMSBuildProject("projectA");
-            var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
-            var projects = new NuGetProject[] { projectA };            
+            var projectB = testSolutionManager.AddNewMSBuildProject("projectB"); */
+            var projectC = testSolutionManager.AddProjectKProject("projectK");
+
+            var projects = new NuGetProject[] { projectC };            
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
             _contextFactory = new NuGetUIContextFactory(repositoryProvider, testSolutionManager, 

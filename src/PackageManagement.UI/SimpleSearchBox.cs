@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsEnabled
+        bool IVsWindowSearchHost.IsEnabled
         {
             get
             {

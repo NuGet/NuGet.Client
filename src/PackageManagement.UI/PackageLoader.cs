@@ -54,6 +54,9 @@ namespace NuGet.PackageManagement.UI
         // The magic unpublished date is 1900-01-01T00:00:00
         public static readonly DateTimeOffset Unpublished = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8));
 
+        // The list of packages that have updates available
+        private List<UISearchMetadata> _packagesWithUpdates;
+
         public PackageLoader(PackageLoaderOption option, 
             NuGetPackageManager packageManager,
             IEnumerable<NuGetProject> projects, 
@@ -151,7 +154,8 @@ namespace NuGet.PackageManagement.UI
             {
                 foreach (var package in project.GetInstalledPackages())
                 {
-                    if (!_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
+                    if (!(project is NuGet.ProjectManagement.Projects.ProjectKNuGetProject) &&
+                        !_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
                     {
                         continue;
                     }
@@ -187,7 +191,10 @@ namespace NuGet.PackageManagement.UI
         private async Task<IEnumerable<UISearchMetadata>> SearchInstalled(int startIndex, CancellationToken ct)
         {
             var installedPackages = GetInstalledPackages(latest: true)
-                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1);
+                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
+                .OrderBy(p => p.Id)
+                .Skip(startIndex)
+                .Take(_pageSize);
 
             List<UISearchMetadata> results = new List<UISearchMetadata>();
             var localResource = await _packageManager.PackagesFolderSourceRepository
@@ -256,16 +263,27 @@ namespace NuGet.PackageManagement.UI
         // Search in installed packages that have updates available
         private async Task<IEnumerable<UISearchMetadata>> SearchUpdates(int startIndex, CancellationToken ct)
         {
-            List<UISearchMetadata> results = new List<UISearchMetadata>();
-            var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+            if (_packagesWithUpdates == null)
+            {
+                await CreatePackagesWithUpdates(ct);
+            }
 
+            return _packagesWithUpdates.Skip(startIndex).Take(_pageSize);
+        }
+
+        // Creates the list of installed packages that have updates available
+        private async Task CreatePackagesWithUpdates(CancellationToken ct)
+        {
+            _packagesWithUpdates = new List<UISearchMetadata>();
+            var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
             if (metadataResource == null)
             {
-                return Enumerable.Empty<UISearchMetadata>();
+                return;
             }
 
             var installedPackages = GetInstalledPackages(latest: false)
-                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1);
+                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
+                .OrderBy(p => p.Id);
             foreach (var package in installedPackages)
             {
                 // only release packages respect the prerel option
@@ -282,12 +300,10 @@ namespace NuGet.PackageManagement.UI
 
                         string summary = String.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
 
-                        results.Add(new UISearchMetadata(highest.Identity, summary, highest.IconUrl, allVersions, highest));
+                        _packagesWithUpdates.Add(new UISearchMetadata(highest.Identity, summary, highest.IconUrl, allVersions, highest));
                     }
                 }
             }
-
-            return results;
         }
 
         public async Task<LoadResult> LoadItems(int startIndex, CancellationToken ct)
@@ -300,15 +316,21 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedPackagesLoaded = true;
 
-                foreach (var package in _projects.SelectMany(p => p.GetInstalledPackages()))
+                foreach (var project in _projects)
                 {
-                    if (!_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
+                    var installedPackagesInProject = project.GetInstalledPackages();
+                    if (!(project is ProjectManagement.Projects.ProjectKNuGetProject))
                     {
-                        continue;
+                        installedPackagesInProject = installedPackagesInProject.Where(
+                            p =>
+                                _packageManager.PackageExistsInPackagesFolder(p.PackageIdentity));
                     }
 
-                    _installedPackages.Add(package.PackageIdentity);
-                    _installedPackageIds.Add(package.PackageIdentity.Id);
+                    foreach (var package in installedPackagesInProject)
+                    {
+                        _installedPackages.Add(package.PackageIdentity);
+                        _installedPackageIds.Add(package.PackageIdentity.Id);
+                    }
                 }
             }
 

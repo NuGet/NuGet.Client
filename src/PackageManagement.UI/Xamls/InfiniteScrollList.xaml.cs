@@ -21,8 +21,6 @@ namespace NuGet.PackageManagement.UI
         private ObservableCollection<object> _items;
         private LoadingStatusIndicator _loadingStatusIndicator;
         private ScrollViewer _scrollViewer;
-        private Task _loadTask;
-        private object _taskStartLockObj = new object();
         
         public event SelectionChangedEventHandler SelectionChanged;
 
@@ -83,26 +81,19 @@ namespace NuGet.PackageManagement.UI
             Load();
         }
 
-        // Thread safe call to start an update
-        private void Load()
+        private async void Load()
         {
-            lock (_taskStartLockObj)
+            if (_cts != null)
             {
-                if (_cts != null)
-                {
-                    // There is another async loading process. Cancel it.
-                    _cts.Cancel();
-                }
-
-                _cts = new CancellationTokenSource();
-
-                // let this run in the background
-                _loadTask = Task.Run(async () => await LoadWork(this.Dispatcher, _cts.Token));
+                // There is another async loading process. Cancel it.
+                _cts.Cancel();
             }
+
+            _cts = new CancellationTokenSource();            
+            await LoadWork(_cts.Token);
         }
 
-        // Runs on a background thread
-        private async Task LoadWork(Dispatcher dispatcher, CancellationToken token)
+        private async Task LoadWork(CancellationToken token)
         {
             if (token.IsCancellationRequested)
             {
@@ -113,22 +104,20 @@ namespace NuGet.PackageManagement.UI
             var currentLoader = _loader;
             try
             {
-                // multiple loads may occur at the same time
-                var r = await Loader.LoadItems(_startIndex, _cts.Token);
+                // run Loader.LoadItems in background thread. Otherwise if the 
+                // source if V2, the UI can get blocked a little bit.
+                var r = await Task.Run(async () => await Loader.LoadItems(_startIndex, _cts.Token));
 
+                // multiple loads may occur at the same time
                 if (!token.IsCancellationRequested && currentLoader == _loader)
                 {
-                    // only one list update may occur at the same time
-                    dispatcher.Invoke(() =>
-                    {
-                        UpdatePackageList(r);
+                    UpdatePackageList(r);
 
-                        // select the first item if none was selected before
-                        if (_list.SelectedIndex == -1 && _items.Count > 1)
-                        {
-                            _list.SelectedIndex = 0;
-                        }
-                    });
+                    // select the first item if none was selected before
+                    if (_list.SelectedIndex == -1 && _items.Count > 1)
+                    {
+                        _list.SelectedIndex = 0;
+                    }
                 }
             }
             catch (Exception ex)
@@ -136,15 +125,12 @@ namespace NuGet.PackageManagement.UI
                 // only display errors if this is still relevant
                 if (!token.IsCancellationRequested)
                 {
-                    dispatcher.Invoke(() =>
-                    {
-                        var message = String.Format(
+                    var message = String.Format(
                             CultureInfo.CurrentCulture,
                             Resx.Resources.Text_ErrorOccurred,
                             ex);
-                        _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
-                        _loadingStatusIndicator.ErrorMessage = message;
-                    });
+                    _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
+                    _loadingStatusIndicator.ErrorMessage = message;
                 }
             }
         }
@@ -177,8 +163,8 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _loadingStatusIndicator.Status = LoadingStatus.Ready;
                 _startIndex = r.NextStartIndex;
+                _loadingStatusIndicator.Status = LoadingStatus.Ready;               
             }
 
             if (_loadingStatusIndicator.Status != LoadingStatus.NoMoreItems)

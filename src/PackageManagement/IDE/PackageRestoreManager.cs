@@ -158,6 +158,12 @@ namespace NuGet.PackageManagement
             List<PackageReference> packageReferences = new List<PackageReference>();
             foreach(var nuGetProject in SolutionManager.GetNuGetProjects())
             {
+                // skip project k projects
+                if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject)
+                {
+                    continue;
+                }
+
                 packageReferences.AddRange(nuGetProject.GetInstalledPackages());
             }
 
