@@ -85,6 +85,7 @@
     <Compile Include="SearchFilter.cs" />
     <Compile Include="SourceRepository.cs" />
     <Compile Include="SourceRepositoryProvider.cs" />
+    <Compile Include="RepositoryFactory.cs" />
     <Compile Include="UserAgentUtil.cs" />
   </ItemGroup>
   <ItemGroup>
