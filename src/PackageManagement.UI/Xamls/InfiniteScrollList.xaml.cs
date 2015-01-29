@@ -32,9 +32,19 @@ namespace NuGet.PackageManagement.UI
 
         public InfiniteScrollList()
         {
-            InitializeComponent();
-            _loadingStatusIndicator = new LoadingStatusIndicator();
+            InitializeComponent();                        
 
+            if (!StandaloneSwitch.IsRunningStandalone)
+            {
+                // it's running inside VS. Load needed resources
+                Brushes.Initialize();
+
+                var itemContainerStyle = _list.ItemContainerStyle;
+                var setter = new Setter(ListBoxItem.TemplateProperty, this.FindResource("ListBoxItemTemplate"));
+                itemContainerStyle.Setters.Add(setter);                
+            }
+
+            _loadingStatusIndicator = new LoadingStatusIndicator();
             _items = new ObservableCollection<object>();
             _list.ItemsSource = _items;
             _startIndex = 0;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -94,6 +95,64 @@ namespace NuGet.PackageManagement.UI
                 {
                     return Microsoft.VisualStudio.PlatformUI.ProgressBarColors.IndicatorFillBrushKey;
                 }
+            }
+        }
+
+        internal static void Initialize()
+        {
+            var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
+            var colorResources = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.ColorResources");
+            
+            var prop = colorResources.GetProperty("ContentMouseOverBrushKey");
+            _contentMouseOverBrushKey = prop.GetValue(null);
+
+            prop = colorResources.GetProperty("ContentInactiveSelectedBrushKey");
+            _contentInactiveSelectedBrushKey = prop.GetValue(null);
+
+            prop = colorResources.GetProperty("ContentSelectedBrushKey");
+            _contentSelectedBrushKey = prop.GetValue(null);
+
+            prop = colorResources.GetProperty("ContentSelectedTextBrushKey");
+            _contentSelectedTextBrushKey = prop.GetValue(null);
+        }
+
+        private static object _contentMouseOverBrushKey;
+
+        public static object ContentMouseOverBrushKey
+        {
+            get
+            {
+                return _contentMouseOverBrushKey;
+            }
+        }
+
+        private static object _contentInactiveSelectedBrushKey;
+
+        public static object ContentInactiveSelectedBrushKey
+        {
+            get
+            {
+                return _contentInactiveSelectedBrushKey;
+            }
+        }
+
+        private static object _contentSelectedBrushKey;
+
+        public static object ContentSelectedBrushKey
+        {
+            get
+            {
+                return _contentSelectedBrushKey;
+            }
+        }
+
+        private static object _contentSelectedTextBrushKey;
+
+        public static object ContentSelectedTextBrushKey
+        {
+            get
+            {
+                return _contentSelectedTextBrushKey;
             }
         }
     }
