@@ -129,7 +129,7 @@ namespace NuGet.Client.DependencyInfo
                 NuGetVersion lower = NuGetVersion.Parse(item["lower"].ToString());
                 NuGetVersion upper = NuGetVersion.Parse(item["upper"].ToString());
 
-                if (IsItemRangeRequired(preFilterRange, lower, upper))
+                if (ResolverMetadataClientUtility.IsItemRangeRequired(preFilterRange, lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))
@@ -241,24 +241,23 @@ namespace NuGet.Client.DependencyInfo
 
             return framework;
         }
+    }
 
-        private static bool IsItemRangeRequired(VersionRange preFilterRange, NuGetVersion lower, NuGetVersion upper)
+    public static class ResolverMetadataClientUtility
+    {
+        public static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
-            VersionRange itemRange = new VersionRange(lower, true, upper, true, true);
+            VersionRange catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
+                maxVersion: catalogItemUpper, includeMaxVersion: true, includePrerelease: true);
 
-            if (preFilterRange.HasLowerAndUpperBounds)
+            if(dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
             {
-                return itemRange.Satisfies(preFilterRange.MinVersion) || itemRange.Satisfies(preFilterRange.MaxVersion);
+                return catalogItemVersionRange.Satisfies(dependencyRange.MinVersion) || catalogItemVersionRange.Satisfies(dependencyRange.MaxVersion);
             }
-            else if (preFilterRange.HasLowerBound)
+            else
             {
-                return upper > preFilterRange.MinVersion;
+                return dependencyRange.Satisfies(catalogItemLower) || dependencyRange.Satisfies(catalogItemUpper);
             }
-            else if (preFilterRange.HasUpperBound)
-            {
-                return lower < preFilterRange.MaxVersion;
-            }
-            return true;
         }
     }
 }

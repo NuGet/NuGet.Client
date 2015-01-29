@@ -74,6 +74,7 @@
     <Compile Include="DownloadResourceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistrationResourceTests.cs" />
+    <Compile Include="ResolverMetadataClientTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="UIMetadataResourceTests.cs" />
     <Compile Include="UISearchTests.cs" />
