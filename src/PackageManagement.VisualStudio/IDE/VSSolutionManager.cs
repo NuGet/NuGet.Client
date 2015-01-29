@@ -112,7 +112,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string GetNuGetProjectSafeName(NuGetProject nuGetProject)
         {
-            throw new NotImplementedException();
+            if (nuGetProject == null)
+            {
+                throw new ArgumentNullException("nuGetProject");
+            }
+
+            // Try searching for simple names first
+            string name = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            EnvDTEProjectName envDTEProjectName;
+            NuGetAndEnvDTEProjectCache.TryGetNuGetProjectName(name, out envDTEProjectName);
+            Debug.Assert(envDTEProjectName != null);
+
+            return envDTEProjectName.CustomUniqueName;
         }
 
         public IEnumerable<NuGetProject> GetNuGetProjects()

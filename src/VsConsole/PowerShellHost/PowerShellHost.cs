@@ -27,9 +27,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISolutionManager _solutionManager;
         private readonly ISettings _settings;
-        private const string activePackageSourceKey = "activePackageSource";
-        private const string ActivePackageSourceKey = "ActivePackageSource";
-        private const string packageSourceKey = "packageSources";
+        private const string ActivePackageSourceKey = "activePackageSource";
+        private const string PackageSourceKey = "packageSources";
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
         private const string DTEKey = "DTE";
@@ -408,7 +407,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 if (_settings != null)
                 {
-                    var activePackageKeyValue = _settings.GetSettingValues(activePackageSourceKey);
+                    var activePackageKeyValue = _settings.GetSettingValues(ActivePackageSourceKey);
                     if (activePackageKeyValue != null && activePackageKeyValue.Any())
                     {
                         _activePackageSource = activePackageKeyValue[0].Key;
@@ -437,15 +436,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _activePackageSource = value;
                     if (_settings != null)
                     {
-                        var match = _settings.GetSettingValues(packageSourceKey)
+                        var match = _settings.GetSettingValues(PackageSourceKey)
                             .Where(p => string.Equals(p.Key, _activePackageSource, StringComparison.OrdinalIgnoreCase))
                             .FirstOrDefault();
 
                         if (match != null)
                         {
                             var pair = new KeyValuePair<string, string>(match.Key, match.Value);
-                            _settings.DeleteSection(activePackageSourceKey);
-                            _settings.SetValues(activePackageSourceKey, new List<KeyValuePair<string, string>>() { pair });
+                            _settings.DeleteSection(ActivePackageSourceKey);
+                            _settings.SetValues(ActivePackageSourceKey, new List<KeyValuePair<string, string>>() { pair });
                         }
                     }
                 }
