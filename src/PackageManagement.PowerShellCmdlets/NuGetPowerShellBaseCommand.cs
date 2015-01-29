@@ -301,7 +301,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get list of package updates that are installed to a project. Used for Update-Package -Version.
+        /// Get update identity for a package that is installed to a project. Used for Update-Package Id -Version.
         /// </summary>
         /// <param name="installedPackages"></param>
         /// <param name="project"></param>
@@ -311,39 +311,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="isEnum"></param>
         /// <param name="dependencyEnum"></param>
         /// <returns></returns>
-        protected IEnumerable<PackageIdentity> GetPackageUpdates(IEnumerable<PackageReference> installedPackages, NuGetProject project, 
+        protected PackageIdentity GetPackageUpdate(PackageReference installedPackage, NuGetProject project,
             bool includePrerelease, bool isSafe, string version = null, bool isEnum = false, DependencyBehavior dependencyEnum = DependencyBehavior.Lowest)
         {
-            List<PackageIdentity> updates = new List<PackageIdentity>();
-
-            foreach (PackageReference package in installedPackages)
+            PackageIdentity identity = null;
+            if (isSafe)
             {
-                PackageIdentity identity;
-                if (isSafe)
-                {
-                    identity = PowerShellCmdletsUtility.GetSafePackageIdentityForId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease, package.PackageIdentity.Version);
-                }
-                else if (isEnum)
-                {
-                    identity = PowerShellCmdletsUtility.GetUpdateForPackageByDependencyEnum(ActiveSourceRepository, package.PackageIdentity, project, dependencyEnum, includePrerelease);
-                }
-                else if (!string.IsNullOrEmpty(version))
-                {
-                    NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(version);
-                    identity = new PackageIdentity(package.PackageIdentity.Id, nVersion);
-                }
-                else
-                {
-                    identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, package.PackageIdentity.Id, project, includePrerelease);
-                }
-                // Only add to the package updates list if version is higher than the current installed version.
-                if (identity.Version > package.PackageIdentity.Version)
-                {
-                    updates.Add(identity);
-                }
+                identity = PowerShellCmdletsUtility.GetSafePackageIdentityForId(ActiveSourceRepository, installedPackage.PackageIdentity.Id, project, includePrerelease, installedPackage.PackageIdentity.Version);
+            }
+            else if (isEnum)
+            {
+                identity = PowerShellCmdletsUtility.GetUpdateForPackageByDependencyEnum(ActiveSourceRepository, installedPackage.PackageIdentity, project, dependencyEnum, includePrerelease);
+            }
+            else
+            {
+                NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(version);
+                identity = new PackageIdentity(installedPackage.PackageIdentity.Id, nVersion);
             }
 
-            return updates;
+            // Only return the packge identity if version is higher than the current installed version.
+            if (identity != null && identity.Version > installedPackage.PackageIdentity.Version)
+            {
+                return identity;
+            }
+
+            return null;
         }
         #endregion
 

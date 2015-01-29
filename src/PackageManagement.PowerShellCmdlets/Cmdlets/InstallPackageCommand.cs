@@ -46,10 +46,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void ProcessRecordCore()
         {
             base.ProcessRecordCore();
-            IEnumerable<PackageIdentity> identities = GetPackageIdentities();
 
             SubscribeToProgressEvents();
-            InstallPackages(identities);
+            if (!_readFromPackagesConfig && !_readFromDirectPackagePath && _nugetVersion == null)
+            {
+                InstallPackageById();
+            }
+            else
+            {
+                IEnumerable<PackageIdentity> identities = GetPackageIdentities();
+                InstallPackages(identities);
+            }
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();
         }
@@ -66,6 +73,26 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     await InstallPackageByIdentityAsync(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent, UninstallContext);
                 }
+            }
+            catch (Exception ex)
+            {
+                Log(MessageLevel.Error, ex.Message);
+            }
+            finally
+            {
+                completeEvent.Set();
+            }
+        }
+
+        /// <summary>
+        /// Async call for install a package by Id.
+        /// </summary>
+        /// <param name="identities"></param>
+        private async void InstallPackageById()
+        {
+            try
+            {
+                await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent, UninstallContext);
             }
             catch (Exception ex)
             {
@@ -141,10 +168,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (_nugetVersion != null)
             {
                 identity = new PackageIdentity(Id, _nugetVersion);
-            }
-            else
-            {
-                identity = PowerShellCmdletsUtility.GetLatestPackageIdentityForId(ActiveSourceRepository, Id, Project, _allowPrerelease);
             }
             return new List<PackageIdentity>() { identity };
         }

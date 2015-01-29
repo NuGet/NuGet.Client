@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="isForce"></param>
         /// <param name="uninstallContext"></param>
         /// <returns></returns>
-        protected async Task InstallPackageById(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
+        protected async Task InstallPackageByIdAsync(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
             if (isPreview)
             {

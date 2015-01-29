@@ -97,7 +97,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Resources.UnknownPackage, packageId));
             }
 
-
             return identity;
         }
 

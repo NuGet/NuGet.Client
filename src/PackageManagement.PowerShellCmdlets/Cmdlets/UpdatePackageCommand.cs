@@ -96,32 +96,39 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.ProcessRecordCore();
 
             SubscribeToProgressEvents();
-            if (!Reinstall.IsPresent)
-            {
-                PerformPackageUpdates();
-            }
-            else
-            {
-                PerformPackageReinstalls();
-            }
+            PerformPackageUpdatesOrReinstalls();
             UnsubscribeFromProgressEvents();
         }
 
         /// <summary>
         /// Perform package updates
         /// </summary>
-        private void PerformPackageUpdates()
+        private void PerformPackageUpdatesOrReinstalls()
         {
             // Update-Package without ID specified
             if (!_idSpecified)
             {
                 foreach (NuGetProject project in Projects)
                 {
-                    IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
-                    IEnumerable<PackageIdentity> updates = GetPackageUpdates(installedPackages, project, IncludePrerelease.IsPresent, Safe.IsPresent);
-                    if (updates.Any())
+                    // Get the list of package identities to be updated for PackageManager
+                    IEnumerable<PackageIdentity> identitiesToUpdate = Enumerable.Empty<PackageIdentity>();
+                    if (Reinstall.IsPresent)
                     {
-                        UpdatePackages(updates, project);
+                        // Update-Package -Reinstall -> get list of installed package identities
+                        identitiesToUpdate = project.GetInstalledPackages().Select(v => v.PackageIdentity);
+                    }
+                    else
+                    {
+                        // Update-Packages -> get list of package identities with Id and null version.
+                        identitiesToUpdate = GeneratePackageIdentityListForUpdate(project);
+                    }
+
+                    // Preview update actions
+                    IEnumerable<NuGetProjectAction> actions = PackageManager.PreviewUpdatePackagesAsync(identitiesToUpdate, project, ResolutionContext, this, ActiveSourceRepository).Result;
+                    if (actions.Any())
+                    {
+                        // Execute project actions by Package Manager
+                        ExecutePackageUpdates(actions, project);
                         WaitAndLogFromMessageQueue();
                     }
                     else
@@ -130,13 +137,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                 }
             }
+            // Update-Package with Id specified
             else
             {
                 foreach (NuGetProject project in Projects)
                 {
                     PackageReference installedPackage = Project.GetInstalledPackages().Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                    IEnumerable<PackageReference> installedPackages = new List<PackageReference>() { installedPackage };
-                    IEnumerable<PackageIdentity> updates = Enumerable.Empty<PackageIdentity>();
 
                     // If package Id exists in Packages folder but is not actually installed to the current project, throw.
                     if (installedPackage == null)
@@ -145,88 +151,62 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
+                        PackageIdentity update = null;
+                        // If -Version switch is specified
                         if (!string.IsNullOrEmpty(Version))
                         {
                             // If Highest/HighestMinor/HighestPatch/Lowest is given after -version switch
                             if (IsVersionEnum)
                             {
-                                updates = GetPackageUpdates(installedPackages, project, _allowPrerelease, false, null, true, _updateVersionEnum);
+                                update = GetPackageUpdate(installedPackage, project, _allowPrerelease, false, null, true, _updateVersionEnum);
                             }
                             // If a NuGetVersion format is given after -version switch
                             else
                             {
-                                updates = GetPackageUpdates(installedPackages, project, _allowPrerelease, false, Version);
+                                update = GetPackageUpdate(installedPackage, project, _allowPrerelease, false, Version);
+                            }
+
+                            if (update != null)
+                            {
+                                // Update by package identity
+                                UpdatePackageByIdentity(update, project);
+                                WaitAndLogFromMessageQueue();
+                            }
+                            else
+                            {
+                                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
                             }
                         }
-                        // Find the latest update from server
                         else
                         {
-                            updates = GetPackageUpdates(installedPackages, project, _allowPrerelease, Safe.IsPresent);
+                            if (Reinstall.IsPresent)
+                            {
+                                // Update-Package Id -Reinstall
+                                PackageIdentity identity = installedPackage.PackageIdentity;
+                                UpdatePackageByIdentity(identity, project);
+                            }
+                            else
+                            {
+                                // Update-Package Id
+                                UpdatePackageById(project);
+                            }
+                            WaitAndLogFromMessageQueue();
                         }
                     }
-
-                    if (updates.Any())
-                    {
-                        UpdatePackages(updates, project);
-                        WaitAndLogFromMessageQueue();
-                    }
-                    else
-                    {
-                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
-                    }
                 }
             }
         }
 
         /// <summary>
-        /// Performs package reinstall
-        /// </summary>
-        private void PerformPackageReinstalls()
-        {
-            // Update-Package -reinstall
-            if (!_idSpecified)
-            {
-                foreach (NuGetProject project in Projects)
-                {
-                    IEnumerable<PackageReference> installedPackages = Project.GetInstalledPackages();
-                    UpdatePackages(installedPackages.Select(v => v.PackageIdentity), project);
-                    WaitAndLogFromMessageQueue();
-                }
-            }
-            else
-            {
-                foreach (NuGetProject project in Projects)
-                {
-                    PackageReference installedPackage = Project.GetInstalledPackages().Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-
-                    // If package Id exists in Packages folder but is not actually installed to the current project, throw.
-                    if (installedPackage == null)
-                    {
-                        WriteError(string.Format(Resources.PackageNotInstalledInAnyProject, Id));
-                    }
-                    else
-                    {
-                        List<PackageIdentity> identities = new List<PackageIdentity>() { installedPackage.PackageIdentity };
-                        UpdatePackages(identities, project);
-                        WaitAndLogFromMessageQueue();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Async call for Update packages from the list of identities
+        /// Async call for Execute package update actions from the list of identities
         /// </summary>
         /// <param name="identities"></param>
         /// <param name="project"></param>
-        private async void UpdatePackages(IEnumerable<PackageIdentity> identities, NuGetProject project)
+        private async void ExecutePackageUpdates(IEnumerable<NuGetProjectAction> actions, NuGetProject project)
         {
             try
             {
-                foreach (PackageIdentity identity in identities)
-                {
-                    await InstallPackageByIdentityAsync(project, identity, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
-                }
+                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this);
             }
             catch (Exception ex)
             {
@@ -236,6 +216,62 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 completeEvent.Set();
             }
+        }
+
+        /// <summary>
+        /// Async call for update a package by Identity.
+        /// </summary>
+        /// <param name="identities"></param>
+        private async void UpdatePackageByIdentity(PackageIdentity identity, NuGetProject project)
+        {
+            try
+            {
+                await InstallPackageByIdentityAsync(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+            }
+            catch (Exception ex)
+            {
+                Log(MessageLevel.Error, ex.Message);
+            }
+            finally
+            {
+                completeEvent.Set();
+            }
+        }
+
+        /// <summary>
+        /// Async call for update a package by Id.
+        /// </summary>
+        /// <param name="identities"></param>
+        private async void UpdatePackageById(NuGetProject project)
+        {
+            try
+            {
+                await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+            }
+            catch (Exception ex)
+            {
+                Log(MessageLevel.Error, ex.Message);
+            }
+            finally
+            {
+                completeEvent.Set();
+            }
+        }
+
+        /// <summary>
+        /// Get a list of package identities with installed package Ids but null versions
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        private IEnumerable<PackageIdentity> GeneratePackageIdentityListForUpdate(NuGetProject project)
+        {
+            List<PackageIdentity> identityList = new List<PackageIdentity>();
+            IEnumerable<string> packageIds = project.GetInstalledPackages().Select(v => v.PackageIdentity.Id);
+            foreach (string id in packageIds)
+            {
+                identityList.Add(new PackageIdentity(id, null));
+            }
+            return identityList;
         }
 
         /// <summary>
@@ -286,6 +322,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _uninstallcontext = new UninstallationContext(false , Reinstall.IsPresent);
                 return _uninstallcontext;
             }
+        }
+
+        /// <summary>
+        /// Return dependecy behavior for Update-Package command. Scenarios include Update-Package and Update-Package -Safe.
+        /// </summary>
+        /// <returns></returns>
+        protected override DependencyBehavior GetDependencyBehavior()
+        {
+            // Return DependencyBehavior.HighestPatch for -Safe switch
+            if (Safe.IsPresent)
+            {
+                return DependencyBehavior.HighestPatch;
+            }
+
+            // Return DependencyBehavior.Highest for Update-Package
+            if (!_idSpecified && !Reinstall.IsPresent)
+            {
+                return DependencyBehavior.Highest;
+            }
+
+            return base.GetDependencyBehavior();
         }
     }
 }
