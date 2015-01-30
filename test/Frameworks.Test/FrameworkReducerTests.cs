@@ -12,6 +12,23 @@ namespace NuGet.Test
     public class FrameworkReducerTests
     {
         [Fact]
+        public void FrameworkReducer_GetNearestEqual()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("net40");
+            var framework2 = NuGetFramework.Parse("net40-client");
+
+            var project = NuGetFramework.Parse("net40-client");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(framework2, result);
+        }
+
+        [Fact]
         public void FrameworkReducer_GetNearestEquivalent()
         {
             FrameworkReducer reducer = new FrameworkReducer();
