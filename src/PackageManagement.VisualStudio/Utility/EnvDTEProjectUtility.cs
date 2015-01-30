@@ -971,51 +971,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static bool SupportsINuGetProjectSystem(EnvDTEProject envDTEProject)
         {
-#if VS14
-            return ToNuGetProjectSystem(project) != null;
-#else
-            return false;
-#endif
+            var projectKProject = VSNuGetProjectFactory.GetProjectKProject(envDTEProject);
+            return projectKProject != null;
         }
-
-#if VS14
-        public static INuGetPackageManager ToNuGetProjectSystem(EnvDTEProject project)
-        {
-            var vsProject = project.ToVsHierarchy() as IVsProject;
-            if (vsProject == null)
-            {
-                return null;
-            }
-
-            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider = null;
-            vsProject.GetItemContext(
-                (uint)VSConstants.VSITEMID.Root,
-                out serviceProvider);
-            if (serviceProvider == null)
-            {
-                return null;
-            }
-
-            using (var sp = new ServiceProvider(serviceProvider))
-            {
-                var retValue = sp.GetService(typeof(INuGetPackageManager));
-                if (retValue == null)
-                {
-                    return null;
-                }
-
-                var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
-                if (properties.Count() != 1)
-                {
-                    return null;
-                }
-
-                var v = properties.First().GetValue(retValue) as INuGetPackageManager;
-                return v as INuGetPackageManager;
-            }
-        }
-#endif
-
         #endregion // Check Project Types
 
         #region Act on Project

@@ -9,6 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProperty = EnvDTE.Property;
+using Microsoft.VisualStudio.ProjectSystem.Interop;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -41,9 +44,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public NuGetProject CreateNuGetProject(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext = null)
         {
-            if(nuGetProjectContext == null)
+            if (nuGetProjectContext == null)
             {
                 nuGetProjectContext = EmptyNuGetProjectContext;
+            }
+
+            var projectK = GetProjectKProject(envDTEProject);
+            if (projectK != null)
+            {
+                return new NuGet.ProjectManagement.Projects.ProjectKNuGetProject(projectK, envDTEProject.Name);
             }
 
             var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
@@ -53,6 +62,42 @@ namespace NuGet.PackageManagement.VisualStudio
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath, packagesConfigFullPath);
 
             return msBuildNuGetProject;
+        }
+
+        public static INuGetPackageManager GetProjectKProject(EnvDTEProject project)
+        {
+            var vsProject = VsHierarchyUtility.ToVsHierarchy(project) as IVsProject;
+            if (vsProject == null)
+            {
+                return null;
+            }
+
+            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider = null;
+            vsProject.GetItemContext(
+                (uint)Microsoft.VisualStudio.VSConstants.VSITEMID.Root,
+                out serviceProvider);
+            if (serviceProvider == null)
+            {
+                return null;
+            }
+
+            using (var sp = new ServiceProvider(serviceProvider))
+            {
+                var retValue = sp.GetService(typeof(INuGetPackageManager));
+                if (retValue == null)
+                {
+                    return null;
+                }
+
+                var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
+                if (properties.Count() != 1)
+                {
+                    return null;
+                }
+
+                var v = properties.First().GetValue(retValue) as INuGetPackageManager;
+                return v as INuGetPackageManager;
+            }
         }
     }
 }
