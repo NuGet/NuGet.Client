@@ -13,6 +13,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Versions of the package
         /// </summary>
-        List<NuGetVersion> Version { get; set; }
+        IEnumerable<NuGetVersion> Version { get; set; }
     }
 }

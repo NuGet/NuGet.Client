@@ -80,58 +80,51 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>();
             Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
-            IEnumerable<string> packageIds = task.Result;
+            IEnumerable<string> packageIds = task.Result;            
 
             if (!ExactMatch.IsPresent)
             {
                 List<IPowerShellPackage> packages = new List<IPowerShellPackage>();
                 foreach (string id in packageIds)
                 {
-                    IPowerShellPackage package = new PowerShellRemotePackage();
-                    Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
-                    List<NuGetVersion> versions = versionTask.Result.ToList();
-                    package.Id = id;
-                    if (AllVersions.IsPresent)
-                    {
-                        package.Version = versions.OrderByDescending(v => v).ToList();
-                    }
-                    else
-                    {
-                        NuGetVersion latestVersion = versions.OrderByDescending(v => v).FirstOrDefault();
-                        package.Version = new List<NuGetVersion>() { latestVersion };
-                    }
+                    IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, id);
                     packages.Add(package);
                 }
                 WriteObject(packages, enumerateCollection: true);
             }
             else
             {
-                IPowerShellPackage package = new PowerShellRemotePackage();
-                string packageId = task.Result.Where(p => string.Equals(p, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                package.Id = packageId;
-                Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(packageId, Version, IncludePrerelease.IsPresent, CancellationToken.None);
-                List<NuGetVersion> versions = versionTask.Result.ToList();
-                if (string.IsNullOrEmpty(Version))
+                string packageId = packageIds.Where(p => string.Equals(p, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                if (!string.IsNullOrEmpty(packageId))
                 {
-                    if (AllVersions.IsPresent)
-                    {
-                        package.Version = versions;
-                    }
-                    else
-                    {
-                        NuGetVersion latestVersion = versions.OrderByDescending(v => v).FirstOrDefault();
-                        package.Version = new List<NuGetVersion>() { latestVersion };
-                    }
-                    WriteObject(package);
-                }
-                else
-                {
-                    NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
-                    NuGetVersion version = versions.Where(v => v == nVersion).FirstOrDefault();
-                    package.Version = new List<NuGetVersion>() { version };
+                    IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, packageId);
                     WriteObject(package);
                 }
             }
+        }
+
+        /// <summary>
+        /// Get IPowerShellPackage from the remote package source
+        /// </summary>
+        /// <param name="autoCompleteResource"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private IPowerShellPackage GetIPowerShellPackageFromRemoteSource(PSAutoCompleteResource autoCompleteResource, string id)
+        {
+            Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
+            List<NuGetVersion> versions = versionTask.Result.ToList();
+            IPowerShellPackage package = new PowerShellRemotePackage();
+            package.Id = id;
+            if (AllVersions.IsPresent)
+            {
+                package.Version = versions.OrderByDescending(v => v);
+            }
+            else
+            {
+                NuGetVersion nVersion = versions.OrderByDescending(v => v).FirstOrDefault();
+                package.Version = new List<NuGetVersion>() { nVersion };
+            }
+            return package;
         }
     }
 }

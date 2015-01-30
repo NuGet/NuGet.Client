@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         public string Id { get; set; }
 
-        public List<NuGetVersion> Version { get; set; }
+        public IEnumerable<NuGetVersion> Version { get; set; }
 
         public string ProjectName { get; set; }
 
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         public string Id { get; set; }
 
-        public List<NuGetVersion> Version { get; set; }
+        public IEnumerable<NuGetVersion> Version { get; set; }
 
         public string Description { get; set; }
 
@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     case VersionType.all:
                         {
-                            package.Version = data.Versions.OrderByDescending(v => v).ToList();
+                            package.Version = data.Versions.OrderByDescending(v => v);
                         }
                         break;
                     case VersionType.latest:
@@ -100,7 +100,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         public string Id { get; set; }
 
-        public List<NuGetVersion> Version { get; set; }
+        public IEnumerable<NuGetVersion> Version { get; set; }
 
         public string Description { get; set; }
 
@@ -118,13 +118,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PowerShellUpdatePackage package = new PowerShellUpdatePackage();
             package.Id = data.Identity.Id;
             package.Description = data.Summary;
-            package.Version = new List<NuGetVersion>();
             package.ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
             switch (versionType)
             {
                 case VersionType.updates:
                     {
-                        package.Version = data.Versions.Where(p => p > version).OrderByDescending(v => v).ToList();
+                        package.Version = data.Versions.Where(p => p > version).OrderByDescending(v => v);
                     }
                     break;
                 case VersionType.latest:
@@ -132,7 +131,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         NuGetVersion nVersion = data.Versions.Where(p => p > version).OrderByDescending(v => v).FirstOrDefault();
                         if (nVersion != null)
                         {
-                            package.Version.Add(nVersion);
+                            package.Version = new List<NuGetVersion>() { nVersion };
                         }
                     }
                     break;
