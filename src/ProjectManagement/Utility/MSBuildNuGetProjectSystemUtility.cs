@@ -22,7 +22,7 @@ namespace NuGet.ProjectManagement
             if (mostCompatibleFramework != null)
             {
                 IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => i.TargetFramework.Equals(mostCompatibleFramework));
-                var mostCompatibleGroup = mostCompatibleGroups.FirstOrDefault();
+                var mostCompatibleGroup = mostCompatibleGroups.SingleOrDefault();
                 if (IsValid(mostCompatibleGroup))
                 {
                     mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,

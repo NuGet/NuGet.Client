@@ -385,9 +385,28 @@ namespace NuGet.PackageManagement
                     nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
                 }
             }
+            catch(InvalidOperationException)
+            {
+                throw;
+            }
+            catch (AggregateException)
+            {
+                throw;
+            }
+            catch (NuGetResolverConstraintException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(Strings.PackagesCouldNotBeInstalled, ex);
+                if(String.IsNullOrEmpty(ex.Message))
+                {
+                    throw new InvalidOperationException(Strings.PackagesCouldNotBeInstalled, ex);
+                }
+                else
+                {
+                    throw new InvalidOperationException(ex.Message, ex);
+                }                
             }
             return nuGetProjectActions;
         }
@@ -536,9 +555,28 @@ namespace NuGet.PackageManagement
                         nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
                     }
                 }
+                catch (InvalidOperationException)
+                {
+                    throw;
+                }
+                catch (AggregateException)
+                {
+                    throw;
+                }
+                catch (NuGetResolverException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException(String.Format(Strings.PackageCouldNotBeInstalled, packageIdentity), ex);
+                    if (String.IsNullOrEmpty(ex.Message))
+                    {
+                        throw new InvalidOperationException(String.Format(Strings.PackageCouldNotBeInstalled, packageIdentity), ex);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(ex.Message, ex);
+                    }
                 }
             }
             else

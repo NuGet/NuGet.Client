@@ -63,6 +63,9 @@ namespace NuGet.ProjectManagement
 
         private static void AddFileCore(string root, string path, Action<Stream> writeToStream)
         {
+            if (String.IsNullOrEmpty(path) || String.IsNullOrEmpty(Path.GetFileName(path)))
+                return;
+
             EnsureDirectory(root, Path.GetDirectoryName(path));
 
             string fullPath = GetFullPath(root, path);
