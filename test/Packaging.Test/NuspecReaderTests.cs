@@ -11,7 +11,7 @@ namespace Packaging.Test
 {
     public class NuspecReaderTests
     {
-        private const string basicNuspec = @"<?xml version=""1.0""?>
+        private const string BasicNuspec = @"<?xml version=""1.0""?>
                 <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
                   <metadata>
                     <id>packageA</id>
@@ -38,10 +38,32 @@ namespace Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string NamespaceOnMetadataNuspec = @"<?xml version=""1.0""?>
+                <package xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+                    <metadata xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                    <id>packageB</id>
+                    <version>1.0</version>
+                    <authors>nuget</authors>
+                    <owners>nuget</owners>
+                    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+                    <description>test</description>
+                    </metadata>
+                </package>";
+
+        [Fact]
+        public void NuspecReaderTests_NamespaceOnMetadata()
+        {
+            NuspecReader reader = GetReader(NamespaceOnMetadataNuspec);
+
+            string id = reader.GetId();
+
+            Assert.Equal("packageB", id);
+        }
+
         [Fact]
         public void NuspecReaderTests_Id()
         {
-            NuspecReader reader = GetReader(basicNuspec);
+            NuspecReader reader = GetReader(BasicNuspec);
 
             string id = reader.GetId();
 
@@ -51,7 +73,7 @@ namespace Packaging.Test
         [Fact]
         public void NuspecReaderTests_DependencyGroups()
         {
-            NuspecReader reader = GetReader(basicNuspec);
+            NuspecReader reader = GetReader(BasicNuspec);
 
             var dependencies = reader.GetDependencyGroups().ToList();
 
