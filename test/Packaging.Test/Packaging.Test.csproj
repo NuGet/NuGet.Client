@@ -58,7 +58,6 @@
     <Compile Include="PackagesConfigReaderTests.cs" />
     <Compile Include="PackagesConfigWriterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TreeTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

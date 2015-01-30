@@ -46,11 +46,6 @@
     <Compile Include="PackageIdentityComparer.cs" />
     <Compile Include="PackagingException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="tree\ComponentTree.cs" />
-    <Compile Include="tree\TreeBuilder.cs" />
-    <Compile Include="PackageItem.cs" />
-    <Compile Include="tree\TreeNode.cs" />
-    <Compile Include="PackageItemGroup.cs" />
     <Compile Include="PackageProperty.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -20,24 +20,5 @@ namespace NuGet.Packaging
         // should this logic be taken out of packaging?
         public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
         public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*)*)?$", RegexFlags);
-
-
-        public static class Schema
-        {
-            public static class TreeItemTypes
-            {
-                public const string Content = "content";
-                public const string Reference = "reference";
-                public const string Intellisense = "intellisense";
-                public const string FrameworkReference = "frameworkreference";
-                public const string Tool = "tool";
-                public const string Build = "build";
-            }
-
-            public static class TreePropertyTypes
-            {
-                public const string KeyValueProperty = "http://schema.nuget.org/nupkg#KeyValueProp";
-            }
-        }
     }
 }

@@ -67,9 +67,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Include="tree\DevTree.cs" />
-    <Compile Include="tree\DevTreeItem.cs" />
-    <Compile Include="tree\KeyValueTreeProperty.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">

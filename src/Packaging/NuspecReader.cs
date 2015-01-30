@@ -10,6 +10,9 @@ using System.Xml.Linq;
 
 namespace NuGet.Packaging
 {
+    /// <summary>
+    /// Reads .nuspec files
+    /// </summary>
     public class NuspecReader : NuspecCoreReader
     {
         public NuspecReader(Stream stream)
@@ -22,62 +25,6 @@ namespace NuGet.Packaging
             : base(xml)
         {
 
-        }
-
-        public bool HasComponentGroupsNode
-        {
-            get
-            {
-                string ns = Xml.Root.GetDefaultNamespace().NamespaceName;
-                return Xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("componentGroups", ns)).Any();
-            }
-        }
-
-        public IEnumerable<PackageItemGroup> GetComponentGroups()
-        {
-            string ns = Xml.Root.GetDefaultNamespace().NamespaceName;
-
-            var node = Xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("componentGroups", ns)).SingleOrDefault();
-
-            if (node != null)
-            {
-                foreach (var group in node.Elements(XName.Get("group", ns)))
-                {
-                    var props = group.Attributes().Select(a => new KeyValueTreeProperty(a.Name.LocalName, a.Value, false, false));
-                    var items = group.Elements().Select(e => GetGroupItem(e));
-
-                    yield return new PackageItemGroup(props, items);
-                }
-            }
-
-            yield break;
-        }
-
-        private static PackageItem GetGroupItem(XElement item)
-        {
-            string ns = item.GetDefaultNamespace().NamespaceName;
-
-            switch (item.Name.LocalName)
-            {
-                case "reference":
-                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
-                case "frameworkAssembly":
-                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("assemblyName", ns)).Value));
-                case "content":
-                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
-                case "build":
-                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
-                case "tool":
-                    return new DevTreeItem(item.Name.LocalName, true, GetPath(item.Attribute(XName.Get("file", ns)).Value));
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> GetPath(string path)
-        {
-            yield return new KeyValuePair<string, string>("path", path);
-            yield break;
         }
 
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups()
