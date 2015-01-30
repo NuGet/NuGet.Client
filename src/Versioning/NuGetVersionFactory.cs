@@ -45,7 +45,7 @@ namespace NuGet.Versioning
                 if (sections != null && Version.TryParse(sections.Item1, out systemVersion))
                 {
                     // labels
-                    if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s.ToCharArray(), false)))
+                    if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s, false)))
                     {
                         return false;
                     }

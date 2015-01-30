@@ -51,7 +51,7 @@ namespace NuGet.Versioning
 
                     foreach (var part in parts)
                     {
-                        if (!IsValidPart(part.ToCharArray(), false))
+                        if (!IsValidPart(part, false))
                         {
                             // leading zeros are not allowed
                             return false;
@@ -59,7 +59,7 @@ namespace NuGet.Versioning
                     }
 
                     // labels
-                    if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s.ToCharArray(), false)))
+                    if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s, false)))
                     {
                         return false;
                     }
@@ -93,7 +93,12 @@ namespace NuGet.Versioning
 
         internal static bool IsValid(string s, bool allowLeadingZeros)
         {
-            return s.Split('.').All(p => IsValidPart(p.ToCharArray(), allowLeadingZeros));
+            return s.Split('.').All(p => IsValidPart(p, allowLeadingZeros));
+        }
+
+        internal static bool IsValidPart(string s, bool allowLeadingZeros)
+        {
+            return IsValidPart(s.ToCharArray(), allowLeadingZeros);
         }
 
         internal static bool IsValidPart(char[] chars, bool allowLeadingZeros)
