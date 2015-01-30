@@ -90,6 +90,11 @@ namespace NuGet.Packaging
 
         public static bool IsPackageFile(string packageFileName, PackageSaveModes packageSaveMode)
         {
+            if(String.IsNullOrEmpty(packageFileName) || String.IsNullOrEmpty(Path.GetFileName(packageFileName)))
+            {
+                // This is to ignore archive entries that are not really files
+                return false;
+            }
             if(packageSaveMode.HasFlag(PackageSaveModes.Nuspec))
             {
                 return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
