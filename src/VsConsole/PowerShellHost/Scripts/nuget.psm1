@@ -150,7 +150,7 @@ function GetPackages($context) {
         $parameters.IncludePreRelease = $true 
     }
 
-    return Find-Package @parameters -ListAll -ErrorAction SilentlyContinue
+    return Find-Package @parameters -AllVersions -ErrorAction SilentlyContinue
 }
 
 function GetProjectNames {
@@ -228,7 +228,7 @@ function GetRemotePackageVersions($context) {
         if (IsPrereleaseSet $context) {
             $parameters.IncludePreRelease = $true 
         }
-        $parameters.ListAll = $true
+        $parameters.AllVersions = $true
         GetAndSortVersions(Find-Package @parameters -ExactMatch -ErrorAction SilentlyContinue)
     }
 }
