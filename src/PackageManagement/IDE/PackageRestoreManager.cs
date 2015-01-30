@@ -209,7 +209,8 @@ namespace NuGet.PackageManagement
         public static async Task<bool> RestoreMissingPackages(NuGetPackageManager nuGetPackageManager,
             IEnumerable<PackageReference> packageReferences,
             INuGetProjectContext nuGetProjectContext,
-            EventHandler<PackageRestoredEventArgs> packageRestoredEvent = null)
+            EventHandler<PackageRestoredEventArgs> packageRestoredEvent = null,
+            IEnumerable<SourceRepository> sourceRepositories = null)
         {
             if(nuGetPackageManager == null)
             {
@@ -233,7 +234,8 @@ namespace NuGet.PackageManagement
 
             // TODO: Update this to use the locked version
             bool[] results = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
-                RestorePackage(nuGetPackageManager, uniqueMissingPackage.PackageIdentity, nuGetProjectContext, packageRestoredEvent)));
+                RestorePackage(nuGetPackageManager, uniqueMissingPackage.PackageIdentity, nuGetProjectContext,
+                packageRestoredEvent, sourceRepositories)));
 
             return results.Any(r => r);
         }
@@ -241,7 +243,8 @@ namespace NuGet.PackageManagement
         private static async Task<bool> RestorePackage(NuGetPackageManager nuGetPackageManager,
             PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
-            EventHandler<PackageRestoredEventArgs> packageRestoredEvent)
+            EventHandler<PackageRestoredEventArgs> packageRestoredEvent,
+            IEnumerable<SourceRepository> sourceRepositories = null)
         {
             bool restored = await nuGetPackageManager.RestorePackage(packageIdentity, nuGetProjectContext);
             // At this point, it is guaranteed that package restore did not fail

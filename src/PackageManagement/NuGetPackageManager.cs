@@ -762,7 +762,8 @@ namespace NuGet.PackageManagement
         /// RestorePackage is only allowed on a folderNuGetProject. In most cases, one will simply use the packagesFolderPath from NuGetPackageManager
         /// to create a folderNuGetProject before calling into this method
         /// </summary>
-        public async Task<bool> RestorePackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        public async Task<bool> RestorePackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> sourceRepositories = null)
         {
             if(PackageExistsInPackagesFolder(packageIdentity))
             {
@@ -770,7 +771,8 @@ namespace NuGet.PackageManagement
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, String.Format(Strings.RestoringPackage, packageIdentity));
-            var enabledSources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            var enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
+                SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
             var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
 
             using (var targetPackageStream = new MemoryStream())
