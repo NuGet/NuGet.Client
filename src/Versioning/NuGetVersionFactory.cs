@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Linq;
 
 namespace NuGet.Versioning
 {
@@ -31,24 +32,48 @@ namespace NuGet.Versioning
         /// </summary>
         public static bool TryParse(string value, out NuGetVersion version)
         {
-            if (!String.IsNullOrEmpty(value))
-            {
-                var match = Constants.SemanticVersionRegex.Match(value.Trim());
+            version = null;
 
-                Version versionValue;
-                if (match.Success && Version.TryParse(match.Groups["Version"].Value, out versionValue))
+            if (value != null)
+            {
+                Version systemVersion = null;
+
+                // trim the value before passing it in since we not strict here
+                Tuple<string, string[], string> sections = ParseSections(value.Trim());
+
+                // null indicates the string did not meet the rules
+                if (sections != null && Version.TryParse(sections.Item1, out systemVersion))
                 {
-                    Version ver = NormalizeVersionValue(versionValue);
+                    // labels
+                    if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s.ToCharArray(), false)))
+                    {
+                        return false;
+                    }
+
+                    // build metadata
+                    if (sections.Item3 != null && !IsValid(sections.Item3, true))
+                    {
+                        return false;
+                    }
+
+                    Version ver = NormalizeVersionValue(systemVersion);
+
+                    string originalVersion = value;
+
+                    if (originalVersion.IndexOf(' ') > -1)
+                    {
+                        originalVersion = value.Replace(" ", "");
+                    }
 
                     version = new NuGetVersion(version: ver,
-                                                releaseLabels: ParseReleaseLabels(match.Groups["Release"].Value.TrimStart('-')),
-                                                metadata: match.Groups["Metadata"].Value.TrimStart('+'),
-                                                originalVersion: value.Replace(" ", ""));
+                                                releaseLabels: sections.Item2,
+                                                metadata: sections.Item3 ?? string.Empty,
+                                                originalVersion: originalVersion);
+
                     return true;
                 }
             }
 
-            version = null;
             return false;
         }
 
@@ -59,40 +84,13 @@ namespace NuGet.Versioning
         {
             version = null;
 
-            if (String.IsNullOrEmpty(value))
+            SemanticVersion semVer = null;
+            if (SemanticVersion.TryParse(value, out semVer))
             {
-                return false;
+                version = new NuGetVersion(semVer.Major, semVer.Minor, semVer.Patch, 0, semVer.ReleaseLabels, semVer.Metadata);
             }
-
-            var match = Constants.SemanticVersionStrictRegex.Match(value.Trim());
-
-            Version versionValue;
-            if (!match.Success || !Version.TryParse(match.Groups["Version"].Value, out versionValue))
-            {
-                return false;
-            }
-
-            Version ver = NormalizeVersionValue(versionValue);
-
-            version = new NuGetVersion(ver, ParseReleaseLabels(match.Groups["Release"].Value.TrimStart('-')), match.Groups["Metadata"].Value.TrimStart('+'), null);
 
             return true;
-        }
-
-        private static Version NormalizeVersionValue(Version version)
-        {
-            Version normalized = version;
-
-            if (version.Major < 0 || version.Minor < 0 || version.Build < 0 || version.Revision < 0)
-            {
-                normalized = new Version(
-                               Math.Max(version.Major, 0),
-                               Math.Max(version.Minor, 0),
-                               Math.Max(version.Build, 0),
-                               Math.Max(version.Revision, 0));
-            }
-
-            return normalized;
         }
 
         /// <summary>
