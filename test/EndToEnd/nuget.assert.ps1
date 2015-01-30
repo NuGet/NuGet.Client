@@ -163,10 +163,13 @@ function Assert-NoPackage {
     
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
+        $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $actualVersion)
+        Assert-Null ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
     }
-    
-    $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $Version)
-    Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity -eq $packageIdentity }) "Package $Id $Version is referenced in $($Project.Name)"
+    else
+    {
+        Assert-Null ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
+    }
 }
 
 function Assert-SolutionPackage {
