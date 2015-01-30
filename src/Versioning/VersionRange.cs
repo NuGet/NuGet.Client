@@ -316,6 +316,39 @@ namespace NuGet.Versioning
             return Equals(other, comparer);
         }
 
+        /// <summary>
+        /// A range that accepts all versions, prerelease and stable.
+        /// </summary>
+        public static VersionRange All
+        {
+            get
+            {
+                return new VersionRange(null, true, null, true, true);
+            }
+        }
+
+        /// <summary>
+        /// A range that accepts all stable versions
+        /// </summary>
+        public static VersionRange AllStable
+        {
+            get
+            {
+                return new VersionRange(null, true, null, true, false);
+            }
+        }
+
+        /// <summary>
+        /// A range that rejects all versions
+        /// </summary>
+        public static VersionRange None
+        {
+            get
+            {
+                return new VersionRange(new NuGetVersion(0, 0, 0), false, new NuGetVersion(0, 0, 0), false, false);
+            }
+        }
+
         private static bool? IsPrerelease(SimpleVersion version)
         {
             bool? b = null;
