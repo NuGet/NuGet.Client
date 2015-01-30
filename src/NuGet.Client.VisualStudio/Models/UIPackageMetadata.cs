@@ -23,8 +23,9 @@ namespace NuGet.Client.VisualStudio
             Description = description;
             Summary = summary;
             Tags = tags;
+            DownloadCount = downloadCount;
             DependencySets = dependencySet;
-            HasDependencies = hasDependencies;
+            HasDependencies = hasDependencies;            
             RequireLicenseAcceptance = requireLicenseAccept;
         }
 

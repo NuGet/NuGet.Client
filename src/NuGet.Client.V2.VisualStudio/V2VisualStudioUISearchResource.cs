@@ -54,14 +54,29 @@ namespace NuGet.Client.V2.VisualStudio
                     // Some V2 sources, e.g. NuGet.Server, local repository, the result contains all 
                     // versions of each package. So we need to explicitly select the latest version
                     // on the client side.
-                    var latestVersions = allPackages
-                        .OrderBy(p => p.Id)
-                        .ThenByDescending(p => p.Version)
-                        .GroupBy(p => p.Id)
-                        .Select(g => g.First());
+                    Dictionary<string, IPackage> latestVersion = new Dictionary<string, IPackage>(StringComparer.OrdinalIgnoreCase);
 
-                    var result = latestVersions
-                        .Select(p => CreatePackageSearchResult(p, cancellationToken));
+                    // this is used to maintain the order of the packages
+                    List<string> packageIds = new List<string>();
+                    foreach (var package in allPackages)
+                    {
+                        IPackage existingPackage;
+                        if (latestVersion.TryGetValue(package.Id, out existingPackage))
+                        {
+                            if (package.Version > existingPackage.Version)
+                            {
+                                latestVersion[package.Id] = package;
+                            }
+                        }
+                        else
+                        {
+                            latestVersion[package.Id] = package;
+                            packageIds.Add(package.Id);
+                        }
+                    }
+
+                    var result = packageIds.Select(
+                        id => CreatePackageSearchResult(latestVersion[id], cancellationToken));
 
                     return result;
                 });
