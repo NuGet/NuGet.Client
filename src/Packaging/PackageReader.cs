@@ -83,17 +83,27 @@ namespace NuGet.Packaging
             return GetFiles("lib");
         }
 
+        /// <summary>
+        /// True only for assemblies that should be added as references to msbuild projects
+        /// </summary>
         private static bool IsReferenceAssembly(string path)
         {
             bool result = false;
 
             string extension = Path.GetExtension(path);
 
-            if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".dll") && !path.EndsWith(".resource.dll", StringComparison.OrdinalIgnoreCase))
+            if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".dll"))
+            {
+                if (!path.EndsWith(".resource.dll", StringComparison.OrdinalIgnoreCase))
+                {
+                    result = true;
+                }
+            }
+            else if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".winmd"))
             {
                 result = true;
             }
-            else if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".winmd"))
+            else if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".exe"))
             {
                 result = true;
             }
