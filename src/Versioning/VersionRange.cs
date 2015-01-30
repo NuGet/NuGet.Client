@@ -5,7 +5,7 @@ namespace NuGet.Versioning
     /// <summary>
     /// Represents a range of versions.
     /// </summary>
-    public partial class VersionRange
+    public partial class VersionRange : IFormattable, IEquatable<VersionRange>
     {
         private readonly bool _includeMinVersion;
         private readonly bool _includeMaxVersion;
@@ -202,9 +202,17 @@ namespace NuGet.Versioning
         /// </summary>
         public override string ToString()
         {
+            return ToNormalizedString();
+        }
+
+        public virtual string ToNormalizedString()
+        {
             return ToString("N", new VersionRangeFormatter());
         }
 
+        /// <summary>
+        /// Format the version range with an IFormatProvider
+        /// </summary>
         public string ToString(string format, IFormatProvider formatProvider)
         {
             string formattedString = null;
@@ -217,6 +225,9 @@ namespace NuGet.Versioning
             return formattedString;
         }
 
+        /// <summary>
+        /// Format the range
+        /// </summary>
         protected bool TryFormatter(string format, IFormatProvider formatProvider, out string formattedString)
         {
             bool formatted = false;
@@ -235,9 +246,74 @@ namespace NuGet.Versioning
             return formatted;
         }
 
+        /// <summary>
+        /// Format the version range in Pretty Print format.
+        /// </summary>
         public string PrettyPrint()
         {
             return ToString("P", new VersionRangeFormatter());
+        }
+
+        /// <summary>
+        /// Compares the object as a VersionRange with the default comparer
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            VersionRange range = obj as VersionRange;
+
+            if (range != null)
+            {
+                return VersionRangeComparer.Default.Equals(this, range);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the hash code using the default comparer.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return VersionRangeComparer.Default.GetHashCode(this);
+        }
+
+        /// <summary>
+        /// Default compare
+        /// </summary>
+        public bool Equals(VersionRange other)
+        {
+            return Equals(other, VersionRangeComparer.Default);
+        }
+
+        /// <summary>
+        /// Use the VersionRangeComparer for equality checks
+        /// </summary>
+        public bool Equals(VersionRange other, IVersionRangeComparer comparer)
+        {
+            if (comparer == null)
+            {
+                throw new ArgumentNullException("comparer");
+            }
+
+            return comparer.Equals(this, other);
+        }
+
+        /// <summary>
+        /// Use a specific VersionComparison for comparison
+        /// </summary>
+        public bool Equals(VersionRange other, VersionComparison versionComparison)
+        {
+            IVersionRangeComparer comparer = new VersionRangeComparer(versionComparison);
+            return Equals(other, comparer);
+        }
+
+        /// <summary>
+        ///  Use a specific IVersionComparer for comparison
+        /// </summary>
+        public bool Equals(VersionRange other, IVersionComparer versionComparer)
+        {
+            IVersionRangeComparer comparer = new VersionRangeComparer(versionComparer);
+            return Equals(other, comparer);
         }
 
         private static bool? IsPrerelease(SimpleVersion version)

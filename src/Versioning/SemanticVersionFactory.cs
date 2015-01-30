@@ -8,8 +8,6 @@ namespace NuGet.Versioning
 {
     public partial class SemanticVersion
     {
-        private const RegexOptions _flags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
-
         /// <summary>
         /// Parses a SemVer string using strict SemVer rules.
         /// </summary>

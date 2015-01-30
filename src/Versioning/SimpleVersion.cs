@@ -52,7 +52,7 @@ namespace NuGet.Versioning
 
         public override int GetHashCode()
         {
-            return ToNormalizedString().GetHashCode();
+            return VersionComparer.Default.GetHashCode(this);
         }
 
         public virtual int CompareTo(object obj)
@@ -92,31 +92,49 @@ namespace NuGet.Versioning
             return comparer.Compare(this, other);
         }
 
+        /// <summary>
+        /// ==
+        /// </summary>
         public static bool operator ==(SimpleVersion version1, SimpleVersion version2)
         {
             return Compare(version1, version2) == 0;
         }
 
+        /// <summary>
+        /// !=
+        /// </summary>
         public static bool operator !=(SimpleVersion version1, SimpleVersion version2)
         {
             return Compare(version1, version2) != 0;
         }
 
+        /// <summary>
+        /// <
+        /// </summary>
         public static bool operator <(SimpleVersion version1, SimpleVersion version2)
         {
             return Compare(version1, version2) < 0;
         }
 
+        /// <summary>
+        /// <=
+        /// </summary>
         public static bool operator <=(SimpleVersion version1, SimpleVersion version2)
         {
             return Compare(version1, version2) <= 0;
         }
 
+        /// <summary>
+        /// >
+        /// </summary>
         public static bool operator >(SimpleVersion version1, SimpleVersion version2)
         {
             return Compare(version1, version2) > 0;
         }
 
+        /// <summary>
+        /// >=
+        /// </summary>
         public static bool operator >=(SimpleVersion version1, SimpleVersion version2)
         {
             return Compare(version1, version2) >= 0;

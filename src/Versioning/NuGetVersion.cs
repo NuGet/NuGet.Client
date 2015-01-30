@@ -181,5 +181,10 @@ namespace NuGet.Versioning
         {
             get { return Version.Revision > 0; }
         }
+
+        /// <summary>
+        /// Revision version R (x.y.z.R)
+        /// </summary>
+        public int Revision { get { return _version.Revision; } }
     }
 }

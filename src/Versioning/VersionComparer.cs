@@ -55,31 +55,71 @@ namespace NuGet.Versioning
                 return 0;
             }
 
-            string verString = string.Empty;
+            HashCodeCombiner combiner = new HashCodeCombiner();
 
-            VersionFormatter formatter = new VersionFormatter();
+            SemanticVersion semVersion = obj as SemanticVersion;
+            NuGetVersion nuGetVersion = obj as NuGetVersion;
 
-            if (_mode == VersionComparison.Default || _mode == VersionComparison.VersionRelease)
+            if (semVersion != null)
             {
-                verString = obj.ToString("V-R", formatter).ToUpperInvariant();
+                combiner.AddObject(semVersion.Major);
+                combiner.AddObject(semVersion.Minor);
+                combiner.AddObject(semVersion.Patch);
+
+                if (nuGetVersion != null && nuGetVersion.Revision > 0)
+                {
+                    combiner.AddObject(nuGetVersion.Revision);
+                }
+
+                if (_mode == VersionComparison.Default || _mode == VersionComparison.VersionRelease || _mode == VersionComparison.VersionReleaseMetadata)
+                {
+                    if (semVersion.IsPrerelease)
+                    {
+                        combiner.AddObject(semVersion.Release.ToUpperInvariant());
+                    }
+                }
+
+                if (_mode == VersionComparison.VersionReleaseMetadata)
+                {
+                    if (semVersion.HasMetadata)
+                    {
+                        combiner.AddObject(semVersion.Metadata);
+                    }
+                }
+
+                return combiner.CombinedHash;
             }
-            else if (_mode == VersionComparison.Version)
+            else
             {
-                verString = obj.ToString("V", formatter);
-            }
-            else if (_mode == VersionComparison.VersionReleaseMetadata)
-            {
-                verString = String.Format(CultureInfo.InvariantCulture, "{0}+{1}",
-                    obj.ToString("V-R", formatter).ToUpperInvariant(),
-                    obj.ToString("M", formatter));
+                // This is a new kind of version, fall back to using the formatter
+                string verString = string.Empty;
+
+                VersionFormatter formatter = new VersionFormatter();
+
+                if (_mode == VersionComparison.Default || _mode == VersionComparison.VersionRelease)
+                {
+                    verString = obj.ToString("V-R", formatter).ToUpperInvariant();
+                }
+                else if (_mode == VersionComparison.Version)
+                {
+                    verString = obj.ToString("V", formatter);
+                }
+                else if (_mode == VersionComparison.VersionReleaseMetadata)
+                {
+                    verString = String.Format(CultureInfo.InvariantCulture, "{0}+{1}",
+                        obj.ToString("V-R", formatter).ToUpperInvariant(),
+                        obj.ToString("M", formatter));
+                }
+
+                if (String.IsNullOrEmpty(verString))
+                {
+                    verString = obj.ToNormalizedString().ToUpperInvariant();
+                }
+
+                combiner.AddObject(verString);
             }
 
-            if (String.IsNullOrEmpty(verString))
-            {
-                verString = obj.ToNormalizedString().ToUpperInvariant();
-            }
-
-            return verString.GetHashCode();
+            return combiner.CombinedHash;
         }
 
         /// <summary>
@@ -87,6 +127,11 @@ namespace NuGet.Versioning
         /// </summary>
         public int Compare(SimpleVersion x, SimpleVersion y)
         {
+            if (Object.ReferenceEquals(x, y))
+            {
+                return 0;
+            }
+
             // null checks
             if (Object.ReferenceEquals(x, null) && Object.ReferenceEquals(y, null))
             {

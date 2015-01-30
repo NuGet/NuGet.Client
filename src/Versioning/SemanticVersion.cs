@@ -190,10 +190,5 @@ namespace NuGet.Versioning
                 return _metadata;
             }
         }
-
-        public override int GetHashCode()
-        {
-            return ToString("V-R", new VersionFormatter()).ToUpperInvariant().GetHashCode();
-        }
     }
 }
