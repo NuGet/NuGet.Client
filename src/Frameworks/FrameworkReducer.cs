@@ -50,47 +50,53 @@ namespace NuGet.Frameworks
                 possibleFrameworks = possibleFrameworks.Where(e => e != NuGetFramework.UnsupportedFramework);
             }
 
-            IEnumerable<NuGetFramework> compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
-            IEnumerable<NuGetFramework> reduced = ReduceUpwards(compatible);
+            // Try exact matches first
+            nearest = possibleFrameworks.Where(f => _fullComparer.Equals(framework, f)).FirstOrDefault();
 
-            if (reduced.Count() > 1)
+            if (nearest == null)
             {
-                // if we have a pcl and non-pcl mix, throw out the pcls
-                if (reduced.Any(f => f.IsPCL) && reduced.Any(f => !f.IsPCL))
-                {
-                    reduced = reduced.Where(f => !f.IsPCL);
-                }
+                // Elimate non-compatible frameworks
+                IEnumerable<NuGetFramework> compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
 
-                if (reduced.Count() > 1 && reduced.All(f => f.IsPCL))
-                {
-                    // TODO: improve this
-
-                    // For now just find the compatible PCL with the fewest frameworks
-                    reduced = reduced.OrderBy(e => e.Profile.Split('+').Length).ThenBy(e => e.Profile.Length);
-                }
+                // Remove lower versions of compatible frameworks
+                IEnumerable<NuGetFramework> reduced = ReduceUpwards(compatible);
 
                 if (reduced.Count() > 1)
                 {
-                    // Prefer frameworks without profiles
-                    if (reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
+                    // if we have a pcl and non-pcl mix, throw out the pcls
+                    if (reduced.Any(f => f.IsPCL) && reduced.Any(f => !f.IsPCL))
                     {
-                        reduced = reduced.Where(f => !f.HasProfile);
+                        reduced = reduced.Where(f => !f.IsPCL);
+                    }
+                    else if (reduced.All(f => f.IsPCL))
+                    {
+                        // decide between PCLs
+                        // TODO: improve this
+
+                        // For now just find the compatible PCL with the fewest frameworks
+                        reduced = reduced.OrderBy(e => e.Profile.Split('+').Length).ThenBy(e => e.Profile.Length);
+                    }
+                    else
+                    {
+                        // Prefer frameworks without profiles
+                        // TODO: should we try to match against the profile of the input framework?
+                        if (reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
+                        {
+                            reduced = reduced.Where(f => !f.HasProfile);
+                        }
                     }
                 }
 
-                if (reduced.Count() > 1)
+                // if we have reduced down to a single framework, use that
+                nearest = reduced.SingleOrDefault();
+
+                // this should be a very rare occurrence
+                // at this point we are unable to decide between the remaining frameworks in any useful way
+                // just take the first one by rev alphabetical order if we can't narrow it down at all
+                if (nearest != null && reduced.Any())
                 {
-                    // just take the first one by rev alphabetical order if we can't narrow it down at all
                     nearest = reduced.OrderByDescending(f => f.Framework, StringComparer.OrdinalIgnoreCase).ThenBy(f => f.GetHashCode()).First();
                 }
-                else if (reduced.Count() == 1)
-                {
-                    nearest = reduced.Single();
-                }
-            }
-            else if (reduced.Count() == 1)
-            {
-                nearest = reduced.Single();
             }
 
             return nearest;
@@ -166,8 +172,10 @@ namespace NuGet.Frameworks
 
         private IEnumerable<NuGetFramework> ReduceCore(IEnumerable<NuGetFramework> frameworks, Func<NuGetFramework, NuGetFramework, bool> isCompat)
         {
-            // order first so we get consistent results for equivalent frameworks
-            NuGetFramework[] input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).Distinct(_fullComparer).ToArray();
+            // remove duplicate frameworks
+            NuGetFramework[] input = frameworks.Distinct(_fullComparer).ToArray();
+
+            List<NuGetFramework> results = new List<NuGetFramework>(input.Length);
 
             for (int i = 0; i < input.Length; i++)
             {
@@ -180,17 +188,22 @@ namespace NuGet.Frameworks
                     if (j != i)
                     {
                         NuGetFramework y = input[j];
+
+                        // remove frameworks that are compatible with other framworks in the list
+                        // do not remove frameworks which tie with others, for example: net40 and net40-client
+                        // these equivalent frameworks should both be returned to let the caller decide between them
                         dupe = isCompat(x, y) && !isCompat(y, x);
                     }
                 }
 
                 if (!dupe)
                 {
-                    yield return input[i];
+                    results.Add(input[i]);
                 }
             }
 
-            yield break;
+            // sort the results just to make this more deterministic for the callers
+            return results.OrderBy(f => f.Framework, StringComparer.OrdinalIgnoreCase).ThenBy(f => f.ToString());
         }
     }
 }
