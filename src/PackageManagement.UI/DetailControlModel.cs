@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged("Id");
             OnPropertyChanged("IconUrl");
 
-            _allPackages = new List<NuGetVersion>(searchResultPackage.Versions);
+            _allPackages = searchResultPackage.Versions.Select(v => v.Version).ToList();
             CreateActions();
         }
 
@@ -240,6 +240,10 @@ namespace NuGet.PackageManagement.UI
 
         public async Task LoadPackageMetadaAsync(UIMetadataResource metadataResource, CancellationToken token)
         {
+            var downloadCountDict = _searchResultPackage.Versions.ToDictionary(
+                v => v.Version,
+                v => v.DownloadCount);                
+
             var dict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
             if (metadataResource != null)
             {
@@ -249,7 +253,12 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (!dict.ContainsKey(item.Identity.Version))
                     {
-                        dict.Add(item.Identity.Version, new DetailedPackageMetadata(item));                    
+                        int downloadCount;
+                        if (!downloadCountDict.TryGetValue(item.Identity.Version, out downloadCount))
+                        {
+                            downloadCount = 0;
+                        }
+                        dict.Add(item.Identity.Version, new DetailedPackageMetadata(item, downloadCount));
                     }
                 }
             }

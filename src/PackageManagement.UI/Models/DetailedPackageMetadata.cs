@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI
 
         }
 
-        public DetailedPackageMetadata(UIPackageMetadata serverData)
+        public DetailedPackageMetadata(UIPackageMetadata serverData, int downloadCount)
         {
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;
@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
             Tags = serverData.Tags;
-            DownloadCount = serverData.DownloadCount;
+            DownloadCount = downloadCount;
             Published = serverData.Published;
             DependencySets = serverData.DependencySets.Select(e => new PackageDependencySetMetadata(e));
             HasDependencies = serverData.HasDependencies;

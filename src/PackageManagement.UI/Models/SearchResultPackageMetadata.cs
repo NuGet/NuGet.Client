@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using NuGet.Client.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.UI
 
         public Uri IconUrl { get; set; }
 
-        public IEnumerable<NuGetVersion> Versions { get; set; }
+        public IEnumerable<VersionInfo> Versions { get; set; }
 
         protected void OnPropertyChanged(string propertyName)
         {

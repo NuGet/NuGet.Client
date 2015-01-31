@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.UI
                             identity, 
                             summary: summary,
                             iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
-                            versions: versions,
+                            versions: versions.Select(v => new VersionInfo(v, 0)),
                             latestPackageMetadata: packageMetadata);
                     });
                 tasks.Add(task);
@@ -296,7 +296,9 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (VersionComparer.VersionRelease.Compare(package.Version, highest.Identity.Version) < 0)
                     {
-                        var allVersions = data.Select(e => e.Identity.Version).OrderByDescending(e => e, VersionComparer.VersionRelease);
+                        var allVersions = data.Select(e => e.Identity.Version)
+                            .OrderByDescending(e => e, VersionComparer.VersionRelease)
+                            .Select(v => new VersionInfo(v, 0));
 
                         string summary = String.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
 
@@ -352,12 +354,12 @@ namespace NuGet.PackageManagement.UI
                 if (!_option.IncludePrerelease)
                 {
                     // remove prerelease version if includePrelease is false
-                    versionList.RemoveAll(v => v.IsPrerelease);
+                    versionList.RemoveAll(v => v.Version.IsPrerelease);
                 }
 
-                if (!versionList.Contains(searchResultPackage.Version))
+                if (!versionList.Select(v => v.Version).Contains(searchResultPackage.Version))
                 {
-                    versionList.Add(searchResultPackage.Version);
+                    versionList.Add(new VersionInfo(searchResultPackage.Version, 0));
                 }
 
                 searchResultPackage.Versions = versionList;

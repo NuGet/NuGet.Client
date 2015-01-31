@@ -416,11 +416,11 @@ namespace NuGet.PackageManagement.UI
         public static PackageStatus GetPackageStatus(
             string packageId,
             IEnumerable<NuGetProject> projects,
-            IEnumerable<NuGetVersion> allVersions)
+            IEnumerable<VersionInfo> allVersions)
         {
             var latestStableVersion = allVersions
-                .Where(p => !p.IsPrerelease)
-                .Max(p => p);
+                .Where(p => !p.Version.IsPrerelease)
+                .Max(p => p.Version);
 
             // Get the minimum version installed in any target project/solution
             var minimumInstalledPackage = projects.SelectMany(project => project.GetInstalledPackages())
