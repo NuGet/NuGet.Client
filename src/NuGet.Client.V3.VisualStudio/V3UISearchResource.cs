@@ -47,42 +47,8 @@ namespace NuGet.Client.V3.VisualStudio
         {
             string id = package.Value<string>(Properties.PackageId);
             NuGetVersion version = NuGetVersion.Parse(package.Value<string>(Properties.Version));
-
             PackageIdentity topPackage = new PackageIdentity(id, version);
-
             Uri iconUrl = GetUri(package, Properties.IconUrl);
-
-            // get other versions
-            var versionList = new List<NuGetVersion>();
-            var versions = package.Value<JArray>(Properties.Versions);
-            if (versions != null)
-            {
-                if (versions[0].Type == JTokenType.String)
-                {
-                    // TODO: this part should be removed once the new end point is up and running.
-                    versionList = versions
-                        .Select(v => NuGetVersion.Parse(v.Value<string>()))
-                        .ToList();
-                }
-                else
-                {
-                    versionList = versions
-                        .Select(v => NuGetVersion.Parse(v.Value<string>("version")))
-                        .ToList();
-                }
-
-                if (!includePrerelease)
-                {
-                    // remove prerelease version if includePrelease is false
-                    versionList.RemoveAll(v => v.IsPrerelease);
-                }
-            }
-            if (!versionList.Contains(version))
-            {
-                versionList.Add(version);
-            }
-
-            IEnumerable<NuGetVersion> nuGetVersions = versionList;
             string summary = package.Value<string>(Properties.Summary);
             if (string.IsNullOrWhiteSpace(summary))
             {
@@ -90,9 +56,38 @@ namespace NuGet.Client.V3.VisualStudio
                 summary = package.Value<string>(Properties.Description);
             }
 
+            // get other versions            
+            var versionList = new List<VersionInfo>();
+            var versions = package.Value<JArray>(Properties.Versions);
+            if (versions != null)
+            {
+                foreach (var v in versions)
+                {
+                    var nugetVersion = NuGetVersion.Parse(v.Value<string>("version"));
+                    var count = v.Value<int>("downloads");
+                    versionList.Add(new VersionInfo(nugetVersion, count));
+                }
+            }
+
+            // TODO: in v2, we only have download count for all versions, not per version.
+            // To be consistent, in v3, we also use total download count for now.
+            int totalDownloadCount = versionList.Select(v => v.DownloadCount).Sum();
+            versionList = versionList.Select(v => new VersionInfo(v.Version, totalDownloadCount))
+                .ToList();
+
+            if (!includePrerelease)
+            {
+                // remove prerelease version if includePrelease is false
+                versionList.RemoveAll(v => v.Version.IsPrerelease);
+            }
+
+            if (!versionList.Select(v => v.Version).Contains(version))
+            {
+                versionList.Add(new VersionInfo(version, 0));
+            }
+
             // retrieve metadata for the top package
             UIPackageMetadata metadata = null;
-
             V3UIMetadataResource v3metadataRes = _metadataResource as V3UIMetadataResource;
 
             // for v3 just parse the data from the search results
@@ -107,7 +102,7 @@ namespace NuGet.Client.V3.VisualStudio
                 metadata = await _metadataResource.GetMetadata(topPackage, token);
             }
 
-            UISearchMetadata searchResult = new UISearchMetadata(topPackage, summary, iconUrl, nuGetVersions, metadata);
+            UISearchMetadata searchResult = new UISearchMetadata(topPackage, summary, iconUrl, versionList, metadata);
             return searchResult;
         }
 

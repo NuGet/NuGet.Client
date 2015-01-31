@@ -28,7 +28,7 @@ namespace NuGet.Client.V3.VisualStudio
             List<PSSearchMetadata> powerShellSearchResults = new List<PSSearchMetadata>();
             foreach (UISearchMetadata result in searchResultJsonObjects)
             {
-                powerShellSearchResults.Add(new PSSearchMetadata(result.Identity, result.Versions, result.Summary));
+                powerShellSearchResults.Add(new PSSearchMetadata(result.Identity, result.Versions.Select(v => v.Version), result.Summary));
             }
 
             return powerShellSearchResults;

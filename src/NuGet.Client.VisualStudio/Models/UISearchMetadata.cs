@@ -5,12 +5,24 @@ using System.Collections.Generic;
 
 namespace NuGet.Client.VisualStudio
 {
+    public class VersionInfo
+    {
+        public VersionInfo(NuGetVersion version, int downloadCount)
+        {
+            Version = version;
+            DownloadCount = downloadCount;
+        }
+        public NuGetVersion Version { get; private set; }
+
+        public int DownloadCount { get; private set; }
+    }
+
     /// <summary>
     /// Model for Search results displayed by Visual Studio Package Manager dialog UI.
     /// </summary>
     public sealed class UISearchMetadata
     {
-        public UISearchMetadata(PackageIdentity identity, string summary, Uri iconUrl, IEnumerable<NuGetVersion> versions, UIPackageMetadata latestPackageMetadata)
+        public UISearchMetadata(PackageIdentity identity, string summary, Uri iconUrl, IEnumerable<VersionInfo> versions, UIPackageMetadata latestPackageMetadata)
         {
             Identity = identity;
             Summary = summary;
@@ -22,7 +34,7 @@ namespace NuGet.Client.VisualStudio
         public PackageIdentity Identity { get; private set; }
         public string Summary { get; private set; }
         public Uri IconUrl { get; private set; }
-        public IEnumerable<NuGetVersion> Versions { get; private set; }
+        public IEnumerable<VersionInfo> Versions { get; private set; }
         public UIPackageMetadata LatestPackageMetadata { get; private set; }
 
     }

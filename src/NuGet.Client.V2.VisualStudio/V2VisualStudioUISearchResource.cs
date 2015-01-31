@@ -93,7 +93,8 @@ namespace NuGet.Client.V2.VisualStudio
             string id = package.Id;
             NuGetVersion version = V2Utilities.SafeToNuGetVer(package.Version);
             string summary = package.Summary;
-            IEnumerable<NuGetVersion> nuGetVersions = versions.Select(p => V2Utilities.SafeToNuGetVer(p.Version));
+            var nuGetVersions = versions.Select(p =>
+                new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount));
             if (string.IsNullOrWhiteSpace(summary))
             {
                 summary = package.Description;

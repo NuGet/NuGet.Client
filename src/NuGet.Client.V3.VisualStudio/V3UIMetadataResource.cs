@@ -71,14 +71,13 @@ namespace NuGet.Client.V3.VisualStudio
             Uri LicenseUrl = GetUri(metadata, Properties.LicenseUrl);
             Uri ProjectUrl = GetUri(metadata, Properties.ProjectUrl);
             string Tags = GetField(metadata, Properties.Tags);
-            int DownloadCount = metadata.Value<int>(Properties.DownloadCount);
             IEnumerable<UIPackageDependencySet> DependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
             bool requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
 
             bool HasDependencies = DependencySets.Any(
                 set => set.Dependencies != null && set.Dependencies.Count > 0);
 
-            return new UIPackageMetadata(new PackageIdentity(id, Version), Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, DownloadCount, Published, DependencySets, HasDependencies, requireLicenseAcceptance);
+            return new UIPackageMetadata(new PackageIdentity(id, Version), Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, Published, DependencySets, HasDependencies, requireLicenseAcceptance);
         }
 
         /// <summary>

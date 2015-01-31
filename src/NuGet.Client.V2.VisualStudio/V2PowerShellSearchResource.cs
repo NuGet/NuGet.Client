@@ -22,7 +22,7 @@ namespace NuGet.Client.V2.VisualStudio
 
         private PSSearchMetadata GetPSSearch(UISearchMetadata item)
         {
-            return new PSSearchMetadata(item.Identity, item.Versions,item.Summary);
+            return new PSSearchMetadata(item.Identity, item.Versions.Select(v => v.Version), item.Summary);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace NuGet.Client.VisualStudio
     public sealed class UIPackageMetadata 
     {
         public UIPackageMetadata(PackageIdentity identity, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl,
-            string tags, int downloadCount, DateTimeOffset? published, IEnumerable<UIPackageDependencySet> dependencySet, bool hasDependencies, bool requireLicenseAccept)
+            string tags, DateTimeOffset? published, IEnumerable<UIPackageDependencySet> dependencySet, bool hasDependencies, bool requireLicenseAccept)
         {
             Identity = identity;
             Summary = summary;
@@ -23,7 +23,6 @@ namespace NuGet.Client.VisualStudio
             Description = description;
             Summary = summary;
             Tags = tags;
-            DownloadCount = downloadCount;
             DependencySets = dependencySet;
             HasDependencies = hasDependencies;            
             RequireLicenseAcceptance = requireLicenseAccept;

@@ -75,7 +75,6 @@ namespace NuGet.Client.V2.VisualStudio
             Uri LicenseUrl = package.LicenseUrl;
             Uri ProjectUrl = package.ProjectUrl;
             string Tags = package.Tags;
-            int DownloadCount = package.DownloadCount;
             IEnumerable<UIPackageDependencySet> DependencySets = package.DependencySets.Select(p => GetVisualStudioUIPackageDependencySet(p));
             bool requiresLiceneseAcceptance = package.RequireLicenseAcceptance;
 
@@ -83,7 +82,7 @@ namespace NuGet.Client.V2.VisualStudio
                 set => set.Dependencies != null && set.Dependencies.Count > 0);
             PackageIdentity identity = new PackageIdentity(package.Id, Version);
 
-            return new UIPackageMetadata(identity, Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, DownloadCount, Published, DependencySets, HasDependencies, requiresLiceneseAcceptance);
+            return new UIPackageMetadata(identity, Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, Published, DependencySets, HasDependencies, requiresLiceneseAcceptance);
         }
 
         private static NuGet.PackagingCore.PackageDependency GetVisualStudioUIPackageDependency(PackageDependency dependency)
