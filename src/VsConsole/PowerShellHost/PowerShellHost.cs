@@ -56,7 +56,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             _settings = ServiceLocator.GetInstance<ISettings>();
             _dte = ServiceLocator.GetInstance<DTE>();
-            _packageManagementContext = new PackageManagementContext(_sourceRepositoryProvider, _solutionManager);
+            _packageManagementContext = new PackageManagementContext(_sourceRepositoryProvider, _solutionManager, _settings);
 
             _name = name;
             IsCommandEnabled = true;
