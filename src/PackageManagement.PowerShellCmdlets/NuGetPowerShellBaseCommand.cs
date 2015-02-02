@@ -10,6 +10,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -34,6 +35,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
+        [Import]
+        private ISettings _settings;
         internal const string PowerConsoleHostName = "Package Manager Host";
         internal const string ActivePackageSourceKey = "activePackageSource";
         internal const string SyncModeKey = "IsSyncMode";
@@ -45,14 +48,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         #region Properties
+        /// <summary>
+        /// NuGet Package Manager for PowerShell Cmdlets
+        /// </summary>
         protected NuGetPackageManager PackageManager
         {
             get
             {
-                return new NuGetPackageManager(_resourceRepositoryProvider, ConfigSettings, _solutionManager);
+                return new NuGetPackageManager(_resourceRepositoryProvider, _settings, _solutionManager);
             }
         }
 
+        /// <summary>
+        /// Vs Solution Manager for PowerShell Cmdlets
+        /// </summary>
         protected ISolutionManager VsSolutionManager
         {
             get
@@ -61,28 +70,46 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Package Source Provider
+        /// </summary>
         protected PackageSourceProvider PackageSourceProvider
         {
             get
             {
-                return new PackageSourceProvider(ConfigSettings);
+                return new PackageSourceProvider(_settings);
             }
         }
 
+        /// <summary>
+        /// Active Source Repository for PowerShell Cmdlets
+        /// </summary>
         protected SourceRepository ActiveSourceRepository { get; set; }
 
+        /// <summary>
+        /// Settings read from the config files
+        /// </summary>
         protected ISettings ConfigSettings
         {
             get
             {
-                return new Settings(Environment.ExpandEnvironmentVariables("systemdrive"));
+                return _settings;
             }
         }
 
+        /// <summary>
+        /// NuGet Project
+        /// </summary>
         protected NuGetProject Project { get; set; }
 
+        /// <summary>
+        /// File conflict action property
+        /// </summary>
         protected FileConflictAction? ConflictAction { get; set; }
 
+        /// <summary>
+        /// Determine if current PowerShell host is sync or async
+        /// </summary>
         internal bool IsSyncMode
         {
             get
@@ -97,6 +124,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Error handler
+        /// </summary>
         protected IErrorHandler ErrorHandler
         {
             get
@@ -152,6 +182,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         protected abstract void ProcessRecordCore();
 
+        /// <summary>
+        /// Preprocess to get resourceRepositoryProvider and solutionManager from packageManagementContext.
+        /// </summary>
         protected virtual void Preprocess()
         {
             _packageManagementContext = (PackageManagementContext)GetPropertyValueFromHost(PackageManagementContextKey);
@@ -539,6 +572,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             WriteProgress(progressRecord);
         }
 
+        /// <summary>
+        /// Implement INuGetProjectContext.ResolveFileConflict()
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public FileConflictAction ResolveFileConflict(string message)
         {
             if (_overwriteAll)
@@ -587,6 +625,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return FileConflictAction.Ignore;
         }
 
+        /// <summary>
+        /// Implement INuGetProjectContext.Log(). Called by worker thread.
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="message"></param>
+        /// <param name="args"></param>
         public void Log(MessageLevel level, string message, params object[] args)
         {
             string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
@@ -597,6 +641,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             queueSemaphone.Release();
         }
 
+        /// <summary>
+        /// LogCore that write messages to the PowerShell console via PowerShellExecution thread.
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="formattedMessage"></param>
         protected virtual void LogCore(MessageLevel level, string formattedMessage)
         {
             switch (level)
@@ -619,6 +668,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Wait for messageQueue and completeEvent (ManualResetEvent).
+        /// </summary>
         protected void WaitAndLogFromMessageQueue()
         {
             while (true)
@@ -646,6 +698,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        /// <summary>
+        /// Log from the message queue. Called by PowerShell execution thread.
+        /// </summary>
         private void LogFromMessageQueue()
         {
             var messageFromQueue = logQueue.First();
