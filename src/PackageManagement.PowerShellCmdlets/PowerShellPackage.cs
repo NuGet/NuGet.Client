@@ -8,6 +8,16 @@ using System.Linq;
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
+    /// Represent the view of packages by Id and Versions
+    /// </summary>
+    internal class PowerShellPackage : IPowerShellPackage
+    {
+        public string Id { get; set; }
+
+        public IEnumerable<NuGetVersion> Version { get; set; }
+    }
+
+    /// <summary>
     /// Represent the view of packages installed to project(s)
     /// </summary>
     internal class PowerShellInstalledPackage : IPowerShellPackage

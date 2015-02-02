@@ -88,7 +88,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 foreach (string id in packageIds)
                 {
                     IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, id);
-                    packages.Add(package);
+                    if (package.Version != null && package.Version.Any())
+                    {
+                        packages.Add(package);
+                    }
                 }
                 WriteObject(packages, enumerateCollection: true);
             }
@@ -98,7 +101,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (!string.IsNullOrEmpty(packageId))
                 {
                     IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, packageId);
-                    WriteObject(package);
+                    if (package.Version != null && package.Version.Any())
+                    {
+                        WriteObject(package);
+                    }
                 }
             }
         }
@@ -112,17 +118,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private IPowerShellPackage GetIPowerShellPackageFromRemoteSource(PSAutoCompleteResource autoCompleteResource, string id)
         {
             Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
-            List<NuGetVersion> versions = versionTask.Result.ToList();
-            IPowerShellPackage package = new PowerShellRemotePackage();
+            IEnumerable<NuGetVersion> versions = versionTask.Result;
+            IPowerShellPackage package = new PowerShellPackage();
             package.Id = id;
             if (AllVersions.IsPresent)
             {
-                package.Version = versions.OrderByDescending(v => v);
+                if (versions != null)
+                {
+                    package.Version = versions.OrderByDescending(v => v);
+                }
             }
             else
             {
-                NuGetVersion nVersion = versions.OrderByDescending(v => v).FirstOrDefault();
-                package.Version = new List<NuGetVersion>() { nVersion };
+                NuGetVersion nVersion = null;
+                if (versions != null)
+                {
+                    nVersion = versions.OrderByDescending(v => v).FirstOrDefault();
+                }
+
+                if (nVersion != null)
+                {
+                    package.Version = new List<NuGetVersion>() { nVersion };
+                }
             }
             return package;
         }
