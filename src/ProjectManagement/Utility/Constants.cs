@@ -67,6 +67,7 @@ namespace NuGet.ProjectManagement
 
         public const string ResourceAssemblyExtension = ".resources.dll";
 
-        public static readonly SemanticVersion NuGetSemanticVersion = SemanticVersion.Parse(typeof(PackageIdentity).Assembly.GetName().Version.ToString());
+        public static readonly Version NuGetVersion = typeof(PackageIdentity).Assembly.GetName().Version;
+        public static readonly SemanticVersion NuGetSemanticVersion = new SemanticVersion(NuGetVersion.Major, NuGetVersion.Minor, NuGetVersion.Build);
     }
 }
