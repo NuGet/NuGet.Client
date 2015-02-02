@@ -32,11 +32,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private PackageManagementContext _packageManagementContext;
         private ISourceRepositoryProvider _resourceRepositoryProvider;
         private ISolutionManager _solutionManager;
+        private ISettings _settings;
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
-        [Import]
-        private ISettings _settings;
         internal const string PowerConsoleHostName = "Package Manager Host";
         internal const string ActivePackageSourceKey = "activePackageSource";
         internal const string SyncModeKey = "IsSyncMode";
@@ -192,6 +191,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 _resourceRepositoryProvider = _packageManagementContext.SourceRepositoryProvider;
                 _solutionManager = _packageManagementContext.VsSolutionManager;
+                _settings = _packageManagementContext.Settings;
             }
         }
 
