@@ -1,4 +1,5 @@
 ﻿using Ionic.Zip;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +13,7 @@ namespace Test.Utility
     {
         private static string NuspecStringFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
-                              <metadata>
+                              <metadata{3}>
                                 <id>{0}</id>
                                 <version>{1}</version>
                                 <authors>Author1, author2</authors>
@@ -109,7 +110,18 @@ namespace Test.Utility
             return fileInfo;
         }
 
-        public static FileInfo GetFileInfo(string path, string packageId, string packageVersion, out ZipFile zipFile)
+        public static FileInfo GetPackageWithMinClientVersion(string path, string packageId, string packageVersion, SemanticVersion minClientVersion)
+        {
+            ZipFile zipFile;
+            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            SetSimpleNuspec(zipFile, packageId, packageVersion, false, minClientVersion);
+            zipFile.Save();
+
+            return fileInfo;
+        }
+
+        private static FileInfo GetFileInfo(string path, string packageId, string packageVersion, out ZipFile zipFile)
         {
             string file = Guid.NewGuid().ToString() + ".nupkg";
             FileInfo fileInfo = new FileInfo(file);
@@ -119,16 +131,20 @@ namespace Test.Utility
             return fileInfo;
         }
 
-        public static void SetSimpleNuspec(ZipFile zipFile, string packageId, string packageVersion, bool frameworkAssemblies = false)
+        public static void SetSimpleNuspec(ZipFile zipFile, string packageId, string packageVersion, bool frameworkAssemblies = false, SemanticVersion minClientVersion = null)
         {
             zipFile.AddEntry(packageId + ".nuspec", GetSimpleNuspecString(packageId, packageVersion, frameworkAssemblies), Encoding.UTF8);
         }
 
-        private static string GetSimpleNuspecString(string packageId, string packageVersion, bool frameworkAssemblies)
+        private static readonly string MinClientVersionStringFormat = "minClientVersion=\"{0}\"";
+        private static string GetSimpleNuspecString(string packageId, string packageVersion, bool frameworkAssemblies, SemanticVersion minClientVersion = null)
         {
             string frameworkAssemblyReferences = frameworkAssemblies ?
                 String.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : String.Empty;
-            return String.Format(NuspecStringFormat, packageId, packageVersion, frameworkAssemblyReferences);
+
+            string minClientVersionString = minClientVersion == null ? String.Empty :
+                String.Format(MinClientVersionStringFormat, minClientVersion.ToNormalizedString());
+            return String.Format(NuspecStringFormat, packageId, packageVersion, frameworkAssemblyReferences, minClientVersionString);
         }
     }
 }

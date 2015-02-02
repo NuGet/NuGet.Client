@@ -753,6 +753,21 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject, IEnumerable<NuGetProjectAction> nuGetProjectActions, INuGetProjectContext nuGetProjectContext)
         {
+            if (nuGetProject == null)
+            {
+                throw new ArgumentNullException("nuGetProject");
+            }
+
+            if (nuGetProjectActions == null)
+            {
+                throw new ArgumentNullException("nuGetProjectActions");
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException("nuGetProjectContext");
+            }
+
             foreach (NuGetProjectAction nuGetProjectAction in nuGetProjectActions)
             {
                 if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
@@ -803,6 +818,9 @@ namespace NuGet.PackageManagement
 
         private void ExecuteInstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
         {
+            // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback
+            MinClientVersionHandler.CheckMinClientVersion(packageStream, packageIdentity);
+
             var packageOperationEventArgs = new PackageOperationEventArgs(packageIdentity);
             if(PackageInstalling != null)
             {

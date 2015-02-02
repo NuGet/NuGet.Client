@@ -205,6 +205,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The &apos;{0}&apos; package requires NuGet client version &apos;{1}&apos; or above, but the current NuGet version is &apos;{2}&apos;..
+        /// </summary>
+        internal static string PackageMinVersionNotSatisfied {
+            get {
+                return ResourceManager.GetString("PackageMinVersionNotSatisfied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; is not found.
         /// </summary>
         internal static string PackageNotFound {

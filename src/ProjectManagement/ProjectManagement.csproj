@@ -89,6 +89,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="Utility\CollectionsUtility.cs" />
+    <Compile Include="Utility\Constants.cs" />
     <Compile Include="Utility\FileSystemUtility.cs" />
     <Compile Include="Utility\HashCodeCombiner.cs" />
     <Compile Include="Utility\MSBuildNuGetProjectSystemUtility.cs" />
