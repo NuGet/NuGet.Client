@@ -21,6 +21,7 @@ namespace NuGet.PackagingCore
         private const string Id = "id";
         private const string Version = "version";
         private const string MinClientVersion = "minClientVersion";
+        private const string Language = "language";
 
         /// <summary>
         /// Read a nuspec from a stream.
@@ -69,6 +70,12 @@ namespace NuGet.PackagingCore
         {
             var node = MetadataNode.Elements(XName.Get(MinClientVersion, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
             return node == null ? null : SemanticVersion.Parse(node.Value);
+        }
+
+        public string GetLanguage()
+        {
+            var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
+            return node == null ? null : node.Value;
         }
 
         /// <summary>

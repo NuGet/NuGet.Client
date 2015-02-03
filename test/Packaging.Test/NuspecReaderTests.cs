@@ -80,6 +80,16 @@ namespace Packaging.Test
             Assert.Equal(2, dependencies.Count);
         }
 
+        [Fact]
+        public void NuspecReaderTests_Language()
+        {
+            NuspecReader reader = GetReader(BasicNuspec);
+
+            var language = reader.GetLanguage();
+
+            Assert.Equal("en-US", language);
+        }
+
 
         private static NuspecReader GetReader(string nuspec)
         {

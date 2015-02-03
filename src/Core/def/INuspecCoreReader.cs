@@ -29,6 +29,11 @@ namespace NuGet.PackagingCore
         SemanticVersion GetMinClientVersion();
 
         /// <summary>
+        /// The locale ID for the package, such as en-us.
+        /// </summary>
+        string GetLanguage();
+
+        /// <summary>
         /// Id and Version of a package.
         /// </summary>
         PackageIdentity GetIdentity();
