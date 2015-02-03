@@ -36,11 +36,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
+            base.Preprocess();
             ParseUserInputForId();
             ParseUserInputForVersion();
-            base.Preprocess();
             // The following update to ActiveSourceRepository may get overwritten if the 'Id' was just a path to a nupkg
-            UpdateActiveSourceRepository(Source);
+            if (_readFromDirectPackagePath)
+            {
+                UpdateActiveSourceRepository(Source);
+            }
         }
 
         protected override void ProcessRecordCore()
@@ -177,12 +180,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private IEnumerable<PackageIdentity> CreatePackageIdentitiesFromPackagesConfig()
         {
-            List<PackageIdentity> identities = new List<PackageIdentity>();
-            IEnumerable<PackageIdentity> parsedIdentities = null;
+            IEnumerable<PackageIdentity> identities = Enumerable.Empty<PackageIdentity>();
 
             try
             {
-                // Example: install-package2 https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
+                // Example: install-package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
                 if (Id.ToLowerInvariant().StartsWith("http"))
                 {
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Id);
@@ -192,16 +194,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     PackagesConfigReader reader = new PackagesConfigReader(resStream);
                     IEnumerable<PackageReference> packageRefs = reader.GetPackages();
-                    parsedIdentities = packageRefs.Select(v => v.PackageIdentity);
+                    identities = packageRefs.Select(v => v.PackageIdentity);
                 }
                 else
                 {
-                    // Example: install-package2 c:\temp\packages.config
+                    // Example: install-package c:\temp\packages.config
                     using (FileStream stream = new FileStream(Id, FileMode.Open))
                     {
                         PackagesConfigReader reader = new PackagesConfigReader(stream);
                         IEnumerable<PackageReference> packageRefs = reader.GetPackages();
-                        parsedIdentities = packageRefs.Select(v => v.PackageIdentity);
+                        identities = packageRefs.Select(v => v.PackageIdentity);
                         if (stream != null)
                         {
                             stream.Close();
@@ -217,21 +219,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return identities;
         }
 
-        // TODO: Fix the logic here.
+        /// <summary>
+        /// Return package identity parsed from path to .nupkg file
+        /// </summary>
+        /// <returns></returns>
         private IEnumerable<PackageIdentity> CreatePackageIdentityFromNupkgPath()
         {
             PackageIdentity identity = null;
 
             try
             {
-                // Example: install-package2 https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+                // Example: install-package https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
                 if (_isHttp)
                 {
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
                     if (identity != null)
                     {
                         Uri downloadUri = new Uri(Id);
-                        using (var targetPackageStream = new MemoryStream())
+                        using (var targetPackageStream = new FileStream(Source, FileMode.Create, FileAccess.ReadWrite))
                         {
                             PackageDownloader.GetPackageStream(ActiveSourceRepository, identity, targetPackageStream).Wait();
                         }
@@ -239,7 +244,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    // Example: install-package2 c:\temp\packages\jQuery.1.10.2.nupkg
+                    // Example: install-package c:\temp\packages\jQuery.1.10.2.nupkg
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"\");
                 }
             }
@@ -252,7 +257,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Parse package identity from the http source, such as https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+        /// Parse package identity from path to .nupkg file, such as https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
         /// </summary>
         /// <param name="sourceUrl"></param>
         /// <returns></returns>

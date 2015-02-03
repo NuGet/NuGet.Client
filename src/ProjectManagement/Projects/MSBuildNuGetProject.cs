@@ -87,6 +87,11 @@ namespace NuGet.ProjectManagement
             return PackagesConfigNuGetProject.GetInstalledPackages();
         }
 
+        public void AddBindingRedirects()
+        {
+            MSBuildNuGetProjectSystem.AddBindingRedirects();
+        }
+
         public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
         {
             if(packageIdentity == null)

@@ -273,4 +273,10 @@
   <data name="ExecutingScript" xml:space="preserve">
     <value>Executing script file '{0}'</value>
   </data>
+  <data name="Cmdlets_AddedBindingRedirects" xml:space="preserve">
+    <value>Finished adding BindingRedirects to project '{0}'</value>
+  </data>
+  <data name="Cmdlets_FailedBindingRedirects" xml:space="preserve">
+    <value>Failed to add BindingRedirects to project '{0}' due to error: {1}</value>
+  </data>
 </root>

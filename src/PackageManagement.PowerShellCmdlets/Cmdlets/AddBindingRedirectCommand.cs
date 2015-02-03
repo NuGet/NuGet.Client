@@ -30,9 +30,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            CheckForSolutionOpen();
-
             Preprocess();
+
+            CheckForSolutionOpen();
 
             var projects = new List<NuGetProject>();
 
@@ -52,29 +52,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 // get matching projects, expanding wildcards
-                projects.AddRange(VsSolutionManager.GetNuGetProjects());
+                projects.AddRange(GetNuGetProjectsByName(ProjectName));
             }
 
-            // Create a new app domain so we don't load the assemblies into the host app domain
-            AppDomain domain = AppDomain.CreateDomain("domain");
-
-            try
+            foreach (NuGetProject project in projects)
             {
-                foreach (NuGetProject project in projects)
+                string projectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                try
                 {
-                    IMSBuildNuGetProjectSystem projectSystem = (IMSBuildNuGetProjectSystem)project;
-                    projectSystem.AddBindingRedirects();
-
-                    // TODO: Find AddBindingRedirects API
-                    //var redirects = RuntimeHelpers.AddBindingRedirects(project, _fileSystemProvider, domain, _frameworkMultiTargeting);
-
-                    // Print out what we did
-                    //WriteObject(redirects, enumerateCollection: true);
+                    // App domain loading and unloading is handled at the RuntimeHelpers class.
+                    MSBuildNuGetProject msbuildProject = (MSBuildNuGetProject)project;
+                    msbuildProject.AddBindingRedirects();
+                    LogCore(MessageLevel.Info, string.Format(Resources.Cmdlets_AddedBindingRedirects, projectName));
                 }
-            }
-            finally
-            {
-                AppDomain.Unload(domain);
+                catch (Exception ex)
+                {
+                    LogCore(MessageLevel.Error, string.Format(Resources.Cmdlets_FailedBindingRedirects, projectName, ex.Message));
+                }
             }
         }
     }

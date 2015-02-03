@@ -1,4 +1,5 @@
-﻿using NuGet.Client;
+﻿using EnvDTE;
+using NuGet.Client;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -10,7 +11,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -33,6 +33,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ISourceRepositoryProvider _resourceRepositoryProvider;
         private ISolutionManager _solutionManager;
         private ISettings _settings;
+        private DTE _dte;
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
         private bool _overwriteAll, _ignoreAll;
@@ -93,6 +94,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get
             {
                 return _settings;
+            }
+        }
+
+        /// <summary>
+        /// DTE instance for PowerShell Cmdlets
+        /// </summary>
+        protected DTE DTE
+        {
+            get
+            {
+                return _dte;
             }
         }
 
@@ -193,6 +205,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _solutionManager = _packageManagementContext.VsSolutionManager;
                 _settings = _packageManagementContext.Settings;
             }
+            _dte = (DTE)GetPropertyValueFromHost("DTE");
         }
 
         #region Cmdlets base APIs
@@ -310,6 +323,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
+        /// Check if solution is open. If not, throw terminating error
+        /// </summary>
+        protected void CheckForSolutionOpen()
+        {
+            if (!_solutionManager.IsSolutionOpen)
+            {
+                ErrorHandler.ThrowSolutionNotOpenTerminatingError();
+            }
+        }
+
+        /// <summary>
         /// Get the default NuGet Project
         /// </summary>
         /// <param name="projectName"></param>
@@ -325,15 +349,74 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        /// <summary>
-        /// Check if solution is open. If not, throw terminating error
-        /// </summary>
-        protected void CheckForSolutionOpen()
+        protected IEnumerable<NuGetProject> GetNuGetProjectsByName(string[] projectNames)
         {
-            if (!_solutionManager.IsSolutionOpen)
+            List<NuGetProject> nuGetProjects = new List<NuGetProject>();
+            foreach (Project project in GetProjectsByName(projectNames))
             {
-                ErrorHandler.ThrowSolutionNotOpenTerminatingError();
+                NuGetProject nuGetProject = _solutionManager.GetNuGetProject(project.Name);
+                if (nuGetProject != null)
+                {
+                    nuGetProjects.Add(nuGetProject);
+                }
             }
+            return nuGetProjects;
+        }
+
+        /// <summary>
+        /// Return all projects in the solution matching the provided names. Wildcards are supported.
+        /// This method will automatically generate error records for non-wildcarded project names that
+        /// are not found.
+        /// </summary>
+        /// <param name="projectNames">An array of project names that may or may not include wildcards.</param>
+        /// <returns>Projects matching the project name(s) provided.</returns>
+        protected IEnumerable<Project> GetProjectsByName(string[] projectNames)
+        {
+            var allValidProjectNames = GetAllValidProjectNames().ToList();
+
+            foreach (string projectName in projectNames)
+            {
+                // if ctrl+c hit, leave immediately
+                if (Stopping)
+                {
+                    break;
+                }
+
+                // Treat every name as a wildcard; results in simpler code
+                var pattern = new WildcardPattern(projectName, WildcardOptions.IgnoreCase);
+
+                var matches = from s in allValidProjectNames
+                              where pattern.IsMatch(s)
+                              select _dte.Solution.GetAllProjects()
+                              .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, s) || StringComparer.OrdinalIgnoreCase.Equals(p.FullName, s))
+                              .FirstOrDefault();
+
+                int count = 0;
+                foreach (var project in matches)
+                {
+                    count++;
+                    yield return project;
+                }
+
+                // We only emit non-terminating error record if a non-wildcarded name was not found.
+                // This is consistent with built-in cmdlets that support wildcarded search.
+                // A search with a wildcard that returns nothing should not be considered an error.
+                if ((count == 0) && !WildcardPattern.ContainsWildcardCharacters(projectName))
+                {
+                    ErrorHandler.WriteProjectNotFoundError(projectName, terminating: false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Return all possibly valid project names in the current solution. This includes all
+        /// unique names and safe names.
+        /// </summary>
+        /// <returns></returns>
+        protected IEnumerable<string> GetAllValidProjectNames()
+        {
+            var safeNames = _dte.Solution.GetAllProjects().Select(p => p.Name);
+            return safeNames;
         }
 
         /// <summary>
