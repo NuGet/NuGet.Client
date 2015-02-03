@@ -9,6 +9,20 @@ using NuGet.ProjectManagement.Projects;
 
 namespace Test.Utility.ProjectManagement
 {
+    public class NuGetPackageMoniker : INuGetPackageMoniker
+    {
+        public string Id
+        {
+            get;
+            set;
+        }
+
+        public string Version
+        {
+            get;
+            set;
+        }
+    }
     public class TestProjectKProject : INuGetPackageManager
     {
         private List<NuGetPackageMoniker> _installedPackages;

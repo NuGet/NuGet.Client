@@ -420,7 +420,7 @@ namespace NuGet.PackageManagement
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
         {
-            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject)
+            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
             {
                 var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySourceRepository);
                 return new NuGetProjectAction[] { action };
@@ -706,7 +706,7 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(Strings.SolutionManagerNotAvailableForUninstall);
             }
 
-            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject)
+            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
             {
                 var action = NuGetProjectAction.CreateUninstallProjectAction(packageReference.PackageIdentity);
                 return new NuGetProjectAction[] { action };
@@ -853,7 +853,7 @@ namespace NuGet.PackageManagement
             nuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
 
             // Step-3: Check if the package directory could be deleted
-            if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject) &&
+            if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
                 !PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, nuGetProjectContext))
             {
                 DeletePackageDirectory(packageIdentity, nuGetProjectContext);

@@ -46,13 +46,13 @@ namespace Test.Utility
             return nuGetProject;
         }
 
-        public NuGetProject AddProjectKProject(string projectName)
-        {
-            var testProjectKProject = new TestProjectKProject();
-            var nugetProject = new ProjectKNuGetProject(testProjectKProject, projectName);
-            NuGetProjects.Add(nugetProject);
-            return nugetProject;
-        }
+        //public NuGetProject AddProjectKProject(string projectName)
+        //{
+        //    var testProjectKProject = new TestProjectKProject();
+        //    var nugetProject = new ProjectKNuGetProjectBase(testProjectKProject, projectName);
+        //    NuGetProjects.Add(nugetProject);
+        //    return nugetProject;
+        //}
 
         public NuGetProject DefaultNuGetProject
         {

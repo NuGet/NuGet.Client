@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement.UI
             {
                 foreach (var package in project.GetInstalledPackages())
                 {
-                    if (!(project is NuGet.ProjectManagement.Projects.ProjectKNuGetProject) &&
+                    if (!(project is NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
                         !_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
                     {
                         continue;
@@ -321,7 +321,7 @@ namespace NuGet.PackageManagement.UI
                 foreach (var project in _projects)
                 {
                     var installedPackagesInProject = project.GetInstalledPackages();
-                    if (!(project is ProjectManagement.Projects.ProjectKNuGetProject))
+                    if (!(project is ProjectManagement.Projects.ProjectKNuGetProjectBase))
                     {
                         installedPackagesInProject = installedPackagesInProject.Where(
                             p =>

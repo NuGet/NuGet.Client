@@ -159,7 +159,7 @@ namespace NuGet.PackageManagement
             foreach(var nuGetProject in SolutionManager.GetNuGetProjects())
             {
                 // skip project k projects
-                if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProject)
+                if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
                 {
                     continue;
                 }
