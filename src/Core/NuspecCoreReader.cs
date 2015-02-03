@@ -114,5 +114,11 @@ namespace NuGet.PackagingCore
                 return _xml;
             }
         }
+
+
+        public PackageIdentity GetIdentity()
+        {
+            return new PackageIdentity(GetId(), GetVersion());
+        }
     }
 }

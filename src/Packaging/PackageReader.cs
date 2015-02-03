@@ -35,6 +35,14 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
+        /// Minimum client version needed to consume this package.
+        /// </summary>
+        public SemanticVersion GetMinClientVersion()
+        {
+            return Nuspec.GetMinClientVersion();
+        }
+
+        /// <summary>
         /// Frameworks mentioned in the package.
         /// </summary>
         public IEnumerable<NuGetFramework> GetSupportedFrameworks()

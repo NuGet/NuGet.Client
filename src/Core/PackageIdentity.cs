@@ -1,6 +1,7 @@
 ﻿using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,6 +57,17 @@ namespace NuGet.PackagingCore
         }
 
         /// <summary>
+        /// True if the version is non-null
+        /// </summary>
+        public bool HasVersion
+        {
+            get
+            {
+                return _version != null;
+            }
+        }
+
+        /// <summary>
         /// True if the package identities are the same.
         /// </summary>
         /// <param name="other"></param>
@@ -66,18 +78,44 @@ namespace NuGet.PackagingCore
         }
 
         /// <summary>
+        /// True if the identity objects are equal based on the given comparison mode.
+        /// </summary>
+        public virtual bool Equals(PackageIdentity other, VersionComparison versionComparison)
+        {
+            PackageIdentityComparer comparer = new PackageIdentityComparer(versionComparison);
+
+            return comparer.Equals(this, other);
+        }
+
+        /// <summary>
         /// Sorts based on the id, then version
         /// </summary>
         public int CompareTo(PackageIdentity other)
         {
-            int x = StringComparer.OrdinalIgnoreCase.Compare(Id, other.Id);
+            return Comparer.Compare(this, other);
+        }
 
-            if (x != 0)
+        /// <summary>
+        /// Compare using the default comparer.
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            PackageIdentity identity = obj as PackageIdentity;
+
+            if (identity == null)
             {
-                x = VersionComparer.VersionRelease.Compare(Version, other.Version);
+                return false;
             }
 
-            return x;
+            return Comparer.Equals(this, identity);
+        }
+
+        /// <summary>
+        /// Creates a hash code using the default comparer.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return Comparer.GetHashCode(this);
         }
 
         /// <summary>
@@ -96,7 +134,7 @@ namespace NuGet.PackagingCore
         /// </summary>
         public override string ToString()
         {
-            return String.Format(ToStringFormat, Id, Version.ToNormalizedString());
+            return String.Format(CultureInfo.InvariantCulture, ToStringFormat, Id, Version.ToNormalizedString());
         }
     }
 }

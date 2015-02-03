@@ -1,6 +1,7 @@
 ﻿using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,6 +49,36 @@ namespace NuGet.PackagingCore
             {
                 return _dependencies;
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            PackageDependencyInfo info = obj as PackageDependencyInfo;
+
+            if (info != null)
+            {
+                return Equals(info);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Hash code from the default PackageDependencyInfoComparer
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return PackageDependencyInfoComparer.Default.GetHashCode(this);
+        }
+
+        /// <summary>
+        /// Example: Id : Dependency1, Dependency2
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format(CultureInfo.InvariantCulture, "{0} : {1}", base.ToString(), String.Join(", ", Dependencies.Select(e => e.ToString()).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
         }
     }
 }

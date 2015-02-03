@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace NuGet.Packaging
 {
+    /// <summary>
+    /// A group of items/files from a nupkg with the same target framework.
+    /// </summary>
     public class FrameworkSpecificGroup
     {
         private readonly NuGetFramework _targetFramework;
@@ -14,6 +17,11 @@ namespace NuGet.Packaging
 
         public FrameworkSpecificGroup(string targetFramework, IEnumerable<string> items)
         {
+            if (items == null)
+            {
+                throw new ArgumentException("items");
+            }
+
             if (String.IsNullOrEmpty(targetFramework))
             {
                 _targetFramework = NuGetFramework.AnyFramework;
@@ -33,10 +41,18 @@ namespace NuGet.Packaging
                 throw new ArgumentException("framework");
             }
 
+            if (items == null)
+            {
+                throw new ArgumentException("items");
+            }
+
             _targetFramework = targetFramework;
             _items = items;
         }
 
+        /// <summary>
+        /// Group target framework
+        /// </summary>
         public NuGetFramework TargetFramework
         {
             get
@@ -45,6 +61,9 @@ namespace NuGet.Packaging
             }
         }
 
+        /// <summary>
+        /// Item relative paths
+        /// </summary>
         public IEnumerable<string> Items
         {
             get

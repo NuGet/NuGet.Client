@@ -3,6 +3,7 @@ using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Represents a package element in the packages.config file
     /// </summary>
-    public sealed class PackageReference
+    public class PackageReference
     {
         private readonly PackageIdentity _identity;
         private readonly VersionRange _allowedVersions;
@@ -144,6 +145,15 @@ namespace NuGet.Packaging
             {
                 return _requireReinstallation;
             }
+        }
+
+        /// <summary>
+        /// Displays the identity and target framework of the reference.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format(CultureInfo.InvariantCulture, "{0} {1}", PackageIdentity.ToString(), TargetFramework.ToString());
         }
     }
 }

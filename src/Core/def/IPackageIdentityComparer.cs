@@ -7,14 +7,10 @@ using System.Threading.Tasks;
 namespace NuGet.PackagingCore
 {
     /// <summary>
-    /// Generic packaging exception.
+    /// Compares the id and version of a package
     /// </summary>
-    public class PackagingException : Exception
+    public interface IPackageIdentityComparer : IEqualityComparer<PackageIdentity>, IComparer<PackageIdentity>
     {
-        public PackagingException(string message)
-            : base(message)
-        {
 
-        }
     }
 }
