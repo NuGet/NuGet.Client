@@ -1,4 +1,5 @@
-﻿using NuGet.Resolver;
+﻿using NuGet.Packaging;
+using NuGet.Resolver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace NuGet.ProjectManagement
         /// Resolves a file conflict for the given project context
         /// </summary>
         FileConflictAction ResolveFileConflict(string message);
+        PackageExtractionContext PackageExtractionContext { get; }
     }
 
     /// <summary>

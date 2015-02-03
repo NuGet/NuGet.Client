@@ -811,6 +811,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get;
             private set;
         }
+
+
+        public PackageExtractionContext PackageExtractionContext
+        {
+            get { return null; }
+        }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>

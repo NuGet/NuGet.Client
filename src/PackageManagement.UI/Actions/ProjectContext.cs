@@ -25,5 +25,10 @@ namespace NuGet.PackageManagement.UI
 
             return FileConflictAction.Ignore;
         }
+
+        public Packaging.PackageExtractionContext PackageExtractionContext
+        {
+            get { return null; }
+        }
     }
 }

@@ -17,5 +17,11 @@ namespace NuGet.ProjectManagement
         {
             return FileConflictAction.IgnoreAll;
         }
+
+
+        public Packaging.PackageExtractionContext PackageExtractionContext
+        {
+            get { return null; }
+        }
     }
 }

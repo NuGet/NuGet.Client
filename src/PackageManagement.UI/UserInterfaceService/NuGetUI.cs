@@ -440,5 +440,11 @@ namespace NuGet.PackageManagement.UI
         {
             _logger.End();
         }
+
+
+        public Packaging.PackageExtractionContext PackageExtractionContext
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }
