@@ -122,8 +122,8 @@ namespace NuGet.Packaging
                 // Now, we know that the package is a satellite package and that the runtime package is 'runtimePackageId'
                 // Check, if the runtimePackage is installed and get the folder to copy over files
 
-                string runtimePackageDirectory = packagePathResolver.GetInstallPath(packageIdentity);
-                string runtimePackageFilePath = Path.Combine(runtimePackageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
+                string runtimePackageDirectory = packagePathResolver.GetInstallPath(runtimePackageIdentity);
+                string runtimePackageFilePath = Path.Combine(runtimePackageDirectory, packagePathResolver.GetPackageFileName(runtimePackageIdentity));
 
                 if(File.Exists(runtimePackageFilePath))
                 {

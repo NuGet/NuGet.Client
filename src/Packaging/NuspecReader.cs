@@ -77,7 +77,7 @@ namespace NuGet.Packaging
             // legacy behavior
             if (!groupFound)
             {
-                var packages = MetadataNode.Elements(XName.Get(Dependency, ns))
+                var packages = MetadataNode.Elements(XName.Get(Dependencies, ns))
                     .Elements(XName.Get(Dependency, ns)).Select(n => new PackageDependency(GetAttributeValue(n, Id), VersionRange.Parse(GetAttributeValue(n, Version)))).ToArray();
 
                 if (packages.Any())
