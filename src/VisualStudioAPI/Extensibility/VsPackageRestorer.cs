@@ -12,6 +12,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
 using NuGet.Client;
+using System.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -49,7 +50,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                _restoreManager.RestoreMissingPackagesInSolution().Wait();
+                _restoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None).Wait();
             }
             catch (Exception ex)
             {

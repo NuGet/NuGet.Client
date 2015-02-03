@@ -24,5 +24,12 @@ namespace NuGet.VisualStudio
             // TODO: is this correct for the API?
             return FileConflictAction.OverwriteAll;
         }
+
+
+        public Packaging.PackageExtractionContext PackageExtractionContext
+        {
+            get;
+            set;
+        }
     }
 }

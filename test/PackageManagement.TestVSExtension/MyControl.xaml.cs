@@ -138,5 +138,12 @@ namespace NuGet.PackageManagement_TestVSExtension
         {
             return FileConflictAction.IgnoreAll;
         }
+
+
+        public PackageExtractionContext PackageExtractionContext
+        {
+            get;
+            set;
+        }
     }
 }

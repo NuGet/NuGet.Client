@@ -196,7 +196,8 @@ namespace NuGetVSExtension
                                     iDelayToShowDialog: 0,
                                     fIsCancelable: true,
                                     fShowMarqueeProgress: true);
-                            await System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject)));
+                            CancellationToken token = CancellationToken.None;
+                            await System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject, token)));
                             PackageRestoreManager.RaisePackagesMissingEventForSolution();
                         }
                     }
@@ -242,13 +243,13 @@ namespace NuGetVSExtension
             }
         }
 
-        private async System.Threading.Tasks.Task RestorePackagesInProject(NuGetProject nuGetProject)
+        private async System.Threading.Tasks.Task RestorePackagesInProject(NuGetProject nuGetProject, CancellationToken token)
         {
             var projectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
             bool hasMissingPackages = false;
             try
             {
-                hasMissingPackages = await PackageRestoreManager.RestoreMissingPackages(nuGetProject);
+                hasMissingPackages = await PackageRestoreManager.RestoreMissingPackagesAsync(nuGetProject, token);
                 WriteLine(hasMissingPackages, error: false);
             }
             catch (Exception ex)
