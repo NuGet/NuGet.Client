@@ -1,21 +1,16 @@
-﻿using NuGet.Data;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
+﻿using System;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Data;
 
 namespace NuGet.Client
 {
-    
     [NuGetResourceProviderMetadata(typeof(V3RegistrationResource), "V3RegistrationResource", NuGetResourceProviderPositions.Last)]
     public class V3RegistrationResourceProvider : INuGetResourceProvider
     {
         public V3RegistrationResourceProvider()
         {
-   
         }
 
         public async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)

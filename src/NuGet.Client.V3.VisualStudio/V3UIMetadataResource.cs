@@ -1,28 +1,29 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Client.VisualStudio;
 using NuGet.Data;
 using NuGet.Frameworks;
 using NuGet.PackagingCore;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NuGet.Client.V3.VisualStudio
 {
     public class V3UIMetadataResource : UIMetadataResource
     {
         private readonly V3RegistrationResource _regResource;
+        private readonly V3ReportAbuseResouce _reportAbuseResource;
         private readonly DataClient _client;
 
-        public V3UIMetadataResource(DataClient client, V3RegistrationResource regResource)
+        public V3UIMetadataResource(DataClient client, V3RegistrationResource regResource, V3ReportAbuseResouce reportAbuseResource)
             : base()
         {
             _regResource = regResource;
             _client = client;
+            _reportAbuseResource = reportAbuseResource;
         }
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackageIdentity> packages, CancellationToken token)
@@ -73,12 +74,14 @@ namespace NuGet.Client.V3.VisualStudio
             IEnumerable<UIPackageDependencySet> dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
             bool requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
 
-            // !!!
-            Uri reportAbuseUrl = null;
+            Uri reportAbuseUrl =
+                _reportAbuseResource != null ?
+                _reportAbuseResource.GetReportAbuseUrl(id, Version) :
+                null;
 
             return new UIPackageMetadata(
-                new PackageIdentity(id, Version), 
-                summary, description, authors, owners, 
+                new PackageIdentity(id, Version),
+                summary, description, authors, owners,
                 iconUrl, licenseUrl, projectUrl, reportAbuseUrl,
                 tags, Published, dependencySets, requireLicenseAcceptance);
         }
