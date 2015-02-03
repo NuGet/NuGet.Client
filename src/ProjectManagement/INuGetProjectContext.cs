@@ -21,7 +21,7 @@ namespace NuGet.ProjectManagement
         /// Resolves a file conflict for the given project context
         /// </summary>
         FileConflictAction ResolveFileConflict(string message);
-        PackageExtractionContext PackageExtractionContext { get; }
+        PackageExtractionContext PackageExtractionContext { get; set; }
     }
 
     /// <summary>

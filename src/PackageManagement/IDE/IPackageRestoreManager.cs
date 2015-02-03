@@ -3,6 +3,7 @@ using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement
@@ -40,18 +41,18 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restores the missing packages for the current solution. Returns true if atleast one package was restored
         /// </summary>
-        Task<bool> RestoreMissingPackagesInSolution();
+        Task<bool> RestoreMissingPackagesInSolutionAsync(CancellationToken token);
 
         /// <summary>
         /// Restores the missing packages for a project. Returns true if atleast one package was restored
         /// </summary>
-        Task<bool> RestoreMissingPackages(NuGetProject nuGetProject);
+        Task<bool> RestoreMissingPackagesAsync(NuGetProject nuGetProject, CancellationToken token);
 
         /// <summary>
         /// Restores the passed in missing packages. Returns true if atleast one package was restored
         /// </summary>
         // TODO : Use IEnumerable<PackageIdentity> instead of IEnumerable<PackageReference>
-        Task<bool> RestoreMissingPackages(IEnumerable<PackageReference> packageReferences);
+        Task<bool> RestoreMissingPackagesAsync(IEnumerable<PackageReference> packageReferences, CancellationToken token);
     }
 
     /// <summary>

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement
@@ -181,9 +182,9 @@ namespace NuGet.PackageManagement
         /// Restores missing packages for the entire solution
         /// </summary>
         /// <returns></returns>
-        public async virtual Task<bool> RestoreMissingPackagesInSolution()
+        public async virtual Task<bool> RestoreMissingPackagesInSolutionAsync(CancellationToken token)
         {
-            return await RestoreMissingPackages(GetPackageReferencesFromSolution());
+            return await RestoreMissingPackagesAsync(GetPackageReferencesFromSolution(), token);
         }
 
         /// <summary>
@@ -191,16 +192,16 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <param name="nuGetProject"></param>
         /// <returns></returns>
-        public async virtual Task<bool> RestoreMissingPackages(NuGetProject nuGetProject)
+        public async virtual Task<bool> RestoreMissingPackagesAsync(NuGetProject nuGetProject, CancellationToken token)
         {
             if(nuGetProject == null)
             {
                 throw new ArgumentNullException("nuGetProject");
             }
-            return await RestoreMissingPackages(nuGetProject.GetInstalledPackages());
+            return await RestoreMissingPackagesAsync(nuGetProject.GetInstalledPackages(), token);
         }
 
-        public async virtual Task<bool> RestoreMissingPackages(IEnumerable<PackageReference> packageReferences)
+        public async virtual Task<bool> RestoreMissingPackagesAsync(IEnumerable<PackageReference> packageReferences, CancellationToken token)
         {
             if(packageReferences == null)
             {
@@ -209,12 +210,13 @@ namespace NuGet.PackageManagement
 
             var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, Settings, SolutionManager);
             return await RestoreMissingPackages(nuGetPackageManager, packageReferences,
-                SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext(), PackageRestoredEvent);
+                SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext(), token, PackageRestoredEvent);
         }
 
         public static async Task<bool> RestoreMissingPackages(NuGetPackageManager nuGetPackageManager,
             IEnumerable<PackageReference> packageReferences,
             INuGetProjectContext nuGetProjectContext,
+            CancellationToken token,
             EventHandler<PackageRestoredEventArgs> packageRestoredEvent = null,
             IEnumerable<SourceRepository> sourceRepositories = null)
         {
@@ -238,21 +240,34 @@ namespace NuGet.PackageManagement
 
             var hashSetOfMissingPackageReferences = new HashSet<PackageReference>(packageReferences, new PackageReferenceComparer()); 
 
+            // Before starting to restore package, set the nuGetProjectContext such that satellite files are not copied yet
+            // Satellite files will be copied as a post operation. This helps restore packages in parallel
+            // and not have to determine if the package is a satellite package beforehand
+
+            if(nuGetProjectContext.PackageExtractionContext == null)
+            {
+                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext();
+            }
+            nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
+
             // TODO: Update this to use the locked version
             bool[] results = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
-                RestorePackage(nuGetPackageManager, uniqueMissingPackage.PackageIdentity, nuGetProjectContext,
+                RestorePackageAsync(nuGetPackageManager, uniqueMissingPackage.PackageIdentity, nuGetProjectContext,
                 packageRestoredEvent, sourceRepositories)));
 
-            return results.Any(r => r);
+            bool[] satelliteFileResults = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
+                nuGetPackageManager.CopySatelliteFilesAsync(uniqueMissingPackage.PackageIdentity, nuGetProjectContext, token)));
+
+            return results.Any() || satelliteFileResults.Any();
         }
 
-        private static async Task<bool> RestorePackage(NuGetPackageManager nuGetPackageManager,
+        private static async Task<bool> RestorePackageAsync(NuGetPackageManager nuGetPackageManager,
             PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
             EventHandler<PackageRestoredEventArgs> packageRestoredEvent,
             IEnumerable<SourceRepository> sourceRepositories = null)
         {
-            bool restored = await nuGetPackageManager.RestorePackage(packageIdentity, nuGetProjectContext, sourceRepositories);
+            bool restored = await nuGetPackageManager.RestorePackageAsync(packageIdentity, nuGetProjectContext, sourceRepositories);
             // At this point, it is guaranteed that package restore did not fail
             if(packageRestoredEvent != null)
             {

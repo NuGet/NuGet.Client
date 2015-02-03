@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
+using System.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -75,7 +76,7 @@ namespace NuGet.PackageManagement.UI
             TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             try
             {
-                await _packageRestoreManager.RestoreMissingPackagesInSolution();
+                await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None);
                 // Check for missing packages again
                 _packageRestoreManager.RaisePackagesMissingEventForSolution();
             }

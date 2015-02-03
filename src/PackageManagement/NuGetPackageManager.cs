@@ -789,7 +789,7 @@ namespace NuGet.PackageManagement
         /// RestorePackage is only allowed on a folderNuGetProject. In most cases, one will simply use the packagesFolderPath from NuGetPackageManager
         /// to create a folderNuGetProject before calling into this method
         /// </summary>
-        public async Task<bool> RestorePackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
+        public async Task<bool> RestorePackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> sourceRepositories = null)
         {
             if(PackageExistsInPackagesFolder(packageIdentity))
@@ -809,6 +809,11 @@ namespace NuGet.PackageManagement
             }
 
             return true;
+        }
+
+        public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            return await PackagesFolderNuGetProject.CopySatelliteFilesAsync(packageIdentity, nuGetProjectContext, token);
         }
 
         public bool PackageExistsInPackagesFolder(PackageIdentity packageIdentity)

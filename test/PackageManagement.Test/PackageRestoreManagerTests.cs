@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Test.Utility;
 using Xunit;
+using System.Threading;
 
 namespace NuGet.Test
 {
@@ -103,7 +104,7 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackagesInSolution();
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None);
 
             Assert.Equal(1, restoredPackages.Count);
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
@@ -191,7 +192,7 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackagesInSolution();
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None);
 
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
         }

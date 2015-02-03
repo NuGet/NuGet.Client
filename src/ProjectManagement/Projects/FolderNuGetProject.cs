@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -73,7 +75,8 @@ namespace NuGet.ProjectManagement
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Root);
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
             packageStream.Seek(0, SeekOrigin.Begin);
-            PackageExtractor.ExtractPackage(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode);
+            PackageExtractor.ExtractPackageAsync(packageStream, packageIdentity, PackagePathResolver, nuGetProjectContext.PackageExtractionContext,
+                PackageSaveMode, CancellationToken.None).Wait();
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
             return true;
         }
@@ -92,6 +95,12 @@ namespace NuGet.ProjectManagement
             string packageFileFullPath = Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
                 PackagePathResolver.GetPackageFileName(packageIdentity));
             return File.Exists(packageFileFullPath);
+        }
+
+        public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            return await PackageExtractor.CopySatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
         }
     }
 }

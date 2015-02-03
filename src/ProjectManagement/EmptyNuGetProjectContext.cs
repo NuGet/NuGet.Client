@@ -21,7 +21,8 @@ namespace NuGet.ProjectManagement
 
         public Packaging.PackageExtractionContext PackageExtractionContext
         {
-            get { return null; }
+            get;
+            set;
         }
     }
 }

@@ -14,5 +14,12 @@ namespace Test.Utility
         {
             return FileConflictAction.IgnoreAll;
         }
+
+
+        public NuGet.Packaging.PackageExtractionContext PackageExtractionContext
+        {
+            get;
+            set;
+        }
     }
 }

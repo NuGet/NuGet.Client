@@ -815,7 +815,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public PackageExtractionContext PackageExtractionContext
         {
-            get { return null; }
+            get;
+            set;
         }
     }
 
