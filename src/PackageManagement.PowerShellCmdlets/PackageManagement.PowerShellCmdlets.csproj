@@ -116,6 +116,7 @@
     <Compile Include="Cmdlets\UninstallPackageCommand.cs" />
     <Compile Include="Cmdlets\UpdatePackageCommand.cs" />
     <Compile Include="Utility\ProjectExtension.cs" />
+    <Compile Include="Utility\PSPathUtility.cs" />
     <Compile Include="Utility\SolutionExtension.cs" />
     <Compile Include="Utility\WebRequestEventArgs.cs" />
   </ItemGroup>

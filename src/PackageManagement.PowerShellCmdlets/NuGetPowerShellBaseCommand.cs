@@ -210,16 +210,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             IEnumerable<SourceRepository> repoes = _resourceRepositoryProvider.GetRepositories();
             if (!string.IsNullOrEmpty(source))
             {
+                // Look through all available sources (including those disabled) by matching source name and url
                 ActiveSourceRepository = repoes
-                    .Where(p => p.PackageSource.IsEnabled && (StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Name, source) ||
-                    StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Source, source)))
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Name, source) ||
+                    StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Source, source))
                     .FirstOrDefault();
 
                 if(ActiveSourceRepository == null)
                 {
                     try
                     {
-                        ActiveSourceRepository = _resourceRepositoryProvider.CreateRepository(new PackageSource(source));
+                        // source should be the format of url here; otherwise it cannot resolve from name anyways.
+                        ActiveSourceRepository = CreateRepositoryFromSource(source);
                     }
                     catch (Exception)
                     {
@@ -227,6 +229,84 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Create a package repository from the source by trying to resolve relative paths.
+        /// </summary>
+        protected SourceRepository CreateRepositoryFromSource(string source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            UriFormatException uriException = null;
+            PackageSource packageSource = new PackageSource(source);
+
+            try
+            {
+                SourceRepository repository = _resourceRepositoryProvider.CreateRepository(packageSource);
+            }
+            catch (UriFormatException ex)
+            {
+                // if the source is relative path, it can result in invalid uri exception
+                uriException = ex;
+            }
+
+            Uri uri;
+            if (uriException != null)
+            {
+                // if it's not an absolute path, treat it as relative path
+                if (Uri.TryCreate(source, UriKind.Relative, out uri))
+                {
+                    string outputPath;
+                    bool? exists;
+                    string errorMessage;
+                    // translate relative path to absolute path
+                    if (TryTranslatePSPath(source, out outputPath, out exists, out errorMessage) && exists == true)
+                    {
+                        source = outputPath;
+                        packageSource = new PackageSource(outputPath);
+                    }
+                }
+            }
+
+            try
+            {
+                var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
+                return sourceRepo;
+            }
+            catch (Exception ex)
+            {
+                // if this is not a valid relative path either, 
+                // we rethrow the UriFormatException that we caught earlier.
+                if (uriException != null)
+                {
+                    throw uriException;
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Translate a PSPath into a System.IO.* friendly Win32 path.
+        /// Does not resolve/glob wildcards.
+        /// </summary>                
+        /// <param name="psPath">The PowerShell PSPath to translate which may reference PSDrives or have provider-qualified paths which are syntactically invalid for .NET APIs.</param>
+        /// <param name="path">The translated PSPath in a format understandable to .NET APIs.</param>
+        /// <param name="exists">Returns null if not tested, or a bool representing path existence.</param>
+        /// <param name="errorMessage">If translation failed, contains the reason.</param>
+        /// <returns>True if successfully translated, false if not.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "Following TryParse pattern in BCL", Target = "path")]
+        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "Following TryParse pattern in BCL", Target = "exists")]
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps", Justification = "ps is a common powershell prefix")]
+        protected bool TryTranslatePSPath(string psPath, out string path, out bool? exists, out string errorMessage)
+        {
+            return PSPathUtility.TryTranslatePSPath(SessionState, psPath, out path, out exists, out errorMessage);
         }
 
         /// <summary>
