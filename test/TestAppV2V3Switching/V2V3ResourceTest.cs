@@ -84,7 +84,6 @@ namespace V2V3ResourcesTest
             UIPackageMetadata packageMetadata = result.FirstOrDefault(
                 p => p.Identity.Version == new NuGetVersion("4.0.0-beta1"));
 
-            Assert.True(packageMetadata.HasDependencies.Equals(true));
             Assert.True(packageMetadata.DependencySets.Count() == 1);
             Assert.True(packageMetadata.DependencySets.First().Dependencies.Count().Equals(12));
 

@@ -78,11 +78,12 @@ namespace NuGet.Client.V2.VisualStudio
             IEnumerable<UIPackageDependencySet> DependencySets = package.DependencySets.Select(p => GetVisualStudioUIPackageDependencySet(p));
             bool requiresLiceneseAcceptance = package.RequireLicenseAcceptance;
 
-            bool HasDependencies = DependencySets.Any(
-                set => set.Dependencies != null && set.Dependencies.Count > 0);
             PackageIdentity identity = new PackageIdentity(package.Id, Version);
 
-            return new UIPackageMetadata(identity, Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, Published, DependencySets, HasDependencies, requiresLiceneseAcceptance);
+            return new UIPackageMetadata(
+                identity, Summary, Description, Authors, Owners, IconUrl, LicenseUrl, 
+                ProjectUrl, package.ReportAbuseUrl,
+                Tags, Published, DependencySets, requiresLiceneseAcceptance);
         }
 
         private static NuGet.PackagingCore.PackageDependency GetVisualStudioUIPackageDependency(PackageDependency dependency)

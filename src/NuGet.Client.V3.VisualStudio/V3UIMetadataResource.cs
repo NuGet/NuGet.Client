@@ -53,7 +53,6 @@ namespace NuGet.Client.V3.VisualStudio
 
         public UIPackageMetadata ParseMetadata(JObject metadata)
         {
-
             NuGetVersion Version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
             string publishedStr = metadata.Value<string>(Properties.Published);
             DateTimeOffset? Published = null;
@@ -63,21 +62,25 @@ namespace NuGet.Client.V3.VisualStudio
             }
 
             string id = metadata.Value<string>(Properties.PackageId);
-            string Summary = metadata.Value<string>(Properties.Summary);
-            string Description = metadata.Value<string>(Properties.Description);
-            string Authors = GetField(metadata, Properties.Authors);
-            string Owners = GetField(metadata, Properties.Owners);
-            Uri IconUrl = GetUri(metadata, Properties.IconUrl);
-            Uri LicenseUrl = GetUri(metadata, Properties.LicenseUrl);
-            Uri ProjectUrl = GetUri(metadata, Properties.ProjectUrl);
-            string Tags = GetField(metadata, Properties.Tags);
-            IEnumerable<UIPackageDependencySet> DependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
+            string summary = metadata.Value<string>(Properties.Summary);
+            string description = metadata.Value<string>(Properties.Description);
+            string authors = GetField(metadata, Properties.Authors);
+            string owners = GetField(metadata, Properties.Owners);
+            Uri iconUrl = GetUri(metadata, Properties.IconUrl);
+            Uri licenseUrl = GetUri(metadata, Properties.LicenseUrl);
+            Uri projectUrl = GetUri(metadata, Properties.ProjectUrl);
+            string tags = GetField(metadata, Properties.Tags);
+            IEnumerable<UIPackageDependencySet> dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
             bool requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
 
-            bool HasDependencies = DependencySets.Any(
-                set => set.Dependencies != null && set.Dependencies.Count > 0);
+            // !!!
+            Uri reportAbuseUrl = null;
 
-            return new UIPackageMetadata(new PackageIdentity(id, Version), Summary, Description, Authors, Owners, IconUrl, LicenseUrl, ProjectUrl, Tags, Published, DependencySets, HasDependencies, requireLicenseAcceptance);
+            return new UIPackageMetadata(
+                new PackageIdentity(id, Version), 
+                summary, description, authors, owners, 
+                iconUrl, licenseUrl, projectUrl, reportAbuseUrl,
+                tags, Published, dependencySets, requireLicenseAcceptance);
         }
 
         /// <summary>
