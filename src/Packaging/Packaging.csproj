@@ -54,7 +54,9 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="NuspecReader.cs" />
     <Compile Include="PackageDependencyGroup.cs" />
+    <Compile Include="PackageExtraction\PackageExtractionContext.cs" />
     <Compile Include="PackageExtractor.cs" />
+    <Compile Include="PackageExtraction\PackageHelper.cs" />
     <Compile Include="PackagePathResolver.cs" />
     <Compile Include="PackageReader.cs" />
     <Compile Include="PackageReference.cs" />

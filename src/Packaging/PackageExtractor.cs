@@ -1,14 +1,21 @@
 ﻿using NuGet.PackagingCore;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        public static void ExtractPackage(Stream packageStream, PackageIdentity packageIdentity, PackagePathResolver packagePathResolver, PackageSaveModes packageSaveMode = PackageSaveModes.Nupkg)
+        public static async Task ExtractPackageAsync(Stream packageStream, PackageIdentity packageIdentity,
+            PackagePathResolver packagePathResolver,
+            PackageExtractionContext packageExtractionContext,
+            PackageSaveModes packageSaveMode,
+            CancellationToken token)
         {
             if(packageStream == null)
             {
@@ -31,92 +38,120 @@ namespace NuGet.Packaging
             }
 
             // TODO: Need to handle PackageSaveMode
-            // TODO: Need to handle satellite package files differently
             // TODO: Support overwriting files also?
             long nupkgStartPosition = packageStream.Position;
             var zipArchive = new ZipArchive(packageStream);
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentity));
-            foreach (var entry in zipArchive.Entries)
-            {
-                if (PackageHelper.IsPackageFile(entry.FullName, packageSaveMode))
-                {
-                    var packageFileFullPath = Path.Combine(packageDirectoryInfo.FullName, entry.FullName);
-                    using (var inputStream = entry.Open())
-                    {
-                        CreatePackageFile(packageFileFullPath, inputStream);
-                    }
-                }
-            }
+            string packageDirectory = packageDirectoryInfo.FullName;
 
+            await PackageHelper.CreatePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
+
+            string nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
             if(packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
-            {
-                var nupkgFilePath = Path.Combine(packageDirectoryInfo.FullName, packagePathResolver.GetPackageFileName(packageIdentity));
+            {                
                 // During package extraction, nupkg is the last file to be created
                 // Since all the packages are already created, the package stream is likely positioned at its end
                 // Reset it to the nupkgStartPosition
                 packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
-                CreatePackageFile(nupkgFilePath, packageStream);
+                await PackageHelper.CreatePackageFile(nupkgFilePath, packageStream, token);
+            }
+
+            // Now, copy satellite files unless requested to not copy them
+            if (packageExtractionContext == null || packageExtractionContext.CopySatelliteFiles)
+            {
+                await CopySatelliteFilesAsync(packageIdentity, packagePathResolver, packageSaveMode, token);
             }
         }
 
-        private static void CreatePackageFile(string packageFileFullPath, Stream inputStream)
+        public static async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
+            PackageSaveModes packageSaveMode, CancellationToken token)
         {
-            string directory = Path.GetDirectoryName(packageFileFullPath);
-            if (!Directory.Exists(directory))
+            if (packageIdentity == null)
             {
-                Directory.CreateDirectory(directory);
+                throw new ArgumentNullException("packageIdentity");
             }
 
-            if (File.Exists(packageFileFullPath))
+            if (packagePathResolver == null)
             {
-                // Log and skip adding file
-                return;
+                throw new ArgumentNullException("packagePathResolver");
             }
 
-            using (Stream outputStream = File.Create(packageFileFullPath))
+            string nupkgFilePath = Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), packagePathResolver.GetPackageFileName(packageIdentity));
+            if(File.Exists(nupkgFilePath))
             {
-                inputStream.CopyTo(outputStream);
+                using(var packageStream = File.OpenRead(nupkgFilePath))
+                {
+                    return await CopySatelliteFilesAsync(packageStream, packageIdentity, packagePathResolver, packageSaveMode, token);
+                }
             }
+
+            return false;
         }
-    }
 
-    internal static class PackageHelper
-    {
-        private static readonly string[] ExcludePaths = new[] { "_rels", "package" };
-        public static bool IsManifest(string path)
+        private static async Task<bool> CopySatelliteFilesAsync(Stream packageStream, PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
+            PackageSaveModes packageSaveMode, CancellationToken token)
         {
-            return Path.GetExtension(path).Equals(PackagingConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static bool IsPackageFile(string packageFileName, PackageSaveModes packageSaveMode)
-        {
-            if(String.IsNullOrEmpty(packageFileName) || String.IsNullOrEmpty(Path.GetFileName(packageFileName)))
+            if (packageStream == null)
             {
-                // This is to ignore archive entries that are not really files
-                return false;
+                throw new ArgumentNullException("packageStream");
             }
-            if(packageSaveMode.HasFlag(PackageSaveModes.Nuspec))
+
+            if (!packageStream.CanSeek)
             {
-                return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+                throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
-            else
+
+            if (packageIdentity == null)
             {
-                return !IsManifest(packageFileName) && !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
-            } 
+                throw new ArgumentNullException("packageIdentity");
+            }
+
+            if (packagePathResolver == null)
+            {
+                throw new ArgumentNullException("packagePathResolver");
+            }
+
+            var zipArchive = new ZipArchive(packageStream);
+            var packageReader = new PackageReader(zipArchive);
+            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+
+            PackageIdentity runtimePackageIdentity = null;
+            string packageLanguage = null;
+            if(PackageHelper.IsSatellitePackage(nuspecReader, out runtimePackageIdentity, out packageLanguage))
+            {
+                // Now, we know that the package is a satellite package and that the runtime package is 'runtimePackageId'
+                // Check, if the runtimePackage is installed and get the folder to copy over files
+
+                string runtimePackageDirectory = packagePathResolver.GetInstallPath(packageIdentity);
+                string runtimePackageFilePath = Path.Combine(runtimePackageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
+
+                if(File.Exists(runtimePackageFilePath))
+                {
+                    // Existence of the package file is the validation that the package exists
+                    var libItemGroups = packageReader.GetLibItems();
+                    List<ZipArchiveEntry> satelliteFileEntries = new List<ZipArchiveEntry>();
+                    foreach(var libItemGroup in libItemGroups)
+                    {
+                        var satelliteFilesInGroup = libItemGroup.Items.Where(item => Path.GetDirectoryName(item).Split(Path.DirectorySeparatorChar)
+                                                                .Contains(packageLanguage, StringComparer.OrdinalIgnoreCase));
+                        
+                        foreach(var satelliteFile in satelliteFilesInGroup)
+                        {
+                            var zipArchiveEntry = zipArchive.GetEntry(satelliteFile);
+                            if (zipArchiveEntry != null)
+                            {
+                                satelliteFileEntries.Add(zipArchiveEntry);
+                            }             
+                        }
+                    }
+
+                    // Now, add all the satellite files collected from the package to the runtime package folder(s)
+                    await PackageHelper.CreatePackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
+                    return true;
+                }
+            }
+
+            return false;
         }
-    }
-
-    [Flags]
-    public enum PackageSaveModes
-    {
-        None = 0,
-        Nuspec = 1,
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Naming",
-            "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            MessageId = "Nupkg",
-            Justification = "nupkg is the file extension of the package file")]
-        Nupkg = 2
     }
 }
