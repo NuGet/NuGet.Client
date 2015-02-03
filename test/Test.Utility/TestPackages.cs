@@ -58,6 +58,47 @@ namespace Test.Utility
             return result;
         }
 
+        public static FileInfo GetLegacyTestPackageMinClient()
+        {
+            string file = Guid.NewGuid().ToString() + ".nupkg";
+            FileInfo result = new FileInfo(file);
+
+            ZipFile zip = new ZipFile(result.FullName);
+
+            zip.AddEntry("lib/test.dll", new byte[] { 0 });
+            zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
+            zip.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
+            zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
+
+            zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata minClientVersion=""3.0.5-beta"">
+                                <id>packageA</id>
+                                <version>2.0.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                                <dependencies> 
+                                   <group>
+                                      <dependency id=""RouteMagic"" version=""1.1.0"" />
+                                   </group>
+                                   <group targetFramework=""net40"">
+                                      <dependency id=""jQuery"" />
+                                      <dependency id=""WebActivator"" />
+                                   </group>
+                                   <group targetFramework=""sl30"">
+                                   </group>
+                                </dependencies>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+
+            zip.Save();
+
+            return result;
+        }
+
         public static FileInfo GetLibSubFolderPackage()
         {
             string file = Guid.NewGuid().ToString() + ".nupkg";

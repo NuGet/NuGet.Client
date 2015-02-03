@@ -46,6 +46,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NuSpecCoreReaderTests.cs" />
     <Compile Include="PackageIdentityTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -56,6 +57,10 @@
     <ProjectReference Include="..\..\src\Core\Core.csproj">
       <Project>{77be39da-13e0-41a2-8eec-7d207b4564a4}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
+      <Project>{8010a76a-cb15-4484-8f9b-d523fbc34dfa}</Project>
+      <Name>Test.Utility</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -17,10 +17,10 @@ namespace NuGet.PackagingCore
         private readonly XDocument _xml;
         private XElement _metadataNode;
 
-        private const string Metadata = "metadata";
-        private const string Id = "id";
-        private const string Version = "version";
-        private const string MinClientVersion = "minClientVersion";
+        protected const string Metadata = "metadata";
+        protected const string Id = "id";
+        protected const string Version = "version";
+        protected const string MinClientVersion = "minClientVersion";
         private const string Language = "language";
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace NuGet.PackagingCore
         /// </summary>
         public SemanticVersion GetMinClientVersion()
         {
-            var node = MetadataNode.Elements(XName.Get(MinClientVersion, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
+            var node = MetadataNode.Attribute(XName.Get(MinClientVersion));
             return node == null ? null : SemanticVersion.Parse(node.Value);
         }
 
@@ -91,7 +91,7 @@ namespace NuGet.PackagingCore
             yield break;
         }
 
-        public XElement MetadataNode
+        protected XElement MetadataNode
         {
             get
             {

@@ -1,4 +1,5 @@
-﻿using NuGet.PackagingCore;
+﻿using NuGet.Frameworks;
+using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,18 @@ namespace NuGet.Packaging
     /// </summary>
     public class NuspecReader : NuspecCoreReader
     {
+        // node names
+        protected const string Dependencies = "dependencies";
+        protected const string Group = "group";
+        protected const string TargetFramework = "targetFramework";
+        protected const string Dependency = "dependency";
+        protected const string References = "references";
+        protected const string Reference = "reference";
+        protected const string File = "file";
+        protected const string FrameworkAssemblies = "frameworkAssemblies";
+        protected const string FrameworkAssembly = "frameworkAssembly";
+        protected const string AssemblyName = "assemblyName";
+
         public NuspecReader(Stream stream)
             : base(stream)
         {
@@ -29,23 +42,23 @@ namespace NuGet.Packaging
 
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups()
         {
-            string ns = Xml.Root.GetDefaultNamespace().NamespaceName;
+            string ns = MetadataNode.GetDefaultNamespace().NamespaceName;
 
             bool groupFound = false;
 
-            foreach (var depGroup in Xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("dependencies", ns)).Elements(XName.Get("group", ns)))
+            foreach (var depGroup in MetadataNode.Elements(XName.Get(Dependencies, ns)).Elements(XName.Get(Group, ns)))
             {
                 groupFound = true;
 
-                string groupFramework = GetAttributeValue(depGroup, "targetFramework");
+                string groupFramework = GetAttributeValue(depGroup, TargetFramework);
 
                 List<PackageDependency> packages = new List<PackageDependency>();
 
-                foreach (var depNode in depGroup.Elements(XName.Get("dependency", ns)))
+                foreach (var depNode in depGroup.Elements(XName.Get(Dependency, ns)))
                 {
                     VersionRange range = null;
 
-                    var rangeNode = GetAttributeValue(depNode, "version");
+                    var rangeNode = GetAttributeValue(depNode, Version);
 
                     if (!String.IsNullOrEmpty(rangeNode))
                     {
@@ -55,7 +68,7 @@ namespace NuGet.Packaging
                         }
                     }
 
-                    packages.Add(new PackageDependency(GetAttributeValue(depNode, "id"), range));
+                    packages.Add(new PackageDependency(GetAttributeValue(depNode, Id), range));
                 }
 
                 yield return new PackageDependencyGroup(groupFramework, packages);
@@ -64,12 +77,12 @@ namespace NuGet.Packaging
             // legacy behavior
             if (!groupFound)
             {
-                var packages = Xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("references", ns))
-                    .Elements(XName.Get("reference", ns)).Select(n => new PackageDependency(GetAttributeValue(n, "id"), VersionRange.Parse(GetAttributeValue(n, "version")))).ToArray();
+                var packages = MetadataNode.Elements(XName.Get(Dependency, ns))
+                    .Elements(XName.Get(Dependency, ns)).Select(n => new PackageDependency(GetAttributeValue(n, Id), VersionRange.Parse(GetAttributeValue(n, Version)))).ToArray();
 
                 if (packages.Any())
                 {
-                    yield return new PackageDependencyGroup(string.Empty, packages);
+                    yield return new PackageDependencyGroup(NuGetFramework.AnyFramework, packages);
                 }
             }
 
@@ -78,17 +91,17 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetReferenceGroups()
         {
-            string ns = Xml.Root.GetDefaultNamespace().NamespaceName;
+            string ns = MetadataNode.GetDefaultNamespace().NamespaceName;
 
             bool groupFound = false;
 
-            foreach (var group in Xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("references", ns)).Elements(XName.Get("group", ns)))
+            foreach (var group in MetadataNode.Elements(XName.Get(References, ns)).Elements(XName.Get(Group, ns)))
             {
                 groupFound = true;
 
-                string groupFramework = GetAttributeValue(group, "targetFramework");
+                string groupFramework = GetAttributeValue(group, TargetFramework);
 
-                string[] items = group.Elements(XName.Get("reference", ns)).Select(n => GetAttributeValue(n, "file")).Where(n => !String.IsNullOrEmpty(n)).ToArray();
+                string[] items = group.Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
                 if (items.Length > 0)
                 {
@@ -99,12 +112,12 @@ namespace NuGet.Packaging
             // pre-2.5 flat list of references, this should only be used if there are no groups
             if (!groupFound)
             {
-                string[] items = Xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("references", ns))
-                    .Elements(XName.Get("reference", ns)).Select(n => GetAttributeValue(n, "file")).Where(n => !String.IsNullOrEmpty(n)).ToArray();
+                string[] items = MetadataNode.Elements(XName.Get(References, ns))
+                    .Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
                 if (items.Length > 0)
                 {
-                    yield return new FrameworkSpecificGroup(string.Empty, items);
+                    yield return new FrameworkSpecificGroup(NuGetFramework.AnyFramework, items);
                 }
             }
 
@@ -115,10 +128,10 @@ namespace NuGet.Packaging
         {
             string ns = Xml.Root.GetDefaultNamespace().NamespaceName;
 
-            foreach (var group in Xml.Root.Elements(XName.Get("metadata", ns)).Elements(XName.Get("frameworkAssemblies", ns)).Elements(XName.Get("frameworkAssembly", ns))
-                .GroupBy(n => GetAttributeValue(n, "targetFramework")))
+            foreach (var group in MetadataNode.Elements(XName.Get(FrameworkAssemblies, ns)).Elements(XName.Get(FrameworkAssembly, ns))
+                .GroupBy(n => GetAttributeValue(n, TargetFramework)))
             {
-                yield return new FrameworkSpecificGroup(group.Key, group.Select(n => GetAttributeValue(n, "assemblyName")).Where(n => !String.IsNullOrEmpty(n)).ToArray());
+                yield return new FrameworkSpecificGroup(group.Key, group.Select(n => GetAttributeValue(n, AssemblyName)).Where(n => !String.IsNullOrEmpty(n)).ToArray());
             }
         }
 

@@ -12,6 +12,18 @@ namespace NuGet.Test
 {
     public class PackageReaderTests
     {
+        [Fact]
+        public void PackageReader_MinClientVersion()
+        {
+            var zip = TestPackages.GetZip(TestPackages.GetLegacyTestPackageMinClient());
+
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                var version = reader.GetMinClientVersion();
+
+                Assert.Equal("3.0.5-beta", version.ToNormalizedString());
+            }
+        }
 
         [Fact]
         public void PackageReader_ContentWithMixedFrameworks()
