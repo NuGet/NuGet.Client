@@ -1,10 +1,8 @@
-﻿using NuGet.Client;
-using NuGet.ProjectManagement;
+﻿using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
-using System.Runtime.CompilerServices;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -64,6 +62,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (NuGetProject project in projects)
                 {
+                    IMSBuildNuGetProjectSystem projectSystem = (IMSBuildNuGetProjectSystem)project;
+                    projectSystem.AddBindingRedirects();
+
                     // TODO: Find AddBindingRedirects API
                     //var redirects = RuntimeHelpers.AddBindingRedirects(project, _fileSystemProvider, domain, _frameworkMultiTargeting);
 

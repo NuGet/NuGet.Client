@@ -122,7 +122,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (UriHelper.IsHttpSource(Id))
                     {
                         _isHttp = true;
-                        Source = Path.Combine(Environment.ExpandEnvironmentVariables("appdata"), @"..\Local\NuGet\Cache");
+                        Source = PackageManager.PackagesFolderSourceRepository.PackageSource.Source;
                     }
                     else
                     {
@@ -147,8 +147,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else if (_readFromDirectPackagePath)
             {
-                // TODO: Fix this
-                //identityList = CreatePackageIdentityFromNupkgPath();
+                identityList = CreatePackageIdentityFromNupkgPath();
             }
             else
             {
@@ -228,19 +227,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Example: install-package2 https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
                 if (_isHttp)
                 {
-                    PackageIdentity packageIdentity = ParsePackageIdentityFromHttpSource(Id);
-                    Uri downloadUri = new Uri(Id);
-                    using (var targetPackageStream = new MemoryStream())
+                    identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
+                    if (identity != null)
                     {
-                        UpdateActiveSourceRepository(Id);
-                        PackageDownloader.GetPackageStream(ActiveSourceRepository, packageIdentity, targetPackageStream).Wait();
+                        Uri downloadUri = new Uri(Id);
+                        using (var targetPackageStream = new MemoryStream())
+                        {
+                            PackageDownloader.GetPackageStream(ActiveSourceRepository, identity, targetPackageStream).Wait();
+                        }
                     }
                 }
                 else
                 {
                     // Example: install-package2 c:\temp\packages\jQuery.1.10.2.nupkg
-                    string fullPath = Path.GetFullPath(Id);
-                    //package = new OptimizedZipPackage(fullPath);
+                    identity = ParsePackageIdentityFromNupkgPath(Id, @"\");
                 }
             }
             catch (Exception ex)
@@ -256,11 +256,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="sourceUrl"></param>
         /// <returns></returns>
-        private PackageIdentity ParsePackageIdentityFromHttpSource(string sourceUrl)
+        private PackageIdentity ParsePackageIdentityFromNupkgPath(string path, string divider)
         {
-            if (!string.IsNullOrEmpty(sourceUrl))
+            if (!string.IsNullOrEmpty(path))
             {
-                string lastPart = sourceUrl.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                string lastPart = path.Split(new string[] { divider }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
                 lastPart = lastPart.Replace(Constants.PackageExtension, "");
                 string[] parts = lastPart.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                 StringBuilder builderForId = new StringBuilder();

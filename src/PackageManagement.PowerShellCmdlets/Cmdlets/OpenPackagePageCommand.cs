@@ -1,5 +1,4 @@
 ﻿using NuGet.Client.VisualStudio;
-using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -74,15 +73,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Uri targetUrl = null;
                 if (License.IsPresent)
                 {
-                    targetUrl = GetUri(package, "licenseUrl");
+                    targetUrl = package.LicenseUrl;
                 }
                 else if (ReportAbuse.IsPresent)
                 {
-                    //targetUrl = GetUri(package, Properties.ReportAbuseUrl);
+                    targetUrl = package.ReportAbuseUrl;
                 }
                 else
                 {
-                    targetUrl = GetUri(package, "projectUrl");
+                    targetUrl = package.ProjectUrl;
                 }
 
                 if (targetUrl != null)
@@ -110,24 +109,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageIdAndVersionNotFound, Id, Version));
                 }
-            }
-        }
-
-        // TODO: This should be a common method for UI and PoweShell. 
-        private static Uri GetUri(UIPackageMetadata metadata, string property)
-        {
-            if (property == "licenseUrl")
-            {
-                return metadata.LicenseUrl;
-            }
-            else if (property == "projectUrl")
-            {
-                return metadata.ProjectUrl;
-            }
-            // TODO: Fix ReportAbuseUrl
-            else
-            {
-                return null;
             }
         }
 
