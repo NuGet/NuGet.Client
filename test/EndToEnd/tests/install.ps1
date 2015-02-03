@@ -2123,10 +2123,10 @@ function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
     # Arrange
     $p = New-ConsoleApplication
 
-    $currentVersion = $host.Version.ToString()
+    $currentSemanticVersion = Get-HostSemanticVersion
 
     # Act & Assert
-    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0.1' or above, but the current NuGet version is '$currentVersion'."
+    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'."
     Assert-NoPackage $p "Kitty"
 }
 
