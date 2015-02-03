@@ -411,4 +411,7 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Link_LearnAboutOptions" xml:space="preserve">
     <value>Learn about Options</value>
   </data>
+  <data name="Label_ReportAbuse" xml:space="preserve">
+    <value>Report Abuse:</value>
+  </data>
 </root>

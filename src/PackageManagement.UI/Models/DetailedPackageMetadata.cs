@@ -23,11 +23,13 @@ namespace NuGet.PackageManagement.UI
             IconUrl = serverData.IconUrl;
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
+            ReportAbuseUrl = serverData.ReportAbuseUrl;
             Tags = serverData.Tags;
             DownloadCount = downloadCount;
             Published = serverData.Published;
             DependencySets = serverData.DependencySets.Select(e => new PackageDependencySetMetadata(e));
-            HasDependencies = serverData.HasDependencies;
+            HasDependencies = DependencySets.Any(
+                dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
         }
 
         public NuGetVersion Version { get; set; }
@@ -44,6 +46,8 @@ namespace NuGet.PackageManagement.UI
         public Uri LicenseUrl { get; set; }
 
         public Uri ProjectUrl { get; set; }
+
+        public Uri ReportAbuseUrl { get; set; }
 
         public string Tags { get; set; }
 

@@ -547,6 +547,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Report Abuse:.
+        /// </summary>
+        public static string Label_ReportAbuse {
+            get {
+                return ResourceManager.GetString("Label_ReportAbuse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package source:.
         /// </summary>
         public static string Label_Repository {

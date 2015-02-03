@@ -49,6 +49,7 @@
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -145,10 +146,29 @@
                         </Hyperlink>
             </TextBlock>
 
+            <!-- Report abuse Url -->
+            <TextBlock
+                        Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
+                        Grid.Row="6" Grid.Column="0" FontWeight="Bold"
+                        Margin="0,8,0,0"
+                        Text="{x:Static resx:Resources.Label_ReportAbuse}" />
+
+            <TextBlock
+                        Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
+                        TextWrapping="Wrap"
+                        Margin="8,8,0,0"
+                        Grid.Row="6" Grid.Column="1">
+                <Hyperlink NavigateUri="{Binding Path=ReportAbuseUrl}"
+                           Style="{StaticResource HyperlinkStyle}"
+                           Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
+                    <Run Text="{Binding Path=ReportAbuseUrl}" />
+                </Hyperlink>
+            </TextBlock>
+
             <!-- Tags -->
             <TextBlock
                         Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
-                        Grid.Row="6" Grid.Column="0" FontWeight="Bold"
+                        Grid.Row="7" Grid.Column="0" FontWeight="Bold"
                         Margin="0,8,0,0"
                         Text="{x:Static resx:Resources.Label_Tags}" />
             <TextBlock
@@ -156,7 +176,7 @@
                         Text="{Binding Path=Tags}"
                         Margin="8,8,0,0"
                         TextWrapping="Wrap"
-                        Grid.Row="6" Grid.Column="1"></TextBlock>
+                        Grid.Row="7" Grid.Column="1" />
         </Grid>
 
         <!-- dependencies -->
