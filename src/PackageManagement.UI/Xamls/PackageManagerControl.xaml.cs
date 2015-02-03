@@ -364,6 +364,16 @@ namespace NuGet.PackageManagement.UI
             var newSource = _sourceRepoList.SelectedItem as PackageSource;
             if (newSource != null)
             {
+                if (String.IsNullOrEmpty(newSource.Description))
+                {
+                    _sourceTooltip.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    _sourceTooltip.Visibility = Visibility.Visible;
+                    _sourceTooltip.DataContext = newSource.Description;
+                }
+
                 _activeSource = EnabledSources.Where(s => s.PackageSource == _sourceRepoList.SelectedItem).SingleOrDefault();
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             }

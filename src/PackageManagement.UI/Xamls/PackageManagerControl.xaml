@@ -35,10 +35,10 @@
             </Grid.RowDefinitions>
             <!-- Row 0 is used by restore bar -->
 
-            <TextBlock 
-                Grid.Row="1" 
-                x:Name="_label" 
-                FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" 
+            <TextBlock
+                Grid.Row="1"
+                x:Name="_label"
+                FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}"
                 Margin="8,8">Package Manager</TextBlock>
 
             <WrapPanel Grid.Row="2" Margin="0,12,0,20" Orientation="Horizontal">
@@ -58,12 +58,11 @@
                         Grid.Column="1"
                         SelectionChanged="_sourceRepoList_SelectionChanged">
                         <ComboBox.ToolTip>
-                            <ToolTip DataContext="{Binding Path=PlacementTarget,RelativeSource={RelativeSource Self}}"
-                                     Visibility="{Binding Path=PlacementTarget.SelectedItem.Description,RelativeSource={RelativeSource Self},Converter={StaticResource NullToVisibilityConverter}}">
-                                <TextBlock Text="{Binding Path=SelectedItem.Description}" Style="{StaticResource TooltipStyle}" />
+                            <ToolTip x:Name="_sourceTooltip" >
+                                <TextBlock Text="{Binding}" Style="{StaticResource TooltipStyle}" />
                             </ToolTip>
                         </ComboBox.ToolTip>
-                    </ComboBox>                    
+                    </ComboBox>
 
                     <TextBlock
                         Grid.Column="2"
@@ -79,10 +78,9 @@
                         x:Name="_filter"
                         MinWidth="130"
                         MinHeight="22"
-                        SelectionChanged="_filter_SelectionChanged"
-                        />
+                        SelectionChanged="_filter_SelectionChanged" />
 
-                    <CheckBox 
+                    <CheckBox
                         x:Name="_checkboxPrerelease"
                         Grid.Column="4" Margin="24,0,0,0"
                         VerticalAlignment="Center"
@@ -94,7 +92,7 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="24,8,0,0" MinHeight="24">
-                    <Border 
+                    <Border
                         Grid.Column="6"
                         VerticalAlignment="Center"
                         x:Name="_searchControlParent"
@@ -108,8 +106,8 @@
                         Grid.Column="7"
                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                         Click="SettingsButtonClick" x:Name="_settingsButton">
-                        <Rectangle 
-                            Width="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}" 
+                        <Rectangle
+                            Width="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
                             Height="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}">
                             <Rectangle.Fill>
                                 <DrawingBrush>
