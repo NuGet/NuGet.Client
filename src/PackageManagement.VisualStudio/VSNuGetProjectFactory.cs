@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectK = GetProjectKProject(envDTEProject);
             if (projectK != null)
             {
-                return new NuGet.ProjectManagement.Projects.ProjectKNuGetProject(projectK, envDTEProject.Name);
+                return new ProjectKNuGetProject(projectK, envDTEProject.Name);
             }
 
             var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);

@@ -156,6 +156,9 @@
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\NativeProjectSystem.cs" />
+    <Compile Include="ProjectSystems\ProjectKNuGetProject.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ProjectSystems\WebProjectSystem.cs" />
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />
