@@ -26,6 +26,8 @@ namespace NuGet.Configuration
 
         public bool IsPasswordClearText { get; set; }
 
+        public string Description { get; set; }
+
         public bool IsPersistable
         {
             get;
