@@ -252,7 +252,7 @@ namespace NuGet.PackageManagement
             EventHandler<PackageRestoredEventArgs> packageRestoredEvent,
             IEnumerable<SourceRepository> sourceRepositories = null)
         {
-            bool restored = await nuGetPackageManager.RestorePackage(packageIdentity, nuGetProjectContext);
+            bool restored = await nuGetPackageManager.RestorePackage(packageIdentity, nuGetProjectContext, sourceRepositories);
             // At this point, it is guaranteed that package restore did not fail
             if(packageRestoredEvent != null)
             {
