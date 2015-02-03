@@ -56,8 +56,14 @@
                         MinWidth="130"
                         MinHeight="22"
                         Grid.Column="1"
-                        SelectionChanged="_sourceRepoList_SelectionChanged"
-                        />
+                        SelectionChanged="_sourceRepoList_SelectionChanged">
+                        <ComboBox.ToolTip>
+                            <ToolTip DataContext="{Binding Path=PlacementTarget,RelativeSource={RelativeSource Self}}"
+                                     Visibility="{Binding Path=PlacementTarget.SelectedItem.Description,RelativeSource={RelativeSource Self},Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="{Binding Path=SelectedItem.Description}" Style="{StaticResource TooltipStyle}" />
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                    </ComboBox>                    
 
                     <TextBlock
                         Grid.Column="2"

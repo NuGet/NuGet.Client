@@ -15,11 +15,7 @@
             </ResourceDictionary.MergedDictionaries>
             <ui:PackageStatusToInstallImageVisibilityConverter x:Key="PackageStatusToInstallImageVisibilityConverter" />
             <ui:PackageStatusToUpdateImageVisibilityConverter x:Key="PackageStatusToUpdateImageVisibilityConverter" />
-            <ui:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <Style x:Key="TooltipStyle" TargetType="{x:Type TextBlock}">
-                <Setter Property="TextWrapping" Value="Wrap" />
-                <Setter Property="MaxWidth" Value="300" />
-            </Style>
+            <ui:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />            
         </ResourceDictionary>
     </UserControl.Resources>
     <Border

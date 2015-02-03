@@ -26,6 +26,11 @@
         <Tools:PackageItemControl DataContext="{Binding}" />
     </DataTemplate>
 
+    <Style x:Key="TooltipStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="MaxWidth" Value="300" />
+    </Style>
+    
     <Style TargetType="{x:Type Hyperlink}" x:Key="HyperlinkStyle">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static resx:Brushes.ControlLinkTextKey}}" />
 

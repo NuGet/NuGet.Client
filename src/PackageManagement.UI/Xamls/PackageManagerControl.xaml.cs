@@ -365,9 +365,8 @@ namespace NuGet.PackageManagement.UI
             if (newSource != null)
             {
                 _activeSource = EnabledSources.Where(s => s.PackageSource == _sourceRepoList.SelectedItem).SingleOrDefault();
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             }
-
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
         }
 
         private void _filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
