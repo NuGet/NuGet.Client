@@ -24,7 +24,7 @@ namespace NuGet.Test
         };
 
         [Fact]
-        public void TestGetMissingPackagesForSolution()
+        public async Task TestGetMissingPackagesForSolution()
         {
             // Arrange
             var testSolutionManager = new TestSolutionManager();
@@ -36,12 +36,13 @@ namespace NuGet.Test
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
             var testNuGetProjectContext = new TestNuGetProjectContext();
+            var token = CancellationToken.None;
 
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                projectA.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
-                projectB.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                await projectB.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -49,8 +50,8 @@ namespace NuGet.Test
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             
             // Act            
-            var packageReferencesFromSolution = packageRestoreManager.GetPackageReferencesFromSolution().ToList();
-            var missingPackagesFromSolution = packageRestoreManager.GetMissingPackagesInSolution().ToList();
+            var packageReferencesFromSolution = (await packageRestoreManager.GetPackageReferencesFromSolution(token)).ToList();
+            var missingPackagesFromSolution = (await packageRestoreManager.GetMissingPackagesInSolution(token)).ToList();
 
             Assert.Equal(2, packageReferencesFromSolution.Count);
             Assert.Equal(0, missingPackagesFromSolution.Count);
@@ -58,8 +59,8 @@ namespace NuGet.Test
             // Delete packages folder
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
-            packageReferencesFromSolution = packageRestoreManager.GetPackageReferencesFromSolution().ToList();
-            missingPackagesFromSolution = packageRestoreManager.GetMissingPackagesInSolution().ToList();
+            packageReferencesFromSolution = (await packageRestoreManager.GetPackageReferencesFromSolution(token)).ToList();
+            missingPackagesFromSolution = (await packageRestoreManager.GetPackageReferencesFromSolution(token)).ToList();
             Assert.Equal(2, packageReferencesFromSolution.Count);
             Assert.Equal(1, missingPackagesFromSolution.Count);
         }
@@ -77,13 +78,14 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
             var resolutionContext = new ResolutionContext();
+            var token = CancellationToken.None;
 
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
             await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var restoredPackages = new List<PackageIdentity>();
@@ -111,7 +113,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public void TestCheckForMissingPackages()
+        public async Task TestCheckForMissingPackages()
         {
             // Arrange
             var testSolutionManager = new TestSolutionManager();
@@ -123,12 +125,13 @@ namespace NuGet.Test
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
             var testNuGetProjectContext = new TestNuGetProjectContext();
+            var token = CancellationToken.None;
 
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                projectA.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
-                projectB.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                await projectB.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -144,7 +147,7 @@ namespace NuGet.Test
             };
 
             // Act
-            packageRestoreManager.RaisePackagesMissingEventForSolution();
+            await packageRestoreManager.RaisePackagesMissingEventForSolution(token);
 
             // Assert
             Assert.Equal(1, packagesMissingEventCount);
@@ -154,7 +157,7 @@ namespace NuGet.Test
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
             // Act
-            packageRestoreManager.RaisePackagesMissingEventForSolution();
+            await packageRestoreManager.RaisePackagesMissingEventForSolution(token);
 
             // Assert
             Assert.Equal(2, packagesMissingEventCount);
@@ -174,13 +177,14 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
             var resolutionContext = new ResolutionContext();
+            var token = CancellationToken.None;
 
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
             await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
-                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First());
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 

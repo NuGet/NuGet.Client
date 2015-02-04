@@ -28,15 +28,15 @@ namespace NuGet.PackageManagement
 
         event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
 
-        IEnumerable<PackageReference> GetMissingPackagesInSolution();
+        Task<IEnumerable<PackageReference>> GetMissingPackagesInSolution(CancellationToken token);
 
-        IEnumerable<PackageReference> GetMissingPackages(NuGetProject nuGetProject);
+        Task<IEnumerable<PackageReference>> GetMissingPackages(NuGetProject nuGetProject, CancellationToken token);
 
         /// <summary>
         /// Checks the current solution if there is any package missing.
         /// </summary>
         /// <returns></returns>
-        void RaisePackagesMissingEventForSolution();
+        Task RaisePackagesMissingEventForSolution(CancellationToken token);
 
         /// <summary>
         /// Restores the missing packages for the current solution. Returns true if atleast one package was restored

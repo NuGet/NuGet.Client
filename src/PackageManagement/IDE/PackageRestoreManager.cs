@@ -49,26 +49,26 @@ namespace NuGet.PackageManagement
             SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
-        private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
+        private async void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            RaisePackagesMissingEventForSolution();
+            await RaisePackagesMissingEventForSolution(CancellationToken.None);
         }
 
-        private void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
+        private async void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
         {
             if (IsCurrentSolutionEnabledForRestore)
             {
                 EnablePackageRestore(e.NuGetProject);
             }
 
-            RaisePackagesMissingEventForSolution();
+            await RaisePackagesMissingEventForSolution(CancellationToken.None);
         }
 
         protected virtual bool EnablePackageRestore(NuGetProject nuGetProject)
         {
-            var installedPackages = nuGetProject.GetInstalledPackages();
+            var installedPackages = nuGetProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
             if(!installedPackages.Any())
             {
                 return true;
@@ -104,12 +104,12 @@ namespace NuGet.PackageManagement
 
         public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
 
-        public virtual void RaisePackagesMissingEventForSolution()
+        public async virtual Task RaisePackagesMissingEventForSolution(CancellationToken token)
         {
             // This method is called by both Solution Opened and Solution Closed event handlers.
             // In the case of Solution Closed event, the _solutionManager.IsSolutionOpen is false,
             // and so we won't do the unnecessary work of checking for package references.
-            bool missing = SolutionManager.IsSolutionOpen && GetMissingPackagesInSolution().Any();
+            bool missing = SolutionManager.IsSolutionOpen && (await GetMissingPackagesInSolution(token)).Any();
 
             if (PackagesMissingStatusChanged != null)
             {
@@ -121,15 +121,15 @@ namespace NuGet.PackageManagement
         ///  Gets the missing packages for the entire solution
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<PackageReference> GetMissingPackagesInSolution()
+        public async Task<IEnumerable<PackageReference>> GetMissingPackagesInSolution(CancellationToken token)
         {
-            var packageReferencesFromSolution = GetPackageReferencesFromSolution();
+            var packageReferencesFromSolution = await GetPackageReferencesFromSolution(token);
             return GetMissingPackages(packageReferencesFromSolution);
         }
 
-        public IEnumerable<PackageReference> GetMissingPackages(NuGetProject nuGetProject)
+        public async Task<IEnumerable<PackageReference>> GetMissingPackages(NuGetProject nuGetProject, CancellationToken token)
         {
-            return GetMissingPackages(nuGetProject.GetInstalledPackages());
+            return GetMissingPackages(await nuGetProject.GetInstalledPackagesAsync(token));
         }
 
         public IEnumerable<PackageReference> GetMissingPackages(IEnumerable<PackageReference> packageReferences)
@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        public IEnumerable<PackageReference> GetPackageReferencesFromSolution()
+        public async Task<IEnumerable<PackageReference>> GetPackageReferencesFromSolution(CancellationToken token)
         {
             List<PackageReference> packageReferences = new List<PackageReference>();
             foreach(var nuGetProject in SolutionManager.GetNuGetProjects())
@@ -165,7 +165,7 @@ namespace NuGet.PackageManagement
                     continue;
                 }
 
-                packageReferences.AddRange(nuGetProject.GetInstalledPackages());
+                packageReferences.AddRange(await nuGetProject.GetInstalledPackagesAsync(token));
             }
 
             return packageReferences;
@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement
         /// <returns></returns>
         public async virtual Task<bool> RestoreMissingPackagesInSolutionAsync(CancellationToken token)
         {
-            return await RestoreMissingPackagesAsync(GetPackageReferencesFromSolution(), token);
+            return await RestoreMissingPackagesAsync(await GetPackageReferencesFromSolution(token), token);
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException("nuGetProject");
             }
-            return await RestoreMissingPackagesAsync(nuGetProject.GetInstalledPackages(), token);
+            return await RestoreMissingPackagesAsync(await nuGetProject.GetInstalledPackagesAsync(token), token);
         }
 
         public async virtual Task<bool> RestoreMissingPackagesAsync(IEnumerable<PackageReference> packageReferences, CancellationToken token)
@@ -253,7 +253,7 @@ namespace NuGet.PackageManagement
             // TODO: Update this to use the locked version
             bool[] results = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
                 RestorePackageAsync(nuGetPackageManager, uniqueMissingPackage.PackageIdentity, nuGetProjectContext,
-                packageRestoredEvent, sourceRepositories)));
+                packageRestoredEvent, sourceRepositories, token)));
 
             bool[] satelliteFileResults = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
                 nuGetPackageManager.CopySatelliteFilesAsync(uniqueMissingPackage.PackageIdentity, nuGetProjectContext, token)));
@@ -265,9 +265,10 @@ namespace NuGet.PackageManagement
             PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
             EventHandler<PackageRestoredEventArgs> packageRestoredEvent,
-            IEnumerable<SourceRepository> sourceRepositories = null)
+            IEnumerable<SourceRepository> sourceRepositories,
+            CancellationToken token)
         {
-            bool restored = await nuGetPackageManager.RestorePackageAsync(packageIdentity, nuGetProjectContext, sourceRepositories);
+            bool restored = await nuGetPackageManager.RestorePackageAsync(packageIdentity, nuGetProjectContext, sourceRepositories, token);
             // At this point, it is guaranteed that package restore did not fail
             if(packageRestoredEvent != null)
             {

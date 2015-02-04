@@ -106,7 +106,8 @@ namespace NuGet.PackageManagement
         /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
-            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
+            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             // Step-1 : Get latest version for packageId
             var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySourceRepository);
@@ -118,7 +119,7 @@ namespace NuGet.PackageManagement
 
             // Step-2 : Call InstallPackageAsync(project, packageIdentity)
             await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources);
+                nuGetProjectContext, primarySourceRepository, secondarySources, token);
         }
 
         /// <summary>
@@ -126,23 +127,25 @@ namespace NuGet.PackageManagement
         /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
-            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
+            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             // Step-1 : Call PreviewInstallPackageAsync to get all the nuGetProjectActions
             var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources);
+                nuGetProjectContext, primarySourceRepository, secondarySources, token);
 
             // Step-2 : Execute all the nuGetProjectActions
-            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
+            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
         }
 
-        public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
+        public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Step-1 : Call PreviewUninstallPackagesAsync to get all the nuGetProjectActions
-            var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, uninstallationContext, nuGetProjectContext);
+            var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, uninstallationContext, nuGetProjectContext, token);
 
             // Step-2 : Execute all the nuGetProjectActions
-            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext);
+            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
         }
 
         /// <summary>
@@ -151,7 +154,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, string packageId,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -182,12 +185,13 @@ namespace NuGet.PackageManagement
 
             // Step-2 : Call InstallPackage(project, packageIdentity)
             return await PreviewInstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources);
+                nuGetProjectContext, primarySourceRepository, secondarySources, token);
         }
 
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(IEnumerable<string> packagesToInstall, NuGetProject nuGetProject,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
         {
             if (packagesToInstall == null)
             {
@@ -209,7 +213,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
+            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
             // Note: resolver needs all the installed packages as targets too. And, metadata should be gathered for the installed packages as well
@@ -228,12 +232,14 @@ namespace NuGet.PackageManagement
                 resolutionContext,
                 nuGetProjectContext,
                 primarySourceRepository,
-                secondarySources);
+                secondarySources,
+                token);
         }
 
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(IEnumerable<PackageIdentity> packagesToInstall, NuGetProject nuGetProject,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
         {
             if(packagesToInstall == null)
             {
@@ -260,7 +266,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentException("packagesToInstall");
             }
 
-            var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
+            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
             // Note: resolver needs all the installed packages as targets too. And, metadata should be gathered for the installed packages as well
@@ -281,7 +287,8 @@ namespace NuGet.PackageManagement
                 resolutionContext,
                 nuGetProjectContext,
                 primarySourceRepository,
-                secondarySources);
+                secondarySources,
+                token);
         }
 
         // TODO: HACK: Copy-pasted PreviewInstallPackageAsync here. Need to refactor later
@@ -291,7 +298,8 @@ namespace NuGet.PackageManagement
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
             SourceRepository primarySourceRepository,
-            IEnumerable<SourceRepository> secondarySources)
+            IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
         {
             if(packageTargetsForResolver == null)
             {
@@ -318,7 +326,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("secondarySources");
             }
 
-            var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
+            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
             List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
@@ -418,7 +426,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources = null)
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
             {
@@ -432,12 +440,13 @@ namespace NuGet.PackageManagement
             }
 
             return await PreviewInstallPackageAsyncPrivate(nuGetProject, packageIdentity, resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources);
+                nuGetProjectContext, primarySourceRepository, secondarySources, token);
         }
 
         private async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources)
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
         {
             if(nuGetProject == null)
             {
@@ -474,7 +483,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("packageIdentity.Version");
             }
 
-            var projectInstalledPackageReferences = nuGetProject.GetInstalledPackages();
+            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
             if(oldListOfInstalledPackages.Any(p => p.Equals(packageIdentity)))
             {
@@ -625,7 +634,8 @@ namespace NuGet.PackageManagement
         /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall <param name="packageId"></param> into <param name="nuGetProject"></param>
         /// <param name="uninstallationContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId,
+            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if(nuGetProject == null)
             {
@@ -648,7 +658,7 @@ namespace NuGet.PackageManagement
             }
 
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
-            var installedPackages = nuGetProject.GetInstalledPackages();
+            var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
             PackageReference packageReference = installedPackages
                 .Where(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             if (packageReference == null || packageReference.PackageIdentity == null)
@@ -657,14 +667,15 @@ namespace NuGet.PackageManagement
                     packageId, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
 
-            return await PreviewUninstallPackageAsyncPrivate(nuGetProject, packageReference, uninstallationContext, nuGetProjectContext);
+            return await PreviewUninstallPackageAsyncPrivate(nuGetProject, packageReference, uninstallationContext, nuGetProjectContext, token);
         }
 
         /// <summary>
         /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall <param name="packageId"></param> into <param name="nuGetProject"></param>
         /// <param name="uninstallationContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -687,7 +698,7 @@ namespace NuGet.PackageManagement
             }
 
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
-            var installedPackages = nuGetProject.GetInstalledPackages();
+            var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
             PackageReference packageReference = installedPackages
                 .Where(pr => pr.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
             if (packageReference == null || packageReference.PackageIdentity == null)
@@ -696,10 +707,11 @@ namespace NuGet.PackageManagement
                     packageIdentity.Id, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
 
-            return await PreviewUninstallPackageAsyncPrivate(nuGetProject, packageReference, uninstallationContext, nuGetProjectContext);
+            return await PreviewUninstallPackageAsyncPrivate(nuGetProject, packageReference, uninstallationContext, nuGetProjectContext, token);
         }
 
-        private async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageReference packageReference, UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext)
+        private async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageReference packageReference,
+            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if(SolutionManager == null)
             {
@@ -718,7 +730,7 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, packageReferenceTargetFramework);
 
             // TODO: IncludePrerelease is a big question mark
-            var installedPackageIdentities = nuGetProject.GetInstalledPackages().Select(pr => pr.PackageIdentity);
+            var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
                 packageReferenceTargetFramework, includePrerelease: true);
 
@@ -751,7 +763,8 @@ namespace NuGet.PackageManagement
         /// Executes the list of <param name="nuGetProjectActions"></param> on <param name="nuGetProject"></param>, which is likely obtained by calling into PreviewInstallPackageAsync
         /// <param name="nuGetProjectContext"></param> is used in the process
         /// </summary>
-        public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject, IEnumerable<NuGetProjectAction> nuGetProjectActions, INuGetProjectContext nuGetProjectContext)
+        public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject, IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -772,14 +785,14 @@ namespace NuGet.PackageManagement
             {
                 if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                 {
-                    ExecuteUninstall(nuGetProject, nuGetProjectAction.PackageIdentity, nuGetProjectContext);
+                    await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, nuGetProjectContext, token);
                 }
                 else
                 {
                     using (var targetPackageStream = new MemoryStream())
                     {
                         await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream);
-                        ExecuteInstall(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext);
+                        await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext, token);
                     }
                 }
             }
@@ -790,7 +803,7 @@ namespace NuGet.PackageManagement
         /// to create a folderNuGetProject before calling into this method
         /// </summary>
         public async Task<bool> RestorePackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
-            IEnumerable<SourceRepository> sourceRepositories = null)
+            IEnumerable<SourceRepository> sourceRepositories, CancellationToken token)
         {
             if(PackageExistsInPackagesFolder(packageIdentity))
             {
@@ -805,7 +818,7 @@ namespace NuGet.PackageManagement
             using (var targetPackageStream = new MemoryStream())
             {
                 await PackageDownloader.GetPackageStream(sourceRepository, packageIdentity, targetPackageStream);
-                PackagesFolderNuGetProject.InstallPackage(packageIdentity, targetPackageStream, nuGetProjectContext);
+                await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, targetPackageStream, nuGetProjectContext, token);
             }
 
             return true;
@@ -821,7 +834,8 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
-        private void ExecuteInstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
+        private async Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback
             MinClientVersionHandler.CheckMinClientVersion(packageStream, packageIdentity);
@@ -831,7 +845,7 @@ namespace NuGet.PackageManagement
             {
                 PackageInstalling(this, packageOperationEventArgs);
             }
-            nuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
+            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
             //if (packageOperationEventArgs.Cancel)
@@ -845,7 +859,8 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private void ExecuteUninstall(NuGetProject nuGetProject, PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Step-1: Raise package uninstalling event
             var packageOperationEventArgs = new PackageOperationEventArgs(packageIdentity);
@@ -855,11 +870,11 @@ namespace NuGet.PackageManagement
             }
 
             // Step-2: Call nuGetProject.UninstallPackage
-            nuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
+            await nuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
             // Step-3: Check if the package directory could be deleted
             if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
-                !PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, nuGetProjectContext))
+                !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, nuGetProjectContext, token))
             {
                 DeletePackageDirectory(packageIdentity, nuGetProjectContext);
             }
@@ -877,7 +892,8 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private bool PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        private async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             bool packageExistsInAnotherNuGetProject = false;
             var nuGetProjectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
@@ -885,7 +901,7 @@ namespace NuGet.PackageManagement
             {
                 if (!otherNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name).Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
                 {
-                    packageExistsInAnotherNuGetProject = otherNuGetProject.GetInstalledPackages().Where(pr => pr.PackageIdentity.Equals(packageIdentity)).Any();
+                    packageExistsInAnotherNuGetProject = (await otherNuGetProject.GetInstalledPackagesAsync(token)).Where(pr => pr.PackageIdentity.Equals(packageIdentity)).Any();
                 }
             }
 
