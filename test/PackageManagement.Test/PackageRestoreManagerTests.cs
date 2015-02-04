@@ -60,7 +60,7 @@ namespace NuGet.Test
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
             packageReferencesFromSolution = (await packageRestoreManager.GetPackageReferencesFromSolution(token)).ToList();
-            missingPackagesFromSolution = (await packageRestoreManager.GetPackageReferencesFromSolution(token)).ToList();
+            missingPackagesFromSolution = (await packageRestoreManager.GetMissingPackagesInSolution(token)).ToList();
             Assert.Equal(2, packageReferencesFromSolution.Count);
             Assert.Equal(1, missingPackagesFromSolution.Count);
         }

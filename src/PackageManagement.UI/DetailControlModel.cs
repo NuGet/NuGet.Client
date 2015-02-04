@@ -54,7 +54,14 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _nugetProjects.SelectMany(p => p.GetInstalledPackages()).Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
+                foreach(var project in _nugetProjects)
+                {
+                    var task = project.GetInstalledPackagesAsync(CancellationToken.None);
+                    task.Wait();
+                    installedPackages.AddRange(task.Result);
+                }
+                return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
             }
         }
 

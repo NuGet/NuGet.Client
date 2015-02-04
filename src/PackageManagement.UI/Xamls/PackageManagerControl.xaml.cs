@@ -14,6 +14,7 @@ using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Resx = NuGet.PackageManagement.UI;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -327,15 +328,15 @@ namespace NuGet.PackageManagement.UI
             Model.UIController.LaunchNuGetOptionsDialog();
         }
 
-        private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdateDetailPane();
+            await UpdateDetailPane();
         }
 
         /// <summary>
         /// Updates the detail pane based on the selected package
         /// </summary>
-        private async void UpdateDetailPane()
+        private async Task UpdateDetailPane()
         {
             var selectedPackage = _packageList.SelectedItem as SearchResultPackageMetadata;
             if (selectedPackage == null)
@@ -431,8 +432,16 @@ namespace NuGet.PackageManagement.UI
                 .Where(p => !p.Version.IsPrerelease)
                 .Max(p => p.Version);
 
+            List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
+            foreach (var project in projects)
+            {
+                var task = project.GetInstalledPackagesAsync(CancellationToken.None);
+                task.Wait();
+                installedPackages.AddRange(task.Result);
+            }
+
             // Get the minimum version installed in any target project/solution
-            var minimumInstalledPackage = projects.SelectMany(project => project.GetInstalledPackages())
+            var minimumInstalledPackage = installedPackages
                 .Where(p => p != null)
                 .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
                 .OrderBy(r => r.PackageIdentity.Version)

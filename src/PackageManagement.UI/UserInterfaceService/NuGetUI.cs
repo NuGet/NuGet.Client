@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.UI
                     });
         }
 
-        public void RefreshPackageStatus()
+        public async Task RefreshPackageStatus()
         {
             if (PackageManagerControl != null)
             {

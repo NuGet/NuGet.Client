@@ -41,12 +41,12 @@ namespace NuGet.PackageManagement.UI
                 _packageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
             }
         }
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (_packageRestoreManager != null)
             {
                 // when the control is first loaded, check for missing packages
-                _packageRestoreManager.RaisePackagesMissingEventForSolution();
+                await _packageRestoreManager.RaisePackagesMissingEventForSolution(CancellationToken.None);
             }
         }
 
@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.UI
             {
                 await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None);
                 // Check for missing packages again
-                _packageRestoreManager.RaisePackagesMissingEventForSolution();
+                await _packageRestoreManager.RaisePackagesMissingEventForSolution(CancellationToken.None);
             }
             catch (Exception ex)
             {

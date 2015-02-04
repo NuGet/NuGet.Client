@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
+using System.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -60,7 +61,9 @@ namespace NuGet.PackageManagement.UI
 
         private PackageReference GetInstalledPackage(NuGetProject project, string id)
         {
-            var installedPackage = project.GetInstalledPackages()
+            var installedPackagesTask = project.GetInstalledPackagesAsync(CancellationToken.None);
+            installedPackagesTask.Wait();
+            var installedPackage = installedPackagesTask.Result
                 .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id))
                 .FirstOrDefault();
             return installedPackage;
@@ -134,7 +137,9 @@ namespace NuGet.PackageManagement.UI
 
         private bool IsInstalled(NuGetProject project, string id)
         {
-            var installed = project.GetInstalledPackages()
+            var installedPackagesTask = project.GetInstalledPackagesAsync(CancellationToken.None);
+            installedPackagesTask.Wait();
+            var installed = installedPackagesTask.Result
                 .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id));
             return installed.Any();
         }

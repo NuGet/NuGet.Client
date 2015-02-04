@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.UI
                     await ExecuteActions(actions, uiService.ProgressWindow, token);
 
                     // update
-                    uiService.RefreshPackageStatus();
+                    await uiService.RefreshPackageStatus();
                 }
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.UI
         {
             foreach (var projectActions in actions.GroupBy(e => e.Item1))
             {
-                await _packageManager.ExecuteNuGetProjectActionsAsync(projectActions.Key, projectActions.Select(e => e.Item2), projectContext);
+                await _packageManager.ExecuteNuGetProjectActionsAsync(projectActions.Key, projectActions.Select(e => e.Item2), projectContext, token);
             }
         }
 
@@ -164,7 +164,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     IEnumerable<NuGetProjectAction> actions;
                     actions = await _packageManager.PreviewInstallPackageAsync(target, userAction.PackageIdentity,
-                        resolutionContext, projectContext, uiService.ActiveSource);
+                        resolutionContext, projectContext, uiService.ActiveSource, null, token);
                     results.AddRange(actions.Select(a => new Tuple<NuGetProject, NuGetProjectAction>(target, a)));
                 }
             }
@@ -179,11 +179,11 @@ namespace NuGet.PackageManagement.UI
                     IEnumerable<NuGetProjectAction> actions;
                     if (userAction.PackageIdentity != null)
                     {
-                        actions = await _packageManager.PreviewUninstallPackageAsync(target, userAction.PackageIdentity, uninstallationContext, projectContext);
+                        actions = await _packageManager.PreviewUninstallPackageAsync(target, userAction.PackageIdentity, uninstallationContext, projectContext, token);
                     }
                     else
                     {
-                        actions = await _packageManager.PreviewUninstallPackageAsync(target, userAction.PackageId, uninstallationContext, projectContext);
+                        actions = await _packageManager.PreviewUninstallPackageAsync(target, userAction.PackageId, uninstallationContext, projectContext, token);
                     }
                     results.AddRange(actions.Select(a => new Tuple<NuGetProject, NuGetProjectAction>(target, a)));
                 }

@@ -146,13 +146,13 @@ namespace NuGet.PackageManagement.UI
         /// <param name="latest">If true, the latest version is returned. Otherwise, the oldest 
         /// version is returned.</param>
         /// <returns></returns>
-        private IEnumerable<PackageIdentity> GetInstalledPackages(bool latest)
+        private async Task<IEnumerable<PackageIdentity>> GetInstalledPackages(bool latest, CancellationToken token)
         {
             Dictionary<string, PackageIdentity> installedPackages = new Dictionary<string, PackageIdentity>(
                 StringComparer.OrdinalIgnoreCase);
             foreach (var project in _projects)
             {
-                foreach (var package in project.GetInstalledPackages())
+                foreach (var package in (await project.GetInstalledPackagesAsync(token)))
                 {
                     if (!(project is NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
                         !_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
@@ -190,7 +190,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<IEnumerable<UISearchMetadata>> SearchInstalled(int startIndex, CancellationToken ct)
         {
-            var installedPackages = GetInstalledPackages(latest: true)
+            var installedPackages = (await GetInstalledPackages(latest: true, token: ct))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
                 .Skip(startIndex)
@@ -281,7 +281,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            var installedPackages = GetInstalledPackages(latest: false)
+            var installedPackages = (await GetInstalledPackages(latest: false, token: ct))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id);
             foreach (var package in installedPackages)
@@ -320,7 +320,7 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var project in _projects)
                 {
-                    var installedPackagesInProject = project.GetInstalledPackages();
+                    var installedPackagesInProject = await project.GetInstalledPackagesAsync(ct);
                     if (!(project is ProjectManagement.Projects.ProjectKNuGetProjectBase))
                     {
                         installedPackagesInProject = installedPackagesInProject.Where(

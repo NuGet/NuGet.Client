@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Refreshes the package details and installed status icons
         /// </summary>
-        void RefreshPackageStatus();
+        Task RefreshPackageStatus();
 
         SourceRepository ActiveSource { get; }
 
