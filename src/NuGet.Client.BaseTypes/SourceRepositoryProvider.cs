@@ -17,6 +17,18 @@ namespace NuGet.Client
     [Export(typeof(ISourceRepositoryProvider))]
     public sealed class SourceRepositoryProvider : ISourceRepositoryProvider
     {
+        private static PackageSource[] DefaultSources = new [] {
+            new PackageSource("https://www.nuget.org/api/v2/", "nuget.org", isEnabled:true, isOfficial: true)
+            {
+                Description = Resource.v2sourceDescription
+            },
+
+            new PackageSource("https://api.nuget.org/v3/index.json", "api.nuget.org", isEnabled:true, isOfficial: true)
+            {
+                Description = Resource.v3sourceDescription
+            }
+        };
+
         // TODO: add support for reloading sources when changes occur
         private readonly IPackageSourceProvider _packageSourceProvider;
         private IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _resourceProviders;
@@ -35,7 +47,7 @@ namespace NuGet.Client
         /// </summary>
         [ImportingConstructor]
         public SourceRepositoryProvider([ImportMany]IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders, [Import]ISettings settings)
-            : this(new PackageSourceProvider(settings), resourceProviders)
+            : this(new PackageSourceProvider(settings, DefaultSources, null), resourceProviders)
         {
 
         }
