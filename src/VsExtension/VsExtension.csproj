@@ -165,12 +165,18 @@
     <ProjectReference Include="..\VisualStudio.Interop\VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>VisualStudio.Interop</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudio12\VisualStudio12.csproj" Condition="$(VisualStudioVersion)=='12.0'">
       <Project>{3dd213f7-999b-4c15-9560-bf9c96cb8c52}</Project>
       <Name>VisualStudio12</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudioAPI\VisualStudioAPI.csproj">
+      <Project>{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}</Project>
+      <Name>VisualStudioAPI</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
       <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>

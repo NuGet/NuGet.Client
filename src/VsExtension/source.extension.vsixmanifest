@@ -29,5 +29,7 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Console" Path="|Console|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="PowerShellHostProvider" Path="|PowerShellHostProvider|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Configuration.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="VisualStudioAPI" Path="|VisualStudioAPI|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="VisualStudio.Interop" Path="|VisualStudio.Interop|" AssemblyName="|VisualStudio.Interop;AssemblyName|" />
   </Assets>
 </PackageManifest>

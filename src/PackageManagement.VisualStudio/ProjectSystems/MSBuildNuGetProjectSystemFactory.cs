@@ -10,7 +10,7 @@ using IMSBuildNuGetProjectSystemThunk = System.Func<EnvDTE.Project, NuGet.Projec
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal static class MSBuildNuGetProjectSystemFactory
+    public static class MSBuildNuGetProjectSystemFactory
     {
         private static Dictionary<string, IMSBuildNuGetProjectSystemThunk> _factories = new Dictionary<string, IMSBuildNuGetProjectSystemThunk>(StringComparer.OrdinalIgnoreCase)
         {
@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
             { NuGetVSConstants.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) }
         };
 
-        internal static IMSBuildNuGetProjectSystem CreateMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+        public static IMSBuildNuGetProjectSystem CreateMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
             if (envDTEProject == null)
             {

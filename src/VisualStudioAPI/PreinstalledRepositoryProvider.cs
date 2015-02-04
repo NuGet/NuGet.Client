@@ -1,4 +1,7 @@
-﻿using NuGet.Client;
+﻿extern alias Legacy;
+using LegacyNuGet = Legacy.NuGet;
+
+using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
@@ -10,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NuGet.Client.V2;
 
 namespace NuGet.VisualStudio
 {
@@ -18,20 +22,22 @@ namespace NuGet.VisualStudio
         private const string RegistryKeyRoot = @"SOFTWARE\NuGet\Repository";
         private List<SourceRepository> _repositories;
         private readonly Action<string> _errorHandler;
+        private readonly ISourceRepositoryProvider _provider;
 
-        public PreinstalledRepositoryProvider(Action<string> errorHandler)
+        public PreinstalledRepositoryProvider(Action<string> errorHandler, ISourceRepositoryProvider provider)
         {
             _repositories = new List<SourceRepository>();
             _errorHandler = errorHandler;
+            _provider = provider;
         }
 
-        public void AddFromRegistry(ISourceRepositoryProvider provider, string keyName)
+        public void AddFromRegistry(string keyName)
         {
             string path = GetRegistryRepositoryPath(keyName, null, _errorHandler);
 
             PackageSource source = new PackageSource(path);
 
-            _repositories.Add(provider.CreateRepository(source));
+            _repositories.Add(_provider.CreateRepository(source));
         }
 
         public void AddFromExtension(ISourceRepositoryProvider provider, string extensionId)
@@ -43,6 +49,13 @@ namespace NuGet.VisualStudio
             _repositories.Add(provider.CreateRepository(source));
         }
 
+        public void AddFromRepository(Legacy.NuGet.IPackageRepository repo)
+        {
+            V2PackageSource source = new V2PackageSource(repo.Source, () => repo);
+
+            _repositories.Add(_provider.CreateRepository(source));
+        }
+
         public void AddFromSource(SourceRepository repo)
         {
             _repositories.Add(repo);
@@ -50,7 +63,7 @@ namespace NuGet.VisualStudio
 
         public SourceRepository CreateRepository(PackageSource source)
         {
-            throw new NotImplementedException();
+            return _provider.CreateRepository(source);
         }
 
         public IEnumerable<SourceRepository> GetRepositories()

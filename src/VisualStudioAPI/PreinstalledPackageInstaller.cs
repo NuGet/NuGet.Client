@@ -16,6 +16,10 @@ using NuGet.VisualStudio.Resources;
 using LegacyNuGet = Legacy.NuGet;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
+using NuGet.Configuration;
+using NuGet.PackagingCore;
+using NuGet.Client;
+using System.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -27,20 +31,26 @@ namespace NuGet.VisualStudio
         private const string RegistryKeyRoot = @"SOFTWARE\NuGet\Repository";
         //private readonly IVsWebsiteHandler _websiteHandler;
         private readonly IVsPackageInstallerServices _packageServices;
-        private readonly IVsCommonOperations _vsCommonOperations;
+        //private readonly IVsCommonOperations _vsCommonOperations;
         private readonly ISolutionManager _solutionManager;
+        private readonly ISourceRepositoryProvider _sourceProvider;
+        private readonly VsPackageInstaller _installer;
 
         public Action<string> InfoHandler { get; set; }
 
         public PreinstalledPackageInstaller(
             IVsPackageInstallerServices packageServices,
-            IVsCommonOperations vsCommonOperations,
-            ISolutionManager solutionManager)
+            ISolutionManager solutionManager,
+            ISettings settings,
+            ISourceRepositoryProvider sourceProvider,
+            VsPackageInstaller installer)
         {
             //_websiteHandler = websiteHandler;
             _packageServices = packageServices;
-            _vsCommonOperations = vsCommonOperations;
+            //_vsCommonOperations = vsCommonOperations;
             _solutionManager = solutionManager;
+            _sourceProvider = sourceProvider;
+            _installer = installer;
         }
 
         /// <summary>
@@ -144,6 +154,9 @@ namespace NuGet.VisualStudio
                                                 ? (LegacyNuGet.IPackageRepository)new LegacyNuGet.UnzippedPackageRepository(repositoryPath)
                                                 : (LegacyNuGet.IPackageRepository)new LegacyNuGet.LocalPackageRepository(repositoryPath);
 
+            PreinstalledRepositoryProvider repos = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
+            repos.AddFromRepository(repository);
+
             foreach (var package in configuration.Packages)
             {
                 // Does the project already have this package installed?
@@ -166,7 +179,12 @@ namespace NuGet.VisualStudio
                             InfoHandler(String.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_PackageInstallStatus, package.Id, package.Version));
                         }
 
-                        packageInstaller.InstallPackage(repository, project, package.Id, package.Version.ToString(), ignoreDependencies: package.IgnoreDependencies, skipAssemblyReferences: package.SkipAssemblyReferences);
+                        List<PackageIdentity> toInstall = new List<PackageIdentity>();
+                        toInstall.Add(new PackageIdentity(package.Id, package.Version));
+
+                        _installer.InstallInternal(project, toInstall, repos, package.SkipAssemblyReferences, package.IgnoreDependencies, CancellationToken.None).Wait();
+
+                        //packageInstaller.InstallPackage(repository, project, package.Id, package.Version.ToString(), ignoreDependencies: package.IgnoreDependencies, skipAssemblyReferences: package.SkipAssemblyReferences);
                     }
                     catch (InvalidOperationException exception)
                     {
@@ -185,8 +203,6 @@ namespace NuGet.VisualStudio
 
                 errorHandler(errorString.ToString());
             }
-
-            throw new NotImplementedException();
 
             // RepositorySettings = null in unit tests
             //if (project.IsWebSite() && repositorySettings != null)
@@ -227,74 +243,6 @@ namespace NuGet.VisualStudio
             throw new NotImplementedException();
             //IEnumerable<PackageName> packageNames = packageInfos.Select(pi => new PackageName(pi.Id, pi.Version));
             //_websiteHandler.CopyNativeBinaries(project, new PhysicalFileSystem(repositoryPath), packageNames);
-        }
-
-        private class ExtensionManagerShim
-        {
-            private static Type _iInstalledExtensionType;
-            private static Type _iVsExtensionManagerType;
-            private static PropertyInfo _installPathProperty;
-            private static Type _sVsExtensionManagerType;
-            private static MethodInfo _tryGetInstalledExtensionMethod;
-            private static bool _typesInitialized;
-
-            private readonly object _extensionManager;
-
-            public ExtensionManagerShim(object extensionManager, Action<string> errorHandler)
-            {
-                InitializeTypes(errorHandler);
-                _extensionManager = extensionManager ?? Package.GetGlobalService(_sVsExtensionManagerType);
-            }
-
-            private static void InitializeTypes(Action<string> errorHandler)
-            {
-                if (_typesInitialized)
-                {
-                    return;
-                }
-
-                try
-                {
-                    Assembly extensionManagerAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                        .First(a => a.FullName.StartsWith("Microsoft.VisualStudio.ExtensionManager,"));
-                    _sVsExtensionManagerType =
-                        extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager");
-                    _iVsExtensionManagerType =
-                        extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager");
-                    _iInstalledExtensionType =
-                        extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IInstalledExtension");
-                    _tryGetInstalledExtensionMethod = _iVsExtensionManagerType.GetMethod("TryGetInstalledExtension",
-                        new[] { typeof(string), _iInstalledExtensionType.MakeByRefType() });
-                    _installPathProperty = _iInstalledExtensionType.GetProperty("InstallPath", typeof(string));
-                    if (_installPathProperty == null || _tryGetInstalledExtensionMethod == null ||
-                        _sVsExtensionManagerType == null)
-                    {
-                        throw new Exception();
-                    }
-
-                    _typesInitialized = true;
-                }
-                catch
-                {
-                    // if any of the types or methods cannot be loaded throw an error. this indicates that some API in
-                    // Microsoft.VisualStudio.ExtensionManager got changed.
-                    errorHandler(VsResources.PreinstalledPackages_ExtensionManagerError);
-                }
-            }
-
-            public bool TryGetExtensionInstallPath(string extensionId, out string installPath)
-            {
-                installPath = null;
-                object[] parameters = new object[] { extensionId, null };
-                bool result = (bool)_tryGetInstalledExtensionMethod.Invoke(_extensionManager, parameters);
-                if (!result)
-                {
-                    return false;
-                }
-                object extension = parameters[1];
-                installPath = _installPathProperty.GetValue(extension, index: null) as string;
-                return true;
-            }
         }
     }
 }

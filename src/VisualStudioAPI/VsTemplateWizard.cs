@@ -15,6 +15,8 @@ using NuGetConsole;
 using NuGet.Versioning;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
+using NuGet.Configuration;
+using NuGet.Client;
 
 namespace NuGet.VisualStudio
 {
@@ -27,27 +29,30 @@ namespace NuGet.VisualStudio
         private DTE _dte;
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IOutputConsoleProvider _consoleProvider;
-        private readonly IVsCommonOperations _vsCommonOperations;
         private readonly ISolutionManager _solutionManager;
         private readonly PreinstalledPackageInstaller _preinstalledPackageInstaller;
+        private readonly ISettings _settings;
+        private readonly ISourceRepositoryProvider _sourceProvider;
 
         [ImportingConstructor]
         public VsTemplateWizard(
             IVsPackageInstaller installer,
             IVsPackageInstallerServices packageServices,
             IOutputConsoleProvider consoleProvider,
-            IVsCommonOperations vsCommonOperations,
-            ISolutionManager solutionManager)
+            ISolutionManager solutionManager,
+            ISettings settings,
+            ISourceRepositoryProvider sourceProvider
+            )
         {
             _installer = installer;
             //_websiteHandler = websiteHandler;
             _packageServices = packageServices;
             _consoleProvider = consoleProvider;
-            _vsCommonOperations = vsCommonOperations;
             _solutionManager = solutionManager;
+            _settings = settings;
+            _sourceProvider = sourceProvider;
 
-            //_preinstalledPackageInstaller = new PreinstalledPackageInstaller(_websiteHandler, _packageServices, _vsCommonOperations, _solutionManager);
-            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _vsCommonOperations, _solutionManager);
+            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer);
         }
 
         [Import]

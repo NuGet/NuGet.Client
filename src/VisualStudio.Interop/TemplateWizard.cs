@@ -15,13 +15,14 @@ namespace NuGet.VisualStudio
     internal sealed class TemplateWizard : IWizard
     {
         [Import]
-        internal IWizard Wizard { get; set; }
+        internal IVsTemplateWizard Wizard { get; set; }
 
         private void Initialize(object automationObject)
         {
             using (var serviceProvider = new ServiceProvider((IServiceProvider)automationObject))
             {
                 var componentModel = (IComponentModel)serviceProvider.GetService(typeof(SComponentModel));
+
                 using (var container = new CompositionContainer(componentModel.DefaultExportProvider))
                 {
                     container.ComposeParts(this);
