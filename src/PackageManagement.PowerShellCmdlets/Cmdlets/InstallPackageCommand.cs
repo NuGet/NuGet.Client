@@ -235,7 +235,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
                     if (identity != null)
                     {
-                        Uri downloadUri = new Uri(Id);
+                        string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
                         using (var targetPackageStream = new FileStream(Source, FileMode.Create, FileAccess.ReadWrite))
                         {
                             PackageDownloader.GetPackageStream(ActiveSourceRepository, identity, targetPackageStream).Wait();
