@@ -143,7 +143,26 @@ namespace NuGet.Configuration
 
             SetDefaultPackageSources(loadedPackageSources, machineWideSourcesCount);
 
+            foreach (var source in loadedPackageSources)
+            {
+                source.Description = GetDescription(source);
+            }
+
             return loadedPackageSources;
+        }
+
+        // Gets the description of the source if it matches a default source.
+        // Returns null if it does not match a default source
+        private string GetDescription(PackageSource source)
+        {
+            var matchingSource = _providerDefaultPrimarySources.FirstOrDefault(
+                s => StringComparer.OrdinalIgnoreCase.Equals(s.Source, source.Source));
+            if (matchingSource != null)
+            {
+                return matchingSource.Description;
+            }
+
+            return null;
         }
 
         private PackageSourceCredential ReadCredential(string sourceName)

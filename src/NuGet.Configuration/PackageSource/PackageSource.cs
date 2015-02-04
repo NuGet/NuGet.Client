@@ -107,7 +107,14 @@ namespace NuGet.Configuration
 
         public PackageSource Clone()
         {
-            return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable) { UserName = UserName, Password = Password, IsPasswordClearText = IsPasswordClearText, IsMachineWide = IsMachineWide };
+            return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable) 
+                { 
+                    Description = Description,
+                    UserName = UserName, 
+                    Password = Password, 
+                    IsPasswordClearText = IsPasswordClearText, 
+                    IsMachineWide = IsMachineWide 
+                };
         }
     }
 
