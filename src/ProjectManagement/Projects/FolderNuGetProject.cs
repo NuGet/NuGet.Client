@@ -38,12 +38,13 @@ namespace NuGet.ProjectManagement
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.AnyFramework);
         }
 
-        public override IEnumerable<PackageReference> GetInstalledPackages()
+        public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return Enumerable.Empty<PackageReference>();
+            return Task.FromResult(Enumerable.Empty<PackageReference>());
         }
 
-        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
+        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)
             {
@@ -75,16 +76,16 @@ namespace NuGet.ProjectManagement
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Root);
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
             packageStream.Seek(0, SeekOrigin.Begin);
-            PackageExtractor.ExtractPackageAsync(packageStream, packageIdentity, PackagePathResolver, nuGetProjectContext.PackageExtractionContext,
-                PackageSaveMode, CancellationToken.None).Wait();
+            await PackageExtractor.ExtractPackageAsync(packageStream, packageIdentity, PackagePathResolver, nuGetProjectContext.PackageExtractionContext,
+                PackageSaveMode, token);
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
             return true;
         }
 
-        public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // No-op: There is no uninstall on a folder NuGetProject
-            return true;
+            return Task.FromResult(true);
         }
 
         /// <summary>

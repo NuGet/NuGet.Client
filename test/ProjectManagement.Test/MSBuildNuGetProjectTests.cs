@@ -7,6 +7,8 @@ using System.Linq;
 using Test.Utility;
 using Xunit;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace ProjectManagement.Test
 {
@@ -14,7 +16,7 @@ namespace ProjectManagement.Test
     {
         #region Assembly references tests
         [Fact]
-        public void TestMSBuildNuGetProjectInstallReferences()
+        public async Task TestMSBuildNuGetProjectInstallReferences()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -22,17 +24,18 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
-            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);            
 
             // Pre-Assert
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -41,14 +44,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -63,7 +66,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestMSBuildNuGetProjectUninstallReferences()
+        public async Task TestMSBuildNuGetProjectUninstallReferences()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -71,6 +74,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -81,7 +85,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -90,14 +94,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -108,9 +112,9 @@ namespace ProjectManagement.Test
                 "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First().Value);
 
             // Main Act
-            msBuildNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
+            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
@@ -122,7 +126,7 @@ namespace ProjectManagement.Test
 
         #region Framework reference tests
         [Fact]
-        public void TestMSBuildNuGetProjectInstallFrameworkReferences()
+        public async Task TestMSBuildNuGetProjectInstallFrameworkReferences()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -130,6 +134,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -140,7 +145,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -149,14 +154,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -171,7 +176,7 @@ namespace ProjectManagement.Test
 
         #region Content files tests
         [Fact]
-        public void TestMSBuildNuGetProjectInstallContentFiles()
+        public async Task TestMSBuildNuGetProjectInstallContentFiles()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -179,6 +184,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -189,7 +195,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -198,14 +204,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -222,7 +228,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestMSBuildNuGetProjectUninstallContentFiles()
+        public async Task TestMSBuildNuGetProjectUninstallContentFiles()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -230,6 +236,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -240,7 +247,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -249,14 +256,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -269,11 +276,11 @@ namespace ProjectManagement.Test
             Assert.Equal("packages.config", filesList[3]);
 
             // Main Act
-            msBuildNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
+            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
             // Check that the packages.config file does not exist after the uninstallation
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             // Check that the files have been removed from MSBuildNuGetProjectSystem
             Assert.Equal(0, msBuildNuGetProjectSystem.Files.Count);
@@ -286,7 +293,7 @@ namespace ProjectManagement.Test
 
         #region XmlTransform tests
         [Fact]
-        public void TestMSBuildNuGetProjectInstallWebConfigTransform()
+        public async Task TestMSBuildNuGetProjectInstallWebConfigTransform()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -294,6 +301,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -315,7 +323,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -332,14 +340,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -368,7 +376,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestMSBuildNuGetProjectUninstallWebConfigTransform()
+        public async Task TestMSBuildNuGetProjectUninstallWebConfigTransform()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -376,6 +384,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -395,7 +404,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -410,14 +419,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -440,7 +449,7 @@ namespace ProjectManagement.Test
             }
 
             // Main Act
-            msBuildNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
+            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
             // Check that the reference has been added to MSBuildNuGetProjectSystem
@@ -468,7 +477,7 @@ namespace ProjectManagement.Test
 
         #region Import tests
         [Fact]
-        public void TestMSBuildNuGetProjectAddImport()
+        public async Task TestMSBuildNuGetProjectAddImport()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -476,6 +485,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -486,7 +496,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -495,14 +505,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -516,7 +526,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestMSBuildNuGetProjectRemoveImport()
+        public async Task TestMSBuildNuGetProjectRemoveImport()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -524,6 +534,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -534,7 +545,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -543,14 +554,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -560,13 +571,13 @@ namespace ProjectManagement.Test
                 "build\\net45\\build.targets"), msBuildNuGetProjectSystem.Imports.First());
 
             // Main Act
-            msBuildNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
+            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
             // Check that the packages.config file does not exist after uninstallation
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             // Check that the imports are removed
             Assert.Equal(0, msBuildNuGetProjectSystem.Imports.Count);
@@ -578,7 +589,7 @@ namespace ProjectManagement.Test
 
         #region Powershell tests
         [Fact]
-        public void TestMSBuildNuGetProjectPSInstallAndInit()
+        public async Task TestMSBuildNuGetProjectPSInstallAndInit()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -586,6 +597,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -596,7 +608,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -605,14 +617,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -629,7 +641,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestMSBuildNuGetProjectPSUninstall()
+        public async Task TestMSBuildNuGetProjectPSUninstall()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -637,6 +649,7 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -647,7 +660,7 @@ namespace ProjectManagement.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
@@ -656,14 +669,14 @@ namespace ProjectManagement.Test
             using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                msBuildNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
@@ -676,13 +689,13 @@ namespace ProjectManagement.Test
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
 
             // Main Act
-            msBuildNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
+            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
             // Check that the packages.config file does not exist after uninstallation
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             // Check that the ps script install.ps1 has been executed
             Assert.Equal(3, msBuildNuGetProjectSystem.ScriptsExecuted.Count);

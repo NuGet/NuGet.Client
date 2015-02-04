@@ -5,6 +5,8 @@ using NuGet.Versioning;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Test.Utility;
 using Xunit;
 
@@ -13,7 +15,7 @@ namespace ProjectManagement.Test
     public class PackagesConfigNuGetProjectTests
     {
         [Fact]
-        public void TestInstallPackage()
+        public async Task TestInstallPackage()
         {
             // Arrange
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
@@ -25,19 +27,20 @@ namespace ProjectManagement.Test
             };
             var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
             var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+            var token = CancellationToken.None;
 
             // Act
-            packagesConfigNuGetProject.InstallPackage(packageIdentity, Stream.Null, new TestNuGetProjectContext());
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, new TestNuGetProjectContext(), token);
 
             // Assert
-            var installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
         }
 
         [Fact]
-        public void TestUninstallLastPackage()
+        public async Task TestUninstallLastPackage()
         {
             // Arrange
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
@@ -50,26 +53,27 @@ namespace ProjectManagement.Test
             var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
             var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var testNuGetProjectContext = new TestNuGetProjectContext();
+            var token = CancellationToken.None;
 
             // Act
-            packagesConfigNuGetProject.InstallPackage(packageIdentity, Stream.Null, testNuGetProjectContext);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, testNuGetProjectContext, token);
 
             // Assert
-            var installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
             // Main Act
-            packagesConfigNuGetProject.UninstallPackage(packageIdentity, testNuGetProjectContext);
+            await packagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Main Assert
-            installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, installedPackagesList.Count);
         }
 
         [Fact]
-        public void TestInstallSecondPackage()
+        public async Task TestInstallSecondPackage()
         {
             // Arrange
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
@@ -84,20 +88,21 @@ namespace ProjectManagement.Test
             var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
             var testNuGetProjectContext = new TestNuGetProjectContext();
+            var token = CancellationToken.None;
 
             // Act
-            packagesConfigNuGetProject.InstallPackage(packageA, Stream.Null, testNuGetProjectContext);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA, Stream.Null, testNuGetProjectContext, token);
 
             // Assert
-            var installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
             // Main Act
-            packagesConfigNuGetProject.InstallPackage(packageB, Stream.Null, testNuGetProjectContext);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageB, Stream.Null, testNuGetProjectContext, token);
             // Assert
-            installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, installedPackagesList.Count);
             Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
             Assert.Equal(packageB, installedPackagesList[1].PackageIdentity);
@@ -106,7 +111,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestUninstallPenultimatePackage()
+        public async Task TestUninstallPenultimatePackage()
         {
             // Arrange
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
@@ -121,20 +126,21 @@ namespace ProjectManagement.Test
             var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
             var testNuGetProjectContext = new TestNuGetProjectContext();
+            var token = CancellationToken.None;
 
             // Act
-            packagesConfigNuGetProject.InstallPackage(packageA, Stream.Null, testNuGetProjectContext);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA, Stream.Null, testNuGetProjectContext, token);
 
             // Assert
-            var installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
             // Act
-            packagesConfigNuGetProject.InstallPackage(packageB, Stream.Null, testNuGetProjectContext);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageB, Stream.Null, testNuGetProjectContext, token);
             // Assert
-            installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, installedPackagesList.Count);
             Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
             Assert.Equal(packageB, installedPackagesList[1].PackageIdentity);
@@ -142,17 +148,17 @@ namespace ProjectManagement.Test
             Assert.Equal(targetFramework, installedPackagesList[1].TargetFramework);
 
             // Main Act
-            packagesConfigNuGetProject.UninstallPackage(packageA, testNuGetProjectContext);
+            await packagesConfigNuGetProject.UninstallPackageAsync(packageA, testNuGetProjectContext, token);
 
             // Main Assert
-            installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageB, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
         }
 
         [Fact]
-        public void TestInstallHigherVersionPackage()
+        public async Task TestInstallHigherVersionPackage()
         {
             // Arrange
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
@@ -165,21 +171,22 @@ namespace ProjectManagement.Test
             var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
             var packageA1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var packageA2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+            var token = CancellationToken.None;
 
             // Act
-            packagesConfigNuGetProject.InstallPackage(packageA1, Stream.Null, new TestNuGetProjectContext());
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA1, Stream.Null, new TestNuGetProjectContext(), token);
 
             // Assert
-            var installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageA1, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
             // Main Act
-            packagesConfigNuGetProject.InstallPackage(packageA2, Stream.Null, new TestNuGetProjectContext());
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA2, Stream.Null, new TestNuGetProjectContext(), token);
 
             // Assert
-            installedPackagesList = packagesConfigNuGetProject.GetInstalledPackages().ToList();
+            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageA2, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);

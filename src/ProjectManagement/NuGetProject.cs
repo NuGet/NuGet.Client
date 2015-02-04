@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -33,17 +35,18 @@ namespace NuGet.ProjectManagement
         /// <param name="packageStream"></param> should be seekable
         /// </summary>
         /// <returns>Returns false if the package was already present in the NuGetProject. On successful installation, returns true</returns>
-        public abstract bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext);
+        public abstract Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token);
         /// <summary>
         /// This uninstalls the package from the NuGetProject, if found
         /// </summary>
         /// <returns>Returns false if the package was not found. On successful uninstallation, returns true</returns>
-        public abstract bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext);
+        public abstract Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token);
         /// <summary>
         /// GetInstalledPackages will be used by Dependency Resolver and more
         /// </summary>
         /// <returns></returns>
-        public abstract IEnumerable<PackageReference> GetInstalledPackages();
+        public abstract Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token);
         public T GetMetadata<T>(string key)
         {
             if(key == null)

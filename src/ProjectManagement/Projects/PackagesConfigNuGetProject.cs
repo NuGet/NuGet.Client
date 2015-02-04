@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace NuGet.ProjectManagement
@@ -33,7 +35,8 @@ namespace NuGet.ProjectManagement
             TargetFramework = GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
         }
 
-        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
+        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {            
             if (packageIdentity == null)
             {
@@ -81,7 +84,7 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)
             {
@@ -126,7 +129,7 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public override IEnumerable<PackageReference> GetInstalledPackages()
+        public async override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             return GetInstalledPackagesList();
         }

@@ -6,6 +6,8 @@ using NuGet.Versioning;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
 using Test.Utility;
 using Xunit;
 
@@ -14,7 +16,7 @@ namespace ProjectManagement.Test
     public class FolderNuGetProjectTests
     {
         [Fact]
-        public void TestFolderNuGetProjectInstall()
+        public async Task TestFolderNuGetProjectInstall()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -25,10 +27,11 @@ namespace ProjectManagement.Test
             var packageInstallPath = folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
             var nupkgFilePath = Path.Combine(packageInstallPath, folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
             var testNuGetProjectContext = new TestNuGetProjectContext();
+            var token = CancellationToken.None;
             using(var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
-                folderNuGetProject.InstallPackage(packageIdentity, packageStream, testNuGetProjectContext);
+                await folderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
             // Assert

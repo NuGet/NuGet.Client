@@ -9,6 +9,8 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace NuGet.ProjectManagement
@@ -82,9 +84,9 @@ namespace NuGet.ProjectManagement
             PackagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, InternalMetadata);
         }
 
-        public override IEnumerable<PackageReference> GetInstalledPackages()
+        public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return PackagesConfigNuGetProject.GetInstalledPackages();
+            return PackagesConfigNuGetProject.GetInstalledPackagesAsync(token);
         }
 
         public void AddBindingRedirects()
@@ -92,7 +94,8 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystem.AddBindingRedirects();
         }
 
-        public override bool InstallPackage(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext)
+        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if(packageIdentity == null)
             {
@@ -117,7 +120,7 @@ namespace NuGet.ProjectManagement
             // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
-            var packageReference = GetInstalledPackages().Where(
+            var packageReference = (await GetInstalledPackagesAsync(token)).Where(
                 p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
             if (packageReference != null)
             {
@@ -161,7 +164,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-5: Install package to FolderNuGetProject     
-            FolderNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
+            await FolderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
 
             // Step-6: MSBuildNuGetProjectSystem operations
             // Step-6.1: Add references to project
@@ -217,7 +220,7 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystem.AddBindingRedirects();
 
             // Step-7: Install package to PackagesConfigNuGetProject
-            PackagesConfigNuGetProject.InstallPackage(packageIdentity, packageStream, nuGetProjectContext);
+            await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
 
             // Step-8: Add packages.config to MSBuildNuGetProject
             MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
@@ -257,7 +260,7 @@ namespace NuGet.ProjectManagement
                 folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
         }
 
-        public override bool UninstallPackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)
             {
@@ -272,7 +275,7 @@ namespace NuGet.ProjectManagement
             // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
-            var packageReference = GetInstalledPackages().Where(
+            var packageReference = (await GetInstalledPackagesAsync(token)).Where(
                 p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
             if (packageReference == null)
             {
@@ -307,10 +310,10 @@ namespace NuGet.ProjectManagement
                 // TODO: Need to handle References element??
 
                 // Step-4: Uninstall package from packages.config
-                PackagesConfigNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
+                await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
                 // Step-5: Remove packages.config from MSBuildNuGetProject if there are no packages
-                if(!PackagesConfigNuGetProject.GetInstalledPackages().Any())
+                if(!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
                 {
                     MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
                 }
@@ -335,7 +338,7 @@ namespace NuGet.ProjectManagement
                 {
                     MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
                         zipArchive,
-                        GetInstalledPackages().Select(pr => GetPackagePath(FolderNuGetProject, pr.PackageIdentity)),
+                        (await GetInstalledPackagesAsync(token)).Select(pr => GetPackagePath(FolderNuGetProject, pr.PackageIdentity)),
                         compatibleContentFilesGroup,
                         FileTransformers);
                 }
@@ -369,7 +372,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-8: Uninstall package from the folderNuGetProject
-            FolderNuGetProject.UninstallPackage(packageIdentity, nuGetProjectContext);
+            await FolderNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
             return true;
         }
