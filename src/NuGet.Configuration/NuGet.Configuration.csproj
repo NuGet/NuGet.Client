@@ -50,6 +50,7 @@
     <Compile Include="Utility\CryptoHashProvider.cs" />
     <Compile Include="Utility\EncryptionUtility.cs" />
     <Compile Include="Utility\FileSystemUtility.cs" />
+    <Compile Include="Utility\SettingsUtility.cs" />
     <Compile Include="Utility\XmlUtility.cs" />
     <Compile Include="Settings\ISettings.cs" />
     <Compile Include="NuGet.Configuration.Resources.Designer.cs">
