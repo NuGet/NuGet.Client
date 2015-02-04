@@ -18,12 +18,12 @@ namespace NuGet.Client
     public sealed class SourceRepositoryProvider : ISourceRepositoryProvider
     {
         private static PackageSource[] DefaultSources = new [] {
-            new PackageSource("https://www.nuget.org/api/v2/", "nuget.org", isEnabled:true, isOfficial: true)
+            new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, isEnabled:true, isOfficial: true)
             {
                 Description = Resource.v2sourceDescription
             },
 
-            new PackageSource("https://api.nuget.org/v3/index.json", "api.nuget.org", isEnabled:true, isOfficial: true)
+            new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName, isEnabled:true, isOfficial: true)
             {
                 Description = Resource.v3sourceDescription
             }
