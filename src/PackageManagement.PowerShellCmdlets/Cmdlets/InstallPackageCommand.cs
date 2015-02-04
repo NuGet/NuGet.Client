@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Net;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -235,8 +236,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
                     if (identity != null)
                     {
+                        DirectoryInfo info = Directory.CreateDirectory(Source);
                         string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
-                        using (var targetPackageStream = new FileStream(Source, FileMode.Create, FileAccess.ReadWrite))
+                        using (var targetPackageStream = new FileStream(downloadPath, FileMode.Create, FileAccess.ReadWrite))
                         {
                             PackageDownloader.GetPackageStream(ActiveSourceRepository, identity, targetPackageStream).Wait();
                         }

@@ -31,14 +31,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Project project = projects.Pop();
 
-                if (project.IsExplicitlyUnsupported())
+                if (project.IsSupported())
+                {
+                    yield return project;
+                }
+                else if (project.IsExplicitlyUnsupported())
                 {
                     // do not drill down further if this project is explicitly unsupported, e.g. LightSwitch projects
                     continue;
-                }
-                else
-                {
-                    yield return project;
                 }
 
                 ProjectItems projectItems = null;
