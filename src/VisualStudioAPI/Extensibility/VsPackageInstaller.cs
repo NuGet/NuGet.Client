@@ -15,6 +15,7 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.PackagingCore;
 using NuGet.Client;
+using System.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -188,7 +189,8 @@ namespace NuGet.VisualStudio
                 foreach (PackageIdentity package in packages)
                 {
                     // HACK: We need to update nuget package manager to always take in an IEnumerable of primary repositories
-                    packageManager.InstallPackageAsync(nuGetProject, package, resolution, _projectContext, repoProvider.GetRepositories().First()).Wait();
+                    packageManager.InstallPackageAsync(nuGetProject, package, resolution, _projectContext, repoProvider.GetRepositories().First(),
+                        null, CancellationToken.None).Wait();
                 }
             }
             finally

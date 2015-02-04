@@ -9,6 +9,7 @@ using EnvDTE;
 using NuGet.VisualStudio.Resources;
 using NuGet.PackageManagement;
 using NuGet.Versioning;
+using System.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -29,7 +30,9 @@ namespace NuGet.VisualStudio
         {
             foreach (var project in _solutionManager.GetNuGetProjects())
             {
-                foreach (var package in project.GetInstalledPackages())
+                var task = project.GetInstalledPackagesAsync(CancellationToken.None);
+                task.Wait();
+                foreach (var package in task.Result)
                 {
                     // TODO: populate this data!!!
                     throw new NotImplementedException();
@@ -52,7 +55,9 @@ namespace NuGet.VisualStudio
             {
                 if (StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(curProject), project.UniqueName))
                 {
-                    foreach (var package in curProject.GetInstalledPackages())
+                    var task = curProject.GetInstalledPackagesAsync(CancellationToken.None);
+                    task.Wait();
+                    foreach (var package in task.Result)
                     {
                         // TODO: populate this data!!!
                         throw new NotImplementedException();

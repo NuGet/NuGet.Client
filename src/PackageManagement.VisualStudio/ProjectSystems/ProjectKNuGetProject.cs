@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -54,7 +55,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public override bool InstallPackage(PackagingCore.PackageIdentity packageIdentity, System.IO.Stream packageStream, INuGetProjectContext nuGetProjectContext)
+        public async override Task<bool> InstallPackageAsync(PackagingCore.PackageIdentity packageIdentity, System.IO.Stream packageStream,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (!packageStream.CanSeek)
             {
@@ -65,7 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var zipArchive = new ZipArchive(packageStream);
             PackageReader packageReader = new PackageReader(zipArchive);
             var packageSupportedFrameworks = packageReader.GetSupportedFrameworks();
-            var projectFrameworks = _project.GetSupportedFrameworksAsync(CancellationToken.None)
+            var projectFrameworks = _project.GetSupportedFrameworksAsync(token)
                 .Result
                 .Select(f => NuGetFramework.Parse(f.FullName));
 
@@ -73,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio
             args["Frameworks"] = projectFrameworks.Where(
                 projectFramework =>
                     IsCompatible(projectFramework, packageSupportedFrameworks)).ToArray();
-            var task = _project.InstallPackageAsync(
+            await _project.InstallPackageAsync(
                 new NuGetPackageMoniker
                 {
                     Id = packageIdentity.Id,
@@ -82,15 +84,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 args,
                 logger: null,
                 progress: null,
-                cancellationToken: CancellationToken.None);
-            task.Wait();
+                cancellationToken: token);
             return true;
         }
 
-        public override bool UninstallPackage(PackagingCore.PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        public async override Task<bool> UninstallPackageAsync(PackagingCore.PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var args = new Dictionary<string, object>();
-            var task = _project.UninstallPackageAsync(
+            await _project.UninstallPackageAsync(
                 new NuGetPackageMoniker
                 {
                     Id = packageIdentity.Id,
@@ -99,18 +100,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 args,
                 logger: null,
                 progress: null,
-                cancellationToken: CancellationToken.None);
-            task.Wait();
+                cancellationToken: token);
             return true;
         }
 
-        public override IEnumerable<Packaging.PackageReference> GetInstalledPackages()
+        public async override Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            var task = _project.GetInstalledPackagesAsync(CancellationToken.None);
-            task.Wait();
-
             var result = new List<Packaging.PackageReference>();
-            foreach (object item in task.Result)
+            foreach (object item in await _project.GetInstalledPackagesAsync(token))
             {
                 PackagingCore.PackageIdentity identity = null;
 

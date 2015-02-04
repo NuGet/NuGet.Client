@@ -8,6 +8,7 @@ using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Client;
+using System.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -51,7 +52,7 @@ namespace NuGet.VisualStudio
                 INuGetProjectContext projectContext = new VSAPIProjectContext();
 
                 // uninstall the package
-                packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext).Wait();
+                packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None).Wait();
             }
             finally
             {

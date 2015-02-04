@@ -7,6 +7,7 @@ using NuGet.Versioning;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -37,7 +38,7 @@ namespace NuGet.PackageManagement_TestVSExtension
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
-        private void AddPackage(object sender, RoutedEventArgs e)
+        private async void AddPackage(object sender, RoutedEventArgs e)
         {            
             Init();
             try
@@ -53,7 +54,7 @@ namespace NuGet.PackageManagement_TestVSExtension
                     {
                         using(var packageStream = File.OpenRead(packagePath))
                         {
-                            nuGetProject.InstallPackage(packageIdentity, packageStream, MyControlNuGetProjectContext);
+                            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, MyControlNuGetProjectContext, CancellationToken.None);
                         }
                     }
                     else
@@ -72,7 +73,7 @@ namespace NuGet.PackageManagement_TestVSExtension
             }
         }
 
-        private void RemovePackage(object sender, RoutedEventArgs e)
+        private async void RemovePackage(object sender, RoutedEventArgs e)
         {
             Init();
             try
@@ -80,14 +81,15 @@ namespace NuGet.PackageManagement_TestVSExtension
                 var nuGetProject = SolutionManager.DefaultNuGetProject;
                 if (nuGetProject != null)
                 {
-                    var addedPackageReference = nuGetProject.GetInstalledPackages()
+                    var addedPackageReference = (await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None))
                         .Where(i => RemovePackageId.Text.Equals(i.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase))
                         .FirstOrDefault();
 
                     if(addedPackageReference != null)
                     {
                         MessageBox.Show("You want to remove package " + addedPackageReference.PackageIdentity);
-                        nuGetProject.UninstallPackage(addedPackageReference.PackageIdentity, MyControlNuGetProjectContext);
+                        await nuGetProject.UninstallPackageAsync(addedPackageReference.PackageIdentity,
+                            MyControlNuGetProjectContext, CancellationToken.None);
                     }
                     else
                     {

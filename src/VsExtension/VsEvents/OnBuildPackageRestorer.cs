@@ -177,6 +177,7 @@ namespace NuGetVSExtension
             _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
             var waitDialogFactory = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
             waitDialogFactory.CreateInstance(out _waitDialog);
+            var token = CancellationToken.None;
 
             try
             {
@@ -184,7 +185,7 @@ namespace NuGetVSExtension
                 {
                     if (scope == vsBuildScope.vsBuildScopeSolution || scope == vsBuildScope.vsBuildScopeBatch || scope == vsBuildScope.vsBuildScopeProject)
                     {
-                        TotalCount = PackageRestoreManager.GetMissingPackagesInSolution().ToList().Count;
+                        TotalCount = (await PackageRestoreManager.GetMissingPackagesInSolution(token)).ToList().Count;
                         if (TotalCount > 0)
                         {
                             _waitDialog.StartWaitDialog(
@@ -196,9 +197,8 @@ namespace NuGetVSExtension
                                     iDelayToShowDialog: 0,
                                     fIsCancelable: true,
                                     fShowMarqueeProgress: true);
-                            CancellationToken token = CancellationToken.None;
                             await System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject, token)));
-                            PackageRestoreManager.RaisePackagesMissingEventForSolution();
+                            await PackageRestoreManager.RaisePackagesMissingEventForSolution(token);
                         }
                     }
                     else
@@ -217,7 +217,7 @@ namespace NuGetVSExtension
                                     iDelayToShowDialog: 0,
                                     fIsCancelable: true,
                                     fShowMarqueeProgress: true);
-                    CheckForMissingPackages(PackageRestoreManager.GetMissingPackagesInSolution().ToList());
+                    CheckForMissingPackages((await PackageRestoreManager.GetMissingPackagesInSolution(token)).ToList());
                 }
             }
             finally

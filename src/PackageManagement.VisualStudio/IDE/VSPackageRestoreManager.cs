@@ -3,6 +3,7 @@ using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using System;
 using System.ComponentModel.Composition;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -27,28 +28,24 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
 
-        private ISolutionManager SolutionManager { get; set; }
-
-        public void EnableCurrentSolutionForRestore(bool fromActivation)
+        public override void EnableCurrentSolutionForRestore(bool fromActivation)
         {
             throw new NotImplementedException();
         }
 
-        public bool IsCurrentSolutionEnabledForRestore
+        public override bool IsCurrentSolutionEnabledForRestore
         {
             get { return false; }
         }
 
-        public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
-
-        private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
+        private async void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            base.RaisePackagesMissingEventForSolution();
+            await base.RaisePackagesMissingEventForSolution(CancellationToken.None);
         }
 
-        private void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
+        private async void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
         {
             if (IsCurrentSolutionEnabledForRestore)
             {
@@ -56,7 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 //EnablePackageRestore(e.Project, _packageManagerFactory.CreatePackageManager());
             }
 
-            base.RaisePackagesMissingEventForSolution();
+            await base.RaisePackagesMissingEventForSolution(CancellationToken.None);
         }
     }
 }
