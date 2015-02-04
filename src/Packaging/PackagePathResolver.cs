@@ -23,7 +23,7 @@ namespace NuGet.Packaging
             string directoryName = packageIdentity.Id;
             if (_useSideBySidePaths)
             {
-                directoryName += "." + packageIdentity.Version;
+                directoryName += "." + packageIdentity.Version.ToNormalizedString();
             }
 
             return directoryName;
@@ -34,7 +34,7 @@ namespace NuGet.Packaging
             string fileNameBase = packageIdentity.Id;
             if(_useSideBySidePaths)
             {
-                fileNameBase += "." + packageIdentity.Version;
+                fileNameBase += "." + packageIdentity.Version.ToNormalizedString();
             }
 
             return fileNameBase + PackagingConstants.NupkgExtension;
