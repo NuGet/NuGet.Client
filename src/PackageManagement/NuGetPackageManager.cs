@@ -8,6 +8,7 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -610,20 +611,18 @@ namespace NuGet.PackageManagement
             {
                 try
                 {
-                    var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>();
-                    if(downloadResource == null)
+                    var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>();
+                    if (metadataResource != null)
                     {
-                        continue;
-                    }
-
-                    var downloadUrl = await downloadResource.GetDownloadUrl(packageIdentity);
-                    if(downloadUrl != null)
-                    {
-                        return sourceRepository;
+                        if (await metadataResource.Exists(packageIdentity, CancellationToken.None))
+                        {
+                            return sourceRepository;
+                        }
                     }
                 }
                 catch (Exception)
                 {
+                    Debug.Fail("Error finding repository");
                 }
             }
 
