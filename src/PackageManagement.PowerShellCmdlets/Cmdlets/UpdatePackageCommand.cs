@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -91,20 +92,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected override void ProcessRecordCore()
+        protected override async void ProcessRecordCore()
         {
             base.ProcessRecordCore();
 
             SubscribeToProgressEvents();
-            PerformPackageUpdatesOrReinstalls();
+            await PerformPackageUpdatesOrReinstalls();
             UnsubscribeFromProgressEvents();
         }
 
         /// <summary>
         /// Perform package updates
         /// </summary>
-        private void PerformPackageUpdatesOrReinstalls()
+        private async Task PerformPackageUpdatesOrReinstalls()
         {
+            var token = CancellationToken.None;
             // Update-Package without ID specified
             if (!_idSpecified)
             {
@@ -115,16 +117,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (Reinstall.IsPresent)
                     {
                         // Update-Package -Reinstall -> get list of installed package identities
-                        identitiesToUpdate = project.GetInstalledPackages().Select(v => v.PackageIdentity);
+                        identitiesToUpdate = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity);
                     }
                     else
                     {
                         // Update-Packages -> get list of package identities with Id and null version.
-                        identitiesToUpdate = GeneratePackageIdentityListForUpdate(project);
+                        identitiesToUpdate = await GeneratePackageIdentityListForUpdate(project, token);
                     }
 
                     // Preview update actions
-                    IEnumerable<NuGetProjectAction> actions = PackageManager.PreviewUpdatePackagesAsync(identitiesToUpdate, project, ResolutionContext, this, ActiveSourceRepository).Result;
+                    IEnumerable<NuGetProjectAction> actions = await PackageManager.PreviewUpdatePackagesAsync(identitiesToUpdate, project, ResolutionContext,
+                        this, ActiveSourceRepository, null, token);
 
                     if (!WhatIf.IsPresent)
                     {
@@ -146,7 +149,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (NuGetProject project in Projects)
                 {
-                    PackageReference installedPackage = Project.GetInstalledPackages().Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    PackageReference installedPackage = (await Project.GetInstalledPackagesAsync(token)).Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
                     // If package Id exists in Packages folder but is not actually installed to the current project, throw.
                     if (installedPackage == null)
@@ -210,7 +213,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this);
+                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -267,10 +270,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        private IEnumerable<PackageIdentity> GeneratePackageIdentityListForUpdate(NuGetProject project)
+        private async Task<IEnumerable<PackageIdentity>> GeneratePackageIdentityListForUpdate(NuGetProject project, CancellationToken token)
         {
             List<PackageIdentity> identityList = new List<PackageIdentity>();
-            IEnumerable<string> packageIds = project.GetInstalledPackages().Select(v => v.PackageIdentity.Id);
+            IEnumerable<string> packageIds = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity.Id);
             foreach (string id in packageIds)
             {
                 identityList.Add(new PackageIdentity(id, null));

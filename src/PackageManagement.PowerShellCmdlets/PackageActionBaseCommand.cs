@@ -3,6 +3,7 @@ using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using System;
 using System.Management.Automation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -78,17 +79,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (isForce)
                 {
-                    await PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext);
+                    await PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext, CancellationToken.None);
                 }
-                await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository);
+                await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
             }
             else
             {
                 if (isForce)
                 {
-                    await PackageManager.UninstallPackageAsync(project, identity.Id, uninstallContext, projectContext);
+                    await PackageManager.UninstallPackageAsync(project, identity.Id, uninstallContext, projectContext, CancellationToken.None);
                 }
-                await PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository);
+                await PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
             }
         }
 
@@ -109,17 +110,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (isForce)
                 {
-                    await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext);
+                    await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
                 }
-                await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository);
+                await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
             }
             else
             {
                 if (isForce)
                 {
-                    await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext);
+                    await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
                 }
-                await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository);
+                await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
             }
         }
 

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
+using System.Threading;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -101,14 +102,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected override void ProcessRecordCore()
+        protected override async void ProcessRecordCore()
         {
             Preprocess();
 
             // If Remote & Updates set of parameters are not specified, list the installed package.
             if (!UseRemoteSource)
             {
-                Dictionary<NuGetProject, IEnumerable<PackageReference>> packagesToDisplay = GetInstalledPackages(Projects, Filter, Skip, First);
+                Dictionary<NuGetProject, IEnumerable<PackageReference>> packagesToDisplay = await GetInstalledPackages(Projects, Filter, Skip, First);
                 WriteInstalledPackages(packagesToDisplay);
             }
             else
@@ -147,7 +148,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     foreach (NuGetProject project in Projects)
                     {
                         IEnumerable<string> frameworks = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project);
-                        IEnumerable<PackageReference> installedPackages = project.GetInstalledPackages();
+                        IEnumerable<PackageReference> installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
                         Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, frameworks, IncludePrerelease.IsPresent, Skip, First);
                         WriteUpdatePackagesFromRemoteSource(remoteUpdates, project);
                     }

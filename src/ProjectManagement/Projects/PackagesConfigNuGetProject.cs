@@ -35,7 +35,7 @@ namespace NuGet.ProjectManagement
             TargetFramework = GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
         }
 
-        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
+        public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {            
             if (packageIdentity == null)
@@ -56,7 +56,7 @@ namespace NuGet.ProjectManagement
                 if(packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
                 {
                     nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity);
-                    return false;
+                    return Task.FromResult(false);
                 }
                 else
                 {
@@ -81,10 +81,10 @@ namespace NuGet.ProjectManagement
                 writer.Close();
             }
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToPackagesConfig, packageIdentity);
-            return true;
+            return Task.FromResult(true);
         }
 
-        public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)
             {
@@ -101,7 +101,7 @@ namespace NuGet.ProjectManagement
             if(packageReference == null)
             {
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExisttInPackagesConfig, packageIdentity);
-                return false;
+                return Task.FromResult(false);
             }
 
             installedPackagesList.Remove(packageReference);
@@ -126,12 +126,12 @@ namespace NuGet.ProjectManagement
                 }
             }
             nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity);
-            return true;
+            return Task.FromResult(true);
         }
 
-        public async override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return GetInstalledPackagesList();
+            return Task.FromResult<IEnumerable<PackageReference>>(GetInstalledPackagesList());
         }
 
         private List<PackageReference> GetInstalledPackagesList()

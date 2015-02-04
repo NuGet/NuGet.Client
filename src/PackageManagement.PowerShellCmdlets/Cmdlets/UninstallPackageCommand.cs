@@ -1,6 +1,7 @@
 ﻿using NuGet.ProjectManagement;
 using System;
 using System.Management.Automation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -82,11 +83,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (isPreview)
             {
-                await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext);
+                await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
             }
             else
             {
-                await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext);
+                await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
             }
         }
 

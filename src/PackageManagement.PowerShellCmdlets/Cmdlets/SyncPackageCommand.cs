@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -30,10 +31,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Projects = VsSolutionManager.GetNuGetProjects().ToList();
         }
 
-        protected override void ProcessRecordCore()
+        protected override async void ProcessRecordCore()
         {
             base.ProcessRecordCore();
-            PackageIdentity identity = GetPackageIdentity();
+            PackageIdentity identity = await GetPackageIdentity();
 
             SubscribeToProgressEvents();
             Task syncTask = SyncPackages(Projects, identity);
@@ -69,7 +70,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Returns single package identity for resolver when Id is specified
         /// </summary>
         /// <returns></returns>
-        private PackageIdentity GetPackageIdentity()
+        private async Task<PackageIdentity> GetPackageIdentity()
         {
             PackageIdentity identity = null;
             if (!string.IsNullOrEmpty(Version))
@@ -79,7 +80,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                identity = Project.GetInstalledPackages()
+                identity = (await Project.GetInstalledPackagesAsync(CancellationToken.None))
                     .Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase))
                     .Select(v => v.PackageIdentity).FirstOrDefault();
             }
