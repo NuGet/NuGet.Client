@@ -561,7 +561,10 @@ namespace NuGet.Options
 
             if (index >= 0 && index < currentListBox.Items.Count && e.Y <= currentListBox.PreferredHeight)
             {
-                string newToolTip = ((PackageSource)currentListBox.Items[index]).Source;
+                var source = (PackageSource)currentListBox.Items[index];
+                string newToolTip = !String.IsNullOrEmpty(source.Description) ? 
+                    source.Description :
+                    source.Source;
                 string currentToolTip = packageListToolTip.GetToolTip(currentListBox);
                 if (currentToolTip != newToolTip)
                 {
