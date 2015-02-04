@@ -33,27 +33,20 @@ function Get-PackagesConfigNuGetProject {
     return $packagesConfigNuGetProject
 }
 
-<#
-function Get-ProjectPackageReferences {
+
+function Get-InstalledPackageReferencesFromProject {
     param(
         [parameter(Mandatory = $true)]
-        $Project
+        $packagesConfigNuGetProject
     )
 
-    $packageReferenceFile = New-Object NuGet.PackageReferenceFile((Get-ProjectItemPath $Project 'packages.config'))
-    $packageReferencesEnumerable = $packageReferenceFile.GetPackageReferences()
-    $packageReferences = @()
+    $token = [System.Threading.CancellationToken]::None
+    $task = $packagesConfigNuGetProject.GetInstalledPackagesAsync($token)
+    $task.Wait()
 
-    # In powershell, It is easier to simply iterate over the enumerable and create an array
-    # than to try and use the extension method ToArray in System.Linq
-    foreach($packageReference in $packageReferencesEnumerable)
-    {
-        $packageReferences += $packageReference
-    }
-
-    return ,$packageReferences
+    return ,$task.Result
 }
-#>
+
 
 function Get-ProjectPackage {
     param(
@@ -129,11 +122,11 @@ function Assert-Package {
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
         $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $actualVersion)
-        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
+        Assert-NotNull (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
     }
     else
     {
-        Assert-NotNull ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
+        Assert-NotNull (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
     }    
 }
 
@@ -164,11 +157,11 @@ function Assert-NoPackage {
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
         $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $actualVersion)
-        Assert-Null ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
+        Assert-Null (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
     }
     else
     {
-        Assert-Null ($packagesConfigNuGetProject.GetInstalledPackages() | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
+        Assert-Null (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
     }
 }
 

@@ -183,6 +183,7 @@
     <Compile Include="Utility\PathValidator.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />
+    <Compile Include="Utility\SettingsHelper.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
