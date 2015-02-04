@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Net;
-using System.Security.AccessControl;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -231,6 +231,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 // Example: install-package https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+                // TODO: Currently null ref due to bug https://github.com/NuGet/Home/issues/30. Follow up with the bug. 
                 if (_isHttp)
                 {
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
@@ -238,9 +239,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         DirectoryInfo info = Directory.CreateDirectory(Source);
                         string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
-                        using (var targetPackageStream = new FileStream(downloadPath, FileMode.Create, FileAccess.ReadWrite))
+
+                        HttpClient client = new HttpClient();
+                        Stream downloadStream = client.GetStreamAsync(Id).Result;
+                        using (var targetPackageStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write))
                         {
-                            PackageDownloader.GetPackageStream(ActiveSourceRepository, identity, targetPackageStream).Wait();
+                            downloadStream.CopyToAsync(targetPackageStream).Wait();
                         }
                     }
                 }
