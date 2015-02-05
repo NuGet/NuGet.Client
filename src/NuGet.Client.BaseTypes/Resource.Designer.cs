@@ -61,7 +61,7 @@ namespace NuGet.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to legacy source.
+        ///   Looks up a localized string similar to API v2 (legacy).
         /// </summary>
         internal static string v2sourceDescription {
             get {
@@ -70,7 +70,7 @@ namespace NuGet.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to API v3 source.
+        ///   Looks up a localized string similar to API v3.
         /// </summary>
         internal static string v3sourceDescription {
             get {

@@ -118,9 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="v2sourceDescription" xml:space="preserve">
-    <value>legacy source</value>
+    <value>API v2 (legacy)</value>
   </data>
   <data name="v3sourceDescription" xml:space="preserve">
-    <value>API v3 source</value>
+    <value>API v3</value>
   </data>
 </root>

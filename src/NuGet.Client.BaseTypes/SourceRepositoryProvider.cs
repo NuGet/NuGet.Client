@@ -17,16 +17,18 @@ namespace NuGet.Client
     [Export(typeof(ISourceRepositoryProvider))]
     public sealed class SourceRepositoryProvider : ISourceRepositoryProvider
     {
-        private static PackageSource[] DefaultSources = new [] {
-            new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, isEnabled:true, isOfficial: true)
-            {
-                Description = Resource.v2sourceDescription
-            },
-
+        private static PackageSource[] DefaultPrimarySources = new [] {
             new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName, isEnabled:true, isOfficial: true)
             {
                 Description = Resource.v3sourceDescription
             }
+        };
+
+        private static PackageSource[] DefaultSecondarySources = new [] {
+            new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, isEnabled:true, isOfficial: true)
+            {
+                Description = Resource.v2sourceDescription
+            }            
         };
 
         // TODO: add support for reloading sources when changes occur
@@ -47,7 +49,7 @@ namespace NuGet.Client
         /// </summary>
         [ImportingConstructor]
         public SourceRepositoryProvider([ImportMany]IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> resourceProviders, [Import]ISettings settings)
-            : this(new PackageSourceProvider(settings, DefaultSources, null), resourceProviders)
+            : this(new PackageSourceProvider(settings, DefaultPrimarySources, DefaultSecondarySources, migratePackageSources: null), resourceProviders)
         {
 
         }
