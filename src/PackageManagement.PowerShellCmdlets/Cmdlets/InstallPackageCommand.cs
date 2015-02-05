@@ -11,6 +11,7 @@ using System.Management.Automation;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets

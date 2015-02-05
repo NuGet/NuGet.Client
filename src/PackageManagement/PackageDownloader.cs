@@ -18,14 +18,14 @@ namespace NuGet.PackageManagement
         /// Sets <param name="targetPackageStream"></param> for a given <param name="packageIdentity"></param> 
         /// from the given <param name="sourceRepository"></param>. If successfully set, returns true. Otherwise, false
         /// </summary>
-        public static async Task<bool> GetPackageStream(SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream)
+        public static async Task<bool> GetPackageStream(SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream, CancellationToken token)
         {
             // TODO: Tie up machine cache with CacheClient?!
 
             try
             {
                 // Step-1 : Get the download stream for packageIdentity
-                Stream downloadStream = await GetDownloadStream(sourceRepository, packageIdentity);
+                Stream downloadStream = await GetDownloadStream(sourceRepository, packageIdentity, token);
 
                 if(downloadStream == null)
                 {
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement
             } 
         }
 
-        private static async Task<Stream> GetDownloadStream(SourceRepository sourceRepository, PackageIdentity packageIdentity)
+        private static async Task<Stream> GetDownloadStream(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
         {
             Stream downloadStream = null;
             DownloadResource downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>();

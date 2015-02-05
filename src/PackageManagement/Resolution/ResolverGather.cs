@@ -17,6 +17,63 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class ResolverGather
     {
+        // TODO: We have to stop passing around PackageIdentities with Version as null
+
+        public static async Task<HashSet<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext resolutionContext,
+            IEnumerable<string> primaryPackageIds,
+            SourceRepository primarySource,
+            IEnumerable<string> packageTargetIdsForResolver,
+            NuGetFramework targetFramework,
+            IEnumerable<SourceRepository> allSources,
+            CancellationToken token)
+        {
+            var primaryDependencyInfoResource = primarySource.GetResource<DepedencyInfoResource>();
+            IEnumerable<PackageDependencyInfo> primaryRepoPackageDependencyInfo;
+            try
+            {
+                var packagesList = new List<PackageDependencyInfo>();
+                foreach (var primaryPackageId in primaryPackageIds)
+                {
+                    packagesList.AddRange(await primaryDependencyInfoResource.ResolvePackages(primaryPackageId, targetFramework, resolutionContext.IncludePrerelease, token));
+                }
+                primaryRepoPackageDependencyInfo = packagesList;
+            }
+            catch (Exception)
+            {
+                primaryRepoPackageDependencyInfo = null;
+            }
+
+            if (primaryRepoPackageDependencyInfo == null)
+            {
+                // TODO: Get rid of this vague error message. ResolvePackages must throw a valid exception
+                throw new InvalidOperationException(Strings.PackagesCouldNotBeInstalled);
+            }
+
+            var packageIdWithNoDependencyInfoInPrimary = (primaryPackageIds.Where(p => !primaryRepoPackageDependencyInfo
+                .Any(pdi => String.Equals(p, pdi.Id, StringComparison.OrdinalIgnoreCase)))).FirstOrDefault();
+
+            if (packageIdWithNoDependencyInfoInPrimary != null)
+            {
+                throw new InvalidOperationException(String.Format(Strings.PackageNotFound, packageIdWithNoDependencyInfoInPrimary));
+            }
+
+            var primaryPackageDependencyInfoWithSourceSet =
+                new HashSet<SourceDependencyInfo>(primaryRepoPackageDependencyInfo.Select(pdi => new SourceDependencyInfo(pdi, primarySource)),
+                    PackageIdentity.Comparer);
+
+            var allAvailablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
+                packageTargetIdsForResolver.Select(p => new PackageIdentity(p, null)),
+                targetFramework, allSources, token);
+
+            foreach (var item in allAvailablePackageDependencyInfoWithSourceSet)
+            {
+                // The following operation ensures that primary source wins in case of conflict
+                primaryPackageDependencyInfoWithSourceSet.Add(item);
+            }
+
+            return primaryPackageDependencyInfoWithSourceSet;
+        }
+
         public static async Task<HashSet<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext resolutionContext,
             IEnumerable<PackageIdentity> primaryPackages,
             SourceRepository primarySource,
@@ -29,12 +86,30 @@ namespace NuGet.PackageManagement
             IEnumerable<PackageDependencyInfo> primaryRepoPackageDependencyInfo;
             try
             {
-                primaryRepoPackageDependencyInfo = await primaryDependencyInfoResource.ResolvePackages(primaryPackages,
-            targetFramework, resolutionContext.IncludePrerelease);
+                if (primaryPackages.Any(t => t.Version == null))
+                {
+                    var packagesList = new List<PackageDependencyInfo>();
+                    foreach (var primaryPackage in primaryPackages)
+                    {
+                        packagesList.AddRange(await primaryDependencyInfoResource.ResolvePackages(primaryPackage.Id, targetFramework, resolutionContext.IncludePrerelease, token));
+                    }
+                    primaryRepoPackageDependencyInfo = packagesList;
+                }
+                else
+                {
+                    primaryRepoPackageDependencyInfo = await primaryDependencyInfoResource.ResolvePackages(primaryPackages,
+                                targetFramework, resolutionContext.IncludePrerelease, token);
+                }                
             }
             catch (Exception)
             {
                 primaryRepoPackageDependencyInfo = null;
+            }
+
+            if(primaryRepoPackageDependencyInfo == null)
+            {
+                // TODO: Get rid of this vague error message. ResolvePackages must throw a valid exception
+                throw new InvalidOperationException(Strings.PackagesCouldNotBeInstalled);
             }
 
             var packageWithNoDependencyInfoInPrimary = (primaryPackages.Where(p => !primaryRepoPackageDependencyInfo
@@ -50,7 +125,7 @@ namespace NuGet.PackageManagement
                     PackageIdentity.Comparer);
 
             var allAvailablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext, packageTargetsForResolver,
-                targetFramework, allSources, CancellationToken.None);
+                targetFramework, allSources, token);
 
             foreach(var item in allAvailablePackageDependencyInfoWithSourceSet)
             {
@@ -111,7 +186,7 @@ namespace NuGet.PackageManagement
                     var packagesList = new List<PackageDependencyInfo>();
                     foreach(var target in targets)
                     {
-                        packagesList.AddRange(await resourceTuple.Item2.ResolvePackages(target.Id, targetFramework, context.IncludePrerelease, CancellationToken.None));
+                        packagesList.AddRange(await resourceTuple.Item2.ResolvePackages(target.Id, targetFramework, context.IncludePrerelease, token));
                     }
                     packages = packagesList;
                 }
