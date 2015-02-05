@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Test.Utility;
 using Xunit;
@@ -18,7 +19,13 @@ namespace NuGet.Test
 {
     public class UnzippedPackageInstallTests
     {
-
+        private List<PackageIdentity> NoDependencyLibPackages = new List<PackageIdentity>()
+        {
+            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("2.0.30506")),
+            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.0.0")),
+            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.2.0-rc")),
+            new PackageIdentity("Antlr", new NuGetVersion("3.5.0.2")),
+        };
         [Fact]
         public async Task UnzippedPackageInstall_Basic()
         {
@@ -31,6 +38,7 @@ namespace NuGet.Test
 
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -41,19 +49,19 @@ namespace NuGet.Test
             // Check that the packages.config file does not exist
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check that there are no packages returned by PackagesConfigProject
-            var packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                new ResolutionContext(), new TestNuGetProjectContext());
+                new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
             // Assert
             // Check that the packages.config file exists after the installation
             Assert.True(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
-            packagesInPackagesConfig = msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackages().ToList();
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);

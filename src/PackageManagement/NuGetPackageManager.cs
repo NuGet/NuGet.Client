@@ -267,7 +267,8 @@ namespace NuGet.PackageManagement
                 // TODO: Consider using IPackageResolver once it is extensible
                 var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
-                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetIdsForResolver, availablePackageDependencyInfoWithSourceSet, projectInstalledPackageReferences, token);
+                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetIdsForResolver, availablePackageDependencyInfoWithSourceSet,
+                    Enumerable.Empty<PackageReference>(), token);
                 if (newListOfInstalledPackages == null)
                 {
                     throw new InvalidOperationException(Strings.UnableToResolveDependencyInfoForMultiplePackages);
@@ -969,7 +970,7 @@ namespace NuGet.PackageManagement
             return true;
         }
 
-        private static async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext, SourceRepository primarySourceRepository, CancellationToken token)
+        public static async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext, SourceRepository primarySourceRepository, CancellationToken token)
         {
             var metadataResource = primarySourceRepository.GetResource<MetadataResource>();
             if (metadataResource != null)
