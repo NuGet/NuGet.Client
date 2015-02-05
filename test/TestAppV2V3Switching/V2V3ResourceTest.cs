@@ -26,7 +26,6 @@ namespace V2V3ResourcesTest
     public class V2V3ResourcesTest
     {
         private CompositionContainer container;
-        private string V3SourceUrl = "https://api.nuget.org/v3/index.json";
         private string V2SourceUrl = "https://nuget.org/api/v2";
         public V2V3ResourcesTest()
         {

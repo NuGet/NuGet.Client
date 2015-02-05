@@ -20,7 +20,7 @@ namespace NuGet.Client
 
             if (serviceIndex != null)
             {
-                Uri baseUrl = serviceIndex["RegistrationsBaseUrl"].FirstOrDefault();
+                Uri baseUrl = serviceIndex[ServiceTypes.RegistrationsBaseUrl].FirstOrDefault();
 
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 

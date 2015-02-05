@@ -16,7 +16,7 @@ namespace NuGet.Client
             var serviceIndex = await source.GetResourceAsync<V3ServiceIndexResource>(token);
             if (serviceIndex != null)
             {
-                Uri templateUrl = serviceIndex["ReportAbuse/3.0.0-rc"].FirstOrDefault();
+                Uri templateUrl = serviceIndex[ServiceTypes.ReportAbuse].FirstOrDefault();
                 if (templateUrl != null)
                 {
                     resource = new V3ReportAbuseResouce(templateUrl);

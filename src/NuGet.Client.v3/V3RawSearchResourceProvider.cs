@@ -26,7 +26,7 @@ namespace NuGet.Client
 
             if (serviceIndex != null)
             {
-                var endpoints = serviceIndex["SearchQueryService"].ToArray();
+                var endpoints = serviceIndex[ServiceTypes.SearchQueryService].ToArray();
 
                 if (endpoints.Length > 0)
                 {
