@@ -41,6 +41,8 @@ namespace NuGetVSExtension
 
         private IVsThreadedWaitDialog2 _waitDialog;
 
+        private CancellationTokenSource CancellationTokenSource { get; set; }
+
         private IPackageRestoreManager PackageRestoreManager { get; set; }
 
         private ISolutionManager SolutionManager { get; set; }
@@ -73,6 +75,10 @@ namespace NuGetVSExtension
             _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
 
             _errorListProvider = new ErrorListProvider(serviceProvider);
+
+            // Create a non-null but cancelled CancellationTokenSource
+            CancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource.Cancel();
         }
 
         OutputWindowPane GetBuildOutputPane()
@@ -98,6 +104,7 @@ namespace NuGetVSExtension
 
         private async void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction Action)
         {
+            CancellationTokenSource = new CancellationTokenSource();
             try
             {
                 _errorListProvider.Tasks.Clear();
@@ -138,6 +145,7 @@ namespace NuGetVSExtension
             finally
             {
                 PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
+                CancellationTokenSource.Cancel();
             }
         }
 
@@ -147,7 +155,7 @@ namespace NuGetVSExtension
         private void PackageRestoreManager_PackageRestored(object sender, PackageRestoredEventArgs args)
         {
             PackageIdentity packageIdentity = args.Package;
-            if (args.Restored)
+            if (args.Restored && CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested)
             {
                 bool canceled = false;
                 Interlocked.Increment(ref CurrentCount);
@@ -176,8 +184,8 @@ namespace NuGetVSExtension
         {
             _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
             var waitDialogFactory = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
-            waitDialogFactory.CreateInstance(out _waitDialog);
-            var token = CancellationToken.None;
+            waitDialogFactory.CreateInstance(out _waitDialog);            
+            var token = CancellationTokenSource.Token;
 
             try
             {
@@ -197,8 +205,38 @@ namespace NuGetVSExtension
                                     iDelayToShowDialog: 0,
                                     fIsCancelable: true,
                                     fShowMarqueeProgress: true);
-                            await System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject, token)));
-                            await PackageRestoreManager.RaisePackagesMissingEventForSolution(token);
+
+                            System.Threading.Tasks.Task waitDialogCanceledCheckTask = System.Threading.Tasks.Task.Run(() => 
+                                {
+                                    // Just create an extra task that can keep checking if the wait dialog was cancelled
+                                    // If so, cancel the CancellationTokenSource
+                                    bool canceled = false;
+                                    try
+                                    {
+                                        while (!canceled && CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested && _waitDialog != null)
+                                        {
+                                            _waitDialog.HasCanceled(out canceled);
+                                            // Wait on the cancellation handle for 100ms to avoid checking on the wait dialog too frequently
+                                            CancellationTokenSource.Token.WaitHandle.WaitOne(100);
+                                        }
+
+                                        CancellationTokenSource.Cancel();
+                                    }
+                                    catch (Exception)
+                                    {
+                                        // Catch all and don't throw
+                                        // There is a slight possibility that the _waitDialog was set to null by another thread right after the check for null
+                                        // So, it could be null or disposed. Just ignore all errors
+                                    }
+                                });
+
+                            System.Threading.Tasks.Task whenAllTaskForRestorePackageTasks =
+                                System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject, token)));
+
+                            await System.Threading.Tasks.Task.WhenAny(whenAllTaskForRestorePackageTasks, waitDialogCanceledCheckTask);
+                            // Once all the tasks are completed, just cancel the CancellationTokenSource
+                            // This will prevent the wait dialog from getting updated
+                            CancellationTokenSource.Cancel();                            
                         }
                     }
                     else
@@ -226,6 +264,8 @@ namespace NuGetVSExtension
                 _waitDialog.EndWaitDialog(out canceled);
                 _waitDialog = null;
             }
+
+            await PackageRestoreManager.RaisePackagesMissingEventForSolution(CancellationToken.None);
         }
 
         /// <summary>
@@ -245,6 +285,9 @@ namespace NuGetVSExtension
 
         private async System.Threading.Tasks.Task RestorePackagesInProject(NuGetProject nuGetProject, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+                return;
+
             var projectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
             bool hasMissingPackages = false;
             try
