@@ -838,19 +838,23 @@ namespace NuGet.PackageManagement
         public async Task<bool> RestorePackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> sourceRepositories, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             if(PackageExistsInPackagesFolder(packageIdentity))
             {
                 return false;
             }
 
+            token.ThrowIfCancellationRequested();
             nuGetProjectContext.Log(MessageLevel.Info, String.Format(Strings.RestoringPackage, packageIdentity));
             var enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
                 SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
             var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
 
+            token.ThrowIfCancellationRequested();
             using (var targetPackageStream = new MemoryStream())
             {
                 await PackageDownloader.GetPackageStream(sourceRepository, packageIdentity, targetPackageStream, token);
+                // If you already downloaded the package, just restore it, don't cancel the operation now
                 await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, targetPackageStream, nuGetProjectContext, token);
             }
 

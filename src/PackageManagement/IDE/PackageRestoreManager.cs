@@ -250,11 +250,13 @@ namespace NuGet.PackageManagement
             }
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 
+            token.ThrowIfCancellationRequested();
             // TODO: Update this to use the locked version
             bool[] results = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
                 RestorePackageAsync(nuGetPackageManager, uniqueMissingPackage.PackageIdentity, nuGetProjectContext,
                 packageRestoredEvent, sourceRepositories, token)));
 
+            token.ThrowIfCancellationRequested();
             bool[] satelliteFileResults = await Task.WhenAll(hashSetOfMissingPackageReferences.Select(uniqueMissingPackage =>
                 nuGetPackageManager.CopySatelliteFilesAsync(uniqueMissingPackage.PackageIdentity, nuGetProjectContext, token)));
 
