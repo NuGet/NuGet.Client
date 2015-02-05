@@ -112,22 +112,26 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (NuGetProject project in Projects)
                 {
-                    // Get the list of package identities to be updated for PackageManager
-                    IEnumerable<PackageIdentity> identitiesToUpdate = Enumerable.Empty<PackageIdentity>();
+                    IEnumerable<NuGetProjectAction> actions = Enumerable.Empty<NuGetProjectAction>();
+                    // Get the list of package ids or identities to be updated for PackageManager
                     if (Reinstall.IsPresent)
                     {
                         // Update-Package -Reinstall -> get list of installed package identities
+                        IEnumerable<PackageIdentity> identitiesToUpdate = Enumerable.Empty<PackageIdentity>();
                         identitiesToUpdate = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity);
+                        // Preview Update-Package -Reinstall actions
+                        actions = await PackageManager.PreviewUpdatePackagesAsync(identitiesToUpdate, project, ResolutionContext,
+                        this, ActiveSourceRepository, null, token);
                     }
                     else
                     {
-                        // Update-Packages -> get list of package identities with Id and null version.
-                        identitiesToUpdate = await GeneratePackageIdentityListForUpdate(project, token);
-                    }
-
-                    // Preview update actions
-                    IEnumerable<NuGetProjectAction> actions = await PackageManager.PreviewUpdatePackagesAsync(identitiesToUpdate, project, ResolutionContext,
+                        // Update-Package -> get list of installed package ids
+                        IEnumerable<string> idsToUpdate = Enumerable.Empty<string>();
+                        idsToUpdate = await GeneratePackageIdListForUpdate(project, token);
+                        // Preview Update-Package actions
+                        actions = await PackageManager.PreviewUpdatePackagesAsync(idsToUpdate, project, ResolutionContext,
                         this, ActiveSourceRepository, null, token);
+                    }
 
                     if (!WhatIf.IsPresent)
                     {
@@ -270,15 +274,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        private async Task<IEnumerable<PackageIdentity>> GeneratePackageIdentityListForUpdate(NuGetProject project, CancellationToken token)
+        private async Task<IEnumerable<string>> GeneratePackageIdListForUpdate(NuGetProject project, CancellationToken token)
         {
-            List<PackageIdentity> identityList = new List<PackageIdentity>();
             IEnumerable<string> packageIds = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity.Id);
-            foreach (string id in packageIds)
-            {
-                identityList.Add(new PackageIdentity(id, null));
-            }
-            return identityList;
+            return packageIds;
         }
 
         /// <summary>

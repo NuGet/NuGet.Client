@@ -45,14 +45,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Task.Run(async () =>
             {
                 PackageIdentity identity = await GetPackageIdentity();
-                if (identity == null)
+                SubscribeToProgressEvents();
+                if (identity != null)
                 {
-                    Log(MessageLevel.Info, Resources.Cmdlet_PackageNotInstalled, Id);
+                    await SyncPackages(Projects, identity);
                 }
                 else
                 {
-                    SubscribeToProgressEvents();
-                    await SyncPackages(Projects, identity);
+                    Log(MessageLevel.Info, Resources.Cmdlet_PackageNotInstalled, Id);
+                    completeEvent.Set();
                 }
             });
             WaitAndLogFromMessageQueue();
