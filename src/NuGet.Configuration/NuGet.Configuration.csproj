@@ -45,6 +45,7 @@
     <Compile Include="PackageSource\NuGetConstants.cs" />
     <Compile Include="PackageSource\PackageSource.cs" />
     <Compile Include="PackageSource\PackageSourceProvider.cs" />
+    <Compile Include="Settings\ConfigurationDefaults.cs" />
     <Compile Include="Settings\IMachineWideSettings.cs" />
     <Compile Include="Settings\NullSettings.cs" />
     <Compile Include="Utility\CryptoHashProvider.cs" />

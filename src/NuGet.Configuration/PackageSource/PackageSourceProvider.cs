@@ -32,6 +32,16 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="settings">Specifies the settings file to use to read package sources.</param>
         /// <param name="providerDefaultPrimarySources">The primary default sources you would like to use</param>
+        public PackageSourceProvider(ISettings settings, IEnumerable<PackageSource> providerDefaultPrimarySources)
+            : this(settings, providerDefaultPrimarySources, providerDefaultSecondarySources : null , migratePackageSources: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new PackageSourceProvider instance.
+        /// </summary>
+        /// <param name="settings">Specifies the settings file to use to read package sources.</param>
+        /// <param name="providerDefaultPrimarySources">The primary default sources you would like to use</param>
         /// <param name="providerDefaultSecondarySources">The secondary default sources you would like to use</param>
         public PackageSourceProvider(ISettings settings, IEnumerable<PackageSource> providerDefaultPrimarySources, IEnumerable<PackageSource> providerDefaultSecondarySources)
             : this(settings, providerDefaultPrimarySources, providerDefaultSecondarySources, migratePackageSources: null)
