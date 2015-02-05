@@ -80,6 +80,58 @@ namespace NuGet.Packaging
             return false;
         }
 
+        public static bool GetSatelliteFiles(Stream packageStream, PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
+            out string language, out string runtimePackageDirectory, out IEnumerable<ZipArchiveEntry> satelliteFiles)
+        {
+            var zipArchive = new ZipArchive(packageStream);
+            var packageReader = new PackageReader(zipArchive);
+            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+
+            PackageIdentity runtimePackageIdentity = null;
+            string packageLanguage = null;
+            if (PackageHelper.IsSatellitePackage(nuspecReader, out runtimePackageIdentity, out packageLanguage))
+            {
+                // Now, we know that the package is a satellite package and that the runtime package is 'runtimePackageId'
+                // Check, if the runtimePackage is installed and get the folder to copy over files
+
+                runtimePackageDirectory = packagePathResolver.GetInstallPath(runtimePackageIdentity);
+                string runtimePackageFilePath = Path.Combine(runtimePackageDirectory, packagePathResolver.GetPackageFileName(runtimePackageIdentity));
+
+                if (File.Exists(runtimePackageFilePath))
+                {
+                    // Existence of the package file is the validation that the package exists
+                    var libItemGroups = packageReader.GetLibItems();
+                    List<ZipArchiveEntry> satelliteFileEntries = new List<ZipArchiveEntry>();
+                    foreach (var libItemGroup in libItemGroups)
+                    {
+                        var satelliteFilesInGroup = libItemGroup.Items.Where(item => Path.GetDirectoryName(item).Split(Path.DirectorySeparatorChar)
+                                                                .Contains(packageLanguage, StringComparer.OrdinalIgnoreCase));
+
+                        foreach (var satelliteFile in satelliteFilesInGroup)
+                        {
+                            var zipArchiveEntry = zipArchive.GetEntry(satelliteFile);
+                            if (zipArchiveEntry != null)
+                            {
+                                satelliteFileEntries.Add(zipArchiveEntry);
+                            }
+                        }
+                    }
+
+                    if(satelliteFileEntries.Count > 0)
+                    {
+                        language = packageLanguage;
+                        satelliteFiles = satelliteFileEntries;
+                        return true;
+                    }
+                }
+            }
+
+            language = null;
+            runtimePackageDirectory = null;
+            satelliteFiles = null;
+            return false;
+        }
+
         public static async Task CreatePackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
@@ -114,6 +166,31 @@ namespace NuGet.Packaging
             {
                 await inputStream.CopyToAsync(outputStream);
             }
+        }
+
+        public static Task RemovePackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
+            PackageSaveModes packageSaveMode, CancellationToken token)
+        {
+            foreach(var entry in packageFiles)
+            {
+                if(PackageHelper.IsPackageFile(entry.FullName, packageSaveMode))
+                {
+                    var packageFileFullPath = Path.Combine(packageDirectory, entry.FullName);
+                    if(File.Exists(packageFileFullPath))
+                    {
+                        try
+                        {
+                            File.Delete(packageFileFullPath);
+                        }
+                        catch (Exception)
+                        {
+                            // Catch all exceptions
+                        }
+                    }                    
+                }
+            }
+
+            return Task.FromResult(0);
         }
     }
 

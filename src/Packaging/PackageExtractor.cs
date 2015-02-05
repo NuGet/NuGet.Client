@@ -81,26 +81,23 @@ namespace NuGet.Packaging
             {
                 using(var packageStream = File.OpenRead(nupkgFilePath))
                 {
-                    return await CopySatelliteFilesAsync(packageStream, packageIdentity, packagePathResolver, packageSaveMode, token);
+                    string language;
+                    string runtimePackageDirectory;
+                    IEnumerable<ZipArchiveEntry> satelliteFiles;
+                    if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFiles))
+                    {
+                        // Now, add all the satellite files collected from the package to the runtime package folder(s)
+                        await PackageHelper.CreatePackageFiles(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
+                    }
                 }
             }
 
             return false;
         }
 
-        private static async Task<bool> CopySatelliteFilesAsync(Stream packageStream, PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
+        public static async Task<bool> RemoveSatelliteFilesAsync(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
-            if (packageStream == null)
-            {
-                throw new ArgumentNullException("packageStream");
-            }
-
-            if (!packageStream.CanSeek)
-            {
-                throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
-            }
-
             if (packageIdentity == null)
             {
                 throw new ArgumentNullException("packageIdentity");
@@ -111,47 +108,22 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException("packagePathResolver");
             }
 
-            var zipArchive = new ZipArchive(packageStream);
-            var packageReader = new PackageReader(zipArchive);
-            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
-
-            PackageIdentity runtimePackageIdentity = null;
-            string packageLanguage = null;
-            if(PackageHelper.IsSatellitePackage(nuspecReader, out runtimePackageIdentity, out packageLanguage))
+            string nupkgFilePath = Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), packagePathResolver.GetPackageFileName(packageIdentity));
+            if(File.Exists(nupkgFilePath))
             {
-                // Now, we know that the package is a satellite package and that the runtime package is 'runtimePackageId'
-                // Check, if the runtimePackage is installed and get the folder to copy over files
-
-                string runtimePackageDirectory = packagePathResolver.GetInstallPath(runtimePackageIdentity);
-                string runtimePackageFilePath = Path.Combine(runtimePackageDirectory, packagePathResolver.GetPackageFileName(runtimePackageIdentity));
-
-                if(File.Exists(runtimePackageFilePath))
+                using(var packageStream = File.OpenRead(nupkgFilePath))
                 {
-                    // Existence of the package file is the validation that the package exists
-                    var libItemGroups = packageReader.GetLibItems();
-                    List<ZipArchiveEntry> satelliteFileEntries = new List<ZipArchiveEntry>();
-                    foreach(var libItemGroup in libItemGroups)
+                    string language;
+                    string runtimePackageDirectory;
+                    IEnumerable<ZipArchiveEntry> satelliteFiles;                    
+                    if(PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFiles))
                     {
-                        var satelliteFilesInGroup = libItemGroup.Items.Where(item => Path.GetDirectoryName(item).Split(Path.DirectorySeparatorChar)
-                                                                .Contains(packageLanguage, StringComparer.OrdinalIgnoreCase));
-                        
-                        foreach(var satelliteFile in satelliteFilesInGroup)
-                        {
-                            var zipArchiveEntry = zipArchive.GetEntry(satelliteFile);
-                            if (zipArchiveEntry != null)
-                            {
-                                satelliteFileEntries.Add(zipArchiveEntry);
-                            }             
-                        }
+                        await PackageHelper.RemovePackageFiles(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
                     }
-
-                    // Now, add all the satellite files collected from the package to the runtime package folder(s)
-                    await PackageHelper.CreatePackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
-                    return true;
                 }
             }
 
-            return false;
+            return false;            
         }
     }
 }
