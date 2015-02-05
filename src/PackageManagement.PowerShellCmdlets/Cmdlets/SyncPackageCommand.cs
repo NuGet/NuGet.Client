@@ -31,13 +31,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Projects = VsSolutionManager.GetNuGetProjects().ToList();
         }
 
-        protected override async void ProcessRecordCore()
+        protected override void ProcessRecordCore()
         {
             base.ProcessRecordCore();
-            PackageIdentity identity = await GetPackageIdentity();
 
-            SubscribeToProgressEvents();
-            Task syncTask = SyncPackages(Projects, identity);
+            Task.Run(async () =>
+            {
+                PackageIdentity identity = await GetPackageIdentity();
+                SubscribeToProgressEvents();
+                await SyncPackages(Projects, identity);
+            });
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();
         }

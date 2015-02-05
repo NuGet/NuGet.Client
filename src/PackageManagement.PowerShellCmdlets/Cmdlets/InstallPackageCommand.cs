@@ -55,12 +55,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SubscribeToProgressEvents();
             if (!_readFromPackagesConfig && !_readFromDirectPackagePath && _nugetVersion == null)
             {
-                Task idTask = InstallPackageById();
+                Task.Run(() => InstallPackageById());
             }
             else
             {
                 IEnumerable<PackageIdentity> identities = GetPackageIdentities();
-                Task identitiesTask = InstallPackages(identities);
+                Task.Run(() => InstallPackages(identities));
             }
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();

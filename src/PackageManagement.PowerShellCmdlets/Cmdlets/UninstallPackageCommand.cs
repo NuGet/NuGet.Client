@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             CheckForSolutionOpen();
 
             SubscribeToProgressEvents();
-            Task uninstallTask = UnInstallPackage();
+            Task.Run(() => UnInstallPackage());
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();
         }

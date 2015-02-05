@@ -92,12 +92,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected override async void ProcessRecordCore()
+        protected override void ProcessRecordCore()
         {
             base.ProcessRecordCore();
 
             SubscribeToProgressEvents();
-            await PerformPackageUpdatesOrReinstalls();
+            Task.Run(() => PerformPackageUpdatesOrReinstalls());
             UnsubscribeFromProgressEvents();
         }
 
