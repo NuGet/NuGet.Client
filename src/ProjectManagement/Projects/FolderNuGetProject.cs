@@ -82,10 +82,10 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            // No-op: There is no uninstall on a folder NuGetProject
-            return Task.FromResult(true);
+            await PackageExtractor.RemoveSatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
+            return true;
         }
 
         /// <summary>
