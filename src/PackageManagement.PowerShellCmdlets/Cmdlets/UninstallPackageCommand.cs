@@ -19,6 +19,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public virtual string Id { get; set; }
 
+        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
+        [ValidateNotNullOrEmpty]
+        public virtual string ProjectName { get; set; }
+
         [Parameter(Position = 2)]
         [ValidateNotNullOrEmpty]
         public virtual string Version { get; set; }
