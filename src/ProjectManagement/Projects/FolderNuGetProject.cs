@@ -101,6 +101,7 @@ namespace NuGet.ProjectManagement
         public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             return await PackageExtractor.CopySatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
         }
     }

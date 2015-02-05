@@ -24,6 +24,7 @@ namespace NuGet.PackageManagement
 
             try
             {
+                token.ThrowIfCancellationRequested();
                 // Step-1 : Get the download stream for packageIdentity
                 Stream downloadStream = await GetDownloadStream(sourceRepository, packageIdentity, token);
 
@@ -32,6 +33,7 @@ namespace NuGet.PackageManagement
                     return false;
                 }
 
+                token.ThrowIfCancellationRequested();
                 // Step-2: Copy download stream to targetPackageStream if it is not null
                 await downloadStream.CopyToAsync(targetPackageStream);
                 return true;
@@ -45,10 +47,10 @@ namespace NuGet.PackageManagement
         private static async Task<Stream> GetDownloadStream(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
         {
             Stream downloadStream = null;
-            DownloadResource downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>();
+            DownloadResource downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
             if(downloadResource != null)
             {
-                downloadStream = await downloadResource.GetStream(packageIdentity, CancellationToken.None);
+                downloadStream = await downloadResource.GetStream(packageIdentity, token);
                 return downloadStream;
             }
 
