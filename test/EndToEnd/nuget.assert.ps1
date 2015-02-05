@@ -57,10 +57,10 @@ function Get-ProjectPackage {
         [string]$Version
     )
     
-    $repository = Get-PackagesConfigNuGetProject $Project
+    $packagesConfigNuGetProject = Get-PackagesConfigNuGetProject $Project
         
     # We can't call the nuget methods since powershell gets confused with overload resolution
-    $packages = $repository.GetInstalledPackages() | ?{ $_.PackageIdentity.Id -eq $Id }    
+    $packages = (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject) | ?{ $_.PackageIdentity.Id -eq $Id }    
     
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
@@ -157,11 +157,11 @@ function Assert-NoPackage {
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
         $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $actualVersion)
-        Assert-Null (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
+        Assert-Null ((Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject) | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
     }
     else
     {
-        Assert-Null (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
+        Assert-Null ((Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Id -eq $Id })) "Package $Id is not referenced in $($Project.Name)"
     }
 }
 
