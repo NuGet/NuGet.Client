@@ -340,7 +340,7 @@ namespace NuGet.VisualStudio
                 foreach (PackageIdentity package in packages)
                 {
                     // HACK: We need to update nuget package manager to always take in an IEnumerable of primary repositories
-                    await packageManager.InstallPackageAsync(nuGetProject, package, resolution, _projectContext, repoProvider.GetRepositories().First());
+                    await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories().First(), repoProvider.GetRepositories(), token);
                 }
             }
             catch (Exception ex)
