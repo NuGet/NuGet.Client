@@ -241,7 +241,7 @@ namespace NuGet.Configuration
                 string directory = Path.Combine(basePath, combinedPath);
 
                 // load setting files in directory
-                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(directory, "*.config"))
+                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, directory, "*.config", SearchOption.TopDirectoryOnly))
                 {
                     var settings = ReadSettings(root, file, true);
                     if (settings != null)
@@ -692,8 +692,9 @@ namespace NuGet.Configuration
             }
             else if (!FileSystemUtility.IsPathAFile(settingsPath))
             {
-                root = Path.GetDirectoryName(Path.Combine(root ?? String.Empty, settingsPath));
-                fileName = settingsPath;
+                var fullPath = Path.Combine(root ?? String.Empty, settingsPath);
+                root = Path.GetDirectoryName(fullPath);
+                fileName = Path.GetFileName(fullPath);
             }
             else
             {

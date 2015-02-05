@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -13,6 +14,8 @@ namespace NuGet.Configuration
         private const string UsernameToken = "Username";
         private const string PasswordToken = "Password";
         private const string ClearTextPasswordToken = "ClearTextPassword";
+        private const string ConfigurationDefaultsFile = "NuGetDefaults.config";
+
         private ISettings Settings { get; set; }
         private readonly IEnumerable<PackageSource> _providerDefaultPrimarySources;
         private readonly IEnumerable<PackageSource> _providerDefaultSecondarySources;
@@ -40,26 +43,37 @@ namespace NuGet.Configuration
             IEnumerable<PackageSource> providerDefaultPrimarySources,
             IEnumerable<PackageSource> providerDefaultSecondarySources,
             IDictionary<PackageSource, PackageSource> migratePackageSources)
-            : this(settings, providerDefaultPrimarySources, providerDefaultSecondarySources, migratePackageSources, /* ConfigurationDefaults.Instance.DefaultPackageSources */ null)
         {
-        }
-
-        internal PackageSourceProvider(
-            ISettings settingsManager,
-            IEnumerable<PackageSource> providerDefaultPrimarySources,
-            IEnumerable<PackageSource> providerDefaultSecondarySources,
-            IDictionary<PackageSource, PackageSource> migratePackageSources,
-            IEnumerable<PackageSource> configurationDefaultSources)
-        {
-            if (settingsManager == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException("settingsManager");
+                throw new ArgumentNullException("settings");
             }
-            Settings = settingsManager;
+            Settings = settings;
             _providerDefaultPrimarySources = providerDefaultPrimarySources ?? Enumerable.Empty<PackageSource>();
             _providerDefaultSecondarySources = providerDefaultSecondarySources ?? Enumerable.Empty<PackageSource>();
             _migratePackageSources = migratePackageSources;
-            _configurationDefaultSources = configurationDefaultSources ?? Enumerable.Empty<PackageSource>();
+            _configurationDefaultSources = LoadConfigurationDefaultSources();
+        }
+
+        private IEnumerable<PackageSource> LoadConfigurationDefaultSources()
+        {
+            var baseDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NuGet");
+            var settings = new Settings(baseDirectory, ConfigurationDefaultsFile);
+
+            var sources = new List<PackageSource>();
+            IList<SettingValue> disabledPackageSources = settings.GetSettingValues("disabledPackageSources");
+            IList<SettingValue> packageSources = settings.GetSettingValues("packageSources");
+
+            foreach (var settingValue in packageSources)
+            {
+                // In a SettingValue representing a package source, the Key represents the name of the package source and the Value its source
+                sources.Add(new PackageSource(settingValue.Value,
+                    settingValue.Key,
+                    isEnabled: !disabledPackageSources.Any<SettingValue>(p => p.Key.Equals(settingValue.Key, StringComparison.CurrentCultureIgnoreCase)),
+                    isOfficial: true));
+            }
+
+            return sources;
         }
 
         /// <summary>
