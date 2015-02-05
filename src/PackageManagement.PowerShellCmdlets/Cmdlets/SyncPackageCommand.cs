@@ -28,7 +28,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void Preprocess()
         {
             base.Preprocess();
-            Projects = VsSolutionManager.GetNuGetProjects().ToList();
+            if (string.IsNullOrEmpty(ProjectName))
+            {
+                ProjectName = VsSolutionManager.DefaultNuGetProjectName;
+            }
+            // Get the projects in the solution that's not the current default or specified project to sync the package identity to.
+            Projects = VsSolutionManager.GetNuGetProjects()
+                .Where(p => !StringComparer.OrdinalIgnoreCase.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), ProjectName))
+                .ToList();
         }
 
         protected override void ProcessRecordCore()
@@ -38,8 +45,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Task.Run(async () =>
             {
                 PackageIdentity identity = await GetPackageIdentity();
-                SubscribeToProgressEvents();
-                await SyncPackages(Projects, identity);
+                if (identity == null)
+                {
+                    Log(MessageLevel.Info, Resources.Cmdlet_PackageNotInstalled, Id);
+                }
+                else
+                {
+                    SubscribeToProgressEvents();
+                    await SyncPackages(Projects, identity);
+                }
             });
             WaitAndLogFromMessageQueue();
             UnsubscribeFromProgressEvents();

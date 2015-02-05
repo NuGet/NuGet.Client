@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> pair in remoteUpdates)
             {
                 PowerShellUpdatePackage package = PowerShellUpdatePackage.GetPowerShellPackageUpdateView(pair.Key, pair.Value, versionType, project);
-                if (package.Version.Any())
+                if (package.Version != null && package.Version.Any())
                 {
                     view.Add(package);
                 }

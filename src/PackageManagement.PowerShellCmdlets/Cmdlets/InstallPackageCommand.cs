@@ -206,10 +206,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         PackagesConfigReader reader = new PackagesConfigReader(stream);
                         IEnumerable<PackageReference> packageRefs = reader.GetPackages();
                         identities = packageRefs.Select(v => v.PackageIdentity);
-                        if (stream != null)
-                        {
-                            stream.Close();
-                        }
                     }
                 }
             }
