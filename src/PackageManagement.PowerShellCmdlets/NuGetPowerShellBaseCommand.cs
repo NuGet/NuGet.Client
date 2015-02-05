@@ -373,6 +373,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected IEnumerable<Project> GetProjectsByName(string[] projectNames)
         {
             var allValidProjectNames = GetAllValidProjectNames().ToList();
+            var allDteProjects = _dte.Solution.GetAllProjects();
 
             foreach (string projectName in projectNames)
             {
@@ -387,15 +388,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 var matches = from s in allValidProjectNames
                               where pattern.IsMatch(s)
-                              select _dte.Solution.GetAllProjects()
-                              .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, s) || StringComparer.OrdinalIgnoreCase.Equals(p.FullName, s))
-                              .FirstOrDefault();
+                              select _solutionManager.GetNuGetProject(s);
 
                 int count = 0;
                 foreach (var project in matches)
                 {
                     count++;
-                    yield return project;
+                    string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                    Project dteProject = allDteProjects
+                            .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, name) ||
+                            StringComparer.OrdinalIgnoreCase.Equals(p.FullName, name))
+                            .FirstOrDefault();
+                    yield return dteProject;
                 }
 
                 // We only emit non-terminating error record if a non-wildcarded name was not found.
@@ -415,8 +419,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected IEnumerable<string> GetAllValidProjectNames()
         {
-            var safeNames = _dte.Solution.GetAllProjects().Select(p => p.Name);
-            return safeNames;
+            var safeNames = _dte.Solution.GetAllProjects().Select(p => p.GetProjectSafeName(_dte));
+            var uniqueNames = _dte.Solution.GetAllProjects().Select(p => p.GetCustomUniqueName());
+            return uniqueNames.Concat(safeNames).Distinct();
         }
 
         /// <summary>

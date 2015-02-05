@@ -137,9 +137,85 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
+        public static string GetName(this Project project)
+        {
+            string name = project.Name;
+            if (project.IsJavaScriptProject())
+            {
+                // The JavaScript project initially returns a "(loading..)" suffix to the project Name.
+                // Need to get rid of it for the rest of NuGet to work properly.
+                // TODO: Follow up with the VS team to see if this will be fixed eventually
+                const string suffix = " (loading...)";
+                if (name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    name = name.Substring(0, name.Length - suffix.Length);
+                }
+            }
+            return name;
+        }
+
+        /// <summary>
+        /// Returns the unique name of the specified project including all solution folder names containing it.
+        /// </summary>
+        /// <remarks>
+        /// This is different from the DTE Project.UniqueName property, which is the absolute path to the project file.
+        /// </remarks>
+        public static string GetCustomUniqueName(this Project project)
+        {
+            if (project.IsWebSite())
+            {
+                // website projects always have unique name
+                return project.Name;
+            }
+            else
+            {
+                Stack<string> nameParts = new Stack<string>();
+
+                Project cursor = project;
+                nameParts.Push(cursor.GetName());
+
+                // walk up till the solution root
+                while (cursor.ParentProjectItem != null && cursor.ParentProjectItem.ContainingProject != null)
+                {
+                    cursor = cursor.ParentProjectItem.ContainingProject;
+                    nameParts.Push(cursor.GetName());
+                }
+
+                return String.Join("\\", nameParts);
+            }
+        }
+
+        public static string GetProjectSafeName(this Project project, DTE dte)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException("project");
+            }
+
+            // Try searching for simple names first
+            string name = project.GetName();
+            Project target = dte.Solution.GetAllProjects().Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, name)).FirstOrDefault();
+            if (target == project)
+            {
+                return name;
+            }
+
+            return project.GetCustomUniqueName();
+        }
+
+        public static bool IsWebSite(this Project project)
+        {
+            return project.Kind != null && project.Kind.Equals(WebSiteProjectTypeGuid, StringComparison.OrdinalIgnoreCase);
+        }
+
         public static bool IsWixProject(this Project project)
         {
             return project.Kind != null && project.Kind.Equals(WixProjectTypeGuid, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsJavaScriptProject(this Project project)
+        {
+            return project != null && JsProjectTypeGuid.Equals(project.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool SupportsINuGetProjectSystem(this Project project)
