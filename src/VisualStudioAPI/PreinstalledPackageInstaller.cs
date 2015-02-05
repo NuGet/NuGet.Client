@@ -182,7 +182,9 @@ namespace NuGet.VisualStudio
                         List<PackageIdentity> toInstall = new List<PackageIdentity>();
                         toInstall.Add(new PackageIdentity(package.Id, package.Version));
 
-                        _installer.InstallInternal(project, toInstall, repos, package.SkipAssemblyReferences, package.IgnoreDependencies, CancellationToken.None).Wait();
+                        // This runs from the UI thread
+                        var task = System.Threading.Tasks.Task.Run(async () => await _installer.InstallInternal(project, toInstall, repos, package.SkipAssemblyReferences, package.IgnoreDependencies, CancellationToken.None));
+                        task.Wait();
 
                         //packageInstaller.InstallPackage(repository, project, package.Id, package.Version.ToString(), ignoreDependencies: package.IgnoreDependencies, skipAssemblyReferences: package.SkipAssemblyReferences);
                     }
