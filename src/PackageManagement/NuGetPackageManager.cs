@@ -223,6 +223,7 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException("primarySourceRepository");
             }
+            var primarySources = new List<SourceRepository>() { primarySourceRepository };
 
             if (secondarySources == null)
             {
@@ -243,7 +244,7 @@ namespace NuGet.PackageManagement
             // TODO: these sources should be ordered
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
-            var effectiveSources = GetEffectiveSources(primarySourceRepository, secondarySources);
+            var effectiveSources = GetEffectiveSources(primarySources, secondarySources);
 
             try
             {
@@ -254,7 +255,7 @@ namespace NuGet.PackageManagement
                     packageIdsToInstall,
                     packageTargetIdsForResolver,
                     targetFramework,
-                    new List<SourceRepository>() { primarySourceRepository },
+                    primarySources,
                     effectiveSources,
                     token);
 
@@ -336,6 +337,7 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException("primarySourceRepository");
             }
+            var primarySources = new List<SourceRepository>() { primarySourceRepository };
 
             if (secondarySources == null)
             {
@@ -356,7 +358,7 @@ namespace NuGet.PackageManagement
             // TODO: these sources should be ordered
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
-            var effectiveSources = GetEffectiveSources(primarySourceRepository, secondarySources);
+            var effectiveSources = GetEffectiveSources(primarySources, secondarySources);
 
             try
             {
@@ -367,7 +369,7 @@ namespace NuGet.PackageManagement
                     packagesToInstall,
                     packageTargetsForResolver,
                     targetFramework,
-                    new List<SourceRepository>() { primarySourceRepository },
+                    primarySources,
                     effectiveSources,
                     token);
 
@@ -480,7 +482,7 @@ namespace NuGet.PackageManagement
 
         private async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources,
+            IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
             if(nuGetProject == null)
@@ -503,9 +505,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            if (primarySourceRepository == null)
+            if (primarySources == null)
             {
-                throw new ArgumentNullException("primarySourceRepository");
+                throw new ArgumentNullException("primarySources");
             }
 
             if(secondarySources == null)
@@ -531,7 +533,7 @@ namespace NuGet.PackageManagement
             // TODO: these sources should be ordered
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
-            var effectiveSources = GetEffectiveSources(primarySourceRepository, secondarySources);
+            var effectiveSources = GetEffectiveSources(primarySources, secondarySources);
             
             if (resolutionContext.DependencyBehavior != DependencyBehavior.Ignore)
             {
@@ -556,7 +558,7 @@ namespace NuGet.PackageManagement
                         primaryPackages,
                         packageTargetsForResolver,
                         targetFramework,
-                        new List<SourceRepository>() { primarySourceRepository },
+                        primarySources,
                         effectiveSources,
                         token);
 
@@ -991,11 +993,12 @@ namespace NuGet.PackageManagement
             return null;
         }
 
-        private IEnumerable<SourceRepository> GetEffectiveSources(SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources)
+        private IEnumerable<SourceRepository> GetEffectiveSources(IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources)
         {
             // Always have to add the packages folder as the primary repository so that
             // dependency info for an installed package that is unlisted from the server is still available :(
-            var effectiveSources = new List<SourceRepository>() { primarySourceRepository, PackagesFolderSourceRepository };
+            var effectiveSources = new List<SourceRepository>(primarySources);
+            effectiveSources.Add(PackagesFolderSourceRepository);
             effectiveSources.AddRange(secondarySources);
 
             return new HashSet<SourceRepository>(effectiveSources, new SourceRepositoryComparer());
