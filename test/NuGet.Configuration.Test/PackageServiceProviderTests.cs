@@ -286,7 +286,88 @@ namespace NuGet.Configuration.Test
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
-        private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "")
+        [Fact]
+        public void ActivePackageSourceCanBeReadAndWrittenInNuGetConfig()
+        {
+            // Act
+            //Create nuget.config that has active package source defined
+            string nugetConfigFileFolder = NuGet.Configuration.Test.TestFilesystemUtility.CreateRandomTestFolder();
+            string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+            File.Create(nugetConfigFilePath).Close();
+
+            string enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            string disabledReplacement = string.Empty;
+            string activeReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, activeReplacement));
+
+            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+            PackageSourceProvider before = new PackageSourceProvider(settings);
+            SettingValue activeValue = new SettingValue(NuGetConstants.V2FeedName, NuGetConstants.V2FeedUrl, false);
+            Assert.Equal(activeValue, before.ActivePackageSource);
+
+            SettingValue newActiveValue = new SettingValue(NuGetConstants.V3FeedName, NuGetConstants.V3FeedUrl, false);
+            before.ActivePackageSource = newActiveValue;
+                        
+            Assert.Equal(newActiveValue, before.ActivePackageSource);
+
+            //Clean up
+            NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+        }
+
+        [Fact]
+        public void ActivePackageSourceReturnsNullIfNotSetInNuGetConfig()
+        {
+            // Act
+            //Create nuget.config that has active package source defined
+            string nugetConfigFileFolder = NuGet.Configuration.Test.TestFilesystemUtility.CreateRandomTestFolder();
+            string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+            File.Create(nugetConfigFilePath).Close();
+
+            string enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement));
+
+            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+            PackageSourceProvider before = new PackageSourceProvider(settings);
+            Assert.Null( before.ActivePackageSource);
+
+            SettingValue newActiveValue = new SettingValue(NuGetConstants.V3FeedName, NuGetConstants.V3FeedUrl, false);
+            before.ActivePackageSource = newActiveValue;
+
+            Assert.Equal(newActiveValue, before.ActivePackageSource);
+
+            //Clean up
+            NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+        }
+
+        [Fact]
+        public void ActivePackageSourceReturnsNullIfNotPresentInNuGetConfig()
+        {
+            // Act
+            //Create nuget.config that has active package source defined
+            string nugetConfigFileFolder = NuGet.Configuration.Test.TestFilesystemUtility.CreateRandomTestFolder();
+            string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+            File.Create(nugetConfigFilePath).Close();
+
+            string enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            string fileContents = CreateNuGetConfigContent(enabledReplacement);
+            fileContents = fileContents.Replace("<activePackageSource>", string.Empty);
+            fileContents = fileContents.Replace("</activePackageSource>", string.Empty);
+            File.WriteAllText(nugetConfigFilePath, fileContents);
+
+            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+            PackageSourceProvider before = new PackageSourceProvider(settings);
+            Assert.Null( before.ActivePackageSource);
+
+            SettingValue newActiveValue = new SettingValue(NuGetConstants.V3FeedName, NuGetConstants.V3FeedUrl, false);
+            before.ActivePackageSource = newActiveValue;
+
+            Assert.Equal(newActiveValue, before.ActivePackageSource);
+
+            //Clean up
+            NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+        }
+
+        private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             StringBuilder nugetConfigBaseString = new StringBuilder();
             nugetConfigBaseString.AppendLine(@"<?xml version='1.0' encoding='utf-8'?>");
@@ -302,13 +383,14 @@ namespace NuGet.Configuration.Test
             nugetConfigBaseString.AppendLine("[DisabledSources]");
             nugetConfigBaseString.AppendLine("</disabledPackageSources>");
             nugetConfigBaseString.AppendLine("<activePackageSource>");
-            nugetConfigBaseString.AppendLine(@"<add key='All' value='(Aggregate source)' />");
+            nugetConfigBaseString.AppendLine("[ActiveSource]");
             nugetConfigBaseString.AppendLine("</activePackageSource>");
             nugetConfigBaseString.AppendLine("</configuration>");
 
             string nugetConfig = nugetConfigBaseString.ToString();
             nugetConfig = nugetConfig.Replace("[EnabledSources]", enabledReplacement);
             nugetConfig = nugetConfig.Replace("[DisabledSources]", disabledReplacement);
+            nugetConfig = nugetConfig.Replace("[ActiveSource]", activeSourceReplacement);
             return nugetConfig;
         }
 

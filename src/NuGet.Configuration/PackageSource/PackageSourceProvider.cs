@@ -10,6 +10,7 @@ namespace NuGet.Configuration
     {
         private const string PackageSourcesSectionName = "packageSources";
         private const string DisabledPackageSourcesSectionName = "disabledPackageSources";
+        private const string ActivePackageSourceSectionName = "activePackageSource";
         private const string CredentialsSectionName = "packageSourceCredentials";
         private const string UsernameToken = "Username";
         private const string PasswordToken = "Password";
@@ -439,6 +440,24 @@ namespace NuGet.Configuration
             // It doesn't matter what value it is.
             // As long as the package source name is persisted in the <disabledPackageSources> section, the source is disabled.
             return String.IsNullOrEmpty(value);
+        }
+
+        /// <summary>
+        /// Get/ Set ActivePackageSource from/ in NuGet.Config
+        /// </summary>
+        public SettingValue ActivePackageSource
+        {
+            get
+            {
+                IList<SettingValue> activeSources = Settings.GetSettingValues(ActivePackageSourceSectionName);
+                return (activeSources.Count == 0) ? null : activeSources[0];
+            }
+            set
+            {
+                Settings.DeleteSection(ActivePackageSourceSectionName);
+                Settings.SetValue(ActivePackageSourceSectionName, value.Key, value.Value);
+            }
+
         }
 
         private class PackageSourceCredential
