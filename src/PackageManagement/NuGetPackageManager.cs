@@ -252,9 +252,9 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
                     packageIdsToInstall,
-                    primarySourceRepository,
                     packageTargetIdsForResolver,
                     targetFramework,
+                    new List<SourceRepository>() { primarySourceRepository },
                     effectiveSources,
                     token);
 
@@ -365,9 +365,9 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
                     packagesToInstall,
-                    primarySourceRepository,
                     packageTargetsForResolver,
                     targetFramework,
+                    new List<SourceRepository>() { primarySourceRepository },
                     effectiveSources,
                     token);
 
@@ -554,9 +554,9 @@ namespace NuGet.PackageManagement
 
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
                         primaryPackages,
-                        primarySourceRepository,
                         packageTargetsForResolver,
                         targetFramework,
+                        new List<SourceRepository>() { primarySourceRepository },
                         effectiveSources,
                         token);
 

@@ -54,7 +54,8 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
 
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, framework, repos, CancellationToken.None);
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, Enumerable.Empty<PackageIdentity>(),
+                framework, repos, repos, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -104,7 +105,8 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
 
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, framework, repos, CancellationToken.None);
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, Enumerable.Empty<PackageIdentity>(),
+                framework, repos, repos, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -153,7 +155,61 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
 
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, framework, repos, CancellationToken.None);
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, Enumerable.Empty<PackageIdentity>(),
+                framework, repos, repos, CancellationToken.None);
+
+            var check = results.OrderBy(e => e.Id).ToList();
+
+            Assert.Equal(3, check.Count);
+            Assert.Equal("a", check[0].Id);
+            Assert.Equal("b", check[1].Id);
+            Assert.Equal("c", check[2].Id);
+        }
+
+        /// <summary>
+        /// Verify packages can be found across repos
+        /// </summary>
+        [Fact]
+        public async Task ResolverGather_Complex()
+        {
+            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+
+            PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+
+            NuGetFramework framework = NuGetFramework.Parse("net451");
+
+            List<PackageDependencyInfo> packages1 = new List<PackageDependencyInfo>()
+            {
+                new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
+            };
+
+            List<PackageDependencyInfo> packages2 = new List<PackageDependencyInfo>()
+            {
+                new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+            };
+
+            List<PackageDependencyInfo> packages3 = new List<PackageDependencyInfo>()
+            {
+                new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+            };
+
+            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers1 = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
+            providers1.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packages1), new TestAttribute()));
+
+            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers2 = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
+            providers2.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packages2), new TestAttribute()));
+
+            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers3 = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
+            providers3.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packages3), new TestAttribute()));
+
+            List<SourceRepository> repos = new List<SourceRepository>();
+            repos.Add(new SourceRepository(new PackageSource("http://1"), providers1));
+            repos.Add(new SourceRepository(new PackageSource("http://2"), providers2));
+            repos.Add(new SourceRepository(new PackageSource("http://3"), providers3));
+
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, Enumerable.Empty<PackageIdentity>(),
+                framework, repos, repos, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
