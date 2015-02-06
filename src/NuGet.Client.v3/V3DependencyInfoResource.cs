@@ -71,9 +71,16 @@ namespace NuGet.Client
         /// <summary>
         /// Gives all packages for an Id, and all dependencies recursively.
         /// </summary>
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<string> packageIds, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
         {
-            return await GetPackagesFromRegistration(packageId, AllVersions, projectFramework, token);
+            HashSet<PackageDependencyInfo> result = new HashSet<PackageDependencyInfo>(PackageIdentityComparer.Default);
+
+            foreach (string packageId in packageIds)
+            {
+                result.UnionWith(await GetPackagesFromRegistration(packageId, AllVersions, projectFramework, token));
+            }
+
+            return result;
         }
 
         /// <summary>

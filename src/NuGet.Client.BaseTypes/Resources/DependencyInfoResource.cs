@@ -32,6 +32,14 @@ namespace NuGet.Client
         /// <summary>
         /// Find all packages with the given name and their dependencies
         /// </summary>
-        public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token);
+        public async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
+        {
+            return await ResolvePackages(new string[] { packageId }, projectFramework, includePrerelease, token);
+        }
+
+        /// <summary>
+        /// Find all packages with the given name and their dependencies
+        /// </summary>
+        public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<string> packageIds, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token);
     }
 }

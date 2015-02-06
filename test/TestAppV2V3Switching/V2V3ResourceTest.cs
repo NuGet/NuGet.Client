@@ -169,7 +169,14 @@ namespace V2V3ResourcesTest
             List<PackageIdentity> packageIdentities = new List<PackageIdentity>();
             //Check the dependency tree depth for a known package. Since the same test executes for both V2 and V3 source, we cna also ensure that the pre-resolver data is same for both V2 and V3.
             packageIdentities.Add(new PackageIdentity("WebGrease",new NuGetVersion("1.6.0")));
+
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+
             IEnumerable<PackageDependencyInfo> packages = await resource.ResolvePackages(packageIdentities, NuGet.Frameworks.NuGetFramework.AnyFramework, true, new CancellationToken());
+
+            timer.Stop();
+
             Assert.True(packages.Count() >= 16);
         }
 
