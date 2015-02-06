@@ -228,7 +228,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 // Example: install-package https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
-                // TODO: Currently null ref due to bug https://github.com/NuGet/Home/issues/30. Follow up with the bug. 
                 if (_isHttp)
                 {
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
