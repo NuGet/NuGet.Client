@@ -1,6 +1,8 @@
 ﻿using System.Management.Automation;
 using EnvDTE;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.PackageManagement;
+using System;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

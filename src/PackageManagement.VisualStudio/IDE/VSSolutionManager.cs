@@ -126,6 +126,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProjectName.CustomUniqueName;
         }
 
+        public Project GetDTEProject(string nuGetProjectSafeName)
+        {
+            // wait for Init() to finish so that NuGetAndEnvDTEProjectCache is created.
+            _initFinished.WaitOne();
+
+            Project dteProject;
+            NuGetAndEnvDTEProjectCache.TryGetDTEProject(nuGetProjectSafeName, out dteProject);
+            return dteProject;
+        }
+
         public IEnumerable<NuGetProject> GetNuGetProjects()
         {
             if(IsSolutionOpen)

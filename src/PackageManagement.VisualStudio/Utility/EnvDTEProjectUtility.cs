@@ -275,6 +275,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return name;
         }
 
+        public static string GetDisplayName(EnvDTEProject envDTEProject)
+        {
+            string name = GetCustomUniqueName(envDTEProject);
+            if (IsWebSite(envDTEProject))
+            {
+                name = PathHelper.SmartTruncate(name, 40);
+            }
+            return name;
+        }
+
         /// <summary>
         /// This method is different from the GetName() method above in that for Website project, 
         /// it will always return the project name, instead of the full path to the website, when it uses Casini server.

@@ -1,4 +1,5 @@
-﻿using NuGet.ProjectManagement;
+﻿using EnvDTE;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,15 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProjectName envDTEProjectName;
             return TryGetNuGetProjectName(name, out envDTEProjectName) &&
                 _nuGetProjectCache.TryGetValue(envDTEProjectName, out nuGetProject);
+        }
+
+        public bool TryGetDTEProject(string name, out Project project)
+        {
+            project = null;
+            // First try to find the project name in one of the dictionaries. Then locate the project for that name.
+            EnvDTEProjectName envDTEProjectName;
+            return TryGetNuGetProjectName(name, out envDTEProjectName) &&
+                _envDTEProjectCache.TryGetValue(envDTEProjectName, out project);
         }
 
         /// <summary>

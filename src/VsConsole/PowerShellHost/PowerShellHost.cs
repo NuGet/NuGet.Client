@@ -63,6 +63,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesSaved += PackageSourceProvider_PackageSourcesSaved;
         }
 
+        #region Properties
         protected Pipeline ExecutingPipeline { get; set; }
 
         /// <summary>
@@ -134,6 +135,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 return ComplexCommand.IsComplete ? EvaluatePrompt() : ">> ";
             }
         }
+
+        public PackageManagementContext PackageManagementContext
+        {
+            get
+            {
+                return _packageManagementContext;
+            }
+            set
+            {
+                _packageManagementContext = value;
+            }
+        }
+        #endregion
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         private string EvaluatePrompt()
@@ -509,7 +523,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     return null;
                 }
 
-                return _solutionManager.DefaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                return GetDisplayName(_solutionManager.DefaultNuGetProject);
             }
         }
 
@@ -533,10 +547,35 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             var allProjects = _solutionManager.GetNuGetProjects();
             _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();
-            var displayNames = allProjects.Select(p => p.GetMetadata<string>(NuGetProjectMetadataKeys.Name)).ToArray();
+            var displayNames = GetDisplayNames(allProjects).ToArray();
             Array.Sort(displayNames, _projectSafeNames, StringComparer.CurrentCultureIgnoreCase);
-            return displayNames;
+            return _projectSafeNames;
         }
+
+        private IEnumerable<string> GetDisplayNames(IEnumerable<NuGetProject> allProjects)
+        {
+            List<string> projectNames = new List<string>();
+            VSSolutionManager solutionManager = (VSSolutionManager)_solutionManager;
+            foreach (NuGetProject nuGetProject in allProjects)
+            {
+                string displayName = GetDisplayName(nuGetProject, solutionManager);
+                projectNames.Add(displayName);
+            }
+            return projectNames;
+        }
+
+        public string GetDisplayName(NuGetProject nuGetProject)
+        {
+            VSSolutionManager solutionManager = (VSSolutionManager)_solutionManager;
+            return GetDisplayName(nuGetProject, solutionManager);
+        }      
+
+        public string GetDisplayName(NuGetProject nuGetProject, VSSolutionManager solutionManager)
+        {
+            string safeName = solutionManager.GetNuGetProjectSafeName(nuGetProject);
+            Project project = solutionManager.GetDTEProject(safeName);
+            return EnvDTEProjectUtility.GetDisplayName(project);
+        }       
 
         #region ITabExpansion
         public string[] GetExpansions(string line, string lastWord)
@@ -577,18 +616,5 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
         #endregion
-
-
-        public PackageManagementContext PackageManagementContext
-        {
-            get
-            {
-                return _packageManagementContext;
-            }
-            set
-            {
-                _packageManagementContext = value;
-            }
-        }
     }
 }
