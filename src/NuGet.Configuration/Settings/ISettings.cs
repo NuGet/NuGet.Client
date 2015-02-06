@@ -18,6 +18,7 @@ namespace NuGet.Configuration
         /// Otherwise, path relative to ISettings.Root is returned
         /// </summary>
         string GetValue(string section, string key, bool isPath = false);
+        string GetDecryptedValue(string section, string key, bool isPath = false);
         /// <summary>
         /// Gets all the values under section
         /// </summary>
@@ -27,9 +28,12 @@ namespace NuGet.Configuration
         /// </summary>
         IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection);
         void SetValue(string section, string key, string value);
+
+        void SetEncryptedValue(string section, string key, string value);
         void SetValues(string section, IList<KeyValuePair<string, string>> values);
         void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values);
         bool DeleteValue(string section, string key);
         bool DeleteSection(string section);
+
     }
 }

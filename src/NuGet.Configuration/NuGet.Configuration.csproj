@@ -41,10 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Credential\CredentialStore.cs" />
+    <Compile Include="Credential\ICredentialCache.cs" />
     <Compile Include="PackageSource\IPackageSourceProvider.cs" />
     <Compile Include="PackageSource\NuGetConstants.cs" />
     <Compile Include="PackageSource\PackageSource.cs" />
     <Compile Include="PackageSource\PackageSourceProvider.cs" />
+    <Compile Include="Proxy\EnvironmentVariableWrapper.cs" />
+    <Compile Include="Proxy\IEnvironmentVariableReader.cs" />
+    <Compile Include="Proxy\IProxyCache.cs" />
+    <Compile Include="Proxy\ProxyCache.cs" />
     <Compile Include="Settings\ConfigurationDefaults.cs" />
     <Compile Include="Settings\IMachineWideSettings.cs" />
     <Compile Include="Settings\NullSettings.cs" />
