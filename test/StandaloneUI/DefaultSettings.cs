@@ -20,12 +20,12 @@ namespace StandaloneUI
 
         public bool DeleteSection(string section)
         {
-            throw new NotImplementedException();
+            return Instance.DeleteSection(section);
         }
 
         public bool DeleteValue(string section, string key)
         {
-            throw new NotImplementedException();
+            return Instance.DeleteValue(section, key);
         }
 
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
@@ -50,17 +50,17 @@ namespace StandaloneUI
 
         public void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values)
         {
-            throw new NotImplementedException();
+            Instance.SetNestedValues(section, subSection, values);
         }
 
         public void SetValue(string section, string key, string value)
         {
-            throw new NotImplementedException();
+            Instance.SetValue(section, key, value);
         }
 
         public void SetValues(string section, IList<KeyValuePair<string, string>> values)
         {
-            throw new NotImplementedException();
+            Instance.SetValues(section, values);
         }
     }
 }

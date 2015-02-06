@@ -138,6 +138,16 @@ namespace ResolverTestApp
             {
                 throw new NotImplementedException();
             }
+
+            public string ActivePackageSourceName
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public void SaveActivePackageSource(PackageSource source)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

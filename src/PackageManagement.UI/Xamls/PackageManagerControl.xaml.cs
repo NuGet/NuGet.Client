@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Client;
 using NuGet.Client.VisualStudio;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
-using NuGet.Versioning;
 using Resx = NuGet.PackageManagement.UI;
-using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -100,17 +98,14 @@ namespace NuGet.PackageManagement.UI
             {
                 return;
             }
-            
+
             _sourceRepoList.Style = Styles.ThemedComboStyle;
             _filter.Style = Styles.ThemedComboStyle;
         }
 
-        private IEnumerable<SourceRepository> EnabledSources
+        private IEnumerable<SourceRepository> GetEnabledSources()
         {
-            get
-            {
-                return Model.Context.SourceProvider.GetRepositories().Where(s => s.PackageSource.IsEnabled);
-            }
+            return Model.Context.SourceProvider.GetRepositories().Where(s => s.PackageSource.IsEnabled);
         }
 
         private void Sources_PackageSourcesChanged(object sender, EventArgs e)
@@ -121,8 +116,8 @@ namespace NuGet.PackageManagement.UI
             _dontStartNewSearch = true;
             try
             {
-                var oldActiveSource = _sourceRepoList.SelectedItem as PackageSource;
-                var newSources = new List<PackageSource>(EnabledSources.Select(s => s.PackageSource));
+                var oldActiveSource = _sourceRepoList.SelectedItem as SourceRepository;
+                var newSources = GetEnabledSources();
 
                 // Update the source repo list with the new value.
                 _sourceRepoList.Items.Clear();
@@ -131,14 +126,14 @@ namespace NuGet.PackageManagement.UI
                     _sourceRepoList.Items.Add(source);
                 }
 
-                SetNewActiveSource(oldActiveSource);
-                
+                SetNewActiveSource(newSources, oldActiveSource.PackageSource);
+
                 // force a new search explicitly if active source has changed
                 if ((oldActiveSource == null && _activeSource != null) ||
-                    (oldActiveSource != null && 
+                    (oldActiveSource != null &&
                     _activeSource != null &&
                     !StringComparer.OrdinalIgnoreCase.Equals(
-                        oldActiveSource.Source,
+                        oldActiveSource.PackageSource.Source,
                         _activeSource.PackageSource.Source)))
                 {
                     SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
@@ -150,30 +145,36 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void SetNewActiveSource(PackageSource oldActiveSource)
+        
+        /// <summary>
+        /// Calculate the active source after the list of sources have been changed.
+        /// </summary>
+        /// <param name="newSources">The current list of sources.</param>
+        /// <param name="oldActiveSource">The old active source.</param>
+        private void SetNewActiveSource(IEnumerable<SourceRepository> newSources, PackageSource oldActiveSource)
         {
-            if (!EnabledSources.Any())
+            if (!newSources.Any())
             {
                 _activeSource = null;
             }
-            else 
+            else
             {
                 if (oldActiveSource == null)
                 {
                     // use the first enabled source as the active source
-                    _activeSource = EnabledSources.First();
+                    _activeSource = newSources.First();
                 }
                 else
                 {
-                    var s = EnabledSources.FirstOrDefault(repo => StringComparer.CurrentCultureIgnoreCase.Equals(
+                    var s = newSources.FirstOrDefault(repo => StringComparer.CurrentCultureIgnoreCase.Equals(
                         repo.PackageSource.Name, oldActiveSource.Name));
                     if (s == null)
                     {
-                        // the old active source does not exist any more. In this case, 
+                        // the old active source does not exist any more. In this case,
                         // use the first eneabled source as the active source.
-                        _activeSource = EnabledSources.First();
+                        _activeSource = newSources.First();
                     }
-                    else 
+                    else
                     {
                         // the old active source still exists. Keep it as the active source.
                         _activeSource = s;
@@ -184,6 +185,7 @@ namespace NuGet.PackageManagement.UI
             if (_activeSource != null)
             {
                 _sourceRepoList.SelectedItem = _activeSource.PackageSource;
+                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(_activeSource.PackageSource);
             }
         }
 
@@ -249,19 +251,27 @@ namespace NuGet.PackageManagement.UI
         {
             // init source repo list
             _sourceRepoList.Items.Clear();
-            foreach (var source in EnabledSources)
+            var enabledSources = GetEnabledSources();
+            foreach (var source in enabledSources)
             {
-                if (_activeSource == null)
-                {
-                    _activeSource = source;
-                }
+                _sourceRepoList.Items.Add(source);
+            }
 
-                _sourceRepoList.Items.Add(source.PackageSource);
+            // set active source
+            var activeSourceName = Model.Context.SourceProvider.PackageSourceProvider.ActivePackageSourceName;
+            if (activeSourceName != null)
+            {
+                _activeSource = enabledSources
+                    .FirstOrDefault(s => activeSourceName.Equals(s.PackageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+            }
+            else
+            {
+                _activeSource = enabledSources.FirstOrDefault();
             }
 
             if (_activeSource != null)
             {
-                _sourceRepoList.SelectedItem = _activeSource.PackageSource;
+                _sourceRepoList.SelectedItem = _activeSource;
             }
         }
 
@@ -362,20 +372,20 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            var newSource = _sourceRepoList.SelectedItem as PackageSource;
-            if (newSource != null)
+            _activeSource = _sourceRepoList.SelectedItem as SourceRepository;
+            if (_activeSource != null)
             {
-                if (String.IsNullOrEmpty(newSource.Description))
+                if (String.IsNullOrEmpty(_activeSource.PackageSource.Description))
                 {
                     _sourceTooltip.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
                     _sourceTooltip.Visibility = Visibility.Visible;
-                    _sourceTooltip.DataContext = newSource.Description;
+                    _sourceTooltip.DataContext = _activeSource.PackageSource.Description;
                 }
 
-                _activeSource = EnabledSources.Where(s => s.PackageSource == _sourceRepoList.SelectedItem).SingleOrDefault();
+                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(_activeSource.PackageSource);
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             }
         }

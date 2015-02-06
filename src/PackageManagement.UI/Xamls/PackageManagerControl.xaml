@@ -52,7 +52,7 @@
                         Margin="6,0,0,0"
                         x:Name="_sourceRepoList"
                         VerticalAlignment="Center"
-                        DisplayMemberPath="Name"
+                        DisplayMemberPath="PackageSource.Name"
                         MinWidth="130"
                         MinHeight="22"
                         Grid.Column="1"

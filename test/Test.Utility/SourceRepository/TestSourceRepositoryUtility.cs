@@ -95,6 +95,16 @@ namespace Test.Utility
                 PackageSourcesSaved(this, null);
             }
         }
+
+        public string ActivePackageSourceName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void SaveActivePackageSource(PackageSource source)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static class TestPackageSourceSettings
