@@ -302,13 +302,10 @@ namespace NuGet.Configuration.Test
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            SettingValue activeValue = new SettingValue(NuGetConstants.V2FeedName, NuGetConstants.V2FeedUrl, false);
-            Assert.Equal(activeValue, before.ActivePackageSource);
+            Assert.Equal(NuGetConstants.V2FeedName, before.ActivePackageSourceName);
 
-            SettingValue newActiveValue = new SettingValue(NuGetConstants.V3FeedName, NuGetConstants.V3FeedUrl, false);
-            before.ActivePackageSource = newActiveValue;
-                        
-            Assert.Equal(newActiveValue, before.ActivePackageSource);
+            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName));
+            Assert.Equal(NuGetConstants.V3FeedName, before.ActivePackageSourceName);
 
             //Clean up
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
@@ -328,12 +325,10 @@ namespace NuGet.Configuration.Test
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            Assert.Null( before.ActivePackageSource);
+            Assert.Null(before.ActivePackageSourceName);
 
-            SettingValue newActiveValue = new SettingValue(NuGetConstants.V3FeedName, NuGetConstants.V3FeedUrl, false);
-            before.ActivePackageSource = newActiveValue;
-
-            Assert.Equal(newActiveValue, before.ActivePackageSource);
+            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName));
+            Assert.Equal(NuGetConstants.V3FeedName, before.ActivePackageSourceName);
 
             //Clean up
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
@@ -356,12 +351,11 @@ namespace NuGet.Configuration.Test
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            Assert.Null( before.ActivePackageSource);
+            Assert.Null(before.ActivePackageSourceName);
 
             SettingValue newActiveValue = new SettingValue(NuGetConstants.V3FeedName, NuGetConstants.V3FeedUrl, false);
-            before.ActivePackageSource = newActiveValue;
-
-            Assert.Equal(newActiveValue, before.ActivePackageSource);
+            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName));
+            Assert.Equal(NuGetConstants.V3FeedName, before.ActivePackageSourceName);
 
             //Clean up
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);

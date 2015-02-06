@@ -11,5 +11,9 @@ namespace NuGet.Configuration
         void SavePackageSources(IEnumerable<PackageSource> sources);
         void DisablePackageSource(PackageSource source);
         bool IsPackageSourceEnabled(PackageSource source);
+
+        string ActivePackageSourceName { get; }
+
+        void SaveActivePackageSource(PackageSource source);
     }
 }

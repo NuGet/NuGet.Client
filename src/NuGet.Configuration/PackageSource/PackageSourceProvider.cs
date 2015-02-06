@@ -443,21 +443,37 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Get/ Set ActivePackageSource from/ in NuGet.Config
+        /// Gets the name of the ActivePackageSource from NuGet.Config
         /// </summary>
-        public SettingValue ActivePackageSource
+        public string ActivePackageSourceName
         {
             get
             {
-                IList<SettingValue> activeSources = Settings.GetSettingValues(ActivePackageSourceSectionName);
-                return (activeSources.Count == 0) ? null : activeSources[0];
+                var activeSource = Settings.GetSettingValues(ActivePackageSourceSectionName).FirstOrDefault();
+                if (activeSource == null)
+                {
+                    return null;
+                }
+
+                return activeSource.Key;
             }
-            set
+        }
+
+        /// <summary>
+        /// Saves the <paramref name="source"/> as the active source.
+        /// </summary>
+        /// <param name="source"></param>
+        public void SaveActivePackageSource(PackageSource source)
+        {
+            try
             {
                 Settings.DeleteSection(ActivePackageSourceSectionName);
-                Settings.SetValue(ActivePackageSourceSectionName, value.Key, value.Value);
+                Settings.SetValue(ActivePackageSourceSectionName, source.Name, source.Source);
             }
-
+            catch (Exception)
+            {
+                // we want to ignore all errors here.
+            }
         }
 
         private class PackageSourceCredential
