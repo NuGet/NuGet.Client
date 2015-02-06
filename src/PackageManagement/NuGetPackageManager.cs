@@ -110,17 +110,29 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
-            // Step-1 : Get latest version for packageId
-            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySourceRepository, token);
+            await InstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext,
+                new List<SourceRepository>() { primarySourceRepository }, secondarySources, token);
+        }
 
-            if(latestVersion == null)
+        /// <summary>
+        /// Installs the latest version of the given <param name="packageId"></param> to NuGetProject <param name="nuGetProject"></param>
+        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
+        /// </summary>
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
+        {
+            // Step-1 : Get latest version for packageId
+            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySources, token);
+
+            if (latestVersion == null)
             {
                 throw new InvalidOperationException(String.Format(Strings.NoLatestVersionFound, packageId));
             }
 
             // Step-2 : Call InstallPackageAsync(project, packageIdentity)
             await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources, token);
+                nuGetProjectContext, primarySources, secondarySources, token);
         }
 
         /// <summary>
@@ -131,9 +143,21 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
+            await InstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext,
+                new List<SourceRepository>() { primarySourceRepository }, secondarySources, token);
+        }
+
+        /// <summary>
+        /// Installs given <param name="packageIdentity"></param> to NuGetProject <param name="nuGetProject"></param>
+        /// <param name="resolutionContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
+        /// </summary>
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
+        {
             // Step-1 : Call PreviewInstallPackageAsync to get all the nuGetProjectActions
             var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources, token);
+                nuGetProjectContext, primarySources, secondarySources, token);
 
             // Step-2 : Execute all the nuGetProjectActions
             await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
@@ -471,16 +495,12 @@ namespace NuGet.PackageManagement
                 return new NuGetProjectAction[] { action };
             }
 
-            if(secondarySources == null)
-            {
-                secondarySources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            }
-
-            return await PreviewInstallPackageAsyncPrivate(nuGetProject, packageIdentity, resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources, token);
+            var primarySources = new List<SourceRepository>() { primarySourceRepository };
+            return await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
+                nuGetProjectContext, primarySources, secondarySources, token);
         }
 
-        private async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
@@ -510,14 +530,28 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("primarySources");
             }
 
-            if(secondarySources == null)
+            if (secondarySources == null)
             {
-                throw new ArgumentNullException("secondarySources");
+                secondarySources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            }
+
+            if(!primarySources.Any())
+            {
+                throw new ArgumentException("primarySources");
             }
 
             if(packageIdentity.Version == null)
             {
                 throw new ArgumentNullException("packageIdentity.Version");
+            }
+
+            // TODO: BUGBUG: HACK: Multiple primary repositories is mainly intended for nuget.exe at the moment
+            // The following special case for ProjectK is not correct, if they used nuget.exe
+            // and multiple repositories in the -Source switch
+            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
+            {
+                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First());
+                return new NuGetProjectAction[] { action };
             }
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
@@ -978,19 +1012,28 @@ namespace NuGet.PackageManagement
 
         public static async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext, SourceRepository primarySourceRepository, CancellationToken token)
         {
-            var metadataResource = primarySourceRepository.GetResource<MetadataResource>();
-            if (metadataResource != null)
+            return await GetLatestVersionAsync(packageId, resolutionContext, new List<SourceRepository> { primarySourceRepository }, token);
+        }
+
+        private static async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext,
+            IEnumerable<SourceRepository> sources, CancellationToken token)
+        {
+            List<NuGetVersion> latestVersions = new List<NuGetVersion>();
+            foreach (var source in sources)
             {
-                var latestVersionKeyPairList = await metadataResource.GetLatestVersions(new List<string>() { packageId },
-                    resolutionContext.IncludePrerelease, resolutionContext.IncludeUnlisted, token);
-                if ((latestVersionKeyPairList == null || !latestVersionKeyPairList.Any()))
+                var metadataResource = await source.GetResourceAsync<MetadataResource>(token);
+                if (metadataResource != null)
                 {
-                    return null;
+                    var latestVersion = await metadataResource.GetLatestVersion(packageId,
+                        resolutionContext.IncludePrerelease, resolutionContext.IncludeUnlisted, token);
+                    if (latestVersion != null)
+                    {
+                        latestVersions.Add(latestVersion);
+                    }
                 }
-                return latestVersionKeyPairList.FirstOrDefault().Value;
             }
 
-            return null;
+            return latestVersions.Max<NuGetVersion>();
         }
 
         private IEnumerable<SourceRepository> GetEffectiveSources(IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources)
