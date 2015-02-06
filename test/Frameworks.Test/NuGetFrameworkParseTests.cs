@@ -12,6 +12,14 @@ namespace NuGet.Test
     public class NuGetFrameworkParseTests
     {
         [Fact]
+        public void NuGetFramework_SpecialNamesToDotNetFrameworkName()
+        {
+            Assert.Equal("Any, Version=v0.0", NuGetFramework.AnyFramework.DotNetFrameworkName);
+            Assert.Equal("Agnostic, Version=v0.0", NuGetFramework.AgnosticFramework.DotNetFrameworkName);
+            Assert.Equal("Unsupported, Version=v0.0", NuGetFramework.UnsupportedFramework.DotNetFrameworkName);
+        }
+
+        [Fact]
         public void NuGetFramework_PortableWithOptional()
         {
             NuGetFramework framework = NuGetFramework.Parse("portable-net4%2Bsl5%2Bwp8%2Bwin8%2Bwpa81%2Bmonotouch%2Bmonoandroid");
@@ -47,8 +55,8 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("foo45", "Unsupported")]
-        [InlineData("", "Unsupported")]
+        [InlineData("foo45", "Unsupported, Version=v0.0")]
+        [InlineData("", "Unsupported, Version=v0.0")]
         public void NuGetFramework_ParseUnknown(string input, string expected)
         {
             string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
@@ -129,7 +137,7 @@ namespace NuGet.Test
         [InlineData("")]
         public void NuGetFramework_Unsupported(string folderName)
         {
-            Assert.Equal("Unsupported", NuGetFramework.Parse(folderName).DotNetFrameworkName);
+            Assert.Equal("Unsupported, Version=v0.0", NuGetFramework.Parse(folderName).DotNetFrameworkName);
         }
     }
 }

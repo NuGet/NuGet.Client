@@ -141,7 +141,7 @@ namespace NuGet.Test
             {
                 string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
 
-                Assert.Equal("Any", frameworks[0]);
+                Assert.Equal("Any, Version=v0.0", frameworks[0]);
                 Assert.Equal(".NETFramework, Version=v4.0", frameworks[1]);
                 Assert.Equal(".NETFramework, Version=v4.5", frameworks[2]);
                 Assert.Equal(frameworks.Length, 3);
@@ -157,7 +157,7 @@ namespace NuGet.Test
             {
                 string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
 
-                Assert.Equal("Agnostic", frameworks[0]);
+                Assert.Equal("Agnostic, Version=v0.0", frameworks[0]);
                 Assert.Equal(frameworks.Length, 1);
             }
         }

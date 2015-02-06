@@ -159,7 +159,7 @@ namespace NuGet.Frameworks
                 }
                 else
                 {
-                    result = Framework;
+                    result = String.Format(CultureInfo.InvariantCulture, "{0}, Version=v0.0", Framework);
                 }
 
                 return result;
