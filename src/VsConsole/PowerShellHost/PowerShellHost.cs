@@ -47,6 +47,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // store the current command typed so far
         private ComplexCommand _complexCommand;
 
+        List<SourceRepository> _sourceRepositories;
+
         protected PowerShellHost(string name, IRunspaceManager runspaceManager)
         {
             _runspaceManager = runspaceManager;
@@ -60,7 +62,38 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             _name = name;
             IsCommandEnabled = true;
+
+            InitializeSources();            
+
             _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesSaved += PackageSourceProvider_PackageSourcesSaved;
+        }
+
+        private void InitializeSources()
+        {
+            _sourceRepositories = _sourceRepositoryProvider
+                .GetRepositories()
+                .Where(repo => repo.PackageSource.IsEnabled)
+                .ToList();
+
+            _activePackageSource = _sourceRepositoryProvider.PackageSourceProvider.ActivePackageSourceName;
+
+            // check if active package source name is valid
+            var activeSource = _sourceRepositories.FirstOrDefault(
+                repo => StringComparer.CurrentCultureIgnoreCase.Equals(repo.PackageSource.Name, _activePackageSource));
+            if (activeSource == null)
+            {
+                // the name can't be found. Use the first source as active source.
+                activeSource = _sourceRepositories.FirstOrDefault();
+            }
+
+            if (activeSource != null)
+            {
+                _activePackageSource = activeSource.PackageSource.Name;
+            }
+            else
+            {
+                _activePackageSource = null;
+            }
         }
 
         #region Properties
@@ -416,75 +449,40 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             get
             {
-                Debug.Assert(_settings != null);
-                _activePackageSource = string.Empty;
-
-                if (_settings != null)
-                {
-                    var activePackageKeyValue = _settings.GetSettingValues(ActivePackageSourceKey);
-                    if (activePackageKeyValue != null && activePackageKeyValue.Any())
-                    {
-                        _activePackageSource = activePackageKeyValue[0].Key;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(_activePackageSource) && _sourceRepositoryProvider != null)
-                {
-                    PackageSource[] packageSources = _sourceRepositoryProvider.GetRepositories().Select(v => v.PackageSource).Where(p => p.IsEnabled).ToArray();
-                    return packageSources[0].Name;
-                }
-                else
-                {
-                    PackageSource activePackageSource = new PackageSource(_activePackageSource);
-                    return activePackageSource == null ? null : activePackageSource.Name;
-                }
+                return _activePackageSource;
             }
             set
             {
-                if (string.IsNullOrEmpty(value))
+                _activePackageSource = value;
+                var source = _sourceRepositories
+                    .Where(s => StringComparer.CurrentCultureIgnoreCase.Equals(_activePackageSource, s.PackageSource.Name))
+                    .FirstOrDefault();
+                if (source != null)
                 {
-                    throw new ArgumentNullException("value");
-                }
-                else
-                {
-                    _activePackageSource = value;
-                    if (_settings != null)
-                    {
-                        var match = _settings.GetSettingValues(PackageSourceKey)
-                            .Where(p => string.Equals(p.Key, _activePackageSource, StringComparison.OrdinalIgnoreCase))
-                            .FirstOrDefault();
-
-                        if (match != null)
-                        {
-                            var pair = new KeyValuePair<string, string>(match.Key, match.Value);
-                            _settings.DeleteSection(ActivePackageSourceKey);
-                            _settings.SetValues(ActivePackageSourceKey, new List<KeyValuePair<string, string>>() { pair });
-                        }
-                    }
+                    _sourceRepositoryProvider.PackageSourceProvider.SaveActivePackageSource(source.PackageSource);
                 }
             }
         }
 
         public string[] GetPackageSources()
         {
-            // Starting NuGet 3.0 RC, AggregateSource will not be displayed in the Package source dropdown box of PowerShell console.
-            string[] sources = _sourceRepositoryProvider.GetRepositories()
-                .Where(p => p.PackageSource.IsEnabled)
-                .Select(ps => ps.PackageSource.Name)
-                .ToArray();
-            return sources;
+            return _sourceRepositories.Select(repo => repo.PackageSource.Name).ToArray();
         }
 
         private void PackageSourceProvider_PackageSourcesSaved(object sender, EventArgs e)
         {
+            _sourceRepositories = _sourceRepositoryProvider
+                .GetRepositories()
+                .Where(repo => repo.PackageSource.IsEnabled)
+                .ToList();
+
             string oldActiveSource = this.ActivePackageSource;
             SetNewActiveSource(oldActiveSource);
         }
 
         private void SetNewActiveSource(string oldActiveSource)
         {
-            var allEnabledSources = GetPackageSources();
-            if (!allEnabledSources.Any())
+            if (!_sourceRepositories.Any())
             {
                 ActivePackageSource = string.Empty;
             }
@@ -493,21 +491,22 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 if (oldActiveSource == null)
                 {
                     // use the first enabled source as the active source
-                    ActivePackageSource = allEnabledSources.First();
+                    ActivePackageSource = _sourceRepositories.First().PackageSource.Name;
                 }
                 else
                 {
-                    var s = allEnabledSources.FirstOrDefault(p => StringComparer.CurrentCultureIgnoreCase.Equals(p, oldActiveSource));
+                    var s = _sourceRepositories.FirstOrDefault(
+                        p => StringComparer.CurrentCultureIgnoreCase.Equals(p.PackageSource.Name, oldActiveSource));
                     if (s == null)
                     {
                         // the old active source does not exist any more. In this case, 
                         // use the first eneabled source as the active source.
-                        ActivePackageSource = allEnabledSources.First();
+                        ActivePackageSource = _sourceRepositories.First().PackageSource.Name;
                     }
                     else
                     {
                         // the old active source still exists. Keep it as the active source.
-                        ActivePackageSource = s;
+                        ActivePackageSource = s.PackageSource.Name;
                     }
                 }
             }

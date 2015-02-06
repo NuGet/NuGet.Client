@@ -218,11 +218,36 @@ namespace NuGet.Options
             // get package sources as ordered list
             var packageSources = PackageSourcesListBox.Items.Cast<PackageSource>().ToList();
             packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSource>().ToList());
-            _packageSourceProvider.SavePackageSources(packageSources);
+
+            var existingSources = _packageSourceProvider.LoadPackageSources().ToList();
+            if (SourcesChanged(existingSources, packageSources))
+            {
+                _packageSourceProvider.SavePackageSources(packageSources);
+            }
 
             // find the enabled package source 
             var updatedActiveSource = packageSources.Find(p => p.IsEnabled);
             return true;
+        }
+
+        // Returns true if there are no changes between existingSources and packageSources.
+        private bool SourcesChanged(List<PackageSource> existingSources, List<PackageSource> packageSources)
+        {
+            if (existingSources.Count != packageSources.Count)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < existingSources.Count; ++i)
+            {
+                if (!existingSources[i].Equals(packageSources[i]) ||
+                    existingSources[i].IsEnabled != packageSources[i].IsEnabled)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
