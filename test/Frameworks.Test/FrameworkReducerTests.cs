@@ -12,6 +12,23 @@ namespace NuGet.Test
     public class FrameworkReducerTests
     {
         [Fact]
+        public void FrameworkReducer_GetNearestChooseFrameworkName()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var framework1 = NuGetFramework.Parse("net40");
+            var framework2 = NuGetFramework.Parse("netcore45");
+
+            var project = NuGetFramework.Parse("net451");
+
+            var all = new NuGetFramework[] { framework1, framework2 };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(framework1, result);
+        }
+
+        [Fact]
         public void FrameworkReducer_GetNearestEqual()
         {
             FrameworkReducer reducer = new FrameworkReducer();

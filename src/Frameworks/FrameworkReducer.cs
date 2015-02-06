@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace NuGet.Frameworks
         private readonly IFrameworkNameProvider _mappings;
         private readonly IFrameworkCompatibilityProvider _compat;
         private readonly NuGetFrameworkFullComparer _fullComparer;
+        private readonly NuGetFrameworkNameComparer _fwNameComparer;
 
         /// <summary>
         /// Creates a FrameworkReducer using the default framework mappings.
@@ -32,6 +34,7 @@ namespace NuGet.Frameworks
             _mappings = mappings;
             _compat = compat;
             _fullComparer = new NuGetFrameworkFullComparer();
+            _fwNameComparer = new NuGetFrameworkNameComparer();
         }
 
         /// <summary>
@@ -61,6 +64,13 @@ namespace NuGet.Frameworks
                 // Remove lower versions of compatible frameworks
                 IEnumerable<NuGetFramework> reduced = ReduceUpwards(compatible);
 
+                // Reduce to the same framework name if possible
+                if (reduced.Count() > 1 && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
+                {
+                    reduced = reduced.Where(f => _fwNameComparer.Equals(f, framework));
+                }
+
+                // PCL reduce
                 if (reduced.Count() > 1)
                 {
                     // if we have a pcl and non-pcl mix, throw out the pcls
@@ -76,16 +86,20 @@ namespace NuGet.Frameworks
                         // For now just find the compatible PCL with the fewest frameworks
                         reduced = reduced.OrderBy(e => e.Profile.Split('+').Length).ThenBy(e => e.Profile.Length);
                     }
-                    else
+                }
+
+                // Profile reduce
+                if (reduced.Count() > 1 && !reduced.Any(f => f.IsPCL))
+                {
+                    // Prefer frameworks without profiles
+                    // TODO: should we try to match against the profile of the input framework?
+                    if (reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
                     {
-                        // Prefer frameworks without profiles
-                        // TODO: should we try to match against the profile of the input framework?
-                        if (reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
-                        {
-                            reduced = reduced.Where(f => !f.HasProfile);
-                        }
+                        reduced = reduced.Where(f => !f.HasProfile);
                     }
                 }
+
+                Debug.Assert(reduced.Count() < 2, "Unable to find the nearest framework: " + String.Join(", ", reduced));
 
                 // if we have reduced down to a single framework, use that
                 nearest = reduced.SingleOrDefault();
