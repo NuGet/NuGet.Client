@@ -6,7 +6,8 @@ param (
     [string]$PFXPath,
     [switch]$DelaySign,
     [switch]$Stable,
-    [string]$Version
+    [string]$Version,
+    [string]$BuildExtras
 )
 
 # build
@@ -32,7 +33,7 @@ if (!$SkipBuild)
     }
 
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
-    Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
+    Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration $BuildExtras" -Wait -NoNewWindow
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
 }
 
