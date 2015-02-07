@@ -1,5 +1,6 @@
 ﻿using EnvDTE;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management.Automation;
@@ -53,8 +54,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (Name == null)
                 {
                     string defaultProjectName = VsSolutionManager.DefaultNuGetProjectName;
-                    Project defaultProject = DTE.Solution.GetAllProjects()
-                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, defaultProjectName))
+                    IEnumerable<Project> projects = DTE.Solution.GetAllProjects();
+                    Project defaultProject = projects
+                        .Where(p => defaultProjectName.EndsWith(GetDefaultName(projects, p), StringComparison.OrdinalIgnoreCase))
                         .FirstOrDefault();
                     if (defaultProject != null)
                     {
@@ -67,6 +69,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     WriteObject(GetProjectsByName(Name), enumerateCollection: true);
                 }
             }
+        }
+
+        private string GetDefaultName(IEnumerable<Project> projects, Project project)
+        {
+            string defaultName = IsAmbiguous(projects, project.Name) ? project.GetCustomUniqueName() : project.GetName();
+            return defaultName;
+        }
+
+        /// <summary>
+        /// Determines if a short name is ambiguous
+        /// </summary>
+        /// <param name="shortName">short name of the project</param>
+        /// <returns>true if there are multiple projects with the specified short name.</returns>
+        private bool IsAmbiguous(IEnumerable<Project> projects, string shortName)
+        {
+            IEnumerable<string> projectNames = projects.Select(v => v.Name)
+                .Where(p => p.ToLowerInvariant().Contains(shortName.ToLowerInvariant()));
+            int count = projectNames.Count();
+            return count > 1;
         }
     }
 }
