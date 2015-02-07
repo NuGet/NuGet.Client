@@ -605,7 +605,18 @@ namespace NuGet.PackageManagement
                     // TODO: Consider using IPackageResolver once it is extensible
                     var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
-                    IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver, availablePackageDependencyInfoWithSourceSet, projectInstalledPackageReferences, token);
+
+                    // Note: resolver prefers installed package versions if the satisfy the dependency version constraints
+                    // So, since we want an exact version of a package, create a new list of installed packages where the packageIdentity being installed
+                    // is present after removing the one with the same id
+                    var preferredPackageReferences = new List<PackageReference>(projectInstalledPackageReferences.Where(pr =>
+                        !pr.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)));
+                    preferredPackageReferences.Add(new PackageReference(packageIdentity, targetFramework));
+
+                    IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver,
+                        availablePackageDependencyInfoWithSourceSet,
+                        preferredPackageReferences,
+                        token);
                     if (newListOfInstalledPackages == null)
                     {
                         throw new InvalidOperationException(String.Format(Strings.UnableToResolveDependencyInfo, packageIdentity, resolutionContext.DependencyBehavior));
