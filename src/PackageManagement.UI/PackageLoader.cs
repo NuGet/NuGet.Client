@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Versioning;
-using NuGet.Client.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.Client;
-using NuGet.Frameworks;
-using System.Runtime.Versioning;
+using NuGet.Client.VisualStudio;
 using NuGet.PackagingCore;
-using NuGet.Packaging;
+using NuGet.ProjectManagement;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -57,10 +52,10 @@ namespace NuGet.PackageManagement.UI
         // The list of packages that have updates available
         private List<UISearchMetadata> _packagesWithUpdates;
 
-        public PackageLoader(PackageLoaderOption option, 
+        public PackageLoader(PackageLoaderOption option,
             NuGetPackageManager packageManager,
-            IEnumerable<NuGetProject> projects, 
-            SourceRepository sourceRepository, 
+            IEnumerable<NuGetProject> projects,
+            SourceRepository sourceRepository,
             string searchText)
         {
             _sourceRepository = sourceRepository;
@@ -89,7 +84,12 @@ namespace NuGet.PackageManagement.UI
         private async Task<IEnumerable<UISearchMetadata>> Search(int startIndex, CancellationToken ct)
         {
             List<UISearchMetadata> results = new List<UISearchMetadata>();
-            
+
+            if (_sourceRepository == null)
+            {
+                return results;
+            }
+
             if (_option.Filter == Filter.Installed)
             {
                 // show only the installed packages
@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI
             else if (_option.Filter == Filter.UpdatesAvailable)
             {
                 return await SearchUpdates(startIndex, ct);
-            }            
+            }
             else
             {
                 // normal search
@@ -143,7 +143,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the grouped list of installed packages.
         /// </summary>
-        /// <param name="latest">If true, the latest version is returned. Otherwise, the oldest 
+        /// <param name="latest">If true, the latest version is returned. Otherwise, the oldest
         /// version is returned.</param>
         /// <returns></returns>
         private async Task<IEnumerable<PackageIdentity>> GetInstalledPackages(bool latest, CancellationToken token)
@@ -242,7 +242,7 @@ namespace NuGet.PackageManagement.UI
                         }
 
                         return new UISearchMetadata(
-                            identity, 
+                            identity,
                             summary: summary,
                             iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
                             versions: versions.Select(v => new VersionInfo(v, 0)),

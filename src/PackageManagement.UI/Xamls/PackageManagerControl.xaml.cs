@@ -126,12 +126,12 @@ namespace NuGet.PackageManagement.UI
                     _sourceRepoList.Items.Add(source);
                 }
 
-                SetNewActiveSource(newSources, oldActiveSource.PackageSource);
+                SetNewActiveSource(newSources, oldActiveSource);
 
                 // force a new search explicitly if active source has changed
                 if ((oldActiveSource == null && _activeSource != null) ||
-                    (oldActiveSource != null &&
-                    _activeSource != null &&
+                    (oldActiveSource != null && _activeSource == null) ||
+                    (oldActiveSource != null && _activeSource != null &&
                     !StringComparer.OrdinalIgnoreCase.Equals(
                         oldActiveSource.PackageSource.Source,
                         _activeSource.PackageSource.Source)))
@@ -144,14 +144,13 @@ namespace NuGet.PackageManagement.UI
                 _dontStartNewSearch = false;
             }
         }
-
         
         /// <summary>
         /// Calculate the active source after the list of sources have been changed.
         /// </summary>
         /// <param name="newSources">The current list of sources.</param>
         /// <param name="oldActiveSource">The old active source.</param>
-        private void SetNewActiveSource(IEnumerable<SourceRepository> newSources, PackageSource oldActiveSource)
+        private void SetNewActiveSource(IEnumerable<SourceRepository> newSources, SourceRepository oldActiveSource)
         {
             if (!newSources.Any())
             {
@@ -162,17 +161,17 @@ namespace NuGet.PackageManagement.UI
                 if (oldActiveSource == null)
                 {
                     // use the first enabled source as the active source
-                    _activeSource = newSources.First();
+                    _activeSource = newSources.FirstOrDefault();
                 }
                 else
                 {
                     var s = newSources.FirstOrDefault(repo => StringComparer.CurrentCultureIgnoreCase.Equals(
-                        repo.PackageSource.Name, oldActiveSource.Name));
+                        repo.PackageSource.Name, oldActiveSource.PackageSource.Name));
                     if (s == null)
                     {
                         // the old active source does not exist any more. In this case,
                         // use the first eneabled source as the active source.
-                        _activeSource = newSources.First();
+                        _activeSource = newSources.FirstOrDefault();
                     }
                     else
                     {
@@ -182,9 +181,9 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
+            _sourceRepoList.SelectedItem = _activeSource;
             if (_activeSource != null)
             {
-                _sourceRepoList.SelectedItem = _activeSource.PackageSource;
                 Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(_activeSource.PackageSource);
             }
         }
@@ -319,18 +318,14 @@ namespace NuGet.PackageManagement.UI
                 filter = Filter.UpdatesAvailable;
             }
 
-            if (_activeSource != null)
-            {
-                PackageLoaderOption option = new PackageLoaderOption(filter, IncludePrerelease);
-
-                var loader = new PackageLoader(
-                    option,
-                    Model.Context.PackageManager,
-                    Model.Context.Projects,
-                    _activeSource,
-                    searchText);
-                _packageList.Loader = loader;
-            }
+            PackageLoaderOption option = new PackageLoaderOption(filter, IncludePrerelease);
+            var loader = new PackageLoader(
+                option,
+                Model.Context.PackageManager,
+                Model.Context.Projects,
+                _activeSource,
+                searchText);
+            _packageList.Loader = loader;
         }
 
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
