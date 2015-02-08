@@ -67,15 +67,24 @@ namespace NuGet.Client.V2
         public override async Task<Stream> GetStream(PackageIdentity identity, CancellationToken token)
         {
             Stream result = null;
+            IPackage package = null;
 
-            SemanticVersion version = null;
-            
-            if (identity.Version != null)
+            SemanticVersion version = SemanticVersion.Parse(identity.Version.ToString());
+
+            // attempt a normal lookup first
+            if (!V2Client.TryFindPackage(identity.Id, version, out package))
             {
-                SemanticVersion.TryParse(identity.Version.ToNormalizedString(), out version);
-            }
+                // skip further look ups for online repos
+                DataServicePackageRepository v2Online = V2Client as DataServicePackageRepository;
 
-            var package = V2Client.FindPackage(identity.Id, version);
+                if (v2Online == null)
+                {
+                    IVersionComparer versionComparer = VersionComparer.VersionRelease;
+
+                    // otherwise search further to find the package - this is needed for v2 non-normalized versions
+                    V2Client.FindPackagesById(identity.Id).Any(p => versionComparer.Equals(identity.Version, NuGetVersion.Parse(p.ToString())));
+                }
+            }
 
             if (package != null)
             {
