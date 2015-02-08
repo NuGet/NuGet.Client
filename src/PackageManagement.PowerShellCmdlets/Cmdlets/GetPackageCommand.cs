@@ -109,6 +109,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // If Remote & Updates set of parameters are not specified, list the installed package.
             if (!UseRemoteSource)
             {
+                CheckForSolutionOpen();
+
                 Dictionary<NuGetProject, IEnumerable<PackageReference>> packagesToDisplay = await GetInstalledPackages(Projects, Filter, Skip, First);
                 WriteInstalledPackages(packagesToDisplay);
             }
