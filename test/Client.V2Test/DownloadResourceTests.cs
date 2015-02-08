@@ -1,0 +1,50 @@
+﻿using NuGet.Client;
+using NuGet.Frameworks;
+using NuGet.PackagingCore;
+using NuGet.Versioning;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Client.V2Test
+{
+    public class DownloadResourceTests : TestBase
+    {
+
+        [Fact]
+        public async Task DownloadResource_Unzipped()
+        {
+            NuGet.UnzippedPackageRepository repo = new NuGet.UnzippedPackageRepository(@"C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Stack 5\Packages");
+
+            var sourceRepo = GetSourceRepository(repo);
+
+            var resource = sourceRepo.GetResource<DownloadResource>();
+
+            var stream = await resource.GetStream(new PackageIdentity("Microsoft.AspNet.MVC", NuGetVersion.Parse("5.2.2")), CancellationToken.None);
+
+            long length = stream.Length;
+
+            Assert.Equal(298098, length);
+        }
+
+        [Fact]
+        public async Task DownloadResource_Local()
+        {
+            NuGet.LocalPackageRepository legacyRepo = new NuGet.LocalPackageRepository(@"C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Stack 5\Packages");
+
+            var sourceRepo = GetSourceRepository(legacyRepo);
+
+            var resource = sourceRepo.GetResource<DownloadResource>();
+
+            var stream = await resource.GetStream(new PackageIdentity("Microsoft.AspNet.MVC", NuGetVersion.Parse("5.2.2")), CancellationToken.None);
+
+            long length = stream.Length;
+
+            Assert.Equal(298098, length);
+        }
+    }
+}

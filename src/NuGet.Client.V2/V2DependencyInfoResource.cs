@@ -120,7 +120,8 @@ namespace NuGet.Client.V2
 
                 foreach (NuGet.PackagingCore.PackageDependency dep in toSeek)
                 {
-                    var task = Seek(dep, projectFramework, includePrerelease, parents.Concat(new string[] { target.Id }), token);
+                    // run tasks on another thread
+                    var task = Task.Run(async () => await Seek(dep, projectFramework, includePrerelease, parents.Concat(new string[] { target.Id }), token));
                     tasks.Push(task);
                 }
 
