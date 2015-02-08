@@ -161,24 +161,7 @@ function New-Project {
         $project = Get-Project "$destPath\"
     }
     
-    # Currently, $project is of type NuGetProject, so get the dte project object from the project name
-    foreach($dteProject in $dte.Solution.Projects) {
-           if($dteProject.Name -eq $ProjectName) {
-                return $dteProject
-           }
-    }
-
-    # At this point, we could not find a matching project. This may be because it is a website
-    if ($TemplateName -eq "EmptyWeb")
-    {
-        foreach($dteProject in $dte.Solution.Projects) {
-               if($ProjectName.StartsWith($dteProject.Name)) {
-                    return $dteProject
-               }
-        }
-    }
-
-    return $null
+    $project
 }
 
 function Get-SolutionFolderPathRecursive([parameter(mandatory=$true)]$solutionFolder) {

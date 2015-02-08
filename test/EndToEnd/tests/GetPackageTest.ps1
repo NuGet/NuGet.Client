@@ -70,7 +70,7 @@ function Test-GetPackageWithUpdatesAcceptsSourceName {
     Assert-AreEqual 2 $packages.Count
 }
 
-function Test-GetPackageAcceptsAllAsSourceName {
+function GetPackageAcceptsAllAsSourceName {
      # Act
     $p = @(Get-Package -Filter elmah -ListAvailable -Source 'All')
 
@@ -86,7 +86,7 @@ function Test-GetPackageAcceptsRelativePathSource {
     pushd
 
     # Act
-    cd $context.TestRoot
+	cd $context.TestRoot
     $p = @(Get-Package -ListAvailable -Source '..\')
 
     # Assert
