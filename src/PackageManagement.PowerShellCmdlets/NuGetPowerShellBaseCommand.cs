@@ -160,22 +160,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 ProcessRecordCore();
-                if(ScriptsPath != null)
-                {
-                    foreach(var fullPath in ScriptsPath)
-                    {
-                        string command = "& " + PathUtility.EscapePSPath(fullPath) + " $__rootPath $__toolsPath $__package $__project";
-                        LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullPath));
-
-                        InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
-                    }
-
-                    // clear temp variables
-                    SessionState.PSVariable.Remove("__rootPath");
-                    SessionState.PSVariable.Remove("__toolsPath");
-                    SessionState.PSVariable.Remove("__package");
-                    SessionState.PSVariable.Remove("__project");
-                }
             }
             catch (Exception ex)
             {
@@ -538,7 +522,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 return identity;
             }
 
-            return null;
+            return null;      
         }
         #endregion
 
@@ -546,8 +530,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void BeginProcessing()
         {
             IsExecuting = true;
-            ScriptsPath = null;
-            ScriptsPath = new ConcurrentQueue<string>();
             if (_httpClientEvents != null)
             {
                 _httpClientEvents.SendingRequest += OnSendingRequest;
@@ -806,7 +788,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 logQueue.Add(Tuple.Create(level, formattedMessage));
             }
-            queueSemaphone.Release();
+            queueSemaphore.Release();
         }
 
         /// <summary>
@@ -843,18 +825,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             while (true)
             {
-                int index = WaitHandle.WaitAny(new WaitHandle[] { completeEvent, queueSemaphone });
+                int index = WaitHandle.WaitAny(new WaitHandle[] { completeEvent, psExecutionSemaphore, queueSemaphore });
                 if (index == 0)
                 {
                     int count = logQueue.Count;
                     if (count != 0)
                     {
-                        for (int i = 0; i < count; i++)
+                        lock (this)
                         {
-                            LogFromMessageQueue();
+                            for (int i = 0; i < count; i++)
+                            {
+                                LogFromMessageQueue();
+                            }
                         }
                     }
                     break;
+                }
+                else if (index == 1)
+                {
+                    ExecutePSScript();
                 }
                 else
                 {
@@ -864,6 +853,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                 }
             }
+        }
+
+        private void ExecutePSScript()
+        {
+            var messageFromQueue = logQueue.First();
+            logQueue.RemoveAt(0);
+            ExecutePSScriptInternal(messageFromQueue.Item2);
         }
 
         /// <summary>
@@ -876,11 +872,51 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             LogCore(messageFromQueue.Item1, messageFromQueue.Item2);
         }
 
+        /// <summary>
+        /// Execute PowerShell script. Called by PowerShell execution thread.
+        /// </summary>
+        /// <param name="path"></param>
+        private void ExecutePSScriptInternal(string path)
+        {
+            try
+            {
+                if (path != null)
+                {
+                    string command = "& " + PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
+                    LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, path));
+
+                    InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
+                }
+
+                // clear temp variables
+                SessionState.PSVariable.Remove("__rootPath");
+                SessionState.PSVariable.Remove("__toolsPath");
+                SessionState.PSVariable.Remove("__package");
+                SessionState.PSVariable.Remove("__project");
+            }
+            catch (Exception ex)
+            {
+                LogCore(MessageLevel.Warning, ex.Message);
+            }
+            finally
+            {
+                scriptEndSemaphore.Release();
+            }
+        }
+
         protected List<Tuple<MessageLevel, string>> logQueue = new List<Tuple<MessageLevel, string>>();
 
         protected ManualResetEvent completeEvent = new ManualResetEvent(false);
 
-        protected Semaphore queueSemaphone = new Semaphore(0, Int32.MaxValue);
+        protected Semaphore queueSemaphore = new Semaphore(0, Int32.MaxValue);
+
+        protected ConcurrentQueue<string> ScriptQueue = new ConcurrentQueue<string>();
+
+        protected Semaphore scriptStartSemaphore = new Semaphore(0, Int32.MaxValue);
+
+        protected Semaphore psExecutionSemaphore = new Semaphore(0, Int32.MaxValue);
+
+        protected Semaphore scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
         #endregion
 
         public bool IsExecuting
@@ -894,17 +930,39 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get { return this; }
         }
 
-        public ConcurrentQueue<string> ScriptsPath
-        {
-            get;
-            private set;
-        }
-
-
         public PackageExtractionContext PackageExtractionContext
         {
             get;
             set;
+        }
+
+        public void ExecutePSScript(string scriptPath)
+        {
+            ScriptQueue.Enqueue(scriptPath);
+            scriptStartSemaphore.Release();
+        }
+
+        public void WaitForPSScriptExecution()
+        {
+            while (true)
+            {
+                int index = WaitHandle.WaitAny(new WaitHandle[] { scriptStartSemaphore, scriptEndSemaphore });
+                if (index == 0)
+                {
+                    string scriptPath;
+                    bool success = ScriptQueue.TryDequeue(out scriptPath);
+                    lock (this)
+                    {
+                        logQueue.Add(Tuple.Create(MessageLevel.Info, scriptPath));
+                    }
+                    psExecutionSemaphore.Release();
+                }
+                else
+                {
+                    // Script execution is complete now.
+                    break;
+                }
+            }
         }
     }
 
@@ -919,7 +977,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public interface IPSNuGetProjectContext : INuGetProjectContext
     {
         bool IsExecuting { get; }
+
         PSCmdlet CurrentPSCmdlet { get; }
-        ConcurrentQueue<string> ScriptsPath { get; }
+
+        void ExecutePSScript(string scriptPath);
+
+        void WaitForPSScriptExecution();
     }
 }
