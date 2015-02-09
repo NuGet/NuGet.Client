@@ -56,7 +56,7 @@ namespace NuGet.Client
             if (proxy == null && credential == null) return null;
             else
             {
-                if(proxy != null) ProxyCache.Instance.add(proxy);
+                if(proxy != null) ProxyCache.Instance.Add(proxy);
                 if (credential != null) CredentialStore.Instance.Add(uri, credential);
                 return new WebRequestHandler()
                 {
