@@ -87,8 +87,7 @@ namespace NuGetConsole
                 object[] inputs = new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject };
 
                 IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
-                if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting
-                    && psNuGetProjectContext.CurrentPSCmdlet != null && psNuGetProjectContext.ScriptsPath != null)
+                if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting && psNuGetProjectContext.CurrentPSCmdlet != null)
                 {
                     var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
 
@@ -98,7 +97,7 @@ namespace NuGetConsole
                     psVariable.Set("__package", packageZipArchive);
                     psVariable.Set("__project", envDTEProject);
 
-                    psNuGetProjectContext.ScriptsPath.Enqueue(fullScriptPath);
+                    psNuGetProjectContext.ExecutePSScript(fullScriptPath);
                 }
                 else
                 {
