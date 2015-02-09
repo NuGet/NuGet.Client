@@ -365,5 +365,14 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("UnknownPackageSpecificVersion", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install failed. Rolling back....
+        /// </summary>
+        internal static string Warning_RollingBack {
+            get {
+                return ResourceManager.GetString("Warning_RollingBack", resourceCulture);
+            }
+        }
     }
 }

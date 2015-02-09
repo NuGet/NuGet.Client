@@ -861,19 +861,86 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            foreach (NuGetProjectAction nuGetProjectAction in nuGetProjectActions)
+            Exception executeNuGetProjectActionsException = null;
+            Stack<NuGetProjectAction> executedNuGetProjectActions = new Stack<NuGetProjectAction>();
+            HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+            try
             {
-                if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                foreach (NuGetProjectAction nuGetProjectAction in nuGetProjectActions)
                 {
-                    await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, nuGetProjectContext, token);
-                }
-                else
-                {
-                    using (var targetPackageStream = new MemoryStream())
+                    executedNuGetProjectActions.Push(nuGetProjectAction);
+                    if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                     {
-                        await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
-                        await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext, token);
+                        await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                     }
+                    else
+                    {
+                        using (var targetPackageStream = new MemoryStream())
+                        {
+                            await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
+                            await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext, token);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                executeNuGetProjectActionsException = ex;
+            }
+
+            if(executeNuGetProjectActionsException != null)
+            {
+                await Rollback(nuGetProject, executedNuGetProjectActions, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+            }
+
+            // Delete the package directories as the last step, so that, if an uninstall had to be rolled back, we can just use the package file on the directory
+            // Also, always perform deletion of package directories, even in a rollback, so that there are no stale package directories
+            foreach(var packageWithDirectoryToBeDeleted in packageWithDirectoriesToBeDeleted)
+            {
+                DeletePackageDirectory(packageWithDirectoryToBeDeleted, nuGetProjectContext);
+            }
+
+            if(executeNuGetProjectActionsException != null)
+            {
+                throw executeNuGetProjectActionsException;
+            }
+        }
+
+        private async Task Rollback(NuGetProject nuGetProject, Stack<NuGetProjectAction> executedNuGetProjectActions, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            if (executedNuGetProjectActions.Count > 0)
+            {
+                // Only print the rollback warning if we have something to rollback
+                nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_RollingBack);
+            }
+
+            while(executedNuGetProjectActions.Count > 0)
+            {
+                NuGetProjectAction nuGetProjectAction = executedNuGetProjectActions.Pop();
+                try
+                {
+                    if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    {
+                        // Rolling back an install would be to uninstall the package
+                        await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                    }
+                    else
+                    {
+                        packageWithDirectoriesToBeDeleted.Remove(nuGetProjectAction.PackageIdentity);
+                        var packagePath = PackagesFolderNuGetProject.GetPackagePath(nuGetProjectAction.PackageIdentity);
+                        if (File.Exists(packagePath))
+                        {
+                            using (var packageStream = File.OpenRead(packagePath))
+                            {
+                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, nuGetProjectContext, token);
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // TODO: We are ignoring exceptions on rollback. Is this OK?
                 }
             }
         }
@@ -943,7 +1010,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+        private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Step-1: Raise package uninstalling event
@@ -960,7 +1027,7 @@ namespace NuGet.PackageManagement
             if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
                 !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, nuGetProjectContext, token))
             {
-                DeletePackageDirectory(packageIdentity, nuGetProjectContext);
+                packageWithDirectoriesToBeDeleted.Add(packageIdentity);
             }
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??

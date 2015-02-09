@@ -104,5 +104,11 @@ namespace NuGet.ProjectManagement
             token.ThrowIfCancellationRequested();
             return await PackageExtractor.CopySatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
         }
+
+        public string GetPackagePath(PackageIdentity packageIdentity)
+        {
+            return Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
+                PackagePathResolver.GetPackageFileName(packageIdentity));
+        }
     }
 }

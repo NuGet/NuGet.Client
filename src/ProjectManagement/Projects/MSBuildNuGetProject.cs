@@ -256,8 +256,7 @@ namespace NuGet.ProjectManagement
 
         private static string GetPackagePath(FolderNuGetProject folderNuGetProject, PackageIdentity packageIdentity)
         {
-            return Path.Combine(folderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
-                folderNuGetProject.PackagePathResolver.GetPackageFileName(packageIdentity));
+            return folderNuGetProject.GetPackagePath(packageIdentity);
         }
 
         public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)

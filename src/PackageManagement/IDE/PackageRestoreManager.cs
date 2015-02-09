@@ -171,13 +171,6 @@ namespace NuGet.PackageManagement
             return packageReferences;
         }
 
-        private bool PackageExistsInPackagesFolder(PackagePathResolver packagesFolderPackagePathResolver, PackageReference packageReference)
-        {
-            var packageFilePath = Path.Combine(packagesFolderPackagePathResolver.GetInstallPath(packageReference.PackageIdentity),
-                packagesFolderPackagePathResolver.GetPackageFileName(packageReference.PackageIdentity));
-            return File.Exists(packageFilePath);
-        }
-
         /// <summary>
         /// Restores missing packages for the entire solution
         /// </summary>
