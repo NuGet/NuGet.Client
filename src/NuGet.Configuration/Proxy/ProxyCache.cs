@@ -90,13 +90,13 @@ namespace NuGet.Configuration
         internal WebProxy GetUserConfiguredProxy()
         {
             // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy_user, http_proxy_password
-            var host = _settings.GetValue("config", HostKey);
+            var host = _settings.GetValue(SettingsUtility.ConfigSection, HostKey);
             if (!String.IsNullOrEmpty(host))
             {
                 // The host is the minimal value we need to assume a user configured proxy. 
                 var webProxy = new WebProxy(host);
-                string userName = _settings.GetValue("config", UserKey);
-                string password = _settings.GetDecryptedValue("config", PasswordKey);
+                string userName = _settings.GetValue(SettingsUtility.ConfigSection, UserKey);
+                string password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, PasswordKey);
 
                 if (!String.IsNullOrEmpty(userName) && !String.IsNullOrEmpty(password))
                 {

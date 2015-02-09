@@ -23,11 +23,6 @@ namespace NuGet.Configuration
             return String.Empty;
         }
 
-        public string GetDecryptedValue(string section, string key, bool isPath = false)
-        {
-            return String.Empty;
-        }
-
         public IList<SettingValue> GetSettingValues(string section)
         {
             return new List<SettingValue>().AsReadOnly();
@@ -46,11 +41,6 @@ namespace NuGet.Configuration
         public void SetValues(string section, IList<KeyValuePair<string, string>> values)
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.InvalidNullSettingsOperation, "SetValues"));
-        }
-
-        public void SetEncryptedValue(string section, string key, string value)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.InvalidNullSettingsOperation, "SetEncryptedValue"));
         }
 
         public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)

@@ -299,30 +299,6 @@ namespace NuGet.Configuration
             return ret;
         }
 
-        public string GetDecryptedValue(string section, string key, bool isPath = false)
-        {
-            if (String.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
-            }
-
-            if (String.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
-            }
-
-            var encryptedString = GetValue(section, key, isPath);
-            if (encryptedString == null)
-            {
-                return null;
-            }
-            if (String.IsNullOrEmpty(encryptedString))
-            {
-                return String.Empty;
-            }
-            return EncryptionUtility.DecryptString(encryptedString);
-        }
-
         public IList<SettingValue> GetSettingValues(string section)
         {
             if (String.IsNullOrEmpty(section))
@@ -385,32 +361,6 @@ namespace NuGet.Configuration
             var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
             SetValueInternal(sectionElement, key, value);
             Save();
-        }
-
-        public void SetEncryptedValue(string section, string key, string value)
-        {
-            if (String.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
-            }
-            if (String.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
-            }
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            if (String.IsNullOrEmpty(value))
-            {
-                SetValue(section, key, String.Empty);
-            }
-            else
-            {
-                var encryptedString = EncryptionUtility.EncryptString(value);
-                SetValue(section, key, encryptedString);
-            }
         }
 
         public void SetValues(string section, IList<KeyValuePair<string, string>> values)
