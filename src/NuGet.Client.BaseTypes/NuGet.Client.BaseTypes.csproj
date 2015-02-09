@@ -71,6 +71,7 @@
     <Compile Include="ISourceRepositoryProvider.cs" />
     <Compile Include="MEFAttributes\INuGetResourceProviderMetadata.cs" />
     <Compile Include="NuGetResourceProviderPositions.cs" />
+    <Compile Include="PackageProgressEventArgs.cs" />
     <Compile Include="ProviderComparer.cs" />
     <Compile Include="Resource.Designer.cs">
       <AutoGen>True</AutoGen>
