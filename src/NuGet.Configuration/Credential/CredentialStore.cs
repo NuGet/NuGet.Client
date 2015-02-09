@@ -4,7 +4,7 @@ using System.Net;
 
 namespace NuGet.Configuration
 {
-    internal class CredentialStore : ICredentialCache
+    public class CredentialStore : ICredentialCache
     {
         private readonly ConcurrentDictionary<Uri, ICredentials> _credentialCache = new ConcurrentDictionary<Uri, ICredentials>();
 
