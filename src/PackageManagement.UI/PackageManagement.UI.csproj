@@ -151,12 +151,11 @@
     <Compile Include="StandaloneSwitch.cs" />
     <Compile Include="UserAction.cs" />
     <Compile Include="UserInterfaceService\INuGetUIContext.cs" />
-    <Compile Include="UserInterfaceService\INuGetUIContextFactory.cs" />
     <Compile Include="UserInterfaceService\INuGetUIFactory.cs" />
     <Compile Include="UserInterfaceService\NuGetUI.cs" />
     <Compile Include="UserInterfaceService\NuGetUIContext.cs" />
-    <Compile Include="UserInterfaceService\NuGetUIContextFactory.cs" />
     <Compile Include="UserInterfaceService\NuGetUIFactory.cs" />
+    <Compile Include="UserSettings.cs" />
     <Compile Include="VersionForDisplay.cs" />
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">

@@ -30,10 +30,8 @@ namespace StandaloneUI
         [Import]
         public ISettings _settings;
 
-        //[Import]
-        public INuGetUIContextFactory _contextFactory;
-
         private CompositionContainer _container;
+        private PackageManagerControl _packageManagerControl;
 
         public MainWindow()
         {
@@ -61,24 +59,21 @@ namespace StandaloneUI
             var projects = new NuGetProject[] { projectA, projectB };            
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
-            _contextFactory = new NuGetUIContextFactory(repositoryProvider, testSolutionManager, 
+            var contextFactory = new StandaloneUIContextFactory(
+                repositoryProvider, 
+                testSolutionManager, 
                 settings, 
                 packageRestoreManager: packageRestoreManager,
                 optionsPage: null);
-            var context = _contextFactory.Create(projects);
+            var context = contextFactory.Create(@"c:\temp\test\settings.txt", projects);
             var uiController = _uiServiceFactory.Create(
                 context,
                 new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer)));
 
             PackageManagerModel model = new PackageManagerModel(uiController, context);
             model.SolutionName = "test solution";
-            PackageManagerControl control = new PackageManagerControl(model);
-            layoutGrid.Children.Add(control);
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-
+            _packageManagerControl = new PackageManagerControl(model);
+            layoutGrid.Children.Add(_packageManagerControl);
         }
 
         private CompositionContainer Initialize()
@@ -105,6 +100,11 @@ namespace StandaloneUI
                     throw;
                 }
             }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            _packageManagerControl.Model.Context.SaveSettings();
         }
     }
 

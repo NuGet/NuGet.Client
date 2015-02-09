@@ -10,7 +10,6 @@ using System.Windows.Input;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Client;
 using NuGet.Client.VisualStudio;
-using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using Resx = NuGet.PackageManagement.UI;
 
@@ -78,7 +77,10 @@ namespace NuGet.PackageManagement.UI
             _packageDetail.Visibility = Visibility.Hidden;
 
             SetTitle();
-            InitSourceRepoList();
+
+            var settings = LoadSettings();
+            InitSourceRepoList(settings);
+            ApplySettings(settings);
 
             _initialized = true;
 
@@ -90,6 +92,32 @@ namespace NuGet.PackageManagement.UI
             }
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesSaved += Sources_PackageSourcesChanged;
+        }
+
+        private void ApplySettings(UserSettings settings)
+        {
+            if (settings == null)
+            {
+                return;
+            }
+
+            _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
+            _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
+            _detailModel.Options.ForceRemove = settings.ForceRemove;
+
+            var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
+                .FirstOrDefault(d => d.Behavior == settings.DependencyBehavior);
+            if (selectedDependencyBehavior != null)
+            {
+                _detailModel.Options.SelectedDependencyBehavior = selectedDependencyBehavior;
+            }
+
+            var selectedFileConflictAction = _detailModel.Options.FileConflictActions.
+                FirstOrDefault(a => a.Action == settings.FileConflictAction);
+            if (selectedFileConflictAction != null)
+            {
+                _detailModel.Options.SelectedFileConflictAction = selectedFileConflictAction;
+            }
         }
 
         private void SetStyles()
@@ -136,6 +164,7 @@ namespace NuGet.PackageManagement.UI
                         oldActiveSource.PackageSource.Source,
                         _activeSource.PackageSource.Source)))
                 {
+                    SaveSettings();
                     SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
                 }
             }
@@ -144,7 +173,56 @@ namespace NuGet.PackageManagement.UI
                 _dontStartNewSearch = false;
             }
         }
+
+        private string GetSettingsKey()
+        {
+            string key;
+            if (Model.Context.Projects.Count() == 1)
+            {
+                var project = Model.Context.Projects.First();
+                string projectName = null;
+                if (!project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out projectName))
+                {
+                    projectName = "unknown";
+                }
+                key = "project:" + projectName;
+            }
+            else
+            {
+                key = "solution";
+            }
+
+            return key;
+        }
         
+        // Save the settings of this doc window in the UIContext. Note that the settings 
+        // are not guaranteed to be persisted. We need to call Model.Context.SaveSettings()
+        // to persist the settings.
+        public void SaveSettings()
+        {
+            UserSettings settings = new UserSettings();
+            if (_activeSource != null)
+            {
+                settings.SourceRepository = _activeSource.PackageSource.Name;
+            }
+
+            settings.ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow;
+            settings.RemoveDependencies = _detailModel.Options.RemoveDependencies;
+            settings.ForceRemove = _detailModel.Options.ForceRemove;
+            settings.DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior;
+            settings.FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action;
+
+            string key = GetSettingsKey();
+            Model.Context.AddSettings(key, settings);
+        }
+
+        private UserSettings LoadSettings()
+        {
+            string key = GetSettingsKey();
+            UserSettings settings = Model.Context.GetSettings(key);
+            return settings;
+        }
+
         /// <summary>
         /// Calculate the active source after the list of sources have been changed.
         /// </summary>
@@ -246,7 +324,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void InitSourceRepoList()
+        private void InitSourceRepoList(UserSettings settings)
         {
             // init source repo list
             _sourceRepoList.Items.Clear();
@@ -256,8 +334,20 @@ namespace NuGet.PackageManagement.UI
                 _sourceRepoList.Items.Add(source);
             }
 
-            // set active source
-            var activeSourceName = Model.Context.SourceProvider.PackageSourceProvider.ActivePackageSourceName;
+            // get active source name.
+            string activeSourceName = null;
+
+            // try saved user settings first.
+            if (settings != null && !String.IsNullOrEmpty(settings.SourceRepository))
+            {
+                activeSourceName = settings.SourceRepository;
+            }
+            else
+            {
+                // no user settings found. Then use the active source from PackageSourceProvider.
+                activeSourceName = Model.Context.SourceProvider.PackageSourceProvider.ActivePackageSourceName;
+            }
+
             if (activeSourceName != null)
             {
                 _activeSource = enabledSources
@@ -381,6 +471,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(_activeSource.PackageSource);
+                SaveSettings();
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             }
         }

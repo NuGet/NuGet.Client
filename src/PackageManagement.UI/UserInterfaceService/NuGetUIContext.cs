@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Context of a PackageManagement UI window
     /// </summary>
-    public class NuGetUIContext : INuGetUIContext
+    public abstract class NuGetUIContextBase : INuGetUIContext
     {
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly ISolutionManager _solutionManager;
@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
         private readonly IOptionsPageActivator _optionsPageActivator;
         private readonly NuGetProject[] _projects;
 
-        public NuGetUIContext(
+        public NuGetUIContextBase(
             ISourceRepositoryProvider sourceProvider, 
             ISolutionManager solutionManager, 
             NuGetPackageManager packageManager,
@@ -97,5 +97,11 @@ namespace NuGet.PackageManagement.UI
                 return _projects;
             }
         }
+
+        public abstract void AddSettings(string key, UserSettings obj);
+
+        public abstract UserSettings GetSettings(string key);
+
+        public abstract void SaveSettings();
     }
 }
