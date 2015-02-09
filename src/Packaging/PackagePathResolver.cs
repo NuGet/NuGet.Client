@@ -37,7 +37,7 @@ namespace NuGet.Packaging
                 fileNameBase += "." + packageIdentity.Version.ToNormalizedString();
             }
 
-            return fileNameBase + PackagingConstants.NupkgExtension;
+            return fileNameBase + PackagingCoreConstants.NupkgExtension;
         }
 
         public virtual string GetInstallPath(PackageIdentity packageIdentity)

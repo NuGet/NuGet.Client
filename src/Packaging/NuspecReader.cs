@@ -14,7 +14,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Reads .nuspec files
     /// </summary>
-    public class NuspecReader : NuspecCoreReader
+    public class NuspecReader : NuspecCoreReaderBase
     {
         // node names
         protected const string Dependencies = "dependencies";
@@ -27,6 +27,7 @@ namespace NuGet.Packaging
         protected const string FrameworkAssemblies = "frameworkAssemblies";
         protected const string FrameworkAssembly = "frameworkAssembly";
         protected const string AssemblyName = "assemblyName";
+        protected const string Language = "language";
 
         public NuspecReader(Stream stream)
             : base(stream)
@@ -133,6 +134,12 @@ namespace NuGet.Packaging
             {
                 yield return new FrameworkSpecificGroup(group.Key, group.Select(n => GetAttributeValue(n, AssemblyName)).Where(n => !String.IsNullOrEmpty(n)).ToArray());
             }
+        }
+
+        public string GetLanguage()
+        {
+            var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
+            return node == null ? null : node.Value;
         }
 
         private static string GetAttributeValue(XElement element, string attributeName)

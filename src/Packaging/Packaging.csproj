@@ -57,8 +57,10 @@
     <Compile Include="PackageExtraction\PackageExtractionContext.cs" />
     <Compile Include="PackageExtractor.cs" />
     <Compile Include="PackageExtraction\PackageHelper.cs" />
+    <Compile Include="PackageFolderReader.cs" />
     <Compile Include="PackagePathResolver.cs" />
     <Compile Include="PackageReader.cs" />
+    <Compile Include="PackageReaderBase.cs" />
     <Compile Include="PackageReference.cs" />
     <Compile Include="PackagesConfigReader.cs" />
     <Compile Include="PackagesConfigWriter.cs" />

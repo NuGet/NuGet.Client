@@ -9,8 +9,6 @@ namespace NuGet.Packaging
 {
     public static class PackagingConstants
     {
-        public const string NupkgExtension = ".nupkg";
-        public const string NuspecExtension = ".nuspec";
         public const string ContentFolder = "content";
         public const string AnyFramework = "any";
         public const string AgnosticFramework = "agnostic";

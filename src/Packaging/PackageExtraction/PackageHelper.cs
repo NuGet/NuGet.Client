@@ -15,7 +15,7 @@ namespace NuGet.Packaging
         private static readonly string[] ExcludePaths = new[] { "_rels", "package" };
         public static bool IsManifest(string path)
         {
-            return Path.GetExtension(path).Equals(PackagingConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase);
+            return Path.GetExtension(path).Equals(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsPackageFile(string packageFileName, PackageSaveModes packageSaveMode)

@@ -8,8 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.Packaging {
+namespace NuGet.PackagingCore {
     using System;
+    using System.Reflection;
     
     
     /// <summary>
@@ -39,7 +40,7 @@ namespace NuGet.Packaging {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackagingCore.Strings", typeof(Strings).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -66,24 +67,6 @@ namespace NuGet.Packaging {
         internal static string MissingNuspec {
             get {
                 return ResourceManager.GetString("MissingNuspec", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package stream should be seekable.
-        /// </summary>
-        internal static string PackageStreamShouldBeSeekable {
-            get {
-                return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
-        /// </summary>
-        internal static string StringCannotBeNullOrEmpty {
-            get {
-                return ResourceManager.GetString("StringCannotBeNullOrEmpty", resourceCulture);
             }
         }
     }

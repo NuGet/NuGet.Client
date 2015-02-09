@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 namespace NuGet.PackagingCore
 {
     /// <summary>
-    /// Basic package reader
+    /// Basic package reader that provides the identity, min client version, and file access.
     /// </summary>
+    /// <remarks>Higher level concepts used for normal development nupkgs should go at a higher level</remarks>
     public interface IPackageReaderCore : IDisposable
     {
         /// <summary>
@@ -24,6 +25,19 @@ namespace NuGet.PackagingCore
         /// </summary>
         SemanticVersion GetMinClientVersion();
 
-        // TODO: add dependency info
+        /// <summary>
+        /// Returns a file stream from the package.
+        /// </summary>
+        Stream GetStream(string path);
+
+        /// <summary>
+        /// All files in the nupkg
+        /// </summary>
+        IEnumerable<string> GetFiles();
+
+        /// <summary>
+        /// Nuspec stream
+        /// </summary>
+        Stream GetNuspec();
     }
 }

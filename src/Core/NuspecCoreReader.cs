@@ -10,24 +10,16 @@ using System.Xml.Linq;
 namespace NuGet.PackagingCore
 {
     /// <summary>
-    /// A very basic Nuspec reader that understands the Id, Version, and MinClientVersion of a package.
+    /// A basic nuspec reader that understand id, version, and a flat list of dependencies.
     /// </summary>
-    public class NuspecCoreReader : INuspecCoreReader
+    public class NuspecCoreReader : NuspecCoreReaderBase
     {
-        private readonly XDocument _xml;
-        private XElement _metadataNode;
-
-        protected const string Metadata = "metadata";
-        protected const string Id = "id";
-        protected const string Version = "version";
-        protected const string MinClientVersion = "minClientVersion";
-        private const string Language = "language";
 
         /// <summary>
         /// Read a nuspec from a stream.
         /// </summary>
         public NuspecCoreReader(Stream stream)
-            : this(XDocument.Load(stream))
+            : base(stream)
         {
 
         }
@@ -36,96 +28,34 @@ namespace NuGet.PackagingCore
         /// Reads a nuspec from XML
         /// </summary>
         public NuspecCoreReader(XDocument xml)
+            : base(xml)
         {
-            if (xml == null)
+
+        }
+
+        /// <summary>
+        /// Returns a flat list of dependencies from a nuspec
+        /// </summary>
+        public virtual IEnumerable<PackageDependency> GetDependencies()
+        {
+            var nodes = MetadataNode.Elements(XName.Get("dependencies", MetadataNode.GetDefaultNamespace().NamespaceName))
+                .Descendants(XName.Get("dependency", MetadataNode.GetDefaultNamespace().NamespaceName));
+
+            foreach (var node in nodes)
             {
-                throw new ArgumentNullException("xml");
-            }
+                var versionNode = node.Attribute(XName.Get(Version));
 
-            _xml = xml;
-        }
+                VersionRange range = VersionRange.All;
 
-        /// <summary>
-        /// Id of the package
-        /// </summary>
-        public string GetId()
-        {
-            var node = MetadataNode.Elements(XName.Get(Id, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
-            return node == null ? null : node.Value;
-        }
+                if (versionNode != null)
+                {
+                    range = VersionRange.Parse(versionNode.Value);
+                }
 
-        /// <summary>
-        /// Version of the package
-        /// </summary>
-        public NuGetVersion GetVersion()
-        {
-            var node = MetadataNode.Elements(XName.Get(Version, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
-            return node == null ? null : NuGetVersion.Parse(node.Value);
-        }
-
-        /// <summary>
-        /// The minimum client version this package supports.
-        /// </summary>
-        public SemanticVersion GetMinClientVersion()
-        {
-            var node = MetadataNode.Attribute(XName.Get(MinClientVersion));
-            return node == null ? null : SemanticVersion.Parse(node.Value);
-        }
-
-        public string GetLanguage()
-        {
-            var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
-            return node == null ? null : node.Value;
-        }
-
-        /// <summary>
-        /// Nuspec Metadata
-        /// </summary>
-        public IEnumerable<KeyValuePair<string, string>> GetMetadata()
-        {
-            foreach (var element in MetadataNode.Elements().Where(n => !n.HasElements && !String.IsNullOrEmpty(n.Value)))
-            {
-                yield return new KeyValuePair<string, string>(element.Name.LocalName, element.Value);
+                yield return new PackageDependency(node.Attribute(XName.Get(Id)).Value, range);
             }
 
             yield break;
-        }
-
-        protected XElement MetadataNode
-        {
-            get
-            {
-                if (_metadataNode == null)
-                {
-                    // find the metadata node regardless of the NS, some legacy packages have the NS here instead of on package
-                    _metadataNode = _xml.Root.Elements().Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, Metadata)).SingleOrDefault();
-
-                    if (_metadataNode == null)
-                    {
-                        // TODO: add a resource string for this
-                        throw new InvalidOperationException();
-                    }
-                }
-
-                return _metadataNode;
-            }
-        }
-
-        /// <summary>
-        /// Raw XML doc
-        /// </summary>
-        public XDocument Xml
-        {
-            get
-            {
-                return _xml;
-            }
-        }
-
-
-        public PackageIdentity GetIdentity()
-        {
-            return new PackageIdentity(GetId(), GetVersion());
         }
     }
 }

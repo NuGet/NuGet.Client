@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 namespace NuGet.PackagingCore
 {
     /// <summary>
-    /// A basic nuspec reader that understands the id, version, and min client version of a package.
+    /// A basic nuspec reader that understands ONLY the id, version, and min client version of a package.
     /// </summary>
+    /// <remarks>Higher level concepts used for normal development nupkgs should go at a higher level</remarks>
     public interface INuspecCoreReader
     {
         /// <summary>
@@ -27,11 +28,6 @@ namespace NuGet.PackagingCore
         /// Minimum client version needed to consume the package.
         /// </summary>
         SemanticVersion GetMinClientVersion();
-
-        /// <summary>
-        /// The locale ID for the package, such as en-us.
-        /// </summary>
-        string GetLanguage();
 
         /// <summary>
         /// Id and Version of a package.
