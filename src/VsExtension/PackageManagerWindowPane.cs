@@ -68,6 +68,9 @@ namespace NuGetVSExtension
 
         public int OnClose(ref uint pgrfSaveOptions)
         {
+            _content.SaveSettings();
+            _content.Model.Context.SaveSettings();
+
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
             return Microsoft.VisualStudio.VSConstants.S_OK;
         }

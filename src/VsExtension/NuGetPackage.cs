@@ -24,6 +24,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Configuration;
 using NuGet.Options;
 using NuGet.Client;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace NuGetVSExtension
 {
@@ -56,7 +57,7 @@ namespace NuGetVSExtension
         NuGetConsole.Implementation.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
         "{" + GuidList.guidNuGetPkgString + "}")]    
     [Guid(GuidList.guidNuGetPkgString)]
-    public sealed class NuGetPackage : Package, IVsPackageExtensionProvider
+    public sealed class NuGetPackage : Package, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // This product version will be updated by the build script to match the daily build version.
         // It is displayed in the Help - About box of Visual Studio
@@ -85,11 +86,14 @@ namespace NuGetVSExtension
 
         private NuGetUIProjectContext _uiProjectContext;
 
+        NuGetSettings _nugetSettings;
+
         public NuGetPackage()
         {
             ServiceLocator.InitializePackageServiceProvider(this);
             _projectToToolWindowId = new Dictionary<Project, int>();
             StandaloneSwitch.IsRunningStandalone = false;
+            _nugetSettings = new NuGetSettings();
         }
 
         private IVsMonitorSelection VsMonitorSelection
@@ -241,8 +245,14 @@ namespace NuGetVSExtension
             var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
             Debug.Assert(webProxy != null);
 
-
-            string dir = _solutionManager == null ? null : _solutionManager.SolutionDirectory;
+            if (SolutionManager != null)
+            {
+                SolutionManager.SolutionOpened += (obj, ev) =>
+                {
+                    _nugetSettings = new NuGetSettings();
+                    LoadNuGetSettings();
+                };
+            }
 
             // when NuGet loads, if the current solution has package
             // restore mode enabled, we make sure every thing is set up correctly.
@@ -279,6 +289,8 @@ namespace NuGetVSExtension
             //       Exported IPackageRestoreManager is used by UI manual restore, Powershell manual restore and by VS extensibility package restore
             // var packageRestoreManagerForOnBuildPackageRestorer = new PackageRestoreManager(SourceRepositoryProvider, Settings, SolutionManager);
             OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this);
+
+            LoadNuGetSettings();
         }
 
         private void AddMenuCommandHandlers()
@@ -453,7 +465,7 @@ namespace NuGetVSExtension
         }
 
         private void ShowDocWindow(Project project, string searchText)
-        {
+        {   
             var windowFrame = FindExistingWindowFrame(project);
             if (windowFrame == null)
             {
@@ -532,10 +544,10 @@ namespace NuGetVSExtension
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-            var nugetProject = solutionManager.GetNuGetProject(project.Name); // *** use safe name here
+            var nugetProject = solutionManager.GetNuGetProject(project.Name);
 
-            var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();            
-            var uiContext = uiContextFactory.Create(new [] { nugetProject });
+            var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
+            var uiContext = uiContextFactory.Create(this, new [] { nugetProject });
 
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
             var uiController = uiFactory.Create(uiContext, _uiProjectContext);
@@ -652,6 +664,36 @@ namespace NuGetVSExtension
             }
         }
 
+        private void LoadNuGetSettings()
+        {
+            IVsSolutionPersistence solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
+            solutionPersistence.LoadPackageUserOpts(this, "nuget");
+        }
+
+        public void SaveNuGetSettings()
+        {
+            IVsSolutionPersistence solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
+            solutionPersistence.SavePackageUserOpts(this, "nuget");
+        }
+
+        public UserSettings GetWindowSetting(string key)
+        {
+            UserSettings settings;
+            if (_nugetSettings.WindowSettings.TryGetValue(key, out settings))
+            {
+                return settings;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void AddWindowSettings(string key, UserSettings obj)
+        {
+            _nugetSettings.WindowSettings[key] = obj;
+        }
+
         private IVsWindowFrame CreateDocWindowForSolution()
         {
             // TODO: Need to wait until solution is loaded
@@ -673,7 +715,7 @@ namespace NuGetVSExtension
             }
 
             var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
-            var uiContext = uiContextFactory.Create(projects);
+            var uiContext = uiContextFactory.Create(this, projects);
 
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
             var uiController = uiFactory.Create(uiContext, _uiProjectContext);
@@ -894,5 +936,53 @@ namespace NuGetVSExtension
             _dteEvents = null;
         }
 
+        int IVsPersistSolutionOpts.LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
+        {
+            return VSConstants.S_OK;
+        }
+
+        int IVsPersistSolutionOpts.ReadUserOptions(Microsoft.VisualStudio.OLE.Interop.IStream pOptionsStream, string pszKey)
+        {
+            try
+            {
+                using (var stream = new DataStreamFromComStream(pOptionsStream))
+                {
+                    BinaryFormatter serializer = new BinaryFormatter();
+                    var obj = serializer.Deserialize(stream) as NuGetSettings;
+                    if (obj != null)
+                    {
+                        _nugetSettings = obj;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return VSConstants.S_OK;
+        }
+
+        int IVsPersistSolutionOpts.SaveUserOptions(IVsSolutionPersistence pPersistence)
+        {
+            pPersistence.SavePackageUserOpts(this, "nuget");
+            return VSConstants.S_OK;
+        }
+
+        int IVsPersistSolutionOpts.WriteUserOptions(Microsoft.VisualStudio.OLE.Interop.IStream pOptionsStream, string pszKey)
+        {
+            try
+            {
+                using (var stream = new DataStreamFromComStream(pOptionsStream))
+                {
+                    BinaryFormatter serializer = new BinaryFormatter();
+                    serializer.Serialize(stream, _nugetSettings);
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return VSConstants.S_OK;
+        }
     }
 }
