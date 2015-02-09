@@ -784,11 +784,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public void Log(MessageLevel level, string message, params object[] args)
         {
             string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
-            lock (this)
-            {
-                logQueue.Add(Tuple.Create(level, formattedMessage));
-            }
-            queueSemaphore.Release();
+            logQueue.Enqueue(Tuple.Create(level, formattedMessage));
+            logQueueSemaphore.Release();
         }
 
         /// <summary>
@@ -825,18 +822,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             while (true)
             {
-                int index = WaitHandle.WaitAny(new WaitHandle[] { completeEvent, psExecutionSemaphore, queueSemaphore });
+                int index = WaitHandle.WaitAny(new WaitHandle[] { completeEvent, scriptStartSemaphore, logQueueSemaphore });
                 if (index == 0)
                 {
                     int count = logQueue.Count;
                     if (count != 0)
                     {
-                        lock (this)
+                        for (int i = 0; i < count; i++)
                         {
-                            for (int i = 0; i < count; i++)
-                            {
-                                LogFromMessageQueue();
-                            }
+                            LogFromMessageQueue();
                         }
                     }
                     break;
@@ -847,18 +841,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    lock (this)
-                    {
-                        LogFromMessageQueue();
-                    }
+                    LogFromMessageQueue();
                 }
             }
         }
 
+        /// <summary>
+        /// Execute PowerShell script. Called by PowerShell execution thread.
+        /// </summary>
         private void ExecutePSScript()
         {
-            var messageFromQueue = logQueue.First();
-            logQueue.RemoveAt(0);
+            Tuple<MessageLevel,string> messageFromQueue;
+            logQueue.TryDequeue(out messageFromQueue);
             ExecutePSScriptInternal(messageFromQueue.Item2);
         }
 
@@ -867,13 +861,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         private void LogFromMessageQueue()
         {
-            var messageFromQueue = logQueue.First();
-            logQueue.RemoveAt(0);
+            Tuple<MessageLevel, string> messageFromQueue;
+            logQueue.TryDequeue(out messageFromQueue);
             LogCore(messageFromQueue.Item1, messageFromQueue.Item2);
         }
 
         /// <summary>
-        /// Execute PowerShell script. Called by PowerShell execution thread.
+        /// Execute PowerShell script internally by PowerShell execution thread.
         /// </summary>
         /// <param name="path"></param>
         private void ExecutePSScriptInternal(string path)
@@ -904,17 +898,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected List<Tuple<MessageLevel, string>> logQueue = new List<Tuple<MessageLevel, string>>();
+        protected ConcurrentQueue<Tuple<MessageLevel, string>> logQueue = new ConcurrentQueue<Tuple<MessageLevel, string>>();
 
         protected ManualResetEvent completeEvent = new ManualResetEvent(false);
 
-        protected Semaphore queueSemaphore = new Semaphore(0, Int32.MaxValue);
-
-        protected ConcurrentQueue<string> ScriptQueue = new ConcurrentQueue<string>();
+        protected Semaphore logQueueSemaphore = new Semaphore(0, Int32.MaxValue);
 
         protected Semaphore scriptStartSemaphore = new Semaphore(0, Int32.MaxValue);
-
-        protected Semaphore psExecutionSemaphore = new Semaphore(0, Int32.MaxValue);
 
         protected Semaphore scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
         #endregion
@@ -938,30 +928,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public void ExecutePSScript(string scriptPath)
         {
-            ScriptQueue.Enqueue(scriptPath);
+            logQueue.Enqueue(Tuple.Create(MessageLevel.Info, scriptPath));
             scriptStartSemaphore.Release();
-        }
 
-        public void WaitForPSScriptExecution()
-        {
             while (true)
             {
-                int index = WaitHandle.WaitAny(new WaitHandle[] { scriptStartSemaphore, scriptEndSemaphore });
-                if (index == 0)
-                {
-                    string scriptPath;
-                    bool success = ScriptQueue.TryDequeue(out scriptPath);
-                    lock (this)
-                    {
-                        logQueue.Add(Tuple.Create(MessageLevel.Info, scriptPath));
-                    }
-                    psExecutionSemaphore.Release();
-                }
-                else
-                {
-                    // Script execution is complete now.
-                    break;
-                }
+                int index = WaitHandle.WaitAny(new WaitHandle[] { scriptEndSemaphore });
+                break;
             }
         }
     }
@@ -981,7 +954,5 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         PSCmdlet CurrentPSCmdlet { get; }
 
         void ExecutePSScript(string scriptPath);
-
-        void WaitForPSScriptExecution();
     }
 }
