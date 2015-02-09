@@ -62,5 +62,16 @@ namespace StandaloneUI
         {
             Instance.SetValues(section, values);
         }
+
+
+        public string GetDecryptedValue(string section, string key, bool isPath = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetEncryptedValue(string section, string key, string value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

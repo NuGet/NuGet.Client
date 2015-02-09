@@ -278,9 +278,16 @@ namespace NuGet.Test
             Packages = packages;
         }
 
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<string> packageIds, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
         {
-            return await ResolvePackages(Packages.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Id, packageId)), projectFramework, includePrerelease, token);
+            List<PackageDependencyInfo> results = new List<PackageDependencyInfo>();
+
+            foreach (var packageId in packageIds)
+            {
+                results.AddRange(await ResolvePackages(Packages.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Id, packageId)), projectFramework, includePrerelease, token));
+            }
+
+            return results;
         }
 
         public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
