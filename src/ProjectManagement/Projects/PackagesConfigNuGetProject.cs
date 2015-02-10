@@ -71,7 +71,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Create new file or overwrite existing file
-            using (var stream = FileSystemUtility.OpenFile(FullPath))
+            using (var stream = FileSystemUtility.CreateFile(FullPath))
             {
                 var writer = new PackagesConfigWriter(stream);
                 foreach (var pr in installedPackagesList)
@@ -108,7 +108,7 @@ namespace NuGet.ProjectManagement
             if (installedPackagesList.Count > 0)
             {
                 // Create new file or overwrite existing file
-                using (var stream = FileSystemUtility.OpenFile(FullPath))
+                using (var stream = FileSystemUtility.CreateFile(FullPath))
                 {
                     var writer = new PackagesConfigWriter(stream);
                     foreach (var pr in installedPackagesList)
@@ -120,10 +120,7 @@ namespace NuGet.ProjectManagement
             }
             else
             {
-                if(File.Exists(FullPath))
-                {
-                    File.Delete(FullPath);
-                }
+                FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
             }
             nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
             return Task.FromResult(true);

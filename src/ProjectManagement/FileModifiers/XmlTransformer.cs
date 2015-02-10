@@ -20,12 +20,12 @@ namespace NuGet.ProjectManagement
             // Get the xml fragment
             XElement xmlFragment = GetXml(packageFile, msBuildNuGetProjectSystem);
 
-            XDocument transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, msBuildNuGetProjectSystem.ProjectFullPath, targetPath);
+            XDocument transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, msBuildNuGetProjectSystem.ProjectFullPath, targetPath, msBuildNuGetProjectSystem.NuGetProjectContext);
 
             // Do a merge
             transformDocument.Root.MergeWith(xmlFragment, _nodeActions);
 
-            FileSystemUtility.AddFile(msBuildNuGetProjectSystem.ProjectFullPath, targetPath, transformDocument.Save);
+            FileSystemUtility.AddFile(msBuildNuGetProjectSystem.ProjectFullPath, targetPath, transformDocument.Save, msBuildNuGetProjectSystem.NuGetProjectContext);
         }
 
         public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
@@ -33,7 +33,7 @@ namespace NuGet.ProjectManagement
             // Get the xml snippet
             XElement xmlFragment = GetXml(packageFile, msBuildNuGetProjectSystem);
 
-            XDocument document = XmlUtility.GetOrCreateDocument(xmlFragment.Name, msBuildNuGetProjectSystem.ProjectFullPath, targetPath);
+            XDocument document = XmlUtility.GetOrCreateDocument(xmlFragment.Name, msBuildNuGetProjectSystem.ProjectFullPath, targetPath, msBuildNuGetProjectSystem.NuGetProjectContext);
 
             // Merge the other xml elements into one element within this xml hierarchy (matching the config file path)
             var mergedFragments = matchingFiles.Select(f => GetXml(f, msBuildNuGetProjectSystem))

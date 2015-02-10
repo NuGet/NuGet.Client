@@ -48,7 +48,7 @@ namespace NuGet.ProjectManagement
             return safeSettings;
         }
 
-        public static XDocument GetOrCreateDocument(XName rootName, string root, string path)
+        public static XDocument GetOrCreateDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
         {
             if (File.Exists(Path.Combine(root, path)))
             {
@@ -58,18 +58,18 @@ namespace NuGet.ProjectManagement
                 }
                 catch (FileNotFoundException)
                 {
-                    return CreateDocument(rootName, root, path);
+                    return CreateDocument(rootName, root, path, nuGetProjectContext);
                 }
             }
-            return CreateDocument(rootName, root, path);
+            return CreateDocument(rootName, root, path, nuGetProjectContext);
         }
 
-        public static XDocument CreateDocument(XName rootName, string root, string path)
+        public static XDocument CreateDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
         {
             var fullPath = Path.Combine(root, path);
             XDocument document = new XDocument(new XElement(rootName));
             // Add it to the file system
-            FileSystemUtility.AddFile(root, path, document.Save);
+            FileSystemUtility.AddFile(root, path, document.Save, nuGetProjectContext);
             return document;
         }
 

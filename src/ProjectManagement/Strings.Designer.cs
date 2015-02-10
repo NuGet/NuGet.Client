@@ -133,6 +133,24 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Added file &apos;{0}&apos;..
+        /// </summary>
+        public static string Debug_AddedFile {
+            get {
+                return ResourceManager.GetString("Debug_AddedFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Added file &apos;{0}&apos; to folder &apos;{1}&apos;..
+        /// </summary>
+        public static string Debug_AddedFileToFolder {
+            get {
+                return ResourceManager.GetString("Debug_AddedFileToFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removed file &apos;{0}&apos;..
         /// </summary>
         public static string Debug_RemovedFile {

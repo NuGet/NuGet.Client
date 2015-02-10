@@ -25,12 +25,15 @@ namespace ProjectManagement.Test
             {
                 { NuGetProjectMetadataKeys.TargetFramework, targetFramework},
             };
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
+            var packagesConfigFullPath = Path.Combine(randomTestFolder, packagesConfigFileName);
+            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, metadata);
             var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var token = CancellationToken.None;
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Act
             await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, new TestNuGetProjectContext(), token);
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Assert
             var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
@@ -50,13 +53,16 @@ namespace ProjectManagement.Test
             {
                 { NuGetProjectMetadataKeys.TargetFramework, targetFramework},
             };
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
+            var packagesConfigFullPath = Path.Combine(randomTestFolder, packagesConfigFileName);
+            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, metadata);
             var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var token = CancellationToken.None;
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Act
             await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, testNuGetProjectContext, token);
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Assert
             var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
@@ -83,15 +89,18 @@ namespace ProjectManagement.Test
             {
                 { NuGetProjectMetadataKeys.TargetFramework, targetFramework},
             };
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
+            var packagesConfigFullPath = Path.Combine(randomTestFolder, packagesConfigFileName);
+            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, metadata);
 
             var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var token = CancellationToken.None;
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Act
             await packagesConfigNuGetProject.InstallPackageAsync(packageA, Stream.Null, testNuGetProjectContext, token);
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Assert
             var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
@@ -121,15 +130,18 @@ namespace ProjectManagement.Test
             {
                 { NuGetProjectMetadataKeys.TargetFramework, targetFramework},
             };
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
+            var packagesConfigFullPath = Path.Combine(randomTestFolder, packagesConfigFileName);
+            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, metadata);
 
             var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var token = CancellationToken.None;
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Act
             await packagesConfigNuGetProject.InstallPackageAsync(packageA, Stream.Null, testNuGetProjectContext, token);
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Assert
             var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
@@ -168,13 +180,16 @@ namespace ProjectManagement.Test
             {
                 { NuGetProjectMetadataKeys.TargetFramework, targetFramework},
             };
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(Path.Combine(randomTestFolder, packagesConfigFileName), metadata);
+            var packagesConfigFullPath = Path.Combine(randomTestFolder, packagesConfigFileName);
+            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, metadata);
             var packageA1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
             var packageA2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
             var token = CancellationToken.None;
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Act
             await packagesConfigNuGetProject.InstallPackageAsync(packageA1, Stream.Null, new TestNuGetProjectContext(), token);
+            MakeFileReadOnly(packagesConfigFullPath);
 
             // Assert
             var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
@@ -190,6 +205,14 @@ namespace ProjectManagement.Test
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageA2, installedPackagesList[0].PackageIdentity);
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+        }
+
+        private static void MakeFileReadOnly(string fullPath)
+        {
+            if(File.Exists(fullPath))
+            {
+                File.SetAttributes(fullPath, File.GetAttributes(fullPath) | FileAttributes.ReadOnly);
+            }
         }
     }
 }

@@ -13,17 +13,14 @@ namespace NuGet.ProjectManagement
     {
         public static void MakeWriteable(string fullPath)
         {
-            FileAttributes attributes = File.GetAttributes(fullPath);
-            if (attributes.HasFlag(FileAttributes.ReadOnly))
+            if (File.Exists(fullPath))
             {
-                File.SetAttributes(fullPath, attributes & ~FileAttributes.ReadOnly);
+                FileAttributes attributes = File.GetAttributes(fullPath);
+                if (attributes.HasFlag(FileAttributes.ReadOnly))
+                {
+                    File.SetAttributes(fullPath, attributes & ~FileAttributes.ReadOnly);
+                }
             }
-        }
-
-        public static void EnsureDirectory(string root, string path)
-        {
-            path = GetFullPath(root, path);
-            Directory.CreateDirectory(path);
         }
 
         public static bool FileExists(string root, string path)
@@ -41,32 +38,32 @@ namespace NuGet.ProjectManagement
             return Path.Combine(root, path);
         }
 
-        public static void AddFile(string root, string path, Stream stream)
+        public static void AddFile(string root, string path, Stream stream, INuGetProjectContext nuGetProjectContext)
         {
             if (stream == null)
             {
                 throw new ArgumentNullException("stream");
             }
 
-            AddFileCore(root, path, targetStream => stream.CopyTo(targetStream));
+            AddFileCore(root, path, targetStream => stream.CopyTo(targetStream), nuGetProjectContext);
         }
 
-        public static void AddFile(string root, string path, Action<Stream> writeToStream)
+        public static void AddFile(string root, string path, Action<Stream> writeToStream, INuGetProjectContext nuGetProjectContext)
         {
             if (writeToStream == null)
             {
                 throw new ArgumentNullException("writeToStream");
             }
 
-            AddFileCore(root, path, writeToStream);
+            AddFileCore(root, path, writeToStream, nuGetProjectContext);
         }
 
-        private static void AddFileCore(string root, string path, Action<Stream> writeToStream)
+        private static void AddFileCore(string root, string path, Action<Stream> writeToStream, INuGetProjectContext nuGetProjectContext)
         {
             if (String.IsNullOrEmpty(path) || String.IsNullOrEmpty(Path.GetFileName(path)))
                 return;
 
-            EnsureDirectory(root, Path.GetDirectoryName(path));
+            Directory.CreateDirectory(GetFullPath(root, Path.GetDirectoryName(path)));
 
             string fullPath = GetFullPath(root, path);
 
@@ -75,19 +72,32 @@ namespace NuGet.ProjectManagement
                 writeToStream(outputStream);
             }
 
-            //WriteAddedFileAndDirectory(path);
+            WriteAddedFileAndDirectory(path, nuGetProjectContext);
+        }
+
+        private static void WriteAddedFileAndDirectory(string path, INuGetProjectContext nuGetProjectContext)
+        {
+            string folderPath = Path.GetDirectoryName(path);
+
+            if (!String.IsNullOrEmpty(folderPath))
+            {
+                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToFolder, Path.GetFileName(path), folderPath);
+            }
+            else
+            {
+                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFile, Path.GetFileName(path));
+            }
         }
 
         public static Stream CreateFile(string root, string path)
-        {            
-            EnsureDirectory(root, Path.GetDirectoryName(path));
-
-            return File.Create(GetFullPath(root, path));
+        {
+            return CreateFile(GetFullPath(root, path));
         }
 
-        public static Stream OpenFile(string fullPath)
+        public static Stream CreateFile(string fullPath)
         {
             MakeWriteable(fullPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
             return File.Create(fullPath);
         }
 
@@ -124,26 +134,25 @@ namespace NuGet.ProjectManagement
             return Enumerable.Empty<string>();
         }
 
-        public static void DeleteFile(string root, string path, INuGetProjectContext nuGetProjectContext)
+        public static void DeleteFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
-            if (!FileExists(root, path))
+            if (!File.Exists(fullPath))
             {
                 return;
             }
 
             try
             {
-                path = GetFullPath(root, path);
-                MakeWriteable(path);
-                File.Delete(path);
-                string folderPath = Path.GetDirectoryName(path);
+                MakeWriteable(fullPath);
+                File.Delete(fullPath);
+                string folderPath = Path.GetDirectoryName(fullPath);
                 if (!String.IsNullOrEmpty(folderPath))
                 {
-                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
+                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(fullPath), folderPath);
                 }
                 else
                 {
-                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(path));
+                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(fullPath));
                 }
             }
             catch (FileNotFoundException)
@@ -241,7 +250,7 @@ namespace NuGet.ProjectManagement
 
         internal static void DeleteFileSafe(string root, string path, INuGetProjectContext nuGetProjectContext)
         {
-            DoSafeAction(() => DeleteFile(root, path, nuGetProjectContext), nuGetProjectContext);
+            DoSafeAction(() => DeleteFile(GetFullPath(root, path), nuGetProjectContext), nuGetProjectContext);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to log an exception as a warning and move on")]
