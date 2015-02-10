@@ -13,6 +13,24 @@ namespace NuGet.Test
     public class PackageReaderTests
     {
         [Fact]
+        public void PackageReader_NestedReferenceItems()
+        {
+            var zip = TestPackages.GetZip(TestPackages.GetLibSubFolderPackage());
+
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                var groups = reader.GetReferenceItems().ToArray();
+
+                Assert.Equal(1, groups.Count());
+
+                Assert.Equal(NuGetFramework.Parse("net40"), groups[0].TargetFramework);
+                Assert.Equal(2, groups[0].Items.Count());
+                Assert.Equal("lib/net40/test40.dll", groups[0].Items.ToArray()[0]);
+                Assert.Equal("lib/net40/x86/testx86.dll", groups[0].Items.ToArray()[1]);
+            }
+        }
+
+        [Fact]
         public void PackageReader_MinClientVersion()
         {
             var zip = TestPackages.GetZip(TestPackages.GetLegacyTestPackageMinClient());

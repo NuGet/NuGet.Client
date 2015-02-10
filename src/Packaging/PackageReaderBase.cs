@@ -193,10 +193,11 @@ namespace NuGet.Packaging
             Dictionary<NuGetFramework, List<string>> groups = new Dictionary<NuGetFramework, List<string>>(new NuGetFrameworkFullComparer());
 
             bool isContentFolder = StringComparer.OrdinalIgnoreCase.Equals(folder, PackagingConstants.ContentFolder);
+            bool allowSubFolders = true;
 
             foreach (string path in GetFiles(folder))
             {
-                NuGetFramework framework = NuGetFramework.Parse(GetFrameworkFromPath(path, isContentFolder));
+                NuGetFramework framework = NuGetFramework.Parse(GetFrameworkFromPath(path, allowSubFolders));
 
                 // Content allows both random folder names and framework folder names.
                 // It's nearly impossible to tell the difference and stay consistent over
