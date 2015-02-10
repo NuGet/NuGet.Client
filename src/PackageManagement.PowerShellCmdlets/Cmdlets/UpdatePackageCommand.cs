@@ -223,6 +223,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         else
                         {
                             // Update-Package Id
+                            NormalizePackageId(project);
                             await UpdatePackageById(project);
                         }
                     }

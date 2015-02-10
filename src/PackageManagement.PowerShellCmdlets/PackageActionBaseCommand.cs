@@ -1,7 +1,10 @@
-﻿using NuGet.PackagingCore;
+﻿using NuGet.Client.VisualStudio;
+using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
@@ -121,6 +124,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
                 }
                 await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
+            }
+        }
+        
+        /// <summary>
+        /// Normalize package Id input against server metadata for project K, which is case-sensitive.
+        /// </summary>
+        /// <param name="project"></param>
+        protected void NormalizePackageId(NuGetProject project)
+        {
+            if (project is ProjectManagement.Projects.ProjectKNuGetProjectBase)
+            {
+                IEnumerable<string> frameworks = Enumerable.Empty<string>();
+                PSSearchMetadata match = GetPackagesFromRemoteSource(Id, frameworks, true, 0, 30)
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(Id, p.Identity.Id))
+                    .FirstOrDefault();
+                Id = match.Identity.Id;
             }
         }
 
