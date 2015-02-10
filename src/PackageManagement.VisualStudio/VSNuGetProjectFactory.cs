@@ -59,9 +59,9 @@ namespace NuGet.PackageManagement.VisualStudio
             var folderNuGetProjectFullPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
             var packagesConfigFiles = EnvDTEProjectUtility.GetPackageReferenceFileFullPaths(envDTEProject);
 
-            // Item1 is path to "packages.config". Item2 is path to "packages.<projectName>.config"
-            string packagesConfigFullPath = packagesConfigFiles.Item1;
-            string packagesConfigWithProjectNameFullPath = packagesConfigFiles.Item2;
+            // Item1 is path to "packages.<projectName>.config". Item2 is path to "packages.config"
+            string packagesConfigWithProjectNameFullPath = packagesConfigFiles.Item1;
+            string packagesConfigFullPath = packagesConfigFiles.Item2;
 
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath,
                 File.Exists(packagesConfigWithProjectNameFullPath) ? packagesConfigWithProjectNameFullPath : packagesConfigFullPath);
