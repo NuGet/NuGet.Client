@@ -85,6 +85,12 @@ namespace NuGet.ProjectManagement
             return File.Create(GetFullPath(root, path));
         }
 
+        public static Stream OpenFile(string fullPath)
+        {
+            MakeWriteable(fullPath);
+            return File.Create(fullPath);
+        }
+
         public static IEnumerable<string> GetFiles(string root, string path, string filter)
         {
             return GetFiles(root, path, filter, recursive: false);

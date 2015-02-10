@@ -312,9 +312,14 @@ namespace NuGet.ProjectManagement
                 await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
                 // Step-5: Remove packages.config from MSBuildNuGetProject if there are no packages
+                //         OR Add it again (to ensure that Source Control works), when there are some packages
                 if(!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
                 {
                     MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+                }
+                else
+                {
+                    MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
                 }
 
                 // Step-6: Uninstall package from the msbuild project
