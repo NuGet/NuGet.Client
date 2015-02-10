@@ -255,18 +255,25 @@ namespace NuGet.PackageManagement.UI
             if (metadataResource != null)
             {
                 // load up the full details for each version
-                var metadata = await metadataResource.GetMetadata(Id, true, false, token);
-                foreach (var item in metadata)
+                try
                 {
-                    if (!dict.ContainsKey(item.Identity.Version))
+                    var metadata = await metadataResource.GetMetadata(Id, true, false, token);
+                    foreach (var item in metadata)
                     {
-                        int downloadCount;
-                        if (!downloadCountDict.TryGetValue(item.Identity.Version, out downloadCount))
+                        if (!dict.ContainsKey(item.Identity.Version))
                         {
-                            downloadCount = 0;
+                            int downloadCount;
+                            if (!downloadCountDict.TryGetValue(item.Identity.Version, out downloadCount))
+                            {
+                                downloadCount = 0;
+                            }
+                            dict.Add(item.Identity.Version, new DetailedPackageMetadata(item, downloadCount));
                         }
-                        dict.Add(item.Identity.Version, new DetailedPackageMetadata(item, downloadCount));
                     }
+                }
+                catch (InvalidOperationException)
+                {
+                    // Ignore failures.
                 }
             }
 
