@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private ISettings Settings { get; set; }
         private EmptyNuGetProjectContext EmptyNuGetProjectContext { get; set; }
 
-        // TODO: Add ISettings, ISolutionManager, IDeleteOnRestartManager, VsPackageInstallerEvents and IVsFrameworkMultiTargeting to constructor
+        // TODO: Add IDeleteOnRestartManager, VsPackageInstallerEvents and IVsFrameworkMultiTargeting to constructor
         public VSNuGetProjectFactory(ISolutionManager solutionManager)
             : this(solutionManager, ServiceLocator.GetInstance<ISettings>()) { }
 
@@ -57,9 +57,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
             var folderNuGetProjectFullPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
-            // TODO: Handle non-default packages.config name
-            var packagesConfigFullPath = Path.Combine(EnvDTEProjectUtility.GetFullPath(envDTEProject), "packages.config");
-            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath, packagesConfigFullPath);
+            var packagesConfigFiles = EnvDTEProjectUtility.GetPackageReferenceFileFullPaths(envDTEProject);
+
+            // Item1 is path to "packages.config". Item2 is path to "packages.<projectName>.config"
+            string packagesConfigFullPath = packagesConfigFiles.Item1;
+            string packagesConfigWithProjectNameFullPath = packagesConfigFiles.Item2;
+
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath,
+                File.Exists(packagesConfigWithProjectNameFullPath) ? packagesConfigWithProjectNameFullPath : packagesConfigFullPath);
 
             return msBuildNuGetProject;
         }

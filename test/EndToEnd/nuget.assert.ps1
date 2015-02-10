@@ -18,13 +18,37 @@ function Get-SolutionPackage {
     $packages
 }
 
+function Get-PackageConfigName {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project)
+    $projectName = Get-ProjectName $Project
+
+    $configName = "packages." + $projectName + ".config"
+
+    # Check for existence of packages.project_name.config
+    $configPath = Join-Path (Get-ProjectDir $Project) $configName
+
+    if (-not (Test-Path $configPath))
+    {
+        # Check for existence on disk of packages.config
+        Assert-PathExists (Join-Path (Get-ProjectDir $Project) "packages.config")
+
+        $configName = "packages.config"
+    }
+
+    return $configName
+}
+
 function Get-PackagesConfigNuGetProject {
     param(
         [parameter(Mandatory = $true)]
         $Project
     )
-    
-    $packagesConfigFile = (Join-Path (Get-ProjectDir $Project) packages.config)
+
+    $configName = Get-PackageConfigName $Project
+    Write-Host 'Packages config file name is ' $configName
+    $packagesConfigFile = (Join-Path (Get-ProjectDir $Project) $configName)
     $metadataDictionary = New-Object 'System.Collections.Generic.Dictionary[string,object]'
     $targetFrameworkMoniker = $project.Properties.Item("TargetFrameworkMoniker").Value
     $nuGetFramework = [NuGet.Frameworks.NuGetFramework]::Parse($targetFrameworkMoniker)
@@ -44,7 +68,9 @@ function Get-InstalledPackageReferencesFromProject {
     $task = $packagesConfigNuGetProject.GetInstalledPackagesAsync($token)
     $task.Wait()
 
-    return ,$task.Result
+    $result = ,$task.Result
+    Write-Host 'Packages count in packages config file: ' $result.Count
+    return $result
 }
 
 
@@ -98,20 +124,8 @@ function Assert-Package {
 
     $projectName = Get-ProjectName $Project
 
-    $configName = "packages." + $projectName + ".config"
+    $configName = Get-PackageConfigName $Project
 
-    # Check for existence of packages.project_name.config
-    $configPath = Join-Path (Get-ProjectDir $Project) $configName
-
-    if (-not (Test-Path $configPath)) 
-    {
-        # Check for existence on disk of packages.config
-        Assert-PathExists (Join-Path (Get-ProjectDir $Project) "packages.config")
-
-        $configName = "packages.config"
-    }
-
-    
     # Check for the project item
     Assert-NotNull (Get-ProjectItem $Project $configName) "$configName does not exist in $projectName"
         
@@ -119,14 +133,15 @@ function Assert-Package {
     
     Assert-NotNull $packagesConfigNuGetProject "Unable to find the project repository"
     
+    $packagesInPackagesConfig = Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
         $packageIdentity = New-Object NuGet.PackagingCore.PackageIdentity($Id, $actualVersion)
-        Assert-NotNull (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
+        Assert-NotNull ($packagesInPackagesConfig | where { $_.PackageIdentity.Equals($packageIdentity) }) "Package $Id $Version is not referenced in $($Project.Name)"
     }
     else
     {
-        Assert-NotNull (Get-InstalledPackageReferencesFromProject $packagesConfigNuGetProject | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
+        Assert-NotNull ($packagesInPackagesConfig | where { $_.PackageIdentity.Id -eq $Id }) "Package $Id is not referenced in $($Project.Name)"
     }    
 }
 

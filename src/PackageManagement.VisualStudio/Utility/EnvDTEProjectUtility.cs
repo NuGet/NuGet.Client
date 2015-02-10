@@ -253,7 +253,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var packagesConfig = Path.Combine(
                 projectDirectory ?? String.Empty,
-                PackageReferenceFile);
+                NuGet.ProjectManagement.Constants.PackageReferenceFile);
 
             return Tuple.Create(packagesProjectConfig, packagesConfig);
         }
