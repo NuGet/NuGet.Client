@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                //EnsureCheckedOutIfExists(path);
+                EnsureCheckedOutIfExists(path);
                 addFile();
                 if (!fileExistsInProject)
                 {
@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void EnsureCheckedOutIfExists(string path)
         {
-            throw new NotImplementedException();
+            EnvDTEProjectUtility.EnsureCheckedOutIfExists(EnvDTEProject, ProjectFullPath, path);
         }
 
         protected virtual bool ExcludeFile(string path)

@@ -987,6 +987,24 @@ namespace NuGet.PackageManagement.VisualStudio
         #endregion // Check Project Types
 
         #region Act on Project
+        public static void EnsureCheckedOutIfExists(EnvDTEProject envDTEProject, string root, string path)
+        {
+            var fullPath = FileSystemUtility.GetFullPath(root, path);
+
+            if (File.Exists(fullPath))
+            {
+                FileSystemUtility.MakeWriteable(fullPath);
+
+                if (envDTEProject.DTE.SourceControl != null &&
+                    envDTEProject.DTE.SourceControl.IsItemUnderSCC(fullPath) &&
+                    !envDTEProject.DTE.SourceControl.IsItemCheckedOut(fullPath))
+                {
+                    // Check out the item
+                    envDTEProject.DTE.SourceControl.CheckOutItem(fullPath);
+                }
+            }
+        }
+
         public static bool DeleteProjectItem(EnvDTEProject envDTEProject, string path)
         {
             EnvDTEProjectItem projectItem = GetProjectItem(envDTEProject, path);
