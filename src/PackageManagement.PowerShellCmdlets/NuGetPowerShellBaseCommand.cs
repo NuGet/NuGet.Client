@@ -241,20 +241,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             UriFormatException uriException = null;
             PackageSource packageSource = new PackageSource(source);
+            SourceRepository repository = _resourceRepositoryProvider.CreateRepository(packageSource);
+            PSSearchResource resource = repository.GetResource<PSSearchResource>();
 
-            try
+            // resource can be null here for relative path package source.
+            if (resource == null)
             {
-                SourceRepository repository = _resourceRepositoryProvider.CreateRepository(packageSource);
-            }
-            catch (UriFormatException ex)
-            {
-                // if the source is relative path, it can result in invalid uri exception
-                uriException = ex;
-            }
-
-            Uri uri;
-            if (uriException != null)
-            {
+                Uri uri;
                 // if it's not an absolute path, treat it as relative path
                 if (Uri.TryCreate(source, UriKind.Relative, out uri))
                 {
