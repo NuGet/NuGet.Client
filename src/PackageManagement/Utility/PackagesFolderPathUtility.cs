@@ -9,8 +9,6 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class PackagesFolderPathUtility
     {
-        private const string ConfigSection = "config";
-        private const string RepositoryPathKey = "repositoryPath";
         private const string DefaultRepositoryPath = "packages";
         public static string GetPackagesFolderPath(ISolutionManager solutionManager, ISettings settings)
         {
@@ -35,7 +33,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("settings");
             }
 
-            string path = settings.GetValue(ConfigSection, RepositoryPathKey, isPath: true);
+            string path = SettingsUtility.GetRepositoryPath(settings);
             if (!String.IsNullOrEmpty(path))
             {
                 return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));

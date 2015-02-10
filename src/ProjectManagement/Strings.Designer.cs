@@ -79,7 +79,7 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Added package &apos;{0}&apos; to &quot;packages.config&quot;.
+        ///   Looks up a localized string similar to Added package &apos;{0}&apos; to &apos;{1}&apos;.
         /// </summary>
         public static string AddedPackageToPackagesConfig {
             get {
@@ -259,7 +259,7 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists in &quot;packages.config&quot;.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists in &apos;{1}&apos;.
         /// </summary>
         public static string PackageAlreadyExistsInPackagesConfig {
             get {
@@ -295,7 +295,7 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; does not exists in &quot;packages.config&quot;.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; does not exists in &apos;{1}&apos;.
         /// </summary>
         public static string PackageDoesNotExisttInPackagesConfig {
             get {
@@ -331,7 +331,7 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Removed package &apos;{0}&apos; from &quot;packages.config&quot;.
+        ///   Looks up a localized string similar to Removed package &apos;{0}&apos; from &apos;{1}&apos;.
         /// </summary>
         public static string RemovedPackageFromPackagesConfig {
             get {

@@ -55,7 +55,7 @@ namespace NuGet.ProjectManagement
             {
                 if(packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
                 {
-                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity);
+                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
                     return Task.FromResult(false);
                 }
                 else
@@ -80,7 +80,7 @@ namespace NuGet.ProjectManagement
                 }
                 writer.Close();
             }
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToPackagesConfig, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
             return Task.FromResult(true);
         }
 
@@ -100,7 +100,7 @@ namespace NuGet.ProjectManagement
             var packageReference = installedPackagesList.Where(p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
             if(packageReference == null)
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExisttInPackagesConfig, packageIdentity);
+                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExisttInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
                 return Task.FromResult(false);
             }
 
@@ -125,7 +125,7 @@ namespace NuGet.ProjectManagement
                     File.Delete(FullPath);
                 }
             }
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
             return Task.FromResult(true);
         }
 

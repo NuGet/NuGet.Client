@@ -124,7 +124,7 @@
     <value>Added package '{0}' to project '{1}'</value>
   </data>
   <data name="AddedPackageToPackagesConfig" xml:space="preserve">
-    <value>Added package '{0}' to "packages.config"</value>
+    <value>Added package '{0}' to '{1}'</value>
   </data>
   <data name="AddingPackageToFolder" xml:space="preserve">
     <value>Adding package '{0}' to folder '{1}'</value>
@@ -184,7 +184,7 @@
     <value>Package '{0}' already exists in folder '{1}'</value>
   </data>
   <data name="PackageAlreadyExistsInPackagesConfig" xml:space="preserve">
-    <value>Package '{0}' already exists in "packages.config"</value>
+    <value>Package '{0}' already exists in '{1}'</value>
   </data>
   <data name="PackageAlreadyExistsInProject" xml:space="preserve">
     <value>Package '{0}' already exists in project '{1}'</value>
@@ -196,7 +196,7 @@
     <value>Package '{0}' does not exist in project '{1}'</value>
   </data>
   <data name="PackageDoesNotExisttInPackagesConfig" xml:space="preserve">
-    <value>Package '{0}' does not exists in "packages.config"</value>
+    <value>Package '{0}' does not exists in '{1}'</value>
   </data>
   <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
     <value>Package stream should be seekable</value>
@@ -208,7 +208,7 @@
     <value>Removed package '{0}' from project '{1}'</value>
   </data>
   <data name="RemovedPackageFromPackagesConfig" xml:space="preserve">
-    <value>Removed package '{0}' from "packages.config"</value>
+    <value>Removed package '{0}' from '{1}'</value>
   </data>
   <data name="RemovingPackageFromFolder" xml:space="preserve">
     <value>Removing package '{0}' from folder '{1}'</value>
