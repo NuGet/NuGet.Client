@@ -21,6 +21,8 @@ using NuGet.PackagingCore;
 using NuGet.Client;
 using System.Threading;
 using NuGet.ProjectManagement;
+using NuGet.Packaging;
+using NuGet.Frameworks;
 
 namespace NuGet.VisualStudio
 {
@@ -208,18 +210,19 @@ namespace NuGet.VisualStudio
             }
 
             // RepositorySettings = null in unit tests
-            //if (project.IsWebSite() && repositorySettings != null)
-            //{
-            //    using (_vsCommonOperations.SaveSolutionExplorerNodeStates(_solutionManager))
-            //    {
-            //        CreateRefreshFilesInBin(
-            //            project,
-            //            repositorySettings.Value.RepositoryPath,
-            //            configuration.Packages.Where(p => p.SkipAssemblyReferences));
+            if (EnvDTEProjectUtility.IsWebSite(project))
+            {
+                // TODO: the fix solution explorer node state
+                //using (_vsCommonOperations.SaveSolutionExplorerNodeStates(_solutionManager))
+                //{
+                    // CreateRefreshFilesInBin(
+                    //    project,
+                    //    repositoryPath,
+                    //    configuration.Packages.Where(p => p.SkipAssemblyReferences));
 
-            //        CopyNativeBinariesToBin(project, repositorySettings.Value.RepositoryPath, configuration.Packages);
-            //    }
-            //}
+                    CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
+                //}
+            }
         }
 
         /// <summary>
@@ -230,9 +233,73 @@ namespace NuGet.VisualStudio
         /// <param name="packageInfos">The packages that were installed.</param>
         private void CreateRefreshFilesInBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
             //IEnumerable<PackageName> packageNames = packageInfos.Select(pi => new PackageName(pi.Id, pi.Version));
             //_websiteHandler.AddRefreshFilesForReferences(project, new PhysicalFileSystem(repositoryPath), packageNames);
+
+            IEnumerable<PackageIdentity> packageNames = packageInfos.Select(pi => new PackageIdentity(pi.Id, pi.Version));
+            AddRefreshFilesForReferences(project, repositoryPath, packageNames);
+        }
+
+        /// <summary>
+        /// Adds refresh files to the specified project for all assemblies references belonging to the packages specified by packageNames.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <param name="packagesFileSystem">The file system pointing to 'packages' folder under the solution.</param>
+        /// <param name="packageNames">The package names.</param>
+        private void AddRefreshFilesForReferences(Project project, string repositoryPath, IEnumerable<PackageIdentity> packageNames)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException("project");
+            }
+
+            if (repositoryPath == null)
+            {
+                throw new ArgumentNullException("repositoryPath");
+            }
+
+            if (packageNames.IsEmpty())
+            {
+                return;
+            }
+
+
+            foreach (var packageName in packageNames)
+            {
+                string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageName.Id, packageName.Version);
+
+                DirectoryInfo packageFolder = new DirectoryInfo(Path.Combine(repositoryPath, packagePath));
+
+                PackageFolderReader reader = new PackageFolderReader(packageFolder);
+
+                var frameworkGroups = reader.GetReferenceItems();
+
+                VSAPIProjectContext context = new VSAPIProjectContext();
+                WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(project, context);
+
+                var groups = reader.GetReferenceItems();
+
+                var fwComparer = new NuGetFrameworkFullComparer();
+                FrameworkReducer reducer = new FrameworkReducer();
+                NuGetFramework targetGroupFramework = reducer.GetNearest(projectSystem.TargetFramework, groups.Select(e => e.TargetFramework));
+
+                if (targetGroupFramework != null)
+                {
+                    var refGroup = groups.Where(e => fwComparer.Equals(targetGroupFramework, e.TargetFramework)).FirstOrDefault();
+
+                    foreach (string refItem in refGroup.Items)
+                    {
+                        string sourcePath = Path.Combine(packageFolder.FullName, refItem);
+
+                        // TODO: change this back to adding refresh files in bulk
+                        projectSystem.AddReference(sourcePath);
+
+                        // create one refresh file for each assembly reference, as per required by Website projects
+                        // projectSystem.CreateRefreshFile(assemblyPath);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -243,9 +310,39 @@ namespace NuGet.VisualStudio
         /// <param name="packageInfos">The packages that were installed.</param>
         private void CopyNativeBinariesToBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            throw new NotImplementedException();
             //IEnumerable<PackageName> packageNames = packageInfos.Select(pi => new PackageName(pi.Id, pi.Version));
             //_websiteHandler.CopyNativeBinaries(project, new PhysicalFileSystem(repositoryPath), packageNames);
+
+            VSAPIProjectContext context = new VSAPIProjectContext();
+            VSMSBuildNuGetProjectSystem projectSystem = new VSMSBuildNuGetProjectSystem(project, context);
+
+            foreach (var packageInfo in packageInfos)
+            {
+                string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
+
+                CopyNativeBinaries(projectSystem, repositoryPath, 
+                    Path.Combine(repositoryPath, packagePath));
+            }
+        }
+
+        private void CopyNativeBinaries(VSMSBuildNuGetProjectSystem projectSystem, string repositoryPath, string packagePath)
+        {
+            const string nativeBinariesFolder = "NativeBinaries";
+            const string binFolder = "bin";
+
+            DirectoryInfo nativeBinariesPath = new DirectoryInfo(Path.Combine(packagePath, nativeBinariesFolder));
+            if (nativeBinariesPath.Exists)
+            {
+                FileInfo[] nativeFiles = nativeBinariesPath.GetFiles("*.*", SearchOption.AllDirectories);
+                foreach (FileInfo file in nativeFiles)
+                {
+                    string targetPath = Path.Combine(binFolder, file.FullName.Substring(nativeBinariesPath.FullName.Length + 1));  // skip over NativeBinaries/ word
+                    using (Stream stream = file.OpenRead())
+                    {
+                        projectSystem.AddFile(targetPath, stream);
+                    }
+                }
+            }
         }
     }
 }

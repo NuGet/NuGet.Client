@@ -1,6 +1,5 @@
 ﻿extern alias Legacy;
 using LegacyNuGet = Legacy.NuGet;
-//using Legacy.NuGet.EnumerableExtensions;
 
 using System;
 using System.Collections.Generic;
@@ -72,7 +71,7 @@ namespace NuGet.VisualStudio
             await InstallInternal(project, toInstall, sourceProvider, false, ignoreDependencies, token);
         }
 
-
+        // Legacy methods
         public void InstallPackage(string source, Project project, string packageId, Version version, bool ignoreDependencies)
         {
             NuGetVersion semVer = null;
@@ -113,7 +112,11 @@ namespace NuGet.VisualStudio
                 versionRange = new VersionRange(version, true, version, true);
             }
 
-            // InstallInternal(project, )
+            List<PackageIdentity> toInstall = new List<PackageIdentity>();
+            toInstall.Add(new PackageIdentity(packageId, version));
+
+            Task task = InstallInternal(project, toInstall, GetSources(sources), false, ignoreDependencies, CancellationToken.None);
+            task.Wait();
         }
 
         public void InstallPackage(LegacyNuGet.IPackageRepository repository, Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences)
@@ -148,19 +151,10 @@ namespace NuGet.VisualStudio
             PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
             repoProvider.AddFromRegistry(keyName);
 
-            List<PackageIdentity> packages = new List<PackageIdentity>();
+            List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
 
-            // create identities
-            foreach (var pair in packageVersions)
-            {
-                // TODO: versions can be null today, should this continue?
-                NuGetVersion version = null;
-
-                if (!String.IsNullOrEmpty(pair.Value))
-                {
-                    NuGetVersion.TryParse(pair.Value, out version);
-                }
-            }
+            Task task = InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None);
+            task.Wait();
         }
 
         public void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions)
@@ -187,6 +181,32 @@ namespace NuGet.VisualStudio
 
             PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
             repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
+
+            List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
+
+            Task task = InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None);
+            task.Wait();
+        }
+
+        private static List<PackageIdentity> GetIdentitiesFromDict(IDictionary<string, string> packageVersions)
+        {
+            List<PackageIdentity> toInstall = new List<PackageIdentity>();
+
+            // create identities
+            foreach (var pair in packageVersions)
+            {
+                // TODO: versions can be null today, should this continue?
+                NuGetVersion version = null;
+
+                if (!String.IsNullOrEmpty(pair.Value))
+                {
+                    NuGetVersion.TryParse(pair.Value, out version);
+                }
+
+                toInstall.Add(new PackageIdentity(pair.Key, version));
+            }
+
+            return toInstall;
         }
 
         private Action<string> ErrorHandler
@@ -310,13 +330,7 @@ namespace NuGet.VisualStudio
         {
             try
             {
-                // TODO: should this come from settings?
-                DependencyBehavior depBehavior = DependencyBehavior.Lowest;
-
-                if (ignoreDependencies)
-                {
-                    depBehavior = DependencyBehavior.Ignore;
-                }
+                DependencyBehavior depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
 
                 bool includePrerelease = false;
 
@@ -340,8 +354,7 @@ namespace NuGet.VisualStudio
                 // install the package
                 foreach (PackageIdentity package in packages)
                 {
-                    // HACK: We need to update nuget package manager to always take in an IEnumerable of primary repositories
-                    await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories().First(), repoProvider.GetRepositories(), token);
+                    await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
                 }
             }
             catch (Exception ex)

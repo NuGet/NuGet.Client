@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal static class RefreshFileUtility
+    public static class RefreshFileUtility
     {
         private const string RefreshFileExtension = ".refresh";
 

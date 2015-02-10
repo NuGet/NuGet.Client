@@ -144,7 +144,7 @@ namespace NuGet.VisualStudio
 
             if (String.IsNullOrEmpty(path))
             {
-                // If the path is null, look in default settings                 
+                // If the path is null, look in default settings
                 path = DefaultSettings.Root;
 
                 if (String.IsNullOrEmpty(path))
