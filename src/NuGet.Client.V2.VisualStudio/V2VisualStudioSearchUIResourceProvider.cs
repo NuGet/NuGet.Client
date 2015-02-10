@@ -11,20 +11,14 @@ namespace NuGet.Client.V2.VisualStudio
     [NuGetResourceProviderMetadata(typeof(UISearchResource), "V2UISearchResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V2UISearchResourceProvider : V2ResourceProvider
     {
-        private readonly ConcurrentDictionary<Configuration.PackageSource, V2UISearchResource> _cache = new ConcurrentDictionary<Configuration.PackageSource, V2UISearchResource>();
-
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             V2UISearchResource resource = null;
-            if (!_cache.TryGetValue(source.PackageSource, out resource))
-            {
-                var v2repo = await GetRepository(source, token);
+            var v2repo = await GetRepository(source, token);
 
-                if (v2repo != null)
-                {
-                    resource = new V2UISearchResource(v2repo);
-                    _cache.TryAdd(source.PackageSource, resource);
-                }
+            if (v2repo != null)
+            {
+                resource = new V2UISearchResource(v2repo);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);
