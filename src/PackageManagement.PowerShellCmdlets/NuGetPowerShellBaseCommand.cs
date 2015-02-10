@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private DTE _dte;
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
+        private Exception _scriptException;
         private bool _overwriteAll, _ignoreAll;
         internal const string PowerConsoleHostName = "Package Manager Host";
         internal const string ActivePackageSourceKey = "activePackageSource";
@@ -890,7 +891,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(MessageLevel.Warning, ex.Message);
+                _scriptException = ex;
             }
             finally
             {
@@ -930,11 +931,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             logQueue.Enqueue(Tuple.Create(MessageLevel.Info, scriptPath));
             scriptStartSemaphore.Release();
+            
+            WaitHandle.WaitAny(new WaitHandle[] { scriptEndSemaphore });
 
-            while (true)
+            if (_scriptException != null)
             {
-                int index = WaitHandle.WaitAny(new WaitHandle[] { scriptEndSemaphore });
-                break;
+                throw _scriptException;
             }
         }
     }
