@@ -458,9 +458,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             searchfilter.SupportedFrameworks = targetFrameworks;
             searchfilter.IncludeDelisted = false;
 
+            IEnumerable<PSSearchMetadata> packages = Enumerable.Empty<PSSearchMetadata>();
             PSSearchResource resource = ActiveSourceRepository.GetResource<PSSearchResource>();
-            Task<IEnumerable<PSSearchMetadata>> task = resource.Search(packageId, searchfilter, skip, take, CancellationToken.None);
-            IEnumerable<PSSearchMetadata> packages = task.Result;
+            if (resource != null)
+            {
+                Task<IEnumerable<PSSearchMetadata>> task = resource.Search(packageId, searchfilter, skip, take, CancellationToken.None);
+                packages = task.Result;
+            }
             return packages;
         }
 

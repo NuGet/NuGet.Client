@@ -39,6 +39,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             List<PowerShellInstalledPackage> views = new List<PowerShellInstalledPackage>();
             foreach (KeyValuePair<NuGetProject, IEnumerable<PackageReference>> entry in dictionary)
             {
+                // entry.Value is an empty list if no packages are installed
                 foreach (PackageReference package in entry.Value)
                 {
                     PowerShellInstalledPackage view = new PowerShellInstalledPackage();
