@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Xml.Linq;
 using EnvDTE;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TemplateWizard;
+using NuGet.Client;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Versioning;
+using NuGet.VisualStudio.Extensions;
 using NuGet.VisualStudio.Resources;
 using NuGetConsole;
-using NuGet.Versioning;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackageManagement;
-using NuGet.Configuration;
-using NuGet.Client;
 
 namespace NuGet.VisualStudio
 {
@@ -24,8 +21,10 @@ namespace NuGet.VisualStudio
     public class VsTemplateWizard : IVsTemplateWizard
     {
         private readonly IVsPackageInstaller _installer;
+
         //private readonly IVsWebsiteHandler _websiteHandler;
         private IEnumerable<PreinstalledPackageConfiguration> _configurations;
+
         private DTE _dte;
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IOutputConsoleProvider _consoleProvider;
@@ -195,11 +194,14 @@ namespace NuGet.VisualStudio
             {
                 case "extension":
                     return RepositoryType.Extension;
+
                 case "registry":
                     return RepositoryType.Registry;
+
                 case "template":
                 case null:
                     return RepositoryType.Template;
+
                 default:
                     ShowErrorMessage(String.Format(VsResources.TemplateWizard_InvalidRepositoryAttribute,
                         repositoryAttributeValue));
@@ -277,7 +279,7 @@ namespace NuGet.VisualStudio
         {
             // add the $nugetpackagesfolder$ parameter which returns relative path to the solution's packages folder.
             // this is used by project templates to include assembly references directly inside the template project file
-            // without relying on nuget to install the actual packages. 
+            // without relying on nuget to install the actual packages.
             string targetInstallDir;
             if (replacementsDictionary.TryGetValue("$destinationdirectory$", out targetInstallDir))
             {
@@ -291,7 +293,7 @@ namespace NuGet.VisualStudio
                     string solutionDir = DetermineSolutionDirectory(replacementsDictionary);
                     if (!String.IsNullOrEmpty(solutionDir))
                     {
-                        // If the project is a Website that is created on an Http location, 
+                        // If the project is a Website that is created on an Http location,
                         // solutionDir may be an Http address, e.g. http://localhost.
                         // In that case, we have to use forward slash instead of backward one.
                         if (Uri.IsWellFormedUriString(solutionDir, UriKind.Absolute))
@@ -307,7 +309,7 @@ namespace NuGet.VisualStudio
 
                 if (solutionRepositoryPath != null)
                 {
-                    // If the project is a Website that is created on an Http location, 
+                    // If the project is a Website that is created on an Http location,
                     // targetInstallDir may be an Http address, e.g. http://localhost.
                     // In that case, we have to use forward slash instead of backward one.
                     if (Uri.IsWellFormedUriString(targetInstallDir, UriKind.Absolute))
@@ -379,7 +381,7 @@ namespace NuGet.VisualStudio
         internal static string DetermineSolutionDirectory(Dictionary<string, string> replacementsDictionary)
         {
             // the $solutiondirectory$ parameter is available in VS11 RC and later
-            // No $solutiondirectory$? Ok, we're in the case where the solution is in 
+            // No $solutiondirectory$? Ok, we're in the case where the solution is in
             // the same directory as the project
             // Is $specifiedsolutionname$ null or empty? We're definitely in the solution
             // in same directory as project case.

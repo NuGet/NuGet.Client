@@ -1,5 +1,6 @@
 ﻿extern alias Legacy;
 using LegacyNuGet = Legacy.NuGet;
+using Legacy.NuGet.EnumerableExtensions;
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ using System.Diagnostics;
 using NuGet.PackageManagement.VisualStudio;
 using System.IO;
 using System.Threading;
+using NuGet.VisualStudio.Extensions;
 
 namespace NuGet.VisualStudio
 {
