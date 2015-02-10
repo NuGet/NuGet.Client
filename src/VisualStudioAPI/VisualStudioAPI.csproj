@@ -150,7 +150,6 @@
     <Compile Include="Extensibility\VsPackageSourceProvider.cs" />
     <Compile Include="Extensibility\VsPackageUninstaller.cs" />
     <Compile Include="ExtensionManagerShim.cs" />
-    <Compile Include="Extensions\XElementExtensions.cs" />
     <Compile Include="IRepositorySettings.cs" />
     <Compile Include="IVsCommonOperations.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller.cs" />
@@ -210,6 +209,7 @@
       <Name>Console</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

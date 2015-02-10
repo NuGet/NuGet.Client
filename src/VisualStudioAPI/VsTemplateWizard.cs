@@ -8,10 +8,10 @@ using EnvDTE;
 using Microsoft.VisualStudio.TemplateWizard;
 using NuGet.Client;
 using NuGet.Configuration;
+using NuGet.ProjectManagement;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
-using NuGet.VisualStudio.Extensions;
 using NuGet.VisualStudio.Resources;
 using NuGetConsole;
 

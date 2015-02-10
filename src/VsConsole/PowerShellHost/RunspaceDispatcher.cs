@@ -11,6 +11,7 @@ using NuGet;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackagingCore;
 using System.Reflection;
+using NuGet.ProjectManagement;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

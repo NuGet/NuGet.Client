@@ -180,7 +180,6 @@
     <Compile Include="Utility\MessageHelper.cs" />
     <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\PathHelper.cs" />
-    <Compile Include="Utility\PathUtility.cs" />
     <Compile Include="Utility\PathValidator.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />

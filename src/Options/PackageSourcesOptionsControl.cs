@@ -14,6 +14,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Client;
+using NuGet.ProjectManagement;
 
 
 namespace NuGet.Options
@@ -364,8 +365,8 @@ namespace NuGet.Options
             }
 
             // check to see if source has already been added
-            bool hasSource = sourcesList.Any(ps => ps != selectedPackageSource && 
-                                                   String.Equals(PathUtility.GetCanonicalPath(source), PathUtility.GetCanonicalPath(ps.Source), StringComparison.OrdinalIgnoreCase));
+            bool hasSource = sourcesList.Any(ps => ps != selectedPackageSource &&
+                                                   String.Equals(PathValidator.GetCanonicalPath(source), PathValidator.GetCanonicalPath(ps.Source), StringComparison.OrdinalIgnoreCase));
             if (hasSource)
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_UniqueSource, Resources.ShowWarning_Title);

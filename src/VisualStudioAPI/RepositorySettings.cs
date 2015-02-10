@@ -8,9 +8,9 @@ using System.Xml;
 using System.Xml.Linq;
 using NuGet.VisualStudio.Resources;
 using NuGet.Configuration;
+using NuGet.ProjectManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
-using NuGet.VisualStudio.Extensions;
 
 namespace NuGet.VisualStudio
 {

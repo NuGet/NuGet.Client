@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.ProjectManagement;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -91,6 +92,26 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Make sure url starts with protocol:// because Uri.TryCreate() returns true for local and UNC paths even if badly formed.
             return Regex.IsMatch(url, @"^\w+://", RegexOptions.IgnoreCase) && Uri.TryCreate(url, UriKind.Absolute, out result);
+        }
+
+        public static string GetCanonicalPath(string path)
+        {
+            if (PathValidator.IsValidLocalPath(path) || (PathValidator.IsValidUncPath(path)))
+            {
+                return Path.GetFullPath(PathUtility.EnsureTrailingSlash(path));
+            }
+            if (PathValidator.IsValidUrl(path))
+            {
+                var url = new Uri(path);
+                // return canonical representation of Uri
+                return url.AbsoluteUri;
+            }
+            return path;
+        }
+
+        public static string SafeTrim(string value)
+        {
+            return value == null ? null : value.Trim();
         }
     }
 }

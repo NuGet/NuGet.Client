@@ -81,7 +81,7 @@ namespace NuGetConsole
                 }
                 string toolsPath = Path.GetDirectoryName(fullScriptPath);
                 string command = "$__pc_args=@(); $input|%{$__pc_args+=$_}; & "
-                    + NuGet.PackageManagement.VisualStudio.PathUtility.EscapePSPath(fullScriptPath)
+                    + PathUtility.EscapePSPath(fullScriptPath)
                     + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0";
 
                 object[] inputs = new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject };

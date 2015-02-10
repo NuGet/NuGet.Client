@@ -1,4 +1,5 @@
 ﻿using NuGet.Configuration;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -57,7 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                string envValue = PathUtility.SafeTrim(_environmentReader.GetEnvironmentVariable(EnvironmentVariableName));
+                string envValue = PathValidator.SafeTrim(_environmentReader.GetEnvironmentVariable(EnvironmentVariableName));
                 return IsGrantedInSettings || IsSet(envValue);
             }
         }
@@ -71,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     settingsValue = _configurationDefaults.DefaultPackageRestoreConsent;
                 }
-                settingsValue = PathUtility.SafeTrim(settingsValue);
+                settingsValue = PathValidator.SafeTrim(settingsValue);
 
                 if (String.IsNullOrEmpty(settingsValue))
                 {
@@ -96,7 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     return IsGrantedInSettings;
                 }
-                settingsValue = PathUtility.SafeTrim(settingsValue);
+                settingsValue = PathValidator.SafeTrim(settingsValue);
                 return IsSet(settingsValue);
             }
             set

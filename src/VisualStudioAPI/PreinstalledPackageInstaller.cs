@@ -20,6 +20,7 @@ using NuGet.Configuration;
 using NuGet.PackagingCore;
 using NuGet.Client;
 using System.Threading;
+using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
