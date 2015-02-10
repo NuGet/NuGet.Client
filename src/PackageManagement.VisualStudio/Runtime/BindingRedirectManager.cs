@@ -17,8 +17,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private string Root { get; set; }
         private string ConfigurationPath { get; set; }
+        private INuGetProjectContext NuGetProjectContext { get; set; }
 
-        public BindingRedirectManager(string root, string configurationPath)
+        public BindingRedirectManager(string root, string configurationPath, INuGetProjectContext nuGetProjectContext)
         {
             if (String.IsNullOrEmpty(root))
             {
@@ -28,9 +29,14 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentException(NuGet.ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "configurationPath");
             }
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException("nuGetProjectContext");
+            }
 
             Root = root;
             ConfigurationPath = configurationPath;
+            NuGetProjectContext = nuGetProjectContext;
         }
 
         public void AddBindingRedirects(IEnumerable<AssemblyBinding> bindingRedirects)
@@ -168,7 +174,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void Save(XDocument document)
         {
-            FileSystemUtility.AddFile(Root, ConfigurationPath, document.Save);
+            FileSystemUtility.AddFile(Root, ConfigurationPath, document.Save, NuGetProjectContext);
         }
 
         private static ILookup<AssemblyBinding, XElement> GetAssemblyBindings(XDocument document)
@@ -201,7 +207,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private XDocument GetConfiguration()
         {
-            return XmlUtility.GetOrCreateDocument("configuration", Root, ConfigurationPath);
+            return XmlUtility.GetOrCreateDocument("configuration", Root, ConfigurationPath, NuGetProjectContext);
         }
 
         private static void UpdateBindingRedirectElement(XElement element, AssemblyBinding bindingRedirect)

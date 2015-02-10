@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // Always create a refresh file. Vs does this for us in most cases, however for GACed binaries, it resorts to adding a web.config entry instead.
                 // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
-                RefreshFileUtility.CreateRefreshFile(root, PathUtility.GetAbsolutePath(EnvDTEProjectUtility.GetFullPath(EnvDTEProject), referencePath));
+                RefreshFileUtility.CreateRefreshFile(root, PathUtility.GetAbsolutePath(EnvDTEProjectUtility.GetFullPath(EnvDTEProject), referencePath), NuGetProjectContext);
 
                 NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
             }
@@ -61,11 +61,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // We'll clean up any remaining .refresh files.
             var refreshFilePath = Path.Combine("bin", Path.GetFileName(name) + ".refresh");
             var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
-            if (FileSystemUtility.FileExists(root, refreshFilePath))
+            var refreshFileFullPath = FileSystemUtility.GetFullPath(root, refreshFilePath);
+            if (File.Exists(refreshFileFullPath))
             {
                 try
                 {
-                    FileSystemUtility.DeleteFile(root, refreshFilePath, NuGetProjectContext);
+                    FileSystemUtility.DeleteFile(refreshFileFullPath, NuGetProjectContext);
                 }
                 catch (Exception e)
                 {

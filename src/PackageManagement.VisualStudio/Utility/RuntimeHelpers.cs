@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public static void AddBindingRedirects(
             VSSolutionManager vsSolutionManager,
             EnvDTEProject envDTEProject,
-            IVsFrameworkMultiTargeting frameworkMultiTargeting)
+            IVsFrameworkMultiTargeting frameworkMultiTargeting,
+            INuGetProjectContext nuGetProjectContext)
         {
             // Create a new app domain so we can load the assemblies without locking them in this app domain
             AppDomain domain = AppDomain.CreateDomain("assembliesDomain");
@@ -25,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Keep track of visited projects
                 if (EnvDTEProjectUtility.SupportsBindingRedirects(envDTEProject))
                 {
-                    AddBindingRedirects(vsSolutionManager, envDTEProject, domain, frameworkMultiTargeting);
+                    AddBindingRedirects(vsSolutionManager, envDTEProject, domain, frameworkMultiTargeting, nuGetProjectContext);
                 }
             }
             finally
@@ -38,11 +40,12 @@ namespace NuGet.PackageManagement.VisualStudio
             VSSolutionManager vsSolutionManager,
             EnvDTEProject envDTEProject,
             AppDomain domain,
-            IVsFrameworkMultiTargeting frameworkMultiTargeting)
+            IVsFrameworkMultiTargeting frameworkMultiTargeting,
+            INuGetProjectContext nuGetProjectContext)
         {
             var visitedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            AddBindingRedirects(vsSolutionManager, envDTEProject, domain, visitedProjects, projectAssembliesCache, frameworkMultiTargeting);
+            AddBindingRedirects(vsSolutionManager, envDTEProject, domain, visitedProjects, projectAssembliesCache, frameworkMultiTargeting, nuGetProjectContext);
         }
 
         private static void AddBindingRedirects(VSSolutionManager vsSolutionManager,
@@ -50,7 +53,8 @@ namespace NuGet.PackageManagement.VisualStudio
             AppDomain domain,
             HashSet<string> visitedProjects,
             Dictionary<string, HashSet<string>> projectAssembliesCache,
-            IVsFrameworkMultiTargeting frameworkMultiTargeting)
+            IVsFrameworkMultiTargeting frameworkMultiTargeting,
+            INuGetProjectContext nuGetProjectContext)
         {
             string envDTEProjectUniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
             if (visitedProjects.Contains(envDTEProjectUniqueName))
@@ -60,7 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (EnvDTEProjectUtility.SupportsBindingRedirects(envDTEProject))
             {
-                AddBindingRedirects(envDTEProject, domain, projectAssembliesCache, frameworkMultiTargeting);
+                AddBindingRedirects(envDTEProject, domain, projectAssembliesCache, frameworkMultiTargeting, nuGetProjectContext);
             }
 
             // Add binding redirects to all envdteprojects that are referencing this one
@@ -72,7 +76,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     domain,
                     visitedProjects,
                     projectAssembliesCache,
-                    frameworkMultiTargeting);
+                    frameworkMultiTargeting,
+                    nuGetProjectContext);
             }
 
             visitedProjects.Add(envDTEProjectUniqueName);
@@ -82,7 +87,8 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProject envDTEProject,
             AppDomain domain,
             IDictionary<string, HashSet<string>> projectAssembliesCache,
-            IVsFrameworkMultiTargeting frameworkMultiTargeting)
+            IVsFrameworkMultiTargeting frameworkMultiTargeting,
+            INuGetProjectContext nuGetProjectContext)
         {
             var redirects = Enumerable.Empty<AssemblyBinding>();
 
@@ -102,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Create a binding redirect manager over the configuration
-            var manager = new BindingRedirectManager(root, EnvDTEProjectUtility.GetConfigurationFile(envDTEProject));
+            var manager = new BindingRedirectManager(root, EnvDTEProjectUtility.GetConfigurationFile(envDTEProject), nuGetProjectContext);
 
             // Add the redirects
             manager.AddBindingRedirects(redirects);

@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="root">the root path is dte full path</param>
         /// <param name="assemblyPath">The relative path to the assembly being added</param>
-        public static void CreateRefreshFile(string root, string assemblyPath)
+        public static void CreateRefreshFile(string root, string assemblyPath, INuGetProjectContext nuGetProjectContext)
         {
             string referenceName = Path.GetFileName(assemblyPath);
             string refreshFilePath = Path.Combine("bin", referenceName + RefreshFileExtension);
@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     using (var stream = StreamUtility.StreamFromString(relativeAssemblyPath))
                     {
-                        FileSystemUtility.AddFile(root,refreshFilePath, stream);
+                        FileSystemUtility.AddFile(root, refreshFilePath, stream, nuGetProjectContext);
                     }
                 }
                 catch (UnauthorizedAccessException exception)

@@ -97,12 +97,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void AddFile(string path, Stream stream)
         {
-            AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, stream));
+            AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext));
         }
 
         public virtual void AddFile(string path, Action<Stream> writeToStream)
         {
-            AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, writeToStream));
+            AddFileCore(path, () => FileSystemUtility.AddFile(ProjectFullPath, path, writeToStream, NuGetProjectContext));
         }
 
         private void AddFileCore(string path, Action addFile)
@@ -524,7 +524,7 @@ namespace NuGet.PackageManagement.VisualStudio
             InitForBindingRedirects();
             if(IsBindingRedirectSupported && VSSolutionManager != null)
             {
-                RuntimeHelpers.AddBindingRedirects(VSSolutionManager, EnvDTEProject, VSFrameworkMultiTargeting);
+                RuntimeHelpers.AddBindingRedirects(VSSolutionManager, EnvDTEProject, VSFrameworkMultiTargeting, NuGetProjectContext);
             }
         }
 
