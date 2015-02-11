@@ -31,12 +31,12 @@
     <DefineConstants Condition="'$(VisualStudioVersion)'=='11.0'">$(DefineConstants);VS11</DefineConstants>
     <DefineConstants Condition="'$(VisualStudioVersion)'=='12.0'">$(DefineConstants);VS12</DefineConstants>
     <DefineConstants Condition="'$(VisualStudioVersion)'=='14.0'">$(DefineConstants);VS14</DefineConstants>
+    <DeployExtension Condition="Exists($(TEAMCITY_BUILD_PROPERTIES_FILE))">False</DeployExtension>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <StartAction>Program</StartAction>
     <StartProgram>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp /log</StartArguments>
-    <DeployExtension Condition="Exists($(TEAMCITY_BUILD_PROPERTIES_FILE))">False</DeployExtension>
   </PropertyGroup>
   <Choose>
     <When Condition="Exists($(VsSdkTargets))">
