@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Extensions;
 
-namespace NuGet.Test
+namespace NuGet.Versioning.Test
 {
     /// <summary>
     /// Tests specific to the SemVer 2.0.1-rc spec

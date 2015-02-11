@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Versioning;
-using Moq;
-using NuGet.Test;
-using Xunit;
-using NuGet.Versioning;
-using Xunit.Extensions;
+﻿using Xunit;
 
-namespace NuGet.Test
+namespace NuGet.Versioning.Test
 {
     public class SemanticVersionTests
     {

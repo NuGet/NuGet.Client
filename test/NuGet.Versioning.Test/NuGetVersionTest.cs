@@ -5,7 +5,7 @@ using System.Globalization;
 using Xunit;
 using Xunit.Extensions;
 
-namespace NuGet.Test
+namespace NuGet.Versioning.Test
 {
     public class NuGetVersionTest
     {
@@ -57,7 +57,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("ConstructorData")]
+        [MemberData("ConstructorData")]
         public void StringConstructorParsesValuesCorrectly(string version, Version versionValue, string specialValue)
         {
             // Act
@@ -118,7 +118,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("LegacyVersionData")]
+        [MemberData("LegacyVersionData")]
         public void ParseReadsLegacyStyleVersionNumbers(string versionString, NuGetVersion expected)
         {
             // Act
@@ -141,7 +141,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("SemVerData")]
+        [MemberData("SemVerData")]
         public void ParseReadsSemverAndHybridSemverVersionNumbers(string versionString, NuGetVersion expected)
         {
             // Act
@@ -163,7 +163,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("SemVerWithWhiteSpace")]
+        [MemberData("SemVerWithWhiteSpace")]
         public void ParseIgnoresLeadingAndTrailingWhitespace(string versionString, NuGetVersion expected)
         {
             // Act
@@ -282,7 +282,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyDataAttribute("ToStringFromVersionData")]
+        [MemberData("ToStringFromVersionData")]
         public void ToStringConstructedFromVersionAndSpecialVersionConstructor(Version version, string specialVersion, string expected)
         {
             // Act
@@ -293,7 +293,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyDataAttribute("ToStringFromVersionData")]
+        [MemberData("ToStringFromVersionData")]
         public void ToStringFromStringFormat(Version version, string specialVersion, string expected)
         {
             // Act

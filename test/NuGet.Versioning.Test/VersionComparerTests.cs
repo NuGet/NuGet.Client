@@ -5,7 +5,7 @@ using System.Globalization;
 using Xunit;
 using Xunit.Extensions;
 
-namespace NuGet.Test
+namespace NuGet.Versioning.Test
 {
     public class VersionComparerTests
     {

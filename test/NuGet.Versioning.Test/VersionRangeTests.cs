@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Extensions;
 
-namespace NuGet.Test
+namespace NuGet.Versioning.Test
 {
     public class VersionRangeTests
     {
@@ -43,7 +43,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeNotInRange")]
+        [MemberData("VersionRangeNotInRange")]
         public void ParseVersionRangeDoesNotSatisfy(string spec, string version)
         {
             // Act
@@ -61,7 +61,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeInRange")]
+        [MemberData("VersionRangeInRange")]
         public void ParseVersionRangeSatisfies(string spec, string version)
         {
             // Act
@@ -75,7 +75,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeParts")]
+        [MemberData("VersionRangeParts")]
         public void ParseVersionRangeParts(NuGetVersion min, NuGetVersion max, bool minInc, bool maxInc)
         {
             // Act
@@ -89,7 +89,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeParts")]
+        [MemberData("VersionRangeParts")]
         public void ParseVersionRangeToStringReParse(NuGetVersion min, NuGetVersion max, bool minInc, bool maxInc)
         {
             // Act
@@ -104,7 +104,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeStrings")]
+        [MemberData("VersionRangeStrings")]
         public void ParseVersionRangeToStringShortHand(string version)
         {
             // Act
@@ -115,7 +115,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeStringsNormalized")]
+        [MemberData("VersionRangeStringsNormalized")]
         public void ParseVersionRangeToString(string version, string expected)
         {
             // Act
@@ -366,7 +366,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeStrings")]
+        [MemberData("VersionRangeStrings")]
         public void StringFormatNullProvider(string range)
         {
             // Arrange
@@ -379,7 +379,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeStrings")]
+        [MemberData("VersionRangeStrings")]
         public void StringFormatNullProvider2(string range)
         {
             // Arrange
@@ -392,7 +392,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [PropertyData("VersionRangeData")]
+        [MemberData("VersionRangeData")]
         public void ParseVersionParsesTokensVersionsCorrectly(string versionString, VersionRange versionRange)
         {
             // Act

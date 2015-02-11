@@ -1,6 +1,0 @@
-<nupkg>
-	<!-- Relative path to the csproj for the main project. This is used for nuget.exe pack -->
-	<csprojPath>\src\Versioning\Versioning.csproj</csprojPath>
-	<!-- File name without the path for the output from the above project -->
-	<dllName>NuGet.Versioning.dll</dllName>
-</nupkg>

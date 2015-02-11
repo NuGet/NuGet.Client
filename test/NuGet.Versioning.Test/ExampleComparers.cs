@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.Test
+namespace NuGet.Versioning.Test
 {
     public class GitMetadataComparer : IVersionComparer
     {

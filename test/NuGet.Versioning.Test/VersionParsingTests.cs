@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Extensions;
 
-namespace NuGet.Test
+namespace NuGet.Versioning.Test
 {
     public class VersionParsingTests
     {
