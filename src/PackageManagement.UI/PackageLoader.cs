@@ -9,6 +9,7 @@ using NuGet.Client.VisualStudio;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
+using NuGet.Frameworks;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -113,20 +114,22 @@ namespace NuGet.PackageManagement.UI
                 {
                     var searchFilter = new SearchFilter();
                     searchFilter.IncludePrerelease = _option.IncludePrerelease;
-                    var frameworks = new List<string>();
+                    var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                    // TODO: re-enable this once the V3 server supports full framework names
-                    //foreach (var project in _projects)
-                    //{
-                    //    NuGetFramework framework = project.GetMetadata<NuGetFramework>("TargetFramework");
+                    if (!_projects.Any(f => NuGetFramework.Comparer.Equals(NuGetFramework.AnyFramework)))
+                    {
+                        foreach (var project in _projects)
+                        {
+                            NuGetFramework framework = project.GetMetadata<NuGetFramework>("TargetFramework");
 
-                    //    if (framework != null && framework.IsSpecificFramework)
-                    //    {
-                    //        frameworks.Add(framework.DotNetFrameworkName);
-                    //    }
-                    //}
+                            if (framework != null && framework.IsSpecificFramework)
+                            {
+                                frameworks.Add(framework.DotNetFrameworkName);
+                            }
+                        }
+                    }
 
-                    searchFilter.SupportedFrameworks = new string[0]; // !!! frameworks;
+                    searchFilter.SupportedFrameworks = frameworks;
 
                     results.AddRange(await searchResource.Search(
                         _searchText,
