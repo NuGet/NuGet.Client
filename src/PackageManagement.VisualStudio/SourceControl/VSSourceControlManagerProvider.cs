@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public SourceControlManager GetSourceControlManager()
         {
-            if(_dte != null)
+            if (_dte != null && _dte.SourceControl != null)
             {
                 var sourceControl = (SourceControl2)_dte.SourceControl;
                 if (sourceControl != null)
@@ -39,9 +39,10 @@ namespace NuGet.PackageManagement.VisualStudio
                         // TFS might be the only one using it
                     }
 
-                    if (sourceControlBinding != null && String.IsNullOrEmpty(sourceControlBinding.ProviderName) ||
+                    if (sourceControlBinding == null || String.IsNullOrEmpty(sourceControlBinding.ProviderName) ||
                             !sourceControlBinding.ProviderName.Equals(TfsProviderName, StringComparison.OrdinalIgnoreCase))
                     {
+                        // Return null, if the Source control provider is not TFS
                         return null;
                     }
 
