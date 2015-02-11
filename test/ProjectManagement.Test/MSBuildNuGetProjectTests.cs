@@ -222,6 +222,11 @@ namespace ProjectManagement.Test
             Assert.Equal("Scripts\\test2.js", filesList[1]);
             Assert.Equal("Scripts\\test1.js", filesList[2]);
             Assert.Equal("packages.config", filesList[3]);
+            var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
+            Assert.Equal(3, processedFilesList.Count);
+            Assert.Equal("Scripts\\test3.js", processedFilesList[0]);
+            Assert.Equal("Scripts\\test2.js", processedFilesList[1]);
+            Assert.Equal("Scripts\\test1.js", processedFilesList[2]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);

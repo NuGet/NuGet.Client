@@ -84,6 +84,17 @@ namespace NuGet.ProjectManagement
             try
             {
                 var zipArchiveEntryList = packageItemListAsArchiveEntryNames.Select(i => zipArchive.GetEntry(i)).ToList();
+                try
+                {
+                    var paths = zipArchiveEntryList.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
+                        GetEffectivePathForContentFile(packageTargetFramework, file.FullName)));
+                    msBuildNuGetProjectSystem.BeginProcessing(paths);
+                }
+                catch (Exception)
+                {
+                    // Ignore all exceptions for now
+                }
+
                 foreach (ZipArchiveEntry zipArchiveEntry in zipArchiveEntryList)
                 {
                     if (zipArchiveEntry == null)
@@ -127,7 +138,7 @@ namespace NuGet.ProjectManagement
             }
             finally
             {
-
+                msBuildNuGetProjectSystem.EndProcessing();
             }
         }
 

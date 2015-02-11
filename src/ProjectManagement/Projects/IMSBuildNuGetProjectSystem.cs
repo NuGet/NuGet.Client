@@ -1,4 +1,5 @@
 ﻿using NuGet.Frameworks;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
@@ -34,6 +35,8 @@ namespace NuGet.ProjectManagement
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
         void ExecuteScript(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject);
+        void BeginProcessing(IEnumerable<string> files);
+        void EndProcessing();
 
         // LIKELY, THERE HAS TO MORE STUFF HERE like 'IsSupportedFile' and 'IsBindingRedirectsEnabled'
         // IMO, there are hacks introduced to special case based on project systems like 'websites' and 'silverlight'

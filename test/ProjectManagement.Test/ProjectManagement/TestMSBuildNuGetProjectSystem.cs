@@ -16,6 +16,8 @@ namespace Test.Utility
         public Dictionary<string, string> References { get; private set; }
         public HashSet<string> FrameworkReferences { get; private set; }
         public HashSet<string> Files { get; private set; }
+        private HashSet<string> FilesInProcessing { get; set; }
+        public HashSet<string> ProcessedFiles { get; private set; }
         public HashSet<string> Imports { get; private set; }
         public Dictionary<string, int> ScriptsExecuted { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
@@ -31,6 +33,7 @@ namespace Test.Utility
             NuGetProjectContext = nuGetProjectContext;
             ProjectFullPath = String.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
             ScriptsExecuted = new Dictionary<string, int>();
+            ProcessedFiles = new HashSet<string>();
             ProjectName = projectName ?? TestProjectName;
         }
 
@@ -167,6 +170,18 @@ namespace Test.Utility
             }
 
             ScriptsExecuted[scriptRelativePath]++;
+        }
+
+
+        public void BeginProcessing(IEnumerable<string> files)
+        {
+            FilesInProcessing = new HashSet<string>(files);
+        }
+
+        public void EndProcessing()
+        {
+            ProcessedFiles = FilesInProcessing;
+            FilesInProcessing = null;
         }
     }
 }
