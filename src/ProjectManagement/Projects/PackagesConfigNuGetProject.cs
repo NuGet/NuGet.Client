@@ -71,7 +71,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Create new file or overwrite existing file
-            using (var stream = FileSystemUtility.CreateFile(FullPath))
+            using (var stream = FileSystemUtility.CreateFile(FullPath, nuGetProjectContext))
             {
                 var writer = new PackagesConfigWriter(stream);
                 foreach (var pr in installedPackagesList)
@@ -108,7 +108,7 @@ namespace NuGet.ProjectManagement
             if (installedPackagesList.Count > 0)
             {
                 // Create new file or overwrite existing file
-                using (var stream = FileSystemUtility.CreateFile(FullPath))
+                using (var stream = FileSystemUtility.CreateFile(FullPath, nuGetProjectContext))
                 {
                     var writer = new PackagesConfigWriter(stream);
                     foreach (var pr in installedPackagesList)

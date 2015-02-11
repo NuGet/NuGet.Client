@@ -67,7 +67,7 @@ namespace NuGet.ProjectManagement
 
             string fullPath = GetFullPath(root, path);
 
-            using (Stream outputStream = File.Create(fullPath))
+            using (Stream outputStream = CreateFile(fullPath, nuGetProjectContext))
             {
                 writeToStream(outputStream);
             }
@@ -89,14 +89,19 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        public static Stream CreateFile(string root, string path)
+        public static Stream CreateFile(string root, string path, INuGetProjectContext nuGetProjectContext)
         {
-            return CreateFile(GetFullPath(root, path));
+            return CreateFile(GetFullPath(root, path), nuGetProjectContext);
         }
 
-        public static Stream CreateFile(string fullPath)
+        public static Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
             MakeWriteable(fullPath);
+            var sourceControlManager = GetSourceControlManager(nuGetProjectContext);
+            if(sourceControlManager != null)
+            {
+                sourceControlManager.CheckoutIfExists(fullPath);
+            }
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
             return File.Create(fullPath);
         }
@@ -246,6 +251,20 @@ namespace NuGet.ProjectManagement
         public static string MakeRelativePath(string root, string fullPath)
         {
             return fullPath.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar);
+        }
+
+        public static SourceControlManager GetSourceControlManager(INuGetProjectContext nuGetProjectContext)
+        {
+            if(nuGetProjectContext != null)
+            {
+                var sourceControlManagerProvider = nuGetProjectContext.SourceControlManagerProvider;
+                if (sourceControlManagerProvider != null)
+                {
+                    return sourceControlManagerProvider.GetSourceControlManager();
+                }
+            }
+
+            return null;
         }
 
         internal static void DeleteFileSafe(string root, string path, INuGetProjectContext nuGetProjectContext)

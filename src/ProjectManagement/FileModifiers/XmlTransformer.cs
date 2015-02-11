@@ -43,7 +43,8 @@ namespace NuGet.ProjectManagement
             document.Root.Except(xmlFragment.Except(mergedFragments));
 
             // Save the new content to the file system
-            using (var fileStream = FileSystemUtility.CreateFile(msBuildNuGetProjectSystem.ProjectFullPath, targetPath))
+            using (var fileStream = FileSystemUtility.CreateFile(msBuildNuGetProjectSystem.ProjectFullPath,
+                targetPath, msBuildNuGetProjectSystem.NuGetProjectContext))
             {
                 document.Save(fileStream);
             }

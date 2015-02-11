@@ -48,7 +48,8 @@ namespace NuGet.ProjectManagement
                                     // exception during document.Save(), the original file won't be truncated.
                                     document.Save(memoryStream);
                                     memoryStream.Seek(0, SeekOrigin.Begin);
-                                    using (var fileStream = FileSystemUtility.CreateFile(msBuildNuGetProjectSystem.ProjectFullPath, targetPath))
+                                    using (var fileStream = FileSystemUtility.CreateFile(msBuildNuGetProjectSystem.ProjectFullPath,
+                                        targetPath, msBuildNuGetProjectSystem.NuGetProjectContext))
                                     {
                                         memoryStream.CopyTo(fileStream);
                                     }
