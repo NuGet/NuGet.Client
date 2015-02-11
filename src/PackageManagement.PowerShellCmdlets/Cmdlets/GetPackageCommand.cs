@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected override async void ProcessRecordCore()
+        protected override void ProcessRecordCore()
         {
             Preprocess();
 
@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 CheckForSolutionOpen();
 
-                Dictionary<NuGetProject, IEnumerable<PackageReference>> packagesToDisplay = await GetInstalledPackages(Projects, Filter, Skip, First);
+                Dictionary<NuGetProject, IEnumerable<PackageReference>> packagesToDisplay = GetInstalledPackages(Projects, Filter, Skip, First).Result;
                 WriteInstalledPackages(packagesToDisplay);
             }
             else
@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     foreach (NuGetProject project in Projects)
                     {
                         IEnumerable<string> frameworks = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project);
-                        IEnumerable<PackageReference> installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                        IEnumerable<PackageReference> installedPackages = project.GetInstalledPackagesAsync(CancellationToken.None).Result;
                         Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, frameworks, IncludePrerelease.IsPresent, Skip, First);
                         WriteUpdatePackagesFromRemoteSource(remoteUpdates, project);
                     }
@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 versionType = VersionType.all;
-                message = "Find-Package [-Id] -ListAll";
+                message = "Find-Package [-Id] -AllVersions";
             }
 
             // Output list of PowerShellPackages
