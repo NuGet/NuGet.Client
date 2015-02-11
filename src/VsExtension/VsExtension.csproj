@@ -36,6 +36,7 @@
     <StartAction>Program</StartAction>
     <StartProgram>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp /log</StartArguments>
+    <DeployExtension Condition="Exists($(TEAMCITY_BUILD_PROPERTIES_FILE))">False</DeployExtension>
   </PropertyGroup>
   <Choose>
     <When Condition="Exists($(VsSdkTargets))">
