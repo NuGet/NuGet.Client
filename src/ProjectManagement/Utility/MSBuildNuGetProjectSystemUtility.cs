@@ -514,17 +514,16 @@ namespace NuGet.ProjectManagement
             if (effectivePathForContentFile.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 effectivePathForContentFile = effectivePathForContentFile.Substring((Constants.ContentDirectory + Path.DirectorySeparatorChar).Length);
-                if(nuGetFramework.Equals(NuGetFramework.AnyFramework))
+                if(!nuGetFramework.Equals(NuGetFramework.AnyFramework))
                 {
-                    //// TODO: Content files cannot be target framework specific has been made as an assumption
-                    int frameworkFolderEndIndex = effectivePathForContentFile.IndexOf(Path.AltDirectorySeparatorChar);
+                    // Parsing out the framework name out of the effective path
+                    int frameworkFolderEndIndex = effectivePathForContentFile.IndexOf(Path.DirectorySeparatorChar);
                     if (frameworkFolderEndIndex != -1)
                     {
-                        var potentialFrameworkName = effectivePathForContentFile.Substring(0, frameworkFolderEndIndex);
-                        if(nuGetFramework != NuGetFramework.UnsupportedFramework && NuGetFramework.Parse(potentialFrameworkName).Equals(nuGetFramework))
+                        if (effectivePathForContentFile.Length > frameworkFolderEndIndex + 1)
                         {
-                            throw new ArgumentException(Strings.ContentFilesShouldNotBeTargetFrameworkSpecific, effectivePathForContentFile);
-                        }                        
+                            effectivePathForContentFile = effectivePathForContentFile.Substring(frameworkFolderEndIndex + 1);
+                        }
                     }
 
                     return effectivePathForContentFile;

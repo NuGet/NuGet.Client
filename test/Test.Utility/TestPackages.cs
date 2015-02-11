@@ -59,6 +59,21 @@ namespace Test.Utility
 
             return fileInfo;
         }
+
+        public static FileInfo GetContentPackageWithTargetFramework(string path, string packageId, string packageVersion)
+        {
+            ZipFile zipFile;
+            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            zipFile.AddEntry("Content/net45/Scripts/net45test1.js", new byte[] { 0 });
+            zipFile.AddEntry("Content/net45/Scripts/net45test2.js", new byte[] { 0 });
+            zipFile.AddEntry("Content/net45/Scripts/net45test3.js", new byte[] { 0 });
+
+            SetSimpleNuspec(zipFile, packageId, packageVersion);
+            zipFile.Save();
+
+            return fileInfo;
+        }
         
         public static FileInfo GetPackageWithWebConfigTransform(string path, string packageId, string packageVersion, string webConfigTransformContent)
         {
