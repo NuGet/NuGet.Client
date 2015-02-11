@@ -350,6 +350,23 @@ namespace NuGet.ProjectManagement
                 return;
             }
 
+            // Only delete this folder if it is empty and we didn't specify that we want to recurse
+            if (!recursive && (GetFiles(msBuildNuGetProjectSystem, path, "*.*", recursive).Any() || GetDirectories(msBuildNuGetProjectSystem, path).Any()))
+            {
+                msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_DirectoryNotEmpty, path);
+                return;
+            }
+
+            // Workaround for update-package TFS issue. If we're bound to TFS, do not try and delete directories.
+            if(msBuildNuGetProjectSystem.NuGetProjectContext.SourceControlManagerProvider != null)
+            {
+                var sourceControlManager = msBuildNuGetProjectSystem.NuGetProjectContext.SourceControlManagerProvider.GetSourceControlManager();
+                if(sourceControlManager != null)
+                {
+                    return;
+                }
+            }
+
             try
             {
                 Directory.Delete(fullPath, recursive);

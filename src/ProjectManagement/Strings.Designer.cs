@@ -394,6 +394,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Directory &apos;{0}&apos; is not empty. Skipping....
+        /// </summary>
+        public static string Warning_DirectoryNotEmpty {
+            get {
+                return ResourceManager.GetString("Warning_DirectoryNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; already exists. Skipping....
         /// </summary>
         public static string Warning_FileAlreadyExists {

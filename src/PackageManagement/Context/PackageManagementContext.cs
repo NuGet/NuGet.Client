@@ -1,5 +1,6 @@
 ﻿using NuGet.Client;
 using NuGet.Configuration;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,13 @@ namespace NuGet.PackageManagement
         public PackageManagementContext(
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISolutionManager solutionManager,
-            ISettings settings)
+            ISettings settings,
+            ISourceControlManagerProvider sourceControlManagerProvider)
         {
             SourceRepositoryProvider = sourceRepositoryProvider;
             VsSolutionManager = solutionManager;
             Settings = settings;
+            SourceControlManagerProvider = sourceControlManagerProvider;
         }
 
         /// <summary>
@@ -37,5 +40,10 @@ namespace NuGet.PackageManagement
         /// NuGet config settings
         /// </summary>
         public ISettings Settings { get; private set; }
+
+        /// <summary>
+        /// SourceControlManager provider
+        /// </summary>
+        public ISourceControlManagerProvider SourceControlManagerProvider { get; private set; }
     }
 }

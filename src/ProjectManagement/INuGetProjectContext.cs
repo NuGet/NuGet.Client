@@ -1,10 +1,4 @@
 ﻿using NuGet.Packaging;
-using NuGet.Resolver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -22,6 +16,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         FileConflictAction ResolveFileConflict(string message);
         PackageExtractionContext PackageExtractionContext { get; set; }
+        ISourceControlManagerProvider SourceControlManagerProvider { get; }
     }
 
     /// <summary>

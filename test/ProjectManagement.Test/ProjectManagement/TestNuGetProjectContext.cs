@@ -1,4 +1,5 @@
-﻿using NuGet.ProjectManagement;
+﻿using NuGet.Packaging;
+using NuGet.ProjectManagement;
 using System;
 
 namespace Test.Utility
@@ -16,10 +17,18 @@ namespace Test.Utility
         }
 
 
-        public NuGet.Packaging.PackageExtractionContext PackageExtractionContext
+        public PackageExtractionContext PackageExtractionContext
         {
             get;
             set;
+        }
+
+        public ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get
+            {
+                return null;
+            }
         }
     }
 }

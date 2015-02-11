@@ -31,5 +31,11 @@ namespace NuGet.PackageManagement.UI
             get;
             set;
         }
+
+
+        public ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get { return null; }
+        }
     }
 }

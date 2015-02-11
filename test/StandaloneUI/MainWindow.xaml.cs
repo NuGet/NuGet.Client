@@ -30,6 +30,9 @@ namespace StandaloneUI
         [Import]
         public ISettings _settings;
 
+        [Import]
+        public ISourceControlManagerProvider _sourceControlManagerProvider;
+
         private CompositionContainer _container;
         private PackageManagerControl _packageManagerControl;
 
@@ -68,7 +71,7 @@ namespace StandaloneUI
             var context = contextFactory.Create(@"c:\temp\test\settings.txt", projects);
             var uiController = _uiServiceFactory.Create(
                 context,
-                new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer)));
+                new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider));
 
             PackageManagerModel model = new PackageManagerModel(uiController, context);
             model.SolutionName = "test solution";

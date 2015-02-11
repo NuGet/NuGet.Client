@@ -936,6 +936,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 throw _scriptException;
             }
         }
+
+
+        public ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get { return _packageManagementContext.SourceControlManagerProvider; }
+        }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>

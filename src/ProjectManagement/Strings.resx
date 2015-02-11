@@ -228,6 +228,9 @@
   <data name="UnableToFindCompatibleItems" xml:space="preserve">
     <value>Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.</value>
   </data>
+  <data name="Warning_DirectoryNotEmpty" xml:space="preserve">
+    <value>Directory '{0}' is not empty. Skipping...</value>
+  </data>
   <data name="Warning_FileAlreadyExists" xml:space="preserve">
     <value>'{0}' already exists. Skipping...</value>
   </data>

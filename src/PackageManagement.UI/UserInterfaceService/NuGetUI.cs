@@ -376,11 +376,13 @@ namespace NuGet.PackageManagement.UI
 
         private readonly Dispatcher _uiDispatcher;
         private readonly INuGetUILogger _logger;
+        private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
 
-        public NuGetUIProjectContext(INuGetUILogger logger)
+        public NuGetUIProjectContext(INuGetUILogger logger, ISourceControlManagerProvider sourceControlManagerProvider)
         {
             _logger = logger;
             _uiDispatcher = Dispatcher.CurrentDispatcher;
+            _sourceControlManagerProvider = sourceControlManagerProvider;
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
@@ -446,6 +448,12 @@ namespace NuGet.PackageManagement.UI
         {
             get;
             set;
+        }
+
+
+        public ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get { return _sourceControlManagerProvider; }
         }
     }
 }

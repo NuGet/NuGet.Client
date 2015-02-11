@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NuGet.Packaging;
 
 namespace NuGet.ProjectManagement
 {
@@ -19,10 +15,18 @@ namespace NuGet.ProjectManagement
         }
 
 
-        public Packaging.PackageExtractionContext PackageExtractionContext
+        public PackageExtractionContext PackageExtractionContext
         {
             get;
             set;
+        }
+
+        public ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get
+            {
+                return null;
+            }
         }
     }
 }
