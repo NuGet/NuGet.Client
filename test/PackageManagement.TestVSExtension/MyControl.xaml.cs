@@ -147,5 +147,11 @@ namespace NuGet.PackageManagement_TestVSExtension
             get;
             set;
         }
+
+
+        public ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get { return null; }
+        }
     }
 }

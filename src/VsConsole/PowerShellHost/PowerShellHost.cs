@@ -27,6 +27,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISolutionManager _solutionManager;
         private readonly ISettings _settings;
+        private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string PackageSourceKey = "packageSources";
         private const string SyncModeKey = "IsSyncMode";
@@ -58,7 +59,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             _settings = ServiceLocator.GetInstance<ISettings>();
             _dte = ServiceLocator.GetInstance<DTE>();
-            _packageManagementContext = new PackageManagementContext(_sourceRepositoryProvider, _solutionManager, _settings);
+            _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
+            _packageManagementContext = new PackageManagementContext(_sourceRepositoryProvider, _solutionManager,
+                _settings, _sourceControlManagerProvider);
 
             _name = name;
             IsCommandEnabled = true;
