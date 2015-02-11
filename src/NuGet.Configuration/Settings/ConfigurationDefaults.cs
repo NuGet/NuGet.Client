@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("NuGet.Configuration.Test")]
-
 namespace NuGet.Configuration
 {
     public class ConfigurationDefaults
