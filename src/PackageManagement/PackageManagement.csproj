@@ -78,6 +78,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Context\UninstallationContext.cs" />
+    <Compile Include="IDE\IPackageEventsProvider.cs" />
+    <Compile Include="IDE\PackageEventArgs.cs" />
+    <Compile Include="IDE\PackageEvents.cs" />
+    <Compile Include="IDE\PackageEventsProvider.cs" />
     <Compile Include="IDE\SimpleSolutionManager.cs" />
     <Compile Include="IDE\IPackageRestoreManager.cs" />
     <Compile Include="IDE\IProductUpdateService.cs" />

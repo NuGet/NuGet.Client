@@ -996,6 +996,9 @@ namespace NuGet.PackageManagement
             {
                 PackageInstalling(this, packageOperationEventArgs);
             }
+
+            PackageEventsProvider.Instance.NotifyInstalling(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
+
             await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
@@ -1008,6 +1011,8 @@ namespace NuGet.PackageManagement
             {
                 PackageInstalled(this, packageOperationEventArgs);
             }
+
+            PackageEventsProvider.Instance.NotifyInstalled(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
         }
 
         private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
@@ -1019,6 +1024,8 @@ namespace NuGet.PackageManagement
             {
                 PackageUninstalling(this, packageOperationEventArgs);
             }
+
+            PackageEventsProvider.Instance.NotifyUninstalling(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
 
             // Step-2: Call nuGetProject.UninstallPackage
             await nuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
@@ -1041,6 +1048,8 @@ namespace NuGet.PackageManagement
             {
                 PackageUninstalled(this, packageOperationEventArgs);
             }
+
+            PackageEventsProvider.Instance.NotifyUninstalled(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
         }
 
         private async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity,
