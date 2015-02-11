@@ -80,7 +80,7 @@ namespace NuGet.Client
                 result.UnionWith(await GetPackagesFromRegistration(packageId, AllVersions, projectFramework, token));
             }
 
-            return result;
+            return result.Where(e => includePrerelease || !e.Version.IsPrerelease);
         }
 
         /// <summary>

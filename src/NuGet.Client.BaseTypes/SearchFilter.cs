@@ -32,8 +32,8 @@ namespace NuGet.Client
             }
 
             SupportedFrameworks = supportedFrameworks.ToArray();
-            IncludeDelisted = includePrerelease;
-            IncludePrerelease = includeDelisted;
+            IncludeDelisted = includeDelisted;
+            IncludePrerelease = includePrerelease;
         }
 
         /// <summary>

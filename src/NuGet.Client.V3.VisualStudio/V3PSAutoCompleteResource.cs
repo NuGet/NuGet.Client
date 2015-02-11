@@ -39,7 +39,7 @@ namespace NuGet.Client.V3.VisualStudio
             // Construct the query
             var queryUrl = new UriBuilder(searchUrl.AbsoluteUri);
             string queryString =
-                "q=" + packageIdPrefix;
+                "q=" + packageIdPrefix + "&includePrerelease=" + includePrerelease;
 
             queryUrl.Query = queryString;
 
