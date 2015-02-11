@@ -2,6 +2,7 @@
 using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGetConsole.Implementation.PowerConsole;
 using System;
@@ -63,6 +64,7 @@ namespace NuGetConsole
         {
             if (File.Exists(fullScriptPath))
             {
+                PackageIdentity packageIdentity = null;
                 if (envDTEProject != null)
                 {
                     NuGetFramework targetFramework;
@@ -71,7 +73,7 @@ namespace NuGetConsole
                     // targetFramework can be null for unknown project types
                     string shortFramework = targetFramework == null ? string.Empty : targetFramework.GetShortFolderName();
                     var packageReader = new PackageReader(packageZipArchive);
-                    var packageIdentity = packageReader.GetIdentity();
+                    packageIdentity = packageReader.GetIdentity();
 
                     nuGetProjectContext.Log(MessageLevel.Debug, NuGet.ProjectManagement.Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
                         envDTEProject.Name, shortFramework);
@@ -97,7 +99,7 @@ namespace NuGetConsole
                     psVariable.Set("__package", packageZipArchive);
                     psVariable.Set("__project", envDTEProject);
 
-                    psNuGetProjectContext.ExecutePSScript(fullScriptPath);
+                    psNuGetProjectContext.ExecutePSScript(fullScriptPath, packageIdentity);
                 }
                 else
                 {
