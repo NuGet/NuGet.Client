@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
@@ -21,25 +20,30 @@ namespace NuGet.PackageManagement.UI
         private ObservableCollection<object> _items;
         private LoadingStatusIndicator _loadingStatusIndicator;
         private ScrollViewer _scrollViewer;
-        
+
         public event SelectionChangedEventHandler SelectionChanged;
 
         private CancellationTokenSource _cts;
 
         private int _startIndex;
 
+        public static Style PackageItemStyle;
+        public static Style LoadingStatusIndicatorStyle;
+
         public InfiniteScrollList()
         {
-            InitializeComponent();                        
+            InitializeComponent();
+
+            PackageItemStyle = (Style)this.FindResource("packageItemStyle");
+            LoadingStatusIndicatorStyle = (Style)this.FindResource("loadingStatusIndicatorStyle");
 
             if (!StandaloneSwitch.IsRunningStandalone)
             {
                 // it's running inside VS. Load needed resources
                 Brushes.Initialize();
 
-                var itemContainerStyle = _list.ItemContainerStyle;
                 var setter = new Setter(ListBoxItem.TemplateProperty, this.FindResource("ListBoxItemTemplate"));
-                itemContainerStyle.Setters.Add(setter);                
+                PackageItemStyle.Setters.Add(setter);
             }
 
             _loadingStatusIndicator = new LoadingStatusIndicator();
@@ -89,7 +93,7 @@ namespace NuGet.PackageManagement.UI
                 _cts.Cancel();
             }
 
-            _cts = new CancellationTokenSource();            
+            _cts = new CancellationTokenSource();
             await LoadWork(_cts.Token);
         }
 
@@ -104,7 +108,7 @@ namespace NuGet.PackageManagement.UI
             var currentLoader = _loader;
             try
             {
-                // run Loader.LoadItems in background thread. Otherwise if the 
+                // run Loader.LoadItems in background thread. Otherwise if the
                 // source if V2, the UI can get blocked a little bit.
                 var r = await Task.Run(async () => await Loader.LoadItems(_startIndex, _cts.Token));
 
@@ -164,7 +168,7 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 _startIndex = r.NextStartIndex;
-                _loadingStatusIndicator.Status = LoadingStatus.Ready;               
+                _loadingStatusIndicator.Status = LoadingStatus.Ready;
             }
 
             if (_loadingStatusIndicator.Status != LoadingStatus.NoMoreItems)
@@ -295,7 +299,7 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged("Status");
             }
         }
-        
+
         private string _loadingMessage;
 
         public string LoadingMessage
@@ -329,6 +333,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
+
         protected void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
@@ -336,6 +341,19 @@ namespace NuGet.PackageManagement.UI
                 PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
                 PropertyChanged(this, e);
             }
+        }
+    }
+
+    internal class InfiniteScrollListItemStyleSelector : StyleSelector
+    {
+        public override Style SelectStyle(object item, DependencyObject container)
+        {
+            if (item is LoadingStatusIndicator)
+            {
+                return InfiniteScrollList.LoadingStatusIndicatorStyle;
+            }
+
+            return InfiniteScrollList.PackageItemStyle;
         }
     }
 }

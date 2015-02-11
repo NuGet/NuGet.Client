@@ -8,6 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
+        <self:InfiniteScrollListItemStyleSelector x:Key="itemStyleSelector" />
         <DataTemplate DataType="{x:Type self:LoadingStatusIndicator}">
             <Grid Margin="0,8">
                 <TextBlock Name="_noItemsFound"
@@ -72,6 +73,7 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <!-- Template used by ListBoxItem that represents a package. -->
         <ControlTemplate x:Key="ListBoxItemTemplate" TargetType="{x:Type ListBoxItem}">
             <Border x:Name="Bd" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true">
                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -106,7 +108,14 @@
                 </MultiTrigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
-        
+
+        <!-- Template used by the LoadingIndicator. We use it to disable the background change when mouse hovers over it. -->
+        <ControlTemplate x:Key="LoadingIndicatorListBoxItemTemplate" TargetType="{x:Type ListBoxItem}">
+            <Border x:Name="Bd" BorderThickness="0" Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}" Padding="0" SnapsToDevicePixels="true">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+        </ControlTemplate>
+
         <Style x:Key="FocusVisual">
             <Setter Property="Control.Template">
                 <Setter.Value>
@@ -115,61 +124,45 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>        
+        </Style>
+
+        <!-- the base style of the ListBoxItem. -->
+        <Style x:Key="listBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
+        </Style>
+
+        <!-- the style of the ListBoxItem when the item is the loading status indicator. -->
+        <Style x:Key="loadingStatusIndicatorStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource listBoxItemStyle}">
+            <Setter Property="Template" Value="{StaticResource LoadingIndicatorListBoxItemTemplate}" />
+        </Style>
+
+        <!-- the style of the ListBoxItem when the item is a package. -->
+        <Style x:Key="packageItemStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource listBoxItemStyle}">
+            <!-- 
+            Note that we cannot set the template property in xaml list this:
+            
+               <Setter Property="Template" Value="{StaticResource ListBoxItemTemplate}" /> 
+            
+            The reason is that the template referenes resources defined in VisualStudio, which are obviously not 
+            available when this is used in the standalone mode, i.e. outside of VisualStudio. So the setter is 
+            added by code when Standalone == false.
+            -->
+        </Style>
     </UserControl.Resources>
     <ListBox x:Name="_list"
              Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
              Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              ScrollViewer.VerticalScrollBarVisibility="Visible"
+             ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
              BorderThickness="0,0,0,1"
              HorizontalContentAlignment="Stretch"
              SelectionChanged="_list_SelectionChanged"
              Loaded="_list_Loaded">
-        <ListBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ListBoxItem}">
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="SnapsToDevicePixels" Value="True" />
-                <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
-                <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
-                
-                <!--
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                            <Border x:Name="Bd" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true">
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="IsMouseOver" Value="True" />
-                                    </MultiTrigger.Conditions>
-                                    <Setter Property="Background" TargetName="Bd" 
-                                            Value="{DynamicResource {x:Static resx:Brushes.ContentMouseOverBrushKey}}" />
-                                </MultiTrigger>
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="Selector.IsSelectionActive" Value="False" />
-                                        <Condition Property="IsSelected" Value="True" />
-                                    </MultiTrigger.Conditions>
-                                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static resx:Brushes.ContentInactiveSelectedBrushKey}}" />
-                                </MultiTrigger>
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="Selector.IsSelectionActive" Value="True" />
-                                        <Condition Property="IsSelected" Value="True" />
-                                    </MultiTrigger.Conditions>
-                                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedBrushKey}}" />
-                                    <Setter Property="TextBlock.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedTextBrushKey}}" />
-                                </MultiTrigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter> -->
-            </Style>
-        </ListBox.ItemContainerStyle>
     </ListBox>
 </UserControl>
