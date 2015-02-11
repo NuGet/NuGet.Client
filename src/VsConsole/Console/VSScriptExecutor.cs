@@ -1,16 +1,18 @@
 ﻿using NuGet.Frameworks;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
-using NuGetConsole.Implementation.PowerConsole;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Management.Automation.Runspaces;
+using System.Linq;
+using System.Threading;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGetConsole
@@ -19,6 +21,8 @@ namespace NuGetConsole
     public class VSScriptExecutor : IScriptExecutor
     {
         private readonly Lazy<IHost> _host;
+        private readonly ISolutionManager _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+        private bool _skipPSScriptExecution;
 
         public VSScriptExecutor()
         {
@@ -89,29 +93,64 @@ namespace NuGetConsole
                 object[] inputs = new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject };
 
                 IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
-                if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting && psNuGetProjectContext.CurrentPSCmdlet != null)
+
+                if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
-                    var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
-
-                    // set temp variables to pass to the script
-                    psVariable.Set("__rootPath", packageInstallPath);
-                    psVariable.Set("__toolsPath", toolsPath);
-                    psVariable.Set("__package", packageZipArchive);
-                    psVariable.Set("__project", envDTEProject);
-
-                    psNuGetProjectContext.ExecutePSScript(fullScriptPath, packageIdentity);
+                    _skipPSScriptExecution = IsPackageInstalledInSolution(packageIdentity);
                 }
                 else
                 {
-                    string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
-
-                    // logging to both the Output window and progress window.
-                    nuGetProjectContext.Log(MessageLevel.Info, logMessage);
-                    IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
-                    Host.Execute(console, command, inputs);
+                    _skipPSScriptExecution = false;
                 }
 
-                return true;
+                if (!_skipPSScriptExecution)
+                {
+                    if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting && psNuGetProjectContext.CurrentPSCmdlet != null)
+                    {
+                        var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
+
+                        // set temp variables to pass to the script
+                        psVariable.Set("__rootPath", packageInstallPath);
+                        psVariable.Set("__toolsPath", toolsPath);
+                        psVariable.Set("__package", packageZipArchive);
+                        psVariable.Set("__project", envDTEProject);
+
+                        psNuGetProjectContext.ExecutePSScript(fullScriptPath);
+                    }
+                    else
+                    {
+                        string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
+
+                        // logging to both the Output window and progress window.
+                        nuGetProjectContext.Log(MessageLevel.Info, logMessage);
+                        IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
+                        Host.Execute(console, command, inputs);
+                    }
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Determine if the package is installed in any of the projects in solution, via packages.config
+        /// </summary>
+        /// <returns></returns>
+        private bool IsPackageInstalledInSolution(PackageIdentity identity)
+        {
+            if (identity != null)
+            {
+                IEnumerable<NuGetProject> projects = _solutionManager.GetNuGetProjects();
+                foreach (NuGetProject project in projects)
+                {
+                    IEnumerable<PackageReference> installedRefs = project.GetInstalledPackagesAsync(CancellationToken.None).Result;
+                    PackageIdentity match = installedRefs.Select(v => v.PackageIdentity).Where(p => p.Equals(identity)).FirstOrDefault();
+                    if (match != null)
+                    {
+                        return true;
+                    }
+                }
             }
             return false;
         }
