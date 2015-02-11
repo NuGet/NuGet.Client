@@ -21,8 +21,6 @@ namespace NuGet.VisualStudio
     public class VsTemplateWizard : IVsTemplateWizard
     {
         private readonly IVsPackageInstaller _installer;
-
-        //private readonly IVsWebsiteHandler _websiteHandler;
         private IEnumerable<PreinstalledPackageConfiguration> _configurations;
 
         private DTE _dte;
@@ -44,7 +42,6 @@ namespace NuGet.VisualStudio
             )
         {
             _installer = installer;
-            //_websiteHandler = websiteHandler;
             _packageServices = packageServices;
             _consoleProvider = consoleProvider;
             _solutionManager = solutionManager;
@@ -234,23 +231,6 @@ namespace NuGet.VisualStudio
                 }
             }
         }
-
-        //private void CreateRefreshFilesInBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
-        //{
-        //    //IEnumerable<PackageName> packageNames = packageInfos.Select(pi => new PackageName(pi.Id, pi.Version));
-        //    //_websiteHandler.AddRefreshFilesForReferences(project, new PhysicalFileSystem(repositoryPath), packageNames);
-
-        //    throw new NotImplementedException();
-        //}
-
-        //private void CopyNativeBinariesToBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
-        //{
-        //    // By convention, we copy all files under the NativeBinaries folder under package root to the bin folder of the website
-        //    //IEnumerable<PackageName> packageNames = packageInfos.Select(pi => new PackageName(pi.Id, pi.Version));
-        //    //_websiteHandler.CopyNativeBinaries(project, new PhysicalFileSystem(repositoryPath), packageNames);
-
-        //    throw new NotImplementedException();
-        //}
 
         private void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {

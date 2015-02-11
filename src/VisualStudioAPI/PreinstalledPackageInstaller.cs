@@ -160,6 +160,9 @@ namespace NuGet.VisualStudio
             PreinstalledRepositoryProvider repos = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
             repos.AddFromRepository(repository);
 
+            // store expanded node state
+            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = VsHierarchyHelper.GetAllExpandedNodes(_solutionManager);
+
             foreach (var package in configuration.Packages)
             {
                 // Does the project already have this package installed?
@@ -188,8 +191,6 @@ namespace NuGet.VisualStudio
                         // This runs from the UI thread
                         var task = System.Threading.Tasks.Task.Run(async () => await _installer.InstallInternal(project, toInstall, repos, package.SkipAssemblyReferences, package.IgnoreDependencies, CancellationToken.None));
                         task.Wait();
-
-                        //packageInstaller.InstallPackage(repository, project, package.Id, package.Version.ToString(), ignoreDependencies: package.IgnoreDependencies, skipAssemblyReferences: package.SkipAssemblyReferences);
                     }
                     catch (InvalidOperationException exception)
                     {
@@ -212,17 +213,18 @@ namespace NuGet.VisualStudio
             // RepositorySettings = null in unit tests
             if (EnvDTEProjectUtility.IsWebSite(project))
             {
-                // TODO: the fix solution explorer node state
-                //using (_vsCommonOperations.SaveSolutionExplorerNodeStates(_solutionManager))
-                //{
-                    // CreateRefreshFilesInBin(
-                    //    project,
-                    //    repositoryPath,
-                    //    configuration.Packages.Where(p => p.SkipAssemblyReferences));
+                // TODO: respect SkipAssemblyReferences and add them here
 
-                    CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
-                //}
+                // CreateRefreshFilesInBin(
+                //    project,
+                //    repositoryPath,
+                //    configuration.Packages.Where(p => p.SkipAssemblyReferences));
+
+                CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
             }
+
+            // collapse nodes
+            VsHierarchyHelper.CollapseAllNodes(_solutionManager, expandedNodes);
         }
 
         /// <summary>
@@ -233,10 +235,6 @@ namespace NuGet.VisualStudio
         /// <param name="packageInfos">The packages that were installed.</param>
         private void CreateRefreshFilesInBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            //throw new NotImplementedException();
-            //IEnumerable<PackageName> packageNames = packageInfos.Select(pi => new PackageName(pi.Id, pi.Version));
-            //_websiteHandler.AddRefreshFilesForReferences(project, new PhysicalFileSystem(repositoryPath), packageNames);
-
             IEnumerable<PackageIdentity> packageNames = packageInfos.Select(pi => new PackageIdentity(pi.Id, pi.Version));
             AddRefreshFilesForReferences(project, repositoryPath, packageNames);
         }
@@ -310,9 +308,6 @@ namespace NuGet.VisualStudio
         /// <param name="packageInfos">The packages that were installed.</param>
         private void CopyNativeBinariesToBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            //IEnumerable<PackageName> packageNames = packageInfos.Select(pi => new PackageName(pi.Id, pi.Version));
-            //_websiteHandler.CopyNativeBinaries(project, new PhysicalFileSystem(repositoryPath), packageNames);
-
             VSAPIProjectContext context = new VSAPIProjectContext();
             VSMSBuildNuGetProjectSystem projectSystem = new VSMSBuildNuGetProjectSystem(project, context);
 

@@ -143,6 +143,8 @@
     <Compile Include="CommonResources.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller2.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
+    <Compile Include="Utility\VsHierarchyHelper.cs" />
+    <Compile Include="Utility\VsHierarchyItem.cs" />
     <Compile Include="Extensibility\VsPackageInstallerEvents.cs" />
     <Compile Include="Extensibility\VsPackageInstallerServices.cs" />
     <Compile Include="Extensibility\VsPackageMetadata.cs" />
@@ -151,7 +153,6 @@
     <Compile Include="Extensibility\VsPackageUninstaller.cs" />
     <Compile Include="ExtensionManagerShim.cs" />
     <Compile Include="IRepositorySettings.cs" />
-    <Compile Include="IVsCommonOperations.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerEvents.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerServices.cs" />

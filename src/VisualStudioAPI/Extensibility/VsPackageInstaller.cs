@@ -328,6 +328,9 @@ namespace NuGet.VisualStudio
 
         internal async Task InstallInternal(Project project, List<PackageIdentity> packages, ISourceRepositoryProvider repoProvider, bool skipAssemblyReferences, bool ignoreDependencies, CancellationToken token)
         {
+            // store expanded node state
+            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = VsHierarchyHelper.GetAllExpandedNodes(_solutionManager);
+
             try
             {
                 DependencyBehavior depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
@@ -364,6 +367,9 @@ namespace NuGet.VisualStudio
             finally
             {
                 // TODO: log errors
+
+                // collapse nodes
+                VsHierarchyHelper.CollapseAllNodes(_solutionManager, expandedNodes);
             }
         }
     }

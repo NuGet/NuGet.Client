@@ -2,12 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio
 {
+    /// <summary>
+    /// Contains methods to install packages into a project within the current solution.
+    /// </summary>
+    [ComImport]
+    [Guid("D4B29BA7-975E-46B6-818E-097ABC6BB5B4")]
     public interface IVsPackageInstaller2 : IVsPackageInstaller
     {
         /// <summary>
