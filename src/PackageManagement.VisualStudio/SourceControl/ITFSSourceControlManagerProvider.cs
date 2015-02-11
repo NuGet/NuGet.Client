@@ -10,6 +10,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public interface ITFSSourceControlManagerProvider
     {
-        SourceControlManager GetTFSSourceControlManager(SourceControlBindings binding);
+        SourceControlManager GetTFSSourceControlManager(SourceControlBindings sourceControlBindings);
     }
 }

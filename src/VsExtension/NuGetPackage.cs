@@ -74,6 +74,7 @@ namespace NuGetVSExtension
         private IPackageRestoreManager _packageRestoreManager;
         private ISourceRepositoryProvider _sourceRepositoryProvider;
         private ISettings _settings;
+        private ISourceControlManagerProvider _sourceControlManagerProvider;
         private ISolutionManager _solutionManager;
         //*** private IDeleteOnRestartManager _deleteOnRestart;
         private OleMenuCommand _managePackageDialogCommand;
@@ -164,6 +165,18 @@ namespace NuGetVSExtension
                     Debug.Assert(_settings != null);
                 }
                 return _settings;
+            }
+        }
+
+        private ISourceControlManagerProvider SourceControlManagerProvider
+        {
+            get
+            {
+                if(_sourceControlManagerProvider == null)
+                {
+                    _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
+                }
+                return _sourceControlManagerProvider;
             }
         }
 
@@ -273,7 +286,7 @@ namespace NuGetVSExtension
                 }
             }
 
-            _uiProjectContext = new NuGetUIProjectContext(new OutputConsoleLogger());
+            _uiProjectContext = new NuGetUIProjectContext(new OutputConsoleLogger(), SourceControlManagerProvider);
 
             /* ****
             // when NuGet loads, if the current solution has some package

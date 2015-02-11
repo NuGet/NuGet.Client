@@ -147,6 +147,7 @@
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="SourceControl\ITFSSourceControlManagerProvider.cs" />
+    <Compile Include="SourceControl\DefaultTFSSourceControlManagerProvider.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="IEnvironmentVariableReader.cs" />
     <Compile Include="OptionsPageActivator.cs" />

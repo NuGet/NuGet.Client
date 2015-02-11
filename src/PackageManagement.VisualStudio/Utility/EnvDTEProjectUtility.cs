@@ -990,17 +990,25 @@ namespace NuGet.PackageManagement.VisualStudio
         public static void EnsureCheckedOutIfExists(EnvDTEProject envDTEProject, string root, string path)
         {
             var fullPath = FileSystemUtility.GetFullPath(root, path);
+            var dte = envDTEProject.DTE;
+            if (dte != null)
+            {
+                EnsureCheckedOutIfExists(dte.SourceControl, fullPath);
+            }
+        }
 
+        public static void EnsureCheckedOutIfExists(EnvDTE.SourceControl sourceControl, string fullPath)
+        {
             if (File.Exists(fullPath))
             {
                 FileSystemUtility.MakeWriteable(fullPath);
 
-                if (envDTEProject.DTE.SourceControl != null &&
-                    envDTEProject.DTE.SourceControl.IsItemUnderSCC(fullPath) &&
-                    !envDTEProject.DTE.SourceControl.IsItemCheckedOut(fullPath))
+                if (sourceControl != null &&
+                    sourceControl.IsItemUnderSCC(fullPath) &&
+                    !sourceControl.IsItemCheckedOut(fullPath))
                 {
                     // Check out the item
-                    envDTEProject.DTE.SourceControl.CheckOutItem(fullPath);
+                    sourceControl.CheckOutItem(fullPath);
                 }
             }
         }
