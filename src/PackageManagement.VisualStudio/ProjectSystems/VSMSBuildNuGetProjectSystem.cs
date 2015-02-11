@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -550,6 +551,15 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ScriptExecutor.Execute(packageInstallPath, scriptRelativePath, packageZipArchive, EnvDTEProject, nuGetProject, NuGetProjectContext);
             }
+        }
+
+
+        public virtual void BeginProcessing(IEnumerable<string> files)
+        {
+        }
+
+        public virtual void EndProcessing()
+        {
         }
     }
 }

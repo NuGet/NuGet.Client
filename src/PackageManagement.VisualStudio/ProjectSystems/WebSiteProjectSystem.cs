@@ -164,5 +164,33 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             return base.GetPropertyValue(propertyName);
         }
+
+        public override void BeginProcessing(IEnumerable<string> files)
+        {
+            var orderedFiles = files.OrderBy(path => path)
+                             .ToList();
+
+            foreach (var path1 in orderedFiles)
+            {
+                foreach (var path2 in orderedFiles)
+                {
+                    if (path1.Equals(path2, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (path1.StartsWith(path2, StringComparison.OrdinalIgnoreCase) &&
+                        IsSourceFile(path1))
+                    {
+                        _excludedCodeFiles.Add(path1);
+                    }
+                }
+            }
+        }
+
+        public override void EndProcessing()
+        {
+            _excludedCodeFiles.Clear();
+        }
     }
 }
