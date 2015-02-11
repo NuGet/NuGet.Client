@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
 using System.Threading;
+using System.Windows.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,10 +15,12 @@ namespace NuGet.PackageManagement.UI
     public partial class PackageRestoreBar : UserControl
     {
         private readonly IPackageRestoreManager _packageRestoreManager;
+        private Dispatcher _uiDispatcher;
 
         public PackageRestoreBar(IPackageRestoreManager packageRestoreManager)
         {
             InitializeComponent();
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
             _packageRestoreManager = packageRestoreManager;
 
             if (_packageRestoreManager != null)
@@ -57,8 +60,15 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateRestoreBar(bool packagesMissing)
         {
-            RestoreBar.Visibility = packagesMissing ? Visibility.Visible : Visibility.Collapsed;
-            
+            if (!_uiDispatcher.CheckAccess())
+            {
+                _uiDispatcher.Invoke(
+                    new Action<bool>(UpdateRestoreBar),
+                    packagesMissing);
+                return;
+            }
+
+            RestoreBar.Visibility = packagesMissing ? Visibility.Visible : Visibility.Collapsed;            
             if (packagesMissing)
             {
                 ResetUI();
