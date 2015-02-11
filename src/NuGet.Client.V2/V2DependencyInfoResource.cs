@@ -30,6 +30,7 @@ namespace NuGet.Client.V2
         private readonly IVersionComparer _versionComparer;
         private readonly IVersionRangeComparer _versionRangeComparer;
         private static readonly VersionRange EmptyRange = VersionRange.None;
+        private readonly bool _useFindById;
 
         public V2DependencyInfoResource(IPackageRepository repo)
         {
@@ -41,6 +42,8 @@ namespace NuGet.Client.V2
             _packageDepComparer = new PackageDependencyComparer();
             _versionComparer = VersionComparer.VersionRelease;
             _versionRangeComparer = VersionRangeComparer.VersionRelease;
+
+            _useFindById = !(repo is DataServicePackageRepository);
         }
 
         public V2DependencyInfoResource(V2Resource resource)
@@ -106,7 +109,7 @@ namespace NuGet.Client.V2
             {
                 await Ensure(target, projectFramework, includePrerelease, token);
 
-                var packages = Get(target);
+                var packages = Get(target, includePrerelease);
 
                 results.AddRange(packages);
 
@@ -136,7 +139,7 @@ namespace NuGet.Client.V2
         }
 
         // Thread safe retrieval of fetched packages for the target only, no child dependencies
-        private IEnumerable<PackageDependencyInfo> Get(NuGet.PackagingCore.PackageDependency target)
+        private IEnumerable<PackageDependencyInfo> Get(NuGet.PackagingCore.PackageDependency target, bool includePrerelease)
         {
             HashSet<PackageDependencyInfo> packages = null;
             if (!_found.TryGetValue(target.Id, out packages))
@@ -150,7 +153,7 @@ namespace NuGet.Client.V2
                 // lock per package Id
                 lock (lockObj)
                 {
-                    return packages.Where(p => target.VersionRange.Satisfies(p.Version));
+                    return packages.Where(p => includePrerelease || !p.Version.IsPrerelease).Where(p => target.VersionRange.Satisfies(p.Version));
                 }
             }
         }
@@ -175,10 +178,25 @@ namespace NuGet.Client.V2
                     // find what we haven't checked already
                     var needed = NeededRange(alreadySearched, target.VersionRange);
 
+                    // adjust prerelease, is this needed?
+                    needed = ModifyRange(needed, includePrerelease);
+
                     if (!_versionRangeComparer.Equals(needed, EmptyRange))
                     {
                         // server search
-                        var packageVersions = V2Client.FindPackages(target.Id, GetVersionSpec(needed), includePrerelease, false);
+                        IEnumerable<IPackage> repoPackages = null;
+
+                        if (_useFindById)
+                        {
+                            // Ranges fail in some cases for local repos, to work around this just collect every
+                            // version of the package to filter later
+                            repoPackages = V2Client.FindPackagesById(target.Id);
+                        }
+                        else
+                        {
+                            // DataService Repository
+                            repoPackages = V2Client.FindPackages(target.Id, GetVersionSpec(needed), includePrerelease, false);
+                        }
 
                         List<VersionRange> currentRanges = new List<VersionRange>();
                         currentRanges.Add(target.VersionRange);
@@ -189,7 +207,18 @@ namespace NuGet.Client.V2
                         }
 
                         // update the already searched range
-                        var combined = Combine(currentRanges);
+                        VersionRange combined = null;
+
+                        if (_useFindById)
+                        {
+                            // for local repos we found all possible versions
+                            combined = VersionRange.All;
+                        }
+                        else
+                        {
+                            // for non-local repos find the real range
+                            combined = Combine(currentRanges);
+                        }
 
                         _rangeSearched.AddOrUpdate(target.Id, combined, (k, v) => combined);
 
@@ -202,15 +231,23 @@ namespace NuGet.Client.V2
                             _found.TryAdd(target.Id, foundPackages);
                         }
 
-                        // convert all packages into PackageDependencyInfo objects
-                        foreach (var packageVersion in packageVersions)
-                        {
-                            var depInfo = CreateDependencyInfo(packageVersion, projectFramework);
-                            foundPackages.Add(depInfo);
-                        }
+                        // add current packages to found
+                        IEnumerable<PackageDependencyInfo> packageVersions = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework));
+                        foundPackages.UnionWith(packageVersions);
                     }
                 }
             }
+        }
+
+        // Modify a range to have the correct prerelease settings
+        private VersionRange ModifyRange(VersionRange range, bool includePrelease)
+        {
+            if (range.IncludePrerelease != includePrelease)
+            {
+                range = new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, includePrelease);
+            }
+
+            return range;
         }
 
         private PackageDependencyInfo CreateDependencyInfo(IPackage packageVersion, NuGetFramework projectFramework)

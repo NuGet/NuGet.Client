@@ -59,7 +59,11 @@ namespace NuGet.Client.V2.VisualStudio
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            return V2Client.FindPackagesById(packageId).Select(p => GetVisualStudioUIPackageMetadata(p));
+            return await Task.Run(() =>
+                {
+                    return V2Client.FindPackagesById(packageId)
+                        .Select(p => GetVisualStudioUIPackageMetadata(p));
+                });
         }
 
         internal static UIPackageMetadata GetVisualStudioUIPackageMetadata(IPackage package)

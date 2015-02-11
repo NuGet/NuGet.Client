@@ -64,10 +64,8 @@ namespace NuGet.Client.V2
                 if (repo != null)
                 {
                     repoResource = new V2PackageRepositoryResource(repo);
+                    _cache.TryAdd(source.PackageSource, repoResource);
                 }
-
-                // cache regardless of if we are v2 or not
-                _cache.TryAdd(source.PackageSource, repoResource);
             }
 
             return Tuple.Create<bool, INuGetResource>(repoResource != null, repoResource);

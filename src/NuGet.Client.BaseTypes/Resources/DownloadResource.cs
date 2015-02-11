@@ -20,5 +20,8 @@ namespace NuGet.Client
 
 
         public abstract Task<Stream> GetStream(PackageIdentity identity, CancellationToken token);
+
+
+        public event EventHandler<PackageProgressEventArgs> Progress;
     }
 }
