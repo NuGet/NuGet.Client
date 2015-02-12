@@ -137,9 +137,11 @@ namespace NuGet.Packaging
         {
             foreach (var entry in packageFiles)
             {
-                if (PackageHelper.IsPackageFile(entry.FullName, packageSaveMode))
+                string path = ZipArchiveHelper.UnescapePath(entry.FullName);
+
+                if (PackageHelper.IsPackageFile(path, packageSaveMode))
                 {
-                    var packageFileFullPath = Path.Combine(packageDirectory, entry.FullName);
+                    var packageFileFullPath = Path.Combine(packageDirectory, path);
                     using (var inputStream = entry.Open())
                     {
                         await CreatePackageFile(packageFileFullPath, inputStream, token);
