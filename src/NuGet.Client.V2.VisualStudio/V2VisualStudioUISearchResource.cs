@@ -28,7 +28,7 @@ namespace NuGet.Client.V2.VisualStudio
 
         private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUI(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
-            return await Task.Run(() =>
+            return await Task.Run(async () =>
                 {
                     var query = V2Client.Search(
                         searchTerm,
@@ -58,6 +58,7 @@ namespace NuGet.Client.V2.VisualStudio
 
                     // this is used to maintain the order of the packages
                     List<string> packageIds = new List<string>();
+
                     foreach (var package in allPackages)
                     {
                         IPackage existingPackage;
@@ -75,35 +76,59 @@ namespace NuGet.Client.V2.VisualStudio
                         }
                     }
 
-                    var result = packageIds.Select(
-                        id => CreatePackageSearchResult(latestVersion[id], cancellationToken));
+                    Queue<Task<UISearchMetadata>> tasks = new Queue<Task<UISearchMetadata>>();
 
-                    return result;
+                    // fetch version info in parallel
+                    foreach (string id in packageIds)
+                    {
+                        tasks.Enqueue(CreatePackageSearchResult(latestVersion[id], filters, cancellationToken));
+                    }
+
+                    List<UISearchMetadata> results = new List<UISearchMetadata>();
+
+                    while (tasks.Count > 0)
+                    {
+                        UISearchMetadata metadata = await tasks.Dequeue();
+                        results.Add(metadata);
+                    }
+
+                    return results;
                 });
         }
 
-        private UISearchMetadata CreatePackageSearchResult(IPackage package, CancellationToken cancellationToken)
+        private async Task<UISearchMetadata> CreatePackageSearchResult(IPackage package, SearchFilter filters, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var versions = V2Client.FindPackagesById(package.Id);
-            if (!versions.Any())
+            return await Task.Run(() =>
             {
-                versions = new[] { package };
-            }
-            string id = package.Id;
-            NuGetVersion version = V2Utilities.SafeToNuGetVer(package.Version);
-            string summary = package.Summary;
-            var nuGetVersions = versions.Select(p =>
-                new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount));
-            if (string.IsNullOrWhiteSpace(summary))
-            {
-                summary = package.Description;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            Uri iconUrl = package.IconUrl;
-            PackageIdentity identity = new PackageIdentity(id, version);
-            UISearchMetadata searchMetaData = new UISearchMetadata(identity, summary, iconUrl, nuGetVersions, V2UIMetadataResource.GetVisualStudioUIPackageMetadata(package));
-            return searchMetaData;
+                // apply the filters to the version list returned
+                var versions = V2Client.FindPackagesById(package.Id)
+                    .Where(p => filters.IncludeDelisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
+                    .Where(v => filters.IncludePrerelease || String.IsNullOrEmpty(v.Version.SpecialVersion)).ToArray();
+
+                if (!versions.Any())
+                {
+                    versions = new[] { package };
+                }
+
+                string id = package.Id;
+                NuGetVersion version = V2Utilities.SafeToNuGetVer(package.Version);
+                string summary = package.Summary;
+
+                var nuGetVersions = versions.Select(p =>
+                    new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount));
+
+                if (string.IsNullOrWhiteSpace(summary))
+                {
+                    summary = package.Description;
+                }
+
+                Uri iconUrl = package.IconUrl;
+                PackageIdentity identity = new PackageIdentity(id, version);
+                UISearchMetadata searchMetaData = new UISearchMetadata(identity, summary, iconUrl, nuGetVersions, V2UIMetadataResource.GetVisualStudioUIPackageMetadata(package));
+                return searchMetaData;
+            });
         }
       
     }

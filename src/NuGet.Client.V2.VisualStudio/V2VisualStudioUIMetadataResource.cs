@@ -62,6 +62,8 @@ namespace NuGet.Client.V2.VisualStudio
             return await Task.Run(() =>
                 {
                     return V2Client.FindPackagesById(packageId)
+                        .Where(p => includeUnlisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
+                        .Where(p => includePrerelease || String.IsNullOrEmpty(p.Version.SpecialVersion))
                         .Select(p => GetVisualStudioUIPackageMetadata(p));
                 });
         }
