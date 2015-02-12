@@ -1,4 +1,5 @@
 ﻿using EnvDTE;
+using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -53,14 +54,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // No name specified; return default project (if not null)
                 if (Name == null)
                 {
-                    string defaultProjectName = VsSolutionManager.DefaultNuGetProjectName;
-                    IEnumerable<Project> projects = DTE.Solution.GetAllProjects();
-                    Project defaultProject = projects
-                        .Where(p => defaultProjectName.EndsWith(GetDefaultName(projects, p), StringComparison.OrdinalIgnoreCase))
+                    NuGetProject defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
+                    string customUniqueName = defaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                    Project defaultDTEProject = DTE.Solution.GetAllProjects()
+                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), customUniqueName))
                         .FirstOrDefault();
-                    if (defaultProject != null)
+                    if (defaultDTEProject != null)
                     {
-                        WriteObject(defaultProject);
+                        WriteObject(defaultDTEProject);
                     }
                 }
                 else
@@ -69,25 +70,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     WriteObject(GetProjectsByName(Name), enumerateCollection: true);
                 }
             }
-        }
-
-        private string GetDefaultName(IEnumerable<Project> projects, Project project)
-        {
-            string defaultName = IsAmbiguous(projects, project.Name) ? project.GetCustomUniqueName() : project.GetName();
-            return defaultName;
-        }
-
-        /// <summary>
-        /// Determines if a short name is ambiguous
-        /// </summary>
-        /// <param name="shortName">short name of the project</param>
-        /// <returns>true if there are multiple projects with the specified short name.</returns>
-        private bool IsAmbiguous(IEnumerable<Project> projects, string shortName)
-        {
-            IEnumerable<string> projectNames = projects.Select(v => v.Name)
-                .Where(p => p.ToLowerInvariant().Contains(shortName.ToLowerInvariant()));
-            int count = projectNames.Count();
-            return count > 1;
         }
     }
 }

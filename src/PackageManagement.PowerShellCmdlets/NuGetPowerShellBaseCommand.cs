@@ -34,6 +34,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ISolutionManager _solutionManager;
         private ISettings _settings;
         private DTE _dte;
+        // TODO: Hook up DownloadResource.Progress event
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
         private Exception _scriptException;
@@ -42,6 +43,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         internal const string ActivePackageSourceKey = "activePackageSource";
         internal const string SyncModeKey = "IsSyncMode";
         internal const string PackageManagementContextKey = "PackageManagementContext";
+        internal const string DTEKey = "DTE";
         #endregion
 
         public NuGetPowerShellBaseCommand()
@@ -190,7 +192,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _solutionManager = _packageManagementContext.VsSolutionManager;
                 _settings = _packageManagementContext.Settings;
             }
-            _dte = (DTE)GetPropertyValueFromHost("DTE");
+            _dte = (DTE)GetPropertyValueFromHost(DTEKey);
         }
 
         #region Cmdlets base APIs
@@ -378,13 +380,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 int count = 0;
                 foreach (var project in matches)
                 {
-                    count++;
-                    string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                    Project dteProject = allDteProjects
-                            .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, name) ||
-                            StringComparer.OrdinalIgnoreCase.Equals(p.FullName, name))
-                            .FirstOrDefault();
-                    yield return dteProject;
+                    if (project != null)
+                    {
+                        count++;
+                        string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                        Project dteProject = allDteProjects
+                                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, name) ||
+                                StringComparer.OrdinalIgnoreCase.Equals(p.FullName, name) ||
+                                StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), name))
+                                .FirstOrDefault();
+                        yield return dteProject;
+                    }
                 }
 
                 // We only emit non-terminating error record if a non-wildcarded name was not found.
