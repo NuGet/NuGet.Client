@@ -113,7 +113,7 @@ namespace NuGet.VisualStudio
                 if (_settings == null)
                 {
                     _settings = Settings.LoadDefaultSettings(
-                        RepositoryPath, 
+                        _solutionManager.SolutionDirectory, 
                         configFileName: null,
                         machineWideSettings: _machineWideSettings);
                 }
