@@ -1,35 +1,92 @@
 ﻿using EnvDTE80;
+using NuGet.Configuration;
 using NuGet.ProjectManagement;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.IO;
 
-namespace NuGet.PackageManagement.VisualStudio.SourceControl
+namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(ITFSSourceControlManagerProvider))]
     public class DefaultTFSSourceControlManagerProvider : ITFSSourceControlManagerProvider
     {
-        private readonly DefaultTFSSourceControlManager _sourceControlManager = new DefaultTFSSourceControlManager();
+        private readonly ISettings _settings;
+
+        [ImportingConstructor]
+        public DefaultTFSSourceControlManagerProvider()
+        {
+            _settings = ServiceLocator.GetInstanceSafe<ISettings>();
+        }
+
         public SourceControlManager GetTFSSourceControlManager(SourceControlBindings sourceControlBindings)
         {
-            _sourceControlManager.SourceControlBindings = sourceControlBindings;
-            return _sourceControlManager;
+            if (_settings != null)
+            {
+                return new DefaultTFSSourceControlManager(_settings, sourceControlBindings);
+            }
+            return null;
         }
     }
 
     internal class DefaultTFSSourceControlManager : SourceControlManager
     {
-        internal SourceControlBindings SourceControlBindings { get; set; }
-        public override void ProcessInstall(string root, IEnumerable<string> files)
+        public DefaultTFSSourceControlManager(ISettings settings, SourceControlBindings sourceControlBindings) : base(settings)
         {
-            // Do nothing in the default one
+            if(sourceControlBindings == null)
+            {
+                throw new ArgumentNullException("sourceControlBindings");
+            }
+            SourceControlBindings = sourceControlBindings;
+        }
+        private SourceControlBindings SourceControlBindings { get; set; }
+
+        public override void AddFiles(string root, IEnumerable<string> files)
+        {
+            Debug.Assert(SourceControlBindings != null);
+            DTESourceControlUtility.AddOrCheckoutItems(SourceControlBindings.Parent, files);
         }
 
-        public override void CheckoutIfExists(string fullPath)
+        public override Stream CreateFile(string fullPath)
         {
-            if(SourceControlBindings != null)
+            Debug.Assert(SourceControlBindings != null);
+            bool fileNew = true;
+            if (File.Exists(fullPath))
             {
-                EnvDTEProjectUtility.EnsureCheckedOutIfExists(SourceControlBindings.Parent, fullPath);
+                fileNew = false;
+                DTESourceControlUtility.EnsureCheckedOutIfExists(SourceControlBindings.Parent, fullPath);
             }
+
+            var fileStream = FileSystemUtility.CreateFile(fullPath);
+            if (fileNew)
+            {
+                DTESourceControlUtility.EnsureCheckedOutIfExists(SourceControlBindings.Parent, fullPath);
+            }
+
+            return fileStream;
+        }
+
+        public override void DeleteFile(string fullPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void DeleteFiles(string root, IEnumerable<string> files)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void AddFilesUnderDirectory(string root)
+        {
+            // Only add files to Source Control
+            var files = Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
+            AddFiles(root, files);
+        }
+
+        public override void DeleteFilesUnderDirectory(string root)
+        {
+            throw new NotImplementedException();
         }
     }
 }

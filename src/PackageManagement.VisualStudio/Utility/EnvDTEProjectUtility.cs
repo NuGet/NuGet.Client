@@ -993,23 +993,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var dte = envDTEProject.DTE;
             if (dte != null)
             {
-                EnsureCheckedOutIfExists(dte.SourceControl, fullPath);
-            }
-        }
-
-        public static void EnsureCheckedOutIfExists(EnvDTE.SourceControl sourceControl, string fullPath)
-        {
-            if (File.Exists(fullPath))
-            {
-                FileSystemUtility.MakeWriteable(fullPath);
-
-                if (sourceControl != null &&
-                    sourceControl.IsItemUnderSCC(fullPath) &&
-                    !sourceControl.IsItemCheckedOut(fullPath))
-                {
-                    // Check out the item
-                    sourceControl.CheckOutItem(fullPath);
-                }
+                DTESourceControlUtility.EnsureCheckedOutIfExists(dte.SourceControl, fullPath);
             }
         }
 

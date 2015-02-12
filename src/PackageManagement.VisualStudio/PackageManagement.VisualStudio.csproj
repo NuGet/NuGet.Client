@@ -178,6 +178,7 @@
     <Compile Include="Setting\SettingsManagerWrapper.cs" />
     <Compile Include="Setting\SettingsStoreWrapper.cs" />
     <Compile Include="Setting\WritableSettingsStoreWrapper.cs" />
+    <Compile Include="SourceControl\DTESourceControlUtility.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
     <Compile Include="Utility\MessageHelper.cs" />
