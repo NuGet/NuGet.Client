@@ -1,8 +1,10 @@
 ﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.ProjectManagement;
 using System;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -10,14 +12,30 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VSSourceControlManagerProvider : ISourceControlManagerProvider
     {
         private readonly DTE _dte;
-        private readonly ITFSSourceControlManagerProvider _TFSSourceControlManagerProvider;
+        private readonly IComponentModel _componentModel;
         private const string TfsProviderName = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
 
         [ImportingConstructor]
         public VSSourceControlManagerProvider()
+            : this(ServiceLocator.GetInstance<DTE>(),
+                   ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>())
         {
-            _dte = ServiceLocator.GetInstanceSafe<DTE>();
-            _TFSSourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ITFSSourceControlManagerProvider>();
+        }
+
+        public VSSourceControlManagerProvider(DTE dte, IComponentModel componentModel)
+        {
+            if (dte == null)
+            {
+                throw new ArgumentNullException("dte");
+            }
+
+            if (componentModel == null)
+            {
+                throw new ArgumentNullException("componentModel");
+            }
+
+            _componentModel = componentModel;
+            _dte = dte;
         }
 
         public SourceControlManager GetSourceControlManager()
@@ -46,9 +64,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         return null;
                     }
 
-                    if(_TFSSourceControlManagerProvider != null)
+                    var tfsProviders = _componentModel.GetExtensions<ITFSSourceControlManagerProvider>();
+                    if (tfsProviders != null && tfsProviders.Any())
                     {
-                        return _TFSSourceControlManagerProvider.GetTFSSourceControlManager(sourceControlBinding);
+                        return tfsProviders.Select(provider => provider.GetTFSSourceControlManager(sourceControlBinding))
+                            .FirstOrDefault(tp => tp != null);
                     }
                 }
             }

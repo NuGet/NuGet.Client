@@ -7,6 +7,13 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using EnvDTEProject = EnvDTE.Project;
+#if VS10 || VS11 || VS12
+using NuGetVS = NuGet.VisualStudio12;
+#endif
+
+#if VS14
+using NuGetVS = NuGet.VisualStudio14;
+#endif
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -80,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void RemoveImportStatementForVS2013(string relativeTargetPath)
         {
-           ProjectHelper.DoWorkInWriterLock(
+            NuGetVS.ProjectHelper.DoWorkInWriterLock(
                 EnvDTEProject,
                 VsHierarchyUtility.ToVsHierarchy(EnvDTEProject),
                 buildProject => MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(buildProject, relativeTargetPath));

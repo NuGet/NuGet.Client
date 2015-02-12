@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;VS12</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -147,7 +147,7 @@
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="SourceControl\ITFSSourceControlManagerProvider.cs" />
-    <Compile Include="SourceControl\DefaultTFSSourceControlManagerProvider.cs" />
+    <Compile Include="SourceControl\TFSSourceControlManagerProviderPicker.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="IEnvironmentVariableReader.cs" />
     <Compile Include="OptionsPageActivator.cs" />

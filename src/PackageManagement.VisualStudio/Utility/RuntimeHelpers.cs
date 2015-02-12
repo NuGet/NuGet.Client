@@ -3,7 +3,11 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
@@ -114,6 +118,49 @@ namespace NuGet.PackageManagement.VisualStudio
             manager.AddBindingRedirects(redirects);
 
             return redirects;
+        }
+
+        /// <summary>
+        /// Load the specified assembly using the information from the executing assembly. 
+        /// If the executing assembly is strongly signed, use Assembly.Load(); Otherwise, 
+        /// use Assembly.LoadFrom()
+        /// </summary>
+        /// <param name="assemblyName">The name of the assembly to be loaded.</param>
+        /// <returns>The loaded Assembly instance.</returns>
+        internal static Assembly LoadAssemblySmart(string assemblyName)
+        {
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+
+            AssemblyName executingAssemblyName = executingAssembly.GetName();
+            if (HasStrongName(executingAssemblyName))
+            {
+                // construct the Full Name of the assembly using the same version/culture/public key token 
+                // of the executing assembly.
+                string assemblyFullName = String.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}, Version={1}, Culture=neutral, PublicKeyToken={2}",
+                    assemblyName,
+                    executingAssemblyName.Version.ToString(),
+                    ConvertToHexString(executingAssemblyName.GetPublicKeyToken()));
+
+                return Assembly.Load(assemblyFullName);
+            }
+            else
+            {
+                var assemblyDirectory = Path.GetDirectoryName(executingAssembly.Location);
+                return Assembly.LoadFrom(Path.Combine(assemblyDirectory, assemblyName + ".dll"));
+            }
+        }
+
+        private static bool HasStrongName(AssemblyName assembly)
+        {
+            byte[] publicKeyToken = assembly.GetPublicKeyToken();
+            return publicKeyToken != null && publicKeyToken.Length > 0;
+        }
+
+        private static string ConvertToHexString(byte[] data)
+        {
+            return new SoapHexBinary(data).ToString();
         }
     }
 }

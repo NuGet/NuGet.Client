@@ -1,5 +1,6 @@
 ﻿using EnvDTE80;
 using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
@@ -7,15 +8,15 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 
-namespace NuGet.PackageManagement.VisualStudio
+namespace NuGet.TeamFoundationServer
 {
     [Export(typeof(ITFSSourceControlManagerProvider))]
-    public class DefaultTFSSourceControlManagerProvider : ITFSSourceControlManagerProvider
+    public class TFSSourceControlManagerProvider : ITFSSourceControlManagerProvider
     {
         private readonly ISettings _settings;
 
         [ImportingConstructor]
-        public DefaultTFSSourceControlManagerProvider()
+        public TFSSourceControlManagerProvider()
         {
             _settings = ServiceLocator.GetInstanceSafe<ISettings>();
         }

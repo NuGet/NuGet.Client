@@ -51,6 +51,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83AEE32C
 		test\EndToEnd\tests\install.ps1 = test\EndToEnd\tests\install.ps1
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamFoundationServer12", "src\TeamFoundationServer12\TeamFoundationServer12.csproj", "{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Coverage|Any CPU = Coverage|Any CPU
@@ -200,6 +202,16 @@ Global
 		{8452CD29-A6EA-45A7-8F5B-C6FA91618A64}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{8452CD29-A6EA-45A7-8F5B-C6FA91618A64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8452CD29-A6EA-45A7-8F5B-C6FA91618A64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Coverage|Any CPU.Build.0 = Release|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Mono Release|Any CPU.Build.0 = Release|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
