@@ -78,6 +78,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public virtual string ProjectUniqueName
+        {
+            get
+            {
+                return EnvDTEProjectUtility.GetCustomUniqueName(EnvDTEProject);
+            }
+        }
+
         private NuGetFramework _targetFramework;
         public NuGetFramework TargetFramework
         {
