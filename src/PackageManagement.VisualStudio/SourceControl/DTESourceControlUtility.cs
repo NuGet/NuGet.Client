@@ -23,22 +23,19 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public static void AddOrCheckoutItems(SourceControl sourceControl, IEnumerable<string> files)
-        {
-            if(sourceControl != null)
-            {
-                List<object> filesToAdd = new List<object>();
-                foreach(var path in files)
-                {
-                    if(File.Exists(path))
-                    {
-                        filesToAdd.Add(path);
-                    }
-                }
-
-                object[] filesToAddArray = filesToAdd.ToArray();
-                sourceControl.CheckOutItems(ref filesToAddArray);
-            }
-        }
+        //public static void AddOrCheckoutItems(SourceControl sourceControl, IEnumerable<string> files)
+        //{
+        //    if(sourceControl != null)
+        //    {
+        //        List<object> filesToAdd = new List<object>();
+        //        foreach(var path in files)
+        //        {
+        //            if(File.Exists(path))
+        //            {
+        //                sourceControl.CheckOutItem(path);
+        //            }
+        //        }
+        //    }
+        //}
     }
 }
