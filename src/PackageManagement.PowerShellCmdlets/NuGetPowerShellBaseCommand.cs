@@ -266,6 +266,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
+                // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null. 
+                PSSearchResource newResource = repository.GetResource<PSSearchResource>();
+                if (newResource == null)
+                {
+                    // Try to create Uri again to throw UriFormat exception for invalid source input.
+                    Uri sourceUri = new Uri(source);
+                }
                 return sourceRepo;
             }
             catch (Exception ex)
