@@ -82,6 +82,7 @@ namespace NuGet.ProjectManagement
     public static class NuGetProjectMetadataKeys
     {
         public const string Name = "Name";
+        public const string UniqueName = "UniqueName";
         public const string TargetFramework = "TargetFramework";
         public const string FullPath = "FullPath";
     }

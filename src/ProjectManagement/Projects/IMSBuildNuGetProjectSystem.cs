@@ -9,6 +9,7 @@ namespace NuGet.ProjectManagement
     {
         NuGetFramework TargetFramework { get; }
         string ProjectName { get; }
+        string ProjectUniqueName { get; }
         string ProjectFullPath { get;}
         INuGetProjectContext NuGetProjectContext { get; }
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);

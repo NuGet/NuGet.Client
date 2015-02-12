@@ -94,6 +94,14 @@ namespace Test.Utility
             private set;
         }
 
+        public string ProjectUniqueName
+        {
+            get
+            {
+                return ProjectName;
+            }
+        }
+
         public bool ReferenceExists(string name)
         {
             return References.ContainsKey(name);
