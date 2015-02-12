@@ -115,7 +115,7 @@ namespace NuGet.VisualStudio
             List<PackageIdentity> toInstall = new List<PackageIdentity>();
             toInstall.Add(new PackageIdentity(packageId, version));
 
-            Task task = InstallInternal(project, toInstall, GetSources(sources), false, ignoreDependencies, CancellationToken.None);
+            Task task = Task.Run(async () => await InstallInternal(project, toInstall, GetSources(sources), false, ignoreDependencies, CancellationToken.None));
             task.Wait();
         }
 
@@ -153,7 +153,7 @@ namespace NuGet.VisualStudio
 
             List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
 
-            Task task = InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None);
+            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None));
             task.Wait();
         }
 
@@ -184,7 +184,7 @@ namespace NuGet.VisualStudio
 
             List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
 
-            Task task = InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None);
+            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None));
             task.Wait();
         }
 

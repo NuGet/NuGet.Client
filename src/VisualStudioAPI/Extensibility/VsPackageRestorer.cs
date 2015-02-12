@@ -36,12 +36,8 @@ namespace NuGet.VisualStudio
 
         public bool IsUserConsentGranted()
         {
-            // TODO: add this after NuGet.Configuration has added this class
-            throw new NotImplementedException();
-
-            //var settings = ServiceLocator.GetInstance<ISettings>();
-            //var packageRestoreConsent = new PackageRestoreConsent(settings);
-            //return packageRestoreConsent.IsGranted;
+            var packageRestoreConsent = new PackageRestoreConsent(_settings);
+            return packageRestoreConsent.IsGranted;
         }
 
         public void RestorePackages(Project project)
@@ -50,7 +46,8 @@ namespace NuGet.VisualStudio
 
             try
             {
-                _restoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None).Wait();
+                var task = System.Threading.Tasks.Task.Run(async () => await _restoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None));
+                task.Wait();
             }
             catch (Exception ex)
             {

@@ -30,14 +30,13 @@ namespace NuGet.VisualStudio
         {
             foreach (var project in _solutionManager.GetNuGetProjects())
             {
-                var task = project.GetInstalledPackagesAsync(CancellationToken.None);
+                var task = System.Threading.Tasks.Task.Run(async () => await project.GetInstalledPackagesAsync(CancellationToken.None));
                 task.Wait();
+
                 foreach (var package in task.Result)
                 {
-                    // TODO: populate this data!!!
-                    throw new NotImplementedException();
-
-                    // yield return new VsPackageMetadata(package.PackageIdentity, string.Empty);
+                    // TODO: populate the install path
+                    yield return new VsPackageMetadata(package.PackageIdentity, null);
                 }
             }
 
@@ -55,14 +54,11 @@ namespace NuGet.VisualStudio
             {
                 if (StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(curProject), project.UniqueName))
                 {
-                    var task = curProject.GetInstalledPackagesAsync(CancellationToken.None);
+                    var task = System.Threading.Tasks.Task.Run(async () => await curProject.GetInstalledPackagesAsync(CancellationToken.None));
                     task.Wait();
                     foreach (var package in task.Result)
                     {
-                        // TODO: populate this data!!!
-                        throw new NotImplementedException();
-
-                        // yield return new VsPackageMetadata(package.PackageIdentity, string.Empty);
+                        yield return new VsPackageMetadata(package.PackageIdentity, null);
                     }
                 }
             }

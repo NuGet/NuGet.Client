@@ -52,7 +52,8 @@ namespace NuGet.VisualStudio
                 INuGetProjectContext projectContext = new VSAPIProjectContext();
 
                 // uninstall the package
-                packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None).Wait();
+                var task = System.Threading.Tasks.Task.Run(async () => await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None));
+                task.Wait();
             }
             finally
             {
