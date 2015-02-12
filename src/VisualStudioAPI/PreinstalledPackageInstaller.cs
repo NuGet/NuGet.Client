@@ -257,7 +257,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("repositoryPath");
             }
 
-            if (packageNames.IsEmpty())
+            if (!packageNames.Any())
             {
                 return;
             }
