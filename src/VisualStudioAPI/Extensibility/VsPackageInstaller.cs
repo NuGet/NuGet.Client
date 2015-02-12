@@ -142,7 +142,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("project");
             }
 
-            if (packageVersions == null || packageVersions.IsEmpty())
+            if (packageVersions == null || !packageVersions.Any())
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageVersions");
             }
@@ -174,7 +174,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("project");
             }
 
-            if (packageVersions.IsEmpty())
+            if (!packageVersions.Any())
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageVersions");
             }
