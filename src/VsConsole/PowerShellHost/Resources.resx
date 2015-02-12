@@ -121,6 +121,9 @@
   <data name="Add_WrapperMembers" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>scripts\add-wrappermembers.ps1;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Value cannot be null or an empty string.</value>
+  </data>
   <data name="Console_DisclaimerText" xml:space="preserve">
     <value>Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages. Some packages may include dependencies which are governed by additional licenses. Follow the package source (feed) URL to determine any dependencies.</value>
   </data>

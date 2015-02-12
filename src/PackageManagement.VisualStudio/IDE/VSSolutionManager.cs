@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Try searching for simple names first
-            string name = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            string name = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
             EnvDTEProjectName envDTEProjectName;
             NuGetAndEnvDTEProjectCache.TryGetNuGetProjectName(name, out envDTEProjectName);
             Debug.Assert(envDTEProjectName != null);

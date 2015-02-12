@@ -16,5 +16,29 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             return EnvDTEProjectUtility.GetCustomUniqueName((EnvDTE.Project)psObject.BaseObject);
         }
+
+        /// <summary>
+        /// DO NOT delete this. This method is only called from PowerShell functional test. 
+        /// </summary>
+        public static void RemoveProject(string projectName)
+        {
+            if (String.IsNullOrEmpty(projectName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "projectName");
+            }
+
+            var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
+            if (solutionManager != null)
+            {
+                var project = solutionManager.GetDTEProject(projectName);
+                if (project == null)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                var dte = ServiceLocator.GetInstance<DTE>();
+                dte.Solution.Remove(project);
+            }
+        }
     }
 }

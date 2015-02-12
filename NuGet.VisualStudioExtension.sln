@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellHost", "src\VsCon
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellHostProvider", "src\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj", "{A5E7AEB3-738F-4C39-A459-00F90483B2FE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3EF356B5-E2D3-45E3-B515-99F4611ACBDA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3EF356B5-E2D3-45E3-B515-99F4611ACBDA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.TestVSExtension", "test\PackageManagement.TestVSExtension\PackageManagement.TestVSExtension.csproj", "{9713B86C-A35A-4417-A681-466F87544DB6}"
 EndProject

@@ -94,6 +94,15 @@ namespace NuGetConsole.Host.PowerShell {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Value cannot be null or an empty string..
+        /// </summary>
+        internal static string Argument_Cannot_Be_Null_Or_Empty {
+            get {
+                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages. Some packages may include dependencies which are governed by additional licenses. Follow the package source (feed) URL to determine any dependencies..
         /// </summary>
         internal static string Console_DisclaimerText {

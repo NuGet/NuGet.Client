@@ -84,7 +84,7 @@ function global:Run-Test {
     param(
         [parameter(ParameterSetName="Test", Position=0)]
         [string]$Test,
-        [parameter(ParameterSetName="File", Mandatory=$true, Position=0)]
+        [parameter(ParameterSetName="File", Mandatory=$true, Position=1)]
         [string]$File,
         [parameter(Position=1)]
         [bool]$LaunchResultsOnFailure=$true
