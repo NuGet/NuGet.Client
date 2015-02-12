@@ -78,6 +78,15 @@ namespace NuGet.ProjectManagement
             packageStream.Seek(0, SeekOrigin.Begin);
             await PackageExtractor.ExtractPackageAsync(packageStream, packageIdentity, PackagePathResolver, nuGetProjectContext.PackageExtractionContext,
                 PackageSaveMode, token);
+
+            // Source control stuff
+            var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
+            if(sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
+            {
+                var packageInstallPath = PackagePathResolver.GetInstallPath(packageIdentity);
+                sourceControlManager.AddFilesUnderDirectory(packageInstallPath);
+            }
+
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
             return true;
         }

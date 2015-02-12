@@ -96,12 +96,19 @@ namespace NuGet.ProjectManagement
 
         public static Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
-            MakeWriteable(fullPath);
-            var sourceControlManager = GetSourceControlManager(nuGetProjectContext);
+            // MakeWriteable(fullPath); SourceControlManager will do that
+            var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
             if(sourceControlManager != null)
             {
-                sourceControlManager.CheckoutIfExists(fullPath);
+                return sourceControlManager.CreateFile(fullPath);
             }
+
+            return CreateFile(fullPath);
+        }
+
+        public static Stream CreateFile(string fullPath)
+        {
+            MakeWriteable(fullPath);
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
             return File.Create(fullPath);
         }
@@ -251,20 +258,6 @@ namespace NuGet.ProjectManagement
         public static string MakeRelativePath(string root, string fullPath)
         {
             return fullPath.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar);
-        }
-
-        public static SourceControlManager GetSourceControlManager(INuGetProjectContext nuGetProjectContext)
-        {
-            if(nuGetProjectContext != null)
-            {
-                var sourceControlManagerProvider = nuGetProjectContext.SourceControlManagerProvider;
-                if (sourceControlManagerProvider != null)
-                {
-                    return sourceControlManagerProvider.GetSourceControlManager();
-                }
-            }
-
-            return null;
         }
 
         internal static void DeleteFileSafe(string root, string path, INuGetProjectContext nuGetProjectContext)

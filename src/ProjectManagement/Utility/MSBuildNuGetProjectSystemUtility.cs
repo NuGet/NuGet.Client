@@ -358,7 +358,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Workaround for update-package TFS issue. If we're bound to TFS, do not try and delete directories.
-            var sourceControlManager = FileSystemUtility.GetSourceControlManager(msBuildNuGetProjectSystem.NuGetProjectContext);
+            var sourceControlManager = SourceControlUtility.GetSourceControlManager(msBuildNuGetProjectSystem.NuGetProjectContext);
             if(sourceControlManager != null)
             {
                 // Source control bound, do not delete
