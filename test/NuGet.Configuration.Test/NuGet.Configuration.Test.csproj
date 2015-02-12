@@ -32,31 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ionic.Zip">
-      <HintPath>..\..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="NuGet.Frameworks">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.Frameworks.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Frameworks.Fakes">
-      <HintPath>FakesAssemblies\NuGet.Frameworks.Fakes.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.Packaging.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.PackagingCore">
-      <HintPath>..\..\packages\NuGet.Packaging.1.0.0-master-43642026\lib\net45\NuGet.PackagingCore.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.ProjectManagement">
-      <HintPath>..\..\packages\NuGet.ProjectManagement.1.0.0-master-50071904\lib\net45\NuGet.ProjectManagement.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.TestUtility">
-      <HintPath>..\..\packages\NuGet.TestUtility.1.0.0-master-50071911\lib\net45\NuGet.TestUtility.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.1.0.3\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -80,7 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <Fakes Include="Fakes\NuGet.Frameworks.fakes" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

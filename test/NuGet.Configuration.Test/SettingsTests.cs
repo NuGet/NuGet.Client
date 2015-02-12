@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Test.Utility;
 using Xunit;
 using Xunit.Extensions;
 
