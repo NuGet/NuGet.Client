@@ -205,6 +205,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Do not show this again.
+        /// </summary>
+        public static string Checkbox_DoNotShowThisAgain {
+            get {
+                return ResourceManager.GetString("Checkbox_DoNotShowThisAgain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Force uninstall, even if there are dependencies on it.
         /// </summary>
         public static string Checkbox_ForceRemove {

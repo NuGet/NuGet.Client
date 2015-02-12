@@ -146,11 +146,15 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Orientation="Vertical"
+                        x:Name="_legalDisclaimer"
                         Background="{DynamicResource {x:Static resx:Brushes.LegalMessageBackground}}">
                         <TextBlock
-                        Margin="24,12"
-                        TextWrapping="Wrap"
-                        Text="{x:Static resx:Resources.Text_LegalDisclaimer}" />
+                            Margin="24,12,24,12"
+                            TextWrapping="Wrap"
+                            Text="{x:Static resx:Resources.Text_LegalDisclaimer}" />
+                        <CheckBox 
+                            Margin="24,0,24,12"
+                            Content="{x:Static resx:Resources.Checkbox_DoNotShowThisAgain}" Checked="SuppressDisclaimerChecked"/>
                     </StackPanel>
 
                     <GridSplitter Grid.Column="1" Width="5"

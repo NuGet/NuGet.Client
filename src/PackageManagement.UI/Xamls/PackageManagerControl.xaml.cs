@@ -20,6 +20,9 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageManagerControl : UserControl, IVsWindowSearch
     {
+        private const string NuGetRegistryKey = @"Software\NuGet";
+        private const string SuppressUIDisclaimerRegistryName = "SuppressUILegalDisclaimer";
+
         private const int PageSize = 10;
 
         private bool _initialized;
@@ -92,6 +95,28 @@ namespace NuGet.PackageManagement.UI
             }
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesSaved += Sources_PackageSourcesChanged;
+
+            if (IsUILegalDisclaimerSuppressed())
+            {
+                _legalDisclaimer.Visibility = System.Windows.Visibility.Collapsed;
+            }
+        }
+
+        private bool IsUILegalDisclaimerSuppressed()
+        {
+            try
+            {
+                var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(NuGetRegistryKey);
+                var setting =
+                    key == null ?
+                    null :
+                    key.GetValue(SuppressUIDisclaimerRegistryName) as string;
+                return setting != null && setting != "0";
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private void ApplySettings(UserSettings settings)
@@ -697,6 +722,20 @@ namespace NuGet.PackageManagement.UI
         {
             _windowSearchHost.TerminateSearch();
             RemoveRestoreBar();
+        }
+
+        private void SuppressDisclaimerChecked(object sender, RoutedEventArgs e)
+        {
+            _legalDisclaimer.Visibility = System.Windows.Visibility.Collapsed;
+
+            try
+            {
+                var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(NuGetRegistryKey);
+                key.SetValue(SuppressUIDisclaimerRegistryName, "1", Microsoft.Win32.RegistryValueKind.String);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
