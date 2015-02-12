@@ -68,7 +68,11 @@ namespace NuGet.Configuration
 
         private IEnumerable<PackageSource> LoadConfigurationDefaultSources()
         {
+#if NET45
             var baseDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NuGet");
+#else
+            var baseDirectory = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "NuGet");
+#endif
             var settings = new Settings(baseDirectory, ConfigurationDefaultsFile);
 
             var sources = new List<PackageSource>();

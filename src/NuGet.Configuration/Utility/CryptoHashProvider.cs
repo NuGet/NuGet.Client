@@ -46,7 +46,7 @@ namespace NuGet.Configuration
                     !hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 // Only support a vetted list of hash algorithms.
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.UnsupportedHashAlgorithm, hashAlgorithm), "hashAlgorithm");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.UnsupportedHashAlgorithm, hashAlgorithm), "hashAlgorithm");
             }
 
             _hashAlgorithm = hashAlgorithm;
@@ -100,15 +100,27 @@ namespace NuGet.Configuration
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We want to return the object.")]
         private HashAlgorithm GetHashAlgorithm()
         {
+#if NET45
             if (_hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 return AllowOnlyFipsAlgorithms ? (HashAlgorithm)new SHA256CryptoServiceProvider() : (HashAlgorithm)new SHA256Managed();
             }
+
             return AllowOnlyFipsAlgorithms ? (HashAlgorithm)new SHA512CryptoServiceProvider() : (HashAlgorithm)new SHA512Managed();
+#else
+            // TODO: Review FIPS compliance for CoreCLR
+            if (_hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
+            {
+                return SHA256.Create();
+            }
+
+            return SHA512.Create();
+#endif
         }
 
         private static bool ReadFipsConfigValue()
         {
+#if NET45
             // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
             var cryptoConfig = typeof(System.Security.Cryptography.CryptoConfig);
 
@@ -123,6 +135,9 @@ namespace NuGet.Configuration
             }
 
             return false;
+#else
+            return false;
+#endif
         }
     }
 }
