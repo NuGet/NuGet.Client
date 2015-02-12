@@ -84,7 +84,7 @@ namespace NuGet.ProjectManagement
             if(sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
             {
                 var packageInstallPath = PackagePathResolver.GetInstallPath(packageIdentity);
-                sourceControlManager.AddFilesUnderDirectory(packageInstallPath);
+                sourceControlManager.AddFilesUnderDirectory(packageInstallPath, nuGetProjectContext);
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);

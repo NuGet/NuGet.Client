@@ -100,7 +100,7 @@ namespace NuGet.ProjectManagement
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
             if(sourceControlManager != null)
             {
-                return sourceControlManager.CreateFile(fullPath);
+                return sourceControlManager.CreateFile(fullPath, nuGetProjectContext);
             }
 
             return CreateFile(fullPath);
@@ -181,8 +181,9 @@ namespace NuGet.ProjectManagement
 
         public static void DeleteFileAndParentDirectoriesIfEmpty(string root, string filePath, INuGetProjectContext nuGetProjectContext)
         {
+            var fullPath = GetFullPath(root, filePath);
             // first delete the file itself
-            DeleteFileSafe(root, filePath, nuGetProjectContext);
+            DeleteFileSafe(fullPath, nuGetProjectContext);
 
             // now delete all parent directories if they are empty
             for (string path = Path.GetDirectoryName(filePath); !String.IsNullOrEmpty(path); path = Path.GetDirectoryName(path))
@@ -195,36 +196,40 @@ namespace NuGet.ProjectManagement
                 else
                 {
                     // otherwise, delete it, and move up to its parent
-                    DeleteDirectorySafe(root, path, false, nuGetProjectContext);
+                    DeleteDirectorySafe(fullPath, false, nuGetProjectContext);
                 }
             }
         }
 
-        internal static void DeleteDirectorySafe(string root, string path, bool recursive, INuGetProjectContext nuGetProjectContext)
+        public static void DeleteDirectorySafe(string fullPath, bool recursive, INuGetProjectContext nuGetProjectContext)
         {
-            DoSafeAction(() => DeleteDirectory(root, path, recursive, nuGetProjectContext), nuGetProjectContext);
+            DoSafeAction(() => DeleteDirectory(fullPath, recursive, nuGetProjectContext), nuGetProjectContext);
         }
 
-        public static void DeleteDirectory(string root, string path, bool recursive, INuGetProjectContext nuGetProjectContext)
+        public static void DeleteDirectory(string fullPath, bool recursive, INuGetProjectContext nuGetProjectContext)
         {
-            if (!DirectoryExists(root, path))
+            if (!Directory.Exists(fullPath))
             {
                 return;
             }
 
             try
-            {
-                path = GetFullPath(root, path);
-                Directory.Delete(path, recursive);
+            {               
+                var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
+                if(sourceControlManager != null)
+                {
+                    sourceControlManager.DeleteFilesUnderDirectory(fullPath, nuGetProjectContext);
+                }
+                Directory.Delete(fullPath, recursive);
 
                 // The directory is not guaranteed to be gone since there could be
                 // other open handles. Wait, up to half a second, until the directory is gone.
-                for (int i = 0; Directory.Exists(path) && i < 5; ++i)
+                for (int i = 0; Directory.Exists(fullPath) && i < 5; ++i)
                 {
                     System.Threading.Thread.Sleep(100);
                 }
 
-                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, path);
+                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
             }
             catch (DirectoryNotFoundException)
             {
@@ -260,9 +265,9 @@ namespace NuGet.ProjectManagement
             return fullPath.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar);
         }
 
-        internal static void DeleteFileSafe(string root, string path, INuGetProjectContext nuGetProjectContext)
+        internal static void DeleteFileSafe(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
-            DoSafeAction(() => DeleteFile(GetFullPath(root, path), nuGetProjectContext), nuGetProjectContext);
+            DoSafeAction(() => DeleteFile(fullPath, nuGetProjectContext), nuGetProjectContext);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to log an exception as a warning and move on")]

@@ -1092,7 +1092,8 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovingPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             // 2. Delete the package folder and files from the root directory of this FileSystemNuGetProject
             // Remember that the following code may throw System.UnauthorizedAccessException
-            Directory.Delete(PackagesFolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), recursive: true);
+            FileSystemUtility.DeleteDirectorySafe(PackagesFolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+                recursive: true, nuGetProjectContext: nuGetProjectContext);
             nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovedPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             return true;
         }
