@@ -59,7 +59,7 @@
                         SelectionChanged="_sourceRepoList_SelectionChanged">
                         <ComboBox.ToolTip>
                             <ToolTip x:Name="_sourceTooltip" >
-                                <TextBlock Text="{Binding}" Style="{StaticResource TooltipStyle}" />
+                                <TextBlock Text="{Binding}" />
                             </ToolTip>
                         </ComboBox.ToolTip>
                     </ComboBox>

@@ -450,6 +450,27 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private static string GetPackageSourceTooltip(Configuration.PackageSource packageSource)
+        {
+            if (String.IsNullOrEmpty(packageSource.Description))
+            {
+                return string.Format(
+                    CultureInfo.CurrentCulture,
+                    "{0} - {1}",
+                    packageSource.Name,
+                    packageSource.Source);
+            }
+            else
+            {
+                return string.Format(
+                    CultureInfo.CurrentCulture,
+                    "{0} - {1} - {2}",                    
+                    packageSource.Name,
+                    packageSource.Description,
+                    packageSource.Source);
+            }
+        }
+
         private void _sourceRepoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_dontStartNewSearch)
@@ -460,15 +481,8 @@ namespace NuGet.PackageManagement.UI
             _activeSource = _sourceRepoList.SelectedItem as SourceRepository;
             if (_activeSource != null)
             {
-                if (String.IsNullOrEmpty(_activeSource.PackageSource.Description))
-                {
-                    _sourceTooltip.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    _sourceTooltip.Visibility = Visibility.Visible;
-                    _sourceTooltip.DataContext = _activeSource.PackageSource.Description;
-                }
+                _sourceTooltip.Visibility = Visibility.Visible;
+                _sourceTooltip.DataContext = GetPackageSourceTooltip(_activeSource.PackageSource);
 
                 Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(_activeSource.PackageSource);
                 SaveSettings();

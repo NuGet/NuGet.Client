@@ -30,7 +30,7 @@ namespace StandaloneUI
         [Import]
         public ISettings _settings;
 
-        [Import]
+        // !!! [Import]
         public ISourceControlManagerProvider _sourceControlManagerProvider;
 
         private CompositionContainer _container;

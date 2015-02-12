@@ -66,20 +66,20 @@
                     TextTrimming="CharacterEllipsis"
                     TextWrapping="NoWrap"
                     AutomationProperties.AutomationId="id"
-                    Text="{Binding Id}">
-                    <TextBlock.ToolTip>
-                        <TextBlock Text="{Binding Id}" Style="{StaticResource TooltipStyle}" />
-                    </TextBlock.ToolTip>
-                </TextBlock>
+                    Text="{Binding Id}" />
                 <TextBlock
                     Grid.Row="1"
                     Text="{Binding Summary}"
                     TextTrimming="CharacterEllipsis"
-                    TextWrapping="Wrap">
-                    <TextBlock.ToolTip>
-                        <TextBlock Text="{Binding Summary}" Style="{StaticResource TooltipStyle}" />
-                    </TextBlock.ToolTip>
-                </TextBlock>
+                    TextWrapping="Wrap" />
+
+                <Grid.ToolTip>
+                    <TextBlock Style="{StaticResource TooltipStyle}" >
+                        <Run Text="{Binding Id}" FontWeight="Bold" />
+                        <LineBreak/>
+                        <Run Text="{Binding Summary}" />
+                    </TextBlock>
+                </Grid.ToolTip>
             </Grid>
 
             <ui:InstalledIndicator

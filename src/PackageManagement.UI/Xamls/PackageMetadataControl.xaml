@@ -42,7 +42,9 @@
                 x:Name="_metadataGrid"
                 Margin="0,8">
             <Grid.RowDefinitions>
-                <RowDefinition />
+                <!-- place holder for Owners/Publishers -->
+                <RowDefinition Height="0" />
+                
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
@@ -56,7 +58,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <!-- Publisher(s) -->
+            <!-- Publisher(s) 
             <TextBlock
                         Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
                         Grid.Row="0" Grid.Column="0" FontWeight="Bold"
@@ -68,6 +70,7 @@
                         Margin="8,8,0,0"
                         TextWrapping="Wrap"
                         Grid.Row="0" Grid.Column="1" />
+            -->
 
             <!-- Author(s) -->
             <TextBlock
