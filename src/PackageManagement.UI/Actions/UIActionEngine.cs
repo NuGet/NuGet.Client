@@ -42,14 +42,21 @@ namespace NuGet.PackageManagement.UI
 
                 var projects = uiService.Projects;
 
+                // TODO: should stable packages allow prerelease dependencies if include prerelease was checked?
+                // Allow prerelease packages only if the target is prerelease
+                bool includePrelease = userAction.PackageIdentity.Version.IsPrerelease || userAction.Action == NuGetProjectActionType.Uninstall;
+                bool includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
+
+                ResolutionContext resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted);
+
                 IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActions(
                     uiService,
-                    projects, 
+                    projects,
                     userAction,
                     removeDependencies: uiService.RemoveDependencies,
                     forceRemove: uiService.ForceRemove,
-                    dependencyBehavior: uiService.DependencyBehavior, 
-                    projectContext: uiService.ProgressWindow, 
+                    resolutionContext: resolutionContext,
+                    projectContext: uiService.ProgressWindow,
                     token: token);
                 IEnumerable<PreviewResult> results = await GetPreviewResults(actions);
 
@@ -145,12 +152,12 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(
             INuGetUI uiService,
-            IEnumerable<NuGetProject> targets, 
+            IEnumerable<NuGetProject> targets,
             UserAction userAction,
             bool removeDependencies,
             bool forceRemove,
-            DependencyBehavior dependencyBehavior, 
-            INuGetProjectContext projectContext, 
+            ResolutionContext resolutionContext,
+            INuGetProjectContext projectContext,
             CancellationToken token)
         {
             List<Tuple<NuGetProject, NuGetProjectAction>> results = new List<Tuple<NuGetProject, NuGetProjectAction>>();
@@ -159,7 +166,7 @@ namespace NuGet.PackageManagement.UI
             if (userAction.Action == NuGetProjectActionType.Install)
             {
                 Debug.Assert(userAction.PackageIdentity != null, "Package identity cannot be null when installing a package");
-                ResolutionContext resolutionContext = new ResolutionContext(dependencyBehavior);
+
                 foreach (var target in targets)
                 {
                     IEnumerable<NuGetProjectAction> actions;
@@ -249,8 +256,8 @@ namespace NuGet.PackageManagement.UI
         }
 
         private async Task<UIPackageMetadata> GetPackageMetadata(
-            IEnumerable<Client.SourceRepository> sources, 
-            PackageIdentity package, 
+            IEnumerable<Client.SourceRepository> sources,
+            PackageIdentity package,
             CancellationToken token)
         {
             foreach (var source in sources)
@@ -262,9 +269,9 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 var r = await metadataResource.GetMetadata(
-                    package.Id, 
-                    includePrerelease:true, 
-                    includeUnlisted:true,
+                    package.Id,
+                    includePrerelease: true,
+                    includeUnlisted: true,
                     token: token);
                 var packageMetadata = r.FirstOrDefault(p => p.Identity.Version == package.Version);
                 if (packageMetadata != null)
