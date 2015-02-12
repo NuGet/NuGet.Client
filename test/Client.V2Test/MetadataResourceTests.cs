@@ -73,5 +73,19 @@ namespace Client.V2Test
         }
 
         // xunit.core.2.0.0-rc1-build2826
+
+        [Fact]
+        public async Task MetadataResource_LatestVersionPrerelease()
+        {
+            var sourceRepo = SourceRepository;
+
+            var resource = sourceRepo.GetResource<MetadataResource>();
+
+            NuGetVersion latestPre = await resource.GetLatestVersion("TestPackage.AlwaysPrerelease", true, false, CancellationToken.None);
+            NuGetVersion latest = await resource.GetLatestVersion("TestPackage.AlwaysPrerelease", false, false, CancellationToken.None);
+
+            Assert.NotNull(latestPre);
+            Assert.Null(latest);
+        }
     }
 }

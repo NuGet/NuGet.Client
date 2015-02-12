@@ -31,33 +31,52 @@ namespace NuGet.Client.V2
         public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             List<KeyValuePair<string, NuGetVersion>> results = new List<KeyValuePair<string, NuGetVersion>>();
+
+            var tasks = new Stack<KeyValuePair<string, Task<IEnumerable<NuGetVersion>>>>();
+
+            // fetch all ids in parallel
             foreach (var id in packageIds)
             {
-                    //check if a package by that Id exists.
-                    IEnumerable<IPackage> packages = V2Client.FindPackagesById(id);
-                    if (packages == null || packages.Count() == 0)
-                    {
-                        results.Add(new KeyValuePair<string, NuGetVersion>(id, null));
-                    }
-                    else
-                    {
-                        SemanticVersion latestVersion = packages.OrderByDescending(p => p.Version).FirstOrDefault().Version;
-                        //  return new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion);
-                        results.Add(new KeyValuePair<string, NuGetVersion>(id, new NuGetVersion(latestVersion.Version, latestVersion.SpecialVersion)));
-                    }
+                var task = new KeyValuePair<string, Task<IEnumerable<NuGetVersion>>>(id, GetVersions(id, includePrerelease, includeUnlisted, token));
+                tasks.Push(task);
             }
-            return results.AsEnumerable();
+
+            foreach (var pair in tasks)
+            {
+                // wait for the query to finish
+                var versions = await pair.Value;
+
+                if (versions == null || !versions.Any())
+                {
+                    results.Add(new KeyValuePair<string, NuGetVersion>(pair.Key, null));
+                }
+                else
+                {
+                    // sort and take only the highest version
+                    NuGetVersion latestVersion = versions.OrderByDescending(p => p, VersionComparer.VersionRelease).FirstOrDefault();
+
+                    results.Add(new KeyValuePair<string, NuGetVersion>(pair.Key, latestVersion));
+                }
+            }
+
+            return results;
         }
 
         public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            return V2Client.FindPackagesById(packageId).Where(p => includeUnlisted || p.Listed)
+            token.ThrowIfCancellationRequested();
+
+            return await Task.Run(() =>
+                // year check workaround for p.Listed showing as False for online packages
+                V2Client.FindPackagesById(packageId).Where(p => includeUnlisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
                 .Select(p => new NuGetVersion(p.Version.Version, p.Version.SpecialVersion))
-                .Where(v => includePrerelease || !v.IsPrerelease).ToArray();
+                .Where(v => includePrerelease || !v.IsPrerelease).ToArray());
         }
 
         public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             bool exists = false;
             SemanticVersion version = SemanticVersion.Parse(identity.Version.ToString());
 
