@@ -137,7 +137,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     IEnumerable<PackageIdentity> identitiesToUpdate = Enumerable.Empty<PackageIdentity>();
                     identitiesToUpdate = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity);
                     // Preview Update-Package -Reinstall actions
-                    actions = await PackageManager.PreviewUpdatePackagesAsync(identitiesToUpdate, project, ResolutionContext,
+                    actions = await PackageManager.PreviewReinstallPackagesAsync(identitiesToUpdate, project, ResolutionContext,
                     this, ActiveSourceRepository, null, token);
                 }
                 else

@@ -340,7 +340,7 @@ namespace NuGet.PackageManagement
             return nuGetProjectActions;
         }
 
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(IEnumerable<PackageIdentity> packagesToInstall, NuGetProject nuGetProject,
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewReinstallPackagesAsync(IEnumerable<PackageIdentity> packagesToInstall, NuGetProject nuGetProject,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
@@ -439,13 +439,38 @@ namespace NuGet.PackageManagement
                 // TODO: Consider using IPackageResolver once it is extensible
                 var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
-                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver, prunedAvailablePackages, projectInstalledPackageReferences, token);
+
+                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver,
+                    prunedAvailablePackages,
+                    projectInstalledPackageReferences,
+                    token);
                 if (newListOfInstalledPackages == null)
                 {
                     throw new InvalidOperationException(Strings.UnableToResolveDependencyInfoForMultiplePackages);
                 }
 
-                nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, oldListOfInstalledPackages, prunedAvailablePackages, nuGetProjectContext);
+                var packagesInDependencyOrder = (await GetInstalledPackagesInDependencyOrder(nuGetProject,
+                    nuGetProjectContext, token)).Reverse();
+
+                foreach(var package in packagesInDependencyOrder)
+                {
+                    nuGetProjectActions.Add(NuGetProjectAction.CreateUninstallProjectAction(package));
+                }
+
+                var comparer = PackageIdentity.Comparer;
+                foreach (PackageIdentity newPackageToInstall in newListOfInstalledPackages)
+                {
+                    // find the package match based on identity
+                    SourceDependencyInfo sourceDepInfo = availablePackageDependencyInfoWithSourceSet.Where(p => comparer.Equals(p, newPackageToInstall)).SingleOrDefault();
+
+                    if (sourceDepInfo == null)
+                    {
+                        // this really should never happen
+                        throw new InvalidOperationException(String.Format(Strings.PackageNotFound, newPackageToInstall));
+                    }
+
+                    nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
+                }
             }
             catch(InvalidOperationException)
             {
@@ -471,6 +496,20 @@ namespace NuGet.PackageManagement
                 }                
             }
             return nuGetProjectActions;
+        }
+
+        public async Task<IEnumerable<PackageIdentity>> GetInstalledPackagesInDependencyOrder(NuGetProject nuGetProject,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
+            var installedPackageIdentities = installedPackages.Select(pr => pr.PackageIdentity);
+            var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
+                targetFramework, includePrerelease: true);
+
+            var packageResolver = new PackageResolver(DependencyBehavior.Lowest);
+            return packageResolver.Resolve(installedPackageIdentities, dependencyInfoFromPackagesFolder, installedPackages, token);
         }
 
         // TODO: Convert this to a generic GetProjectActions and use it from Install methods too
