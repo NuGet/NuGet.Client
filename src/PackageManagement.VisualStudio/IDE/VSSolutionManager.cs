@@ -314,6 +314,16 @@ namespace NuGet.PackageManagement.VisualStudio
                         NuGetProjectRenamed(this, new NuGetProjectEventArgs(nuGetProject));
                     }
                 }
+                else if (EnvDTEProjectUtility.IsSolutionFolder(envDTEProject))
+                {
+                    // In the case where a solution directory was changed, project FullNames are unchanged. 
+                    // We only need to invalidate the projects under the current tree so as to sync the CustomUniqueNames.
+                    foreach (var item in EnvDTEProjectUtility.GetSupportedChildProjects(envDTEProject))
+                    {
+                        RemoveEnvDTEProjectFromCache(item.FullName);
+                        AddEnvDTEProjectToCache(item);
+                    }
+                }
             }
         }
 

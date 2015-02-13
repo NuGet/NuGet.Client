@@ -168,6 +168,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProject.Kind != null && SupportedProjectTypes.Contains(envDTEProject.Kind) && !IsSharedProject(envDTEProject);
         }
 
+        public static bool IsSolutionFolder(EnvDTEProject envDTEProject)
+        {
+            return envDTEProject.Kind != null && envDTEProject.Kind.Equals(NuGetVSConstants.VsProjectItemKindSolutionFolder, StringComparison.OrdinalIgnoreCase);
+        }
+
         public static bool IsUnloaded(EnvDTEProject envDTEProject)
         {
             return NuGetVSConstants.UnloadedProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
@@ -391,6 +396,42 @@ namespace NuGet.PackageManagement.VisualStudio
 
             EnvDTEProject parentEnvDTEProject = envDTEProject.ParentProjectItem.ContainingProject;
             return IsExplicitlyUnsupported(parentEnvDTEProject);
+        }
+
+        /// <summary>
+        /// Recursively retrieves all supported child projects of a virtual folder.
+        /// </summary>
+        /// <param name="project">The root container project</param>
+        public static IEnumerable<EnvDTE.Project> GetSupportedChildProjects(EnvDTEProject envDTEProject)
+        {
+            if (!IsSolutionFolder(envDTEProject))
+            {
+                yield break;
+            }
+
+            var containerProjects = new Queue<EnvDTE.Project>();
+            containerProjects.Enqueue(envDTEProject);
+
+            while (containerProjects.Any())
+            {
+                var containerProject = containerProjects.Dequeue();
+                foreach (EnvDTE.ProjectItem item in containerProject.ProjectItems)
+                {
+                    var nestedProject = item.SubProject;
+                    if (nestedProject == null)
+                    {
+                        continue;
+                    }
+                    else if (IsSupported(nestedProject))
+                    {
+                        yield return nestedProject;
+                    }
+                    else if (IsSolutionFolder(nestedProject))
+                    {
+                        containerProjects.Enqueue(nestedProject);
+                    }
+                }
+            }
         }
 
         public static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(EnvDTEProject envDTEproject)

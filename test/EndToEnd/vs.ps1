@@ -744,7 +744,7 @@ function Remove-Project {
         $ProjectName
     )
 
-    [NuGetConsole.Host.PowerShell.Implementation]::RemoveProject($ProjectName)
+    [NuGetConsole.Host.PowerShell.Implementation.ProjectExtensions]::RemoveProject($ProjectName)
 }
 
 function Get-SolutionPath {
