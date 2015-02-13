@@ -132,19 +132,32 @@ namespace NuGet.ProjectManagement
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
-            // Delete the package file first since it is used to determine if a package is installed
-            if (PackageSaveMode.HasFlag(PackageSaveModes.Nupkg))
+            var packageFilePath = GetPackagePath(packageIdentity);
+            if (File.Exists(packageFilePath))
             {
-                var packageFilePath = GetPackagePath(packageIdentity);
-                if (File.Exists(packageFilePath))
+                using (var packageStream = File.OpenRead(packageFilePath))
+                {
+                    // Get all the package files before deleting the package file
+                    var allInstalledFiles = await PackageHelper.GetAllInstalledPackageFiles(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode, token);
+
+                    try
+                    {
+                        // Delete all the package files now
+                        FileSystemUtility.DeleteFiles(allInstalledFiles, nuGetProjectContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Warning, ex.Message);
+                        // Catch all exception with delete so that the package file is always deleted
+                    }
+                }
+
+                // Delete the package file first since it is used to determine if a package is installed
+                if (PackageSaveMode.HasFlag(PackageSaveModes.Nupkg))
                 {
                     FileSystemUtility.DeleteFile(packageFilePath, nuGetProjectContext);
                 }
             }
-
-            // Delete all the package files now
-            var allInstalledFiles = await PackageHelper.GetAllInstalledPackageFiles(packageIdentity, PackagePathResolver, PackageSaveMode, token);
-            FileSystemUtility.DeleteFiles(allInstalledFiles, nuGetProjectContext);
 
             return true;
         }
