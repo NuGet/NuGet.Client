@@ -272,10 +272,14 @@ namespace NuGet.PackageManagement
 
             try
             {
+                // If any targets are prerelease we should gather with prerelease on and filter afterwards
+                bool includePrereleaseInGather = resolutionContext.IncludePrerelease || (projectInstalledPackageReferences.Any(p => (p.PackageIdentity.HasVersion && p.PackageIdentity.Version.IsPrerelease)));
+                ResolutionContext contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
+
                 // Step-1 : Get metadata resources using gatherer
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
-                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
+                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
                     packageIdsToInstall,
                     packageTargetIdsForResolver,
                     targetFramework,
@@ -288,18 +292,27 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException(Strings.UnableToGatherDependencyInfoForMultiplePackages);
                 }
 
-                // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages                
+                // Prune the results down to only what we would allow to be installed
+                IEnumerable<SourceDependencyInfo> prunedAvailablePackages = availablePackageDependencyInfoWithSourceSet;
+
+                if (!resolutionContext.IncludePrerelease)
+                {
+                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, 
+                        projectInstalledPackageReferences.Select(p => p.PackageIdentity));
+                }
+
+                // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
                 // TODO: Consider using IPackageResolver once it is extensible
                 var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
-                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetIdsForResolver, availablePackageDependencyInfoWithSourceSet,
+                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetIdsForResolver, prunedAvailablePackages,
                     Enumerable.Empty<PackageReference>(), token);
                 if (newListOfInstalledPackages == null)
                 {
                     throw new InvalidOperationException(Strings.UnableToResolveDependencyInfoForMultiplePackages);
                 }
 
-                nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, oldListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet, nuGetProjectContext);
+                nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, oldListOfInstalledPackages, prunedAvailablePackages, nuGetProjectContext);
             }
             catch (InvalidOperationException)
             {
@@ -386,10 +399,14 @@ namespace NuGet.PackageManagement
 
             try
             {
+                // If any targets are prerelease we should gather with prerelease on and filter afterwards
+                bool includePrereleaseInGather = resolutionContext.IncludePrerelease || (packageTargetsForResolver.Any(p => (p.HasVersion && p.Version.IsPrerelease)));
+                ResolutionContext contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
+
                 // Step-1 : Get metadata resources using gatherer
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
-                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
+                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
                     packagesToInstall,
                     packageTargetsForResolver,
                     targetFramework,
@@ -402,17 +419,33 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException(Strings.UnableToGatherDependencyInfoForMultiplePackages);
                 }
 
+                // Prune the results down to only what we would allow to be installed
+                IEnumerable<SourceDependencyInfo> prunedAvailablePackages = availablePackageDependencyInfoWithSourceSet;
+
+                // Keep only the target package we are trying to install for that Id
+                foreach (var packageIdentity in packagesToInstall)
+                {
+                    prunedAvailablePackages = PrunePackageTree.RemoveAllVersionsForIdExcept(prunedAvailablePackages, packageIdentity);
+                }
+
+                if (!resolutionContext.IncludePrerelease)
+                {
+                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, packageTargetsForResolver);
+                }
+
+                // TODO: prune down level packages?
+
                 // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages                
                 // TODO: Consider using IPackageResolver once it is extensible
                 var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
-                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver, availablePackageDependencyInfoWithSourceSet, projectInstalledPackageReferences, token);
+                IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver, prunedAvailablePackages, projectInstalledPackageReferences, token);
                 if (newListOfInstalledPackages == null)
                 {
                     throw new InvalidOperationException(Strings.UnableToResolveDependencyInfoForMultiplePackages);
                 }
 
-                nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, oldListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet, nuGetProjectContext);
+                nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, oldListOfInstalledPackages, prunedAvailablePackages, nuGetProjectContext);
             }
             catch(InvalidOperationException)
             {
@@ -443,7 +476,7 @@ namespace NuGet.PackageManagement
         // TODO: Convert this to a generic GetProjectActions and use it from Install methods too
         private List<NuGetProjectAction> GetProjectActionsForUpdate(IEnumerable<PackageIdentity> newListOfInstalledPackages,
             IEnumerable<PackageIdentity> oldListOfInstalledPackages,
-            HashSet<SourceDependencyInfo> availablePackageDependencyInfoWithSourceSet,
+            IEnumerable<SourceDependencyInfo> availablePackageDependencyInfoWithSourceSet,
             INuGetProjectContext nuGetProjectContext)
         {
             // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
@@ -588,7 +621,11 @@ namespace NuGet.PackageManagement
 
                     var primaryPackages = new List<PackageIdentity>() { packageIdentity };
 
-                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(resolutionContext,
+                    // If any targets are prerelease we should gather with prerelease on and filter afterwards
+                    bool includePrereleaseInGather = resolutionContext.IncludePrerelease || (packageTargetsForResolver.Any(p => (p.HasVersion && p.Version.IsPrerelease)));
+                    ResolutionContext contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
+
+                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
                         primaryPackages,
                         packageTargetsForResolver,
                         targetFramework,
@@ -600,6 +637,18 @@ namespace NuGet.PackageManagement
                     {
                         throw new InvalidOperationException(String.Format(Strings.UnableToGatherDependencyInfo, packageIdentity));
                     }
+
+                    // Prune the results down to only what we would allow to be installed
+
+                    // Keep only the target package we are trying to install for that Id
+                    IEnumerable<SourceDependencyInfo> prunedAvailablePackages = PrunePackageTree.RemoveAllVersionsForIdExcept(availablePackageDependencyInfoWithSourceSet, packageIdentity);
+
+                    if (!resolutionContext.IncludePrerelease)
+                    {
+                        prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, packageTargetsForResolver);
+                    }
+
+                    // TODO: prune down level packages?
 
                     // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
                     // TODO: Consider using IPackageResolver once it is extensible
@@ -614,7 +663,7 @@ namespace NuGet.PackageManagement
                     preferredPackageReferences.Add(new PackageReference(packageIdentity, targetFramework));
 
                     IEnumerable<PackageIdentity> newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver,
-                        availablePackageDependencyInfoWithSourceSet,
+                        prunedAvailablePackages,
                         preferredPackageReferences,
                         token);
                     if (newListOfInstalledPackages == null)
@@ -641,7 +690,7 @@ namespace NuGet.PackageManagement
                     foreach (PackageIdentity newPackageToInstall in newPackagesToInstall)
                     {
                         // find the package match based on identity
-                        SourceDependencyInfo sourceDepInfo = availablePackageDependencyInfoWithSourceSet.Where(p => comparer.Equals(p, newPackageToInstall)).SingleOrDefault();
+                        SourceDependencyInfo sourceDepInfo = prunedAvailablePackages.Where(p => comparer.Equals(p, newPackageToInstall)).SingleOrDefault();
 
                         if (sourceDepInfo == null)
                         {
