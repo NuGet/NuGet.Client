@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace NuGet.Client.V3.VisualStudio
 {
     
-    [NuGetResourceProviderMetadata(typeof(UISearchResource), "V3SearchLatestResourceProvider", "V2SearchLatestResourceProvider")]
+    [NuGetResourceProviderMetadata(typeof(SearchLatestResource), "V3SearchLatestResourceProvider", "V2SearchLatestResourceProvider")]
     public class V3SearchLatestResourceProvider : INuGetResourceProvider
     {
         private readonly DataClient _client;
