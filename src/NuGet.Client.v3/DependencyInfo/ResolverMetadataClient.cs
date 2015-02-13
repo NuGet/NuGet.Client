@@ -136,7 +136,7 @@ namespace NuGet.Client.DependencyInfo
                     {
                         Uri rangeUri = item["@id"].ToObject<Uri>();
 
-                        rangeTasks.Add(LoadResource(httpClient, registrationUri, sessionCache));
+                        rangeTasks.Add(LoadResource(httpClient, rangeUri, sessionCache));
                     }
                     else
                     {

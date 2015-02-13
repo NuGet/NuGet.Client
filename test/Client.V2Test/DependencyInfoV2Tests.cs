@@ -51,7 +51,7 @@ namespace Client.V2Test
 
             var resolved = await resource.ResolvePackages(new PackageIdentity[] { new PackageIdentity("Microsoft.AspNet.MVC", new NuGetVersion(6, 0, 0, 0, "beta2", null)) }, NuGetFramework.Parse("aspnetcore50"), true, CancellationToken.None);
 
-            Assert.Equal(100, resolved.Count());
+            Assert.True(resolved.Count() > 100, "count: " + resolved.Count());
         }
 
         [Fact]
