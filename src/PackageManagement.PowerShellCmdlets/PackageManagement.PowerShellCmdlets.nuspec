@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet's PowerShell Cmdlets for the Visual Studio client</description>
     <dependencies>
-      <dependency id="NuGet.PackageManagement" version="3.0.0-rc" />
+      <dependency id="NuGet.PackageManagement" version="3.0.0-beta" />
     </dependencies>
   </metadata>
 </package>
