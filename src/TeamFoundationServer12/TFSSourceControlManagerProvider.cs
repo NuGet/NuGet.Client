@@ -50,34 +50,6 @@ namespace NuGet.TeamFoundationServer
         private SourceControlBindings SourceControlBindings { get; set; }
         private Workspace PrivateWorkspace { get; set; }
 
-        public override void AddFiles(string root, IEnumerable<string> files, INuGetProjectContext nuGetProjectContext)
-        {
-            IEnumerable<string> fullPaths = files.Select(f => FileSystemUtility.GetFullPath(root, f));
-            AddFiles(fullPaths, nuGetProjectContext);
-        }
-
-        private void AddFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext)
-        {
-            HashSet<string> filesToAdd = new HashSet<string>();
-            foreach (var fullPath in fullPaths)
-            {
-                if (File.Exists(fullPath))
-                {
-                    nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.Warning_FileAlreadyExists, fullPath);
-                }
-
-                // TODO: Should one also add the Directory under which the file is present since it is TFS?
-                // It would be consistent across Source Control providers to only add files to Source Control
-
-                filesToAdd.Add(fullPath);
-            }
-
-            if (filesToAdd.Count > 0)
-            {
-                PrivateWorkspace.PendAdd(filesToAdd.ToArray(), isRecursive: false);
-            }    
-        }
-
         public override Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
             bool fileNew = true;
@@ -96,50 +68,39 @@ namespace NuGet.TeamFoundationServer
             return fileStream;
         }
 
-        public override void DeleteFile(string fullPath, INuGetProjectContext nuGetProjectContext)
+        public override void PendAddFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext)
         {
-            throw new NotImplementedException();
-        }
+            HashSet<string> filesToAdd = new HashSet<string>();
+            foreach (var fullPath in fullPaths)
+            {
+                if (File.Exists(fullPath))
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.Warning_FileAlreadyExists, fullPath);
+                }
 
-        public override void DeleteFiles(string root, IEnumerable<string> files, INuGetProjectContext nuGetProjectContext)
-        {
-            IEnumerable<string> fullPaths = files.Select(f => FileSystemUtility.GetFullPath(root, f));
-            DeleteFiles(fullPaths, nuGetProjectContext);
-        }
+                // TODO: Should one also add the Directory under which the file is present since it is TFS?
+                // It would be consistent across Source Control providers to only add files to Source Control
 
-        private void DeleteFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext)
+                filesToAdd.Add(fullPath);
+            }
+
+            if (filesToAdd.Count > 0)
+            {
+                PrivateWorkspace.PendAdd(filesToAdd.ToArray(), isRecursive: false);
+            }
+        }        
+
+        public override void PendDeleteFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext)
         {
             HashSet<string> filesToPendDelete = new HashSet<string>();
             foreach (var fullPath in fullPaths)
             {
                 if (File.Exists(fullPath))
                 {
-                    //if (FileSystemExtensions.ContentEqual(this, fullPath, fullPath.GetStream))
-                    //{
-                    //    filesToPendDelete.Add(fullPath);
-                    //}
-                    //else
-                    //{
-                    //    nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.Warning_FileModified, fullPath);
-                    //}
                     filesToPendDelete.Add(fullPath);
                 }
             }
             PrivateWorkspace.PendDelete(filesToPendDelete.ToArray(), RecursionType.None);
-        }
-
-        public override void AddFilesUnderDirectory(string root, INuGetProjectContext nuGetProjectContext)
-        {
-            // Only add files to Source Control
-            var fullPaths = Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
-            AddFiles(fullPaths, nuGetProjectContext);
-        }
-
-        public override void DeleteFilesUnderDirectory(string root, INuGetProjectContext nuGetProjectContext)
-        {
-            // Only add files to Source Control
-            var fullPaths = Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
-            DeleteFiles(fullPaths, nuGetProjectContext);
         }
     }
 }
