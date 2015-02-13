@@ -6,17 +6,19 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        public static async Task ExtractPackageAsync(Stream packageStream, PackageIdentity packageIdentity,
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(Stream packageStream, PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
             PackageSaveModes packageSaveMode,
             CancellationToken token)
         {
+            List<string> filesAdded = new List<string>();
             if(packageStream == null)
             {
                 throw new ArgumentNullException("packageStream");
@@ -44,7 +46,7 @@ namespace NuGet.Packaging
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentity));
             string packageDirectory = packageDirectoryInfo.FullName;
 
-            await PackageHelper.CreatePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
+            filesAdded.AddRange(await PackageHelper.CreatePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token));
 
             string nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
             if(packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
@@ -53,19 +55,22 @@ namespace NuGet.Packaging
                 // Since all the packages are already created, the package stream is likely positioned at its end
                 // Reset it to the nupkgStartPosition
                 packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
-                await PackageHelper.CreatePackageFile(nupkgFilePath, packageStream, token);
+                filesAdded.Add(await PackageHelper.CreatePackageFile(nupkgFilePath, packageStream, token));
             }
 
             // Now, copy satellite files unless requested to not copy them
             if (packageExtractionContext == null || packageExtractionContext.CopySatelliteFiles)
             {
-                await CopySatelliteFilesAsync(packageIdentity, packagePathResolver, packageSaveMode, token);
+                filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentity, packagePathResolver, packageSaveMode, token));
             }
+
+            return filesAdded;
         }
 
-        public static async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
+        public static async Task<IEnumerable<string>> CopySatelliteFilesAsync(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
+            IEnumerable<string> satelliteFilesCopied = Enumerable.Empty<string>();
             if (packageIdentity == null)
             {
                 throw new ArgumentNullException("packageIdentity");
@@ -87,43 +92,12 @@ namespace NuGet.Packaging
                     if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFiles))
                     {
                         // Now, add all the satellite files collected from the package to the runtime package folder(s)
-                        await PackageHelper.CreatePackageFiles(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
+                        satelliteFilesCopied = await PackageHelper.CreatePackageFiles(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
                     }
                 }
             }
 
-            return false;
-        }
-
-        public static async Task<bool> RemoveSatelliteFilesAsync(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
-            PackageSaveModes packageSaveMode, CancellationToken token)
-        {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException("packageIdentity");
-            }
-
-            if (packagePathResolver == null)
-            {
-                throw new ArgumentNullException("packagePathResolver");
-            }
-
-            string nupkgFilePath = Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), packagePathResolver.GetPackageFileName(packageIdentity));
-            if(File.Exists(nupkgFilePath))
-            {
-                using(var packageStream = File.OpenRead(nupkgFilePath))
-                {
-                    string language;
-                    string runtimePackageDirectory;
-                    IEnumerable<ZipArchiveEntry> satelliteFiles;                    
-                    if(PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFiles))
-                    {
-                        await PackageHelper.RemovePackageFiles(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
-                    }
-                }
-            }
-
-            return false;            
+            return satelliteFilesCopied;
         }
     }
 }

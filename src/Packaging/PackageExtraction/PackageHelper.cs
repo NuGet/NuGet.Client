@@ -7,10 +7,11 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.Packaging
 {
-    internal static class PackageHelper
+    public static class PackageHelper
     {
         private static readonly string[] ExcludePaths = new[] { "_rels", "package" };
         public static bool IsManifest(string path)
@@ -132,9 +133,10 @@ namespace NuGet.Packaging
             return false;
         }
 
-        public static async Task CreatePackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
+        public static Task<IEnumerable<ZipFilePair>> GetPackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
+            List<ZipFilePair> effectivePackageFiles = new List<ZipFilePair>();
             foreach (var entry in packageFiles)
             {
                 string path = ZipArchiveHelper.UnescapePath(entry.FullName);
@@ -142,15 +144,68 @@ namespace NuGet.Packaging
                 if (PackageHelper.IsPackageFile(path, packageSaveMode))
                 {
                     var packageFileFullPath = Path.Combine(packageDirectory, path);
-                    using (var inputStream = entry.Open())
+                    effectivePackageFiles.Add(new ZipFilePair(packageFileFullPath, entry));
+                }
+            }
+
+            return Task.FromResult<IEnumerable<ZipFilePair>>(effectivePackageFiles);
+        }
+
+        public static IEnumerable<ZipFilePair> GetInstalledPackageFiles(IEnumerable<ZipFilePair> packageFiles)
+        {
+            List<ZipFilePair> installedPackageFiles = new List<ZipFilePair>();
+            foreach (var packageFile in packageFiles)
+            {
+                if (packageFile != null && packageFile.Item1 != null && packageFile.Item2 != null && File.Exists(packageFile.Item1))
+                {
+                    installedPackageFiles.Add(packageFile);
+                }
+            }
+
+            return installedPackageFiles;
+        }
+
+        /// <summary>
+        /// This returns all the installed package files and the installed satellite files
+        /// </summary>
+        /// <param name="packageIdentity"></param>
+        /// <param name="packagePathResolver"></param>
+        /// <param name="packageDirectory"></param>
+        /// <param name="packageSaveMode"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<ZipFilePair>> GetAllInstalledPackageFiles(PackageIdentity packageIdentity,
+            PackagePathResolver packagePathResolver,
+            PackageSaveModes packageSaveMode,
+            CancellationToken token)
+        {
+            List<ZipFilePair> installedPackageFiles = new List<ZipFilePair>();
+            string packageDirectory = packagePathResolver.GetInstallPath(packageIdentity);
+            string nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
+            if (File.Exists(nupkgFilePath))
+            {
+                using (var packageStream = File.OpenRead(nupkgFilePath))
+                {
+                    var zipArchive = new ZipArchive(packageStream);
+                    var packageFiles = await GetPackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
+                    installedPackageFiles.AddRange(GetInstalledPackageFiles(packageFiles));
+
+                    // Add satellite files from the runtime package directory too if any
+                    string language;
+                    string runtimePackageDirectory;
+                    IEnumerable<ZipArchiveEntry> satelliteFileEntries;
+                    if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
                     {
-                        await CreatePackageFile(packageFileFullPath, inputStream, token);
+                        var satelliteFiles = await GetPackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
+                        installedPackageFiles.AddRange(GetInstalledPackageFiles(satelliteFiles));
                     }
                 }
             }
+
+            return installedPackageFiles;
         }
 
-        public static async Task CreatePackageFile(string packageFileFullPath, Stream inputStream, CancellationToken token)
+        internal static async Task<string> CreatePackageFile(string packageFileFullPath, Stream inputStream, CancellationToken token)
         {
             string directory = Path.GetDirectoryName(packageFileFullPath);
             if (!Directory.Exists(directory))
@@ -161,39 +216,32 @@ namespace NuGet.Packaging
             if (File.Exists(packageFileFullPath))
             {
                 // Log and skip adding file
-                return;
+                return packageFileFullPath;
             }
 
             using (Stream outputStream = File.Create(packageFileFullPath))
             {
                 await inputStream.CopyToAsync(outputStream);
             }
+
+            return packageFileFullPath;
         }
 
-        public static Task RemovePackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
+        internal static async Task<IEnumerable<string>> CreatePackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
-            foreach(var entry in packageFiles)
+            IEnumerable<ZipFilePair> effectivePackageFiles = await GetPackageFiles(packageFiles, packageDirectory, packageSaveMode, token);
+            foreach (var effectivePackageFile in effectivePackageFiles)
             {
-                if(PackageHelper.IsPackageFile(entry.FullName, packageSaveMode))
+                var packageFileFullPath = effectivePackageFile.Item1;
+                var entry = effectivePackageFile.Item2;
+                using (var inputStream = entry.Open())
                 {
-                    var packageFileFullPath = Path.Combine(packageDirectory, entry.FullName);
-                    if(File.Exists(packageFileFullPath))
-                    {
-                        try
-                        {
-                            File.Delete(packageFileFullPath);
-                        }
-                        catch (Exception)
-                        {
-                            // Catch all exceptions
-                        }
-                    }                    
+                    await CreatePackageFile(packageFileFullPath, inputStream, token);
                 }
             }
 
-            return Task.FromResult(0);
+            return effectivePackageFiles.Select(pf => pf.Item1);
         }
     }
-
 }
