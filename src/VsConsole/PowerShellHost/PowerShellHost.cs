@@ -3,6 +3,7 @@ using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
@@ -303,21 +304,25 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 try
                 {
-                    //var localRepository = new SharedPackageRepository(repositorySettings.RepositoryPath);
-
                     // invoke init.ps1 files in the order of package dependency.
                     // if A -> B, we invoke B's init.ps1 before A's.
+                    IEnumerable<NuGetProject> projects = _solutionManager.GetNuGetProjects();
+                    NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+                    List<PackageIdentity> sortedPackages = new List<PackageIdentity>();
+                    foreach (NuGetProject project in projects)
+                    {
+                        IEnumerable<PackageIdentity> installedPackages = packageManager.GetInstalledPackagesInDependencyOrder(project, new EmptyNuGetProjectContext(), CancellationToken.None).Result;
+                        sortedPackages.AddRange(installedPackages);
+                    }
 
-                    //var sorter = new PackageSorter(targetFramework: null);
-                    //var sortedPackages = sorter.GetPackagesByDependencyOrder(localRepository);
-
-                    //foreach (var package in sortedPackages)
-                    //{
-                    //    string installPath = localRepository.PathResolver.GetInstallPath(package);
-
-                    //    AddPathToEnvironment(Path.Combine(installPath, "tools"));
-                    //    Runspace.ExecuteScript(installPath, "tools\\init.ps1", package);
-                    //}
+                    // Get the path to the Packages folder.
+                    string packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
+                    foreach (var package in sortedPackages)
+                    {
+                        string toolsPath = Path.Combine(packagesFolderPath, package.ToString(), "tools");
+                        AddPathToEnvironment(toolsPath);
+                        Runspace.ExecuteScript(toolsPath, PowerShellScripts.Init, package);
+                    }
                 }
                 catch (Exception ex)
                 {
