@@ -69,6 +69,7 @@
     <Compile Include="Models\UIPackageMetadata.cs" />
     <Compile Include="Models\UISearchMetadata.cs" />
     <Compile Include="PSSearchResource.cs" />
+    <Compile Include="SearchLatestResource.cs" />
     <Compile Include="UIMetadataResource.cs" />
     <Compile Include="UISearchResource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -79,6 +79,8 @@
     <Compile Include="V2PowerShellAutoCompleteResourceProvider.cs" />
     <Compile Include="V2PowerShellSearchResource.cs" />
     <Compile Include="V2PowerShellSearchResourceProvider.cs" />
+    <Compile Include="V2SearchLatestResource.cs" />
+    <Compile Include="V2SearchLatestResourceProvider.cs" />
     <Compile Include="V2VisualStudioSearchUIResourceProvider.cs" />
     <Compile Include="V2VisualStudioUIMetadataResource.cs" />
     <Compile Include="V2VisualStudioUIMetatdataResourcerProvider.cs" />

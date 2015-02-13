@@ -85,7 +85,9 @@
     <Compile Include="V3UIMetadataResourceProvider.cs" />
     <Compile Include="V3PSAutoCompleteResource.cs" />
     <Compile Include="V3UIMetadataResource.cs" />
+    <Compile Include="V3SearchLatestResource.cs" />
     <Compile Include="V3UISearchResource.cs" />
+    <Compile Include="V3SearchLatestResourceProvider.cs" />
     <Compile Include="V3UISearchResourceProvider.cs" />
   </ItemGroup>
   <ItemGroup>
