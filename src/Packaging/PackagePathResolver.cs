@@ -23,7 +23,8 @@ namespace NuGet.Packaging
             string directoryName = packageIdentity.Id;
             if (_useSideBySidePaths)
             {
-                directoryName += "." + packageIdentity.Version.ToNormalizedString();
+                // For legacy support do not normalize the version string
+                directoryName += "." + packageIdentity.Version.ToString();
             }
 
             return directoryName;
@@ -34,6 +35,7 @@ namespace NuGet.Packaging
             string fileNameBase = packageIdentity.Id;
             if(_useSideBySidePaths)
             {
+                // TODO: Nupkgs from the server will be normalized, but others might not be.
                 fileNameBase += "." + packageIdentity.Version.ToNormalizedString();
             }
 
