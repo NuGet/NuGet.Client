@@ -897,7 +897,7 @@ namespace NuGet.PackageManagement
             // Also, always perform deletion of package directories, even in a rollback, so that there are no stale package directories
             foreach(var packageWithDirectoryToBeDeleted in packageWithDirectoriesToBeDeleted)
             {
-                DeletePackageDirectory(packageWithDirectoryToBeDeleted, nuGetProjectContext);
+                await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
             }
 
             if(executeNuGetProjectActionsException != null)
@@ -1068,7 +1068,7 @@ namespace NuGet.PackageManagement
             return packageExistsInAnotherNuGetProject;
         }
 
-        private bool DeletePackageDirectory(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext)
+        private async Task<bool> DeletePackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if(packageIdentity == null)
             {
@@ -1080,8 +1080,6 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            // TODO: Handle removing of satellite files from the runtime package also
-
             // 1. Check if the Package exists at root, if not, return false
             if (!PackagesFolderNuGetProject.PackageExists(packageIdentity))
             {
@@ -1092,8 +1090,7 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovingPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             // 2. Delete the package folder and files from the root directory of this FileSystemNuGetProject
             // Remember that the following code may throw System.UnauthorizedAccessException
-            FileSystemUtility.DeleteDirectorySafe(PackagesFolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
-                recursive: true, nuGetProjectContext: nuGetProjectContext);
+            await PackagesFolderNuGetProject.DeletePackage(packageIdentity, nuGetProjectContext, token);
             nuGetProjectContext.Log(MessageLevel.Info, NuGet.ProjectManagement.Strings.RemovedPackageFromFolder, packageIdentity, PackagesFolderNuGetProject.Root);
             return true;
         }

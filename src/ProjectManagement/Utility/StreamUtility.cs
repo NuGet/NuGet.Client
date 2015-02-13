@@ -27,7 +27,7 @@ namespace NuGet.ProjectManagement
         /// <param name="stream">First stream</param>
         /// <param name="otherStream">Second stream which MUST be a seekable stream.</param>
         /// <returns>true if the two streams are considered equal.</returns>
-        public static bool ContentEquals(this Stream stream, Stream otherStream)
+        public static bool ContentEquals(Stream stream, Stream otherStream)
         {
             Debug.Assert(otherStream.CanSeek);
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.ProjectManagement
 {
@@ -156,6 +157,12 @@ namespace NuGet.ProjectManagement
             try
             {
                 MakeWriteable(fullPath);
+                var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
+                if (sourceControlManager != null)
+                {
+                    sourceControlManager.PendDeleteFiles(new List<string>() { fullPath }, nuGetProjectContext);
+                }
+
                 File.Delete(fullPath);
                 string folderPath = Path.GetDirectoryName(fullPath);
                 if (!String.IsNullOrEmpty(folderPath))
@@ -170,6 +177,59 @@ namespace NuGet.ProjectManagement
             catch (FileNotFoundException)
             {
 
+            }
+        }
+
+        public static void DeleteFiles(IEnumerable<ZipFilePair> packageFiles, INuGetProjectContext nuGetProjectContext)
+        {
+            List<string> filesToDelete = new List<string>();
+
+            foreach(var packageFile in packageFiles)
+            {
+                if(packageFile != null && packageFile.Item1 != null && packageFile.Item2 != null && File.Exists(packageFile.Item1))
+                {
+                    if(ContentEquals(packageFile.Item1, packageFile.Item2.Open))
+                    {
+                        MakeWriteable(packageFile.Item1);
+                        filesToDelete.Add(packageFile.Item1);
+                    }
+                    else
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, packageFile.Item1);
+                    }
+                }
+            }
+
+            var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
+            if (sourceControlManager != null)
+            {
+                sourceControlManager.PendDeleteFiles(filesToDelete, nuGetProjectContext);
+            }
+
+            foreach(var fileToDelete in filesToDelete)
+            {
+                File.Delete(fileToDelete);
+            }
+        }
+
+        public static bool ContentEquals(string path, Func<Stream> streamFactory)
+        {
+            using (Stream stream = streamFactory(),
+                fileStream = File.OpenRead(path))
+            {
+                return StreamUtility.ContentEquals(stream, fileStream);
+            }
+        }
+
+        // HACK: TODO: This is kinda bad that there is a PendAddFiles method here while delete files performs necessary pending and deletion
+        // Need to update package extraction in Packaging to use a filesystem abstraction or'
+        // just return files to be added in a clean form for projectmanagement to do the addition
+        public static void PendAddFiles(IEnumerable<string> addedPackageFiles, INuGetProjectContext nuGetProjectContext)
+        {
+            var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
+            if(sourceControlManager != null)
+            {
+                sourceControlManager.PendAddFiles(addedPackageFiles, nuGetProjectContext);
             }
         }
 
@@ -214,12 +274,7 @@ namespace NuGet.ProjectManagement
             }
 
             try
-            {               
-                var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-                if(sourceControlManager != null)
-                {
-                    sourceControlManager.DeleteFilesUnderDirectory(fullPath, nuGetProjectContext);
-                }
+            {
                 Directory.Delete(fullPath, recursive);
 
                 // The directory is not guaranteed to be gone since there could be

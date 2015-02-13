@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.ProjectManagement
 {
@@ -76,16 +77,20 @@ namespace NuGet.ProjectManagement
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Root);
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
             packageStream.Seek(0, SeekOrigin.Begin);
-            await PackageExtractor.ExtractPackageAsync(packageStream, packageIdentity, PackagePathResolver, nuGetProjectContext.PackageExtractionContext,
-                PackageSaveMode, token);
+            var addedPackageFilesList = new List<string>(await PackageExtractor.ExtractPackageAsync(packageStream, packageIdentity, PackagePathResolver, nuGetProjectContext.PackageExtractionContext,
+                PackageSaveMode, token));
 
-            // Source control stuff
-            var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if(sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
+            if (PackageSaveMode.HasFlag(PackageSaveModes.Nupkg))
             {
-                var packageInstallPath = PackagePathResolver.GetInstallPath(packageIdentity);
-                sourceControlManager.AddFilesUnderDirectory(packageInstallPath, nuGetProjectContext);
+                var packageFilePath = GetPackagePath(packageIdentity);
+                if (File.Exists(packageFilePath))
+                {
+                    addedPackageFilesList.Add(packageFilePath);
+                }
             }
+
+            // Pend all the package files including the nupkg file
+            FileSystemUtility.PendAddFiles(addedPackageFilesList, nuGetProjectContext);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
             return true;
@@ -93,7 +98,7 @@ namespace NuGet.ProjectManagement
 
         public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            await PackageExtractor.RemoveSatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
+            // Do nothing. Return true
             return true;
         }
 
@@ -111,13 +116,37 @@ namespace NuGet.ProjectManagement
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            return await PackageExtractor.CopySatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
+            var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
+            FileSystemUtility.PendAddFiles(copiedSatelliteFiles, nuGetProjectContext);
+
+            return copiedSatelliteFiles.Any();
         }
 
         public string GetPackagePath(PackageIdentity packageIdentity)
         {
             return Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
                 PackagePathResolver.GetPackageFileName(packageIdentity));
+        }
+
+        public async Task<bool> DeletePackage(PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            // Delete the package file first since it is used to determine if a package is installed
+            if (PackageSaveMode.HasFlag(PackageSaveModes.Nupkg))
+            {
+                var packageFilePath = GetPackagePath(packageIdentity);
+                if (File.Exists(packageFilePath))
+                {
+                    FileSystemUtility.DeleteFile(packageFilePath, nuGetProjectContext);
+                }
+            }
+
+            // Delete all the package files now
+            var allInstalledFiles = await PackageHelper.GetAllInstalledPackageFiles(packageIdentity, PackagePathResolver, PackageSaveMode, token);
+            FileSystemUtility.DeleteFiles(allInstalledFiles, nuGetProjectContext);
+
+            return true;
         }
     }
 }

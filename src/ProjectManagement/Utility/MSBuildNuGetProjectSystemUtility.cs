@@ -278,7 +278,7 @@ namespace NuGet.ProjectManagement
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
             {
                 var fullPath = Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path);
-                if (ContentEquals(fullPath, streamFactory))
+                if (FileSystemUtility.ContentEquals(fullPath, streamFactory))
                 {
                     PerformSafeAction(() => msBuildNuGetProjectSystem.RemoveFile(path), msBuildNuGetProjectSystem.NuGetProjectContext);
                 }
@@ -326,15 +326,6 @@ namespace NuGet.ProjectManagement
             }
 
             return Enumerable.Empty<string>();
-        }
-
-        private static bool ContentEquals(string path, Func<Stream> streamFactory)
-        {
-            using (Stream stream = streamFactory(),
-                fileStream = File.OpenRead(path))
-            {
-                return stream.ContentEquals(fileStream);
-            }
         }
 
         public static void DeleteDirectorySafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
