@@ -54,14 +54,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // No name specified; return default project (if not null)
                 if (Name == null)
                 {
-                    NuGetProject defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
-                    string customUniqueName = defaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
-                    Project defaultDTEProject = DTE.Solution.GetAllProjects()
-                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), customUniqueName))
-                        .FirstOrDefault();
-                    if (defaultDTEProject != null)
+                    Project defaultProject = GetDefaultProject();
+                    if (defaultProject != null)
                     {
-                        WriteObject(defaultDTEProject);
+                        WriteObject(defaultProject);
                     }
                 }
                 else

@@ -351,6 +351,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
+        /// Get default project in the type of EnvDTE.Project, to keep PowerShell scripts backward-compatbility.
+        /// </summary>
+        /// <returns></returns>
+        protected Project GetDefaultProject()
+        {
+            string customUniqueName = string.Empty;
+            Project defaultDTEProject = null;
+
+            NuGetProject defaultNuGetProject = _solutionManager.DefaultNuGetProject;
+            // Solution may be open without a project in it. Then defaultNuGetProject is null.
+            if (defaultNuGetProject != null)
+            {
+                customUniqueName = defaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+            }
+
+            // Get all DTE projects in the solution and compare by CustomUnique names, especially for projects under solution folders.
+            IEnumerable<Project> allDTEProjects = DTE.Solution.GetAllProjects();
+            if (allDTEProjects != null)
+            {
+                defaultDTEProject = allDTEProjects.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), customUniqueName)).FirstOrDefault();
+            }
+
+            return defaultDTEProject;
+        }
+
+        /// <summary>
         /// Return all projects in the solution matching the provided names. Wildcards are supported.
         /// This method will automatically generate error records for non-wildcarded project names that
         /// are not found.
@@ -383,11 +409,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (project != null)
                     {
                         count++;
-                        string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                        string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
                         Project dteProject = allDteProjects
-                                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, name) ||
-                                StringComparer.OrdinalIgnoreCase.Equals(p.FullName, name) ||
-                                StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), name))
+                                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), name))
                                 .FirstOrDefault();
                         yield return dteProject;
                     }
