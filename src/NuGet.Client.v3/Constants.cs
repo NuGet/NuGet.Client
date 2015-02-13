@@ -19,7 +19,7 @@ namespace NuGet.Client
 
     public static class ServiceTypes
     {
-        public const string TypeVersion = "/3.0.0-rc";
+        public const string TypeVersion = "/3.0.0-beta";
 
         public const string SearchQueryService = "SearchQueryService" + TypeVersion;
         public const string SearchAutocompleteService = "SearchAutocompleteService" + TypeVersion;

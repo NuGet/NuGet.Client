@@ -44,22 +44,22 @@
       <HintPath>..\..\packages\NuGet.Protocol.Types.0.3.0-pre-20150115030521\lib\net45\NuGet.Client.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Configuration">
-      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-rc\lib\net45\NuGet.Configuration.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Frameworks">
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.Frameworks.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.Frameworks.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging">
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.Packaging.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.Packaging.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.PackagingCore">
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.PackagingCore.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.PackagingCore.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Resolver">
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-rc\lib\net45\NuGet.Resolver.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.Resolver.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.3.0.0-rc\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Versioning.3.0.0-beta\lib\portable-net40+win\NuGet.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />

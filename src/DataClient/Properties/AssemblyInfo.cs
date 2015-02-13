@@ -19,5 +19,5 @@ using System.Runtime.CompilerServices;
 // When built locally, the NuGet release version is the values specified in this file.
 #if !FIXED_ASSEMBLY_VERSION
 [assembly: AssemblyVersion("3.0.0.0")]
-[assembly: AssemblyInformationalVersion("3.0.0-rc")]
+[assembly: AssemblyInformationalVersion("3.0.0-beta")]
 #endif
