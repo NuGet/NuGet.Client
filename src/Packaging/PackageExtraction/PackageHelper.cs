@@ -174,32 +174,26 @@ namespace NuGet.Packaging
         /// <param name="packageSaveMode"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<ZipFilePair>> GetAllInstalledPackageFiles(PackageIdentity packageIdentity,
+        public static async Task<IEnumerable<ZipFilePair>> GetAllInstalledPackageFiles(Stream packageStream,
+            PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageSaveModes packageSaveMode,
             CancellationToken token)
         {
             List<ZipFilePair> installedPackageFiles = new List<ZipFilePair>();
             string packageDirectory = packagePathResolver.GetInstallPath(packageIdentity);
-            string nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
-            if (File.Exists(nupkgFilePath))
-            {
-                using (var packageStream = File.OpenRead(nupkgFilePath))
-                {
-                    var zipArchive = new ZipArchive(packageStream);
-                    var packageFiles = await GetPackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
-                    installedPackageFiles.AddRange(GetInstalledPackageFiles(packageFiles));
+            var zipArchive = new ZipArchive(packageStream);
+            var packageFiles = await GetPackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
+            installedPackageFiles.AddRange(GetInstalledPackageFiles(packageFiles));
 
-                    // Add satellite files from the runtime package directory too if any
-                    string language;
-                    string runtimePackageDirectory;
-                    IEnumerable<ZipArchiveEntry> satelliteFileEntries;
-                    if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
-                    {
-                        var satelliteFiles = await GetPackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
-                        installedPackageFiles.AddRange(GetInstalledPackageFiles(satelliteFiles));
-                    }
-                }
+            // Add satellite files from the runtime package directory too if any
+            string language;
+            string runtimePackageDirectory;
+            IEnumerable<ZipArchiveEntry> satelliteFileEntries;
+            if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
+            {
+                var satelliteFiles = await GetPackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
+                installedPackageFiles.AddRange(GetInstalledPackageFiles(satelliteFiles));
             }
 
             return installedPackageFiles;
