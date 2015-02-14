@@ -970,6 +970,8 @@ namespace NuGet.PackageManagement
                         }
                     }
                 }
+
+                await OpenReadmeFile(nuGetProjectContext, token);
             }
             catch (Exception ex)
             {
@@ -1029,6 +1031,23 @@ namespace NuGet.PackageManagement
                 catch (Exception)
                 {
                     // TODO: We are ignoring exceptions on rollback. Is this OK?
+                }
+            }
+        }
+
+        private async Task OpenReadmeFile(INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            var executionContext = nuGetProjectContext.ExecutionContext;
+            if (executionContext != null && executionContext.DirectInstall != null)
+            {
+                var packagePath = PackagesFolderNuGetProject.GetPackagePath(executionContext.DirectInstall);
+                if (File.Exists(packagePath))
+                {
+                    var readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);
+                    if(File.Exists(readmeFilePath))
+                    {
+                        await executionContext.OpenFile(readmeFilePath);
+                    }
                 }
             }
         }
