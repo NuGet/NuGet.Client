@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             base.Preprocess();
             UpdateActiveSourceRepository();
-            GetNuGetProject();
+            GetNuGetProject(ProjectName);
         }
 
         protected override void ProcessRecordCore()

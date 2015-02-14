@@ -172,7 +172,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Log(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
+                LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
             }
         }
 
@@ -286,7 +286,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
             }
         }
 
