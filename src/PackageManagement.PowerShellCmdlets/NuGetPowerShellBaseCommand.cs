@@ -559,6 +559,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             return null;      
         }
+
+        /// <summary>
+        /// Log preview nuget project actions on PowerShell console.
+        /// </summary>
+        /// <param name="actions"></param>
+        protected void PreviewNuGetPackageActions(IEnumerable<NuGetProjectAction> actions)
+        {
+            if (actions == null || !actions.Any())
+            {
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
+            }
+            else
+            {
+                foreach (NuGetProjectAction action in actions)
+                {
+                    Log(MessageLevel.Info, string.Format("{0} {1}", action.NuGetProjectActionType, action.PackageIdentity));
+                }
+            }
+        }
         #endregion
 
         #region Processing
