@@ -3,6 +3,7 @@ using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using System;
@@ -311,8 +312,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     List<PackageIdentity> sortedPackages = new List<PackageIdentity>();
                     foreach (NuGetProject project in projects)
                     {
-                        IEnumerable<PackageIdentity> installedPackages = packageManager.GetInstalledPackagesInDependencyOrder(project, new EmptyNuGetProjectContext(), CancellationToken.None).Result;
-                        sortedPackages.AddRange(installedPackages);
+                        IEnumerable<PackageReference> installedRefs = project.GetInstalledPackagesAsync(CancellationToken.None).Result;
+                        if (installedRefs != null && installedRefs.Any())
+                        {
+                            IEnumerable<PackageIdentity> installedPackages = packageManager.GetInstalledPackagesInDependencyOrder(project, new EmptyNuGetProjectContext(), CancellationToken.None).Result;
+                            sortedPackages.AddRange(installedPackages);
+                        }
                     }
 
                     // Get the path to the Packages folder.
