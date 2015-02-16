@@ -159,8 +159,12 @@ namespace NuGet.PackageManagement
             var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
                 nuGetProjectContext, primarySources, secondarySources, token);
 
+            SetDirectInstall(packageIdentity, nuGetProjectContext);
+
             // Step-2 : Execute all the nuGetProjectActions
             await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
+
+            ClearDirectInstall(nuGetProjectContext);
         }
 
         public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext,
@@ -990,6 +994,9 @@ namespace NuGet.PackageManagement
                 await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
             }
 
+            // Clear direct install
+            SetDirectInstall(null, nuGetProjectContext);
+
             if(executeNuGetProjectActionsException != null)
             {
                 throw executeNuGetProjectActionsException;
@@ -1237,6 +1244,31 @@ namespace NuGet.PackageManagement
             effectiveSources.AddRange(secondarySources);
 
             return new HashSet<SourceRepository>(effectiveSources, new SourceRepositoryComparer());
+        }
+
+        public static void SetDirectInstall(PackageIdentity directInstall,
+            INuGetProjectContext nuGetProjectContext)
+        {
+            if(directInstall != null && nuGetProjectContext != null && nuGetProjectContext.ExecutionContext != null)
+            {
+                var ideExecutionContext = nuGetProjectContext.ExecutionContext as IDEExecutionContext;
+                if(ideExecutionContext != null)
+                {
+                    ideExecutionContext.IDEDirectInstall = directInstall;
+                }
+            }
+        }
+
+        public static void ClearDirectInstall(INuGetProjectContext nuGetProjectContext)
+        {
+            if (nuGetProjectContext != null && nuGetProjectContext.ExecutionContext != null)
+            {
+                var ideExecutionContext = nuGetProjectContext.ExecutionContext as IDEExecutionContext;
+                if (ideExecutionContext != null)
+                {
+                    ideExecutionContext.IDEDirectInstall = null;
+                }
+            }
         }
     }
 

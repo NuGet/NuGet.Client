@@ -18,12 +18,14 @@ namespace NuGet.PackageManagement
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISolutionManager solutionManager,
             ISettings settings,
-            ISourceControlManagerProvider sourceControlManagerProvider)
+            ISourceControlManagerProvider sourceControlManagerProvider,
+            ICommonOperations commonOperations)
         {
             SourceRepositoryProvider = sourceRepositoryProvider;
             VsSolutionManager = solutionManager;
             Settings = settings;
             SourceControlManagerProvider = sourceControlManagerProvider;
+            CommonOperations = commonOperations;
         }
 
         /// <summary>
@@ -45,5 +47,10 @@ namespace NuGet.PackageManagement
         /// SourceControlManager provider
         /// </summary>
         public ISourceControlManagerProvider SourceControlManagerProvider { get; private set; }
+
+        /// <summary>
+        /// CommonOperations to openfile, and so on
+        /// </summary>
+        public ICommonOperations CommonOperations { get; private set; }
     }
 }

@@ -37,5 +37,11 @@ namespace NuGet.PackageManagement.UI
         {
             get { return null; }
         }
+
+
+        public ExecutionContext ExecutionContext
+        {
+            get { return null; }
+        }
     }
 }

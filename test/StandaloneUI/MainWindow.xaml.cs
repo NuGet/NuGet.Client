@@ -32,6 +32,7 @@ namespace StandaloneUI
 
         // !!! [Import]
         public ISourceControlManagerProvider _sourceControlManagerProvider;
+        public ICommonOperations _commonOperations;
 
         private CompositionContainer _container;
         private PackageManagerControl _packageManagerControl;
@@ -39,7 +40,8 @@ namespace StandaloneUI
         public MainWindow()
         {
             InitializeComponent();
-            CreatePackageManagerControl();
+            _commonOperations = new StandAloneUICommonOperations();
+            CreatePackageManagerControl();            
         }
 
         private void CreatePackageManagerControl()
@@ -71,7 +73,7 @@ namespace StandaloneUI
             var context = contextFactory.Create(@"c:\temp\test\settings.txt", projects);
             var uiController = _uiServiceFactory.Create(
                 context,
-                new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider));
+                new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider, _commonOperations));
 
             PackageManagerModel model = new PackageManagerModel(uiController, context);
             model.SolutionName = "test solution";
@@ -143,6 +145,21 @@ namespace StandaloneUI
         public void SaveActivePackageSource(PackageSource source)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    internal class StandAloneUICommonOperations : ICommonOperations
+    {
+        public System.Threading.Tasks.Task OpenFile(string fullPath)
+        {
+            try
+            {
+                Process.Start(@"C:\windows\system32\notepad.exe", fullPath);
+            }
+            catch (Exception)
+            {
+            }
+            return System.Threading.Tasks.Task.FromResult(0);
         }
     }
 }

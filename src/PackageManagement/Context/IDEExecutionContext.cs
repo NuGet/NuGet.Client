@@ -3,12 +3,12 @@ using NuGet.ProjectManagement;
 using System;
 using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement.Context
+namespace NuGet.PackageManagement
 {
     public class IDEExecutionContext : ExecutionContext
     {
         public ICommonOperations CommonOperations { get; private set; }
-        public IDEExecutionContext(PackageIdentity directInstall, ICommonOperations commonOperations) : base(directInstall)
+        public IDEExecutionContext(ICommonOperations commonOperations)
         {
             if(commonOperations == null)
             {
@@ -19,6 +19,18 @@ namespace NuGet.PackageManagement.Context
         public override async Task OpenFile(string fullPath)
         {
             await CommonOperations.OpenFile(fullPath);
+        }
+
+        public PackageIdentity IDEDirectInstall
+        {
+            get
+            {
+                return DirectInstall;
+            }
+            set
+            {
+                DirectInstall = value;
+            }
         }
     }
 }

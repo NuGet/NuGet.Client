@@ -45,9 +45,10 @@ namespace Test.Utility
 
     public class TestExecutionContext : ExecutionContext
     {
-        public TestExecutionContext(PackageIdentity directInstall) : base(directInstall)
+        public TestExecutionContext(PackageIdentity directInstall)
         {
             FilesOpened = new HashSet<string>();
+            DirectInstall = directInstall;
         }
         public HashSet<string> FilesOpened { get; private set; }
         public override Task OpenFile(string fullPath)
