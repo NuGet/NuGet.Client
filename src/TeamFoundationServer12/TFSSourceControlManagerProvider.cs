@@ -7,7 +7,6 @@ using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -52,15 +51,30 @@ namespace NuGet.TeamFoundationServer
 
         public override Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
-            bool fileNew = true;
-            if (File.Exists(fullPath))
+            // See if there are any pending changes for this file
+            var pendingChanges = PrivateWorkspace.GetPendingChanges(fullPath, RecursionType.None).ToArray();
+            var pendingDeletes = pendingChanges.Where(c => c.IsDelete).ToArray();
+
+            // We would need to pend an edit if (a) the file is pending delete (b) is bound to source control and does not already have pending edits or adds
+            bool sourceControlBound = IsSourceControlBound(fullPath);
+            bool requiresEdit = pendingDeletes.Any() || (!pendingChanges.Any(c => c.IsEdit || c.IsAdd) && sourceControlBound);
+
+            // Undo all pending deletes
+            if (pendingDeletes.Any())
             {
-                fileNew = false;
-                PrivateWorkspace.PendEdit(fullPath);
+                PrivateWorkspace.Undo(pendingDeletes);
+            }
+
+            // If the file was marked as deleted, and we undid the change or has no pending adds or edits, we need to edit it.
+            if (requiresEdit)
+            {
+                // If the file exists, but there is not pending edit then edit the file (if it is under source control)
+                requiresEdit = PrivateWorkspace.PendEdit(fullPath) > 0;
             }
 
             var fileStream = FileSystemUtility.CreateFile(fullPath);
-            if (fileNew)
+            // If we didn't have to edit the file, this must be a new file.
+            if (!sourceControlBound)
             {
                 PrivateWorkspace.PendAdd(fullPath);
             }
@@ -68,29 +82,96 @@ namespace NuGet.TeamFoundationServer
             return fileStream;
         }
 
-        public override void PendAddFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext)
+        public override void PendAddFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
         {
             HashSet<string> filesToAdd = new HashSet<string>();
             foreach (var fullPath in fullPaths)
             {
-                if (File.Exists(fullPath))
-                {
-                    nuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.Warning_FileAlreadyExists, fullPath);
-                }
-
                 // TODO: Should one also add the Directory under which the file is present since it is TFS?
                 // It would be consistent across Source Control providers to only add files to Source Control
 
                 filesToAdd.Add(fullPath);
+                filesToAdd.Add(Path.GetDirectoryName(fullPath));
             }
 
-            if (filesToAdd.Count > 0)
+            ProcessAddFiles(filesToAdd, root, nuGetProjectContext);
+
+            if (filesToAdd.Any())
             {
                 PrivateWorkspace.PendAdd(filesToAdd.ToArray(), isRecursive: false);
             }
-        }        
+        }
 
-        public override void PendDeleteFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext)
+        private void ProcessAddFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
+        {
+            if (!fullPaths.Any() || String.IsNullOrEmpty(root))
+            {
+                // Short-circuit if nothing specified
+                return;
+            }
+
+            var batchSet = new HashSet<string>(fullPaths, StringComparer.OrdinalIgnoreCase);
+            var batchFolders = batchSet.Select(Path.GetDirectoryName)
+                                  .Distinct()
+                                  .ToArray();
+
+            // Prior to installing, we'll look at the directories and make sure none of them have any pending deletes.
+            var pendingDeletes = PrivateWorkspace.GetPendingChanges(root, RecursionType.Full)
+                                          .Where(c => c.IsDelete);
+
+            // Find pending deletes that are in the same path as any of the folders we are going to be adding.
+            var pendingFolderDeletesToUndo = pendingDeletes.Where(delete => batchFolders.Any(f => PathUtility.IsSubdirectory(delete.LocalItem, f)))
+                                                     .ToArray();
+
+            // Undo directory deletes.
+            if (pendingFolderDeletesToUndo.Any())
+            {
+                PrivateWorkspace.Undo(pendingFolderDeletesToUndo);
+            }
+
+            // Expand the directory deletes into individual file deletes. Include all the files we want to add but exclude any directories that may be in the path of the file.
+            var childrenToPendDelete = (from folder in pendingFolderDeletesToUndo
+                                        from childItem in GetItemsRecursive(folder.LocalItem)
+                                        where batchSet.Contains(childItem) || !batchFolders.Any(f => PathUtility.IsSubdirectory(childItem, f))
+                                        select childItem).ToArray();
+
+            if (childrenToPendDelete.Any())
+            {
+                PrivateWorkspace.PendDelete(childrenToPendDelete, RecursionType.None);
+            }
+
+            // Undo exact file deletes
+            var pendingFileDeletesToUndo = pendingDeletes.Where(delete =>
+                fullPaths.Any(f =>
+                    String.Equals(delete.LocalItem, PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
+                    .ToArray();
+
+            if(pendingFileDeletesToUndo.Any())
+            {
+                PrivateWorkspace.Undo(pendingFileDeletesToUndo);
+            }
+        }
+        
+        private IEnumerable<string> GetItemsRecursive(string fullPath)
+        {
+            return PrivateWorkspace.VersionControlServer.GetItems(fullPath, VersionSpec.Latest, RecursionType.Full, DeletedState.NonDeleted, ItemType.File)
+                                                  .Items.Select(i => PrivateWorkspace.TryGetLocalItemForServerItem(i.ServerItem));
+        }
+
+        private bool IsSourceControlBound(string fullPath)
+        {
+            try
+            {
+                var serverPath = PrivateWorkspace.TryGetServerItemForLocalItem(fullPath);
+                return !String.IsNullOrEmpty(serverPath) && PrivateWorkspace.VersionControlServer.ServerItemExists(serverPath, ItemType.File);
+            }
+            catch (Exception)
+            {
+            }
+            return false;
+        }
+
+        public override void PendDeleteFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
         {
             HashSet<string> filesToPendDelete = new HashSet<string>();
             foreach (var fullPath in fullPaths)
@@ -100,7 +181,34 @@ namespace NuGet.TeamFoundationServer
                     filesToPendDelete.Add(fullPath);
                 }
             }
-            PrivateWorkspace.PendDelete(filesToPendDelete.ToArray(), RecursionType.None);
+
+            // If the root is null or empty, simply try and pend delete on the fullpaths
+            if (!String.IsNullOrEmpty(root))
+            {
+                // undo pending changes
+                var pendingChanges = PrivateWorkspace.GetPendingChanges(
+                    root, RecursionType.Full).ToArray();
+
+                if(pendingChanges.Any())
+                {
+                    PrivateWorkspace.Undo(pendingChanges);
+                }
+
+                foreach (var pendingChange in pendingChanges)
+                {
+                    if (pendingChange.IsAdd)
+                    {
+                        // If a file was marked for add, it does not have to marked for delete
+                        // Since, all the pending changes on the file are undone, no action needed here
+                        filesToPendDelete.Remove(pendingChange.LocalItem);
+                    }
+                }
+            }
+
+            if (filesToPendDelete.Any())
+            {
+                PrivateWorkspace.PendDelete(filesToPendDelete.ToArray(), RecursionType.None);
+            }
         }
     }
 }
