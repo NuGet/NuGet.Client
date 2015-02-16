@@ -13,6 +13,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGetConsole
@@ -51,14 +52,14 @@ namespace NuGetConsole
             set;
         }
 
-        public bool Execute(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, EnvDTEProject envDTEProject,
+        public async Task<bool> ExecuteAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, EnvDTEProject envDTEProject,
             NuGetProject nuGetProject, INuGetProjectContext nuGetProjectContext)
         {
             string scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            return ExecuteCore(scriptFullPath, packageInstallPath, packageZipArchive, envDTEProject, nuGetProject, nuGetProjectContext);
+            return await ExecuteCoreAsync(scriptFullPath, packageInstallPath, packageZipArchive, envDTEProject, nuGetProject, nuGetProjectContext);
         }
 
-        private bool ExecuteCore(
+        private async Task<bool> ExecuteCoreAsync(
             string fullScriptPath,
             string packageInstallPath,
             ZipArchive packageZipArchive,
@@ -85,18 +86,11 @@ namespace NuGetConsole
                     //logger.Log(MessageLevel.Debug, NuGetResources.Debug_TargetFrameworkInfo_PowershellScripts,
                     //    Path.GetDirectoryName(scriptFile.Path), VersionUtility.GetTargetFrameworkLogString(scriptFile.TargetFramework));
                 }
-                string toolsPath = Path.GetDirectoryName(fullScriptPath);
-                string command = "$__pc_args=@(); $input|%{$__pc_args+=$_}; & "
-                    + PathUtility.EscapePSPath(fullScriptPath)
-                    + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0";
-
-                object[] inputs = new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject };
-
-                IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
 
                 if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
-                    _skipPSScriptExecution = IsPackageInstalledInSolution(packageIdentity);
+                    _skipPSScriptExecution = await NuGetPackageManager.PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity,
+                        _solutionManager, nuGetProjectContext, CancellationToken.None);
                 }
                 else
                 {
@@ -105,6 +99,8 @@ namespace NuGetConsole
 
                 if (!_skipPSScriptExecution)
                 {
+                    string toolsPath = Path.GetDirectoryName(fullScriptPath);
+                    IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
                     if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting && psNuGetProjectContext.CurrentPSCmdlet != null)
                     {
                         var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
@@ -119,6 +115,11 @@ namespace NuGetConsole
                     }
                     else
                     {
+                        string command = "$__pc_args=@(); $input|%{$__pc_args+=$_}; & "
+                            + PathUtility.EscapePSPath(fullScriptPath)
+                            + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0";
+
+                        object[] inputs = new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject };
                         string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
 
                         // logging to both the Output window and progress window.
@@ -128,28 +129,6 @@ namespace NuGetConsole
                     }
 
                     return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Determine if the package is installed in any of the projects in solution, via packages.config
-        /// </summary>
-        /// <returns></returns>
-        private bool IsPackageInstalledInSolution(PackageIdentity identity)
-        {
-            if (identity != null)
-            {
-                IEnumerable<NuGetProject> projects = _solutionManager.GetNuGetProjects();
-                foreach (NuGetProject project in projects)
-                {
-                    IEnumerable<PackageReference> installedRefs = project.GetInstalledPackagesAsync(CancellationToken.None).Result;
-                    PackageIdentity match = installedRefs.Select(v => v.PackageIdentity).Where(p => p.Equals(identity)).FirstOrDefault();
-                    if (match != null)
-                    {
-                        return true;
-                    }
                 }
             }
             return false;

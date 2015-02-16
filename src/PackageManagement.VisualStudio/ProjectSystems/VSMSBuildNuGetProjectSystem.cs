@@ -553,11 +553,11 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         #endregion
 
-        public void ExecuteScript(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject)
+        public async System.Threading.Tasks.Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject)
         {
             if (ScriptExecutor != null)
             {
-                ScriptExecutor.Execute(packageInstallPath, scriptRelativePath, packageZipArchive, EnvDTEProject, nuGetProject, NuGetProjectContext);
+                await ScriptExecutor.ExecuteAsync(packageInstallPath, scriptRelativePath, packageZipArchive, EnvDTEProject, nuGetProject, NuGetProjectContext);
             }
         }
 
