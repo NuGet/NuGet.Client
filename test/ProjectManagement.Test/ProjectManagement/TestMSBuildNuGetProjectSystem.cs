@@ -104,7 +104,7 @@ namespace Test.Utility
 
         public bool ReferenceExists(string name)
         {
-            return References.ContainsKey(name);
+            return References.ContainsKey(name) || FrameworkReferences.Contains(name);
         }
 
         public void RemoveImport(string targetFullPath)

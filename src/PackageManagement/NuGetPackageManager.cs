@@ -970,7 +970,7 @@ namespace NuGet.PackageManagement
                         using (var targetPackageStream = new MemoryStream())
                         {
                             await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
-                            await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext, token);
+                            await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                         }
                     }
                 }
@@ -1030,7 +1030,7 @@ namespace NuGet.PackageManagement
                         {
                             using (var packageStream = File.OpenRead(packagePath))
                             {
-                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, nuGetProjectContext, token);
+                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                             }
                         }
                     }
@@ -1099,7 +1099,7 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
-        private async Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream,
+        private async Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback
@@ -1113,7 +1113,8 @@ namespace NuGet.PackageManagement
 
             PackageEventsProvider.Instance.NotifyInstalling(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
 
-            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
+            packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
+            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);            
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
             //if (packageOperationEventArgs.Cancel)

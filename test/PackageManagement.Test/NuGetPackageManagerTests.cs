@@ -1791,6 +1791,100 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManReinstallPackages()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+            var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var folderNuGetProject = msBuildNuGetProject.FolderNuGetProject;
+            var packageIdentity = MorePackageWithDependents[3]; // Microsoft.Net.Http.2.2.22
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
+                new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(3, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[2].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[2].TargetFramework);
+            Assert.Equal(MorePackageWithDependents[0], packagesInPackagesConfig[1].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
+            Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            var installedPackageIdentities = (await msBuildNuGetProject.GetInstalledPackagesAsync(token))
+                .Select(pr => pr.PackageIdentity);
+
+            // Act
+            var packageActions = (await nuGetPackageManager.PreviewReinstallPackagesAsync(installedPackageIdentities, msBuildNuGetProject,
+                new ResolutionContext(DependencyBehavior.Highest), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(),
+                null, token)).ToList();
+
+            // Assert
+            var singlePackageSource = sourceRepositoryProvider.GetRepositories().Single().PackageSource.Source;
+            Assert.Equal(6, packageActions.Count);
+            Assert.True(MorePackageWithDependents[3].Equals(packageActions[0].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[0].NuGetProjectActionType);
+            Assert.True(MorePackageWithDependents[2].Equals(packageActions[1].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[1].NuGetProjectActionType);
+            Assert.True(MorePackageWithDependents[0].Equals(packageActions[2].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[2].NuGetProjectActionType);
+            Assert.True(MorePackageWithDependents[0].Equals(packageActions[3].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Install, packageActions[3].NuGetProjectActionType);
+            Assert.Equal(singlePackageSource, packageActions[3].SourceRepository.PackageSource.Source);
+            Assert.True(MorePackageWithDependents[2].Equals(packageActions[4].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Install, packageActions[4].NuGetProjectActionType);
+            Assert.Equal(singlePackageSource, packageActions[4].SourceRepository.PackageSource.Source);
+            Assert.True(MorePackageWithDependents[3].Equals(packageActions[5].PackageIdentity));
+            Assert.Equal(NuGetProjectActionType.Install, packageActions[5].NuGetProjectActionType);
+            Assert.Equal(singlePackageSource, packageActions[5].SourceRepository.PackageSource.Source);
+
+            // Main Act
+            await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(msBuildNuGetProject, packageActions, new TestNuGetProjectContext(), token);
+
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(3, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[2].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[2].TargetFramework);
+            Assert.Equal(MorePackageWithDependents[0], packagesInPackagesConfig[1].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
+            Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            Assert.True(File.Exists(folderNuGetProject.GetPackagePath(packageIdentity)));
+            Assert.True(File.Exists(folderNuGetProject.GetPackagePath(MorePackageWithDependents[0])));
+            Assert.True(File.Exists(folderNuGetProject.GetPackagePath(MorePackageWithDependents[2])));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
         public async Task TestPacManOpenReadmeFile()
         {
             // Arrange
