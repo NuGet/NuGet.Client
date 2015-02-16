@@ -157,5 +157,29 @@ namespace NuGet.ProjectManagement
                     folder);
             }
         }
+
+        public static bool IsSubdirectory(string basePath, string path)
+        {
+            if (basePath == null)
+            {
+                throw new ArgumentNullException("basePath");
+            }
+            if (path == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+            basePath = basePath.TrimEnd(Path.DirectorySeparatorChar);
+            return path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string ReplaceAltDirSeparatorWithDirSeparator(string path)
+        {
+            return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+        }
+
+        public static string ReplaceDirSeparatorWithAltDirSeparator(string path)
+        {
+            return Uri.UnescapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        }
     }
 }

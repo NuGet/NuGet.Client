@@ -26,8 +26,8 @@ namespace NuGet.ProjectManagement
                 if (IsValid(mostCompatibleGroup))
                 {
                     mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
-                        mostCompatibleGroup.Items.Select(item => altDirSeparator ? MSBuildNuGetProjectSystemUtility.ReplaceDirSeparatorWithAltDirSeparator(item)
-                            : MSBuildNuGetProjectSystemUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
+                        mostCompatibleGroup.Items.Select(item => altDirSeparator ? PathUtility.ReplaceDirSeparatorWithAltDirSeparator(item)
+                            : PathUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
                 }
 
                 return mostCompatibleGroup;
@@ -78,7 +78,7 @@ namespace NuGet.ProjectManagement
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
 
             // Content files are maintained with AltDirectorySeparatorChar
-            List<string> packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
+            List<string> packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => PathUtility.ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
 
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
@@ -217,7 +217,7 @@ namespace NuGet.ProjectManagement
 
                                 try
                                 {
-                                    var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceDirSeparatorWithAltDirSeparator(file));
+                                    var zipArchiveFileEntry = zipArchive.GetEntry(PathUtility.ReplaceDirSeparatorWithAltDirSeparator(file));
                                     transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
                                 }
                                 catch (Exception e)
@@ -227,7 +227,7 @@ namespace NuGet.ProjectManagement
                             }
                             else
                             {
-                                var zipArchiveFileEntry = zipArchive.GetEntry(ReplaceDirSeparatorWithAltDirSeparator(file));
+                                var zipArchiveFileEntry = zipArchive.GetEntry(PathUtility.ReplaceDirSeparatorWithAltDirSeparator(file));
                                 DeleteFileSafe(path, zipArchiveFileEntry.Open, msBuildNuGetProjectSystem);
                             }
                         }
@@ -502,20 +502,10 @@ namespace NuGet.ProjectManagement
             return null;
         }
 
-        internal static string ReplaceAltDirSeparatorWithDirSeparator(string path)
-        {
-            return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
-        }
-
-        internal static string ReplaceDirSeparatorWithAltDirSeparator(string path)
-        {
-            return Uri.UnescapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-        }
-
         private static string GetEffectivePathForContentFile(NuGetFramework nuGetFramework, string zipArchiveEntryFullName)
         {
             // Always use Path.DirectorySeparatorChar
-            var effectivePathForContentFile = ReplaceAltDirSeparatorWithDirSeparator(zipArchiveEntryFullName);
+            var effectivePathForContentFile = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(zipArchiveEntryFullName);
 
             if (effectivePathForContentFile.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {

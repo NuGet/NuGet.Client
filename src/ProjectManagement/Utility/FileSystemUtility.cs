@@ -160,7 +160,7 @@ namespace NuGet.ProjectManagement
                 var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
                 if (sourceControlManager != null)
                 {
-                    sourceControlManager.PendDeleteFiles(new List<string>() { fullPath }, nuGetProjectContext);
+                    sourceControlManager.PendDeleteFiles(new List<string>() { fullPath }, String.Empty, nuGetProjectContext);
                 }
 
                 File.Delete(fullPath);
@@ -180,7 +180,7 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        public static void DeleteFiles(IEnumerable<ZipFilePair> packageFiles, INuGetProjectContext nuGetProjectContext)
+        public static void DeleteFiles(IEnumerable<ZipFilePair> packageFiles, string packagesDir, INuGetProjectContext nuGetProjectContext)
         {
             List<string> filesToDelete = new List<string>();
 
@@ -203,7 +203,7 @@ namespace NuGet.ProjectManagement
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
             if (sourceControlManager != null)
             {
-                sourceControlManager.PendDeleteFiles(filesToDelete, nuGetProjectContext);
+                sourceControlManager.PendDeleteFiles(filesToDelete, packagesDir, nuGetProjectContext);
             }
 
             foreach(var fileToDelete in filesToDelete)
@@ -224,12 +224,12 @@ namespace NuGet.ProjectManagement
         // HACK: TODO: This is kinda bad that there is a PendAddFiles method here while delete files performs necessary pending and deletion
         // Need to update package extraction in Packaging to use a filesystem abstraction or'
         // just return files to be added in a clean form for projectmanagement to do the addition
-        public static void PendAddFiles(IEnumerable<string> addedPackageFiles, INuGetProjectContext nuGetProjectContext)
+        public static void PendAddFiles(IEnumerable<string> addedPackageFiles, string packagesDir, INuGetProjectContext nuGetProjectContext)
         {
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
             if(sourceControlManager != null)
             {
-                sourceControlManager.PendAddFiles(addedPackageFiles, nuGetProjectContext);
+                sourceControlManager.PendAddFiles(addedPackageFiles, packagesDir, nuGetProjectContext);
             }
         }
 

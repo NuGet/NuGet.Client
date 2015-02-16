@@ -236,7 +236,7 @@ namespace NuGet.ProjectManagement
                     p.StartsWith(PowerShellScripts.InitPS1RelativePath)).FirstOrDefault();
                 if (!String.IsNullOrEmpty(initPS1RelativePath))
                 {
-                    initPS1RelativePath = MSBuildNuGetProjectSystemUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
+                    initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
                     MSBuildNuGetProjectSystem.ExecuteScript(packageInstallPath, initPS1RelativePath, zipArchive, this);
                 }
             }
