@@ -77,6 +77,29 @@ namespace NuGet.ProjectManagement
             }
             return false;
         }
+
+        /// <summary>
+        ///  This static helper method returns the unique name on the project if present
+        ///  Otherwise, returns the name. If name is not present, it will throw
+        /// </summary>
+        /// <param name="nuGetProject"></param>
+        /// <returns></returns>
+        public static string GetUniqueNameOrName(NuGetProject nuGetProject)
+        {
+            if(nuGetProject == null)
+            {
+                throw new ArgumentNullException("nuGetProject");
+            }
+
+            string nuGetProjectName;
+            if(!nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.UniqueName, out nuGetProjectName))
+            {
+                // Unique name is not set, simply return the name
+                nuGetProjectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            }
+
+            return nuGetProjectName;
+        }
     }
 
     public static class NuGetProjectMetadataKeys

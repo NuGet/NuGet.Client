@@ -163,7 +163,7 @@ namespace Test.Utility
         }
 
 
-        public void ExecuteScript(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject)
+        public Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject)
         {
             var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
             if(!File.Exists(scriptFullPath))
@@ -178,6 +178,7 @@ namespace Test.Utility
             }
 
             ScriptsExecuted[scriptRelativePath]++;
+            return Task.FromResult(0);
         }
 
 
