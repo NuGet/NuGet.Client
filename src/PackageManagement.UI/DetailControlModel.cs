@@ -70,9 +70,34 @@ namespace NuGet.PackageManagement.UI
             CreateActions();
         }
 
-        protected abstract bool CanUpdate();
+        /// <summary>
+        /// Whether or not the package can be installed
+        /// </summary>
         protected abstract bool CanInstall();
+
+        /// <summary>
+        /// Whether or not the package can be updated to a new version (combined upgrade/downgrade scenario)
+        /// </summary>
+        protected abstract bool CanUpdate();
+        
+        /// <summary>
+        /// Whether or not the package can be upgraded to a newer version
+        /// </summary>
+        protected abstract bool CanUpgrade();
+
+        /// <summary>
+        /// Whether or not the package can be uninstalled
+        /// </summary>
         protected abstract bool CanUninstall();
+
+        /// <summary>
+        /// Whether or not the package can be downgraded to an older version
+        /// </summary>
+        protected abstract bool CanDowngrade();
+
+        /// <summary>
+        /// Whether or not the package can be consolidated onto a version used elsewhere
+        /// </summary>
         protected abstract bool CanConsolidate();
 
         // Create the _actions list
@@ -85,14 +110,24 @@ namespace NuGet.PackageManagement.UI
                 _actions.Add(Resources.Action_Install);
             }
 
-            if (CanUpdate())
+            if (CanUpgrade())
             {
-                _actions.Add(Resources.Action_Update);
+                _actions.Add(Resources.Action_Upgrade);
             }
 
             if (CanUninstall())
             {
                 _actions.Add(Resources.Action_Uninstall);
+            }
+
+            if (CanDowngrade())
+            {
+                _actions.Add(Resources.Action_Downgrade);
+            }
+
+            if (CanUpdate())
+            {
+                _actions.Add(Resources.Action_Update);
             }
 
             if (CanConsolidate())
@@ -178,7 +213,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _selectedAction = value;
-                SelectedActionIsInstall = SelectedAction != Resources.Action_Uninstall;
+                SelectedActionIsInstall = (SelectedAction != Resources.Action_Uninstall);
                 CreateVersions();
                 OnPropertyChanged("SelectedAction");
             }

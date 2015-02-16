@@ -144,17 +144,6 @@ namespace NuGet.PackageManagement.UI
             return installed.Any();
         }
 
-        protected override bool CanUpdate()
-        {
-            var canUpdateInProjects = _nugetProjects
-                .Any(project =>
-                {
-                    return IsInstalled(project, Id) && _allPackages.Count >= 2;
-                });
-            
-            return canUpdateInProjects;
-        }
-
         protected override bool CanInstall()
         {
             var canInstallInProjects = _nugetProjects
@@ -175,6 +164,31 @@ namespace NuGet.PackageManagement.UI
                 });
 
             return canUninstallFromProjects;
+        }
+
+        protected override bool CanUpgrade()
+        {
+            // In solution-level management, we don't separate upgrade from downgrade because
+            // an update could be an upgrade for one project and a downgrade for another
+            return false;
+        }
+
+        protected override bool CanDowngrade()
+        {
+            // In solution-level management, we don't separate upgrade from downgrade because
+            // an update could be an upgrade for one project and a downgrade for another
+            return false;
+        }
+
+        protected override bool CanUpdate()
+        {
+            var canUpdateInProjects = _nugetProjects
+                .Any(project =>
+                {
+                    return IsInstalled(project, Id) && _allPackages.Count >= 2;
+                });
+
+            return canUpdateInProjects;
         }
 
         protected override bool CanConsolidate()

@@ -126,9 +126,6 @@
   <data name="Action_Uninstall" xml:space="preserve">
     <value>Uninstall</value>
   </data>
-  <data name="Action_Update" xml:space="preserve">
-    <value>Update</value>
-  </data>
   <data name="DependencyBehavior_Highest" xml:space="preserve">
     <value>Highest</value>
   </data>
@@ -416,5 +413,14 @@ Packages installed into Website projects will not be restored during build. Cons
   </data>
   <data name="Checkbox_DoNotShowThisAgain" xml:space="preserve">
     <value>Do not show this again</value>
+  </data>
+  <data name="Action_Downgrade" xml:space="preserve">
+    <value>Downgrade</value>
+  </data>
+  <data name="Action_Upgrade" xml:space="preserve">
+    <value>Upgrade</value>
+  </data>
+  <data name="Action_Update" xml:space="preserve">
+    <value>Update</value>
   </data>
 </root>
