@@ -75,6 +75,7 @@ namespace NuGetVSExtension
         private ISourceRepositoryProvider _sourceRepositoryProvider;
         private ISettings _settings;
         private ISourceControlManagerProvider _sourceControlManagerProvider;
+        private ICommonOperations _commonOperations;
         private ISolutionManager _solutionManager;
         //*** private IDeleteOnRestartManager _deleteOnRestart;
         private OleMenuCommand _managePackageDialogCommand;
@@ -177,6 +178,18 @@ namespace NuGetVSExtension
                     _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
                 }
                 return _sourceControlManagerProvider;
+            }
+        }
+
+        private ICommonOperations CommonOperations
+        {
+            get
+            {
+                if (_commonOperations == null)
+                {
+                    _commonOperations = ServiceLocator.GetInstanceSafe<ICommonOperations>();
+                }
+                return _commonOperations;
             }
         }
 
@@ -286,7 +299,7 @@ namespace NuGetVSExtension
                 }
             }
 
-            _uiProjectContext = new NuGetUIProjectContext(new OutputConsoleLogger(), SourceControlManagerProvider);
+            _uiProjectContext = new NuGetUIProjectContext(new OutputConsoleLogger(), SourceControlManagerProvider, CommonOperations);
 
             /* ****
             // when NuGet loads, if the current solution has some package

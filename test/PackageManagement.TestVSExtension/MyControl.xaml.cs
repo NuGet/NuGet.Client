@@ -153,5 +153,10 @@ namespace NuGet.PackageManagement_TestVSExtension
         {
             get { return null; }
         }
+
+        public ProjectManagement.ExecutionContext ExecutionContext
+        {
+            get { return null; }
+        }
     }
 }

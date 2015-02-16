@@ -145,6 +145,7 @@
     <Compile Include="IDE\NuGetAndEnvDTEProjectCache.cs" />
     <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\IScriptExecutor.cs" />
+    <Compile Include="IDE\VsCommonOperations.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="SourceControl\ITFSSourceControlManagerProvider.cs" />

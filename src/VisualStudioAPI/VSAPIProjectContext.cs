@@ -39,5 +39,10 @@ namespace NuGet.VisualStudio
         {
             get { return _sourceControlManagerProvider; }
         }
+
+        public ExecutionContext ExecutionContext
+        {
+            get { return null; }
+        }
     }
 }
