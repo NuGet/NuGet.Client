@@ -53,5 +53,36 @@ namespace NuGet.Frameworks
         public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
         public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*([0-9]+\.([0-9]+))*)*)?$", RegexFlags);
         public static readonly Regex ProfileNumberRegex = new Regex(@"^Profile(?<ProfileNumber>[0-9]+)$", RegexFlags);
+
+        /// <summary>
+        /// Interned frameworks that are commonly used in NuGet
+        /// </summary>
+        public static class CommonFrameworks
+        {
+            public static NuGetFramework Net35 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(3, 5));
+            public static NuGetFramework Net4 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0));
+            public static NuGetFramework Net403 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0, 3));
+            public static NuGetFramework Net45 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5));
+            public static NuGetFramework Net451 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5, 1));
+            public static NuGetFramework Net452 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5, 2));
+            public static NuGetFramework Net46 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 6));
+
+            public static NuGetFramework Win8 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 0));
+            public static NuGetFramework Win81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 1));
+            public static NuGetFramework Win10 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(10, 0));
+
+            public static NuGetFramework SL4 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(4, 0));
+            public static NuGetFramework SL5 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(5, 0));
+
+            public static NuGetFramework WP7 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 0));
+            public static NuGetFramework WP75 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 5));
+            public static NuGetFramework WP8 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8, 0));
+            public static NuGetFramework WP81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8, 1));
+
+            public static NuGetFramework WPA81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1));
+
+            public static NuGetFramework AspNet50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(5, 0));
+            public static NuGetFramework AspNetCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(5, 0));
+        }
     }
 }

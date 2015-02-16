@@ -20,23 +20,23 @@ namespace NuGet.Frameworks
             {
                 if (_profileFrameworks == null)
                 {
-                    NuGetFramework net4 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0));
-                    NuGetFramework net403 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0, 3));
-                    NuGetFramework net45 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5));
-                    NuGetFramework net451 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5, 1));
+                    NuGetFramework net4 = FrameworkConstants.CommonFrameworks.Net4;
+                    NuGetFramework net403 = FrameworkConstants.CommonFrameworks.Net403;
+                    NuGetFramework net45 = FrameworkConstants.CommonFrameworks.Net45;
+                    NuGetFramework net451 = FrameworkConstants.CommonFrameworks.Net451;
 
-                    NuGetFramework win8 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 0));
-                    NuGetFramework win81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 1));
+                    NuGetFramework win8 = FrameworkConstants.CommonFrameworks.Win8;
+                    NuGetFramework win81 = FrameworkConstants.CommonFrameworks.Win81;
 
-                    NuGetFramework sl4 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(4, 0));
-                    NuGetFramework sl5 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(5, 0));
+                    NuGetFramework sl4 = FrameworkConstants.CommonFrameworks.SL4;
+                    NuGetFramework sl5 = FrameworkConstants.CommonFrameworks.SL5;
 
-                    NuGetFramework wp7 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 0));
-                    NuGetFramework wp75 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 5));
-                    NuGetFramework wp8 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8, 0));
-                    NuGetFramework wp81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8, 1));
+                    NuGetFramework wp7 = FrameworkConstants.CommonFrameworks.WP7;
+                    NuGetFramework wp75 = FrameworkConstants.CommonFrameworks.WP75;
+                    NuGetFramework wp8 = FrameworkConstants.CommonFrameworks.WP8;
+                    NuGetFramework wp81 = FrameworkConstants.CommonFrameworks.WP81;
 
-                    NuGetFramework wpa81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1));
+                    NuGetFramework wpa81 = FrameworkConstants.CommonFrameworks.WPA81;
 
                     _profileFrameworks = new KeyValuePair<int,NuGetFramework[]>[]
                     {
@@ -113,16 +113,20 @@ namespace NuGet.Frameworks
             {
                 if (_profileOptionalFrameworks == null)
                 {
+                    List<KeyValuePair<int, NuGetFramework[]>> profileOptionalFrameworks = null;
+
                     NuGetFramework monoandroid = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, new Version(0, 0));
                     NuGetFramework monotouch = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoTouch, new Version(0, 0));
                     NuGetFramework[] monoFrameworks = new NuGetFramework[] { monoandroid, monotouch };
 
-                    _profileOptionalFrameworks = new List<KeyValuePair<int, NuGetFramework[]>>();
+                    profileOptionalFrameworks = new List<KeyValuePair<int, NuGetFramework[]>>();
 
                     foreach (int profile in _profilesWithOptionalFrameworks)
                     {
-                        _profileOptionalFrameworks.Add(new KeyValuePair<int, NuGetFramework[]>(profile, monoFrameworks));
+                        profileOptionalFrameworks.Add(new KeyValuePair<int, NuGetFramework[]>(profile, monoFrameworks));
                     }
+
+                    _profileOptionalFrameworks = profileOptionalFrameworks;
                 }
 
                 return _profileOptionalFrameworks;
@@ -130,6 +134,10 @@ namespace NuGet.Frameworks
         }
 
         private static IPortableFrameworkMappings _instance;
+
+        /// <summary>
+        /// Static instance of the portable framework mappings
+        /// </summary>
         public static IPortableFrameworkMappings Instance
         {
             get
