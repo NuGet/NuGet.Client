@@ -13,14 +13,12 @@ namespace NuGet.Frameworks
     {
         public bool Equals(NuGetFramework x, NuGetFramework y)
         {
-            // both are null
-            if (x == null && y == null)
+            if (Object.ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            // only one is null
-            if (x == null || y == null)
+            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
             {
                 return false;
             }

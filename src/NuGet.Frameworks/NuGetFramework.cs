@@ -21,10 +21,8 @@ namespace NuGet.Frameworks
         private readonly string _platformIdentifier;
         private readonly Version _platformVersion;
 
-        private readonly static Version _emptyVersion = new Version(0, 0, 0, 0);
-
         public NuGetFramework(string framework)
-            : this(framework, _emptyVersion)
+            : this(framework, FrameworkConstants.EmptyVersion)
         {
 
         }
@@ -63,7 +61,7 @@ namespace NuGet.Frameworks
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = frameworkProfile ?? string.Empty;
             _platformIdentifier = platformIdentifier ?? string.Empty;
-            _platformVersion = platformVersion != null ? NormalizeVersion(platformVersion) : _emptyVersion;
+            _platformVersion = platformVersion != null ? NormalizeVersion(platformVersion) : FrameworkConstants.EmptyVersion;
         }
 
         /// <summary>
@@ -331,7 +329,7 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return this == UnsupportedFramework;
+                return UnsupportedFramework.Equals(this);
             }
         }
 
@@ -342,7 +340,7 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return this == AgnosticFramework;
+                return AgnosticFramework.Equals(this);
             }
         }
 
@@ -353,7 +351,7 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return this == AnyFramework;
+                return AnyFramework.Equals(this);
             }
         }
 
@@ -403,10 +401,18 @@ namespace NuGet.Frameworks
 
         private static Version NormalizeVersion(Version version)
         {
-            return new Version(Math.Max(version.Major, 0),
-                               Math.Max(version.Minor, 0),
+            Version normalized = version;
+
+            if (version.Build < 0 || version.Revision < 0)
+            {
+                normalized = new Version(
+                               version.Major,
+                               version.Minor,
                                Math.Max(version.Build, 0),
                                Math.Max(version.Revision, 0));
+            }
+
+            return normalized;
         }
 
         public override string ToString()

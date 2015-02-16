@@ -119,60 +119,60 @@ namespace NuGet.Frameworks
                     {
                         // win <-> win8
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(0, 0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 0))),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.EmptyVersion),
+                                                    FrameworkConstants.CommonFrameworks.Win8),
 
                         // win8 <-> f:netcore45 p:win8
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5),
-                                                        FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 0))),
+                                                    FrameworkConstants.CommonFrameworks.Win8,
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0),
+                                                        FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 0, 0, 0))),
 
                         // win81 <-> f:netcore451 p:win81
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 1)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 1),
-                                                        FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 1))),
+                                                    FrameworkConstants.CommonFrameworks.Win81,
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0),
+                                                        FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 1, 0, 0))),
 
                         // wp <-> wp7
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(0, 0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 0))),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, FrameworkConstants.EmptyVersion),
+                                                    FrameworkConstants.CommonFrameworks.WP7),
 
                         // wp7 <-> f:sl3-wp
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7,0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(3,0), "WindowsPhone")),
+                                                    FrameworkConstants.CommonFrameworks.WP7,
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(3, 0, 0, 0), "WindowsPhone")),
 
                         // wp71 <-> f:sl4-wp71
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7,1)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(4,0), "WindowsPhone71")),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 1, 0, 0)),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(4, 0, 0, 0), "WindowsPhone71")),
 
                         // wp8 <-> f:sl8-wp
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8,0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(8,0), "WindowsPhone")),
+                                                    FrameworkConstants.CommonFrameworks.WP8,
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(8, 0, 0, 0), "WindowsPhone")),
 
                         // wp81 <-> f:sl81-wp
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8,1)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(8,1), "WindowsPhone")),
+                                                    FrameworkConstants.CommonFrameworks.WP81,
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(8, 1, 0, 0), "WindowsPhone")),
 
                         // wpa <-> wpa81
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(0, 0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1))),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, FrameworkConstants.EmptyVersion),
+                                                    FrameworkConstants.CommonFrameworks.WPA81),
 
                         // aspnet <-> aspnet50
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(0, 0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(5, 0))),
+                                                    FrameworkConstants.CommonFrameworks.AspNet,
+                                                    FrameworkConstants.CommonFrameworks.AspNet50),
 
                         // aspnetcore <-> aspnetcore50
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(0, 0)),
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(5, 0))),
+                                                    FrameworkConstants.CommonFrameworks.AspNetCore,
+                                                    FrameworkConstants.CommonFrameworks.AspNetCore50),
                     };
                 }
 
@@ -229,35 +229,35 @@ namespace NuGet.Frameworks
                     {
                         // .NETFramework projects support native references
                         new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(0,0)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(Int32.MaxValue,0))),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.MaxVersion)),
                             new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)))),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion))),
 
                         // aspnetcore projects support native references
                         new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(0,0)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(Int32.MaxValue,0))),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.MaxVersion)),
                             new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)))),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion))),
 
                         // aspnet projects support native references
                         new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(0,0)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(Int32.MaxValue,0))),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.MaxVersion)),
                             new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, new Version(0,0)))),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion))),
 
                         // aspnet projects support .NET 4.5 and up 
                         new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(0,0)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(Int32.MaxValue,0))),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.MaxVersion)),
                             new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4,5)),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(Int32.MaxValue,0)))),
+                                FrameworkConstants.CommonFrameworks.Net45,
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.MaxVersion))),
                     };
                 }
 

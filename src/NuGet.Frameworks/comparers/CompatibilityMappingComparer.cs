@@ -10,6 +10,16 @@ namespace NuGet.Frameworks
     {
         public bool Equals(OneWayCompatibilityMappingEntry x, OneWayCompatibilityMappingEntry y)
         {
+            if (Object.ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+            {
+                return false;
+            }
+
             // TODO: improve this
             return x.GetHashCode() == y.GetHashCode();
         }

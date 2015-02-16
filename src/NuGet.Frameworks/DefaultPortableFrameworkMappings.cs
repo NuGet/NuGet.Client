@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
+    /// <summary>
+    /// Contains the standard portable framework mappings
+    /// </summary>
     public class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
     {
         public DefaultPortableFrameworkMappings()

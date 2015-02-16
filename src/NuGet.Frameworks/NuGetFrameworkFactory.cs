@@ -118,27 +118,26 @@ namespace NuGet.Frameworks
 
             NuGetFramework result = null;
 
-            // first check if we have a special framework
-            if (!TryParseSpecialFramework(folderName, out result))
+            // first check if we have a special or common framework
+            if (!TryParseSpecialFramework(folderName, out result) && !TryParseCommonFramework(folderName, out result))
             {
                 // assume this is unsupported unless we find a match
                 result = UnsupportedFramework;
 
-                Match match = FrameworkConstants.FrameworkRegex.Match(folderName);
+                Tuple<string, string, string> parts = RawParse(folderName);
 
-                if (match.Success)
+                if (parts != null)
                 {
                     string framework = null;
 
                     // TODO: support number only folder names like 45
-                    if (mappings.TryGetIdentifier(match.Groups["Framework"].Value, out framework))
+                    if (mappings.TryGetIdentifier(parts.Item1, out framework))
                     {
-                        Version version = new Version(0, 0); // default for the empty string
-                        string versionString = match.Groups["Version"].Value;
+                        Version version = FrameworkConstants.EmptyVersion;
 
-                        if (String.IsNullOrEmpty(versionString) || mappings.TryGetVersion(versionString, out version))
+                        if (parts.Item2 == null || mappings.TryGetVersion(parts.Item2, out version))
                         {
-                            string profileShort = match.Groups["Profile"].Value.TrimStart('-');
+                            string profileShort = parts.Item3;
                             string profile = null;
                             if (!mappings.TryGetProfile(framework, profileShort, out profile))
                             {
@@ -174,6 +173,86 @@ namespace NuGet.Frameworks
             return result;
         }
 
+        private static Tuple<string, string, string> RawParse(string s)
+        {
+            string identifier = string.Empty;
+            string profile = string.Empty;
+            string version = null;
+
+            char[] chars = s.ToCharArray();
+
+            int versionStart = 0;
+
+            while (versionStart < chars.Length && IsLetterOrDot(chars[versionStart]))
+            {
+                versionStart++;
+            }
+
+            if (versionStart > 0)
+            {
+                identifier = s.Substring(0, versionStart);
+            }
+            else
+            {
+                // invalid, we no longer support names like: 40
+                return null;
+            }
+
+            int profileStart = versionStart;
+
+            while (profileStart < chars.Length && IsDigitOrDot(chars[profileStart]))
+            {
+                profileStart++;
+            }
+
+            int versionLength = profileStart - versionStart;
+
+            if (versionLength > 0)
+            {
+                version = s.Substring(versionStart, versionLength);
+            }
+
+            if (profileStart < chars.Length)
+            {
+                if (chars[profileStart] == '-')
+                {
+                    int actualProfileStart = profileStart + 1;
+
+                    if (actualProfileStart == chars.Length)
+                    {
+                        // empty profiles are not allowed
+                        return null;
+                    }
+
+                    // TODO: validate the profile string to AZaz09-+.
+                    profile = s.Substring(actualProfileStart, s.Length - actualProfileStart);
+                }
+                else
+                {
+                    // invalid profile
+                    return null;
+                }
+            }
+
+            return new Tuple<string, string, string>(identifier, version, profile);
+        }
+
+        private static bool IsLetterOrDot(char c)
+        {
+            int x = (int)c;
+
+            // "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+            return (x >= 65 && x <= 90) || (x >= 97 && x <= 122) || x == 46;
+        }
+
+        private static bool IsDigitOrDot(char c)
+        {
+            int x = (int)c;
+
+            // "0123456789"
+            return (x >= 48 && x <= 57) || x == 46;
+        }
+
         private static bool TryParseSpecialFramework(string frameworkString, out NuGetFramework framework)
         {
             framework = null;
@@ -189,6 +268,35 @@ namespace NuGet.Frameworks
             else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, FrameworkConstants.SpecialIdentifiers.Unsupported))
             {
                 framework = NuGetFramework.UnsupportedFramework;
+            }
+
+            return framework != null;
+        }
+
+        /// <summary>
+        /// A set of special and common frameworks that can be returned from the list of constants without parsing
+        /// Using the interned frameworks here optimizes comparisons since they can be checked by reference.
+        /// This is designed to optimize 
+        /// </summary>
+        private static bool TryParseCommonFramework(string frameworkString, out NuGetFramework framework)
+        {
+            framework = null;
+
+            if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnet") || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnet50"))
+            {
+                framework = FrameworkConstants.CommonFrameworks.AspNet50;
+            }
+            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnetcore") || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnetcore50"))
+            {
+                framework = FrameworkConstants.CommonFrameworks.AspNetCore50;
+            }
+            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net40"))
+            {
+                framework = FrameworkConstants.CommonFrameworks.Net4;
+            }
+            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net45"))
+            {
+                framework = FrameworkConstants.CommonFrameworks.Net45;
             }
 
             return framework != null;

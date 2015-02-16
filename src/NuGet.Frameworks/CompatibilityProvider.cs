@@ -10,7 +10,6 @@ namespace NuGet.Frameworks
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
-        private static readonly Version _emptyVersion = new Version(0, 0, 0, 0);
         private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
@@ -180,7 +179,7 @@ namespace NuGet.Frameworks
 
         private bool IsVersionCompatible(Version framework, Version other)
         {
-            return other == _emptyVersion || other <= framework;
+            return other == FrameworkConstants.EmptyVersion || other <= framework;
         }
     }
 }

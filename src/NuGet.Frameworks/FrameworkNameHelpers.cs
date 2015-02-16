@@ -45,7 +45,7 @@ namespace NuGet.Frameworks
 
             if (String.IsNullOrEmpty(versionString))
             {
-                version = new Version(0, 0);
+                version = FrameworkConstants.EmptyVersion;
             }
             else
             {
