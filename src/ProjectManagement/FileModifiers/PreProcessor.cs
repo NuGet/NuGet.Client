@@ -22,7 +22,7 @@ namespace NuGet.ProjectManagement
 
         public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem projectSystem)
         {
-            throw new NotImplementedException();
+            MSBuildNuGetProjectSystemUtility.DeleteFileSafe(targetPath, packageFile.Open, projectSystem);
         }
 
         internal static string Process(ZipArchiveEntry packageFile, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)

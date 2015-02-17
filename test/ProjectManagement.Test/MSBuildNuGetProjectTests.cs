@@ -353,6 +353,127 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectInstallPPFiles()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
+            var token = CancellationToken.None;
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            var packageFileInfo = TestPackages.GetPackageWithPPFiles(randomTestPackageSourcePath,
+                packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+            using (var packageStream = packageFileInfo.OpenRead())
+            {
+                // Act
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+            }
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            // Check that the reference has been added to MSBuildNuGetProjectSystem
+            Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
+            var filesList = msBuildNuGetProjectSystem.Files.ToList();
+            Assert.Equal("Foo.cs", filesList[0]);
+            Assert.Equal("Bar.cs", filesList[1]);
+            Assert.Equal("packages.config", filesList[2]);
+            var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
+            Assert.Equal(2, processedFilesList.Count);
+            Assert.Equal("Foo.cs", processedFilesList[0]);
+            Assert.Equal("Bar.cs", processedFilesList[1]);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
+        }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectUninstallPPFiles()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
+            var token = CancellationToken.None;
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            var packageFileInfo = TestPackages.GetPackageWithPPFiles(randomTestPackageSourcePath,
+                packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+            using (var packageStream = packageFileInfo.OpenRead())
+            {
+                // Act
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+            }
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            // Check that the reference has been added to MSBuildNuGetProjectSystem
+            Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
+            var filesList = msBuildNuGetProjectSystem.Files.ToList();
+            Assert.Equal("Foo.cs", filesList[0]);
+            Assert.Equal("Bar.cs", filesList[1]);
+            Assert.Equal("packages.config", filesList[2]);
+            var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
+            Assert.Equal(2, processedFilesList.Count);
+            Assert.Equal("Foo.cs", processedFilesList[0]);
+            Assert.Equal("Bar.cs", processedFilesList[1]);
+
+            // Main Act
+            await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+            // Check that the packages.config file does not exist after the uninstallation
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            // Check that the files have been removed from MSBuildNuGetProjectSystem
+            Assert.Equal(0, msBuildNuGetProjectSystem.Files.Count);
+            Assert.False(Directory.Exists(Path.Combine(randomProjectFolderPath, "Content")));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
+        }
         #endregion
 
         #region XmlTransform tests

@@ -78,6 +78,20 @@ namespace Test.Utility
             return fileInfo;
         }
 
+        public static FileInfo GetPackageWithPPFiles(string path, string packageId, string packageVersion)
+        {
+            ZipFile zipFile;
+            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            zipFile.AddEntry("Content/Bar.cs.pp", new byte[] { 0 });
+            zipFile.AddEntry("Content/Foo.cs.pp", new byte[] { 0 });
+
+            SetSimpleNuspec(zipFile, packageId, packageVersion);
+            zipFile.Save();
+
+            return fileInfo;
+        }
+
         public static FileInfo GetContentPackageWithTargetFramework(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
