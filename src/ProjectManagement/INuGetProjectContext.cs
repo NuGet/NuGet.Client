@@ -17,6 +17,7 @@ namespace NuGet.ProjectManagement
         FileConflictAction ResolveFileConflict(string message);
         PackageExtractionContext PackageExtractionContext { get; set; }
         ISourceControlManagerProvider SourceControlManagerProvider { get; }
+        ExecutionContext ExecutionContext { get; }
     }
 
     /// <summary>

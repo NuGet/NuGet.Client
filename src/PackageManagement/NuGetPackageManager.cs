@@ -159,8 +159,12 @@ namespace NuGet.PackageManagement
             var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
                 nuGetProjectContext, primarySources, secondarySources, token);
 
+            SetDirectInstall(packageIdentity, nuGetProjectContext);
+
             // Step-2 : Execute all the nuGetProjectActions
             await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
+
+            ClearDirectInstall(nuGetProjectContext);
         }
 
         public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext,
@@ -966,10 +970,12 @@ namespace NuGet.PackageManagement
                         using (var targetPackageStream = new MemoryStream())
                         {
                             await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
-                            await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, nuGetProjectContext, token);
+                            await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                         }
                     }
                 }
+
+                await OpenReadmeFile(nuGetProjectContext, token);
             }
             catch (Exception ex)
             {
@@ -987,6 +993,9 @@ namespace NuGet.PackageManagement
             {
                 await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
             }
+
+            // Clear direct install
+            SetDirectInstall(null, nuGetProjectContext);
 
             if(executeNuGetProjectActionsException != null)
             {
@@ -1021,7 +1030,7 @@ namespace NuGet.PackageManagement
                         {
                             using (var packageStream = File.OpenRead(packagePath))
                             {
-                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, nuGetProjectContext, token);
+                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                             }
                         }
                     }
@@ -1029,6 +1038,23 @@ namespace NuGet.PackageManagement
                 catch (Exception)
                 {
                     // TODO: We are ignoring exceptions on rollback. Is this OK?
+                }
+            }
+        }
+
+        private async Task OpenReadmeFile(INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            var executionContext = nuGetProjectContext.ExecutionContext;
+            if (executionContext != null && executionContext.DirectInstall != null)
+            {
+                var packagePath = PackagesFolderNuGetProject.GetPackagePath(executionContext.DirectInstall);
+                if (File.Exists(packagePath))
+                {
+                    var readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);
+                    if(File.Exists(readmeFilePath))
+                    {
+                        await executionContext.OpenFile(readmeFilePath);
+                    }
                 }
             }
         }
@@ -1073,7 +1099,7 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
-        private async Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream,
+        private async Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback
@@ -1087,7 +1113,8 @@ namespace NuGet.PackageManagement
 
             PackageEventsProvider.Instance.NotifyInstalling(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
 
-            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
+            packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
+            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);            
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
             //if (packageOperationEventArgs.Cancel)
@@ -1120,7 +1147,7 @@ namespace NuGet.PackageManagement
 
             // Step-3: Check if the package directory could be deleted
             if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
-                !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, nuGetProjectContext, token))
+                !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, nuGetProjectContext, token))
             {
                 packageWithDirectoriesToBeDeleted.Add(packageIdentity);
             }
@@ -1140,14 +1167,30 @@ namespace NuGet.PackageManagement
             PackageEventsProvider.Instance.NotifyUninstalled(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
         }
 
-        private async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            bool packageExistsInAnotherNuGetProject = false;
-            var nuGetProjectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-            foreach (var otherNuGetProject in SolutionManager.GetNuGetProjects())
+            if(nuGetProject == null)
             {
-                if (!otherNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name).Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentNullException("nuGetProject");
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException("packageIdentity");
+            }
+
+            if(solutionManager == null)
+            {
+                throw new ArgumentNullException("solutionManager");
+            }
+
+            bool packageExistsInAnotherNuGetProject = false;
+            string nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
+            foreach (var otherNuGetProject in solutionManager.GetNuGetProjects())
+            {
+                var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
+                if (!otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
                 {
                     packageExistsInAnotherNuGetProject = (await otherNuGetProject.GetInstalledPackagesAsync(token)).Where(pr => pr.PackageIdentity.Equals(packageIdentity)).Any();
                 }
@@ -1218,6 +1261,31 @@ namespace NuGet.PackageManagement
             effectiveSources.AddRange(secondarySources);
 
             return new HashSet<SourceRepository>(effectiveSources, new SourceRepositoryComparer());
+        }
+
+        public static void SetDirectInstall(PackageIdentity directInstall,
+            INuGetProjectContext nuGetProjectContext)
+        {
+            if(directInstall != null && nuGetProjectContext != null && nuGetProjectContext.ExecutionContext != null)
+            {
+                var ideExecutionContext = nuGetProjectContext.ExecutionContext as IDEExecutionContext;
+                if(ideExecutionContext != null)
+                {
+                    ideExecutionContext.IDEDirectInstall = directInstall;
+                }
+            }
+        }
+
+        public static void ClearDirectInstall(INuGetProjectContext nuGetProjectContext)
+        {
+            if (nuGetProjectContext != null && nuGetProjectContext.ExecutionContext != null)
+            {
+                var ideExecutionContext = nuGetProjectContext.ExecutionContext as IDEExecutionContext;
+                if (ideExecutionContext != null)
+                {
+                    ideExecutionContext.IDEDirectInstall = null;
+                }
+            }
         }
     }
 

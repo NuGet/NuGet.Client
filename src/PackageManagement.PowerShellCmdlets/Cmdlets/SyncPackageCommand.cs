@@ -42,21 +42,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             base.ProcessRecordCore();
 
-            Task.Run(async () =>
+            PackageIdentity identity = GetPackageIdentity().Result;
+            SubscribeToProgressEvents();
+            if (identity == null)
             {
-                PackageIdentity identity = await GetPackageIdentity();
-                SubscribeToProgressEvents();
-                if (identity != null)
-                {
-                    await SyncPackages(Projects, identity);
-                }
-                else
-                {
-                    Log(MessageLevel.Info, Resources.Cmdlet_PackageNotInstalled, Id);
-                    completeEvent.Set();
-                }
-            });
-            WaitAndLogFromMessageQueue();
+                LogCore(MessageLevel.Info, string.Format(Resources.Cmdlet_PackageNotInstalled, Id));
+            }
+            else
+            {
+                Task.Run(() => SyncPackages(Projects, identity));
+                WaitAndLogFromMessageQueue();
+            }
             UnsubscribeFromProgressEvents();
         }
 

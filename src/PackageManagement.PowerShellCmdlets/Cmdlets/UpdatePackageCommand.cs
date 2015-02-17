@@ -126,43 +126,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private async Task UpdateOrReinstallAllPackages()
         {
-            var token = CancellationToken.None;
-            foreach (NuGetProject project in Projects)
+            try
             {
-                IEnumerable<NuGetProjectAction> actions = Enumerable.Empty<NuGetProjectAction>();
-                // Get the list of package ids or identities to be updated for PackageManager
-                if (Reinstall.IsPresent)
+                foreach (NuGetProject project in Projects)
                 {
-                    // Update-Package -Reinstall -> get list of installed package identities
-                    IEnumerable<PackageIdentity> identitiesToUpdate = Enumerable.Empty<PackageIdentity>();
-                    identitiesToUpdate = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity);
-                    // Preview Update-Package -Reinstall actions
-                    actions = await PackageManager.PreviewReinstallPackagesAsync(identitiesToUpdate, project, ResolutionContext,
-                    this, ActiveSourceRepository, null, token);
+                    await PreviewAndExecuteUpdateActionsforAllPackages(project);
                 }
-                else
-                {
-                    // Update-Package -> get list of installed package ids
-                    IEnumerable<string> idsToUpdate = Enumerable.Empty<string>();
-                    idsToUpdate = await GeneratePackageIdListForUpdate(project, token);
-                    // Preview Update-Package actions
-                    actions = await PackageManager.PreviewUpdatePackagesAsync(idsToUpdate, project, ResolutionContext,
-                    this, ActiveSourceRepository, null, token);
-                }
-
-                if (!WhatIf.IsPresent)
-                {
-                    if (actions.Any())
-                    {
-                        // Execute project actions by Package Manager
-                        await ExecutePackageUpdates(actions, project);
-                    }
-                    else
-                    {
-                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
-                        completeEvent.Set();
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
+                Log(MessageLevel.Error, ex.Message);
+            }
+            finally
+            {
+                completeEvent.Set();
             }
         }
 
@@ -172,124 +149,156 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private async Task UpdateOrReinstallSinglePackage()
         {
-            var token = CancellationToken.None;
-            foreach (NuGetProject project in Projects)
+            try
             {
-                PackageReference installedPackage = (await Project.GetInstalledPackagesAsync(token))
-                    .Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-
-                // If package Id exists in Packages folder but is not actually installed to the current project, throw.
-                if (installedPackage == null)
+                foreach (NuGetProject project in Projects)
                 {
-                    Log(MessageLevel.Error, string.Format(Resources.PackageNotInstalledInAnyProject, Id));
-                    completeEvent.Set();
+                    await PreviewAndExecuteUpdateActionsforSinglePackage(project);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log(MessageLevel.Error, ex.Message);
+            }
+            finally
+            {
+                completeEvent.Set();
+            }
+        }
+
+        /// <summary>
+        /// Preview update actions for all packages
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        private async Task PreviewAndExecuteUpdateActionsforAllPackages(NuGetProject project)
+        {
+            var token = CancellationToken.None;
+            IEnumerable<NuGetProjectAction> actions = Enumerable.Empty<NuGetProjectAction>();
+
+            // Get the list of package ids or identities to be updated for PackageManager
+            if (Reinstall.IsPresent)
+            {
+                // Update-Package -Reinstall -> get list of installed package identities
+                IEnumerable<PackageIdentity> identitiesToUpdate = Enumerable.Empty<PackageIdentity>();
+                identitiesToUpdate = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity);
+                // Preview Update-Package -Reinstall actions
+                actions = await PackageManager.PreviewReinstallPackagesAsync(identitiesToUpdate, project, ResolutionContext,
+                this, ActiveSourceRepository, null, token);
+            }
+            else
+            {
+                // Update-Package -> get list of installed package ids
+                IEnumerable<string> idsToUpdate = Enumerable.Empty<string>();
+                idsToUpdate = await GeneratePackageIdListForUpdate(project, token);
+                // Preview Update-Package actions
+                actions = await PackageManager.PreviewUpdatePackagesAsync(idsToUpdate, project, ResolutionContext,
+                this, ActiveSourceRepository, null, token);
+            }
+
+            if (actions.Any())
+            {
+                if (WhatIf.IsPresent)
+                {
+                    // For -WhatIf, only preview the actions
+                    PreviewNuGetPackageActions(actions);
                 }
                 else
                 {
-                    PackageIdentity update = null;
-                    // If -Version switch is specified
-                    if (!string.IsNullOrEmpty(Version))
+                    if (Reinstall.IsPresent)
                     {
-                        // If Highest/HighestMinor/HighestPatch/Lowest is given after -version switch
-                        if (IsVersionEnum)
-                        {
-                            update = GetPackageUpdate(installedPackage, project, _allowPrerelease, false, null, true, _updateVersionEnum);
-                        }
-                        // If a NuGetVersion format is given after -version switch
-                        else
-                        {
-                            update = GetPackageUpdate(installedPackage, project, _allowPrerelease, false, Version);
-                        }
+                        var uninstallActions = actions.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Uninstall);
+                        var installActions = actions.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install);
 
-                        if (update != null)
-                        {
-                            // Update by package identity
-                            await UpdatePackageByIdentity(update, project);
-                        }
-                        else
-                        {
-                            Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
-                            completeEvent.Set();
-                        }
+                        // Execute uninstall actions first to ensure that the package is completely uninstalled even from packages folder
+                        await PackageManager.ExecuteNuGetProjectActionsAsync(project, uninstallActions, this, CancellationToken.None);
+
+                        // Execute install actions now
+                        await PackageManager.ExecuteNuGetProjectActionsAsync(project, installActions, this, CancellationToken.None);
                     }
                     else
                     {
-                        if (Reinstall.IsPresent)
-                        {
-                            // Update-Package Id -Reinstall
-                            PackageIdentity identity = installedPackage.PackageIdentity;
-                            await UpdatePackageByIdentity(identity, project);
-                        }
-                        else
-                        {
-                            // Update-Package Id
-                            NormalizePackageId(project);
-                            await UpdatePackageById(project);
-                        }
+                        // Execute project actions by Package Manager
+                        await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                    }
+                }
+            }
+            else
+            {
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+            }
+        }
+
+        /// <summary>
+        /// Preview update actions for single package
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        private async Task PreviewAndExecuteUpdateActionsforSinglePackage(NuGetProject project)
+        {
+            var token = CancellationToken.None;
+            PackageReference installedPackage = (await project.GetInstalledPackagesAsync(token))
+                .Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+            // If package Id exists in Packages folder but is not actually installed to the current project, throw.
+            if (installedPackage == null)
+            {
+                Log(MessageLevel.Error, string.Format(Resources.PackageNotInstalledInAnyProject, Id));
+            }
+            else
+            {
+                // If -Version switch is specified
+                if (!string.IsNullOrEmpty(Version))
+                {
+                    PackageIdentity update = GetUpdatePackageIdentityWhenVersionSpecified(project, installedPackage);
+                    if (update != null)
+                    {
+                        // Update by package identity
+                        await InstallPackageByIdentityAsync(project, update, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                    }
+                    else
+                    {
+                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                    }
+                }
+                else
+                {
+                    if (Reinstall.IsPresent)
+                    {
+                        // Update-Package Id -Reinstall
+                        PackageIdentity identity = installedPackage.PackageIdentity;
+                        await InstallPackageByIdentityAsync(project, identity, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                    }
+                    else
+                    {
+                        // Update-Package Id
+                        NormalizePackageId(project);
+                        await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Async call for Execute package update actions from the list of identities
+        /// Get update package identity when -Version is specified.
         /// </summary>
-        /// <param name="identities"></param>
         /// <param name="project"></param>
-        private async Task ExecutePackageUpdates(IEnumerable<NuGetProjectAction> actions, NuGetProject project)
+        /// <param name="installedPackage"></param>
+        /// <returns></returns>
+        private PackageIdentity GetUpdatePackageIdentityWhenVersionSpecified(NuGetProject project, PackageReference installedPackage)
         {
-            try
+            PackageIdentity update = null;
+            // If Highest/HighestMinor/HighestPatch/Lowest is given after -version switch
+            if (IsVersionEnum)
             {
-                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                update = GetPackageUpdate(installedPackage, project, _allowPrerelease, false, null, true, _updateVersionEnum);
             }
-            catch (Exception ex)
+            // If a NuGetVersion format is given after -version switch
+            else
             {
-                Log(MessageLevel.Error, ex.Message);
+                update = GetPackageUpdate(installedPackage, project, _allowPrerelease, false, Version);
             }
-            finally
-            {
-                completeEvent.Set();
-            }
-        }
-
-        /// <summary>
-        /// Async call for update a package by Identity.
-        /// </summary>
-        /// <param name="identities"></param>
-        private async Task UpdatePackageByIdentity(PackageIdentity identity, NuGetProject project)
-        {
-            try
-            {
-                await InstallPackageByIdentityAsync(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
-            }
-            catch (Exception ex)
-            {
-                Log(MessageLevel.Error, ex.Message);
-            }
-            finally
-            {
-                completeEvent.Set();
-            }
-        }
-
-        /// <summary>
-        /// Async call for update a package by Id.
-        /// </summary>
-        /// <param name="identities"></param>
-        private async Task UpdatePackageById(NuGetProject project)
-        {
-            try
-            {
-                await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
-            }
-            catch (Exception ex)
-            {
-                Log(MessageLevel.Error, ex.Message);
-            }
-            finally
-            {
-                completeEvent.Set();
-            }
+            return update;
         }
 
         /// <summary>

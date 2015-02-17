@@ -33,6 +33,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ISourceRepositoryProvider _resourceRepositoryProvider;
         private ISolutionManager _solutionManager;
         private ISettings _settings;
+        private ICommonOperations _commonOperations;
         private DTE _dte;
         // TODO: Hook up DownloadResource.Progress event
         private readonly IHttpClientEvents _httpClientEvents;
@@ -191,6 +192,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _resourceRepositoryProvider = _packageManagementContext.SourceRepositoryProvider;
                 _solutionManager = _packageManagementContext.VsSolutionManager;
                 _settings = _packageManagementContext.Settings;
+                _commonOperations = _packageManagementContext.CommonOperations;
+                if (_commonOperations != null)
+                {
+                    ExecutionContext = new IDEExecutionContext(_commonOperations);
+                }
             }
             _dte = (DTE)GetPropertyValueFromHost(DTEKey);
         }
@@ -558,6 +564,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             return null;      
+        }
+
+        /// <summary>
+        /// Log preview nuget project actions on PowerShell console.
+        /// </summary>
+        /// <param name="actions"></param>
+        protected void PreviewNuGetPackageActions(IEnumerable<NuGetProjectAction> actions)
+        {
+            if (actions == null || !actions.Any())
+            {
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
+            }
+            else
+            {
+                foreach (NuGetProjectAction action in actions)
+                {
+                    Log(MessageLevel.Info, string.Format("{0} {1}", action.NuGetProjectActionType, action.PackageIdentity));
+                }
+            }
         }
         #endregion
 
@@ -978,6 +1003,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public ISourceControlManagerProvider SourceControlManagerProvider
         {
             get { return _packageManagementContext.SourceControlManagerProvider; }
+        }
+
+
+        public ProjectManagement.ExecutionContext ExecutionContext
+        {
+            get;
+            protected set;
         }
     }
 

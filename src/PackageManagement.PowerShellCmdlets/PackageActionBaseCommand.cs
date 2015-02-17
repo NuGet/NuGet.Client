@@ -1,4 +1,5 @@
 ﻿using NuGet.Client.VisualStudio;
+using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
@@ -80,11 +81,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (isPreview)
             {
+                List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
                 if (isForce)
                 {
-                    await PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext, CancellationToken.None);
+                    actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext, CancellationToken.None));
+                    // Temporarily work around the issue of Install -Force -WhatIf, where the package was not actually uninstalled in the first step.
+                    // TODO: Fix the logic and add the concept of Force Install to Resolver after Beta. And Remove the hack here.
+                    NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identity, ActiveSourceRepository);
+                    actions.Add(installAction);
                 }
-                await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
+                else
+                {
+                    actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
+                }
+                PreviewNuGetPackageActions(actions);
             }
             else
             {
@@ -111,11 +121,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (isPreview)
             {
+                List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
                 if (isForce)
                 {
-                    await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
+                    actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None));
+                    // Temporarily work around the issue of Install -Force -WhatIf, where the package was not uninstalled in the first step.
+                    // TODO: Fix the logic and add the concept of Force Install to Resolver after Beta. And Remove the hack here.
+                    PackageReference identity = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
+                        StringComparer.OrdinalIgnoreCase.Equals(packageId, p.PackageIdentity.Id)).FirstOrDefault();
+                    NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identity.PackageIdentity, ActiveSourceRepository);
+                    actions.Add(installAction);
                 }
-                await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
+                else
+                {
+                    actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
+                }
+                PreviewNuGetPackageActions(actions);
             }
             else
             {
@@ -126,7 +147,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
             }
         }
-        
+
         /// <summary>
         /// Normalize package Id input against server metadata for project K, which is case-sensitive.
         /// </summary>

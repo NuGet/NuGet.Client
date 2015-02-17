@@ -14,7 +14,6 @@ namespace NuGet.ProjectManagement
             return FileConflictAction.IgnoreAll;
         }
 
-
         public PackageExtractionContext PackageExtractionContext
         {
             get;
@@ -27,6 +26,11 @@ namespace NuGet.ProjectManagement
             {
                 return null;
             }
+        }
+
+        public ExecutionContext ExecutionContext
+        {
+            get { return null; }
         }
     }
 }

@@ -112,7 +112,7 @@ namespace ProjectManagement.Test
                 "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First().Value);
 
             // Main Act
-            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+            await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
@@ -338,7 +338,7 @@ namespace ProjectManagement.Test
             Assert.Equal("packages.config", filesList[3]);
 
             // Main Act
-            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+            await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
             // Check that the packages.config file does not exist after the uninstallation
             Assert.False(File.Exists(randomPackagesConfigPath));
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
@@ -511,7 +511,7 @@ namespace ProjectManagement.Test
             }
 
             // Main Act
-            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+            await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
             // Check that the reference has been added to MSBuildNuGetProjectSystem
@@ -633,7 +633,7 @@ namespace ProjectManagement.Test
                 "build\\net45\\build.targets"), msBuildNuGetProjectSystem.Imports.First());
 
             // Main Act
-            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+            await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
             // Check that the packages.config file does not exist after uninstallation
@@ -751,7 +751,7 @@ namespace ProjectManagement.Test
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
 
             // Main Act
-            msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+            await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
             // Check that the packages.config file does not exist after uninstallation

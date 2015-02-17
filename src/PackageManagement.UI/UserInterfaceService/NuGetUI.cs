@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.UI
             }
 
         // TODO: rename it
-        public INuGetProjectContext ProgressWindow
+        public NuGetUIProjectContext ProgressWindow
         {
             get
             {
@@ -377,12 +377,18 @@ namespace NuGet.PackageManagement.UI
         private readonly Dispatcher _uiDispatcher;
         private readonly INuGetUILogger _logger;
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
+        private readonly ICommonOperations _commonOperations;
 
-        public NuGetUIProjectContext(INuGetUILogger logger, ISourceControlManagerProvider sourceControlManagerProvider)
+        public NuGetUIProjectContext(INuGetUILogger logger, ISourceControlManagerProvider sourceControlManagerProvider, ICommonOperations commonOperations)
         {
             _logger = logger;
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             _sourceControlManagerProvider = sourceControlManagerProvider;
+            _commonOperations = commonOperations;
+            if (commonOperations != null)
+            {
+                ExecutionContext = new IDEExecutionContext(commonOperations);
+            }
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
@@ -454,6 +460,20 @@ namespace NuGet.PackageManagement.UI
         public ISourceControlManagerProvider SourceControlManagerProvider
         {
             get { return _sourceControlManagerProvider; }
+        }
+
+        public ICommonOperations CommonOperations
+        {
+            get
+            {
+                return _commonOperations;
+            }
+        }
+
+        public ExecutionContext ExecutionContext
+        {
+            get;
+            private set;
         }
     }
 }

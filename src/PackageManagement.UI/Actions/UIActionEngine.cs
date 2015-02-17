@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.UI
                 if (!token.IsCancellationRequested)
                 {
                     // execute the actions
-                    await ExecuteActions(actions, uiService.ProgressWindow, token);
+                    await ExecuteActions(actions, uiService.ProgressWindow, userAction, token);
 
                     // update
                     await uiService.RefreshPackageStatus();
@@ -139,12 +139,52 @@ namespace NuGet.PackageManagement.UI
         /// <param name="projectContext"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        protected async Task ExecuteActions(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions, INuGetProjectContext projectContext, CancellationToken token)
+        protected async Task ExecuteActions(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions,
+            NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
         {
+            HashSet<PackageIdentity> processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
             foreach (var projectActions in actions.GroupBy(e => e.Item1))
             {
-                await _packageManager.ExecuteNuGetProjectActionsAsync(projectActions.Key, projectActions.Select(e => e.Item2), projectContext, token);
+                var nuGetProjectActions = projectActions.Select(e => e.Item2);
+                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, projectContext.CommonOperations);
+                if (directInstall != null && !processedDirectInstalls.Contains(directInstall))
+                {
+                    NuGetPackageManager.SetDirectInstall(directInstall, projectContext);
+                    processedDirectInstalls.Add(directInstall);
+                }
+                await _packageManager.ExecuteNuGetProjectActionsAsync(projectActions.Key, nuGetProjectActions, projectContext, token);
+                NuGetPackageManager.ClearDirectInstall(projectContext);
             }
+        }
+
+        private PackageIdentity GetDirectInstall(IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            UserAction userAction,
+            ICommonOperations commonOperations)
+        {
+            if (commonOperations != null && userAction != null && userAction.Action == NuGetProjectActionType.Install && nuGetProjectActions.Any())
+            {
+                PackageIdentity directInstall = null;
+                if(userAction.PackageIdentity != null)
+                {
+                    directInstall = userAction.PackageIdentity;
+                }
+                else
+                {
+                    var identitiesWithSameId = nuGetProjectActions.Where(n => n.PackageIdentity.Id.Equals(userAction)).ToList();
+                    if(identitiesWithSameId.Count == 1)
+                    {
+                        directInstall = identitiesWithSameId[0].PackageIdentity;
+                    }
+                    // If there multiple actions with the same package id as the user action, just ignore
+                }
+
+                if (directInstall != null)
+                {
+                    return directInstall;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

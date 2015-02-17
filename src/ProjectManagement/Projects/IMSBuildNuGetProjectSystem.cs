@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -35,7 +36,7 @@ namespace NuGet.ProjectManagement
         string ResolvePath(string path);
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
-        void ExecuteScript(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject);
+        Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject);
         void BeginProcessing(IEnumerable<string> files);
         void EndProcessing();
 

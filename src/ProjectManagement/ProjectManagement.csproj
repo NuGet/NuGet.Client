@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EmptyNuGetProjectContext.cs" />
+    <Compile Include="ExecutionContext.cs" />
     <Compile Include="FileConflictAction.cs" />
     <Compile Include="FileModifiers\FileTransformExtensions.cs" />
     <Compile Include="FileModifiers\IPackageFileTransformer.cs" />

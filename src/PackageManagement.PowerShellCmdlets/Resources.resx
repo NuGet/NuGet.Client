@@ -279,4 +279,7 @@
   <data name="Cmdlets_FailedBindingRedirects" xml:space="preserve">
     <value>Failed to add BindingRedirects to project '{0}' due to error: {1}</value>
   </data>
+  <data name="Cmdlet_NoPackageActions" xml:space="preserve">
+    <value>No package actions available to be executed.</value>
+  </data>
 </root>

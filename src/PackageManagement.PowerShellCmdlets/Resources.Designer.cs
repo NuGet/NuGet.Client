@@ -277,6 +277,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No package actions available to be executed..
+        /// </summary>
+        internal static string Cmdlet_NoPackageActions {
+            get {
+                return ResourceManager.GetString("Cmdlet_NoPackageActions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No packages installed..
         /// </summary>
         internal static string Cmdlet_NoPackagesInstalled {

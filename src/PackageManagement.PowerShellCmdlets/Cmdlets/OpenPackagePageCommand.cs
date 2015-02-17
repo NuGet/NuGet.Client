@@ -1,4 +1,5 @@
 ﻿using NuGet.Client.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -45,6 +46,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             base.Preprocess();
             UpdateActiveSourceRepository(Source);
+            LogCore(MessageLevel.Warning, string.Format(Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
         }
 
         protected override void ProcessRecordCore()
@@ -62,7 +64,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
                     metadata = metadata.Where(p => p.Identity.Version == nVersion);
                 }
-                package = metadata.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                package = metadata.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(v => v.Identity.Version)
+                    .FirstOrDefault();
             }
             catch (Exception)
             {

@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement
             SourceRepository = sourceRepository;
         }
 
-        internal static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository)
+        public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository)
         {
             if(sourceRepository == null)
             {

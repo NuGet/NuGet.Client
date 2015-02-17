@@ -1,5 +1,6 @@
 ﻿using NuGet.ProjectManagement;
 using System;
+using System.Collections.Generic;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             base.Preprocess();
             UpdateActiveSourceRepository();
-            GetNuGetProject();
+            GetNuGetProject(ProjectName);
         }
 
         protected override void ProcessRecordCore()
@@ -87,7 +88,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (isPreview)
             {
-                await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
+                IEnumerable<NuGetProjectAction> actions = await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
+                PreviewNuGetPackageActions(actions);
             }
             else
             {

@@ -90,7 +90,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Pend all the package files including the nupkg file
-            FileSystemUtility.PendAddFiles(addedPackageFilesList, nuGetProjectContext);
+            FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
             return true;
@@ -117,7 +117,7 @@ namespace NuGet.ProjectManagement
         {
             token.ThrowIfCancellationRequested();
             var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(packageIdentity, PackagePathResolver, PackageSaveMode, token);
-            FileSystemUtility.PendAddFiles(copiedSatelliteFiles, nuGetProjectContext);
+            FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);
 
             return copiedSatelliteFiles.Any();
         }
@@ -143,7 +143,7 @@ namespace NuGet.ProjectManagement
                     try
                     {
                         // Delete all the package files now
-                        FileSystemUtility.DeleteFiles(allInstalledFiles, nuGetProjectContext);
+                        FileSystemUtility.DeleteFiles(allInstalledFiles, Root, nuGetProjectContext);
                     }
                     catch (Exception ex)
                     {

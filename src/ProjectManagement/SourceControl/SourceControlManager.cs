@@ -35,7 +35,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <param name="fullPaths"></param>
         /// <param name="nuGetProjectContext"></param>
-        public abstract void PendAddFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext);
+        public abstract void PendAddFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext);
 
         /// <summary>
         /// Marks the files for deletion
@@ -43,7 +43,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <param name="packageFiles"></param>
         /// <param name="nuGetProjectContext"></param>
-        public abstract void PendDeleteFiles(IEnumerable<string> fullPaths, INuGetProjectContext nuGetProjectContext);
+        public abstract void PendDeleteFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext);
 
         /// <summary>
         /// Determines if the packages folder is bound to SourceControl
