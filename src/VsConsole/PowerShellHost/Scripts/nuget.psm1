@@ -399,11 +399,6 @@ function Format-ProjectName {
         [validaterange(6, 1000)]
         [int]$ColWidth
     )
-
-    # only perform special formatting for web site projects
-    if ($project.kind -ne "{E24C65DC-7377-472B-9ABA-BC803B73C61A}") {
-        return $project.name
-    }
-
-    [NuGet.VisualStudio.PathHelper]::SmartTruncate($project.name, $ColWidth)
+    
+	return $project.name
 }
