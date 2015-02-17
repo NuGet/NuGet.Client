@@ -205,8 +205,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    // Execute project actions by Package Manager
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                    if (Reinstall.IsPresent)
+                    {
+                        var uninstallActions = actions.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Uninstall);
+                        var installActions = actions.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install);
+
+                        // Execute uninstall actions first to ensure that the package is completely uninstalled even from packages folder
+                        await PackageManager.ExecuteNuGetProjectActionsAsync(project, uninstallActions, this, CancellationToken.None);
+
+                        // Execute install actions now
+                        await PackageManager.ExecuteNuGetProjectActionsAsync(project, installActions, this, CancellationToken.None);
+                    }
+                    else
+                    {
+                        // Execute project actions by Package Manager
+                        await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                    }
                 }
             }
             else
