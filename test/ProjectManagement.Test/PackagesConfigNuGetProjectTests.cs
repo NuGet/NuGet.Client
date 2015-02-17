@@ -43,6 +43,34 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
+        public async Task TestInstallPackageUnsupportedFx()
+        {
+            // Arrange
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var packagesConfigFileName = "packages.config";
+            var targetFramework = NuGetFramework.UnsupportedFramework;
+            var metadata = new Dictionary<string, object>()
+            {
+                { NuGetProjectMetadataKeys.TargetFramework, targetFramework},
+            };
+            var packagesConfigFullPath = Path.Combine(randomTestFolder, packagesConfigFileName);
+            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, metadata);
+            var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+            var token = CancellationToken.None;
+            MakeFileReadOnly(packagesConfigFullPath);
+
+            // Act
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, new TestNuGetProjectContext(), token);
+            MakeFileReadOnly(packagesConfigFullPath);
+
+            // Assert
+            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, installedPackagesList.Count);
+            Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
+            Assert.Null(installedPackagesList[0].TargetFramework);
+        }
+
+        [Fact]
         public async Task TestUninstallLastPackage()
         {
             // Arrange

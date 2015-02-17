@@ -323,7 +323,7 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            var packageTargetFramework = packageReference.TargetFramework;
+            var packageTargetFramework = packageReference.TargetFramework ?? NuGetFramework.UnsupportedFramework;
             using (var packageStream = File.OpenRead(FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity)))
             {
                 // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
