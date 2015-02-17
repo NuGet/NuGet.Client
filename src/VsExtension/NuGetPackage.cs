@@ -38,10 +38,10 @@ namespace NuGetVSExtension
         Style = VsDockStyle.Tabbed,
         Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the Output tool window, which is present in both VS and VWD
         Orientation = ToolWindowOrientation.Right)]
-    [ProvideToolWindow(typeof(DebugConsoleToolWindow),
-        Style = VsDockStyle.Tabbed,
-        Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the Output tool window, which is present in both VS and VWD
-        Orientation = ToolWindowOrientation.Right)]
+    //[ProvideToolWindow(typeof(DebugConsoleToolWindow),
+    //    Style = VsDockStyle.Tabbed,
+    //    Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the debug tool window, which is present in both VS and VWD
+    //    Orientation = ToolWindowOrientation.Right)]
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)] 
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
@@ -333,12 +333,13 @@ namespace NuGetVSExtension
                 _mcs.AddCommand(powerConsoleExecuteCommand);
 
                 // menu command for opening NuGet Debug Console
-                CommandID debugWndCommandID = new CommandID(GuidList.guidNuGetDebugConsoleCmdSet, PkgCmdIDList.cmdidDebugConsole);
-                OleMenuCommand debugConsoleExecuteCommand = new OleMenuCommand(ShowDebugConsole, null, null, debugWndCommandID);
+                // Remove debug console from Tools menu for 3.0.0-beta.
+                //CommandID debugWndCommandID = new CommandID(GuidList.guidNuGetDebugConsoleCmdSet, PkgCmdIDList.cmdidDebugConsole);
+                //OleMenuCommand debugConsoleExecuteCommand = new OleMenuCommand(ShowDebugConsole, null, null, debugWndCommandID);
                 // '$' - This indicates that the input line other than the argument forms a single argument string with no autocompletion
                 //       Autocompletion for filename(s) is supported for option 'p' or 'd' which is not applicable for this command
-                debugConsoleExecuteCommand.ParametersDescription = "$";
-                _mcs.AddCommand(debugConsoleExecuteCommand);
+                //debugConsoleExecuteCommand.ParametersDescription = "$";
+                //_mcs.AddCommand(debugConsoleExecuteCommand);
 
                 // menu command for opening Manage NuGet packages dialog
                 CommandID managePackageDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidAddPackageDialog);

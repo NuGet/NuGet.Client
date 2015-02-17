@@ -44,13 +44,13 @@
         </Strings>
       </Button>
 
-      <Button guid="guidNuGetDebugConsoleCmdSet" id="cmdidDebugConsole" priority="0x0900" type="Button">
+      <!--<Button guid="guidNuGetDebugConsoleCmdSet" id="cmdidDebugConsole" priority="0x0900" type="Button">
         <Icon guid="guidToolbarImages" id="bmpPowerConsole" />
         <CommandFlag>AllowParams</CommandFlag>
         <Strings>
           <ButtonText>Package Manager D&amp;ebug Console</ButtonText>
         </Strings>
-      </Button>
+      </Button>-->
 
       <Button guid="guidPowerConsoleCmdSet" id="cmdidSourceSettings" priority="0x1020" type="Button">
         <Parent guid="guidPowerConsoleCmdSet" id="idToolbarHostsGroup"/>
