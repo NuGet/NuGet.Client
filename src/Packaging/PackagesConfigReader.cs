@@ -152,7 +152,7 @@ namespace NuGet.Packaging
                     }
                 }
 
-                NuGetFramework targetFramework = null;
+                NuGetFramework targetFramework = NuGetFramework.UnsupportedFramework;
                 if (TryGetAttribute(package, "targetFramework", out attributeValue))
                 {
                     targetFramework = NuGetFramework.Parse(attributeValue, _frameworkMappings);
