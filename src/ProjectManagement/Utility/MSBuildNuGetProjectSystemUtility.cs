@@ -159,7 +159,7 @@ namespace NuGet.ProjectManagement
 
             // Get all directories that this package may have added
             var directories = from grouping in directoryLookup
-                              from directory in GetDirectories(grouping.Key, altDirectorySeparator: false)
+                              from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
                               orderby directory.Length descending
                               select directory;
 
@@ -406,29 +406,6 @@ namespace NuGet.ProjectManagement
                 }
                 Thread.Sleep(delayBeforeRetry);
             }
-        }
-
-        internal static IEnumerable<string> GetDirectories(string path, bool altDirectorySeparator)
-        {
-            foreach (var index in IndexOfAll(path, altDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar))
-            {
-                yield return path.Substring(0, index);
-            }
-            yield return path;
-        }
-
-        private static IEnumerable<int> IndexOfAll(string value, char ch)
-        {
-            int index = -1;
-            do
-            {
-                index = value.IndexOf(ch, index + 1);
-                if (index >= 0)
-                {
-                    yield return index;
-                }
-            }
-            while (index >= 0);
         }
 
         private static bool IsEmptyFolder(string packageFilePath)

@@ -1025,7 +1025,7 @@ namespace NuGet.PackageManagement
                     else
                     {
                         packageWithDirectoriesToBeDeleted.Remove(nuGetProjectAction.PackageIdentity);
-                        var packagePath = PackagesFolderNuGetProject.GetPackagePath(nuGetProjectAction.PackageIdentity);
+                        var packagePath = PackagesFolderNuGetProject.GetInstalledPackageFilePath(nuGetProjectAction.PackageIdentity);
                         if (File.Exists(packagePath))
                         {
                             using (var packageStream = File.OpenRead(packagePath))
@@ -1047,7 +1047,7 @@ namespace NuGet.PackageManagement
             var executionContext = nuGetProjectContext.ExecutionContext;
             if (executionContext != null && executionContext.DirectInstall != null)
             {
-                var packagePath = PackagesFolderNuGetProject.GetPackagePath(executionContext.DirectInstall);
+                var packagePath = PackagesFolderNuGetProject.GetInstalledPackageFilePath(executionContext.DirectInstall);
                 if (File.Exists(packagePath))
                 {
                     var readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);

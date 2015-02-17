@@ -58,7 +58,7 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(1, msBuildNuGetProjectSystem.References.Count);
             Assert.Equal("test45.dll", msBuildNuGetProjectSystem.References.First().Key);
-            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
                 "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First().Value);
 
             // Clean-up
@@ -108,7 +108,7 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(1, msBuildNuGetProjectSystem.References.Count);
             Assert.Equal("test45.dll", msBuildNuGetProjectSystem.References.First().Key);
-            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
                 "lib\\net45\\test45.dll"), msBuildNuGetProjectSystem.References.First().Value);
 
             // Main Act
@@ -580,7 +580,7 @@ namespace ProjectManagement.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
             // Check that the imports are added
             Assert.Equal(1, msBuildNuGetProjectSystem.Imports.Count);
-            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
                 "build\\net45\\build.targets"), msBuildNuGetProjectSystem.Imports.First());
 
             // Clean-up
@@ -629,7 +629,7 @@ namespace ProjectManagement.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
             // Check that the imports are added
             Assert.Equal(1, msBuildNuGetProjectSystem.Imports.Count);
-            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+            Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
                 "build\\net45\\build.targets"), msBuildNuGetProjectSystem.Imports.First());
 
             // Main Act
@@ -774,9 +774,9 @@ namespace ProjectManagement.Test
         }
         #endregion
 
-        #region Ex-solution-level packages as project packages
+        #region Legacy solution-level packages as project packages
         [Fact]
-        public async Task TestMSBuildNuGetProjectLegacySolutionLevelPackage()
+        public async Task TestMSBuildNuGetProjectInstallLegacySolutionLevelPackage()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -815,8 +815,62 @@ namespace ProjectManagement.Test
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-            Assert.True(File.Exists(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+            Assert.True(File.Exists(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
                 "tools\\tool.exe")));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectUninstallLegacySolutionLevelPackage()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            var packageFileInfo = TestPackages.GetLegacySolutionLevelPackage(randomTestPackageSourcePath,
+                packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+            using (var packageStream = packageFileInfo.OpenRead())
+            {
+                // Act
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+            }
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            Assert.True(File.Exists(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
+                "tools\\tool.exe")));
+
+            await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);

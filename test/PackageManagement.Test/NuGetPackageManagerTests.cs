@@ -38,12 +38,12 @@ namespace NuGet.Test
 
         private List<PackageIdentity> PackageWithDeepDependency = new List<PackageIdentity>()
         {
-            new PackageIdentity("Microsoft.Data.Edm", new NuGetVersion("5.6.2")),
             new PackageIdentity("System.Spatial", new NuGetVersion("5.6.2")),
+            new PackageIdentity("Microsoft.Data.Edm", new NuGetVersion("5.6.2")),
             new PackageIdentity("Microsoft.Data.OData", new NuGetVersion("5.6.2")),
             new PackageIdentity("Microsoft.Data.Services.Client", new NuGetVersion("5.6.2")),
-            new PackageIdentity("Microsoft.WindowsAzure.ConfigurationManager" , new NuGetVersion("1.8.0.0")),
             new PackageIdentity("Newtonsoft.Json", new NuGetVersion("5.0.8")),
+            new PackageIdentity("Microsoft.WindowsAzure.ConfigurationManager" , new NuGetVersion("1.8.0.0")),
             new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.0")),
         };
 
@@ -358,7 +358,7 @@ namespace NuGet.Test
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
@@ -544,7 +544,7 @@ namespace NuGet.Test
             projectBInstalled = (await projectB.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, projectAInstalled.Count);
             Assert.Equal(1, projectBInstalled.Count);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -576,8 +576,8 @@ namespace NuGet.Test
             var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity1,
@@ -587,8 +587,8 @@ namespace NuGet.Test
             projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, projectAInstalled.Count);
             Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -620,8 +620,8 @@ namespace NuGet.Test
             var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, projectAInstalled.Count);
             Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0,
@@ -631,8 +631,8 @@ namespace NuGet.Test
             projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -668,8 +668,8 @@ namespace NuGet.Test
             var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0.Id,
@@ -679,8 +679,8 @@ namespace NuGet.Test
             projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, projectAInstalled.Count);
             Assert.Equal(packageLatest, projectAInstalled[0].PackageIdentity);
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -717,10 +717,10 @@ namespace NuGet.Test
             var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
             Assert.Equal(dependentPackage, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(dependentPackage)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(dependentPackage)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0.Id,
@@ -731,9 +731,9 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageLatest, projectAInstalled[0].PackageIdentity);
             Assert.Equal(dependentPackage, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(dependentPackage)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(dependentPackage)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -766,10 +766,10 @@ namespace NuGet.Test
             var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
             Assert.Equal(dependentPackage, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(dependentPackage)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(dependentPackage)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity1,
@@ -780,9 +780,9 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
             Assert.Equal(dependentPackage, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(dependentPackage)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(dependentPackage)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -819,10 +819,10 @@ namespace NuGet.Test
             var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageLatest, projectAInstalled[0].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
             Assert.Equal(dependentPackage, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(dependentPackage)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(dependentPackage)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0,
@@ -833,9 +833,9 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
             Assert.Equal(dependentPackage, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(dependentPackage)));
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(dependentPackage)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -870,8 +870,8 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity2, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity2)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
@@ -883,10 +883,10 @@ namespace NuGet.Test
             Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity2, projectAInstalled[2].PackageIdentity);
             Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity2)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity3)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -921,8 +921,8 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity3)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
@@ -934,10 +934,10 @@ namespace NuGet.Test
             Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity2, projectAInstalled[2].PackageIdentity);
             Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity2)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity3)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -977,8 +977,8 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageLatest, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity3)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
@@ -990,9 +990,9 @@ namespace NuGet.Test
             Assert.Equal(packageLatest, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity2, projectAInstalled[2].PackageIdentity);
             Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageLatest)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity2)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity3)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
@@ -1027,8 +1027,8 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity2, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity2)));
 
             // Main Act
             var uninstallationContext = new UninstallationContext(removeDependencies: true);
@@ -1076,8 +1076,8 @@ namespace NuGet.Test
             Assert.Equal(2, projectAInstalled.Count);
             Assert.Equal(packageIdentity0, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity2, projectAInstalled[1].PackageIdentity);
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity2)));
 
             // Main Act
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
@@ -1089,10 +1089,10 @@ namespace NuGet.Test
             Assert.Equal(packageIdentity1, projectAInstalled[0].PackageIdentity);
             Assert.Equal(packageIdentity2, projectAInstalled[2].PackageIdentity);
             Assert.Equal(packageIdentity3, projectAInstalled[1].PackageIdentity);
-            Assert.False(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity0)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity1)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity2)));
-            Assert.True(Directory.Exists(packagePathResolver.GetInstallPath(packageIdentity3)));
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity1)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity2)));
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity3)));
 
             // Main Act
             Exception exception = null;
@@ -1519,17 +1519,17 @@ namespace NuGet.Test
             var soleSourceRepository = sourceRepositoryProvider.GetRepositories().Single();
             Assert.True(PackageWithDeepDependency[6].Equals(packageActions[0].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[0].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[0].Equals(packageActions[1].PackageIdentity));
+            Assert.True(PackageWithDeepDependency[4].Equals(packageActions[1].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[1].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[4].Equals(packageActions[2].PackageIdentity));
+            Assert.True(PackageWithDeepDependency[3].Equals(packageActions[2].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[2].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[3].Equals(packageActions[3].PackageIdentity));
+            Assert.True(PackageWithDeepDependency[2].Equals(packageActions[3].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[3].NuGetProjectActionType);
             Assert.True(PackageWithDeepDependency[5].Equals(packageActions[4].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[4].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[1].Equals(packageActions[5].PackageIdentity));
+            Assert.True(PackageWithDeepDependency[0].Equals(packageActions[5].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[5].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[2].Equals(packageActions[6].PackageIdentity));
+            Assert.True(PackageWithDeepDependency[1].Equals(packageActions[6].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[6].NuGetProjectActionType);
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
@@ -1876,9 +1876,9 @@ namespace NuGet.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
             Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-            Assert.True(File.Exists(folderNuGetProject.GetPackagePath(packageIdentity)));
-            Assert.True(File.Exists(folderNuGetProject.GetPackagePath(MorePackageWithDependents[0])));
-            Assert.True(File.Exists(folderNuGetProject.GetPackagePath(MorePackageWithDependents[2])));
+            Assert.True(File.Exists(folderNuGetProject.GetInstalledPackageFilePath(packageIdentity)));
+            Assert.True(File.Exists(folderNuGetProject.GetInstalledPackageFilePath(MorePackageWithDependents[0])));
+            Assert.True(File.Exists(folderNuGetProject.GetInstalledPackageFilePath(MorePackageWithDependents[2])));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
@@ -1918,7 +1918,6 @@ namespace NuGet.Test
             testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(packageIdentity);
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
                 new ResolutionContext(), testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
-            testNuGetProjectContext.TestExecutionContext = null;
 
             // Assert
             // Check that the packages.config file exists after the installation

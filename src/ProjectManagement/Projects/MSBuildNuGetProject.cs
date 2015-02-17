@@ -195,7 +195,7 @@ namespace NuGet.ProjectManagement
                 {
                     if (IsAssemblyReference(referenceItem))
                     {
-                        var referenceItemFullPath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), referenceItem);
+                        var referenceItemFullPath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), referenceItem);
                         var referenceName = Path.GetFileName(referenceItem);
                         if (MSBuildNuGetProjectSystem.ReferenceExists(referenceName))
                         {
@@ -231,7 +231,7 @@ namespace NuGet.ProjectManagement
             {
                 foreach(var buildImportFile in compatibleBuildFilesGroup.Items)
                 {
-                    string fullImportFilePath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), buildImportFile);
+                    string fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
                     MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
                         fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
                 }
@@ -247,7 +247,7 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
 
             // Step-9: Execute powershell script - install.ps1
-            string packageInstallPath = FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
+            string packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
             FrameworkSpecificGroup anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
             if(anyFrameworkToolsGroup != null)
             {
@@ -270,11 +270,6 @@ namespace NuGet.ProjectManagement
                 }
             }
             return true;
-        }
-
-        private static string GetPackagePath(FolderNuGetProject folderNuGetProject, PackageIdentity packageIdentity)
-        {
-            return folderNuGetProject.GetPackagePath(packageIdentity);
         }
 
         public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
@@ -302,7 +297,7 @@ namespace NuGet.ProjectManagement
             }
 
             var packageTargetFramework = packageReference.TargetFramework;
-            using (var packageStream = File.OpenRead(GetPackagePath(FolderNuGetProject, packageIdentity)))
+            using (var packageStream = File.OpenRead(FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity)))
             {
                 // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
                 // Get the package target framework instead of using project targetframework
@@ -360,7 +355,7 @@ namespace NuGet.ProjectManagement
                 {
                     MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
                         zipArchive,
-                        (await GetInstalledPackagesAsync(token)).Select(pr => GetPackagePath(FolderNuGetProject, pr.PackageIdentity)),
+                        (await GetInstalledPackagesAsync(token)).Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity)),
                         compatibleContentFilesGroup,
                         FileTransformers);
                 }
@@ -370,7 +365,7 @@ namespace NuGet.ProjectManagement
                 {
                     foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
                     {
-                        string fullImportFilePath = Path.Combine(FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity), buildImportFile);
+                        string fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
                         MSBuildNuGetProjectSystem.RemoveImport(fullImportFilePath);
                     }
                 }
@@ -387,7 +382,7 @@ namespace NuGet.ProjectManagement
                         p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall)).FirstOrDefault();
                     if (!String.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
-                        string packageInstallPath = FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
+                        string packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
                         await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, uninstallPS1RelativePath, zipArchive, this);
                     }
                 }

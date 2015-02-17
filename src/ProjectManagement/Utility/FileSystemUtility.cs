@@ -204,11 +204,48 @@ namespace NuGet.ProjectManagement
             if (sourceControlManager != null)
             {
                 sourceControlManager.PendDeleteFiles(filesToDelete, packagesDir, nuGetProjectContext);
+                foreach (var fileToDelete in filesToDelete)
+                {
+                    File.Delete(fileToDelete);
+                }
             }
-
-            foreach(var fileToDelete in filesToDelete)
+            else
             {
-                File.Delete(fileToDelete);
+                // When it is not SourceControl, it is a different scenario altogether
+                // First get all directories that contain files
+                var directoryLookup = filesToDelete.ToLookup(p => Path.GetDirectoryName(p));
+
+
+                // Get all directories that this package may have added
+                var directories = from grouping in directoryLookup
+                                  from directory in GetDirectories(grouping.Key, altDirectorySeparator: false)
+                                  orderby directory.Length descending
+                                  select directory;
+
+                // Remove files from every directory
+                foreach (var directory in directories)
+                {
+                    var directoryFiles = directoryLookup.Contains(directory) ? directoryLookup[directory] : Enumerable.Empty<string>();
+                    string dirPath = Path.Combine(packagesDir, directory);
+
+                    if (!Directory.Exists(dirPath))
+                    {
+                        continue;
+                    }
+
+                    foreach (var file in directoryFiles)
+                    {
+                        string path = Path.Combine(packagesDir, file);
+                        File.Delete(path);
+                    }
+
+                    // If the directory is empty then delete it
+                    if (!GetFiles(packagesDir, dirPath, "*.*").Any() &&
+                        !GetDirectories(packagesDir, dirPath).Any())
+                    {
+                        DeleteDirectorySafe(Path.Combine(packagesDir, dirPath), recursive: false, nuGetProjectContext: nuGetProjectContext);
+                    }
+                }
             }
         }
 
@@ -313,6 +350,29 @@ namespace NuGet.ProjectManagement
             }
 
             return Enumerable.Empty<string>();
+        }
+
+        internal static IEnumerable<string> GetDirectories(string path, bool altDirectorySeparator)
+        {
+            foreach (var index in IndexOfAll(path, altDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar))
+            {
+                yield return path.Substring(0, index);
+            }
+            yield return path;
+        }
+
+        private static IEnumerable<int> IndexOfAll(string value, char ch)
+        {
+            int index = -1;
+            do
+            {
+                index = value.IndexOf(ch, index + 1);
+                if (index >= 0)
+                {
+                    yield return index;
+                }
+            }
+            while (index >= 0);
         }
 
         public static string MakeRelativePath(string root, string fullPath)

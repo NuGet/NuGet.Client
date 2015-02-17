@@ -17,14 +17,11 @@ namespace NuGet.ProjectManagement
     public class FolderNuGetProject : NuGetProject
     {
         public string Root { get; set; }
-        public PackagePathResolver PackagePathResolver { get; private set; }
+        private PackagePathResolver PackagePathResolver { get; set; }
         /// <summary>
         /// PackageSaveMode may be set externally for change in behavior
         /// </summary>
         public PackageSaveModes PackageSaveMode { get; set; }
-
-        // TODO: Once PackageExtractor supports handling of satellite files, there will another enum here
-        //       which can be set to control what happens during package extraction
 
         public FolderNuGetProject(string root)
         {
@@ -82,7 +79,7 @@ namespace NuGet.ProjectManagement
 
             if (PackageSaveMode.HasFlag(PackageSaveModes.Nupkg))
             {
-                var packageFilePath = GetPackagePath(packageIdentity);
+                var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
                 if (File.Exists(packageFilePath))
                 {
                     addedPackageFilesList.Add(packageFilePath);
@@ -107,9 +104,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public bool PackageExists(PackageIdentity packageIdentity)
         {
-            string packageFileFullPath = Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
-                PackagePathResolver.GetPackageFileName(packageIdentity));
-            return File.Exists(packageFileFullPath);
+            return !String.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
         }
 
         public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
@@ -122,19 +117,24 @@ namespace NuGet.ProjectManagement
             return copiedSatelliteFiles.Any();
         }
 
-        public string GetPackagePath(PackageIdentity packageIdentity)
+        public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
-            return Path.Combine(PackagePathResolver.GetInstallPath(packageIdentity),
-                PackagePathResolver.GetPackageFileName(packageIdentity));
+            return PackagePathResolver.GetInstalledPackageFilePath(packageIdentity) ?? String.Empty;
         }
+
+        public string GetInstalledPath(PackageIdentity packageIdentity)
+        {
+            return PackagePathResolver.GetInstalledPath(packageIdentity) ?? String.Empty;
+;        }
 
         public async Task<bool> DeletePackage(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
-            var packageFilePath = GetPackagePath(packageIdentity);
+            var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
             if (File.Exists(packageFilePath))
             {
+                string packageDirectoryPath = Path.GetDirectoryName(packageFilePath);
                 using (var packageStream = File.OpenRead(packageFilePath))
                 {
                     // Get all the package files before deleting the package file
@@ -152,10 +152,18 @@ namespace NuGet.ProjectManagement
                     }
                 }
 
-                // Delete the package file first since it is used to determine if a package is installed
-                if (PackageSaveMode.HasFlag(PackageSaveModes.Nupkg))
+                // Delete the package file
+                FileSystemUtility.DeleteFile(packageFilePath, nuGetProjectContext);
+
+                // Delete the package directory if any
+                FileSystemUtility.DeleteDirectorySafe(packageDirectoryPath, recursive: false, nuGetProjectContext: nuGetProjectContext);
+
+                // If this is the last package delete the package directory
+                // If this is the last package delete the package directory
+                if (!FileSystemUtility.GetFiles(Root, String.Empty, "*.*").Any() &&
+                    !FileSystemUtility.GetDirectories(Root, String.Empty).Any())
                 {
-                    FileSystemUtility.DeleteFile(packageFilePath, nuGetProjectContext);
+                    FileSystemUtility.DeleteDirectorySafe(Root, recursive: false, nuGetProjectContext: nuGetProjectContext);
                 }
             }
 
