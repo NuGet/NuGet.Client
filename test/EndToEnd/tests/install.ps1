@@ -322,7 +322,7 @@ function Test-WebsiteInstallPackageWithRootNamespace {
     Assert-True ($content.Contains("namespace ASP"))
 }
 
-function Test-AddBindingRedirectToWebsiteWithNonExistingOutputPath {
+function AddBindingRedirectToWebsiteWithNonExistingOutputPath {
     # Arrange
     $p = New-WebSite
     
@@ -576,7 +576,7 @@ function Test-InstallPackageWorksWithProjectsHavingSameNames {
     $all | % { Assert-Package $_ elmah }
 }
 
-function Test-SimpleBindingRedirects {
+function SimpleBindingRedirects {
     param(
         $context
     )
@@ -600,7 +600,7 @@ function Test-SimpleBindingRedirects {
     Assert-BindingRedirect $b web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
 }
 
-function Test-BindingRedirectDoesNotAddToSilverlightProject {
+function BindingRedirectDoesNotAddToSilverlightProject {
     param(
         $context
     )
@@ -617,7 +617,7 @@ function Test-BindingRedirectDoesNotAddToSilverlightProject {
     Assert-NoBindingRedirect $c app.config HostSL '0.0.0.0-1.0.1.0' '1.0.1.0'
 }
 
-function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
+function SimpleBindingRedirectsClassLibraryUpdatePackage {
     # Arrange
     $a = New-ClassLibrary
       
@@ -637,7 +637,7 @@ function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
     Assert-BindingRedirect $a app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-SimpleBindingRedirectsClassLibraryReference {
+function SimpleBindingRedirectsClassLibraryReference {
     param(
         $context
     )
@@ -669,7 +669,7 @@ function Test-SimpleBindingRedirectsClassLibraryReference {
     Assert-Null (Get-ProjectItem $e web.config)
 }
 
-function Test-SimpleBindingRedirectsIndirectReference {
+function SimpleBindingRedirectsIndirectReference {
     param(
         $context
     )
@@ -693,7 +693,7 @@ function Test-SimpleBindingRedirectsIndirectReference {
     Assert-BindingRedirect $c app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-SimpleBindingRedirectsNonWeb {
+function SimpleBindingRedirectsNonWeb {
     param(
         $context
     )
@@ -711,7 +711,7 @@ function Test-SimpleBindingRedirectsNonWeb {
                    Assert-BindingRedirect $_ app.config F '0.0.0.0-1.0.5.0' '1.0.5.0' }
 }
 
-function Test-BindingRedirectComplex {
+function BindingRedirectComplex {
     param(
         $context
     )
@@ -736,7 +736,7 @@ function Test-BindingRedirectComplex {
     Assert-BindingRedirect $b app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-SimpleBindingRedirectsWebsite {
+function SimpleBindingRedirectsWebsite {
     param(
         $context
     )
@@ -753,7 +753,7 @@ function Test-SimpleBindingRedirectsWebsite {
 }
 
 
-function Test-BindingRedirectInstallLargeProject {
+function BindingRedirectInstallLargeProject {
     param(
         $context
     )
@@ -772,7 +772,7 @@ function Test-BindingRedirectInstallLargeProject {
     Assert-BindingRedirect $p web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-BindingRedirectDuplicateReferences {
+function BindingRedirectDuplicateReferences {
     param(
         $context
     )
@@ -797,7 +797,7 @@ function Test-BindingRedirectDuplicateReferences {
     Assert-BindingRedirect $b app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-BindingRedirectClassLibraryWithDifferentDependents {
+function BindingRedirectClassLibraryWithDifferentDependents {
     param(
         $context
     )
@@ -822,7 +822,7 @@ function Test-BindingRedirectClassLibraryWithDifferentDependents {
     Assert-BindingRedirect $b app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocations {
+function BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocations {
     param(
         $context
     )
@@ -852,7 +852,7 @@ function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocat
     Assert-BindingRedirect $b app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
+function BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
     param(
         $context
     )
@@ -874,7 +874,7 @@ function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
     Assert-BindingRedirect $a app.config Core '0.0.0.0-1.1.0.0' '1.1.0.0'    
 }
 
-function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembly {
+function BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembly {
     param(
         $context
     )
@@ -2198,7 +2198,7 @@ function Test-InstallMetadataPackageAddPackageToProject
     Assert-Package $p DependencyPackage
 }
 
-function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
+function FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 {
     # This test uses a particular profile which is available only in VS 2012.
     if ($dte.Version -ne "13.0")
@@ -2233,7 +2233,7 @@ function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
     Assert-NoBindingRedirect $p1 app.config System.Runtime '0.0.0.0-1.5.11.0' '1.5.11.0'
 }
 
-function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
+function NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 {
     # This test uses a particular profile which is available only in VS 2012.
     if ($dte.Version -eq "10.0" -or $dte.Version -eq "12.0")
