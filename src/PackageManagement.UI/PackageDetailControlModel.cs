@@ -61,10 +61,11 @@ namespace NuGet.PackageManagement.UI
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, id));
         }
 
-        protected override bool CanUpdate()
+        protected override bool CanUpgrade()
         {
-            return HasId(Id, InstalledPackages) &&
-                _allPackages.Count >= 2;
+            return InstalledPackages.Any(i =>
+                StringComparer.OrdinalIgnoreCase.Equals(i.Id, Id) &&
+                i.Version < _allPackages.Max());
         }
 
         protected override bool CanInstall()
@@ -75,6 +76,20 @@ namespace NuGet.PackageManagement.UI
         protected override bool CanUninstall()
         {
             return HasId(Id, InstalledPackages);
+        }
+
+        protected override bool CanDowngrade()
+        {
+            return InstalledPackages.Any(i =>
+                StringComparer.OrdinalIgnoreCase.Equals(i.Id, Id) &&
+                i.Version > _allPackages.Min());
+        }
+
+        protected override bool CanUpdate()
+        {
+            // For project-level management, we don't allow the ambiguous "update"
+            // and instead offer either an Upgrade or a Downgrade
+            return false;
         }
 
         protected override bool CanConsolidate()
@@ -110,9 +125,8 @@ namespace NuGet.PackageManagement.UI
                     _versions.Add(new VersionForDisplay(version, string.Empty));
                 }
             }
-            else
+            else if (SelectedAction == Resources.Action_Upgrade)
             {
-                // update
                 if (latestStableVersion != null &&
                     latestStableVersion != installedVersion.Version)
                 {
@@ -122,10 +136,21 @@ namespace NuGet.PackageManagement.UI
                     _versions.Add(null);
                 }
 
-                foreach (var version in allVersions.Where(v => v != installedVersion.Version))
+                foreach (var version in allVersions.Where(v => v > installedVersion.Version))
                 {
                     _versions.Add(new VersionForDisplay(version, string.Empty));
                 }
+            }
+            else if (SelectedAction == Resources.Action_Downgrade)
+            {
+                foreach (var version in allVersions.Where(v => v < installedVersion.Version))
+                {
+                    _versions.Add(new VersionForDisplay(version, string.Empty));
+                }
+            }
+            else
+            {
+                Debug.Fail("Unexpected Action: " + SelectedAction.ToString());
             }
 
             if (_versions.Count > 0)
