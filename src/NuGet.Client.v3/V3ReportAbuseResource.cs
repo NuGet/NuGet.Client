@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
-    public class V3ReportAbuseResouce : INuGetResource
+    public class V3ReportAbuseResource : INuGetResource
     {
         string _reportAbuseTemplate;
 
-        public V3ReportAbuseResouce(Uri reportAbuseTemplate)
+        public V3ReportAbuseResource(Uri reportAbuseTemplate)
         {
             _reportAbuseTemplate = reportAbuseTemplate.OriginalString;
         }
