@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NuGet.Data
@@ -36,6 +35,83 @@ namespace NuGet.Data
             }
 
             return uri;
+        }
+
+        /// <summary>
+        /// Applies a package's id and version to a URI template
+        /// </summary>
+        /// <param name="template">The URI Template</param>
+        /// <param name="id">The id of the package with natural casing</param>
+        /// <param name="version">The version of the package with natural casing</param>
+        /// <returns>The URI with the template fields applied</returns>
+        public static Uri ApplyPackageIdVersionToUriTemplate(Uri template, string id, Versioning.NuGetVersion version)
+        {
+            var packageUri = ApplyPackageIdToUriTemplate(template, id);
+
+            if (packageUri != null)
+            {
+                var versionUrl = packageUri.ToString()
+                    .Replace("{version}", version.ToNormalizedString())
+                    .Replace("{version-lower}", version.ToNormalizedString().ToLowerInvariant());
+
+                Uri versionUri = null;
+                if (Uri.TryCreate(versionUrl, UriKind.Absolute, out versionUri))
+                {
+                    return versionUri;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Applies a package's id and version to a list of URI templates
+        /// </summary>
+        /// <param name="templates">The list of URI templates</param>
+        /// <param name="id">The id of the package with natural casing</param>
+        /// <param name="version">The version of the package with natural casing</param>
+        /// <returns>The list of URIs with the template fields applied</returns>
+        public static IEnumerable<Uri> ApplyPackageIdVersionToUriTemplate(IEnumerable<Uri> templates, string id, Versioning.NuGetVersion version)
+        {
+            foreach (var template in templates)
+            {
+                yield return ApplyPackageIdVersionToUriTemplate(template, id, version);
+            }
+        }
+
+        /// <summary>
+        /// Applies a package's id to a URI template
+        /// </summary>
+        /// <param name="template">The URI template</param>
+        /// <param name="id">The package's id with natural casing</param>
+        /// <returns>The URI with the template fields applied</returns>
+        public static Uri ApplyPackageIdToUriTemplate(Uri template, string id)
+        {
+            var packageUrl = template.ToString()
+                .Replace("{id}", id)
+                .Replace("{id-lower}", id.ToLowerInvariant());
+
+            Uri packageUri = null;
+            if (Uri.TryCreate(packageUrl, UriKind.Absolute, out packageUri))
+            {
+                return packageUri;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Applies a package's id to a list of URI templates
+        /// </summary>
+        /// <param name="templates">The list of URI templates</param>
+        /// <param name="id">The package's id with natural casing</param>
+        /// <returns>The list of URIs with the template fields applied</returns>
+        public static IEnumerable<Uri> ApplyPackageIdToUriTemplate(IEnumerable<Uri> templates, string id)
+        {
+            foreach (var template in templates)
+            {
+                yield return ApplyPackageIdToUriTemplate(template, id);
+            }
         }
 
         /// <summary>
