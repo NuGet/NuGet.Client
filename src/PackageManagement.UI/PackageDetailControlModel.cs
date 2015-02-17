@@ -104,6 +104,7 @@ namespace NuGet.PackageManagement.UI
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).SingleOrDefault();
 
             var allVersions = _allPackages.OrderByDescending(v => v);
+            var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
             var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
 
             if (SelectedAction == Resources.Action_Uninstall)
@@ -112,11 +113,19 @@ namespace NuGet.PackageManagement.UI
             }
             else if (SelectedAction == Resources.Action_Install)
             {
+                if (latestPrerelease != null && (latestStableVersion == null || latestPrerelease > latestStableVersion))
+                {
+                    _versions.Add(new VersionForDisplay(latestPrerelease, Resources.Version_LatestPrerelease));
+                }
+
                 if (latestStableVersion != null)
                 {
                     _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
+                }
 
-                    // add a separator
+                // add a separator
+                if (_versions.Count > 0)
+                {
                     _versions.Add(null);
                 }
 

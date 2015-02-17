@@ -85,11 +85,17 @@ namespace NuGet.PackageManagement.UI
             {
                 _versions = new List<VersionForDisplay>();
                 var allVersions = _allPackages.OrderByDescending(v => v);
+                var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
                 var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
+
+                if (latestPrerelease != null && (latestStableVersion == null || latestPrerelease > latestStableVersion))
+                {
+                    _versions.Add(new VersionForDisplay(latestPrerelease, Resources.Version_LatestPrerelease));
+                }
+
                 if (latestStableVersion != null)
                 {
-                    _versions.Add(new VersionForDisplay(latestStableVersion,
-                        Resources.Version_LatestStable));
+                    _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
                 }
 
                 // add a separator

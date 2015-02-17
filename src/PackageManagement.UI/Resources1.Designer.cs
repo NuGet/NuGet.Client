@@ -918,6 +918,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Latest prerelease.
+        /// </summary>
+        public static string Version_LatestPrerelease {
+            get {
+                return ResourceManager.GetString("Version_LatestPrerelease", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Latest stable.
         /// </summary>
         public static string Version_LatestStable {
