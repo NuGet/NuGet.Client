@@ -106,7 +106,16 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adding package &apos;{0}&apos; to project &apos;{1}&apos; which only has tools group.
+        ///   Looks up a localized string similar to Adding package &apos;{0}&apos;, which only has dependencies, to project &apos;{1}&apos;..
+        /// </summary>
+        public static string AddingPackageWithOnlyDependencies {
+            get {
+                return ResourceManager.GetString("AddingPackageWithOnlyDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adding package &apos;{0}&apos;, which only has tools group, to project &apos;{1}&apos;.
         /// </summary>
         public static string AddingPackageWithOnlyToolsGroup {
             get {

@@ -29,6 +29,10 @@ namespace Test.Utility
             <frameworkAssembly assemblyName='{0}' targetFramework='{1}' />
         </frameworkAssemblies>";
 
+        private static string DependenciesStringFormat = @"<dependencies>
+            <dependency id='{0}' version='{1}' />
+        </dependencies>";
+
         public static FileInfo GetLegacyTestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
             ZipFile zipFile;
@@ -162,6 +166,17 @@ namespace Test.Utility
             return fileInfo;
         }
 
+        public static FileInfo GetEmptyPackageWithDependencies(string path, string packageId, string packageVersion)
+        {
+            ZipFile zipFile;
+            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            SetSimpleNuspec(zipFile, packageId, packageVersion, false, null, true);
+            zipFile.Save();
+
+            return fileInfo;
+        }
+
         public static FileInfo GetPackageWithMinClientVersion(string path, string packageId, string packageVersion, SemanticVersion minClientVersion)
         {
             ZipFile zipFile;
@@ -183,20 +198,25 @@ namespace Test.Utility
             return fileInfo;
         }
 
-        public static void SetSimpleNuspec(ZipFile zipFile, string packageId, string packageVersion, bool frameworkAssemblies = false, SemanticVersion minClientVersion = null)
+        public static void SetSimpleNuspec(ZipFile zipFile, string packageId, string packageVersion, bool frameworkAssemblies = false, SemanticVersion minClientVersion = null, bool dependencies = false)
         {
-            zipFile.AddEntry(packageId + ".nuspec", GetSimpleNuspecString(packageId, packageVersion, frameworkAssemblies), Encoding.UTF8);
+            zipFile.AddEntry(packageId + ".nuspec", GetSimpleNuspecString(packageId, packageVersion, frameworkAssemblies, minClientVersion, dependencies), Encoding.UTF8);
         }
 
         private static readonly string MinClientVersionStringFormat = "minClientVersion=\"{0}\"";
-        private static string GetSimpleNuspecString(string packageId, string packageVersion, bool frameworkAssemblies, SemanticVersion minClientVersion = null)
+        private static string GetSimpleNuspecString(string packageId, string packageVersion, bool frameworkAssemblies, SemanticVersion minClientVersion, bool dependencies)
         {
             string frameworkAssemblyReferences = frameworkAssemblies ?
                 String.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : String.Empty;
 
             string minClientVersionString = minClientVersion == null ? String.Empty :
                 String.Format(MinClientVersionStringFormat, minClientVersion.ToNormalizedString());
-            return String.Format(NuspecStringFormat, packageId, packageVersion, frameworkAssemblyReferences, minClientVersionString);
+
+            string dependenciesString = dependencies ?
+                String.Format(DependenciesStringFormat, "Owin", "1.0") : String.Empty;
+            return String.Format(NuspecStringFormat, packageId, packageVersion,
+                String.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString),
+                minClientVersionString);
         }
     }
 }

@@ -132,8 +132,11 @@
   <data name="AddingPackageToMSBuildProject" xml:space="preserve">
     <value>Adding package '{0}' to project '{1}'</value>
   </data>
+  <data name="AddingPackageWithOnlyDependencies" xml:space="preserve">
+    <value>Adding package '{0}', which only has dependencies, to project '{1}'.</value>
+  </data>
   <data name="AddingPackageWithOnlyToolsGroup" xml:space="preserve">
-    <value>Adding package '{0}' to project '{1}' which only has tools group</value>
+    <value>Adding package '{0}', which only has tools group, to project '{1}'</value>
   </data>
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>

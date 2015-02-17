@@ -138,10 +138,10 @@ namespace NuGet.ProjectManagement
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
             IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
             IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
-            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
+            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();            
 
             // Step-3: Get the most compatible items groups for all items groups
-            bool hasCompatibleItems = false;
+            bool hasCompatibleProjectLevelContent = false;
 
             FrameworkSpecificGroup compatibleReferenceItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, referenceItemGroups);
@@ -154,23 +154,29 @@ namespace NuGet.ProjectManagement
             FrameworkSpecificGroup compatibleToolItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, toolItemGroups);
 
-            hasCompatibleItems = MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup) ||
+            hasCompatibleProjectLevelContent = MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
 
             // Check if package has any content for project
             bool hasProjectLevelContent = referenceItemGroups.Any() || frameworkReferenceGroups.Any()
-                || contentFileGroups.Any() || buildFileGroups.Any();
-            bool packageWithOnlyToolsGroup = false;
+                || contentFileGroups.Any() || buildFileGroups.Any();            
+            bool onlyHasCompatibleTools = false;
+            bool onlyHasDependencies = false;
 
             if(!hasProjectLevelContent)
             {
-                packageWithOnlyToolsGroup = MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup) && compatibleToolItemsGroup.Items.Any();
-                if (packageWithOnlyToolsGroup)
+                // Since it does not have project-level content, check if it has dependencies or compatible tools
+                // Note that we are not checking if it has compatible project level content, but, just that it has project level content
+                // If the package has project-level content, but nothing compatible, we still need to throw
+                // If a package does not have any project-level content, it can be a
+                // Legacy solution level packages which only has compatible tools group
+                onlyHasCompatibleTools = MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup) && compatibleToolItemsGroup.Items.Any();
+                if(!onlyHasCompatibleTools)
                 {
-                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyToolsGroup, packageIdentity,
-                        this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    // If it does not have compatible tool items either, check if it at least has dependencies
+                    onlyHasDependencies = packageReader.GetPackageDependencies().Any();
                 }
             }
             else
@@ -181,23 +187,28 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-4: Check if there are any compatible items in the package or that this is not a package with only tools group. If not, throw
-            if (!hasCompatibleItems && !packageWithOnlyToolsGroup)
+            if (!hasCompatibleProjectLevelContent && !onlyHasCompatibleTools && !onlyHasDependencies)
             {
                 throw new InvalidOperationException(
                            String.Format(CultureInfo.CurrentCulture,
                            Strings.UnableToFindCompatibleItems, packageIdentity, MSBuildNuGetProjectSystem.TargetFramework));
             }
 
-            if (packageWithOnlyToolsGroup)
-            {
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyToolsGroup, packageIdentity,
-                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
-            }
-            else
+            if (hasCompatibleProjectLevelContent)
             {
                 string shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
                 nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
                     this.GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
+            }
+            else if (onlyHasCompatibleTools)
+            {
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyToolsGroup, packageIdentity,
+                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+            }
+            else if (onlyHasDependencies)
+            {
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyDependencies, packageIdentity,
+                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             }
 
             // Step-5: Install package to FolderNuGetProject     
