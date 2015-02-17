@@ -55,6 +55,7 @@
     <Compile Include="NuspecReader.cs" />
     <Compile Include="PackageDependencyGroup.cs" />
     <Compile Include="PackageExtraction\PackageExtractionContext.cs" />
+    <Compile Include="PackageExtraction\PackagePathHelper.cs" />
     <Compile Include="PackageExtractor.cs" />
     <Compile Include="PackageExtraction\PackageHelper.cs" />
     <Compile Include="PackageFolderReader.cs" />

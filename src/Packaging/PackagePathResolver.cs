@@ -18,6 +18,14 @@ namespace NuGet.Packaging
             _useSideBySidePaths = useSideBySidePaths;
         }
 
+        protected internal string Root
+        {
+            get
+            {
+                return _rootDirectory;
+            }
+        }
+
         public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
         {
             string directoryName = packageIdentity.Id;
@@ -45,6 +53,17 @@ namespace NuGet.Packaging
         public virtual string GetInstallPath(PackageIdentity packageIdentity)
         {
             return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
+        }
+
+        public virtual string GetInstalledPath(PackageIdentity packageIdentity)
+        {
+            var installedPackageFilePath = GetInstalledPackageFilePath(packageIdentity);
+            return String.IsNullOrEmpty(installedPackageFilePath) ? null : Path.GetDirectoryName(installedPackageFilePath);
+        }
+
+        public virtual string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
+        {
+            return PackagePathHelper.GetInstalledPackageFilePath(packageIdentity, this);
         }
     }
 }
