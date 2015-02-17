@@ -9,6 +9,8 @@ using Xunit;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using System;
+using System.Globalization;
 
 namespace ProjectManagement.Test
 {
@@ -118,6 +120,57 @@ namespace ProjectManagement.Test
             Assert.Equal(0, packagesInPackagesConfig.Count);
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectIncompatiblePackage()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
+
+            var projectTargetFramework = NuGetFramework.Parse("net35");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            var packageFileInfo = TestPackages.GetNet45TestPackage(randomTestPackageSourcePath,
+                packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+
+            Exception exception = null;
+            try
+            {
+                using (var packageStream = packageFileInfo.OpenRead())
+                {
+                    // Act
+                    await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                }
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            Assert.NotNull(exception);
+            Assert.True(exception is InvalidOperationException);
+            var errorMessage = String.Format(CultureInfo.CurrentCulture,
+                           Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
+            Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
@@ -871,6 +924,57 @@ namespace ProjectManagement.Test
             // Check the number of packages and packages returned by PackagesConfigProject after the installation
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectInstallInvalidSolutionLevelPackage()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            var packageFileInfo = TestPackages.GetInvalidPackage(randomTestPackageSourcePath,
+                packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+
+            Exception exception = null;
+            try
+            {
+                using (var packageStream = packageFileInfo.OpenRead())
+                {
+                    // Act
+                    await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                }
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            Assert.NotNull(exception);
+            Assert.True(exception is InvalidOperationException);
+            var errorMessage = String.Format(CultureInfo.CurrentCulture,
+                           Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
+            Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);

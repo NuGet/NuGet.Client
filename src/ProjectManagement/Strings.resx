@@ -126,14 +126,14 @@
   <data name="AddedPackageToPackagesConfig" xml:space="preserve">
     <value>Added package '{0}' to '{1}'</value>
   </data>
-  <data name="AddingLegacySolutionLevelPackage" xml:space="preserve">
-    <value>Adding legacy solution-level package '{0}' to project '{1}'</value>
-  </data>
   <data name="AddingPackageToFolder" xml:space="preserve">
     <value>Adding package '{0}' to folder '{1}'</value>
   </data>
   <data name="AddingPackageToMSBuildProject" xml:space="preserve">
     <value>Adding package '{0}' to project '{1}'</value>
+  </data>
+  <data name="AddingPackageWithOnlyToolsGroup" xml:space="preserve">
+    <value>Adding package '{0}' to project '{1}' which only has tools group</value>
   </data>
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>

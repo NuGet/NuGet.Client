@@ -159,13 +159,17 @@ namespace NuGet.ProjectManagement
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
 
-            bool legacySolutionLevelPackage = false;
-            if(!hasCompatibleItems)
+            // Check if package has any content for project
+            bool hasProjectLevelContent = referenceItemGroups.Any() || frameworkReferenceGroups.Any()
+                || contentFileGroups.Any() || buildFileGroups.Any();
+            bool packageWithOnlyToolsGroup = false;
+
+            if(!hasProjectLevelContent)
             {
-                hasCompatibleItems = legacySolutionLevelPackage = MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup);
-                if(legacySolutionLevelPackage)
+                packageWithOnlyToolsGroup = MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup) && compatibleToolItemsGroup.Items.Any();
+                if (packageWithOnlyToolsGroup)
                 {
-                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingLegacySolutionLevelPackage, packageIdentity,
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyToolsGroup, packageIdentity,
                         this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                 }
             }
@@ -176,12 +180,24 @@ namespace NuGet.ProjectManagement
                     this.GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
             }
 
-            // Step-4: Check if there are any compatible items in the package. If not, throw
-            if(!hasCompatibleItems)
+            // Step-4: Check if there are any compatible items in the package or that this is not a package with only tools group. If not, throw
+            if (!hasCompatibleItems && !packageWithOnlyToolsGroup)
             {
                 throw new InvalidOperationException(
                            String.Format(CultureInfo.CurrentCulture,
                            Strings.UnableToFindCompatibleItems, packageIdentity, MSBuildNuGetProjectSystem.TargetFramework));
+            }
+
+            if (packageWithOnlyToolsGroup)
+            {
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyToolsGroup, packageIdentity,
+                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+            }
+            else
+            {
+                string shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
+                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
+                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
             }
 
             // Step-5: Install package to FolderNuGetProject     

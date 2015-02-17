@@ -88,15 +88,6 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adding legacy solution-level package &apos;{0}&apos; to project &apos;{1}&apos;.
-        /// </summary>
-        public static string AddingLegacySolutionLevelPackage {
-            get {
-                return ResourceManager.GetString("AddingLegacySolutionLevelPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Adding package &apos;{0}&apos; to folder &apos;{1}&apos;.
         /// </summary>
         public static string AddingPackageToFolder {
@@ -111,6 +102,15 @@ namespace NuGet.ProjectManagement {
         public static string AddingPackageToMSBuildProject {
             get {
                 return ResourceManager.GetString("AddingPackageToMSBuildProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adding package &apos;{0}&apos; to project &apos;{1}&apos; which only has tools group.
+        /// </summary>
+        public static string AddingPackageWithOnlyToolsGroup {
+            get {
+                return ResourceManager.GetString("AddingPackageWithOnlyToolsGroup", resourceCulture);
             }
         }
         
