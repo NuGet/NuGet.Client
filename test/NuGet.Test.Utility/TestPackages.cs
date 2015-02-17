@@ -65,7 +65,7 @@ namespace NuGet.Test.Utility
                 zip.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
 
-                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var nuspec = string.Format(
                 CultureInfo.InvariantCulture,
                 @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -92,9 +92,10 @@ namespace NuGet.Test.Utility
                             </package>",
                 minClientVersion);
 
-            zip.AddEntry("packageA.nuspec", nuspec, Encoding.UTF8);
+                zip.AddEntry("packageA.nuspec", nuspec, Encoding.UTF8);
 
-            return result;
+                return result;
+            }
         }
 
         public static FileInfo GetLibSubFolderPackage()
