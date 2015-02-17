@@ -774,6 +774,55 @@ namespace ProjectManagement.Test
         }
         #endregion
 
+        #region Ex-solution-level packages as project packages
+        [Fact]
+        public async Task TestMSBuildNuGetProjectLegacySolutionLevelPackage()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var token = CancellationToken.None;
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigPath);
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            var packageFileInfo = TestPackages.GetLegacySolutionLevelPackage(randomTestPackageSourcePath,
+                packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+            using (var packageStream = packageFileInfo.OpenRead())
+            {
+                // Act
+                await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+            }
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            Assert.True(File.Exists(Path.Combine(msBuildNuGetProject.FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity),
+                "tools\\tool.exe")));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+        }
+        #endregion
+
         static void AssertEqualExceptWhitespaceAndLineEndings(string expected, string actual)
         {
             expected = Regex.Replace(Regex.Replace(expected, @"^\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);

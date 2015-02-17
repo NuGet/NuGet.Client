@@ -138,6 +138,7 @@ namespace NuGet.ProjectManagement
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
             IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
             IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
+            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
 
             // Step-3: Get the most compatible items groups for all items groups
             bool hasCompatibleItems = false;
@@ -150,11 +151,30 @@ namespace NuGet.ProjectManagement
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, contentFileGroups);
             FrameworkSpecificGroup compatibleBuildFilesGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, buildFileGroups);
+            FrameworkSpecificGroup compatibleToolItemsGroup =
+                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, toolItemGroups);
 
             hasCompatibleItems = MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
+
+            bool legacySolutionLevelPackage = false;
+            if(!hasCompatibleItems)
+            {
+                hasCompatibleItems = legacySolutionLevelPackage = MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup);
+                if(legacySolutionLevelPackage)
+                {
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingLegacySolutionLevelPackage, packageIdentity,
+                        this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                }
+            }
+            else
+            {
+                string shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
+                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
+                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
+            }
 
             // Step-4: Check if there are any compatible items in the package. If not, throw
             if(!hasCompatibleItems)
@@ -226,8 +246,7 @@ namespace NuGet.ProjectManagement
             // Step-8: Add packages.config to MSBuildNuGetProject
             MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
 
-            // Step-9: Execute powershell script - install.ps1      
-            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
+            // Step-9: Execute powershell script - install.ps1
             string packageInstallPath = FolderNuGetProject.PackagePathResolver.GetInstallPath(packageIdentity);
             FrameworkSpecificGroup anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
             if(anyFrameworkToolsGroup != null)
@@ -241,8 +260,6 @@ namespace NuGet.ProjectManagement
                 }
             }
 
-            FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework,
-                toolItemGroups);
             if(MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
             {
                 string installPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
@@ -380,17 +397,6 @@ namespace NuGet.ProjectManagement
             await FolderNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
             return true;
-        }
-
-        private void LogTargetFrameworkInfo(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
-            FrameworkSpecificGroup referenceItemsGroup, FrameworkSpecificGroup contentItemsGroup, FrameworkSpecificGroup buildFilesGroup)
-        {
-            if(referenceItemsGroup.Items.Any() || contentItemsGroup.Items.Any() || buildFilesGroup.Items.Any())
-            {
-                string shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
-                nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
-                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
-            }
         }
 
         private static string GetTargetFrameworkLogString(NuGetFramework targetFramework)

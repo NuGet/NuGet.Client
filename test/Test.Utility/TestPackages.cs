@@ -125,6 +125,18 @@ namespace Test.Utility
             return fileInfo;
         }
 
+        public static FileInfo GetLegacySolutionLevelPackage(string path, string packageId, string packageVersion)
+        {
+            ZipFile zipFile;
+            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            zipFile.AddEntry("tools/tool.exe", new byte[] { 0 });
+            SetSimpleNuspec(zipFile, packageId, packageVersion);
+            zipFile.Save();
+
+            return fileInfo;
+        }
+
         public static FileInfo GetPackageWithMinClientVersion(string path, string packageId, string packageVersion, SemanticVersion minClientVersion)
         {
             ZipFile zipFile;

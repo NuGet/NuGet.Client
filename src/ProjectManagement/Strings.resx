@@ -126,6 +126,9 @@
   <data name="AddedPackageToPackagesConfig" xml:space="preserve">
     <value>Added package '{0}' to '{1}'</value>
   </data>
+  <data name="AddingLegacySolutionLevelPackage" xml:space="preserve">
+    <value>Adding legacy solution-level package '{0}' to project '{1}'</value>
+  </data>
   <data name="AddingPackageToFolder" xml:space="preserve">
     <value>Adding package '{0}' to folder '{1}'</value>
   </data>
