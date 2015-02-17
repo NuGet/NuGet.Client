@@ -134,6 +134,7 @@ namespace NuGet.Test
         [InlineData("45")]
         [InlineData("foo.45")]
         [InlineData("foo4.5.1.2.3")]
+        [InlineData("portable-net($3747!4")]
         [InlineData("")]
         public void NuGetFramework_Unsupported(string folderName)
         {

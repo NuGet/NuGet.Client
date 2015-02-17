@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -52,9 +47,9 @@ namespace NuGet.Frameworks
             public const string XamarinXboxOne = "Xamarin.XboxOne";
         }
 
-        public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
-        public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*([0-9]+\.([0-9]+))*)*)?$", RegexFlags);
-        public static readonly Regex ProfileNumberRegex = new Regex(@"^Profile(?<ProfileNumber>[0-9]+)$", RegexFlags);
+        // public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
+        // public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*([0-9]+\.([0-9]+))*)*)?$", RegexFlags);
+        // public static readonly Regex ProfileNumberRegex = new Regex(@"^Profile(?<ProfileNumber>[0-9]+)$", RegexFlags);
 
         /// <summary>
         /// Interned frameworks that are commonly used in NuGet

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -224,8 +221,16 @@ namespace NuGet.Frameworks
                         return null;
                     }
 
-                    // TODO: validate the profile string to AZaz09-+.
                     profile = s.Substring(actualProfileStart, s.Length - actualProfileStart);
+
+                    foreach (char c in profile.ToArray())
+                    {
+                        // validate the profile string to AZaz09-+.
+                        if (!IsValidProfileChar(c))
+                        {
+                            return null;
+                        }
+                    }
                 }
                 else
                 {
@@ -251,6 +256,14 @@ namespace NuGet.Frameworks
 
             // "0123456789"
             return (x >= 48 && x <= 57) || x == 46;
+        }
+
+        private static bool IsValidProfileChar(char c)
+        {
+            int x = (int)c;
+
+            // letter, digit, dot, dash, or plus
+            return (x >= 48 && x <= 57) || (x >= 65 && x <= 90) || (x >= 97 && x <= 122) || x == 46 || x == 43 || x == 45;
         }
 
         private static bool TryParseSpecialFramework(string frameworkString, out NuGetFramework framework)

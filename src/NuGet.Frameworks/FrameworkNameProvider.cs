@@ -343,16 +343,21 @@ namespace NuGet.Frameworks
 
         public bool TryGetPortableFrameworks(string profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
         {
-            var match = FrameworkConstants.ProfileNumberRegex.Match(profile);
-
-            int profileNum = -1;
-
             // attempt to parse the profile for a number
-            if (match.Success 
-                && Int32.TryParse(match.Groups["ProfileNumber"].Value, out profileNum) 
-                && TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
+            if (profile.StartsWith("Profile", StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                string trimmed = profile.Substring(7, profile.Length - 7);
+
+                int profileNum = -1;
+                if (Int32.TryParse(trimmed, out profileNum) && TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
+                {
+                    return true;
+                }
+                else
+                {
+                    frameworks = Enumerable.Empty<NuGetFramework>();
+                    return false;
+                }
             }
 
             // treat the profile as a list of frameworks
