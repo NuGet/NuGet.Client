@@ -1542,7 +1542,7 @@ function Test-InstallPackageDontMakeExcessiveNetworkRequests
 #>
 
 # Solution level package used
-function Test-InstallingSolutionLevelPackagesAddsRecordToSolutionLevelConfig
+function Test-InstallingSolutionLevelPackagesAddsRecordToProjectLevelConfig
 {
     param(
         $context
@@ -1556,19 +1556,7 @@ function Test-InstallingSolutionLevelPackagesAddsRecordToSolutionLevelConfig
     $a | Install-Package SkypePackage -version 1.0 -source $context.RepositoryRoot
 
     # Assert
-    $solutionFile = Get-SolutionPath
-    $solutionDir = Split-Path $solutionFile -Parent
-
-    $configFile = "$solutionDir\.nuget\packages.config"
-    
-    Assert-True (Test-Path $configFile)
-
-    $content = Get-Content $configFile
-    $expected = @"
-<?xml version="1.0" encoding="utf-8"?> <packages>   <package id="SolutionLevelPkg" version="1.0.0" /> </packages>
-"@
-
-    Assert-AreEqual $expected $content
+    Assert-Package $a SolutionLevelPkg
 }
 
 <# Solution level package used
@@ -2181,7 +2169,7 @@ function Test-ReinstallSolutionLevelPackageWorks
     Assert-SolutionPackage SolutionLevelPkg
 }
 
-function Test-InstallSolutionLevelPackageAddPackagesConfigToSolution
+function Test-InstallSolutionLevelPackageAddPackagesConfigToProject
 {
     param($context)
 
@@ -2192,12 +2180,7 @@ function Test-InstallSolutionLevelPackageAddPackagesConfigToSolution
     # Assert
     Assert-SolutionPackage SolutionLevelPkg
 
-    $nugetFolder = $dte.Solution.Projects | ? { $_.Name -eq ".nuget" }
-    Assert-NotNull $nugetFolder "The '.nuget' solution folder is missing"
-
-    $configFile = $nugetFolder.ProjectItems.Item("packages.config")
-
-    Assert-NotNull $configFile "The 'packages.config' is not found under '.nuget' solution folder"
+    Assert-Package $p SolutionLevelPkg
 }
 
 function Test-InstallMetadataPackageAddPackageToProject

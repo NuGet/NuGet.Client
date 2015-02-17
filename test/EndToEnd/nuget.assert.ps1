@@ -32,7 +32,7 @@ function Get-PackageConfigName {
     if (-not (Test-Path $configPath))
     {
         # Check for existence on disk of packages.config
-        Assert-PathExists (Join-Path (Get-ProjectDir $Project) "packages.config")
+        #Assert-PathExists (Join-Path (Get-ProjectDir $Project) "packages.config")
 
         $configName = "packages.config"
     }
