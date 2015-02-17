@@ -61,9 +61,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 try
                 {
                     // App domain loading and unloading is handled at the RuntimeHelpers class.
-                    MSBuildNuGetProject msbuildProject = (MSBuildNuGetProject)project;
-                    msbuildProject.AddBindingRedirects();
-                    LogCore(MessageLevel.Info, string.Format(Resources.Cmdlets_AddedBindingRedirects, projectName));
+                    MSBuildNuGetProject msbuildProject = project as MSBuildNuGetProject;
+                    if (msbuildProject != null)
+                    {
+                        msbuildProject.AddBindingRedirects();
+                        LogCore(MessageLevel.Info, string.Format(Resources.Cmdlets_AddedBindingRedirects, projectName));
+                    }
+                    else
+                    {
+                        LogCore(MessageLevel.Error, Resources.Cmdlets_NotSupportBindingRedirects);
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -493,6 +493,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; does not support adding BindingRedirects..
+        /// </summary>
+        internal static string Cmdlets_NotSupportBindingRedirects {
+            get {
+                return ResourceManager.GetString("Cmdlets_NotSupportBindingRedirects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Executing script file &apos;{0}&apos;.
         /// </summary>
         internal static string ExecutingScript {

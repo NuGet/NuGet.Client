@@ -282,4 +282,7 @@
   <data name="Cmdlet_NoPackageActions" xml:space="preserve">
     <value>No package actions available to be executed.</value>
   </data>
+  <data name="Cmdlets_NotSupportBindingRedirects" xml:space="preserve">
+    <value>The project '{0}' does not support adding BindingRedirects.</value>
+  </data>
 </root>
