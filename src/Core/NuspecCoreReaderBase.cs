@@ -65,10 +65,10 @@ namespace NuGet.PackagingCore
         /// <summary>
         /// The minimum client version this package supports.
         /// </summary>
-        public SemanticVersion GetMinClientVersion()
+        public NuGetVersion GetMinClientVersion()
         {
             var node = MetadataNode.Attribute(XName.Get(MinClientVersion));
-            return node == null ? null : SemanticVersion.Parse(node.Value);
+            return node == null ? null : NuGetVersion.Parse(node.Value);
         }
 
         /// <summary>

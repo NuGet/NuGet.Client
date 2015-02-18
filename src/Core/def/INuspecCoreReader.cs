@@ -27,7 +27,7 @@ namespace NuGet.PackagingCore
         /// <summary>
         /// Minimum client version needed to consume the package.
         /// </summary>
-        SemanticVersion GetMinClientVersion();
+        NuGetVersion GetMinClientVersion();
 
         /// <summary>
         /// Id and Version of a package.

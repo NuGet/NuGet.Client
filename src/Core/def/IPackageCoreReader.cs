@@ -23,7 +23,7 @@ namespace NuGet.PackagingCore
         /// <summary>
         /// Minimum client version needed to consume the package.
         /// </summary>
-        SemanticVersion GetMinClientVersion();
+        NuGetVersion GetMinClientVersion();
 
         /// <summary>
         /// Returns a file stream from the package.

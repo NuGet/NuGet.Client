@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace Test.Utility
 {
@@ -58,7 +59,7 @@ namespace Test.Utility
             return result;
         }
 
-        public static FileInfo GetLegacyTestPackageMinClient()
+        public static FileInfo GetLegacyTestPackageMinClient(string minClientVersion)
         {
             string file = Guid.NewGuid().ToString() + ".nupkg";
             FileInfo result = new FileInfo(file);
@@ -70,9 +71,11 @@ namespace Test.Utility
             zip.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
             zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
 
-            zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var nuspec = string.Format(
+                CultureInfo.InvariantCulture,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
-                              <metadata minClientVersion=""3.0.5-beta"">
+                              <metadata minClientVersion=""{0}"">
                                 <id>packageA</id>
                                 <version>2.0.3</version>
                                 <authors>Author1, author2</authors>
@@ -92,7 +95,10 @@ namespace Test.Utility
                                    </group>
                                 </dependencies>
                               </metadata>
-                            </package>", Encoding.UTF8);
+                            </package>",
+                minClientVersion);
+
+            zip.AddEntry("packageA.nuspec", nuspec, Encoding.UTF8);
 
             zip.Save();
 
