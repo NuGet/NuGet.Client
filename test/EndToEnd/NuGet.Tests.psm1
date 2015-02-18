@@ -509,6 +509,6 @@ function Get-PackageRepository
 
     $componentModel = Get-VSComponentModel
     $repositoryProvider = $componentModel.GetService([NuGet.Client.ISourceRepositoryProvider])
-	$packageSource = New-Object -TypeName NuGet.Configuration.PackageSource -ArgumentList $source
+	$packageSource = New-Object -TypeName NuGet.Configuration.PackageSource -ArgumentList @([System.String]::$source)
     $repositoryProvider.CreateRepository($packageSource)
 }

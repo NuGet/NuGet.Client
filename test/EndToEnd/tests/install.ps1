@@ -2663,7 +2663,7 @@ function Test-InstallPackageWithDependencyVersionLowest
 {
     param($context)
 
-   # A depends on B >= 1.0.0
+    # A depends on B >= 1.0.0
     # Available versions of B are: 1.0.0, 1.0.1, 1.2.0, 1.2.1, 2.0.0, 2.0.1
 
     # Arrange
@@ -2682,8 +2682,11 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
 {
     param($context)
 
+	$componentModel = Get-VSComponentModel
+	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+
     try {
-        [NuGet.VisualStudio.SettingsHelper]::Set('DependencyVersion', 'HighestPatch')
+        $setting.SetValue('config', 'dependencyversion', 'HighestPatch')
 
         # Arrange
         $p = New-ClassLibrary
@@ -2696,7 +2699,7 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
         Assert-Package $p jquery 1.4.4
     }
     finally {
-        [NuGet.VisualStudio.SettingsHelper]::Set('DependencyVersion', $null)
+	    $setting.SetValue('config', 'dependencyversion', $null)
     }    
 }
 

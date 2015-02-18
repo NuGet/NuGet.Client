@@ -61,10 +61,10 @@ Register-TabExpansion 'Install-Package' @{
         GetPackageSources
     }
 	'DependencyVersion' = {
-		GetEnumNames 'NuGet.DependencyVersion'
+		GetEnumNames 'NuGet.Resolver.DependencyBehavior'
 	}
 	'FileConflictAction' = {
-		GetEnumNames 'NuGet.Client.FileConflictAction'
+		GetEnumNames 'NuGet.ProjectManagement.FileConflictAction'
 	}
 }
 
@@ -111,7 +111,7 @@ Register-TabExpansion 'Update-Package' @{
         GetPackageSources
     }
 	'FileConflictAction' = {
-		GetEnumNames 'NuGet.Client.FileConflictAction'
+		GetEnumNames 'NuGet.ProjectManagement.FileConflictAction'
 	}
 }
 
@@ -176,7 +176,7 @@ function GetRemotePackageIds($context) {
     if ($context.Id) { $parameters.filter = $context.Id }
     if ($context.Source) { $parameters.source = $context.Source }
     if (IsPrereleaseSet $context) {
-        $parameters.includePrerelease = $true 
+        $parameters.IncludePrerelease = $true 
     }
 
     try {
@@ -189,7 +189,9 @@ function GetRemotePackageIds($context) {
 }
 
 function GetPackageSources() {
-    $allSources = [NuGet.VisualStudio.AggregatePackageSource]::GetEnabledPackageSourcesWithAggregate()
+    $componentModel = Get-VSComponentModel
+    $repositoryProvider = $componentModel.GetService([NuGet.Client.ISourceRepositoryProvider])
+    $allSources = $repositoryProvider.PackageSourceProvider.LoadPackageSources()
     $allSources | Select-Object -ExpandProperty Name
 }
 
