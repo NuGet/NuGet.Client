@@ -42,7 +42,7 @@ namespace Client.V3Test
         }
 
         [Fact]
-        public async void UnavailableUrlsAreNotReturned()
+        public async Task<Uri> UnavailableUrlsAreNotReturned()
         {
             // Arrange
             var templates = new[] {
@@ -57,10 +57,13 @@ namespace Client.V3Test
 
             // Assert
             Assert.Null(actual);
+
+            // Return a value to work around http://xunit.codeplex.com/workitem/9800
+            return actual;
         }
 
         [Fact]
-        public async void FirstAvailableUrlIsReturned()
+        public async Task<Uri> FirstAvailableUrlIsReturned()
         {
             // Arrange
             var templates = new[] {
@@ -75,6 +78,72 @@ namespace Client.V3Test
 
             // Assert
             Assert.Equal(templates[1], actual);
+
+            // Return a value to work around http://xunit.codeplex.com/workitem/9800
+            return actual;
+        }
+
+        [Fact]
+        public async Task<Uri> DifferentHttpFailuresAreHandled()
+        {
+            // Arrange
+            var templates = new[] {
+                new Uri("http://dnsfailure.nuget.org/{id-lower}/{version-lower}", UriKind.Absolute),
+                new Uri("http://api.nuget.org/404-not-found-failure/{id}/{version}", UriKind.Absolute),
+                new Uri("http://api.nuget.org/This/Path/Returns/400/{id}/{version}", UriKind.Absolute),
+                new Uri("http://api.nuget.org/v3/index.json", UriKind.Absolute) // All we need is a document that we know exists
+            };
+
+            var resource = new V3ReportAbuseResource(templates);
+
+            // Act
+            Uri actual = await resource.GetReportAbuseUrl("PackageID", new NuGetVersion("1.2.3-RC"), new System.Threading.CancellationToken());
+
+            // Assert
+            Assert.Equal(templates[3], actual);
+
+            // Return a value to work around http://xunit.codeplex.com/workitem/9800
+            return actual;
+        }
+
+        [Fact]
+        public async Task<Uri> TemporaryRedirectsAreHandled()
+        {
+            // Arrange
+            var templates = new[] {
+                new Uri("http://api.nuget.org", UriKind.Absolute) // This redirects into the v3/index.json with a temporary redirect
+            };
+
+            var resource = new V3ReportAbuseResource(templates);
+
+            // Act
+            Uri actual = await resource.GetReportAbuseUrl("PackageID", new NuGetVersion("1.2.3-RC"), new System.Threading.CancellationToken());
+
+            // Assert
+            Assert.Equal(templates[0], actual);
+
+            // Return a value to work around http://xunit.codeplex.com/workitem/9800
+            return actual;
+        }
+
+        [Fact]
+        public async Task<Uri> PermanentRedirectsAreHandled()
+        {
+            // Arrange
+            var templates = new[] {
+                new Uri("http://api.nuget.org/v3", UriKind.Absolute) // This redirects into the v3/index.json with a permanent redirect
+            };
+
+            var resource = new V3ReportAbuseResource(templates);
+
+            // Act
+            Uri actual = await resource.GetReportAbuseUrl("PackageID", new NuGetVersion("1.2.3-RC"), new System.Threading.CancellationToken());
+
+            // Assert
+            Assert.Equal(templates[0], actual);
+
+            // Return a value to work around http://xunit.codeplex.com/workitem/9800
+            return actual;
         }
     }
 }

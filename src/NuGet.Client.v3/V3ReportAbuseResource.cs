@@ -43,18 +43,30 @@ namespace NuGet.Client
         /// <returns>The first URL available from the resource, with the URI template applied.</returns>
         public async Task<Uri> GetReportAbuseUrl(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
-            HttpClient http = new HttpClient();
-
             foreach (Uri uri in Utility.ApplyPackageIdVersionToUriTemplate(_reportAbuseTemplates, id, version))
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, uri);
-                    HttpResponseMessage response = await http.SendAsync(request, cancellationToken);
-
-                    if (response.IsSuccessStatusCode)
+                    // Get a new HttpClient each time because some BadRequest
+                    // responses were corrupting the HttpClient instance and
+                    // subsequent requests on it would hang unexpectedly
+                    using (HttpClient http = new HttpClient())
                     {
-                        return uri;
+                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, uri);
+
+                        try
+                        {
+                            HttpResponseMessage response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                return uri;
+                            }
+                        }
+                        catch
+                        {
+                            // Any exception means we couldn't connect to the resource
+                        }
                     }
                 }
             }
