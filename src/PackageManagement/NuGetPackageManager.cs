@@ -958,6 +958,7 @@ namespace NuGet.PackageManagement
             HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
             try
             {
+                await nuGetProject.PreProcessAsync();
                 foreach (NuGetProjectAction nuGetProjectAction in nuGetProjectActions)
                 {
                     executedNuGetProjectActions.Push(nuGetProjectAction);
@@ -974,6 +975,7 @@ namespace NuGet.PackageManagement
                         }
                     }
                 }
+                await nuGetProject.PostProcessAsync();
 
                 await OpenReadmeFile(nuGetProjectContext, token);
             }

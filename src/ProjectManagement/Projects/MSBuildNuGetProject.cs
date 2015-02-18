@@ -420,8 +420,7 @@ namespace NuGet.ProjectManagement
 
         public override Task PostProcessAsync()
         {
-            // TODO: Fix https://github.com/NuGet/Home/issues/10
-            // MSBuildNuGetProjectSystem.AddBindingRedirects();
+            MSBuildNuGetProjectSystem.AddBindingRedirects();
             return base.PostProcessAsync();
         }
 
