@@ -459,14 +459,25 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         // REVIEW: This might be inefficient, see what we can do with caching projects until references change
-        internal IEnumerable<EnvDTEProject> GetDependentEnvDTEProjects(EnvDTEProject envDTEProject)
+        internal static IEnumerable<EnvDTEProject> GetDependentEnvDTEProjects(IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectsDictionary, EnvDTEProject envDTEProject)
         {
             if (envDTEProject == null)
             {
                 throw new ArgumentNullException("project");
             }
 
-            var dependentProjects = new Dictionary<string, List<Project>>();
+            List<Project> dependents;
+            if (dependentEnvDTEProjectsDictionary.TryGetValue(EnvDTEProjectUtility.GetUniqueName(envDTEProject), out dependents))
+            {
+                return dependents;
+            }
+
+            return Enumerable.Empty<EnvDTEProject>();
+        }
+
+        internal IDictionary<string, List<EnvDTEProject>> GetDependentEnvDTEProjectsDictionary()
+        {
+            var dependentEnvDTEProjectsDictionary = new Dictionary<string, List<Project>>();
 
             // Get all of the projects in the solution and build the reverse graph. i.e.
             // if A has a project reference to B (A -> B) the this will return B -> A
@@ -480,31 +491,25 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(envDTEProj))
                         {
-                            AddDependentProject(dependentProjects, referencedProject, envDTEProject);
+                            AddDependentProject(dependentEnvDTEProjectsDictionary, referencedProject, envDTEProj);
                         }
                     }
                 }
             });
 
-            List<Project> dependents;
-            if (dependentProjects.TryGetValue(EnvDTEProjectUtility.GetUniqueName(envDTEProject), out dependents))
-            {
-                return dependents;
-            }
-
-            return Enumerable.Empty<EnvDTEProject>();
+            return dependentEnvDTEProjectsDictionary;
         }
 
-        private static void AddDependentProject(IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectDictionary,
+        private static void AddDependentProject(IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectsDictionary,
             EnvDTEProject envDTEProject, EnvDTEProject dependentEnvDTEProject)
         {
             string uniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
 
             List<EnvDTEProject> dependentEnvDTEProjects;
-            if (!dependentEnvDTEProjectDictionary.TryGetValue(uniqueName, out dependentEnvDTEProjects))
+            if (!dependentEnvDTEProjectsDictionary.TryGetValue(uniqueName, out dependentEnvDTEProjects))
             {
                 dependentEnvDTEProjects = new List<EnvDTEProject>();
-                dependentEnvDTEProjectDictionary[uniqueName] = dependentEnvDTEProjects;
+                dependentEnvDTEProjectsDictionary[uniqueName] = dependentEnvDTEProjects;
             }
             dependentEnvDTEProjects.Add(dependentEnvDTEProject);
         }

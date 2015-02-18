@@ -535,6 +535,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 RuntimeHelpers.AddBindingRedirects(VSSolutionManager, EnvDTEProject, VSFrameworkMultiTargeting, NuGetProjectContext);
             }
+            var configFile = EnvDTEProjectUtility.GetConfigurationFile(EnvDTEProject);
+            if(File.Exists(Path.Combine(ProjectFullPath, configFile)))
+            {
+                AddFileToProject(configFile);
+            }
         }
 
         private bool BindingRedirectsRelatedInitialized = false;

@@ -31,7 +31,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Keep track of visited projects
                 if (EnvDTEProjectUtility.SupportsBindingRedirects(envDTEProject))
                 {
-                    AddBindingRedirects(vsSolutionManager, envDTEProject, domain, frameworkMultiTargeting, nuGetProjectContext);
+                    // Get the dependentEnvDTEProjectsDictionary once here, so that, it is not called for every single project
+                    var dependentEnvDTEProjectsDictionary = vsSolutionManager.GetDependentEnvDTEProjectsDictionary();
+                    AddBindingRedirects(vsSolutionManager, envDTEProject, domain,
+                        frameworkMultiTargeting, dependentEnvDTEProjectsDictionary, nuGetProjectContext);
                 }
             }
             finally
@@ -45,11 +48,13 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProject envDTEProject,
             AppDomain domain,
             IVsFrameworkMultiTargeting frameworkMultiTargeting,
+            IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectsDictionary,
             INuGetProjectContext nuGetProjectContext)
         {
             var visitedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            AddBindingRedirects(vsSolutionManager, envDTEProject, domain, visitedProjects, projectAssembliesCache, frameworkMultiTargeting, nuGetProjectContext);
+            AddBindingRedirects(vsSolutionManager, envDTEProject, domain, visitedProjects, projectAssembliesCache,
+                frameworkMultiTargeting, dependentEnvDTEProjectsDictionary, nuGetProjectContext);
         }
 
         private static void AddBindingRedirects(VSSolutionManager vsSolutionManager,
@@ -58,6 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
             HashSet<string> visitedProjects,
             Dictionary<string, HashSet<string>> projectAssembliesCache,
             IVsFrameworkMultiTargeting frameworkMultiTargeting,
+            IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectsDictionary,
             INuGetProjectContext nuGetProjectContext)
         {
             string envDTEProjectUniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
@@ -72,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add binding redirects to all envdteprojects that are referencing this one
-            foreach (EnvDTEProject dependentEnvDTEProject in vsSolutionManager.GetDependentEnvDTEProjects(envDTEProject))
+            foreach (EnvDTEProject dependentEnvDTEProject in VSSolutionManager.GetDependentEnvDTEProjects(dependentEnvDTEProjectsDictionary, envDTEProject))
             {
                 AddBindingRedirects(
                     vsSolutionManager,
@@ -81,6 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     visitedProjects,
                     projectAssembliesCache,
                     frameworkMultiTargeting,
+                    dependentEnvDTEProjectsDictionary,
                     nuGetProjectContext);
             }
 

@@ -576,7 +576,7 @@ function Test-InstallPackageWorksWithProjectsHavingSameNames {
     $all | % { Assert-Package $_ elmah }
 }
 
-function SimpleBindingRedirects {
+function Test-SimpleBindingRedirects {
     param(
         $context
     )
@@ -600,7 +600,7 @@ function SimpleBindingRedirects {
     Assert-BindingRedirect $b web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
 }
 
-function BindingRedirectDoesNotAddToSilverlightProject {
+function Test-BindingRedirectDoesNotAddToSilverlightProject {
     param(
         $context
     )
@@ -617,7 +617,7 @@ function BindingRedirectDoesNotAddToSilverlightProject {
     Assert-NoBindingRedirect $c app.config HostSL '0.0.0.0-1.0.1.0' '1.0.1.0'
 }
 
-function SimpleBindingRedirectsClassLibraryUpdatePackage {
+function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
     # Arrange
     $a = New-ClassLibrary
       
@@ -637,7 +637,7 @@ function SimpleBindingRedirectsClassLibraryUpdatePackage {
     Assert-BindingRedirect $a app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function SimpleBindingRedirectsClassLibraryReference {
+function Test-SimpleBindingRedirectsClassLibraryReference {
     param(
         $context
     )
@@ -653,8 +653,8 @@ function SimpleBindingRedirectsClassLibraryReference {
     # Act
     $d | Install-Package E -Source $context.RepositoryPath
     $e | Install-Package E -Source $context.RepositoryPath
-    $d | Update-Package F -Safe -Source $context.RepositoryPath
-    $e | Update-Package F -Safe -Source $context.RepositoryPath
+    Update-Package F -Safe -Source $context.RepositoryPath -ProjectName $d.Name
+    Update-Package F -Safe -Source $context.RepositoryPath -ProjectName $e.Name
 
     # Assert
     Assert-Package $d E
