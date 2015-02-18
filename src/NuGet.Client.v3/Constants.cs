@@ -26,7 +26,7 @@ namespace NuGet.Client
         public const string SearchGalleryQueryService = "SearchGalleryQueryService" + TypeVersion;
         public const string MetricsService = "MetricsService" + TypeVersion;
         public const string RegistrationsBaseUrl = "RegistrationsBaseUrl" + TypeVersion;
-        public const string ReportAbuse = "ReportAbuse" + TypeVersion;
+        public const string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
     }
 
     public static class Properties
