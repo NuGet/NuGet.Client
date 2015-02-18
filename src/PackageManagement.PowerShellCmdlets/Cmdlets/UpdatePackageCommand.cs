@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             ParseUserInputForVersion();
             base.Preprocess();
-            if (_projectSpecified)
+            if (!_projectSpecified)
             {
                 Projects = VsSolutionManager.GetNuGetProjects().ToList();
             }
