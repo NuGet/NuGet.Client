@@ -57,7 +57,9 @@ namespace NuGet.Client.V2
                         // *TODOs:Do tracing and throw apppropriate exception here.
                         repoResource = null;
 
-                        Debug.Fail("Unable to create V2 repository on: " + source.PackageSource.Source);
+                        // For package source that uses relative path, it will throw UriFormat exception and go here.
+                        // Comment out Debug.Fail so that functional tests using relative path won't be blocked by the Assertion window.
+                        //Debug.Fail("Unable to create V2 repository on: " + source.PackageSource.Source);
                     }
                 }
 
