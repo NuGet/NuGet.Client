@@ -263,9 +263,6 @@ namespace NuGet.ProjectManagement
                         fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
                 }
             }
-            
-            // Step-6.5: Add binding redirects. Project system is supposed to check if binding redirects are needed and add as needed
-            MSBuildNuGetProjectSystem.AddBindingRedirects();
 
             // Step-7: Install package to PackagesConfigNuGetProject
             await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
@@ -419,6 +416,13 @@ namespace NuGet.ProjectManagement
             await FolderNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
             return true;
+        }
+
+        public override Task PostProcessAsync()
+        {
+            // TODO: Fix https://github.com/NuGet/Home/issues/10
+            // MSBuildNuGetProjectSystem.AddBindingRedirects();
+            return base.PostProcessAsync();
         }
 
         private static string GetTargetFrameworkLogString(NuGetFramework targetFramework)

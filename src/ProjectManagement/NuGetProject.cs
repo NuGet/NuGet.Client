@@ -47,6 +47,16 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <returns></returns>
         public abstract Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token);
+        public virtual Task PreProcessAsync()
+        {
+            // Do Nothing by default
+            return Task.FromResult(0);
+        }
+        public virtual Task PostProcessAsync()
+        {
+            // Do Nothing by default
+            return Task.FromResult(0);
+        }
         public T GetMetadata<T>(string key)
         {
             if(key == null)

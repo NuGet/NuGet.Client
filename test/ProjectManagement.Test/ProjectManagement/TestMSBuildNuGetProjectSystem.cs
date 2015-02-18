@@ -20,6 +20,7 @@ namespace Test.Utility
         public HashSet<string> ProcessedFiles { get; private set; }
         public HashSet<string> Imports { get; private set; }
         public Dictionary<string, int> ScriptsExecuted { get; private set; }
+        public int BindingRedirectsCallCount { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
         public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext,
@@ -159,7 +160,7 @@ namespace Test.Utility
 
         public void AddBindingRedirects()
         {
-            // No-op
+            BindingRedirectsCallCount++;
         }
 
 
