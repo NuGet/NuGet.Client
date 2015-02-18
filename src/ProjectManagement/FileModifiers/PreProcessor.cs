@@ -20,9 +20,11 @@ namespace NuGet.ProjectManagement
                 () => StreamUtility.StreamFromString(Process(packageFile, msBuildNuGetProjectSystem)));
         }
 
-        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem projectSystem)
+        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            MSBuildNuGetProjectSystemUtility.DeleteFileSafe(targetPath, packageFile.Open, projectSystem);
+            MSBuildNuGetProjectSystemUtility.DeleteFileSafe(targetPath,
+                () => StreamUtility.StreamFromString(Process(packageFile, msBuildNuGetProjectSystem)),
+                msBuildNuGetProjectSystem);
         }
 
         internal static string Process(ZipArchiveEntry packageFile, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
