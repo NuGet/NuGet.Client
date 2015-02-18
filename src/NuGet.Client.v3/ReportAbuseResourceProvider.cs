@@ -16,10 +16,10 @@ namespace NuGet.Client
             var serviceIndex = await source.GetResourceAsync<V3ServiceIndexResource>(token);
             if (serviceIndex != null)
             {
-                Uri templateUrl = serviceIndex[ServiceTypes.ReportAbuse].FirstOrDefault();
-                if (templateUrl != null)
+                IEnumerable<Uri> templateUrls = serviceIndex[ServiceTypes.ReportAbuse];
+                if (templateUrls != null && templateUrls.Any())
                 {
-                    resource = new V3ReportAbuseResource(templateUrl);
+                    resource = new V3ReportAbuseResource(templateUrls);
                 }
             }
 

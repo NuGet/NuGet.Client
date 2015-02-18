@@ -1,30 +1,62 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Data;
+using NuGet.Versioning;
 
 namespace NuGet.Client
 {
     public class V3ReportAbuseResource : INuGetResource
     {
-        string _reportAbuseTemplate;
+        private IEnumerable<Uri> _reportAbuseTemplates;
 
-        public V3ReportAbuseResource(Uri reportAbuseTemplate)
+        public V3ReportAbuseResource(IEnumerable<Uri> reportAbuseTemplates)
         {
-            _reportAbuseTemplate = reportAbuseTemplate.OriginalString;
+            if (reportAbuseTemplates == null || !reportAbuseTemplates.Any())
+            {
+                throw new ArgumentNullException("reportAbuseTemplates");
+            }
+
+            _reportAbuseTemplates = reportAbuseTemplates;
         }
 
-        public Uri GetReportAbuseUrl(string id, Versioning.NuGetVersion Version)
+        /// <summary>
+        /// Gets a URL for reporting package abuse. The URL will not be verified to exist.
+        /// </summary>
+        /// <param name="id">The package id (natural casing)</param>
+        /// <param name="version">The package version</param>
+        /// <returns>The first URL from the resource, with the URI template applied.</returns>
+        public Uri GetReportAbuseUrl(string id, NuGetVersion version)
         {
-            var reportAbuseUrl = _reportAbuseTemplate
-                .Replace("{id}", id)
-                .Replace("{version}", Version.ToNormalizedString());
+            return Utility.ApplyPackageIdVersionToUriTemplate(_reportAbuseTemplates.First(), id, version);
+        }
 
-            Uri result = null;
-            if (Uri.TryCreate(reportAbuseUrl, UriKind.Absolute, out result))
+        /// <summary>
+        /// Gets a URL for reporting package abuse. The URL will be tested for success with a HEAD request.
+        /// </summary>
+        /// <param name="id">The package id (natural casing)</param>
+        /// <param name="version">The package version</param>
+        /// <param name="cancellationToken">The cancellation token to terminate HTTP requests</param>
+        /// <returns>The first URL available from the resource, with the URI template applied.</returns>
+        public async Task<Uri> GetReportAbuseUrl(string id, NuGetVersion version, CancellationToken cancellationToken)
+        {
+            HttpClient http = new HttpClient();
+
+            foreach (Uri uri in Utility.ApplyPackageIdVersionToUriTemplate(_reportAbuseTemplates, id, version))
             {
-                return result;
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, uri);
+                    HttpResponseMessage response = await http.SendAsync(request, cancellationToken);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return uri;
+                    }
+                }
             }
 
             return null;
