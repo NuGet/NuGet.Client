@@ -47,6 +47,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83AEE32C
 		test\EndToEnd\tests\GetPackageTest.ps1 = test\EndToEnd\tests\GetPackageTest.ps1
 		test\EndToEnd\tests\GetProjectTest.ps1 = test\EndToEnd\tests\GetProjectTest.ps1
 		test\EndToEnd\tests\install.ps1 = test\EndToEnd\tests\install.ps1
+		test\EndToEnd\tests\OpenPackagePageTest.ps1 = test\EndToEnd\tests\OpenPackagePageTest.ps1
+		test\EndToEnd\tests\PackageRestoreTest.ps1 = test\EndToEnd\tests\PackageRestoreTest.ps1
+		test\EndToEnd\tests\PackTest.ps1 = test\EndToEnd\tests\PackTest.ps1
+		test\EndToEnd\tests\ProjectRetargeting.ps1 = test\EndToEnd\tests\ProjectRetargeting.ps1
+		test\EndToEnd\tests\ServicesTest.ps1 = test\EndToEnd\tests\ServicesTest.ps1
+		test\EndToEnd\tests\Settings.ps1 = test\EndToEnd\tests\Settings.ps1
+		test\EndToEnd\tests\TabExpansionTest.ps1 = test\EndToEnd\tests\TabExpansionTest.ps1
+		test\EndToEnd\tests\uninstall.ps1 = test\EndToEnd\tests\uninstall.ps1
+		test\EndToEnd\tests\update.ps1 = test\EndToEnd\tests\update.ps1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamFoundationServer12", "src\TeamFoundationServer12\TeamFoundationServer12.csproj", "{A07D7E9A-C6D8-4C0F-9359-77A7787B2565}"
