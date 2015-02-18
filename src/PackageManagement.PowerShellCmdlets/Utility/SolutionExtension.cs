@@ -74,10 +74,5 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
             }
         }
-
-        public static string GetName(this Solution solution)
-        {
-            return (string)solution.Properties.Item("Name").Value;
-        }
     }
 }

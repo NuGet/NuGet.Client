@@ -8,7 +8,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     internal static class ProgressActivityIds
     {
-
         // represents the activity Id for the Get-Package command to report its progress
         public const int GetPackageId = 1;
 

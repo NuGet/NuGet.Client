@@ -109,7 +109,6 @@
     <Compile Include="Cmdlets\FindPackageCommand.cs" />
     <Compile Include="Cmdlets\GetPackageCommand.cs" />
     <Compile Include="Cmdlets\GetProjectCommand.cs" />
-    <Compile Include="Utility\HttpUtility.cs" />
     <Compile Include="Utility\IErrorHandler.cs" />
     <Compile Include="Utility\IHttpClientEvents.cs" />
     <Compile Include="Cmdlets\InstallPackageCommand.cs" />
