@@ -172,6 +172,10 @@
       <Project>{a07d7e9a-c6d8-4c0f-9359-77a7787b2565}</Project>
       <Name>TeamFoundationServer12</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TeamFoundationServer14\TeamFoundationServer14.csproj">
+      <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
+      <Name>TeamFoundationServer14</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VisualStudio.Interop\VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>VisualStudio.Interop</Name>
@@ -181,6 +185,10 @@
     <ProjectReference Include="..\VisualStudio12\VisualStudio12.csproj" Condition="$(VisualStudioVersion)=='12.0'">
       <Project>{3dd213f7-999b-4c15-9560-bf9c96cb8c52}</Project>
       <Name>VisualStudio12</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>VisualStudio14</Name>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudioAPI\VisualStudioAPI.csproj">
       <Project>{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}</Project>
