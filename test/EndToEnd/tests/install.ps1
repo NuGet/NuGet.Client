@@ -2264,7 +2264,7 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
     Assert-BindingRedirect $p app.config System.Web.Razor '0.0.0.0-3.0.0.0' '3.0.0.0'
 }
 
-function InstallPackageIntoJavaScriptApplication
+function Test-InstallPackageIntoJavaScriptApplication
 {
     if ($dte.Version -eq "10.0")
     {
@@ -2299,7 +2299,7 @@ function Test-InstallPackageIntoJavaScriptWindowsPhoneApp
     Assert-Package $p "jQuery"
 }
 
-function InstallPackageIntoNativeWinStoreApplication
+function Test-InstallPackageIntoNativeWinStoreApplication
 {
     if ($dte.Version -eq "10.0")
     {
@@ -2316,7 +2316,7 @@ function InstallPackageIntoNativeWinStoreApplication
     Assert-Package $p "zlib"
 }
 
-function InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
+function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
 {
     param($context)
 
@@ -2339,7 +2339,7 @@ function InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
     Assert-Null (Get-ProjectItem $p 'windows8.txt')
 }
 
-function InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder
+function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder
 {
     param($context)
 
@@ -2404,7 +2404,7 @@ function Test-InstallLatestVersionWorksCorrectlyWithPrerelease
     Assert-Package $p A 0.6-beta
 }
 
-function InstallPackageIntoJSAppOnWin81AcceptWinmdFile
+function Test-InstallPackageIntoJSAppOnWin81AcceptWinmdFile
 {
     param($context)
 
@@ -2424,7 +2424,7 @@ function InstallPackageIntoJSAppOnWin81AcceptWinmdFile
     Assert-Package $p MarkedUp
 }
 
-function PackageWithConfigTransformInstallToWinJsProject
+function Test-PackageWithConfigTransformInstallToWinJsProject
 {
     param($context)
 
