@@ -47,7 +47,7 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public class MSBuildNuGetProject : NuGetProject
     {
-        private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
+        public IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; private set; }
         public FolderNuGetProject FolderNuGetProject { get; private set; }
         public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; private set; }
 
