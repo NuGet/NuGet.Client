@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
 
         public static Style PackageItemStyle;
         public static Style LoadingStatusIndicatorStyle;
-
+        
         public InfiniteScrollList()
         {
             InitializeComponent();
@@ -79,6 +79,8 @@ namespace NuGet.PackageManagement.UI
         // Reload items starting with index 0
         public async Task Reload()
         {
+            var selectedItem = _list.SelectedItem as SearchResultPackageMetadata;
+
             _items.Clear();
             _items.Add(_loadingStatusIndicator);
             _startIndex = 0;
@@ -89,6 +91,25 @@ namespace NuGet.PackageManagement.UI
 
             // now reload the package list
             await Load();
+
+            if (selectedItem != null)
+            {
+                // select the the previously selected item if it still exists.
+                foreach (var item in _list.Items)
+                {
+                    var package = item as SearchResultPackageMetadata;
+                    if (package == null)
+                    {
+                        continue;
+                    }
+
+                    if (package.Id.Equals(selectedItem.Id, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _list.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
         }
 
         private async Task Load()
@@ -251,14 +272,6 @@ namespace NuGet.PackageManagement.UI
         private async void RetryButtonClicked(object sender, RoutedEventArgs e)
         {
             await Load();
-        }
-
-        internal void SelectFirstItem()
-        {
-            if (_list.Items.Count > 0)
-            {
-                _list.SelectedIndex = 0;
-            }
         }
     }
 
