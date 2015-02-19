@@ -55,6 +55,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override void RemoveFile(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
             string folderPath = Path.GetDirectoryName(path);
             var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
             string fullPath = FileSystemUtility.GetFullPath(root, path);

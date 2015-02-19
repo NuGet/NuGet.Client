@@ -29,14 +29,24 @@ namespace NuGet.PackageManagement.VisualStudio
        
         public override void AddFile(string path, Stream stream)
         {
-            // ensure the parent folder is created before adding file to the project            
-            EnvDTEProjectUtility.GetProjectItems(EnvDTEProject,Path.GetDirectoryName(path), createIfNotExists: true);
+            // ensure the parent folder is created before adding file to the project
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            EnvDTEProjectUtility.GetProjectItems(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
             base.AddFile(path, stream);
         }
 
         public override void AddFile(string path, System.Action<Stream> writeToStream)
         {
-            // ensure the parent folder is created before adding file to the project            
+            // ensure the parent folder is created before adding file to the project    
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
             EnvDTEProjectUtility.GetProjectItems(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
             base.AddFile(path, writeToStream);
         }

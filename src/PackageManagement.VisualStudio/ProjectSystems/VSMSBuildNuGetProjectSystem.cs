@@ -166,6 +166,11 @@ namespace NuGet.PackageManagement.VisualStudio
         protected virtual bool ExcludeFile(string path)
         {
             // Exclude files from the bin directory.
+            if (string.IsNullOrEmpty(path))
+            {
+                return true;
+            }
+
             return Path.GetDirectoryName(path).Equals(BinDir, StringComparison.OrdinalIgnoreCase);
         }
 
