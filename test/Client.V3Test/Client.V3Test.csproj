@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="V3StatsResourceTests.cs" />
     <Compile Include="ClientV3Test.cs" />
     <Compile Include="DependencyInfoTests.cs" />
     <Compile Include="DownloadResourceTests.cs" />

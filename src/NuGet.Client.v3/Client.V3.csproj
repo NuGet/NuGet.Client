@@ -66,6 +66,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="V3StatsResource.cs" />
+    <Compile Include="V3StatsResourceProvider.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DependencyInfo\DependencyInfo.cs" />
     <Compile Include="DependencyInfo\PackageInfo.cs" />
