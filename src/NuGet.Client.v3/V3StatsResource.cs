@@ -33,7 +33,7 @@ namespace NuGet.Client
         public virtual async Task<JObject> GetTotalStats(CancellationToken cancellationToken)
         {
             var statsUrl = new UriBuilder(_baseUrl.AbsoluteUri);
-            statsUrl.Path = statsUrl.Path.TrimEnd('/') + "/stats-totals.json";
+            statsUrl.Path = statsUrl.Path.TrimEnd('/') + "/totals.json";
 
             if (!cancellationToken.IsCancellationRequested)
             {
