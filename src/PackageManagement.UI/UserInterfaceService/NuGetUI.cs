@@ -268,9 +268,9 @@ namespace NuGet.PackageManagement.UI
         {
             if (PackageManagerControl != null)
             {
-                UIDispatcher.Invoke(() =>
+                await UIDispatcher.Invoke(async () =>
                 {
-                    PackageManagerControl.UpdatePackageStatus();
+                    await PackageManagerControl.UpdatePackageStatus();
                 });
             }
 

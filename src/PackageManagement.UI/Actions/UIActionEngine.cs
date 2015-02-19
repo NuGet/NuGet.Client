@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.UI
                     resolutionContext: resolutionContext,
                     projectContext: uiService.ProgressWindow,
                     token: token);
-                IEnumerable<PreviewResult> results = await GetPreviewResults(actions);
+                IEnumerable<PreviewResult> results = GetPreviewResults(actions);
 
                 // preview window
                 if (uiService.DisplayPreviewWindow)
@@ -242,7 +242,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Convert NuGetProjectActions into PreviewResult types
         /// </summary>
-        protected async Task<IEnumerable<PreviewResult>> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
+        protected IEnumerable<PreviewResult> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
         {
             List<PreviewResult> results = new List<PreviewResult>();
             var actionsByProject = projectActions.GroupBy(action => action.Item1);

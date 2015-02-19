@@ -312,14 +312,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
+        private async void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
             // TODO: PackageRestoreManager fires this event even when solution is closed.
             // Don't do anything if solution is closed.
             if (!e.PackagesMissing)
             {
                 // packages are restored. refresh the UI
-                UpdatePackageStatus();
+                await UpdatePackageStatus();
                 _packageDetail.Refresh();
             }
         }
@@ -524,12 +524,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal void UpdatePackageStatus()
+        internal async Task UpdatePackageStatus()
         {
             if (ShowInstalled || ShowUpdatesAvailable)
             {
                 // refresh the whole package list
-                _packageList.Reload();
+                await _packageList.Reload();
             }
             else
             {

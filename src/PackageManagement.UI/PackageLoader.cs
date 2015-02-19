@@ -36,7 +36,6 @@ namespace NuGet.PackageManagement.UI
 
         private HashSet<PackageIdentity> _installedPackages;
         private HashSet<string> _installedPackageIds;
-        private bool _installedPackagesLoaded = false;
         private NuGetPackageManager _packageManager;
 
         private PackageLoaderOption _option;
@@ -345,31 +344,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<LoadResult> LoadItems(int startIndex, CancellationToken ct)
         {
-            ct.ThrowIfCancellationRequested();
-
-            // Load up the packages from the project for the package status
-            // TODO: move this somewhere else? refresh it?
-            if (!_installedPackagesLoaded)
-            {
-                _installedPackagesLoaded = true;
-
-                foreach (var project in _projects)
-                {
-                    var installedPackagesInProject = await project.GetInstalledPackagesAsync(ct);
-                    if (!(project is ProjectManagement.Projects.ProjectKNuGetProjectBase))
-                    {
-                        installedPackagesInProject = installedPackagesInProject.Where(
-                            p =>
-                                _packageManager.PackageExistsInPackagesFolder(p.PackageIdentity));
-                    }
-
-                    foreach (var package in installedPackagesInProject)
-                    {
-                        _installedPackages.Add(package.PackageIdentity);
-                        _installedPackageIds.Add(package.PackageIdentity.Id);
-                    }
-                }
-            }
+            ct.ThrowIfCancellationRequested();            
 
             List<SearchResultPackageMetadata> packages = new List<SearchResultPackageMetadata>();
             var results = await Search(startIndex, ct);
@@ -398,7 +373,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 searchResultPackage.Versions = versionList;
-                searchResultPackage.Status = GetStatus(new PackageIdentity(searchResultPackage.Id, searchResultPackage.Version));
+                searchResultPackage.Status = CalculatePackageStatus(searchResultPackage);
 
                 // filter out prerelease version when needed.
                 if (searchResultPackage.Version.IsPrerelease &&
@@ -427,20 +402,21 @@ namespace NuGet.PackageManagement.UI
             };
         }
 
-        private PackageStatus GetStatus(PackageIdentity package)
+        // Returns the package status for the searchPackageResult
+        private PackageStatus CalculatePackageStatus(SearchResultPackageMetadata searchPackageResult)
         {
-            if (_installedPackageIds.Contains(package.Id))
+            if (_installedPackageIds.Contains(searchPackageResult.Id))
             {
-                // check for an exact match
-                if (_installedPackages.Contains(package))
-                {
-                    return PackageStatus.Installed;
-                }
+                var highestAvailableVersion = searchPackageResult.Versions
+                    .Select(v => v.Version)
+                    .Max();
+                                
+                var highestInstalled = _installedPackages
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, searchPackageResult.Id))
+                    .OrderByDescending(p => p.Version, VersionComparer.Default)
+                    .First();
 
-                // find our highest version to compare
-                var highestInstalled = _installedPackages.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id)).OrderByDescending(p => p.Version, VersionComparer.Default).First();
-
-                if (VersionComparer.VersionRelease.Compare(highestInstalled.Version, package.Version) < 0)
+                if (VersionComparer.VersionRelease.Compare(highestInstalled.Version, highestAvailableVersion) < 0)
                 {
                     return PackageStatus.UpdateAvailable;
                 }
@@ -449,6 +425,28 @@ namespace NuGet.PackageManagement.UI
             }
 
             return PackageStatus.NotInstalled;
+        }
+
+
+        public async Task LoadInstalledPackagesAsync()
+        {
+            // Load up the packages from the project for the package status
+            foreach (var project in _projects)
+            {
+                var installedPackagesInProject = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                if (!(project is ProjectManagement.Projects.ProjectKNuGetProjectBase))
+                {
+                    installedPackagesInProject = installedPackagesInProject.Where(
+                        p =>
+                            _packageManager.PackageExistsInPackagesFolder(p.PackageIdentity));
+                }
+
+                foreach (var package in installedPackagesInProject)
+                {
+                    _installedPackages.Add(package.PackageIdentity);
+                    _installedPackageIds.Add(package.PackageIdentity.Id);
+                }
+            }
         }
     }
 }
