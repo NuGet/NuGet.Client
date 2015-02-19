@@ -10,7 +10,6 @@ namespace NuGet.PackageManagement.UI
 {
     public class PreviewResult
     {
-
         // TODO: hook this up to PM
         public IEnumerable<PackageIdentity> Deleted
         {
@@ -19,12 +18,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         public IEnumerable<PackageIdentity> Added
-        {
-            get;
-            private set;
-        }
-
-        public IEnumerable<PackageIdentity> Unchanged
         {
             get;
             private set;
@@ -52,7 +45,6 @@ namespace NuGet.PackageManagement.UI
             NuGetProject target,
             IEnumerable<PackageIdentity> added,
             IEnumerable<PackageIdentity> deleted,
-            IEnumerable<PackageIdentity> unchanged,
             IEnumerable<UpdatePreviewResult> updated)
         {
             string s = null;
@@ -67,7 +59,6 @@ namespace NuGet.PackageManagement.UI
 
             Added = added;
             Deleted = deleted;
-            Unchanged = unchanged;
             Updated = updated;
         }
     }

@@ -248,24 +248,51 @@ namespace NuGet.PackageManagement.UI
             var actionsByProject = projectActions.GroupBy(action => action.Item1);
             foreach (var actions in actionsByProject)
             {
-                List<PackageIdentity> added = new List<PackageIdentity>();
-                List<PackageIdentity> deleted = new List<PackageIdentity>();
-                List<PackageIdentity> unchanged = new List<PackageIdentity>();
-                List<UpdatePreviewResult> updated = new List<UpdatePreviewResult>();
+                var installed = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
+                var uninstalled = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
+                var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var actionTuple in actions)
                 {
+                    packageIds.Add(actionTuple.Item2.PackageIdentity.Id);
+
                     if (actionTuple.Item2.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
-                        added.Add(actionTuple.Item2.PackageIdentity);
+                        installed[actionTuple.Item2.PackageIdentity.Id] = actionTuple.Item2.PackageIdentity;
                     }
                     else
                     {
-                        deleted.Add(actionTuple.Item2.PackageIdentity);
+                        uninstalled[actionTuple.Item2.PackageIdentity.Id] = actionTuple.Item2.PackageIdentity;
                     }
                 }
 
-                PreviewResult result = new PreviewResult(actions.Key, added, deleted, unchanged, updated);
+                List<PackageIdentity> added = new List<PackageIdentity>();
+                List<PackageIdentity> deleted = new List<PackageIdentity>();
+                List<UpdatePreviewResult> updated = new List<UpdatePreviewResult>();
+                foreach (var packageId in packageIds)
+                {
+                    var isInstalled = installed.ContainsKey(packageId);
+                    var isUninstalled = uninstalled.ContainsKey(packageId);
+
+                    if (isInstalled && isUninstalled)
+                    {
+                        // the package is updated
+                        updated.Add(new UpdatePreviewResult(uninstalled[packageId], installed[packageId]));
+                        installed.Remove(packageId);
+                    }
+                    else if (isInstalled && !isUninstalled)
+                    {
+                        // the package is added
+                        added.Add(installed[packageId]);
+                    }
+                    else if (!isInstalled && isUninstalled)
+                    {
+                        // the package is deleted
+                        deleted.Add(uninstalled[packageId]);
+                    }
+                }
+
+                PreviewResult result = new PreviewResult(actions.Key, added, deleted, updated);
                 results.Add(result);
             }
 

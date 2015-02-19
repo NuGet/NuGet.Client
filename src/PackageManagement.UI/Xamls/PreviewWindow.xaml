@@ -56,6 +56,19 @@
                                     FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
                                     Text="{Binding Path=Name}" />
 
+                                <!-- Uninstalled packages -->
+                                <StackPanel Margin="0,8"
+                                            Visibility="{Binding Path=Deleted,Converter={StaticResource EnumerableToVisibilityConverter}}">
+                                    <TextBlock
+                        FontWeight="Bold"
+                        Text="{x:Static resx:Resources.Label_UninstalledPackages}" />
+                                    <ItemsControl
+                                        Margin="10,0,0,0"
+                                        ItemsSource="{Binding Path=Deleted}"
+                                        IsTabStop="False">
+                                    </ItemsControl>
+                                </StackPanel>
+                                
                                 <!-- Updated packages -->
                                 <StackPanel Margin="0,8"
                                             Visibility="{Binding Path=Updated,Converter={StaticResource EnumerableToVisibilityConverter}}">
@@ -78,19 +91,6 @@
                                     <ItemsControl
                                         Margin="10,0,0,0"
                                         ItemsSource="{Binding Path=Added}"
-                                        IsTabStop="False">
-                                    </ItemsControl>
-                                </StackPanel>
-
-                                <!-- Uninstalled packages -->
-                                <StackPanel Margin="0,8"
-                                            Visibility="{Binding Path=Deleted,Converter={StaticResource EnumerableToVisibilityConverter}}">
-                                    <TextBlock
-                        FontWeight="Bold"
-                        Text="{x:Static resx:Resources.Label_UninstalledPackages}" />
-                                    <ItemsControl
-                                        Margin="10,0,0,0"
-                                        ItemsSource="{Binding Path=Deleted}"
                                         IsTabStop="False">
                                     </ItemsControl>
                                 </StackPanel>
