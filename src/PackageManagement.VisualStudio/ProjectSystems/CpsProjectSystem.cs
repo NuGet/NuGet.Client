@@ -1,5 +1,4 @@
 ﻿using NuGet.ProjectManagement;
-using NuGet.VisualStudio12;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void AddImportStatementForVS2013(ImportLocation location, string relativeTargetPath)
         {
-            ProjectHelper.DoWorkInWriterLock(
+            NuGetVS.ProjectHelper.DoWorkInWriterLock(
                 EnvDTEProject,
                 VsHierarchyUtility.ToVsHierarchy(EnvDTEProject),
                 buildProject => MicrosoftBuildEvaluationProjectUtility.AddImportStatement(buildProject, relativeTargetPath, location));

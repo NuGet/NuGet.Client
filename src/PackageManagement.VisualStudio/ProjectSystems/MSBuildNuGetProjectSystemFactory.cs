@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
 #if VS14
-            if (project.SupportsINuGetProjectSystem())
+            if (EnvDTEProjectUtility.SupportsINuGetProjectSystem(envDTEProject))
             {
                 throw new InvalidOperationException("Does not support INuGetProjectSystem");
             }
