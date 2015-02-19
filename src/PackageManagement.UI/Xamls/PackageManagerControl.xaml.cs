@@ -378,7 +378,8 @@ namespace NuGet.PackageManagement.UI
                 _activeSource = enabledSources
                     .FirstOrDefault(s => activeSourceName.Equals(s.PackageSource.Name, StringComparison.CurrentCultureIgnoreCase));
             }
-            else
+
+            if (_activeSource == null)
             {
                 _activeSource = enabledSources.FirstOrDefault();
             }

@@ -114,22 +114,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     var searchFilter = new SearchFilter();
                     searchFilter.IncludePrerelease = _option.IncludePrerelease;
-                    var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                    if (!_projects.Any(f => NuGetFramework.Comparer.Equals(NuGetFramework.AnyFramework)))
-                    {
-                        foreach (var project in _projects)
-                        {
-                            NuGetFramework framework = project.GetMetadata<NuGetFramework>("TargetFramework");
-
-                            if (framework != null && framework.IsSpecificFramework)
-                            {
-                                frameworks.Add(framework.DotNetFrameworkName);
-                            }
-                        }
-                    }
-
-                    searchFilter.SupportedFrameworks = frameworks;
+                    searchFilter.SupportedFrameworks = GetSupportedFrameworks();
 
                     results.AddRange(await searchResource.Search(
                         _searchText,
@@ -141,6 +126,53 @@ namespace NuGet.PackageManagement.UI
             }
 
             return results;
+        }
+
+        // Returns the list of frameworks that we need to pass to the server during search
+        IEnumerable<string> GetSupportedFrameworks()
+        {
+            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var project in _projects)
+            {
+                NuGetFramework framework;
+                if (project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework,
+                    out framework))
+                {
+                    if (framework != null && framework.IsAny)
+                    {
+                        // One of the project's target framework is AnyFramework. In this case, 
+                        // we don't need to pass the framework filter to the server.
+                        return Enumerable.Empty<string>();
+                    }
+
+                    if (framework != null && framework.IsSpecificFramework)
+                    {
+                        frameworks.Add(framework.DotNetFrameworkName);
+                    }
+                }
+                else
+                {
+                    // we also need to process SupportedFrameworks
+                    IEnumerable<NuGetFramework> supportedFrameworks;
+                    if (project.TryGetMetadata<IEnumerable<NuGetFramework>>(
+                        NuGetProjectMetadataKeys.SupportedFrameworks,
+                        out supportedFrameworks))
+                    {
+                        foreach (var f in supportedFrameworks)
+                        {
+                            if (f.IsAny)
+                            {
+                                return Enumerable.Empty<string>();
+                            }
+
+                            frameworks.Add(f.DotNetFrameworkName);
+                        }
+                    }
+                }
+            }
+
+            return frameworks;
         }
 
         /// <summary>

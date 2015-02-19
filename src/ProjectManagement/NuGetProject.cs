@@ -118,5 +118,8 @@ namespace NuGet.ProjectManagement
         public const string UniqueName = "UniqueName";
         public const string TargetFramework = "TargetFramework";
         public const string FullPath = "FullPath";
+
+        // used by Project K projects
+        public const string SupportedFrameworks = "SupportedFrameworks";
     }
 }
