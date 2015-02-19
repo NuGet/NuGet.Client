@@ -94,14 +94,17 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 }
 
-                var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
-                if (properties.Count() != 1)
+                if (!(retValue is INuGetPackageManager))
                 {
-                    return null;
+                    // Workaround a bug in Dev14 prereleases where Lazy<INuGetPackageManager> was returned.
+                    var properties = retValue.GetType().GetProperties().Where(p => p.Name == "Value");
+                    if (properties.Count() == 1)
+                    {
+                        retValue = properties.First().GetValue(retValue);
+                    }
                 }
 
-                var v = properties.First().GetValue(retValue) as INuGetPackageManager;
-                return v as INuGetPackageManager;
+                return retValue as INuGetPackageManager;
             }
         }
     }
