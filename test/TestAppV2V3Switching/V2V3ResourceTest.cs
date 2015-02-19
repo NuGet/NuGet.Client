@@ -94,6 +94,26 @@ namespace V2V3ResourcesTest
         [Theory]
         [InlineData("https://nuget.org/api/v2/")]
         [InlineData("https://api.nuget.org/v3/index.json")]
+        public async Task TestAllSearchTitle(string SourceUrl)
+        {
+            SourceRepository repo = GetSourceRepository(SourceUrl);
+            UISearchResource resource = repo.GetResource<UISearchResource>();
+
+            SearchFilter filter = new SearchFilter();
+            string searchTerm = "Json";
+
+            IEnumerable<UISearchMetadata> uiSearchResults = await resource.Search(searchTerm, filter, 0, 100, new CancellationToken());
+
+            UISearchMetadata metadata = uiSearchResults.Where(e => StringComparer.OrdinalIgnoreCase.Equals("newtonsoft.json", e.Identity.Id)).Single();
+
+            // TODO: check the title value once the server is updated
+            Assert.True(!String.IsNullOrEmpty(metadata.Title));
+            Assert.True(!String.IsNullOrEmpty(metadata.LatestPackageMetadata.Title));
+        }
+
+        [Theory]
+        [InlineData("https://nuget.org/api/v2/")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
         public async Task TestAllSearchResources(string SourceUrl)
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);

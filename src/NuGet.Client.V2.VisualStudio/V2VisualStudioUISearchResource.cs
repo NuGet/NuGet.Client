@@ -114,19 +114,25 @@ namespace NuGet.Client.V2.VisualStudio
 
                 string id = package.Id;
                 NuGetVersion version = V2Utilities.SafeToNuGetVer(package.Version);
+                string title = package.Title;
                 string summary = package.Summary;
 
                 var nuGetVersions = versions.Select(p =>
                     new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount));
 
-                if (string.IsNullOrWhiteSpace(summary))
+                if (String.IsNullOrWhiteSpace(summary))
                 {
                     summary = package.Description;
                 }
 
+                if (String.IsNullOrEmpty(title))
+                {
+                    title = id;
+                }
+
                 Uri iconUrl = package.IconUrl;
                 PackageIdentity identity = new PackageIdentity(id, version);
-                UISearchMetadata searchMetaData = new UISearchMetadata(identity, summary, iconUrl, nuGetVersions, V2UIMetadataResource.GetVisualStudioUIPackageMetadata(package));
+                UISearchMetadata searchMetaData = new UISearchMetadata(identity, title, summary, iconUrl, nuGetVersions, V2UIMetadataResource.GetVisualStudioUIPackageMetadata(package));
                 return searchMetaData;
             });
         }

@@ -38,6 +38,7 @@ namespace NuGet.Client
 
         public static readonly string PackageId = "id";
         public static readonly string Version = "version";
+        public static readonly string Title = "title";
         public static readonly string Summary = "summary";
         public static readonly string Description = "description";
         public static readonly string Authors = "authors";

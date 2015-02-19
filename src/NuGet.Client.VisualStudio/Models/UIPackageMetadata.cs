@@ -7,9 +7,9 @@ namespace NuGet.Client.VisualStudio
     /// <summary>
     /// Full package details as used by the UI
     /// </summary>
-    public sealed class UIPackageMetadata 
+    public sealed class UIPackageMetadata
     {
-        public UIPackageMetadata(PackageIdentity identity, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl, Uri reportAbuseUrl,
+        public UIPackageMetadata(PackageIdentity identity, string title, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl, Uri reportAbuseUrl,
             string tags, DateTimeOffset? published, IEnumerable<UIPackageDependencySet> dependencySet, bool requireLicenseAccept)
         {
             Identity = identity;
@@ -26,9 +26,18 @@ namespace NuGet.Client.VisualStudio
             Tags = tags;
             DependencySets = dependencySet;
             RequireLicenseAcceptance = requireLicenseAccept;
+            Title = title;
         }
 
+        /// <summary>
+        /// Package Id and Version
+        /// </summary>
         public PackageIdentity Identity { get; private set; }
+
+        /// <summary>
+        /// The Title of the package or the Id if no title was provided.
+        /// </summary>
+        public string Title { get; private set; }
 
         public string Summary { get; private set; }
 

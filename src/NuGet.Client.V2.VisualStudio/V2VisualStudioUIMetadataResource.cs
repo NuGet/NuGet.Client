@@ -72,24 +72,25 @@ namespace NuGet.Client.V2.VisualStudio
         {
             NuGetVersion Version = NuGetVersion.Parse(package.Version.ToString());
             DateTimeOffset? Published = package.Published;
-            string Summary = package.Summary;
-            string Description = package.Description;
+            string title = String.IsNullOrEmpty(package.Title) ? package.Id : package.Title;
+            string summary = package.Summary;
+            string desc = package.Description;
             //*TODOs: Check if " " is the separator in the case of V3 jobjects ...
-            string Authors = string.Join(" ",package.Authors.ToArray());
-            string Owners = string.Join(" ",package.Owners.ToArray());
-            Uri IconUrl = package.IconUrl;
-            Uri LicenseUrl = package.LicenseUrl;
-            Uri ProjectUrl = package.ProjectUrl;
-            string Tags = package.Tags;
-            IEnumerable<UIPackageDependencySet> DependencySets = package.DependencySets.Select(p => GetVisualStudioUIPackageDependencySet(p));
+            string authors = string.Join(" ", package.Authors.ToArray());
+            string owners = string.Join(" ", package.Owners.ToArray());
+            Uri iconUrl = package.IconUrl;
+            Uri licenseUrl = package.LicenseUrl;
+            Uri projectUrl = package.ProjectUrl;
+            string tags = package.Tags;
+            IEnumerable<UIPackageDependencySet> dependencySets = package.DependencySets.Select(p => GetVisualStudioUIPackageDependencySet(p));
             bool requiresLiceneseAcceptance = package.RequireLicenseAcceptance;
 
             PackageIdentity identity = new PackageIdentity(package.Id, Version);
 
             return new UIPackageMetadata(
-                identity, Summary, Description, Authors, Owners, IconUrl, LicenseUrl, 
-                ProjectUrl, package.ReportAbuseUrl,
-                Tags, Published, DependencySets, requiresLiceneseAcceptance);
+                identity, title, summary, desc, authors, owners, iconUrl, licenseUrl, 
+                projectUrl, package.ReportAbuseUrl,
+                tags, Published, dependencySets, requiresLiceneseAcceptance);
         }
 
         private static NuGet.PackagingCore.PackageDependency GetVisualStudioUIPackageDependency(PackageDependency dependency)

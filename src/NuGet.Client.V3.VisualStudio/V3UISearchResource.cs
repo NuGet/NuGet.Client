@@ -56,7 +56,14 @@ namespace NuGet.Client.V3.VisualStudio
                 summary = package.Value<string>(Properties.Description);
             }
 
-            // get other versions            
+            string title = package.Value<string>(Properties.Title);
+            if (String.IsNullOrEmpty(title))
+            {
+                // Use the id instead of the title when no title exists.
+                title = id;
+            }
+
+            // get other versions
             var versionList = new List<VersionInfo>();
             var versions = package.Value<JArray>(Properties.Versions);
             if (versions != null)
@@ -102,7 +109,7 @@ namespace NuGet.Client.V3.VisualStudio
                 metadata = await _metadataResource.GetMetadata(topPackage, token);
             }
 
-            UISearchMetadata searchResult = new UISearchMetadata(topPackage, summary, iconUrl, versionList, metadata);
+            UISearchMetadata searchResult = new UISearchMetadata(topPackage, title, summary, iconUrl, versionList, metadata);
             return searchResult;
         }
 

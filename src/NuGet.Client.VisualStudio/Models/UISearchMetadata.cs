@@ -22,9 +22,10 @@ namespace NuGet.Client.VisualStudio
     /// </summary>
     public sealed class UISearchMetadata
     {
-        public UISearchMetadata(PackageIdentity identity, string summary, Uri iconUrl, IEnumerable<VersionInfo> versions, UIPackageMetadata latestPackageMetadata)
+        public UISearchMetadata(PackageIdentity identity, string title, string summary, Uri iconUrl, IEnumerable<VersionInfo> versions, UIPackageMetadata latestPackageMetadata)
         {
             Identity = identity;
+            Title = title;
             Summary = summary;
             IconUrl = iconUrl;
             Versions = versions;
@@ -32,10 +33,16 @@ namespace NuGet.Client.VisualStudio
         }
 
         public PackageIdentity Identity { get; private set; }
+
         public string Summary { get; private set; }
+
         public Uri IconUrl { get; private set; }
+
         public IEnumerable<VersionInfo> Versions { get; private set; }
+
         public UIPackageMetadata LatestPackageMetadata { get; private set; }
+
+        public string Title { get; private set; }
 
     }
 }

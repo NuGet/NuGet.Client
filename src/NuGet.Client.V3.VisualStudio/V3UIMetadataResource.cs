@@ -63,6 +63,7 @@ namespace NuGet.Client.V3.VisualStudio
             }
 
             string id = metadata.Value<string>(Properties.PackageId);
+            string title = metadata.Value<string>(Properties.Title);
             string summary = metadata.Value<string>(Properties.Summary);
             string description = metadata.Value<string>(Properties.Description);
             string authors = GetField(metadata, Properties.Authors);
@@ -79,9 +80,15 @@ namespace NuGet.Client.V3.VisualStudio
                 _reportAbuseResource.GetReportAbuseUrl(id, Version) :
                 null;
 
+            if (String.IsNullOrEmpty(title))
+            {
+                // If no title exists, use the Id
+                title = id;
+            }
+
             return new UIPackageMetadata(
                 new PackageIdentity(id, Version),
-                summary, description, authors, owners,
+                title, summary, description, authors, owners,
                 iconUrl, licenseUrl, projectUrl, reportAbuseUrl,
                 tags, Published, dependencySets, requireLicenseAcceptance);
         }
