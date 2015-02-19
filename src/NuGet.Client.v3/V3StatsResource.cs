@@ -13,33 +13,30 @@ namespace NuGet.Client
     public class V3StatsResource : INuGetResource
     {
         private readonly DataClient _client;
-        private readonly Uri _baseUrl;
+        private readonly Uri _resourceUrl;
 
         /// <summary>
         /// Creates a new stats resource.
         /// </summary>
         /// <param name="client">DataClient that can be used for accessing resource URLs</param>
-        /// <param name="baseUrl">Base resource URL</param>
-        /// <exception cref="ArgumentNullException">Thrown when client or baseUrl are not specified</exception>
-        public V3StatsResource(DataClient client, Uri baseUrl)
+        /// <param name="resourceUrl">Resource URL</param>
+        /// <exception cref="ArgumentNullException">Thrown when client or resourceUrl are not specified</exception>
+        public V3StatsResource(DataClient client, Uri resourceUrl)
         {
             if (client == null) throw new ArgumentNullException("client");
-            if (baseUrl == null) throw new ArgumentNullException("baseUrl");
+            if (resourceUrl == null) throw new ArgumentNullException("resourceUrl");
 
             _client = client;
-            _baseUrl = baseUrl;
+            _resourceUrl = resourceUrl;
         }
 
         public virtual async Task<JObject> GetTotalStats(CancellationToken cancellationToken)
         {
-            var statsUrl = new UriBuilder(_baseUrl.AbsoluteUri);
-            statsUrl.Path = statsUrl.Path.TrimEnd('/') + "/totals.json";
-
             if (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    return await _client.GetJObjectAsync(statsUrl.Uri, cancellationToken);
+                    return await _client.GetJObjectAsync(_resourceUrl, cancellationToken);
                 }
                 catch (Exception)
                 {

@@ -12,7 +12,7 @@ namespace Client.V3Test
         public async Task GetTotalStatsHasExpectedProperties()
         {
             //var resource = await SourceRepository.GetResourceAsync<V3StatsResource>();
-            var resource = new V3StatsResource(DataClient, new Uri("https://api.nuget.org/v3/stats0/")); // todo: remove and replace with line above when the index.json has this service type listed
+            var resource = new V3StatsResource(DataClient, new Uri("https://api.nuget.org/v3/stats0/totals.json")); // todo: remove and replace with line above when the index.json has this service type listed
             
             var res = await resource.GetTotalStats(CancellationToken.None);
 

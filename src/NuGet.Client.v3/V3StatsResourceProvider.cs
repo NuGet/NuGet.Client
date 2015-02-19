@@ -16,13 +16,13 @@ namespace NuGet.Client
 
             if (serviceIndex != null)
             {
-                Uri baseUrl = serviceIndex[ServiceTypes.Stats].FirstOrDefault();
+                Uri resourceUrl = serviceIndex[ServiceTypes.Stats].FirstOrDefault();
 
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
                 DataClient client = new DataClient(messageHandlerResource.MessageHandler);
 
                 // construct a new resource
-                statsResource = new V3StatsResource(client, baseUrl);
+                statsResource = new V3StatsResource(client, resourceUrl);
             }
 
             return new Tuple<bool, INuGetResource>(statsResource != null, statsResource);
