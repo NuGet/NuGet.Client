@@ -456,10 +456,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, System.Version.Parse("8.0"), framework.Profile, framework.Platform, framework.PlatformVersion);
                 }
-                if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Windows) && framework.Version.Equals(System.Version.Parse("0.0.0.0"))) 
-                {
-                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, System.Version.Parse("8.1"), framework.Profile, framework.Platform, framework.PlatformVersion);
-                }
                 return NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
