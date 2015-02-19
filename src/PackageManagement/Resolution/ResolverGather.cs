@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement
                     sourceToPackageIdsChecked.Add(resourceTuple.Item1, foundIds);
                 }
 
-                IEnumerable<PackageIdentity> missingTargets = targets.Except((IEnumerable<PackageIdentity>)combinedResults);
+                IEnumerable<PackageIdentity> missingTargets = targets.Except((IEnumerable<PackageIdentity>)combinedResults, PackageIdentity.Comparer);
 
                 if(missingTargets.Any())
                 {
@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement
                 HashSet<string> foundIds = sourceToPackageIdsChecked[source];
 
                 // check each source for packages discovered on other sources if we have no checked here already
-                foreach (string missingId in allDiscoveredIds.Except(foundIds).ToArray())
+                foreach (string missingId in allDiscoveredIds.Except(foundIds, StringComparer.OrdinalIgnoreCase).ToArray())
                 {
                     token.ThrowIfCancellationRequested();
 
