@@ -96,7 +96,7 @@
     <Compile Include="V3RawSearchResourceProvider.cs" />
     <Compile Include="V3RegistrationResource.cs" />
     <Compile Include="V3RegistrationResourceProvider.cs" />
-    <Compile Include="V3ReportAbuseResouce.cs" />
+    <Compile Include="V3ReportAbuseResource.cs" />
     <Compile Include="V3ServiceIndexResource.cs" />
     <Compile Include="V3ServiceIndexResourceProvider.cs" />
     <Compile Include="V3SimpleSearchResource.cs" />
