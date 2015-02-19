@@ -165,4 +165,10 @@
   <data name="Warning_NoExactMatchForReference" xml:space="preserve">
     <value>No exact match found for removing reference '{0}'. Trying No No exact match found for removing reference '{0}'. Trying case-insensitive search...-</value>
   </data>
+  <data name="InstallingPackage" xml:space="preserve">
+    <value>Installing NuGet package {0}.</value>
+  </data>
+  <data name="UninstallingPackage" xml:space="preserve">
+    <value>Uninstalling NuGet package {0}.</value>
+  </data>
 </root>

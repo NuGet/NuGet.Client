@@ -33,10 +33,17 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private INuGetPackageManager _project;
 
-        public ProjectKNuGetProject(INuGetPackageManager project, string projectName)
+        public ProjectKNuGetProject(INuGetPackageManager project, string projectName, string uniqueName)
         {
             _project = project;
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, projectName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
+
+            var supportedFrameworks = _project.GetSupportedFrameworksAsync(CancellationToken.None)
+                .Result
+                .Select(f => NuGetFramework.Parse(f.FullName));
+
+            InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supportedFrameworks);
         }
 
         private static bool IsCompatible(
@@ -62,6 +69,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentException(NuGet.ProjectManagement.Strings.PackageStreamShouldBeSeekable);
             }
+
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
 
             packageStream.Seek(0, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
@@ -90,6 +99,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async override Task<bool> UninstallPackageAsync(PackagingCore.PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
+
             var args = new Dictionary<string, object>();
             await _project.UninstallPackageAsync(
                 new NuGetPackageMoniker
