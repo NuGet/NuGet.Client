@@ -116,6 +116,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void AddFileCore(string path, Action addFile)
         {
+            // Do not try to add file to project, if the path is null or empty.
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
             bool fileExistsInProject = FileExistsInProject(path);
 
             // If the file exists on disk but not in the project then skip it.
