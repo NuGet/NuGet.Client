@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (EnvDTEProjectUtility.SupportsBindingRedirects(envDTEProject))
             {
-                AddBindingRedirects(envDTEProject, domain, projectAssembliesCache, frameworkMultiTargeting, nuGetProjectContext);
+                AddBindingRedirects(vsSolutionManager, envDTEProject, domain, projectAssembliesCache, frameworkMultiTargeting, nuGetProjectContext);
             }
 
             // Add binding redirects to all envdteprojects that are referencing this one
@@ -95,6 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private static IEnumerable<AssemblyBinding> AddBindingRedirects(
+            ISolutionManager solutionManager,
             EnvDTEProject envDTEProject,
             AppDomain domain,
             IDictionary<string, HashSet<string>> projectAssembliesCache,
@@ -102,6 +103,13 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetProjectContext nuGetProjectContext)
         {
             var redirects = Enumerable.Empty<AssemblyBinding>();
+            var msBuildNuGetProjectSystem = GetMSBuildNuGetProjectSystem(solutionManager, envDTEProject);
+
+            // If no msBuildNuGetProjectSystem, no binding redirects. Bail
+            if (msBuildNuGetProjectSystem == null)
+            {
+                return redirects;
+            }
 
             // Get the full path from envDTEProject
             var root = EnvDTEProjectUtility.GetFullPath(envDTEProject);
@@ -119,12 +127,26 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Create a binding redirect manager over the configuration
-            var manager = new BindingRedirectManager(root, EnvDTEProjectUtility.GetConfigurationFile(envDTEProject), nuGetProjectContext);
+            var manager = new BindingRedirectManager(EnvDTEProjectUtility.GetConfigurationFile(envDTEProject), msBuildNuGetProjectSystem);
 
             // Add the redirects
             manager.AddBindingRedirects(redirects);
 
             return redirects;
+        }
+
+        private static IMSBuildNuGetProjectSystem GetMSBuildNuGetProjectSystem(ISolutionManager solutionManager, EnvDTEProject envDTEProject)
+        {
+            var nuGetProject = solutionManager.GetNuGetProject(envDTEProject.Name);
+            if(nuGetProject != null)
+            {
+                var msBuildNuGetProject = nuGetProject as MSBuildNuGetProject;
+                if(msBuildNuGetProject != null)
+                {
+                    return msBuildNuGetProject.MSBuildNuGetProjectSystem;
+                }
+            }
+            return null;
         }
 
         /// <summary>

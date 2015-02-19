@@ -1,9 +1,10 @@
-﻿using System;
+﻿using NuGet.ProjectManagement;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -15,28 +16,22 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly XName AssemblyBindingName = AssemblyBinding.GetQualifiedName("assemblyBinding");
         private static readonly XName DependentAssemblyName = AssemblyBinding.GetQualifiedName("dependentAssembly");
 
-        private string Root { get; set; }
-        private string ConfigurationPath { get; set; }
-        private INuGetProjectContext NuGetProjectContext { get; set; }
+        private string ConfigurationFile { get; set; }
+        private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
 
-        public BindingRedirectManager(string root, string configurationPath, INuGetProjectContext nuGetProjectContext)
+        public BindingRedirectManager(string configurationFile, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            if (String.IsNullOrEmpty(root))
+            if (String.IsNullOrEmpty(configurationFile))
             {
-                throw new ArgumentException(NuGet.ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "root");
+                throw new ArgumentException(NuGet.ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "configurationFile");
             }
-            if (String.IsNullOrEmpty(configurationPath))
+            if (msBuildNuGetProjectSystem == null)
             {
-                throw new ArgumentException(NuGet.ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "configurationPath");
-            }
-            if (nuGetProjectContext == null)
-            {
-                throw new ArgumentNullException("nuGetProjectContext");
+                throw new ArgumentNullException("msBuildNuGetProjectSystem");
             }
 
-            Root = root;
-            ConfigurationPath = configurationPath;
-            NuGetProjectContext = nuGetProjectContext;
+            ConfigurationFile = configurationFile;
+            MSBuildNuGetProjectSystem = msBuildNuGetProjectSystem;
         }
 
         public void AddBindingRedirects(IEnumerable<AssemblyBinding> bindingRedirects)
@@ -174,7 +169,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void Save(XDocument document)
         {
-            FileSystemUtility.AddFile(Root, ConfigurationPath, document.Save, NuGetProjectContext);
+            using (var memoryStream = new MemoryStream())
+            {
+                document.Save(memoryStream);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                MSBuildNuGetProjectSystem.AddFile(ConfigurationFile, memoryStream);
+            }
         }
 
         private static ILookup<AssemblyBinding, XElement> GetAssemblyBindings(XDocument document)
@@ -207,7 +207,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private XDocument GetConfiguration()
         {
-            return XmlUtility.GetOrCreateDocument("configuration", Root, ConfigurationPath, NuGetProjectContext);
+            return XmlUtility.GetOrCreateDocument("configuration", MSBuildNuGetProjectSystem.ProjectFullPath, ConfigurationFile, MSBuildNuGetProjectSystem.NuGetProjectContext);
         }
 
         private static void UpdateBindingRedirectElement(XElement element, AssemblyBinding bindingRedirect)

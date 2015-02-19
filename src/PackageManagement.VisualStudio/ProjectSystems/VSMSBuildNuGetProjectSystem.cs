@@ -127,7 +127,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // If the file exists on disk but not in the project then skip it.
             // One exception is the 'packages.config' file, in which case we want to include
             // it into the project.
-            if (File.Exists(Path.Combine(ProjectFullPath, path)) && !fileExistsInProject && !path.Equals(ProjectManagement.Constants.PackageReferenceFile))
+            // Other exceptions are 'web.config' and 'app.config'
+            if (File.Exists(Path.Combine(ProjectFullPath, path))
+                && !fileExistsInProject
+                && !path.Equals(ProjectManagement.Constants.PackageReferenceFile)
+                && !path.Equals(EnvDTEProjectUtility.WebConfig)
+                && !path.Equals(EnvDTEProjectUtility.AppConfig))
             {
                 NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }
@@ -540,11 +545,6 @@ namespace NuGet.PackageManagement.VisualStudio
             if(IsBindingRedirectSupported && VSSolutionManager != null)
             {
                 RuntimeHelpers.AddBindingRedirects(VSSolutionManager, EnvDTEProject, VSFrameworkMultiTargeting, NuGetProjectContext);
-            }
-            var configFile = EnvDTEProjectUtility.GetConfigurationFile(EnvDTEProject);
-            if(File.Exists(Path.Combine(ProjectFullPath, configFile)))
-            {
-                AddFileToProject(configFile);
             }
         }
 

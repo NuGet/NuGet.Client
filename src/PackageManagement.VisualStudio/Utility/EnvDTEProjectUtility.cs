@@ -51,8 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetVSConstants.DeploymentProjectTypeGuid
         };
 
-        private const string WebConfig = "web.config";
-        private const string AppConfig = "app.config";
+        public const string WebConfig = "web.config";
+        public const string AppConfig = "app.config";
         private const string BinFolder = "Bin";
 
         private static readonly Dictionary<string, string> KnownNestedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {

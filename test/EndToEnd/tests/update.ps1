@@ -358,11 +358,9 @@ function Test-AddingBindingRedirectAfterUpdate {
 
     Build-Project $p
 
-    $redirect = $p | Add-BindingRedirect
+    Add-BindingRedirect
 
-    Assert-AreEqual B $redirect.Name
-    Assert-AreEqual '0.0.0.0-2.0.0.0' $redirect.OldVersion
-    Assert-AreEqual '2.0.0.0' $redirect.NewVersion
+    Assert-BindingRedirect $p web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
 }
 
 

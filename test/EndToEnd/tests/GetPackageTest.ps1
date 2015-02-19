@@ -406,7 +406,7 @@ function Test-GetPackageUpdatesReturnPrereleasePackagesIfFlagIsSpecified {
     # Assert
     Assert-AreEqual 1 $updates.Count
     Assert-AreEqual 'PrereleaseTestPackage' $updates[0].Id
-    Assert-AreEqual '1.0.1-a' $updates[0].Version
+    Assert-AreEqual '1.0.1-a' $updates[0].Version.ToNormalizedString()
 }
 
 function Test-GetPackageDoesNotThrowIfSolutionIsTemporary {
@@ -438,7 +438,7 @@ function Test-GetPackageUpdatesReturnAllVersionsIfFlagIsSpecified
     # Assert
     Assert-AreEqual 1 $updates.Count
     Assert-AreEqual 'PrereleaseTestPackage' $updates[0].Id
-    Assert-AreEqual '1.0.0' $updates[0].Version
+    Assert-AreEqual '1.0.0' $updates[0].Version.ToNormalizedString()
 }
 
 function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsAreSpecified 
@@ -461,10 +461,10 @@ function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsA
     Assert-AreEqual 2 $updates.Count
 
     Assert-AreEqual 'PrereleaseTestPackage' $updates[0].Id
-    Assert-AreEqual '1.0.0' $updates[0].Version
+    Assert-AreEqual '1.0.0' $updates[0].Version.ToNormalizedString()
 
     Assert-AreEqual 'PrereleaseTestPackage' $updates[1].Id
-    Assert-AreEqual '1.0.1-a' $updates[1].Version
+    Assert-AreEqual '1.0.1-a' $updates[1].Version.ToNormalizedString()
 }
 
 function Test-GetInstalledPackageWithFilterReturnsCorrectPackage
