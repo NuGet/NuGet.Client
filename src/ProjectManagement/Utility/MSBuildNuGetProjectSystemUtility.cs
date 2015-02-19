@@ -26,7 +26,7 @@ namespace NuGet.ProjectManagement
                 if (IsValid(mostCompatibleGroup))
                 {
                     mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
-                        mostCompatibleGroup.Items.Select(item => altDirSeparator ? PathUtility.ReplaceDirSeparatorWithAltDirSeparator(item)
+                        GetValidPackageItems(mostCompatibleGroup.Items).Select(item => altDirSeparator ? PathUtility.ReplaceDirSeparatorWithAltDirSeparator(item)
                             : PathUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
                 }
 
@@ -88,6 +88,7 @@ namespace NuGet.ProjectManagement
                 {
                     var paths = zipArchiveEntryList.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
                         GetEffectivePathForContentFile(packageTargetFramework, file.FullName)));
+                    paths = paths.Where(p => !String.IsNullOrEmpty(p));
                     msBuildNuGetProjectSystem.BeginProcessing(paths);
                 }
                 catch (Exception)
@@ -218,7 +219,10 @@ namespace NuGet.ProjectManagement
                                 try
                                 {
                                     var zipArchiveFileEntry = zipArchive.GetEntry(PathUtility.ReplaceDirSeparatorWithAltDirSeparator(file));
-                                    transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
+                                    if (zipArchiveFileEntry != null)
+                                    {
+                                        transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
+                                    }
                                 }
                                 catch (Exception e)
                                 {
@@ -228,7 +232,10 @@ namespace NuGet.ProjectManagement
                             else
                             {
                                 var zipArchiveFileEntry = zipArchive.GetEntry(PathUtility.ReplaceDirSeparatorWithAltDirSeparator(file));
-                                DeleteFileSafe(path, zipArchiveFileEntry.Open, msBuildNuGetProjectSystem);
+                                if (zipArchiveFileEntry != null)
+                                {
+                                    DeleteFileSafe(path, zipArchiveFileEntry.Open, msBuildNuGetProjectSystem);
+                                }
                             }
                         }
                     }
@@ -505,6 +512,17 @@ namespace NuGet.ProjectManagement
 
             // Return the effective path with Path.DirectorySeparatorChar
             return effectivePathForContentFile;
+        }
+
+        internal static IEnumerable<string> GetValidPackageItems(IEnumerable<string> items)
+        {
+            if(items == null || !items.Any())
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            // Assume nupkg and nuspec as the save mode for identifying valid package files
+            return items.Where(i => PackageHelper.IsPackageFile(i, PackageSaveModes.Nupkg | PackageSaveModes.Nuspec));
         }
     }
 }

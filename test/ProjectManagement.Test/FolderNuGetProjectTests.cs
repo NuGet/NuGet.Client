@@ -222,7 +222,7 @@ namespace ProjectManagement.Test
             using (var packageStream = File.OpenRead(nupkgFilePath))
             {
                 var zipArchive = new ZipArchive(packageStream);
-                Assert.Equal(4, zipArchive.Entries.Count);
+                Assert.Equal(6, zipArchive.Entries.Count);
             }
             Assert.True(folderNuGetProject.PackageExists(packageIdentity));
             var packageDirectoryPath = folderNuGetProject.GetInstalledPath(unNormalizedPackageIdentity);

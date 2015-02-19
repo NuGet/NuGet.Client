@@ -40,6 +40,11 @@ namespace Test.Utility
 
         public void AddFile(string path, Stream stream)
         {
+            if (String.IsNullOrEmpty(path) || String.IsNullOrEmpty(Path.GetFileName(path)))
+            {
+                return;
+            }
+
             using (var streamReader = new StreamReader(stream))
             {
                 Files.Add(path);

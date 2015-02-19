@@ -78,6 +78,9 @@ namespace NuGet.ProjectManagement
 
         private static void WriteAddedFileAndDirectory(string path, INuGetProjectContext nuGetProjectContext)
         {
+            if (String.IsNullOrEmpty(path))
+                return;
+
             string folderPath = Path.GetDirectoryName(path);
 
             if (!String.IsNullOrEmpty(folderPath))
@@ -97,6 +100,10 @@ namespace NuGet.ProjectManagement
 
         public static Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
+            if (String.IsNullOrEmpty(fullPath) || String.IsNullOrEmpty(Path.GetFileName(fullPath)))
+            {
+                throw new ArgumentException("fullPath");
+            }
             // MakeWriteable(fullPath); SourceControlManager will do that
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
             if(sourceControlManager != null)
@@ -109,6 +116,10 @@ namespace NuGet.ProjectManagement
 
         public static Stream CreateFile(string fullPath)
         {
+            if (String.IsNullOrEmpty(fullPath) || String.IsNullOrEmpty(Path.GetFileName(fullPath)))
+            {
+                throw new ArgumentException("fullPath");
+            }
             MakeWriteable(fullPath);
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
             return File.Create(fullPath);
@@ -282,18 +293,21 @@ namespace NuGet.ProjectManagement
             // first delete the file itself
             DeleteFileSafe(fullPath, nuGetProjectContext);
 
-            // now delete all parent directories if they are empty
-            for (string path = Path.GetDirectoryName(filePath); !String.IsNullOrEmpty(path); path = Path.GetDirectoryName(path))
+            if (!String.IsNullOrEmpty(filePath))
             {
-                if (GetFiles(root, path, "*.*").Any() || GetDirectories(root, path).Any())
+                // now delete all parent directories if they are empty
+                for (string path = Path.GetDirectoryName(filePath); !String.IsNullOrEmpty(path); path = Path.GetDirectoryName(path))
                 {
-                    // if this directory is not empty, stop
-                    break;
-                }
-                else
-                {
-                    // otherwise, delete it, and move up to its parent
-                    DeleteDirectorySafe(fullPath, false, nuGetProjectContext);
+                    if (GetFiles(root, path, "*.*").Any() || GetDirectories(root, path).Any())
+                    {
+                        // if this directory is not empty, stop
+                        break;
+                    }
+                    else
+                    {
+                        // otherwise, delete it, and move up to its parent
+                        DeleteDirectorySafe(fullPath, false, nuGetProjectContext);
+                    }
                 }
             }
         }

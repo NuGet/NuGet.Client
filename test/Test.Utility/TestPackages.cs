@@ -68,6 +68,8 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
+            zipFile.AddEntry("Content/", new byte[] { 0 });
+            zipFile.AddEntry("Content/Scripts/", new byte[] { 0 });
             zipFile.AddEntry("Content/Scripts/test1.js", new byte[] { 0 });
             zipFile.AddEntry("Content/Scripts/test2.js", new byte[] { 0 });
             zipFile.AddEntry("Content/Scripts/test3.js", new byte[] { 0 });
@@ -83,6 +85,7 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
+            zipFile.AddEntry("Content/", new byte[] { 0 });
             zipFile.AddEntry("Content/Bar.cs.pp", new byte[] { 0 });
             zipFile.AddEntry("Content/Foo.cs.pp", new byte[] { 0 });
 
@@ -97,6 +100,9 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
+            zipFile.AddEntry("Content/", new byte[] { 0 });
+            zipFile.AddEntry("Content/net45/", new byte[] { 0 });
+            zipFile.AddEntry("Content/net45/Scripts/", new byte[] { 0 });
             zipFile.AddEntry("Content/net45/Scripts/net45test1.js", new byte[] { 0 });
             zipFile.AddEntry("Content/net45/Scripts/net45test2.js", new byte[] { 0 });
             zipFile.AddEntry("Content/net45/Scripts/net45test3.js", new byte[] { 0 });
@@ -112,6 +118,7 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
+            zipFile.AddEntry("Content/", new byte[] { 0 });
             zipFile.AddEntry("Content/web.config.transform", webConfigTransformContent);
             SetSimpleNuspec(zipFile, packageId, packageVersion);
             zipFile.Save();
