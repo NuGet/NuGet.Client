@@ -111,6 +111,7 @@ namespace V2V3ResourcesTest
             Assert.True(!String.IsNullOrEmpty(metadata.LatestPackageMetadata.Title));
         }
 
+
         [Theory]
         [InlineData("https://nuget.org/api/v2/")]
         [InlineData("https://api.nuget.org/v3/index.json")]
@@ -118,6 +119,8 @@ namespace V2V3ResourcesTest
         {
             SourceRepository repo = GetSourceRepository(SourceUrl);
             UISearchResource resource = repo.GetResource<UISearchResource>();
+            SearchLatestResource latestResource = repo.GetResource<SearchLatestResource>();
+
             //Check if we are able to obtain a resource
             Assert.True(resource != null);
             //check if the resource is of type IVsSearch.
@@ -126,9 +129,13 @@ namespace V2V3ResourcesTest
             fxNames.Add(new FrameworkName(".NET Framework, Version=4.0"));
             filter.SupportedFrameworks = fxNames.Select(e => e.ToString());
             string SearchTerm = "Elmah";
-            IEnumerable<UISearchMetadata> uiSearchResults = await resource.Search(SearchTerm, filter, 0, 100, new System.Threading.CancellationToken());
+            
+            IEnumerable<UISearchMetadata> uiSearchResults = await resource.Search(SearchTerm, filter, 0, 100, new CancellationToken());
+            var latestSearchResults = await latestResource.Search(SearchTerm, filter, 0, 100, CancellationToken.None);
+
             // Check if non empty search result is returned.
             Assert.True(uiSearchResults.Count() > 0);
+
             //check if there is atleast one result which has Id exactly as the search terms.
             Assert.True(uiSearchResults.Any(p => p.Identity.Id.Equals(SearchTerm, StringComparison.OrdinalIgnoreCase)));
 
@@ -136,6 +143,24 @@ namespace V2V3ResourcesTest
             {
                 Assert.Equal(result.Identity.Id, result.LatestPackageMetadata.Identity.Id);
                 Assert.Equal(result.Identity.Version.ToNormalizedString(), result.LatestPackageMetadata.Identity.Version.ToNormalizedString());
+            }
+
+            // Verify search and latest search return the same results
+            var searchEnumerator = uiSearchResults.GetEnumerator();
+            var latestEnumerator = latestSearchResults.GetEnumerator();
+
+            for (int i=0; i < 10; i++)
+            {
+                searchEnumerator.MoveNext();
+                latestEnumerator.MoveNext();
+
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Identity.Id, latestEnumerator.Current.Identity.Id);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.LicenseUrl, latestEnumerator.Current.LicenseUrl);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.ReportAbuseUrl, latestEnumerator.Current.ReportAbuseUrl);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.RequireLicenseAcceptance, latestEnumerator.Current.RequireLicenseAcceptance);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Summary, latestEnumerator.Current.Summary);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Authors, latestEnumerator.Current.Authors);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Title, latestEnumerator.Current.Title);
             }
 
             PSSearchResource psResource = repo.GetResource<PSSearchResource>();

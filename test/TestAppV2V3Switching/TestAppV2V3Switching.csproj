@@ -90,6 +90,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FactoryTests.cs" />
+    <Compile Include="SearchV2Tests.cs" />
     <Compile Include="V2V3ResourceTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -59,6 +59,8 @@ namespace NuGet.Client
         /// </summary>
         public static SourceRepository Create(string sourceUrl)
         {
+            ComposeInstance();
+
             return new SourceRepository(new PackageSource(sourceUrl), _providers);
         }
 
@@ -77,7 +79,7 @@ namespace NuGet.Client
         /// </summary>
         public static SourceRepository CreateV2(string sourceUrl)
         {
-            return new SourceRepository(new PackageSource(sourceUrl), _providers);
+            return CreateV2(new PackageSource(sourceUrl));
         }
 
         /// <summary>
