@@ -1,29 +1,37 @@
 ﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
-
+using EnvDTE;
+using NuGet.Client;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.Versioning;
+using NuGet.VisualStudio.Resources;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
-using EnvDTE;
-using NuGet.VisualStudio.Resources;
-using NuGet.PackageManagement;
-using NuGet.Versioning;
 using System.Threading;
+using LegacyNuGet = Legacy.NuGet;
 
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsPackageInstallerServices))]
     public class VsPackageInstallerServices : IVsPackageInstallerServices
     {
-        //private readonly IVsPackageManagerFactory _packageManagerFactory;
-
         private ISolutionManager _solutionManager;
+        private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
+        private readonly ISettings _settings;
+        private NuGetPackageManager _packageManager;
+        private string _packageFolderPath;
 
         [ImportingConstructor]
-        public VsPackageInstallerServices(ISolutionManager solutionManager)
+        public VsPackageInstallerServices(ISolutionManager solutionManager, ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings)
         {
             _solutionManager = solutionManager;
+            _sourceRepositoryProvider = sourceRepositoryProvider;
+            _settings = settings;
+            _packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+            _packageFolderPath = _packageManager.PackagesFolderSourceRepository.PackageSource.Source;
         }
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages()
@@ -35,8 +43,9 @@ namespace NuGet.VisualStudio
 
                 foreach (var package in task.Result)
                 {
-                    // TODO: populate the install path
-                    yield return new VsPackageMetadata(package.PackageIdentity, null);
+                    // Get the install path for package
+                    string installPath = Path.Combine(_packageFolderPath, package.PackageIdentity.ToString());
+                    yield return new VsPackageMetadata(package.PackageIdentity, installPath);
                 }
             }
 
@@ -58,7 +67,9 @@ namespace NuGet.VisualStudio
                     task.Wait();
                     foreach (var package in task.Result)
                     {
-                        yield return new VsPackageMetadata(package.PackageIdentity, null);
+                        // Get the install path for package
+                        string installPath = Path.Combine(_packageFolderPath, package.PackageIdentity.ToString());
+                        yield return new VsPackageMetadata(package.PackageIdentity, installPath);
                     }
                 }
             }
