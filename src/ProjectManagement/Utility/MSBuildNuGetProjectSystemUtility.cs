@@ -524,5 +524,15 @@ namespace NuGet.ProjectManagement
             // Assume nupkg and nuspec as the save mode for identifying valid package files
             return items.Where(i => PackageHelper.IsPackageFile(i, PackageSaveModes.Nupkg | PackageSaveModes.Nuspec));
         }
+
+        public static void AddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Action<Stream> writeToStream)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                writeToStream(memoryStream);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                msBuildNuGetProjectSystem.AddFile(path, memoryStream);
+            }
+        }
     }
 }

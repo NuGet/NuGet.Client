@@ -48,6 +48,22 @@ namespace NuGet.ProjectManagement
             return safeSettings;
         }
 
+        public static XDocument GetOrCreateDocument(XName rootName, string path, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        {
+            if (File.Exists(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path)))
+            {
+                try
+                {
+                    return GetDocument(msBuildNuGetProjectSystem.ProjectFullPath, path);
+                }
+                catch (FileNotFoundException)
+                {
+                    return CreateDocument(rootName, path, msBuildNuGetProjectSystem);
+                }
+            }
+            return CreateDocument(rootName, path, msBuildNuGetProjectSystem);
+        }
+
         public static XDocument GetOrCreateDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
         {
             if (File.Exists(Path.Combine(root, path)))
@@ -62,6 +78,14 @@ namespace NuGet.ProjectManagement
                 }
             }
             return CreateDocument(rootName, root, path, nuGetProjectContext);
+        }
+
+        public static XDocument CreateDocument(XName rootName, string path, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        {
+            XDocument document = new XDocument(new XElement(rootName));
+            // Add it to the project system
+            MSBuildNuGetProjectSystemUtility.AddFile(msBuildNuGetProjectSystem, path, document.Save);
+            return document;
         }
 
         public static XDocument CreateDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)

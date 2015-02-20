@@ -25,7 +25,7 @@ namespace NuGet.ProjectManagement
             // Do a merge
             transformDocument.Root.MergeWith(xmlFragment, _nodeActions);
 
-            FileSystemUtility.AddFile(msBuildNuGetProjectSystem.ProjectFullPath, targetPath, transformDocument.Save, msBuildNuGetProjectSystem.NuGetProjectContext);
+            MSBuildNuGetProjectSystemUtility.AddFile(msBuildNuGetProjectSystem, targetPath, transformDocument.Save);
         }
 
         public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
