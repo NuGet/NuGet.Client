@@ -165,8 +165,12 @@
       <Link>Properties\CodeAnalysisDictionary.xml</Link>
     </CodeAnalysisDictionary>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />
+    <None Include="Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\build\sign.targets" />  
+  <Import Project="..\..\..\build\sign.targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>

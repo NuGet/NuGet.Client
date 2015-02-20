@@ -92,6 +92,14 @@
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content-->
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
+      <Link>Modules\NuGet\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
+      <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Resources\nuget_256.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
