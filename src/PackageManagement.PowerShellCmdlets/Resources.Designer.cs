@@ -484,6 +484,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to get version update for Package &apos;{0}&apos; due to error {1}.
+        /// </summary>
+        internal static string Cmdlets_ErrorFindingUpdateVersion {
+            get {
+                return ResourceManager.GetString("Cmdlets_ErrorFindingUpdateVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to add BindingRedirects to project &apos;{0}&apos; due to error: {1}.
         /// </summary>
         internal static string Cmdlets_FailedBindingRedirects {

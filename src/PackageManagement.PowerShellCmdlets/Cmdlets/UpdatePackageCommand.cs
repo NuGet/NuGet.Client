@@ -273,7 +273,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         // Update-Package Id
                         NormalizePackageId(project);
-                        await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                        NuGetVersion latestVersion = PowerShellCmdletsUtility.GetLastestVersionForPackageId(ActiveSourceRepository, Id, project, _allowPrerelease);
+                        if (latestVersion > installedPackage.PackageIdentity.Version)
+                        {
+                            await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                        }
+                        else
+                        {
+                            Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                        }
                     }
                 }
             }

@@ -545,7 +545,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PackageIdentity identity = null;
             if (isSafe)
             {
-                identity = PowerShellCmdletsUtility.GetSafePackageIdentityForId(ActiveSourceRepository, installedPackage.PackageIdentity.Id, project, includePrerelease, installedPackage.PackageIdentity.Version);
+                identity = PowerShellCmdletsUtility.GetSafeUpdateForPackageIdentity(ActiveSourceRepository, installedPackage.PackageIdentity, project, includePrerelease, installedPackage.PackageIdentity.Version);
             }
             else if (isEnum)
             {
@@ -557,13 +557,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 identity = new PackageIdentity(installedPackage.PackageIdentity.Id, nVersion);
             }
 
-            // Only return the packge identity if version is higher than the current installed version.
-            if (identity != null && identity.Version > installedPackage.PackageIdentity.Version)
-            {
-                return identity;
-            }
-
-            return null;      
+            // Since package downgrade is allowed, we will not check nVersion > installedPackage.PackageIdentity.Version here.
+            return identity;
         }
 
         /// <summary>

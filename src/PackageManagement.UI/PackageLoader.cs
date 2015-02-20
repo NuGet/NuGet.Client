@@ -274,7 +274,10 @@ namespace NuGet.PackageManagement.UI
                             {
                                 summary = packageMetadata.Description;
                             }
-                            title = packageMetadata.Title;
+                            if (!string.IsNullOrEmpty(packageMetadata.Title))
+                            {
+                                title = packageMetadata.Title;
+                            }
                         }
 
                         return new UISearchMetadata(

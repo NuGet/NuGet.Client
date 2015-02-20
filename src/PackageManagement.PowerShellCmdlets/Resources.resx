@@ -285,4 +285,7 @@
   <data name="Cmdlets_NotSupportBindingRedirects" xml:space="preserve">
     <value>The project '{0}' does not support adding BindingRedirects.</value>
   </data>
+  <data name="Cmdlets_ErrorFindingUpdateVersion" xml:space="preserve">
+    <value>Unable to get version update for Package '{0}' due to error {1}</value>
+  </data>
 </root>
