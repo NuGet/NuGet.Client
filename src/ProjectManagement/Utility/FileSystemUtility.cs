@@ -143,8 +143,21 @@ namespace NuGet.ProjectManagement
                 {
                     return Enumerable.Empty<string>();
                 }
-                return Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                                .Select(p => p.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar));
+
+                IEnumerable<string> filePaths = Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                List<string> trimmedPaths = new List<string>();
+                foreach (string filePath in filePaths)
+                {
+                    if (filePath.Length > root.Length)
+                    {
+                        trimmedPaths.Add(filePath.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar));
+                    }
+                    else
+                    {
+                        trimmedPaths.Add(filePath.TrimStart(Path.DirectorySeparatorChar));
+                    }
+                }
+                return trimmedPaths;
             }
             catch (UnauthorizedAccessException)
             {
@@ -391,6 +404,10 @@ namespace NuGet.ProjectManagement
 
         public static string MakeRelativePath(string root, string fullPath)
         {
+            if (fullPath.Length <= root.Length)
+            {
+                return fullPath.TrimStart(Path.DirectorySeparatorChar);
+            }
             return fullPath.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar);
         }
 
