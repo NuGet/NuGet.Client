@@ -99,8 +99,8 @@
     <Compile Include="V3ServiceIndexResourceProvider.cs" />
     <Compile Include="V3SimpleSearchResource.cs" />
     <Compile Include="V3SimpleSearchResourceProvider.cs" />
-    <Compile Include="V3StatsTotalsResource.cs" />
-    <Compile Include="V3StatsTotalsResourceProvider.cs" />
+    <Compile Include="V3TotalsStatsResource.cs" />
+    <Compile Include="V3TotalsStatsResourceProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

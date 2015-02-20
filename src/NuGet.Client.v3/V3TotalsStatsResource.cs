@@ -10,7 +10,7 @@ namespace NuGet.Client
     /// <summary>
     /// Returns stats resource
     /// </summary>
-    public class V3StatsTotalsResource : INuGetResource
+    public class V3TotalsStatsResource : INuGetResource
     {
         private readonly DataClient _client;
         private readonly Uri _resourceUrl;
@@ -21,7 +21,7 @@ namespace NuGet.Client
         /// <param name="client">DataClient that can be used for accessing resource URLs</param>
         /// <param name="resourceUrl">Resource URL</param>
         /// <exception cref="ArgumentNullException">Thrown when client or resourceUrl are not specified</exception>
-        public V3StatsTotalsResource(DataClient client, Uri resourceUrl)
+        public V3TotalsStatsResource(DataClient client, Uri resourceUrl)
         {
             if (client == null) throw new ArgumentNullException("client");
             if (resourceUrl == null) throw new ArgumentNullException("resourceUrl");
