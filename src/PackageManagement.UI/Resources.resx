@@ -297,8 +297,8 @@
   <data name="Checkbox_IncludePrerelease" xml:space="preserve">
     <value>Include prerelease</value>
   </data>
-  <data name="Filter_UpdateAvailable" xml:space="preserve">
-    <value>Update available</value>
+  <data name="Filter_UpgradeAvailable" xml:space="preserve">
+    <value>Upgrade available</value>
   </data>
   <data name="Version_Installed" xml:space="preserve">
     <value>Installed</value>

@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
 
             _filter.Items.Add(Resx.Resources.Filter_All);
             _filter.Items.Add(Resx.Resources.Filter_Installed);
-            _filter.Items.Add(Resx.Resources.Filter_UpdateAvailable);
+            _filter.Items.Add(Resx.Resources.Filter_UpgradeAvailable);
 
             AddRestoreBar();
 
@@ -402,7 +402,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return Resx.Resources.Filter_UpdateAvailable.Equals(_filter.SelectedItem);
+                return Resx.Resources.Filter_UpgradeAvailable.Equals(_filter.SelectedItem);
             }
         }
 
@@ -429,7 +429,7 @@ namespace NuGet.PackageManagement.UI
             {
                 filter = Filter.Installed;
             }
-            else if (Resx.Resources.Filter_UpdateAvailable.Equals(_filter.SelectedItem))
+            else if (Resx.Resources.Filter_UpgradeAvailable.Equals(_filter.SelectedItem))
             {
                 filter = Filter.UpdatesAvailable;
             }

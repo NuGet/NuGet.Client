@@ -385,11 +385,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Update available.
+        ///   Looks up a localized string similar to Upgrade available.
         /// </summary>
-        public static string Filter_UpdateAvailable {
+        public static string Filter_UpgradeAvailable {
             get {
-                return ResourceManager.GetString("Filter_UpdateAvailable", resourceCulture);
+                return ResourceManager.GetString("Filter_UpgradeAvailable", resourceCulture);
             }
         }
         
