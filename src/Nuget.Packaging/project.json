@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0-*",
+    "version": "3.0.0-*",
     "description": "NuGet's implementation for reading nupkg package and nuspec package specification files.",
     "authors": [ "NuGet" ],
     "copyright": "Copyright Outercurve Foundation. All rights reserved.",
@@ -7,8 +7,8 @@
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
     "tags": [ "semver", "semantic versioning" ],
     "dependencies": {
-        "NuGet.Packaging.Core": "1.0.0-*",
-        "NuGet.Frameworks": "1.0.0-*"
+        "NuGet.Packaging.Core": "3.0.0-*",
+        "NuGet.Frameworks": "3.0.0-*"
     },
     "frameworks": {
         "net45": {

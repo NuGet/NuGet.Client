@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "NuGet.Packaging.Core": "1.0.0-*",
+        "NuGet.Packaging.Core": "3.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {

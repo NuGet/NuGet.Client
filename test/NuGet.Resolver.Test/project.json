@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "NuGet.Resolver": "1.0.0-*",
+        "NuGet.Resolver": "3.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {
