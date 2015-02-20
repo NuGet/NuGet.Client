@@ -1183,7 +1183,7 @@ namespace ProjectManagement.Test
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-            Assert.Null(packagesInPackagesConfig[0].TargetFramework);
+            Assert.Equal(NuGetFramework.UnsupportedFramework, packagesInPackagesConfig[0].TargetFramework);
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(1, msBuildNuGetProjectSystem.References.Count);
             Assert.Equal("test.dll", msBuildNuGetProjectSystem.References.First().Key);
@@ -1233,7 +1233,7 @@ namespace ProjectManagement.Test
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-            Assert.Null(packagesInPackagesConfig[0].TargetFramework);
+            Assert.Equal(NuGetFramework.UnsupportedFramework, packagesInPackagesConfig[0].TargetFramework);
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(1, msBuildNuGetProjectSystem.References.Count);
             Assert.Equal("test.dll", msBuildNuGetProjectSystem.References.First().Key);
