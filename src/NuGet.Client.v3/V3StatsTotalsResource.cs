@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using NuGet.Data;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Data;
 
 namespace NuGet.Client
 {
@@ -30,7 +30,7 @@ namespace NuGet.Client
             _resourceUrl = resourceUrl;
         }
 
-        public virtual async Task<JObject> GetTotalStats(CancellationToken cancellationToken)
+        public virtual async Task<JObject> GetTotalStatsAsync(CancellationToken cancellationToken)
         {
             if (!cancellationToken.IsCancellationRequested)
             {

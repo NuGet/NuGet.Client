@@ -1,8 +1,8 @@
-﻿using System;
+﻿using NuGet.Data;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Data;
 
 namespace NuGet.Client
 {
