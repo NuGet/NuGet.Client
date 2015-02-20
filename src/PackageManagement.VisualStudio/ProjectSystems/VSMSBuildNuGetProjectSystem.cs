@@ -563,8 +563,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var solutionManager = ServiceLocator.GetInstanceSafe<ISolutionManager>();
                 VSSolutionManager = (solutionManager != null) ? (solutionManager as VSSolutionManager) : null;
-
-                VSFrameworkMultiTargeting = ServiceLocator.GetInstanceSafe<IVsFrameworkMultiTargeting>();
+                VSFrameworkMultiTargeting = ServiceLocator.GetGlobalService<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
             }
         }
         #endregion
