@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _project = project;
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, projectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, null);
 
             var supportedFrameworks = _project.GetSupportedFrameworksAsync(CancellationToken.None)
                 .Result
