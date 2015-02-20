@@ -20,7 +20,7 @@ namespace NuGet.ProjectManagement
             // Get the xml fragment
             XElement xmlFragment = GetXml(packageFile, msBuildNuGetProjectSystem);
 
-            XDocument transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, msBuildNuGetProjectSystem.ProjectFullPath, targetPath, msBuildNuGetProjectSystem.NuGetProjectContext);
+            XDocument transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, msBuildNuGetProjectSystem);
 
             // Do a merge
             transformDocument.Root.MergeWith(xmlFragment, _nodeActions);
