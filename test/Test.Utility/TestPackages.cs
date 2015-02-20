@@ -131,7 +131,7 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
-            zipFile.AddEntry("build/net45/build.targets", new byte[] { 0 });
+            zipFile.AddEntry("build/net45/" + packageId + ".targets", new byte[] { 0 });
             SetSimpleNuspec(zipFile, packageId, packageVersion);
             zipFile.Save();
 

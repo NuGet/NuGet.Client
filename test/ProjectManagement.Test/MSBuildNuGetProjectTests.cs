@@ -704,7 +704,7 @@ namespace ProjectManagement.Test
             // Check that the imports are added
             Assert.Equal(1, msBuildNuGetProjectSystem.Imports.Count);
             Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
-                "build\\net45\\build.targets"), msBuildNuGetProjectSystem.Imports.First());
+                "build\\net45\\packageA.targets"), msBuildNuGetProjectSystem.Imports.First());
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
@@ -753,7 +753,7 @@ namespace ProjectManagement.Test
             // Check that the imports are added
             Assert.Equal(1, msBuildNuGetProjectSystem.Imports.Count);
             Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
-                "build\\net45\\build.targets"), msBuildNuGetProjectSystem.Imports.First());
+                "build\\net45\\packageA.targets"), msBuildNuGetProjectSystem.Imports.First());
 
             // Main Act
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);

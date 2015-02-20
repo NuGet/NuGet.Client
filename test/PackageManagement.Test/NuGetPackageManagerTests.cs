@@ -8,6 +8,7 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -38,12 +39,12 @@ namespace NuGet.Test
 
         private List<PackageIdentity> PackageWithDeepDependency = new List<PackageIdentity>()
         {
-            new PackageIdentity("System.Spatial", new NuGetVersion("5.6.2")),
             new PackageIdentity("Microsoft.Data.Edm", new NuGetVersion("5.6.2")),
+            new PackageIdentity("Microsoft.WindowsAzure.ConfigurationManager" , new NuGetVersion("1.8.0.0")),
+            new PackageIdentity("Newtonsoft.Json", new NuGetVersion("5.0.8")),
+            new PackageIdentity("System.Spatial", new NuGetVersion("5.6.2")),
             new PackageIdentity("Microsoft.Data.OData", new NuGetVersion("5.6.2")),
             new PackageIdentity("Microsoft.Data.Services.Client", new NuGetVersion("5.6.2")),
-            new PackageIdentity("Newtonsoft.Json", new NuGetVersion("5.0.8")),
-            new PackageIdentity("Microsoft.WindowsAzure.ConfigurationManager" , new NuGetVersion("1.8.0.0")),
             new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.0")),
         };
 
@@ -1459,7 +1460,7 @@ namespace NuGet.Test
             Assert.Equal(7, installedPackagesInDependencyOrder.Count);
             for (int i = 0; i < 7; i++)
             {
-                Assert.True(installedPackagesInDependencyOrder[i].Equals(PackageWithDeepDependency[i]));
+                Assert.Equal(PackageWithDeepDependency[i], installedPackagesInDependencyOrder[i], PackageIdentity.Comparer);
             }
 
             // Clean-up
@@ -1502,7 +1503,7 @@ namespace NuGet.Test
             var soleSourceRepository = sourceRepositoryProvider.GetRepositories().Single();
             for (int i = 0; i < 7; i++)
             {
-                Assert.True(PackageWithDeepDependency[i].Equals(packageActions[i].PackageIdentity));
+                Assert.Equal(PackageWithDeepDependency[i], packageActions[i].PackageIdentity, PackageIdentity.Comparer);
                 Assert.Equal(NuGetProjectActionType.Install, packageActions[i].NuGetProjectActionType);
                 Assert.Equal(soleSourceRepository.PackageSource.Source,
                     packageActions[i].SourceRepository.PackageSource.Source);
@@ -1557,19 +1558,19 @@ namespace NuGet.Test
                 new UninstallationContext(removeDependencies: true), new TestNuGetProjectContext(), token)).ToList();
             Assert.Equal(7, packageActions.Count);
             var soleSourceRepository = sourceRepositoryProvider.GetRepositories().Single();
-            Assert.True(PackageWithDeepDependency[6].Equals(packageActions[0].PackageIdentity));
+            Assert.Equal(PackageWithDeepDependency[6], packageActions[0].PackageIdentity);
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[0].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[4].Equals(packageActions[1].PackageIdentity));
+            Assert.Equal(PackageWithDeepDependency[2], packageActions[1].PackageIdentity);
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[1].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[3].Equals(packageActions[2].PackageIdentity));
+            Assert.Equal(PackageWithDeepDependency[5], packageActions[2].PackageIdentity);
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[2].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[2].Equals(packageActions[3].PackageIdentity));
+            Assert.Equal(PackageWithDeepDependency[4], packageActions[3].PackageIdentity);
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[3].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[5].Equals(packageActions[4].PackageIdentity));
+            Assert.Equal(PackageWithDeepDependency[1], packageActions[4].PackageIdentity);
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[4].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[0].Equals(packageActions[5].PackageIdentity));
+            Assert.Equal(PackageWithDeepDependency[3], packageActions[5].PackageIdentity);
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[5].NuGetProjectActionType);
-            Assert.True(PackageWithDeepDependency[1].Equals(packageActions[6].PackageIdentity));
+            Assert.Equal(PackageWithDeepDependency[0], packageActions[6].PackageIdentity);
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[6].NuGetProjectActionType);
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
