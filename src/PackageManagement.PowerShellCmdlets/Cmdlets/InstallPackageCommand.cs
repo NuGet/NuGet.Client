@@ -280,7 +280,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     int n;
                     bool isNumeric = int.TryParse(s, out n);
-                    if (!isNumeric)
+                    // Take pre-release versions such as EntityFramework.6.1.3-beta1 into account.
+                    if ((!isNumeric || string.IsNullOrEmpty(builderForId.ToString())) && string.IsNullOrEmpty(builderForVersion.ToString()))
                     {
                         builderForId.Append(s);
                         builderForId.Append(".");
