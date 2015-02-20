@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISettings _settings;
         private NuGetPackageManager _packageManager;
-        private string _packageFolderPath;
+        private string _packageFolderPath = string.Empty;
 
         [ImportingConstructor]
         public VsPackageInstallerServices(ISolutionManager solutionManager, ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings)
@@ -30,12 +30,12 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager;
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
-            _packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
-            _packageFolderPath = _packageManager.PackagesFolderSourceRepository.PackageSource.Source;
         }
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages()
         {
+            InitializePackageManagerAndPackageFolderPath();
+
             foreach (var project in _solutionManager.GetNuGetProjects())
             {
                 var task = System.Threading.Tasks.Task.Run(async () => await project.GetInstalledPackagesAsync(CancellationToken.None));
@@ -59,6 +59,8 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("project");
             }
 
+            InitializePackageManagerAndPackageFolderPath();
+
             foreach (var curProject in _solutionManager.GetNuGetProjects())
             {
                 if (StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(curProject), project.UniqueName))
@@ -75,6 +77,16 @@ namespace NuGet.VisualStudio
             }
 
             yield break;
+        }
+
+        private void InitializePackageManagerAndPackageFolderPath()
+        {
+            // Initialize package manager here since _solutionManager may be targeting different project now.
+            _packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+            if (_packageManager != null && _packageManager.PackagesFolderSourceRepository != null)
+            {
+                _packageFolderPath = _packageManager.PackagesFolderSourceRepository.PackageSource.Source;
+            }
         }
 
         public bool IsPackageInstalled(Project project, string packageId)
