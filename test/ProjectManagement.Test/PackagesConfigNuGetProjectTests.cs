@@ -67,7 +67,7 @@ namespace ProjectManagement.Test
             var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, installedPackagesList.Count);
             Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
-            Assert.Null(installedPackagesList[0].TargetFramework);
+            Assert.True(installedPackagesList[0].TargetFramework.IsUnsupported);
         }
 
         [Fact]
