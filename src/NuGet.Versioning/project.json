@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0-*",
+    "version": "3.0.0-*",
     "authors": [ "NuGet" ],
     "description": "NuGet's implementation of Semantic Versioning.",
     "copyright": "Copyright Outercurve Foundation. All rights reserved.",
