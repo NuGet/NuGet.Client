@@ -1,17 +1,17 @@
-﻿using System;
+﻿using NuGet.Data;
+using NuGet.Versioning;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Data;
-using NuGet.Versioning;
 
 namespace NuGet.Client
 {
     public class V3ReportAbuseResource : INuGetResource
     {
-        private IEnumerable<Uri> _reportAbuseTemplates;
+        private readonly IEnumerable<Uri> _reportAbuseTemplates;
 
         public V3ReportAbuseResource(IEnumerable<Uri> reportAbuseTemplates)
         {
