@@ -1,12 +1,6 @@
 ﻿using NuGet.Client;
-using NuGet.Configuration;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 //using NuGet.Client;

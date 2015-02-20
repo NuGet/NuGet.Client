@@ -28,7 +28,7 @@ namespace NuGet.Client
         public const string MetricsService = "MetricsService" + TypeVersion;
         public const string RegistrationsBaseUrl = "RegistrationsBaseUrl" + TypeVersion;
         public const string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
-        public const string Stats = "Stats" + TypeVersion;
+        public const string TotalStats = "TotalStats" + TypeVersion;
     }
 
     public static class Properties
