@@ -66,8 +66,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="V3StatsResource.cs" />
-    <Compile Include="V3StatsResourceProvider.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DependencyInfo\DependencyInfo.cs" />
     <Compile Include="DependencyInfo\PackageInfo.cs" />
@@ -101,6 +99,8 @@
     <Compile Include="V3ServiceIndexResourceProvider.cs" />
     <Compile Include="V3SimpleSearchResource.cs" />
     <Compile Include="V3SimpleSearchResourceProvider.cs" />
+    <Compile Include="V3StatsTotalsResource.cs" />
+    <Compile Include="V3StatsTotalsResourceProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
