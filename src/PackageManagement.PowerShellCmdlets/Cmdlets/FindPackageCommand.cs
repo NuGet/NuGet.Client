@@ -1,4 +1,6 @@
-﻿using NuGet.Client.VisualStudio;
+﻿extern alias Legacy;
+using LegacyNuGet = Legacy.NuGet;
+using NuGet.Client.VisualStudio;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -88,7 +90,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 foreach (string id in packageIds)
                 {
                     IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, id);
-                    if (package.Version != null && package.Version.Any())
+                    if (package.Versions != null && package.Versions.Any())
                     {
                         packages.Add(package);
                     }
@@ -101,7 +103,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (!string.IsNullOrEmpty(packageId))
                 {
                     IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, packageId);
-                    if (package.Version != null && package.Version.Any())
+                    if (package.Versions != null && package.Versions.Any())
                     {
                         WriteObject(package);
                     }
@@ -125,7 +127,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (versions != null)
                 {
-                    package.Version = versions.OrderByDescending(v => v);
+                    package.Versions = versions.OrderByDescending(v => v);
                 }
             }
             else
@@ -138,7 +140,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (nVersion != null)
                 {
-                    package.Version = new List<NuGetVersion>() { nVersion };
+                    package.Versions = new List<NuGetVersion>() { nVersion };
+                    package.Version = Legacy.NuGet.SemanticVersion.Parse(nVersion.ToNormalizedString());
                 }
             }
             return package;
