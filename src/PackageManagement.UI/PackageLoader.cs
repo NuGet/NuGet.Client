@@ -266,6 +266,7 @@ namespace NuGet.PackageManagement.UI
                         }
 
                         string summary = string.Empty;
+                        string title = identity.Id;
                         if (packageMetadata != null)
                         {
                             summary = packageMetadata.Summary;
@@ -273,10 +274,12 @@ namespace NuGet.PackageManagement.UI
                             {
                                 summary = packageMetadata.Description;
                             }
+                            title = packageMetadata.Title;
                         }
 
                         return new UISearchMetadata(
                             identity,
+                            title: title,
                             summary: summary,
                             iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
                             versions: versions.Select(v => new VersionInfo(v, 0)),
@@ -335,8 +338,9 @@ namespace NuGet.PackageManagement.UI
                             .Select(v => new VersionInfo(v, 0));
 
                         string summary = String.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
+                        string title = string.IsNullOrEmpty(highest.Title) ? highest.Identity.Id : highest.Title;
 
-                        _packagesWithUpdates.Add(new UISearchMetadata(highest.Identity, summary, highest.IconUrl, allVersions, highest));
+                        _packagesWithUpdates.Add(new UISearchMetadata(highest.Identity, title, summary, highest.IconUrl, allVersions, highest));
                     }
                 }
             }
