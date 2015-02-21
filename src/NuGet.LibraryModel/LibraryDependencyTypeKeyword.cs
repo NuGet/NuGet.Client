@@ -12,11 +12,11 @@ namespace NuGet.LibraryModel
     {
         private static ConcurrentDictionary<string, LibraryDependencyTypeKeyword> _keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>();
 
-        public static LibraryDependencyTypeKeyword Default;
-        public static LibraryDependencyTypeKeyword Build;
-        public static LibraryDependencyTypeKeyword Preprocess;
-        public static LibraryDependencyTypeKeyword Private;
-        public static LibraryDependencyTypeKeyword Dev;
+        public static readonly LibraryDependencyTypeKeyword Default;
+        public static readonly LibraryDependencyTypeKeyword Build;
+        public static readonly LibraryDependencyTypeKeyword Preprocess;
+        public static readonly LibraryDependencyTypeKeyword Private;
+        public static readonly LibraryDependencyTypeKeyword Dev;
 
         private readonly string _value;
         private readonly IEnumerable<LibraryDependencyTypeFlag> _flagsToAdd;

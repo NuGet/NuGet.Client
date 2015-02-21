@@ -11,6 +11,6 @@ namespace NuGet.DependencyResolver
     {
         bool SupportsType(string libraryType);
 
-        LibraryDescription GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework);
+        Library GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework);
     }
 }

@@ -32,7 +32,7 @@ namespace NuGet.ProjectModel
                    string.Equals(libraryType, LibraryTypes.Project);
         }
 
-        public LibraryDescription GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
+        public Library GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
             string name = libraryRange.Name;
 
@@ -94,10 +94,10 @@ namespace NuGet.ProjectModel
             bool unresolved = targetFrameworkInfo.FrameworkName == null &&
                               project.TargetFrameworks.Any();
 
-            var description = new LibraryDescription
+            var description = new Library
             {
                 LibraryRange = libraryRange,
-                Identity = new Library
+                Identity = new LibraryIdentity
                 {
                     Name = project.Name,
                     Version = project.Version,

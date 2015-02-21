@@ -23,16 +23,16 @@ namespace NuGet.ProjectModel
                    string.Equals(libraryType, LibraryTypes.Package);
         }
 
-        public LibraryDescription GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
+        public Library GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
             var library = FindCandidate(libraryRange);
 
             if (library != null)
             {
-                var description = new LibraryDescription
+                var description = new Library
                 {
                     LibraryRange = libraryRange,
-                    Identity = new Library
+                    Identity = new LibraryIdentity
                     {
                         Name = library.Name,
                         Version = library.Version,

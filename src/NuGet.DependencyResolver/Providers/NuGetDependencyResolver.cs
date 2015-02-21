@@ -31,7 +31,7 @@ namespace NuGet.DependencyResolver
                    string.Equals(libraryType, LibraryTypes.Package);
         }
 
-        public LibraryDescription GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
+        public Library GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
             var package = FindCandidate(libraryRange.Name, libraryRange.VersionRange);
 
@@ -43,10 +43,10 @@ namespace NuGet.DependencyResolver
                     nuspecReader = new NuspecReader(stream);
                 }
 
-                var description = new LibraryDescription
+                var description = new Library
                 {
                     LibraryRange = libraryRange,
-                    Identity = new Library
+                    Identity = new LibraryIdentity
                     {
                         Name = package.Id,
                         Version = package.Version,

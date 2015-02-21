@@ -19,7 +19,7 @@ namespace NuGet.DependencyResolver
             _dependencyProviders = dependencyProviders;
         }
 
-        public GraphNode<LibraryDescription> Walk(string name, NuGetVersion version, NuGetFramework framework)
+        public GraphNode<Library> Walk(string name, NuGetVersion version, NuGetFramework framework)
         {
             var key = new LibraryRange
             {
@@ -27,9 +27,9 @@ namespace NuGet.DependencyResolver
                 VersionRange = new NuGetVersionRange(version)
             };
 
-            var root = new GraphNode<LibraryDescription>(key);
+            var root = new GraphNode<Library>(key);
 
-            var resolvedItems = new Dictionary<LibraryRange, GraphItem<LibraryDescription>>();
+            var resolvedItems = new Dictionary<LibraryRange, GraphItem<Library>>();
 
             // Recurse through dependencies optimistically, asking resolvers for dependencies
             // based on best match of each encountered dependency
@@ -74,7 +74,7 @@ namespace NuGet.DependencyResolver
 
                     if (!eclipsed)
                     {
-                        var innerNode = new GraphNode<LibraryDescription>(dependency.LibraryRange)
+                        var innerNode = new GraphNode<Library>(dependency.LibraryRange)
                         {
                             OuterNode = node
                         };
@@ -87,7 +87,7 @@ namespace NuGet.DependencyResolver
             return root;
         }
 
-        private static string GetChain(GraphNode<LibraryDescription> node, LibraryDependency dependency)
+        private static string GetChain(GraphNode<Library> node, LibraryDependency dependency)
         {
             var result = dependency.Name;
             var current = node;
@@ -101,18 +101,18 @@ namespace NuGet.DependencyResolver
             return result;
         }
 
-        private GraphItem<LibraryDescription> Resolve(
-            Dictionary<LibraryRange, GraphItem<LibraryDescription>> resolvedItems,
+        private GraphItem<Library> Resolve(
+            Dictionary<LibraryRange, GraphItem<Library>> resolvedItems,
             LibraryRange library,
             NuGetFramework framework)
         {
-            GraphItem<LibraryDescription> item;
+            GraphItem<Library> item;
             if (resolvedItems.TryGetValue(library, out item))
             {
                 return item;
             }
 
-            LibraryDescription hit = null;
+            Library hit = null;
 
             foreach (var dependencyProvider in _dependencyProviders)
             {
@@ -140,7 +140,7 @@ namespace NuGet.DependencyResolver
                 return item;
             }
 
-            item = new GraphItem<LibraryDescription>(hit.Identity)
+            item = new GraphItem<Library>(hit.Identity)
             {
                 Data = hit
             };
