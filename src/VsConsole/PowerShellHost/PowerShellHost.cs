@@ -70,7 +70,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _name = name;
             IsCommandEnabled = true;
 
-            InitializeSources();            
+            InitializeSources();
 
             _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesSaved += PackageSourceProvider_PackageSourcesSaved;
         }
@@ -262,6 +262,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectory();
                     _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectory();
                     _solutionManager.NuGetProjectRemoved += (o, e) => UpdateWorkingDirectory();
+
+                    // Set available private data on Host
+                    SetPrivateDataOnHost(false);
                 }
                 catch (Exception ex)
                 {
