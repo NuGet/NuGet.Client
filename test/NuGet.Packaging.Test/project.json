@@ -1,7 +1,8 @@
 {
+    "version": "3.0.0-*",
     "dependencies": {
         "NuGet.Packaging": "3.0.0-*",
-        "NuGet.Test.Utility": "1.0.0-*",
+        "NuGet.Test.Utility": "3.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {
@@ -9,7 +10,18 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.IO.Compression": "",
+                "System.Xml": "",
+                "System.Xml.Linq": ""
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.IO.Compression": "4.0.0-*",
+                "System.Xml.XDocument": "4.0.10-beta-*"
+            }
+        }
     }
 }

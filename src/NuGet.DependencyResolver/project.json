@@ -1,0 +1,28 @@
+﻿{
+    "version": "3.0.0-*",
+    "dependencies": {
+        "NuGet.LibraryModel": "3.0.0-*",
+        "NuGet.Repositories": "3.0.0-*"
+    },
+
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.Xml": "",
+                "System.Xml.Linq": ""
+            }
+        },
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.Xml": "",
+                "System.Xml.Linq": ""
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Xml.XDocument": "4.0.10-beta-*",
+                "System.Threading": "4.0.10-*"
+            }
+        }
+    }
+}

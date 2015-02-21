@@ -50,7 +50,6 @@ namespace NuGet.Packaging
 
             string packageId = nuspecReader.GetId();
             packageLanguage = nuspecReader.GetLanguage();
-            bool result = false;
             string localruntimePackageId = null;
 
             if (!String.IsNullOrEmpty(packageLanguage) &&

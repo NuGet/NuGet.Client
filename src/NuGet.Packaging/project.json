@@ -13,11 +13,23 @@
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
+                "System.Xml": "",
+                "System.Xml.Linq": "",
+                "System.IO.Compression": ""
+            }
+        },
+        "aspnet50": {
+            "frameworkAssemblies": {
+                "System.Xml": "",
+                "System.Xml.Linq": "",
+                "System.IO.Compression": ""
             }
         },
         "aspnetcore50": {
             "dependencies": {
-                "System.IO.FileSystem": "4.0.0-beta-*"
+                "System.IO.Compression": "4.0.0-beta-*",
+                "System.IO.FileSystem": "4.0.0-beta-*",
+                "System.Xml.XDocument": "4.0.10-beta-*"
             }
         }
     }

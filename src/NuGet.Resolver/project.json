@@ -10,6 +10,7 @@
     },
     "frameworks": {
         "net45": { },
+        "aspnet50": { },
         "aspnetcore50": { }
     }
 }

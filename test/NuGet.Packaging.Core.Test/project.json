@@ -1,4 +1,5 @@
 {
+    "version": "3.0.0-*",
     "dependencies": {
         "NuGet.Packaging.Core": "3.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
