@@ -128,6 +128,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (versions != null)
                 {
                     package.Versions = versions.OrderByDescending(v => v);
+                    if (package.Versions != null && package.Versions.Any())
+                    {
+                        package.Version = Legacy.NuGet.SemanticVersion.Parse(package.Versions.FirstOrDefault().ToNormalizedString());
+                    }
                 }
             }
             else

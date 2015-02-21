@@ -213,7 +213,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
             }
 
-            IEnumerable<SourceRepository> repoes = _resourceRepositoryProvider.GetRepositories();
+            IEnumerable<SourceRepository> repoes = Enumerable.Empty<SourceRepository>();
+            if (_resourceRepositoryProvider != null)
+            {
+                repoes = _resourceRepositoryProvider.GetRepositories();
+            }
+               
             if (!string.IsNullOrEmpty(source))
             {
                 // Look through all available sources (including those disabled) by matching source name and url
