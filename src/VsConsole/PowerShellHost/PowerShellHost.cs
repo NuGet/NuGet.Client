@@ -317,6 +317,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     List<PackageIdentity> sortedPackages = new List<PackageIdentity>();
                     foreach (NuGetProject project in projects)
                     {
+                        // Skip project K projects.
+                        if (project is NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase)
+                        {
+                            continue;
+                        }
+
                         IEnumerable<PackageReference> installedRefs = project.GetInstalledPackagesAsync(CancellationToken.None).Result;
                         if (installedRefs != null && installedRefs.Any())
                         {
