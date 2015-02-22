@@ -1,8 +1,8 @@
 ﻿{
-    "version": "1.0.0-*",
+    "version": "3.0.0-*",
     "dependencies": {
-        "NuGet.Versioning": "1.0.0-*",
-        "NuGet.Packaging": "1.0.0-*",
+        "NuGet.Versioning": "3.0.0-*",
+        "NuGet.Packaging": "3.0.0-*",
         "Newtonsoft.Json": "6.0.6"
     },
 
