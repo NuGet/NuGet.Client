@@ -101,8 +101,8 @@ namespace NuGet.ProjectModel
             }
 
             project.Description = rawProject.GetValue<string>("description");
-            project.Authors = authors == null ? new string[] { } : authors.Value<string[]>();
-            project.Owners = owners == null ? new string[] { } : owners.Value<string[]>();
+            project.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
+            project.Owners = owners == null ? new string[] { } : owners.ValueAsArray<string>();
             project.Dependencies = new List<LibraryDependency>();
             project.ProjectUrl = rawProject.GetValue<string>("projectUrl");
             project.IconUrl = rawProject.GetValue<string>("iconUrl");
@@ -111,30 +111,6 @@ namespace NuGet.ProjectModel
             project.Language = rawProject.GetValue<string>("language");
             project.RequireLicenseAcceptance = rawProject.GetValue<bool?>("requireLicenseAcceptance") ?? false;
             project.Tags = tags == null ? new string[] { } : tags.ValueAsArray<string>();
-
-            var scripts = rawProject["scripts"] as JObject;
-            if (scripts != null)
-            {
-                foreach (var script in scripts)
-                {
-                    var value = script.Value;
-                    if (value.Type == JTokenType.String)
-                    {
-                        project.Scripts[script.Key] = new string[] { value.Value<string>() };
-                    }
-                    else if (value.Type == JTokenType.Array)
-                    {
-                        project.Scripts[script.Key] = script.Value.ValueAsArray<string>();
-                    }
-                    else
-                    {
-                        throw ProjectFormatException.Create(
-                            string.Format("The value of a script in '{0}' can only be a string or an array of strings", Project.ProjectFileName),
-                            value,
-                            project.ProjectFilePath);
-                    }
-                }
-            }
 
             BuildTargetFrameworks(project, rawProject);
 
@@ -349,15 +325,6 @@ namespace NuGet.ProjectModel
 
         private static NuGetFramework GetFramework(string key)
         {
-            //if (key == "aspnet50")
-            //{
-            //    return new NuGetFramework("Asp.Net", new Version(5, 0));
-            //}
-            //else if (key == "aspnetcore50")
-            //{
-            //    return new NuGetFramework("Asp.NetCore", new Version(5, 0));
-            //}
-
             return NuGetFramework.Parse(key);
         }
 

@@ -63,7 +63,7 @@ namespace NuGet.Packaging.Core
 
         public int GetHashCode(PackageDependency obj)
         {
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddObject(obj.Id.ToUpperInvariant());
 

@@ -13,9 +13,9 @@ namespace NuGet.ContentModel
             _assets = paths.Select(path => new Asset { Path = path }).SelectMany(ContractBecomesRef).ToList();
         }
 
-        public void Load(string manifestPath)
+        public void Load(string packageDirectory)
         {
-            _assets = AssetManager.GetPackageAssets(manifestPath).SelectMany(ContractBecomesRef).ToList();
+            _assets = AssetManager.GetPackageAssets(packageDirectory).SelectMany(ContractBecomesRef).ToList();
         }
 
         private IEnumerable<Asset> ContractBecomesRef(Asset asset)

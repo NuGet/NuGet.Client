@@ -79,9 +79,9 @@ namespace NuGet.DependencyResolver
             return GetDependencies(targetFramework, dependencies, frameworkAssemblies);
         }
 
-        public static IList<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
-                                                               PackageDependencyGroup dependencies,
-                                                               FrameworkSpecificGroup frameworkAssemblies)
+        private static IList<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
+                                                                PackageDependencyGroup dependencies,
+                                                                FrameworkSpecificGroup frameworkAssemblies)
         {
             var libraryDependencies = new List<LibraryDependency>();
 

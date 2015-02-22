@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Frameworks;
 
-namespace NuGet.Packaging
+namespace NuGet.Frameworks
 {
     public class NuGetFrameworkUtility
     {

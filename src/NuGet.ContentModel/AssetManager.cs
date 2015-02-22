@@ -1,34 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 
 namespace NuGet.ContentModel
 {
     public static class AssetManager
     {
-        public static IEnumerable<Asset> GetPackageAssets(string manifestPath)
-        {
-            var spec = XDocument.Load(manifestPath);
-
-            var contentsElement = spec.Root.Element("contents");
-
-            if (contentsElement == null)
-            {
-                return GetContentItemsFromDisk(Path.GetDirectoryName(manifestPath));
-            }
-
-            var contents = contentsElement.Elements()
-                            .Select(e => new Asset
-                            {
-                                Path = e.Attribute("path").Value,
-                                Link = e.Attribute("link")?.Value
-                            });
-
-            return contents;
-        }
-
-        private static IEnumerable<Asset> GetContentItemsFromDisk(string packageDirectory)
+        internal static IEnumerable<Asset> GetPackageAssets(string packageDirectory)
         {
             packageDirectory = EnsureTrailingSlash(packageDirectory);
 
