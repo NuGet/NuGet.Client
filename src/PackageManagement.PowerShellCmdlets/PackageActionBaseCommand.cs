@@ -1,14 +1,14 @@
-﻿using NuGet.Client.VisualStudio;
-using NuGet.Packaging;
-using NuGet.PackagingCore;
-using NuGet.ProjectManagement;
-using NuGet.Resolver;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Client.VisualStudio;
+using NuGet.Packaging;
+using NuGet.PackagingCore;
+using NuGet.ProjectManagement;
+using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -154,14 +154,29 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="project"></param>
         protected void NormalizePackageId(NuGetProject project)
         {
-            if (project is ProjectManagement.Projects.ProjectKNuGetProjectBase)
+            if (!(project is ProjectManagement.Projects.ProjectKNuGetProjectBase))
             {
-                IEnumerable<string> frameworks = Enumerable.Empty<string>();
-                PSSearchMetadata match = GetPackagesFromRemoteSource(Id, frameworks, true, 0, 30)
-                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(Id, p.Identity.Id))
-                    .FirstOrDefault();
-                Id = match.Identity.Id;
+                return;
             }
+
+            var resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
+            if (resource == null)
+            {
+                return;
+            }
+
+            var metadata = resource.GetMetadata(
+                Id,
+                includePrerelease: true,
+                includeUnlisted: false,
+                token: CancellationToken.None).Result;
+            if (!metadata.Any())
+            {
+                return;
+            }
+
+            // note that we're assuming that package id is the same for all versions.
+            Id = metadata.First().Identity.Id;
         }
 
         /// <summary>
