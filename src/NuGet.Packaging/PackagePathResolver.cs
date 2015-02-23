@@ -18,12 +18,21 @@ namespace NuGet.Packaging
             _useSideBySidePaths = useSideBySidePaths;
         }
 
+        protected internal string Root
+        {
+            get
+            {
+                return _rootDirectory;
+            }
+        }
+
         public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
         {
             string directoryName = packageIdentity.Id;
             if (_useSideBySidePaths)
             {
-                directoryName += "." + packageIdentity.Version.ToNormalizedString();
+                // For legacy support do not normalize the version string
+                directoryName += "." + packageIdentity.Version.ToString();
             }
 
             return directoryName;
@@ -34,6 +43,7 @@ namespace NuGet.Packaging
             string fileNameBase = packageIdentity.Id;
             if(_useSideBySidePaths)
             {
+                // TODO: Nupkgs from the server will be normalized, but others might not be.
                 fileNameBase += "." + packageIdentity.Version.ToNormalizedString();
             }
 
@@ -43,6 +53,17 @@ namespace NuGet.Packaging
         public virtual string GetInstallPath(PackageIdentity packageIdentity)
         {
             return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
+        }
+
+        public virtual string GetInstalledPath(PackageIdentity packageIdentity)
+        {
+            var installedPackageFilePath = GetInstalledPackageFilePath(packageIdentity);
+            return String.IsNullOrEmpty(installedPackageFilePath) ? null : Path.GetDirectoryName(installedPackageFilePath);
+        }
+
+        public virtual string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
+        {
+            return PackagePathHelper.GetInstalledPackageFilePath(packageIdentity, this);
         }
     }
 }

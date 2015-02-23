@@ -113,6 +113,9 @@ namespace NuGet.Resolver
                 resolverPackages.Add(new ResolverPackage(package.Id, package.Version, dependencies));
             }
 
+            // Sort the packages to make this process as deterministic as possible
+            resolverPackages.Sort(PackageIdentityComparer.Default);
+
             // group the packages by id
             foreach (var group in resolverPackages.GroupBy(e => e.Id))
             {
@@ -163,7 +166,7 @@ namespace NuGet.Resolver
             while (satisfiedNodes.Any())
             {
                 //Pick any element from the set. Remove it, and add it to the result list.
-                var node = satisfiedNodes.First();
+                var node = satisfiedNodes.OrderBy(p => p.Id, StringComparer.OrdinalIgnoreCase).First();
                 satisfiedNodes.Remove(node);
                 result.Add(node);
 

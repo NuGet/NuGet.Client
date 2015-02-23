@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Xunit;
+using Xunit.Extensions;
 
 namespace NuGet.Packaging.Test
 {
@@ -30,18 +31,22 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public void PackageReader_MinClientVersion()
+        [Theory]
+        [InlineData("3.0.5-beta", "3.0.5-beta")]
+        [InlineData("2.5", "2.5.0")]
+        [InlineData("2.5-beta", "2.5.0-beta")]
+        public void PackageReader_MinClientVersion(string minClientVersion, string expected)
         {
-            var zip = TestPackages.GetZip(TestPackages.GetLegacyTestPackageMinClient());
+            var zip = TestPackages.GetZip(TestPackages.GetLegacyTestPackageMinClient(minClientVersion));
 
             using (PackageReader reader = new PackageReader(zip))
             {
                 var version = reader.GetMinClientVersion();
 
-                Assert.Equal("3.0.5-beta", version.ToNormalizedString());
+                Assert.Equal(expected, version.ToNormalizedString());
             }
         }
+        
 
         [Fact]
         public void PackageReader_ContentWithMixedFrameworks()

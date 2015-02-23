@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Globalization;
 
 namespace NuGet.Test.Utility
 {
@@ -52,7 +53,7 @@ namespace NuGet.Test.Utility
             return result;
         }
 
-        public static FileInfo GetLegacyTestPackageMinClient()
+        public static FileInfo GetLegacyTestPackageMinClient(string minClientVersion)
         {
             string file = Path.GetTempFileName() + ".nupkg";
             FileInfo result = new FileInfo(file);
@@ -65,8 +66,10 @@ namespace NuGet.Test.Utility
                 zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                CultureInfo.InvariantCulture,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
-                              <metadata minClientVersion=""3.0.5-beta"">
+                              <metadata minClientVersion=""{0}"">
                                 <id>packageA</id>
                                 <version>2.0.3</version>
                                 <authors>Author1, author2</authors>
@@ -86,8 +89,10 @@ namespace NuGet.Test.Utility
                                    </group>
                                 </dependencies>
                               </metadata>
-                            </package>", Encoding.UTF8);
-            }
+                            </package>",
+                minClientVersion);
+
+            zip.AddEntry("packageA.nuspec", nuspec, Encoding.UTF8);
 
             return result;
         }

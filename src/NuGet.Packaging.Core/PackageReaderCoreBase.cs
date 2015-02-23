@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Core
             return NuspecCore.GetIdentity();
         }
 
-        public virtual SemanticVersion GetMinClientVersion()
+        public virtual NuGetVersion GetMinClientVersion()
         {
             return NuspecCore.GetMinClientVersion();
         }

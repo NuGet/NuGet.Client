@@ -39,7 +39,7 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException("folderName");
             }
 
-            NuGetFramework framework = null;
+            NuGetFramework framework = NuGetFramework.UnsupportedFramework;
 
             if (folderName.IndexOf(',') > -1)
             {
