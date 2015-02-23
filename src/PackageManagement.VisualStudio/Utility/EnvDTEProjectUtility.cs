@@ -963,12 +963,21 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             bool isClr = false;
 
-            // Null properties on the DTE project item are a common source of bugs, make sure everything is non-null before attempting this check.
-            // We will default to false since CLR projects should have all of these properties set.
-            if (envDTEProject != null && envDTEProject.FullName != null && envDTEProject.ConfigurationManager != null && envDTEProject.ConfigurationManager.ActiveConfiguration != null)
+            try
             {
-                var vcx = new VcxProject(envDTEProject.FullName);
-                isClr = vcx.HasClrSupport(envDTEProject.ConfigurationManager.ActiveConfiguration);
+                // Null properties on the DTE project item are a common source of bugs, make sure everything is non-null before attempting this check.
+                // We will default to false since CLR projects should have all of these properties set.
+                // We will also default to false when envDTEProject.ConfigurationManager.ActiveConfiguration throws a COMException
+                if (envDTEProject != null && envDTEProject.FullName != null && envDTEProject.ConfigurationManager != null && envDTEProject.ConfigurationManager.ActiveConfiguration != null)
+                {
+                    var vcx = new VcxProject(envDTEProject.FullName);
+                    isClr = vcx.HasClrSupport(envDTEProject.ConfigurationManager.ActiveConfiguration);
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionHelper.WriteToActivityLog(ex);
+                isClr = false;
             }
 
             return isClr;

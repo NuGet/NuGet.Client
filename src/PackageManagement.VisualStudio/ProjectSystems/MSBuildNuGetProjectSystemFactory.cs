@@ -47,8 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var guids = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
             if (guids.Contains(NuGetVSConstants.CppProjectTypeGuid)) // Got a cpp project
             {
-                var vcx = new VcxProject(envDTEProject.FullName);
-                if (!vcx.HasClrSupport(envDTEProject.ConfigurationManager.ActiveConfiguration))
+                if (!EnvDTEProjectUtility.IsClr(envDTEProject))
                     return new NativeProjectSystem(envDTEProject, nuGetProjectContext);
             }
 
