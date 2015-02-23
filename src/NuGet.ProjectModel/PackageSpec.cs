@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json.Linq;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
 
@@ -16,8 +17,7 @@ namespace NuGet.ProjectModel
     {
         public static readonly string PackageSpecFileName = "project.json";
 
-        public PackageSpec() : this(new Dictionary<string, object>()) { }
-        public PackageSpec(IDictionary<string, object> rawProperties)
+        public PackageSpec(JObject rawProperties)
         {
             Scripts = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
             TargetFrameworks = new List<TargetFrameworkInformation>();
@@ -68,7 +68,8 @@ namespace NuGet.ProjectModel
         /// Gets a list of all properties found in the package spec, including
         /// those not recognized by the parser.
         /// </summary>
-        public IDictionary<string, object> Properties { get; }
+        // TODO: Remove dependency on Newtonsoft.Json here.
+        public JObject Properties { get; }
     }
 }
 

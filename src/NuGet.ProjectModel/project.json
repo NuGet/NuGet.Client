@@ -9,13 +9,10 @@
 
     "frameworks": {
         "net45": {
-            "frameworkAssemblies": {
-                "System.Runtime": { "version": "", "type": "build" }
-            }
         },
         "aspnet50": {
             "frameworkAssemblies": {
-                "System.Runtime": ""
+                "System.Collections": { "version": "", "type": "build" }
             }
         },
         "aspnetcore50": {

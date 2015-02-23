@@ -70,7 +70,7 @@ namespace NuGet.ProjectModel
             // Load the raw JSON into the package spec object
             var reader = new JsonTextReader(new StreamReader(stream));
             var rawPackageSpec = JObject.Load(reader);
-            var packageSpec = new PackageSpec(rawPackageSpec.ToDictionary());
+            var packageSpec = new PackageSpec(rawPackageSpec);
 
             // Parse properties we know about
             var version = rawPackageSpec["version"];
