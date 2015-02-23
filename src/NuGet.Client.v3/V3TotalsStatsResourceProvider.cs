@@ -16,7 +16,7 @@ namespace NuGet.Client
 
             if (serviceIndex != null)
             {
-                Uri resourceUrl = serviceIndex[ServiceTypes.Stats].FirstOrDefault();
+                Uri resourceUrl = serviceIndex[ServiceTypes.TotalStats].FirstOrDefault();
 
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
                 DataClient client = new DataClient(messageHandlerResource.MessageHandler);

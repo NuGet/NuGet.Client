@@ -13,12 +13,12 @@ namespace Client.V3Test
 {
     public class DependencyInfoTests : TestBase
     {
-        private const string RegBaseUrl = "https://az320820.vo.msecnd.net/registrations-1/";
+        private const string RegistrationUriTemplate = "https://az320820.vo.msecnd.net/registrations-1/{id-lower}/index.json";
 
         [Fact]
         public async Task DependencyInfo_RavenDb()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new Uri(RegBaseUrl));
+            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(RegistrationUriTemplate) });
 
             V3DependencyInfoResource depResource = new V3DependencyInfoResource(DataClient, reg);
 
@@ -37,7 +37,7 @@ namespace Client.V3Test
         [Fact]
         public async Task DependencyInfo_Mvc()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new Uri(RegBaseUrl));
+            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(RegistrationUriTemplate) });
 
             V3DependencyInfoResource depResource = new V3DependencyInfoResource(DataClient, reg);
 

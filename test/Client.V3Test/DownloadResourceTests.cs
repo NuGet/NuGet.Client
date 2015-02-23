@@ -2,9 +2,6 @@
 using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,12 +10,12 @@ namespace Client.V3Test
 {
     public class DownloadResourceTests : TestBase
     {
-        private const string RegBaseUrl = "https://az320820.vo.msecnd.net/registrations-1/";
+        private const string RegistrationUriTemplate = "https://az320820.vo.msecnd.net/registrations-1/{id-lower}/index.json";
 
         [Fact]
         public async Task DownloadResource_NotFound()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new Uri(RegBaseUrl));
+            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(RegistrationUriTemplate) });
 
             V3DownloadResource resource = new V3DownloadResource(DataClient, reg);
 
@@ -34,7 +31,7 @@ namespace Client.V3Test
         [Fact]
         public async Task DownloadResource_Found()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new Uri(RegBaseUrl));
+            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(RegistrationUriTemplate) });
 
             V3DownloadResource resource = new V3DownloadResource(DataClient, reg);
 

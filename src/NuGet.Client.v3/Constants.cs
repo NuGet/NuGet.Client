@@ -15,7 +15,6 @@ namespace NuGet.Client
         public static readonly Uri PackageDependencies = new Uri("http://schema.nuget.org/schema#PackageDependencies");
         public static readonly Uri DependencyGroup = new Uri("http://schema.nuget.org/schema#DependencyGroup");
         public static readonly Uri Dependency = new Uri("http://schema.nuget.org/schema#Dependency");
-        public static readonly Uri Stats = new Uri("http://schema.nuget.org/schema#Stats");
     }
 
     public static class ServiceTypes
@@ -26,9 +25,9 @@ namespace NuGet.Client
         public const string SearchAutocompleteService = "SearchAutocompleteService" + TypeVersion;
         public const string SearchGalleryQueryService = "SearchGalleryQueryService" + TypeVersion;
         public const string MetricsService = "MetricsService" + TypeVersion;
-        public const string RegistrationsBaseUrl = "RegistrationsBaseUrl" + TypeVersion;
+        public const string Registrations = "PackageDisplayMetadataUriTemplate" + TypeVersion;
         public const string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
-        public const string Stats = "Stats" + TypeVersion;
+        public const string TotalStats = "TotalStats" + TypeVersion;
     }
 
     public static class Properties
