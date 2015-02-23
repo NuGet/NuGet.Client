@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.LibraryModel;
@@ -15,7 +14,6 @@ namespace NuGet.ProjectModel
 
         public Project()
         {
-            Scripts = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
             TargetFrameworks = new List<TargetFrameworkInformation>();
         }
 
@@ -54,9 +52,7 @@ namespace NuGet.ProjectModel
         public string[] Tags { get; set; }
 
         public IList<LibraryDependency> Dependencies { get; set; }
-
-        public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
-
+        
         public List<TargetFrameworkInformation> TargetFrameworks { get; private set; }
     }
 }

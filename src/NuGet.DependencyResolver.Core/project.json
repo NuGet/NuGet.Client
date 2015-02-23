@@ -1,8 +1,9 @@
 ﻿{
     "version": "3.0.0-*",
     "dependencies": {
-        "NuGet.Packaging": "3.0.0-*",
-        "NuGet.DependencyResolver.Core": "3.0.0-*"
+        "NuGet.LibraryModel": "3.0.0-*",
+        "NuGet.Frameworks": "3.0.0-*",
+        "NuGet.Repositories": "3.0.0-*"
     },
 
     "frameworks": {

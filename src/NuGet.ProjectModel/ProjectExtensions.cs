@@ -1,5 +1,4 @@
 ﻿using NuGet.Frameworks;
-using NuGet.Packaging;
 
 namespace NuGet.ProjectModel
 {
