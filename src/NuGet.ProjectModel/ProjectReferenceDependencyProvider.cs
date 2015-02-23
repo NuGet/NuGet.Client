@@ -36,7 +36,7 @@ namespace NuGet.ProjectModel
         {
             string name = libraryRange.Name;
 
-            Project project;
+            PackageSpec project;
 
             // Can't find a project file with the name so bail
             if (!_projectResolver.TryResolveProject(name, out project))
@@ -103,7 +103,7 @@ namespace NuGet.ProjectModel
                     Version = project.Version,
                     Type = LibraryTypes.Project,
                 },
-                Path = project.ProjectFilePath,
+                Path = project.FilePath,
                 Dependencies = dependencies,
                 Resolved = !unresolved
             };

@@ -31,7 +31,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public bool TryResolveProject(string name, out Project project)
+        public bool TryResolveProject(string name, out PackageSpec project)
         {
             project = null;
 
@@ -103,7 +103,7 @@ namespace NuGet.ProjectModel
 
         private class ProjectInformation
         {
-            private Project _project;
+            private PackageSpec _project;
             private bool _initialized;
             private object _lockObj = new object();
 
@@ -111,14 +111,14 @@ namespace NuGet.ProjectModel
 
             public string FullPath { get; set; }
 
-            public Project Project
+            public PackageSpec Project
             {
                 get
                 {
                     return LazyInitializer.EnsureInitialized(ref _project, ref _initialized, ref _lockObj, () =>
                     {
-                        Project project;
-                        ProjectReader.TryReadProject(FullPath, out project);
+                        PackageSpec project;
+                        JsonPackageSpecReader.TryReadPackageSpec(FullPath, out project);
                         return project;
                     });
                 }

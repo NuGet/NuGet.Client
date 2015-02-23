@@ -4,14 +4,14 @@ using Newtonsoft.Json.Linq;
 
 namespace NuGet.ProjectModel
 {
-    public sealed class ProjectFormatException : Exception
+    public sealed class PackageSpecFormatException : Exception
     {
-        public ProjectFormatException(string message) :
+        public PackageSpecFormatException(string message) :
             base(message)
         {
         }
 
-        public ProjectFormatException(string message, Exception innerException) :
+        public PackageSpecFormatException(string message, Exception innerException) :
             base(message, innerException)
         {
 
@@ -21,7 +21,7 @@ namespace NuGet.ProjectModel
         public int Line { get; private set; }
         public int Column { get; private set; }
 
-        private ProjectFormatException WithLineInfo(IJsonLineInfo lineInfo)
+        private PackageSpecFormatException WithLineInfo(IJsonLineInfo lineInfo)
         {
             Line = lineInfo.LineNumber;
             Column = lineInfo.LinePosition;
@@ -29,31 +29,31 @@ namespace NuGet.ProjectModel
             return this;
         }
 
-        public static ProjectFormatException Create(Exception exception, JToken value, string path)
+        public static PackageSpecFormatException Create(Exception exception, JToken value, string path)
         {
             var lineInfo = (IJsonLineInfo)value;
 
-            return new ProjectFormatException(exception.Message, exception)
+            return new PackageSpecFormatException(exception.Message, exception)
             {
                 Path = path
             }
             .WithLineInfo(lineInfo);
         }
 
-        public static ProjectFormatException Create(string message, JToken value, string path)
+        public static PackageSpecFormatException Create(string message, JToken value, string path)
         {
             var lineInfo = (IJsonLineInfo)value;
 
-            return new ProjectFormatException(message)
+            return new PackageSpecFormatException(message)
             {
                 Path = path
             }
             .WithLineInfo(lineInfo);
         }
 
-        internal static ProjectFormatException Create(JsonReaderException exception, string path)
+        internal static PackageSpecFormatException Create(JsonReaderException exception, string path)
         {
-            return new ProjectFormatException(exception.Message, exception)
+            return new PackageSpecFormatException(exception.Message, exception)
             {
                 Path = path,
                 Column = exception.LinePosition,

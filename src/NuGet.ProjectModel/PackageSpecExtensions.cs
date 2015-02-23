@@ -2,9 +2,9 @@
 
 namespace NuGet.ProjectModel
 {
-    public static class ProjectExtensions
+    public static class PackageSpecExtensions
     {
-        public static TargetFrameworkInformation GetTargetFramework(this Project project, NuGetFramework targetFramework)
+        public static TargetFrameworkInformation GetTargetFramework(this PackageSpec project, NuGetFramework targetFramework)
         {
             var frameworkInfo = NuGetFrameworkUtility.GetNearest(project.TargetFrameworks, 
                                                                  targetFramework, 

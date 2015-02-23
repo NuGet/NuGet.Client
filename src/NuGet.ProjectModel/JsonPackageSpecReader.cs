@@ -11,117 +11,142 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public class ProjectReader
+    public class JsonPackageSpecReader
     {
-        public static bool HasProjectFile(string path)
+        public static bool HasPackageSpecFile(string path)
         {
-            string projectPath = Path.Combine(path, Project.ProjectFileName);
+            string packageSpecPath = Path.Combine(path, PackageSpec.PackageSpecFileName);
 
-            return File.Exists(projectPath);
+            return File.Exists(packageSpecPath);
         }
 
-        public static bool TryReadProject(string path, out Project project)
+        public static bool TryReadPackageSpec(string path, out PackageSpec packageSpec)
         {
-            project = null;
+            packageSpec = null;
 
-            string projectPath = null;
+            string packageSpecPath = null;
 
-            if (string.Equals(Path.GetFileName(path), Project.ProjectFileName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Path.GetFileName(path), PackageSpec.PackageSpecFileName, StringComparison.OrdinalIgnoreCase))
             {
-                projectPath = path;
+                packageSpecPath = path;
                 path = Path.GetDirectoryName(path);
             }
-            else if (!HasProjectFile(path))
+            else if (!HasPackageSpecFile(path))
             {
                 return false;
             }
             else
             {
-                projectPath = Path.Combine(path, Project.ProjectFileName);
+                packageSpecPath = Path.Combine(path, PackageSpec.PackageSpecFileName);
             }
 
-            // Assume the directory name is the project name if none was specified
-            var projectName = GetDirectoryName(path);
-            projectPath = Path.GetFullPath(projectPath);
+            // Assume the directory name is the package spec name if none was specified
+            var packageSpecName = GetDirectoryName(path);
+            packageSpecPath = Path.GetFullPath(packageSpecPath);
 
             try
             {
-                using (var stream = File.OpenRead(projectPath))
+                using (var stream = File.OpenRead(packageSpecPath))
                 {
-                    project = GetProject(stream, projectName, projectPath);
+                    packageSpec = GetPackageSpec(stream, packageSpecName, packageSpecPath);
                 }
             }
             catch (JsonReaderException ex)
             {
-                throw ProjectFormatException.Create(ex, projectPath);
+                throw PackageSpecFormatException.Create(ex, packageSpecPath);
             }
 
             return true;
         }
 
-        public static Project GetProject(string json, string projectName, string projectPath)
+        public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
         {
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            return GetProject(ms, projectName, projectPath);
+            return GetPackageSpec(ms, name, packageSpecPath);
         }
 
-        public static Project GetProject(Stream stream, string projectName, string projectPath)
+        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath)
         {
-            var project = new Project();
-
+            // Load the raw JSON into the package spec object
             var reader = new JsonTextReader(new StreamReader(stream));
-            var rawProject = JObject.Load(reader);
+            var rawPackageSpec = JObject.Load(reader);
+            var packageSpec = new PackageSpec(rawPackageSpec.ToDictionary());
 
-            // Metadata properties
-            var version = rawProject["version"];
-            var authors = rawProject["authors"];
-            var owners = rawProject["owners"];
-            var tags = rawProject["tags"];
+            // Parse properties we know about
+            var version = rawPackageSpec["version"];
+            var authors = rawPackageSpec["authors"];
+            var owners = rawPackageSpec["owners"];
+            var tags = rawPackageSpec["tags"];
             var buildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION");
 
-            project.Name = projectName;
-            project.ProjectFilePath = Path.GetFullPath(projectPath);
+            packageSpec.Name = name;
+            packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
 
             if (version == null)
             {
-                project.Version = new NuGetVersion("1.0.0");
+                packageSpec.Version = new NuGetVersion("1.0.0");
             }
             else
             {
                 try
                 {
-                    project.Version = SpecifySnapshot(version.Value<string>(), buildVersion);
+                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), buildVersion);
                 }
                 catch (Exception ex)
                 {
                     var lineInfo = (IJsonLineInfo)version;
 
-                    throw ProjectFormatException.Create(ex, version, project.ProjectFilePath);
+                    throw PackageSpecFormatException.Create(ex, version, packageSpec.FilePath);
                 }
             }
 
-            project.Description = rawProject.GetValue<string>("description");
-            project.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
-            project.Owners = owners == null ? new string[] { } : owners.ValueAsArray<string>();
-            project.Dependencies = new List<LibraryDependency>();
-            project.ProjectUrl = rawProject.GetValue<string>("projectUrl");
-            project.IconUrl = rawProject.GetValue<string>("iconUrl");
-            project.LicenseUrl = rawProject.GetValue<string>("licenseUrl");
-            project.Copyright = rawProject.GetValue<string>("copyright");
-            project.Language = rawProject.GetValue<string>("language");
-            project.RequireLicenseAcceptance = rawProject.GetValue<bool?>("requireLicenseAcceptance") ?? false;
-            project.Tags = tags == null ? new string[] { } : tags.ValueAsArray<string>();
+            packageSpec.Description = rawPackageSpec.GetValue<string>("description");
+            packageSpec.Authors = authors == null ? new string[] { } : authors.Value<string[]>();
+            packageSpec.Owners = owners == null ? new string[] { } : owners.Value<string[]>();
+            packageSpec.Dependencies = new List<LibraryDependency>();
+            packageSpec.ProjectUrl = rawPackageSpec.GetValue<string>("projectUrl");
+            packageSpec.IconUrl = rawPackageSpec.GetValue<string>("iconUrl");
+            packageSpec.LicenseUrl = rawPackageSpec.GetValue<string>("licenseUrl");
+            packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
+            packageSpec.Language = rawPackageSpec.GetValue<string>("language");
+            packageSpec.RequireLicenseAcceptance = rawPackageSpec.GetValue<bool?>("requireLicenseAcceptance") ?? false;
+            packageSpec.Tags = tags == null ? new string[] { } : tags.ValueAsArray<string>();
 
-            BuildTargetFrameworks(project, rawProject);
+            var scripts = rawPackageSpec["scripts"] as JObject;
+            if (scripts != null)
+            {
+                foreach (var script in scripts)
+                {
+                    var value = script.Value;
+                    if (value.Type == JTokenType.String)
+                    {
+                        packageSpec.Scripts[script.Key] = new string[] { value.Value<string>() };
+                    }
+                    else if (value.Type == JTokenType.Array)
+                    {
+                        packageSpec.Scripts[script.Key] = script.Value.ValueAsArray<string>();
+                    }
+                    else
+                    {
+                        throw PackageSpecFormatException.Create(
+                            string.Format("The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName),
+                            value,
+                            packageSpec.FilePath);
+                    }
+                }
+            }
 
-            PopulateDependencies(
-                project.ProjectFilePath,
-                project.Dependencies,
-                rawProject,
-                "dependencies",
-                isGacOrFrameworkReference: false);
+            // These are broken because NuGet.Versioning is portable or strong-named maybe?
+            //BuildTargetFrameworks(packageSpec, rawPackageSpec);
 
-            return project;
+            //PopulateDependencies(
+            //    packageSpec.FilePath,
+            //    packageSpec.Dependencies,
+            //    rawPackageSpec,
+            //    "dependencies",
+            //    isGacOrFrameworkReference: false);
+
+            return packageSpec;
         }
 
         private static NuGetVersion SpecifySnapshot(string version, string snapshotValue)
@@ -142,7 +167,7 @@ namespace NuGet.ProjectModel
         }
 
         private static void PopulateDependencies(
-            string projectPath,
+            string packageSpecPath,
             IList<LibraryDependency> results,
             JObject settings,
             string propertyName,
@@ -156,10 +181,10 @@ namespace NuGet.ProjectModel
                     if (string.IsNullOrEmpty(dependency.Key))
                     {
 
-                        throw ProjectFormatException.Create(
+                        throw PackageSpecFormatException.Create(
                             "Unable to resolve dependency ''.",
                             dependency.Value,
-                            projectPath);
+                            packageSpecPath);
                     }
 
                     // Support 
@@ -205,20 +230,20 @@ namespace NuGet.ProjectModel
                         }
                         catch (Exception ex)
                         {
-                            throw ProjectFormatException.Create(
+                            throw PackageSpecFormatException.Create(
                                 ex,
                                 dependencyVersionToken,
-                                projectPath);
+                                packageSpecPath);
                         }
                     }
 
-                    results.Add(new LibraryDependency
+                    results.Add(new LibraryDependency()
                     {
-                        LibraryRange = new LibraryRange
+                        LibraryRange = new LibraryRange()
                         {
                             Name = dependency.Key,
-                            VersionRange = dependencyVersionRange,
                             Type = isGacOrFrameworkReference ? LibraryTypes.FrameworkOrGacAssembly : null,
+                            VersionRange = dependencyVersionRange,
                         },
                         Type = dependencyTypeValue
                     });
@@ -250,7 +275,7 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static void BuildTargetFrameworks(Project project, JObject rawProject)
+        private static void BuildTargetFrameworks(PackageSpec packageSpec, JObject rawPackageSpec)
         {
             // The frameworks node is where target frameworks go
             /*
@@ -264,24 +289,24 @@ namespace NuGet.ProjectModel
                 }
             */
 
-            var frameworks = rawProject["frameworks"] as JObject;
+            var frameworks = rawPackageSpec["frameworks"] as JObject;
             if (frameworks != null)
             {
                 foreach (var framework in frameworks)
                 {
                     try
                     {
-                        BuildTargetFrameworkNode(project, framework);
+                        BuildTargetFrameworkNode(packageSpec, framework);
                     }
                     catch (Exception ex)
                     {
-                        throw ProjectFormatException.Create(ex, framework.Value, project.ProjectFilePath);
+                        throw PackageSpecFormatException.Create(ex, framework.Value, packageSpec.FilePath);
                     }
                 }
             }
         }
 
-        private static bool BuildTargetFrameworkNode(Project project, KeyValuePair<string, JToken> targetFramework)
+        private static bool BuildTargetFrameworkNode(PackageSpec packageSpec, KeyValuePair<string, JToken> targetFramework)
         {
             var frameworkName = GetFramework(targetFramework.Key);
 
@@ -301,7 +326,7 @@ namespace NuGet.ProjectModel
             var properties = targetFramework.Value.Value<JObject>();
 
             PopulateDependencies(
-                project.ProjectFilePath,
+                packageSpec.FilePath,
                 targetFrameworkInformation.Dependencies,
                 properties,
                 "dependencies",
@@ -309,7 +334,7 @@ namespace NuGet.ProjectModel
 
             var frameworkAssemblies = new List<LibraryDependency>();
             PopulateDependencies(
-                project.ProjectFilePath,
+                packageSpec.FilePath,
                 frameworkAssemblies,
                 properties,
                 "frameworkAssemblies",
@@ -318,13 +343,22 @@ namespace NuGet.ProjectModel
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
 
 
-            project.TargetFrameworks.Add(targetFrameworkInformation);
+            packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
 
             return true;
         }
 
         private static NuGetFramework GetFramework(string key)
         {
+            //if (key == "aspnet50")
+            //{
+            //    return new NuGetFramework("Asp.Net", new Version(5, 0));
+            //}
+            //else if (key == "aspnetcore50")
+            //{
+            //    return new NuGetFramework("Asp.NetCore", new Version(5, 0));
+            //}
+
             return NuGetFramework.Parse(key);
         }
 

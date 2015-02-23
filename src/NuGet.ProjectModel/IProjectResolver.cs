@@ -10,6 +10,6 @@ namespace NuGet.ProjectModel
     {
         IEnumerable<string> SearchPaths { get; }
 
-        bool TryResolveProject(string name, out Project project);
+        bool TryResolveProject(string name, out PackageSpec project);
     }
 }

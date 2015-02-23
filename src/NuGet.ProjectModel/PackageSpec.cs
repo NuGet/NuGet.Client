@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.LibraryModel;
@@ -8,22 +9,28 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public class Project
+    /// <summary>
+    /// Represents the specification of a package that can be built.
+    /// </summary>
+    public class PackageSpec 
     {
-        public const string ProjectFileName = "project.json";
+        public static readonly string PackageSpecFileName = "project.json";
 
-        public Project()
+        public PackageSpec() : this(new Dictionary<string, object>()) { }
+        public PackageSpec(IDictionary<string, object> rawProperties)
         {
+            Scripts = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
             TargetFrameworks = new List<TargetFrameworkInformation>();
+            Properties = rawProperties;
         }
 
-        public string ProjectFilePath { get; set; }
+        public string FilePath { get; set; }
 
         public string ProjectDirectory
         {
             get
             {
-                return Path.GetDirectoryName(ProjectFilePath);
+                return Path.GetDirectoryName(FilePath);
             }
         }
 
@@ -52,7 +59,16 @@ namespace NuGet.ProjectModel
         public string[] Tags { get; set; }
 
         public IList<LibraryDependency> Dependencies { get; set; }
-        
+
+        public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
+
         public List<TargetFrameworkInformation> TargetFrameworks { get; private set; }
+
+        /// <summary>
+        /// Gets a list of all properties found in the package spec, including
+        /// those not recognized by the parser.
+        /// </summary>
+        public IDictionary<string, object> Properties { get; }
     }
 }
+
