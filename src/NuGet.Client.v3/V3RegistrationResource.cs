@@ -48,7 +48,7 @@ namespace NuGet.Client
         /// <param name="packageId">The package id (natural casing)</param>
         /// <param name="cancellationToken">The cancellation token to terminate HTTP requests</param>
         /// <returns>The first URL available from the resource, with the URI template applied.</returns>
-        public virtual async Task<Uri> GetUri(string packageId, CancellationToken cancellationToken)
+        public virtual async Task<Uri> GetUriAsync(string packageId, CancellationToken cancellationToken)
         {
             if (String.IsNullOrEmpty(packageId))
             {
@@ -91,20 +91,20 @@ namespace NuGet.Client
         /// <summary>
         /// Constructs the URI of a registration blob with a specific version
         /// </summary>
-        public virtual async Task<Uri> GetUri(string id, NuGetVersion version)
+        public virtual async Task<Uri> GetUriAsync(string id, NuGetVersion version)
         {
             if (String.IsNullOrEmpty(id) || version == null)
             {
                 throw new InvalidOperationException();
             }
 
-            return await GetUri(new PackageIdentity(id, version));
+            return await GetUriAsync(new PackageIdentity(id, version));
         }
 
         /// <summary>
         /// Constructs the URI of a registration blob with a specific version
         /// </summary>
-        public virtual async Task<Uri> GetUri(PackageIdentity package)
+        public virtual async Task<Uri> GetUriAsync(PackageIdentity package)
         {
             if (package == null || package.Id == null || package.Version == null)
             {
@@ -112,7 +112,7 @@ namespace NuGet.Client
             }
 
             // TODO: use proper template here instead of replacing index.json
-            var builder = new UriBuilder((await GetUri(package.Id, CancellationToken.None)));
+            var builder = new UriBuilder((await GetUriAsync(package.Id, CancellationToken.None)));
             builder.Path = builder.Path.Replace("index.json", package.Version.ToNormalizedString().ToLowerInvariant() + ".json");
 
             return builder.Uri;
@@ -253,7 +253,7 @@ namespace NuGet.Client
         /// </summary>
         public virtual async Task<JObject> GetIndex(string packageId, CancellationToken cancellationToken)
         {
-            Uri uri = await GetUri(packageId, cancellationToken);
+            Uri uri = await GetUriAsync(packageId, cancellationToken);
 
             return await GetJson(uri, cancellationToken);
         }

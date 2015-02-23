@@ -90,7 +90,7 @@ namespace NuGet.Client
         {
             HashSet<PackageDependencyInfo> results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
 
-            Uri uri = await _regResource.GetUri(packageId, cancellationToken);
+            Uri uri = await _regResource.GetUriAsync(packageId, cancellationToken);
 
             try
             {
