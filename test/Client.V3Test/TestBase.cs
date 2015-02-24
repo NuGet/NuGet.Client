@@ -18,7 +18,7 @@ namespace Client.V3Test
     {
         public CompositionContainer Container;
 
-        public string RCRootUrl = "https://api.nuget.org/v3/index.json";
+        public string RCRootUrl = "https://nugetgallery.blob.core.windows.net/v3-index/https.json";
 
         public TestBase()
         {

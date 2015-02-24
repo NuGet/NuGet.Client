@@ -69,7 +69,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="V3StatsResourceTests.cs" />
     <Compile Include="ClientV3Test.cs" />
     <Compile Include="DependencyInfoTests.cs" />
     <Compile Include="DownloadResourceTests.cs" />
@@ -80,6 +79,7 @@
     <Compile Include="TestBase.cs" />
     <Compile Include="UIMetadataResourceTests.cs" />
     <Compile Include="UISearchTests.cs" />
+    <Compile Include="V3TotalsStatsResourceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
