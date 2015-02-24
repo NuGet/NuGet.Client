@@ -73,6 +73,7 @@
     <Compile Include="DependencyInfo\ResolverMetadataClient.cs" />
     <Compile Include="DependencyInfo\Trim.cs" />
     <Compile Include="DependencyInfo\Utils.cs" />
+    <Compile Include="ResourceSelector.cs" />
     <Compile Include="V3ReportAbuseResourceProvider.cs" />
     <Compile Include="V3DependencyInfoResourceProvider.cs" />
     <Compile Include="GlobalSuppressions.cs" />
