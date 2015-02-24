@@ -2703,7 +2703,7 @@ function matcherFromTokens( tokens ) {
 				return setMatcher(
 					i > 1 && elementMatcher( matchers ),
 					i > 1 && toSelector(
-						// If the preceding token was a descendant combinator, insert an implicit any-element `*`
+						// If the preceding cancellationToken was a descendant combinator, insert an implicit any-element `*`
 						tokens.slice( 0, i - 1 ).concat({ value: tokens[ i - 2 ].type === " " ? "*" : "" })
 					).replace( rtrim, "$1" ),
 					matcher,
@@ -8871,7 +8871,7 @@ var fxNow, timerId,
 			if ( parts ) {
 				start = tween.start = +start || +target || 0;
 				tween.unit = unit;
-				// If a +=/-= token was provided, we're doing a relative animation
+				// If a +=/-= cancellationToken was provided, we're doing a relative animation
 				tween.end = parts[ 1 ] ?
 					start + ( parts[ 1 ] + 1 ) * parts[ 2 ] :
 					+parts[ 2 ];

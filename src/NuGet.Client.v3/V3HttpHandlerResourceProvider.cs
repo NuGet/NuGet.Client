@@ -7,14 +7,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Client
 {
-
-    
     [NuGetResourceProviderMetadata(typeof(HttpHandlerResource), "V3HttpHandlerResourceProvider", NuGetResourceProviderPositions.Last)]
     public class V3HttpHandlerResourceProvider : INuGetResourceProvider
     {

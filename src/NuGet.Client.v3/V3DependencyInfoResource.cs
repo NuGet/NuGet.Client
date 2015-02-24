@@ -86,11 +86,11 @@ namespace NuGet.Client
         /// <summary>
         /// Helper for finding all versions of a package and all dependencies.
         /// </summary>
-        private async Task<IEnumerable<PackageDependencyInfo>> GetPackagesFromRegistration(string packageId, VersionRange range, NuGetFramework projectFramework, CancellationToken token)
+        private async Task<IEnumerable<PackageDependencyInfo>> GetPackagesFromRegistration(string packageId, VersionRange range, NuGetFramework projectFramework, CancellationToken cancellationToken)
         {
             HashSet<PackageDependencyInfo> results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
 
-            Uri uri = _regResource.GetUri(packageId);
+            Uri uri = await _regResource.GetUriAsync(packageId, cancellationToken);
 
             try
             {
@@ -98,9 +98,9 @@ namespace NuGet.Client
 
                 var result = await ResolverMetadataClient.GetTree(_client, regInfo, projectFramework, _cache);
 
-                foreach (var curPkg in GetPackagesFromRegistration(result, token))
+                foreach (var currentPackage in GetPackagesFromRegistration(result, cancellationToken))
                 {
-                    results.Add(curPkg);
+                    results.Add(currentPackage);
                 }
             }
             catch (ArgumentException)

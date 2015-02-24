@@ -43,6 +43,7 @@ namespace NuGet.Client
         /// <returns>The first URL available from the resource, with the URI template applied.</returns>
         public async Task<Uri> GetReportAbuseUrl(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
+            // REVIEW: maballia - doesn't this logic hit the first resource every time, not balancing to secondary resources unless the first is broken?
             foreach (Uri uri in Utility.ApplyPackageIdVersionToUriTemplate(_reportAbuseTemplates, id, version))
             {
                 if (!cancellationToken.IsCancellationRequested)
@@ -50,6 +51,7 @@ namespace NuGet.Client
                     // Get a new HttpClient each time because some BadRequest
                     // responses were corrupting the HttpClient instance and
                     // subsequent requests on it would hang unexpectedly
+                    // REVIEW: maballia - would this support proxy / auth scenarios? I guess we need a client that does support those, right?
                     using (HttpClient http = new HttpClient())
                     {
                         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, uri);

@@ -13,7 +13,7 @@ using NuGet.Versioning;
 namespace NuGet.Client.V3.VisualStudio
 {
     public class V3UIMetadataResource : UIMetadataResource
-    {
+    {   
         private readonly V3RegistrationResource _regResource;
         private readonly V3ReportAbuseResource _reportAbuseResource;
         private readonly DataClient _client;

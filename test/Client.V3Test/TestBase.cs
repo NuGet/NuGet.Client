@@ -85,7 +85,7 @@ namespace Client.V3Test
         public SourceRepository GetSourceRepository(string SourceUrl)
         {
             IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers = Container.GetExports<INuGetResourceProvider, INuGetResourceProviderMetadata>();
-            Assert.True(providers.Count() > 0);
+            Assert.True(providers.Any());
             PackageSource source = new PackageSource(SourceUrl, "mysource", true);
             SourceRepository repo = new SourceRepository(source, providers);
             return repo;

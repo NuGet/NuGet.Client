@@ -2,9 +2,6 @@
 using NuGet.PackagingCore;
 using NuGet.Versioning;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,12 +10,14 @@ namespace Client.V3Test
 {
     public class DownloadResourceTests : TestBase
     {
-        private const string RegBaseUrl = "https://az320820.vo.msecnd.net/registrations-1/";
+        private const string PackageDisplayMetadataUriTemplate = "https://api.nuget.org/v3/registration0/{id-lower}/index.json";
+        private const string PackageVersionDisplayMetadataUriTemplate = "https://api.nuget.org/v3/registration0/{id-lower}/{version-lower}.json";
 
         [Fact]
         public async Task DownloadResource_NotFound()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new Uri(RegBaseUrl));
+            ResourceSelector resourceSelector = new ResourceSelector(SourceRepository);
+            V3RegistrationResource reg = new V3RegistrationResource(resourceSelector, DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
 
             V3DownloadResource resource = new V3DownloadResource(DataClient, reg);
 
@@ -34,7 +33,8 @@ namespace Client.V3Test
         [Fact]
         public async Task DownloadResource_Found()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new Uri(RegBaseUrl));
+            ResourceSelector resourceSelector = new ResourceSelector(SourceRepository);
+            V3RegistrationResource reg = new V3RegistrationResource(resourceSelector, DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
 
             V3DownloadResource resource = new V3DownloadResource(DataClient, reg);
 

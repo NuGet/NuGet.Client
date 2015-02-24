@@ -5,10 +5,8 @@ using NuGet.Versioning;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,67 +20,94 @@ namespace NuGet.Client
         // cache all json retrieved in this resource, the resource *should* be thrown away after the operation is done
         private readonly ConcurrentDictionary<Uri, JObject> _cache;
 
+        private readonly ResourceSelector _resourceSelector;
         private readonly HttpClient _client;
-        private readonly Uri _baseUrl;
+        private readonly IEnumerable<Uri> _packageDisplayMetadataUriTemplates;
+        private readonly IEnumerable<Uri> _packageVersionDisplayMetadataUriTemplates;
 
         private static readonly VersionRange AllVersions = new VersionRange(null, true, null, true, true);
 
-        public V3RegistrationResource(HttpClient client, Uri baseUrl)
+        public V3RegistrationResource(ResourceSelector resourceSelector, HttpClient client, IEnumerable<Uri> packageDisplayMetadataUriTemplates, IEnumerable<Uri> packageVersionDisplayMetadataUriTemplates)
         {
+            if (resourceSelector == null)
+            {
+                throw new ArgumentNullException("resourceSelector");
+            }
+
             if (client == null)
             {
                 throw new ArgumentNullException("client");
             }
 
-            if (baseUrl == null)
+            if (packageDisplayMetadataUriTemplates == null || !packageDisplayMetadataUriTemplates.Any())
             {
-                throw new ArgumentNullException("baseUrl");
+                throw new ArgumentNullException("packageDisplayMetadataUriTemplates");
             }
 
+            if (packageVersionDisplayMetadataUriTemplates == null || !packageVersionDisplayMetadataUriTemplates.Any())
+            {
+                throw new ArgumentNullException("packageVersionDisplayMetadataUriTemplates");
+            }
+
+            _resourceSelector = resourceSelector;
             _client = client;
-            _baseUrl = baseUrl;
+            _packageDisplayMetadataUriTemplates = packageDisplayMetadataUriTemplates;
+            _packageVersionDisplayMetadataUriTemplates = packageVersionDisplayMetadataUriTemplates;
             _cache = new ConcurrentDictionary<Uri, JObject>();
         }
 
         /// <summary>
         /// Constructs the URI of a registration index blob
         /// </summary>
-        public virtual Uri GetUri(string packageId)
+        /// <param name="packageId">The package id (natural casing)</param>
+        /// <param name="cancellationToken">The cancellation token to terminate HTTP requests</param>
+        /// <returns>The first URL available from the resource, with the URI template applied.</returns>
+        public virtual async Task<Uri> GetUriAsync(string packageId, CancellationToken cancellationToken)
         {
             if (String.IsNullOrEmpty(packageId))
             {
                 throw new InvalidOperationException();
             }
 
-            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json", 
-                _baseUrl.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
+            var selectedResource = await _resourceSelector.DetermineResourceUrlAsync(
+                    Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates, packageId), cancellationToken);
+            if (selectedResource == null)
+            {
+                selectedResource = Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates.First(), packageId);
+            }
+            return selectedResource;
         }
 
         /// <summary>
         /// Constructs the URI of a registration blob with a specific version
         /// </summary>
-        public virtual Uri GetUri(string id, NuGetVersion version)
+        public virtual async Task<Uri> GetUriAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             if (String.IsNullOrEmpty(id) || version == null)
             {
                 throw new InvalidOperationException();
             }
 
-            return GetUri(new PackageIdentity(id, version));
+            return await GetUriAsync(new PackageIdentity(id, version), cancellationToken);
         }
 
         /// <summary>
         /// Constructs the URI of a registration blob with a specific version
         /// </summary>
-        public virtual Uri GetUri(PackageIdentity package)
+        public virtual async Task<Uri> GetUriAsync(PackageIdentity package, CancellationToken cancellationToken)
         {
             if (package == null || package.Id == null || package.Version == null)
             {
                 throw new InvalidOperationException();
             }
 
-            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", _baseUrl.AbsoluteUri.TrimEnd('/'), 
-                package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));
+            var selectedResource = await _resourceSelector.DetermineResourceUrlAsync(
+                    Utility.ApplyPackageIdVersionToUriTemplate(_packageVersionDisplayMetadataUriTemplates, package.Id, package.Version), cancellationToken);
+            if (selectedResource == null)
+            {
+                selectedResource = Utility.ApplyPackageIdVersionToUriTemplate(_packageVersionDisplayMetadataUriTemplates.First(), package.Id, package.Version);
+            }
+            return selectedResource;
         }
 
         /// <summary>
@@ -119,7 +144,7 @@ namespace NuGet.Client
 
                 if (catalogEntry != null)
                 {
-                    NuGetVersion version = null;
+                    NuGetVersion version;
 
                     if (catalogEntry["version"] != null && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
                     {
@@ -129,7 +154,7 @@ namespace NuGet.Client
                             {
                                 DateTime published = catalogEntry["published"].ToObject<DateTime>();
 
-                                if ((published != null && published.Year > 1901) || includeUnlisted)
+                                if (published.Year > 1901 || includeUnlisted)
                                 {
                                     // add in the download url
                                     if (entry["packageContent"] != null)
@@ -218,11 +243,11 @@ namespace NuGet.Client
         /// <summary>
         /// Returns the index.json registration page for a package.
         /// </summary>
-        public virtual async Task<JObject> GetIndex(string packageId, CancellationToken token)
+        public virtual async Task<JObject> GetIndex(string packageId, CancellationToken cancellationToken)
         {
-            Uri uri = GetUri(packageId);
+            Uri uri = await GetUriAsync(packageId, cancellationToken);
 
-            return await GetJson(uri, token);
+            return await GetJson(uri, cancellationToken);
         }
 
         /// <summary>
@@ -231,7 +256,7 @@ namespace NuGet.Client
         protected virtual async Task<JObject> GetJson(Uri uri, CancellationToken token)
         {
             JObject json = null;
-            if (!_cache.TryGetValue(uri, out json))
+            if (uri != null && !_cache.TryGetValue(uri, out json))
             {
                 var response = await _client.GetAsync(uri, token);
 
