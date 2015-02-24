@@ -13,15 +13,11 @@ namespace NuGet.PackageManagement.VisualStudio
             vcxFile = Loader.Instance.LoadXml(fullname);
         }
 
-        public bool HasClrSupport(EnvDTE.Configuration config)
+        public bool HasClrSupport()
         {
-            string filter = config.ConfigurationName + "|" + config.PlatformName;
             var elements = vcxFile.Descendants().Where(x => x.Name.LocalName == "PropertyGroup");
-            var propertyGroups =
-                elements.Where(x => x.Attribute("Label") != null && x.Attribute("Label").Value == "Configuration");
-
             var actualPropertyGroups =
-                propertyGroups.Where(x => x.Attribute("Condition") != null && x.Attribute("Condition").Value.Contains(filter));
+                elements.Where(x => x.Attribute("Label") != null && x.Attribute("Label").Value == "Configuration");
             var clritems = actualPropertyGroups.Elements().Where(e => e.Name.LocalName == "CLRSupport");
             var overrideitems = actualPropertyGroups.Elements().Where(e => e.Name.LocalName == "UseNativeNuGet");
             if (overrideitems.Any())
