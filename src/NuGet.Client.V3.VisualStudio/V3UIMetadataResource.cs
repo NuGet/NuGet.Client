@@ -54,14 +54,14 @@ namespace NuGet.Client.V3.VisualStudio
 
         public UIPackageMetadata ParseMetadata(JObject metadata)
         {
-            NuGetVersion Version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
-            string publishedStr = metadata.Value<string>(Properties.Published);
-            DateTimeOffset? Published = null;
-            if (!String.IsNullOrEmpty(publishedStr))
+            NuGetVersion version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
+            DateTimeOffset? published = null;
+            var publishedToken = metadata[Properties.Published];
+            if (publishedToken != null)
             {
-                Published = DateTime.Parse(publishedStr);
+                published = publishedToken.ToObject<DateTimeOffset>();
             }
-
+            
             string id = metadata.Value<string>(Properties.PackageId);
             string title = metadata.Value<string>(Properties.Title);
             string summary = metadata.Value<string>(Properties.Summary);
@@ -77,7 +77,7 @@ namespace NuGet.Client.V3.VisualStudio
 
             Uri reportAbuseUrl =
                 _reportAbuseResource != null ?
-                _reportAbuseResource.GetReportAbuseUrl(id, Version) :
+                _reportAbuseResource.GetReportAbuseUrl(id, version) :
                 null;
 
             if (String.IsNullOrEmpty(title))
@@ -87,10 +87,10 @@ namespace NuGet.Client.V3.VisualStudio
             }
 
             return new UIPackageMetadata(
-                new PackageIdentity(id, Version),
+                new PackageIdentity(id, version),
                 title, summary, description, authors, owners,
                 iconUrl, licenseUrl, projectUrl, reportAbuseUrl,
-                tags, Published, dependencySets, requireLicenseAcceptance);
+                tags, published, dependencySets, requireLicenseAcceptance);
         }
 
         /// <summary>
