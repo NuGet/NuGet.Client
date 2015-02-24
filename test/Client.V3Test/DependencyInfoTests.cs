@@ -5,7 +5,7 @@ using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -13,12 +13,13 @@ namespace Client.V3Test
 {
     public class DependencyInfoTests : TestBase
     {
-        private const string RegistrationUriTemplate = "https://az320820.vo.msecnd.net/registrations-1/{id-lower}/index.json";
+        private const string PackageDisplayMetadataUriTemplate = "https://api.nuget.org/v3/registration0/{id-lower}/index.json";
+        private const string PackageVersionDisplayMetadataUriTemplate = "https://api.nuget.org/v3/registration0/{id-lower}/{version-lower}.json";
 
         [Fact]
         public async Task DependencyInfo_RavenDb()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(RegistrationUriTemplate) });
+            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
 
             V3DependencyInfoResource depResource = new V3DependencyInfoResource(DataClient, reg);
 
@@ -37,7 +38,7 @@ namespace Client.V3Test
         [Fact]
         public async Task DependencyInfo_Mvc()
         {
-            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(RegistrationUriTemplate) });
+            V3RegistrationResource reg = new V3RegistrationResource(DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
 
             V3DependencyInfoResource depResource = new V3DependencyInfoResource(DataClient, reg);
 

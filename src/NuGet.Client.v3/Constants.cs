@@ -19,13 +19,14 @@ namespace NuGet.Client
 
     public static class ServiceTypes
     {
-        public const string TypeVersion = "/3.0.0-beta";
+        public const string TypeVersion = "/3.0.0-rc";
 
         public const string SearchQueryService = "SearchQueryService" + TypeVersion;
         public const string SearchAutocompleteService = "SearchAutocompleteService" + TypeVersion;
         public const string SearchGalleryQueryService = "SearchGalleryQueryService" + TypeVersion;
         public const string MetricsService = "MetricsService" + TypeVersion;
-        public const string Registrations = "PackageDisplayMetadataUriTemplate" + TypeVersion;
+        public const string PackageDisplayMetadataUriTemplate = "PackageDisplayMetadataUriTemplate" + TypeVersion;
+        public const string PackageVersionDisplayMetadataUriTemplate = "PackageVersionDisplayMetadataUriTemplate" + TypeVersion;
         public const string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
         public const string TotalStats = "TotalStats" + TypeVersion;
     }

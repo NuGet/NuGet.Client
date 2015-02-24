@@ -21,24 +21,31 @@ namespace NuGet.Client
         private readonly ConcurrentDictionary<Uri, JObject> _cache;
 
         private readonly HttpClient _client;
-        private readonly IEnumerable<Uri> _registrationUriTemplates;
+        private readonly IEnumerable<Uri> _packageDisplayMetadataUriTemplates;
+        private readonly IEnumerable<Uri> _packageVersionDisplayMetadataUriTemplates;
 
         private static readonly VersionRange AllVersions = new VersionRange(null, true, null, true, true);
 
-        public V3RegistrationResource(HttpClient client, IEnumerable<Uri> registrationUriTemplates)
+        public V3RegistrationResource(HttpClient client, IEnumerable<Uri> packageDisplayMetadataUriTemplates, IEnumerable<Uri> packageVersionDisplayMetadataUriTemplates)
         {
             if (client == null)
             {
                 throw new ArgumentNullException("client");
             }
 
-            if (registrationUriTemplates == null || !registrationUriTemplates.Any())
+            if (packageDisplayMetadataUriTemplates == null || !packageDisplayMetadataUriTemplates.Any())
             {
-                throw new ArgumentNullException("registrationUriTemplates");
+                throw new ArgumentNullException("packageDisplayMetadataUriTemplates");
+            }
+
+            if (packageVersionDisplayMetadataUriTemplates == null || !packageVersionDisplayMetadataUriTemplates.Any())
+            {
+                throw new ArgumentNullException("packageVersionDisplayMetadataUriTemplates");
             }
 
             _client = client;
-            _registrationUriTemplates = registrationUriTemplates;
+            _packageDisplayMetadataUriTemplates = packageDisplayMetadataUriTemplates;
+            _packageVersionDisplayMetadataUriTemplates = packageVersionDisplayMetadataUriTemplates;
             _cache = new ConcurrentDictionary<Uri, JObject>();
         }
 
@@ -56,7 +63,7 @@ namespace NuGet.Client
             }
 
             // REVIEW: maballia - doesn't this logic hit the first resource every time, not balancing to secondary resources unless the first is broken?
-            foreach (Uri uri in Utility.ApplyPackageIdToUriTemplate(_registrationUriTemplates, packageId))
+            foreach (Uri uri in Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates, packageId))
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
@@ -85,37 +92,63 @@ namespace NuGet.Client
                 }
             }
 
-            return Utility.ApplyPackageIdToUriTemplate(_registrationUriTemplates.First(), packageId);
+            return Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates.First(), packageId);
         }
 
         /// <summary>
         /// Constructs the URI of a registration blob with a specific version
         /// </summary>
-        public virtual async Task<Uri> GetUriAsync(string id, NuGetVersion version)
+        public virtual async Task<Uri> GetUriAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             if (String.IsNullOrEmpty(id) || version == null)
             {
                 throw new InvalidOperationException();
             }
 
-            return await GetUriAsync(new PackageIdentity(id, version));
+            return await GetUriAsync(new PackageIdentity(id, version), cancellationToken);
         }
 
         /// <summary>
         /// Constructs the URI of a registration blob with a specific version
         /// </summary>
-        public virtual async Task<Uri> GetUriAsync(PackageIdentity package)
+        public virtual async Task<Uri> GetUriAsync(PackageIdentity package, CancellationToken cancellationToken)
         {
             if (package == null || package.Id == null || package.Version == null)
             {
                 throw new InvalidOperationException();
             }
 
-            // TODO: use proper template here instead of replacing index.json
-            var builder = new UriBuilder((await GetUriAsync(package.Id, CancellationToken.None)));
-            builder.Path = builder.Path.Replace("index.json", package.Version.ToNormalizedString().ToLowerInvariant() + ".json");
+            // REVIEW: maballia - doesn't this logic hit the first resource every time, not balancing to secondary resources unless the first is broken?
+            foreach (Uri uri in Utility.ApplyPackageIdVersionToUriTemplate(_packageDisplayMetadataUriTemplates, package.Id, package.Version))
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    // Get a new HttpClient each time because some BadRequest
+                    // responses were corrupting the HttpClient instance and
+                    // subsequent requests on it would hang unexpectedly
+                    // REVIEW: maballia - would this support proxy / auth scenarios? I guess we need a client that does support those, right?
+                    using (HttpClient http = new HttpClient())
+                    {
+                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, uri);
 
-            return builder.Uri;
+                        try
+                        {
+                            HttpResponseMessage response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                return uri;
+                            }
+                        }
+                        catch
+                        {
+                            // Any exception means we couldn't connect to the resource
+                        }
+                    }
+                }
+            }
+
+            return Utility.ApplyPackageIdVersionToUriTemplate(_packageDisplayMetadataUriTemplates.First(), package.Id, package.Version);
         }
 
         /// <summary>

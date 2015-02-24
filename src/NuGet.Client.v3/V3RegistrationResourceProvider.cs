@@ -23,11 +23,12 @@ namespace NuGet.Client
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
                 DataClient client = new DataClient(messageHandlerResource.MessageHandler);
-
-                IEnumerable<Uri> templateUrls = serviceIndex[ServiceTypes.Registrations];
-                if (templateUrls != null && templateUrls.Any())
+                
+                IEnumerable<Uri> packageDisplayMetadataUriTemplates = serviceIndex[ServiceTypes.PackageDisplayMetadataUriTemplate];
+                IEnumerable<Uri> packageVersionDisplayMetadataUriTemplates = serviceIndex[ServiceTypes.PackageVersionDisplayMetadataUriTemplate];
+                if (packageDisplayMetadataUriTemplates != null && packageDisplayMetadataUriTemplates.Any() && packageVersionDisplayMetadataUriTemplates != null && packageVersionDisplayMetadataUriTemplates.Any())
                 {
-                    resource = new V3RegistrationResource(client, templateUrls);
+                    resource = new V3RegistrationResource(client, packageDisplayMetadataUriTemplates, packageVersionDisplayMetadataUriTemplates);
                 }
             }
 
