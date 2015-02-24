@@ -20,15 +20,16 @@ namespace NuGet.Client
             var serviceIndex = await source.GetResourceAsync<V3ServiceIndexResource>(token);
             if (serviceIndex != null)
             {
-                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
+                ResourceSelector resourceSelector = new ResourceSelector(source);
 
+                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
                 DataClient client = new DataClient(messageHandlerResource.MessageHandler);
                 
                 IEnumerable<Uri> packageDisplayMetadataUriTemplates = serviceIndex[ServiceTypes.PackageDisplayMetadataUriTemplate];
                 IEnumerable<Uri> packageVersionDisplayMetadataUriTemplates = serviceIndex[ServiceTypes.PackageVersionDisplayMetadataUriTemplate];
                 if (packageDisplayMetadataUriTemplates != null && packageDisplayMetadataUriTemplates.Any() && packageVersionDisplayMetadataUriTemplates != null && packageVersionDisplayMetadataUriTemplates.Any())
                 {
-                    resource = new V3RegistrationResource(client, packageDisplayMetadataUriTemplates, packageVersionDisplayMetadataUriTemplates);
+                    resource = new V3RegistrationResource(resourceSelector, client, packageDisplayMetadataUriTemplates, packageVersionDisplayMetadataUriTemplates);
                 }
             }
 

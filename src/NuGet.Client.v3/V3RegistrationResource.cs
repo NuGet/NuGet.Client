@@ -20,14 +20,20 @@ namespace NuGet.Client
         // cache all json retrieved in this resource, the resource *should* be thrown away after the operation is done
         private readonly ConcurrentDictionary<Uri, JObject> _cache;
 
+        private readonly ResourceSelector _resourceSelector;
         private readonly HttpClient _client;
         private readonly IEnumerable<Uri> _packageDisplayMetadataUriTemplates;
         private readonly IEnumerable<Uri> _packageVersionDisplayMetadataUriTemplates;
 
         private static readonly VersionRange AllVersions = new VersionRange(null, true, null, true, true);
 
-        public V3RegistrationResource(HttpClient client, IEnumerable<Uri> packageDisplayMetadataUriTemplates, IEnumerable<Uri> packageVersionDisplayMetadataUriTemplates)
+        public V3RegistrationResource(ResourceSelector resourceSelector, HttpClient client, IEnumerable<Uri> packageDisplayMetadataUriTemplates, IEnumerable<Uri> packageVersionDisplayMetadataUriTemplates)
         {
+            if (resourceSelector == null)
+            {
+                throw new ArgumentNullException("resourceSelector");
+            }
+
             if (client == null)
             {
                 throw new ArgumentNullException("client");
@@ -43,6 +49,7 @@ namespace NuGet.Client
                 throw new ArgumentNullException("packageVersionDisplayMetadataUriTemplates");
             }
 
+            _resourceSelector = resourceSelector;
             _client = client;
             _packageDisplayMetadataUriTemplates = packageDisplayMetadataUriTemplates;
             _packageVersionDisplayMetadataUriTemplates = packageVersionDisplayMetadataUriTemplates;
@@ -62,7 +69,7 @@ namespace NuGet.Client
                 throw new InvalidOperationException();
             }
 
-            var selectedResource = await ResourceSelector.DetermineResourceUrlAsync(
+            var selectedResource = await _resourceSelector.DetermineResourceUrlAsync(
                     Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates, packageId), cancellationToken);
             if (selectedResource == null)
             {
@@ -94,7 +101,7 @@ namespace NuGet.Client
                 throw new InvalidOperationException();
             }
 
-            var selectedResource = await ResourceSelector.DetermineResourceUrlAsync(
+            var selectedResource = await _resourceSelector.DetermineResourceUrlAsync(
                     Utility.ApplyPackageIdVersionToUriTemplate(_packageVersionDisplayMetadataUriTemplates, package.Id, package.Version), cancellationToken);
             if (selectedResource == null)
             {
