@@ -62,37 +62,13 @@ namespace NuGet.Client
                 throw new InvalidOperationException();
             }
 
-            // REVIEW: maballia - doesn't this logic hit the first resource every time, not balancing to secondary resources unless the first is broken?
-            foreach (Uri uri in Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates, packageId))
+            var selectedResource = await ResourceSelector.DetermineResourceUrlAsync(
+                    Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates, packageId), cancellationToken);
+            if (selectedResource == null)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    // Get a new HttpClient each time because some BadRequest
-                    // responses were corrupting the HttpClient instance and
-                    // subsequent requests on it would hang unexpectedly
-                    // REVIEW: maballia - would this support proxy / auth scenarios? I guess we need a client that does support those, right?
-                    using (HttpClient http = new HttpClient())
-                    {
-                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, uri);
-
-                        try
-                        {
-                            HttpResponseMessage response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-
-                            if (response.IsSuccessStatusCode)
-                            {
-                                return uri;
-                            }
-                        }
-                        catch
-                        {
-                            // Any exception means we couldn't connect to the resource
-                        }
-                    }
-                }
+                selectedResource = Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates.First(), packageId);
             }
-
-            return Utility.ApplyPackageIdToUriTemplate(_packageDisplayMetadataUriTemplates.First(), packageId);
+            return selectedResource;
         }
 
         /// <summary>
@@ -118,37 +94,13 @@ namespace NuGet.Client
                 throw new InvalidOperationException();
             }
 
-            // REVIEW: maballia - doesn't this logic hit the first resource every time, not balancing to secondary resources unless the first is broken?
-            foreach (Uri uri in Utility.ApplyPackageIdVersionToUriTemplate(_packageDisplayMetadataUriTemplates, package.Id, package.Version))
+            var selectedResource = await ResourceSelector.DetermineResourceUrlAsync(
+                    Utility.ApplyPackageIdVersionToUriTemplate(_packageVersionDisplayMetadataUriTemplates, package.Id, package.Version), cancellationToken);
+            if (selectedResource == null)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    // Get a new HttpClient each time because some BadRequest
-                    // responses were corrupting the HttpClient instance and
-                    // subsequent requests on it would hang unexpectedly
-                    // REVIEW: maballia - would this support proxy / auth scenarios? I guess we need a client that does support those, right?
-                    using (HttpClient http = new HttpClient())
-                    {
-                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, uri);
-
-                        try
-                        {
-                            HttpResponseMessage response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-
-                            if (response.IsSuccessStatusCode)
-                            {
-                                return uri;
-                            }
-                        }
-                        catch
-                        {
-                            // Any exception means we couldn't connect to the resource
-                        }
-                    }
-                }
+                selectedResource = Utility.ApplyPackageIdVersionToUriTemplate(_packageVersionDisplayMetadataUriTemplates.First(), package.Id, package.Version);
             }
-
-            return Utility.ApplyPackageIdVersionToUriTemplate(_packageDisplayMetadataUriTemplates.First(), package.Id, package.Version);
+            return selectedResource;
         }
 
         /// <summary>
