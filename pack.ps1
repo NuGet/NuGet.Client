@@ -148,5 +148,4 @@ if (!$SkipBuild)
 }
 
 Pack("NuGet.PackageManagement")
-Pack("NuGet.PackageManagement.PowerShellCmdlets")
 Pack("NuGet.PackageManagement.UI")

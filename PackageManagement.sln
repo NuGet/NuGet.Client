@@ -21,8 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.UI", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneUI", "test\StandaloneUI\StandaloneUI.csproj", "{114FD278-477D-4292-82AA-7F8A5FC0BA08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.Cmdlets.Test", "test\PackageManagement.Cmdlets.Test\PackageManagement.Cmdlets.Test.csproj", "{89C56D87-02F1-4809-BE22-D50751000DE7}"
 EndProject
 Global
@@ -63,10 +61,6 @@ Global
 		{114FD278-477D-4292-82AA-7F8A5FC0BA08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{114FD278-477D-4292-82AA-7F8A5FC0BA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{114FD278-477D-4292-82AA-7F8A5FC0BA08}.Release|Any CPU.Build.0 = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{89C56D87-02F1-4809-BE22-D50751000DE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{89C56D87-02F1-4809-BE22-D50751000DE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89C56D87-02F1-4809-BE22-D50751000DE7}.Release|Any CPU.ActiveCfg = Release|Any CPU

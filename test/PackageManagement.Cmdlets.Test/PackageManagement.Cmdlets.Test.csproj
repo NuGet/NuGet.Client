@@ -148,10 +148,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
-      <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
-      <Name>PackageManagement.PowerShellCmdlets</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\PackageManagement\PackageManagement.csproj">
       <Project>{1cb46687-b482-4f64-869a-ed5280badeb4}</Project>
       <Name>PackageManagement</Name>
