@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace NuGet.Packaging
 {
-    // HACK: TODO: This entire class is a hack. This is in place only for back-compat reasons
+    // Work-around: TODO: This entire class is a work-around. This is in place only for back-compat reasons
     // If the version was always normalized for package directory and package file name, there would be no issue :(
     public static class PackagePathHelper
     {
