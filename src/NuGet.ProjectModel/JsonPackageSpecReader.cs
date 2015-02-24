@@ -136,15 +136,14 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            // These are broken because NuGet.Versioning is portable or strong-named maybe?
-            //BuildTargetFrameworks(packageSpec, rawPackageSpec);
+            BuildTargetFrameworks(packageSpec, rawPackageSpec);
 
-            //PopulateDependencies(
-            //    packageSpec.FilePath,
-            //    packageSpec.Dependencies,
-            //    rawPackageSpec,
-            //    "dependencies",
-            //    isGacOrFrameworkReference: false);
+            PopulateDependencies(
+                packageSpec.FilePath,
+                packageSpec.Dependencies,
+                rawPackageSpec,
+                "dependencies",
+                isGacOrFrameworkReference: false);
 
             return packageSpec;
         }
@@ -350,15 +349,6 @@ namespace NuGet.ProjectModel
 
         private static NuGetFramework GetFramework(string key)
         {
-            //if (key == "aspnet50")
-            //{
-            //    return new NuGetFramework("Asp.Net", new Version(5, 0));
-            //}
-            //else if (key == "aspnetcore50")
-            //{
-            //    return new NuGetFramework("Asp.NetCore", new Version(5, 0));
-            //}
-
             return NuGetFramework.Parse(key);
         }
 

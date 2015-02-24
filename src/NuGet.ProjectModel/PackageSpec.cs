@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel
 
         public string FilePath { get; set; }
 
-        public string ProjectDirectory
+        public string BaseDirectory
         {
             get
             {
