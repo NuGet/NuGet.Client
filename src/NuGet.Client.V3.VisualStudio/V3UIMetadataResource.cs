@@ -13,9 +13,7 @@ using NuGet.Versioning;
 namespace NuGet.Client.V3.VisualStudio
 {
     public class V3UIMetadataResource : UIMetadataResource
-    {
-        private static readonly IFormatProvider DefaultCulture = new System.Globalization.CultureInfo("en-US", true);
-
+    {   
         private readonly V3RegistrationResource _regResource;
         private readonly V3ReportAbuseResource _reportAbuseResource;
         private readonly DataClient _client;
@@ -61,7 +59,7 @@ namespace NuGet.Client.V3.VisualStudio
             DateTimeOffset? Published = null;
             if (!String.IsNullOrEmpty(publishedStr))
             {
-                Published = DateTime.Parse(publishedStr, DefaultCulture);
+                Published = DateTime.Parse(publishedStr);
             }
 
             string id = metadata.Value<string>(Properties.PackageId);
