@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.PackageManagement.PowerShellCmdlets</id>
+    <version>1.0.0-overrideme</version>
+    <title>NuGet's PowerShell Cmdlets for the Visual Studio client</title>
+    <authors>NuGet</authors>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/nuget_release_eula.htm</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NuGet's PowerShell Cmdlets for the Visual Studio client</description>
+    <dependencies>
+      <dependency id="NuGet.PackageManagement" version="3.0.0-beta" />
+    </dependencies>
+  </metadata>
+</package>

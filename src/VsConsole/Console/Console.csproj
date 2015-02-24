@@ -247,6 +247,10 @@
     </CodeAnalysisDictionary>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
+      <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
+      <Name>PackageManagement.PowerShellCmdlets</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>PackageManagement.VisualStudio</Name>
@@ -275,7 +279,7 @@
     <Otherwise />
   </Choose>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\build\sign.targets" />  
+  <Import Project="..\..\..\build\sign.targets" />
   <Import Project="..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
