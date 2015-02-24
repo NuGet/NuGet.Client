@@ -95,6 +95,7 @@ namespace NuGet.ProjectModel
             {
                 library.Version = NuGetVersion.Parse(parts[1]);
             }
+            library.Sha = ReadString(json["sha"]);
             library.DependencyGroups = ReadObject(json["dependencySets"] as JObject, ReadPackageDependencySet);
             library.FrameworkReferenceGroups = ReadFrameworkAssemblies(json["frameworkAssemblies"] as JObject);
             library.ReferenceGroups = ReadArray(json["packageAssemblyReferences"] as JArray, ReadPackageReferenceSet);
@@ -105,6 +106,7 @@ namespace NuGet.ProjectModel
         private JProperty WriteLibrary(LockFileLibrary library)
         {
             var json = new JObject();
+            json["sha"] = WriteString(library.Sha);
             WriteObject(json, "dependencySets", library.DependencyGroups, WritePackageDependencySet);
             WriteFrameworkAssemblies(json, "frameworkAssemblies", library.FrameworkReferenceGroups);
             WriteArray(json, "packageAssemblyReferences", library.ReferenceGroups, WritePackageReferenceSet);

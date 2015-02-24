@@ -11,6 +11,8 @@ namespace NuGet.ProjectModel
 
         public NuGetVersion Version { get; set; }
 
+        public string Sha { get; set; }
+
         public IList<PackageDependencyGroup> DependencyGroups { get; set; } = new List<PackageDependencyGroup>();
 
         public IList<FrameworkSpecificGroup> FrameworkReferenceGroups { get; set; } = new List<FrameworkSpecificGroup>();
