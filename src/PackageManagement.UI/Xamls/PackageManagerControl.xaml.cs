@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Client;
 using NuGet.Client.VisualStudio;
@@ -40,6 +41,8 @@ namespace NuGet.PackageManagement.UI
 
         private DetailControlModel _detailModel;
 
+        private Dispatcher _uiDispatcher;
+
         public PackageManagerModel Model { get; private set; }
 
         public PackageManagerControl(PackageManagerModel model)
@@ -49,6 +52,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerControl(PackageManagerModel model, IVsWindowSearchHostFactory searchFactory)
         {
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
             Model = model;
             if (Model.Context.Projects.Count() == 1)
             {
@@ -219,8 +223,8 @@ namespace NuGet.PackageManagement.UI
 
             return key;
         }
-        
-        // Save the settings of this doc window in the UIContext. Note that the settings 
+
+        // Save the settings of this doc window in the UIContext. Note that the settings
         // are not guaranteed to be persisted. We need to call Model.Context.SaveSettings()
         // to persist the settings.
         public void SaveSettings()
@@ -318,10 +322,28 @@ namespace NuGet.PackageManagement.UI
             // Don't do anything if solution is closed.
             if (!e.PackagesMissing)
             {
-                // packages are restored. refresh the UI
-                await UpdatePackageStatus();
-                _packageDetail.Refresh();
+                await UpdateAfterPackagesMissingStatusChanged();
             }
+        }
+
+        // Refresh the UI after packages are restored.
+        // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
+        // the VsSolutionManager.Init() method, which is scheduled on the thread pool. So this
+        // method needs to use _uiDispatcher.
+        private async Task UpdateAfterPackagesMissingStatusChanged()
+        {
+            if (!_uiDispatcher.CheckAccess())
+            {
+                await _uiDispatcher.Invoke(async () =>
+                {
+                    await this.UpdateAfterPackagesMissingStatusChanged();
+                });
+
+                return;
+            }
+
+            await UpdatePackageStatus();
+            _packageDetail.Refresh();
         }
 
         private void SetTitle()
@@ -490,7 +512,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return string.Format(
                     CultureInfo.CurrentCulture,
-                    "{0} - {1} - {2}",                    
+                    "{0} - {1} - {2}",
                     packageSource.Name,
                     packageSource.Description,
                     packageSource.Source);
