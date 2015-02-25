@@ -55,7 +55,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "mscorlib",
-                        Type = LibraryTypes.FrameworkOrGacAssembly
+                        TypeConstraint = LibraryTypes.Reference
                     }
                 });
 
@@ -64,7 +64,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System",
-                        Type = LibraryTypes.FrameworkOrGacAssembly
+                        TypeConstraint = LibraryTypes.Reference
                     }
                 });
 
@@ -73,7 +73,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System.Core",
-                        Type = LibraryTypes.FrameworkOrGacAssembly
+                        TypeConstraint = LibraryTypes.Reference
                     }
                 });
 
@@ -82,7 +82,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "Microsoft.CSharp",
-                        Type = LibraryTypes.FrameworkOrGacAssembly
+                        TypeConstraint = LibraryTypes.Reference
                     }
                 });
             }

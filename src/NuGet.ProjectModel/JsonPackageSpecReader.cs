@@ -241,7 +241,7 @@ namespace NuGet.ProjectModel
                         LibraryRange = new LibraryRange()
                         {
                             Name = dependency.Key,
-                            Type = isGacOrFrameworkReference ? LibraryTypes.FrameworkOrGacAssembly : null,
+                            TypeConstraint = isGacOrFrameworkReference ? LibraryTypes.Reference : null,
                             VersionRange = dependencyVersionRange,
                         },
                         Type = dependencyTypeValue

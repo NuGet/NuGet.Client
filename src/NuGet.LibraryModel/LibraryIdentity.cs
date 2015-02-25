@@ -62,7 +62,7 @@ namespace NuGet.LibraryModel
             return new LibraryRange
             {
                 Name = library.Name,
-                Type = library.Type,
+                TypeConstraint = library.Type,
                 VersionRange = library.Version == null ? null : new NuGetVersionRange
                 {
                     MinVersion = library.Version,

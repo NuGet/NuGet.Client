@@ -117,7 +117,7 @@ namespace NuGet.DependencyResolver
             foreach (var dependencyProvider in _dependencyProviders)
             {
                 // Skip unsupported library type
-                if (!dependencyProvider.SupportsType(library.Type))
+                if (!dependencyProvider.SupportsType(library.TypeConstraint))
                 {
                     continue;
                 }

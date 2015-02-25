@@ -145,7 +145,7 @@ namespace NuGet.DependencyResolver
                 return null;
             }
 
-            if (libraryRange.Type == LibraryTypes.FrameworkOrGacAssembly)
+            if (libraryRange.TypeConstraint == LibraryTypes.Reference)
             {
                 return null;
             }

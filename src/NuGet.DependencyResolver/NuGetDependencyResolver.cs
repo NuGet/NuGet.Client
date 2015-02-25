@@ -124,7 +124,7 @@ namespace NuGet.DependencyResolver
                     LibraryRange = new LibraryRange
                     {
                         Name = name,
-                        Type = LibraryTypes.FrameworkOrGacAssembly
+                        TypeConstraint = LibraryTypes.Reference
                     }
                 });
             }

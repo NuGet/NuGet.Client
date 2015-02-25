@@ -9,11 +9,20 @@ namespace NuGet.LibraryModel
 
         public NuGetVersionRange VersionRange { get; set; }
 
-        public string Type { get; set; }
+        public string TypeConstraint { get; set; }
 
         public override string ToString()
         {
-            return Name + " " + (VersionRange?.ToString());
+            var output = Name;
+            if(VersionRange != null)
+            {
+                output += " " + VersionRange.ToString();
+            }
+            if(!string.IsNullOrEmpty(TypeConstraint))
+            {
+                output = TypeConstraint + "/" + output;
+            }
+            return output; 
         }
 
         public bool Equals(LibraryRange other)
@@ -22,7 +31,7 @@ namespace NuGet.LibraryModel
             if (ReferenceEquals(this, other)) return true;
             return string.Equals(Name, other.Name) &&
                 Equals(VersionRange, other.VersionRange) &&
-                Equals(Type, other.Type);
+                Equals(TypeConstraint, other.TypeConstraint);
         }
 
         public override bool Equals(object obj)
@@ -39,7 +48,7 @@ namespace NuGet.LibraryModel
             {
                 return ((Name != null ? Name.GetHashCode() : 0) * 397) ^
                     (VersionRange != null ? VersionRange.GetHashCode() : 0) ^
-                    (Type != null ? Type.GetHashCode() : 0);
+                    (TypeConstraint != null ? TypeConstraint.GetHashCode() : 0);
             }
         }
 

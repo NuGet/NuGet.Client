@@ -109,7 +109,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = name,
-                        Type = LibraryTypes.FrameworkOrGacAssembly
+                        TypeConstraint = LibraryTypes.Reference
                     }
                 });
             }
