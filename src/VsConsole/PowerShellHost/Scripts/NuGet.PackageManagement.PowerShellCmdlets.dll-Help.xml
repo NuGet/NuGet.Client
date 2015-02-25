@@ -70,7 +70,7 @@
       <command:parameter required="true" position="1">
         <maml:name>Id</maml:name>
         <maml:description>
-          <maml:para>Specifies the package ID of the package to install.</maml:para>
+          <maml:para>Specifies the package ID of the package to install. Now it can also point to an online or local path to packages.config file or package's nupkg file.</maml:para>
         </maml:description>
         <command:parameterValue required="true">
           string
@@ -185,7 +185,34 @@
           <maml:para></maml:para>
         </dev:remarks>
       </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 4  ----------</maml:title>
+        <dev:code>PM&gt; Install-package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config </dev:code>
+        <dev:remarks>
+          <maml:para>
+            Description
+            ------------------------------------------------------------------
+            Installs the package listed on the online packages.config, Newtonsoft.Json version 4.0.1 into the current project.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 5  ----------</maml:title>
+        <dev:code>PM&gt; Install-package c:\temp\packages\jQuery.1.10.2.nupkg </dev:code>
+        <dev:remarks>
+          <maml:para>
+            Description
+            ------------------------------------------------------------------
+            Installs jquery 1.10.2 package, using the .nupkg file under local path of c:\temp\packages. 
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
     </command:examples>
+    
 
     <!-- Link section  -->
     <maml:relatedLinks>
@@ -829,7 +856,7 @@
       <command:parameter required="false" position="named">
         <maml:name>Version</maml:name>
         <maml:description>
-          <maml:para>Specifies the version that the package will be upgraded to. If omitted, defaults to the latest version. Now it takes Highest, HighestMinor, HighestPatch and Lowest to calculate the version of packages to be updated to.</maml:para>
+          <maml:para>Specifies the version that the package will be upgraded to. If omitted, defaults to the latest version. Now it takes 'Highest', 'HighestMinor', 'HighestPatch' (equivalent to -Safe) and 'Lowest' to determine the version of package to be updated to.</maml:para>
         </maml:description>
         <command:parameterValue required="true">
           string
