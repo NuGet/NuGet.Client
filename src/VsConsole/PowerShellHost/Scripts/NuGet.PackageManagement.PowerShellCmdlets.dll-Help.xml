@@ -119,7 +119,7 @@
       <command:parameter required="false" position="named">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>Install a package forcely to the project. If the same version is already installed, will uninstall and then install.</maml:para>
+          <maml:para>Install a package forcely to the project. If the same version is already installed, will uninstall the package first and then install.</maml:para>
         </maml:description>
       </command:parameter>
       <command:parameter required="false" position="named">
@@ -211,7 +211,7 @@
         Find-Package
       </command:name>
       <maml:description>
-        <maml:para>Gets the set of installed packages with specified Id/keyword from the package source.</maml:para>
+        <maml:para>Gets the set of remote packages with specified Id/keyword from the package source.</maml:para>
       </maml:description>
       <command:verb>Find</command:verb>
       <command:noun>Package</command:noun>
@@ -219,7 +219,7 @@
     </command:details>
 
     <maml:description>
-      <maml:para>Gets the set of installed packages with specified Id/keyword from the package source..</maml:para>
+      <maml:para>Gets the set of remote packages with specified Id/keyword from the package source.</maml:para>
     </maml:description>
 
     <!-- Cmdlet syntax section-->
@@ -235,7 +235,7 @@
           <command:parameterValue required="true">string</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" position="named">
-          <maml:name>ListAll</maml:name>
+          <maml:name>AllVersions</maml:name>
         </command:parameter>
         <command:parameter required="false" position="named">
           <maml:name>First</maml:name>
@@ -276,7 +276,7 @@
         </command:parameterValue>
       </command:parameter>
       <command:parameter required="false" position="named">
-        <maml:name>ListAll</maml:name>
+        <maml:name>AllVersions</maml:name>
         <maml:description>
           <maml:para>Gets all versions of packages available from the online package source.</maml:para>
         </maml:description>
@@ -324,7 +324,7 @@
       </command:example>
       <command:example>
         <maml:title>----------  EXAMPLE 2  ----------</maml:title>
-        <dev:code>PM&gt; Find-Package jquery -ListAll -ExactMatch</dev:code>
+        <dev:code>PM&gt; Find-Package jquery -AllVersions -ExactMatch</dev:code>
         <dev:remarks>
           <maml:para>
             Description
@@ -344,7 +344,7 @@
         <maml:uri>http://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
-        <maml:linkText>Get-Package</maml:linkText>
+        <maml:linkText>Find-Package</maml:linkText>
         <maml:uri/>
       </maml:navigationLink>
     </maml:relatedLinks>
@@ -776,6 +776,9 @@
           <maml:name>FileConflictAction</maml:name>
         </command:parameter>
         <command:parameter required="false" position="named">
+          <maml:name>DependencyVersion</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
           <maml:name>WhatIf</maml:name>
         </command:parameter>
       </command:syntaxItem>
@@ -848,6 +851,12 @@
         <maml:name>FileConflictAction</maml:name>
         <maml:description>
           <maml:para>Indicates what this command should do if a file from the package's content folder already exists in the project.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>DependencyVersion</maml:name>
+        <maml:description>
+          <maml:para>Specifies which dependency package version to install. If omitted, this defaults to the lowest required version.</maml:para>
         </maml:description>
       </command:parameter>
       <command:parameter required="false" position="named">
