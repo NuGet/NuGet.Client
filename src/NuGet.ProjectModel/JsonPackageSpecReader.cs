@@ -13,52 +13,6 @@ namespace NuGet.ProjectModel
 {
     public class JsonPackageSpecReader
     {
-        public static bool HasPackageSpecFile(string path)
-        {
-            string packageSpecPath = Path.Combine(path, PackageSpec.PackageSpecFileName);
-
-            return File.Exists(packageSpecPath);
-        }
-
-        public static bool TryReadPackageSpec(string path, out PackageSpec packageSpec)
-        {
-            packageSpec = null;
-
-            string packageSpecPath = null;
-
-            if (string.Equals(Path.GetFileName(path), PackageSpec.PackageSpecFileName, StringComparison.OrdinalIgnoreCase))
-            {
-                packageSpecPath = path;
-                path = Path.GetDirectoryName(path);
-            }
-            else if (!HasPackageSpecFile(path))
-            {
-                return false;
-            }
-            else
-            {
-                packageSpecPath = Path.Combine(path, PackageSpec.PackageSpecFileName);
-            }
-
-            // Assume the directory name is the package spec name if none was specified
-            var packageSpecName = GetDirectoryName(path);
-            packageSpecPath = Path.GetFullPath(packageSpecPath);
-
-            try
-            {
-                using (var stream = File.OpenRead(packageSpecPath))
-                {
-                    packageSpec = GetPackageSpec(stream, packageSpecName, packageSpecPath);
-                }
-            }
-            catch (JsonReaderException ex)
-            {
-                throw PackageSpecFormatException.Create(ex, packageSpecPath);
-            }
-
-            return true;
-        }
-
         public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
         {
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
