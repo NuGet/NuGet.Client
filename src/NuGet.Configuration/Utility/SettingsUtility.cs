@@ -24,12 +24,12 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
             }
 
             var encryptedString = settings.GetValue(section, key, isPath);
@@ -48,11 +48,11 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
             }
             if (value == null)
             {

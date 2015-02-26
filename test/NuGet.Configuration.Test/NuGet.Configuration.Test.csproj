@@ -60,12 +60,6 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\NuGet.Configuration\NuGet.Configuration.csproj">
-      <Project>{f09bba88-5c3b-48ce-ba7b-1ed350627562}</Project>
-      <Name>NuGet.Configuration</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

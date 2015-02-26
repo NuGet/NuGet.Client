@@ -3,12 +3,6 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-// Project-specific attributes
-[assembly: AssemblyTitle("NuGet's client configuration settings implementation.")]
-[assembly: AssemblyDescription("NuGet's client configuration settings implementation.")]
 
 // Common attributes
 [assembly: AssemblyCompany("Outercurve Foundation")]

@@ -20,7 +20,11 @@ namespace NuGet.Configuration
 
         private static ConfigurationDefaults InitializeInstance()
         {
+#if NET45
             var baseDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NuGet");
+#else
+            var baseDirectory = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "NuGet");
+#endif
             return new ConfigurationDefaults(baseDirectory, ConfigurationDefaultsFile);
         }
 

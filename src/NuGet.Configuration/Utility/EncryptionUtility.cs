@@ -10,17 +10,25 @@ namespace NuGet.Configuration
 
         public static string EncryptString(string value)
         {
+#if ASPNETCORE50
+            throw new NotSupportedException();
+#else
             var decryptedByteArray = Encoding.UTF8.GetBytes(value);
             var encryptedByteArray = ProtectedData.Protect(decryptedByteArray, _entropyBytes, DataProtectionScope.CurrentUser);
             var encryptedString = Convert.ToBase64String(encryptedByteArray);
             return encryptedString;
+#endif
         }
 
         public static string DecryptString(string encryptedString)
         {
+#if ASPNETCORE50
+            throw new NotSupportedException();
+#else
             var encryptedByteArray = Convert.FromBase64String(encryptedString);
             var decryptedByteArray = ProtectedData.Unprotect(encryptedByteArray, _entropyBytes, DataProtectionScope.CurrentUser);
             return Encoding.UTF8.GetString(decryptedByteArray);
+#endif
         }
 
         public static string GenerateUniqueToken(string caseInsensitiveKey)

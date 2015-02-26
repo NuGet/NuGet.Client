@@ -35,27 +35,27 @@ namespace NuGet.Configuration
 
         public void SetValue(string section, string key, string value)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.InvalidNullSettingsOperation, "SetValue"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "SetValue"));
         }
 
         public void SetValues(string section, IList<KeyValuePair<string, string>> values)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.InvalidNullSettingsOperation, "SetValues"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "SetValues"));
         }
 
         public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.InvalidNullSettingsOperation, "SetNestedValues"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "SetNestedValues"));
         }
 
         public bool DeleteValue(string section, string key)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.InvalidNullSettingsOperation, "DeleteValue"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "DeleteValue"));
         }
 
         public bool DeleteSection(string section)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.InvalidNullSettingsOperation, "DeleteSection"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "DeleteSection"));
         }
     }
 

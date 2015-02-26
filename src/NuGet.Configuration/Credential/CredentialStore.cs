@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !ASPNETCORE50
+using System;
 using System.Collections.Concurrent;
 using System.Net;
 
@@ -45,3 +46,4 @@ namespace NuGet.Configuration
         }
     }
 }
+#endif

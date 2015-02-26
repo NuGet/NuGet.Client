@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET45
+using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Linq;
@@ -183,4 +184,4 @@ namespace NuGet.Configuration
     }
 
 }
-
+#endif

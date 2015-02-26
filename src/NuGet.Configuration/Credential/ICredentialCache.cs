@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !ASPNETCORE50
+using System;
 using System.Net;
 
 namespace NuGet.Configuration
@@ -9,3 +10,4 @@ namespace NuGet.Configuration
         ICredentials GetCredentials(Uri uri);
     }
 }
+#endif

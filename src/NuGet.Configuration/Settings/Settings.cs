@@ -49,12 +49,12 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(fileName))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "fileName");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "fileName");
             }
 
             if(!FileSystemUtility.IsPathAFile(fileName))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Settings_FileName_Cannot_Be_A_Path);
+                throw new ArgumentException(Resources.Settings_FileName_Cannot_Be_A_Path);
             }
 
             Root = root;
@@ -177,7 +177,11 @@ namespace NuGet.Configuration
             if (configFileName == null)
             {
                 // load %AppData%\NuGet\NuGet.config
+#if NET45
                 string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+#else
+                string appDataPath = Environment.GetEnvironmentVariable("AppData");
+#endif
                 if (!String.IsNullOrEmpty(appDataPath))
                 {
                     var defaultSettingsFilePath = Path.Combine(
@@ -195,7 +199,7 @@ namespace NuGet.Configuration
                 if (!FileSystemUtility.DoesFileExistIn(root, configFileName))
                 {
                     string message = String.Format(CultureInfo.CurrentCulture,
-                        NuGet_Configuration_Resources.FileDoesNotExist,
+                        Resources.FileDoesNotExist,
                         Path.Combine(root, configFileName));
                     throw new InvalidOperationException(message);
                 }
@@ -271,12 +275,12 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
             }
 
             XElement element = null;
@@ -303,7 +307,7 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
 
             var settingValues = new List<SettingValue>();
@@ -321,12 +325,12 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
 
             if (String.IsNullOrEmpty(subSection))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "subSection");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "subSection");
             }
 
             var values = new List<SettingValue>();
@@ -347,7 +351,7 @@ namespace NuGet.Configuration
             {
                 if (_next == null)
                 {
-                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
                 }
 
                 _next.SetValue(section, key, value);
@@ -356,7 +360,7 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
             var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
             SetValueInternal(sectionElement, key, value);
@@ -370,7 +374,7 @@ namespace NuGet.Configuration
             {
                 if (_next == null)
                 {
-                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
                 }
 
                 _next.SetValues(section, values);
@@ -379,7 +383,7 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
             if (values == null)
             {
@@ -401,7 +405,7 @@ namespace NuGet.Configuration
             {
                 if (_next == null)
                 {
-                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
                 }
 
                 _next.SetNestedValues(section, key, values);
@@ -410,7 +414,7 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
             if (values == null)
             {
@@ -434,7 +438,7 @@ namespace NuGet.Configuration
             {
                 if (_next == null)
                 {
-                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
                 }
 
                 return _next.DeleteValue(section, key);
@@ -442,11 +446,11 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
             }
 
             var sectionElement = GetSection(ConfigXDocument.Root, section);
@@ -472,7 +476,7 @@ namespace NuGet.Configuration
             {
                 if (_next == null)
                 {
-                    throw new InvalidOperationException(NuGet_Configuration_Resources.Error_NoWritableConfig);
+                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
                 }
 
                 return _next.DeleteSection(section);
@@ -480,7 +484,7 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
 
             var sectionElement = GetSection(ConfigXDocument.Root, section);
@@ -628,7 +632,7 @@ namespace NuGet.Configuration
 
             if (keyAttribute == null || String.IsNullOrEmpty(keyAttribute.Value) || valueAttribute == null)
             {
-                throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGet_Configuration_Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
+                throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
             }
 
             var value = valueAttribute.Value;
@@ -646,7 +650,7 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(NuGet_Configuration_Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
             }
             if (value == null)
             {
