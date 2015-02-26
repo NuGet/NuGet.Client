@@ -8,6 +8,7 @@ namespace NuGet.Versioning.Test
 {
     public class VersionRangeFloatParsingTests
     {
+
         [Fact]
         public void VersionRangeFloatParsing_Prerelease()
         {

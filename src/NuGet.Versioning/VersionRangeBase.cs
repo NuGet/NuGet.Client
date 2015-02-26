@@ -265,17 +265,20 @@ namespace NuGet.Versioning
         /// <summary>
         /// SubSet check
         /// </summary>
-        public bool IsSubSetOrEqualTo(VersionRange target, VersionRange possibleSubSet)
+        public bool IsSubSetOrEqualTo(VersionRangeBase possibleSuperSet)
         {
-            return IsSubSetOrEqualTo(target, possibleSubSet, VersionComparer.Default);
+            return IsSubSetOrEqualTo(possibleSuperSet, VersionComparer.Default);
         }
 
         /// <summary>
         /// SubSet check
         /// </summary>
-        public bool IsSubSetOrEqualTo(VersionRange target, VersionRange possibleSubSet, IVersionComparer comparer)
+        public bool IsSubSetOrEqualTo(VersionRangeBase possibleSuperSet, IVersionComparer comparer)
         {
             VersionRangeComparer rangeComparer = new VersionRangeComparer(comparer);
+
+            VersionRangeBase possibleSubSet = this;
+            VersionRangeBase target = possibleSuperSet;
 
             if (rangeComparer.Equals(possibleSubSet, VersionRange.None))
             {

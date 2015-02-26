@@ -163,7 +163,7 @@ namespace NuGet.Versioning
                 }
                 else if (starPos == versionString.Length - 1)
                 {
-                    NuGetVersionFloatBehavior behavior = NuGetVersionFloatBehavior.None;
+                    var behavior = NuGetVersionFloatBehavior.None;
 
                     actualVersion = versionString.Substring(0, versionString.Length - 1);
 
@@ -238,38 +238,36 @@ namespace NuGet.Versioning
         /// </summary>
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            string result = string.Empty;
             switch (_floatBehavior)
             {
                 case NuGetVersionFloatBehavior.None:
-                    sb.Append(MinVersion);
+                    result = MinVersion.ToNormalizedString();
                     break;
                 case NuGetVersionFloatBehavior.Prerelease:
-                    sb.AppendFormat("{0}-{1}*", MinVersion, MinVersion.Release);
+                    result = String.Format(new VersionFormatter(), "{0:V}-{1}*", MinVersion, _releasePrefix);
                     break;
                 case NuGetVersionFloatBehavior.Revision:
-                    sb.AppendFormat("{0}.{1}.{2}.*",
-                        MinVersion.Version.Major,
-                        MinVersion.Version.Minor,
-                        MinVersion.Version.Build);
+                    result = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch);
                     break;
                 case NuGetVersionFloatBehavior.Patch:
-                    sb.AppendFormat("{0}.{1}.*",
-                        MinVersion.Version.Major,
-                        MinVersion.Version.Minor);
+                    result = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.*", MinVersion.Major, MinVersion.Minor);
                     break;
                 case NuGetVersionFloatBehavior.Minor:
-                    sb.AppendFormat("{0}.*",
-                        MinVersion.Version.Major);
+                    result = String.Format(CultureInfo.InvariantCulture, "{0}.*", MinVersion.Major);
                     break;
                 case NuGetVersionFloatBehavior.Major:
-                    sb.AppendFormat("*");
+                    result = "*";
+                    break;
+                case NuGetVersionFloatBehavior.AbsoluteLatest:
+                    // TODO: how should this be denoted?
+                    result = string.Empty;
                     break;
                 default:
                     break;
             }
 
-            return sb.ToString();
+            return result;
         }
 
         public bool Equals(FloatRange other)
