@@ -400,7 +400,7 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Show Details</value>
   </data>
   <data name="Checkbox_ProjectSelection" xml:space="preserve">
-    <value>{0} projects</value>
+    <value>{0} project(s)</value>
   </data>
   <data name="Text_ShowAll" xml:space="preserve">
     <value>Show all</value>

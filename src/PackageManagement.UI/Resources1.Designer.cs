@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} projects.
+        ///   Looks up a localized string similar to {0} project(s).
         /// </summary>
         public static string Checkbox_ProjectSelection {
             get {
