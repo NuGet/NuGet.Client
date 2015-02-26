@@ -117,8 +117,17 @@ namespace NuGet.ProjectModel
                 {
                     return LazyInitializer.EnsureInitialized(ref _project, ref _initialized, ref _lockObj, () =>
                     {
-                        PackageSpec project;
-                        JsonPackageSpecReader.TryReadPackageSpec(FullPath, out project);
+                        PackageSpec project = null;
+
+                        if (File.Exists(FullPath))
+                        {
+                            using (var stream = File.OpenRead(FullPath))
+                            {
+                                // TODO: does this need more error handling?
+                                project = JsonPackageSpecReader.GetPackageSpec(stream, Name, FullPath);
+                            }
+                        }
+
                         return project;
                     });
                 }
