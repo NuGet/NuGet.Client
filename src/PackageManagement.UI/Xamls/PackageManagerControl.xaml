@@ -154,6 +154,7 @@
                             Text="{x:Static resx:Resources.Text_LegalDisclaimer}" />
                         <CheckBox 
                             Margin="24,0,24,12"
+                            Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
                             Content="{x:Static resx:Resources.Checkbox_DoNotShowThisAgain}" Checked="SuppressDisclaimerChecked"/>
                     </StackPanel>
 
