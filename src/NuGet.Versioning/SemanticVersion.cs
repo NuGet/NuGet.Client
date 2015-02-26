@@ -7,7 +7,7 @@ namespace NuGet.Versioning
     /// <summary>
     /// A strict SemVer implementation
     /// </summary>
-    public partial class SemanticVersion : SimpleVersion
+    public partial class SemanticVersion
     {
         internal readonly IEnumerable<string> _releaseLabels;
         internal readonly string _metadata;

@@ -69,7 +69,7 @@ namespace NuGet.Versioning
         /// Checks if two version ranges are equivalent. This follows the rules of the version comparer
         /// when checking the bounds.
         /// </summary>
-        public bool Equals(VersionRange x, VersionRange y)
+        public bool Equals(VersionRangeBase x, VersionRangeBase y)
         {
             // same object
             if (Object.ReferenceEquals(x, y))
@@ -92,7 +92,7 @@ namespace NuGet.Versioning
         /// Creates a hash code based on all properties of the range. This follows the rules of the
         /// version comparer when comparing the version bounds.
         /// </summary>
-        public int GetHashCode(VersionRange obj)
+        public int GetHashCode(VersionRangeBase obj)
         {
             if (Object.ReferenceEquals(obj, null))
             {

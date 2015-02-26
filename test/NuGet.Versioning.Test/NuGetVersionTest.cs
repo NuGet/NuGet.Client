@@ -13,7 +13,7 @@ namespace NuGet.Versioning.Test
         public void NuGetVersionConstructors()
         {
             // Arrange
-            HashSet<SimpleVersion> versions = new HashSet<SimpleVersion>(VersionComparer.Default);
+            HashSet<SemanticVersion> versions = new HashSet<SemanticVersion>(VersionComparer.Default);
 
             // act
             versions.Add(new NuGetVersion("4.3.0"));

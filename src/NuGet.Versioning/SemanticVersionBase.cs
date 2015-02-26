@@ -3,9 +3,9 @@
 namespace NuGet.Versioning
 {
     /// <summary>
-    /// A basic version that allows comparisons.
+    /// A base version operations
     /// </summary>
-    public abstract class SimpleVersion : IFormattable, IComparable, IComparable<SimpleVersion>, IEquatable<SimpleVersion>
+    public partial class SemanticVersion : IFormattable, IComparable, IComparable<SemanticVersion>, IEquatable<SemanticVersion>
     {
         /// <summary>
         /// Gives a normalized representation of the version.
@@ -57,20 +57,20 @@ namespace NuGet.Versioning
 
         public virtual int CompareTo(object obj)
         {
-            return CompareTo(obj as SimpleVersion);
+            return CompareTo(obj as SemanticVersion);
         }
 
-        public virtual int CompareTo(SimpleVersion other)
+        public virtual int CompareTo(SemanticVersion other)
         {
             return CompareTo(other, VersionComparison.Default);
         }
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as SimpleVersion);
+            return Equals(obj as SemanticVersion);
         }
 
-        public virtual bool Equals(SimpleVersion other)
+        public virtual bool Equals(SemanticVersion other)
         {
             return Equals(other, VersionComparison.Default);
         }
@@ -78,7 +78,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// True if the VersionBase objects are equal based on the given comparison mode.
         /// </summary>
-        public virtual bool Equals(SimpleVersion other, VersionComparison versionComparison)
+        public virtual bool Equals(SemanticVersion other, VersionComparison versionComparison)
         {
             return CompareTo(other, versionComparison) == 0;
         }
@@ -86,7 +86,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Compares NuGetVersion objects using the given comparison mode.
         /// </summary>
-        public virtual int CompareTo(SimpleVersion other, VersionComparison versionComparison)
+        public virtual int CompareTo(SemanticVersion other, VersionComparison versionComparison)
         {
             VersionComparer comparer = new VersionComparer(versionComparison);
             return comparer.Compare(this, other);
@@ -95,7 +95,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// ==
         /// </summary>
-        public static bool operator ==(SimpleVersion version1, SimpleVersion version2)
+        public static bool operator ==(SemanticVersion version1, SemanticVersion version2)
         {
             return Compare(version1, version2) == 0;
         }
@@ -103,7 +103,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// !=
         /// </summary>
-        public static bool operator !=(SimpleVersion version1, SimpleVersion version2)
+        public static bool operator !=(SemanticVersion version1, SemanticVersion version2)
         {
             return Compare(version1, version2) != 0;
         }
@@ -111,7 +111,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// <
         /// </summary>
-        public static bool operator <(SimpleVersion version1, SimpleVersion version2)
+        public static bool operator <(SemanticVersion version1, SemanticVersion version2)
         {
             return Compare(version1, version2) < 0;
         }
@@ -119,7 +119,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// <=
         /// </summary>
-        public static bool operator <=(SimpleVersion version1, SimpleVersion version2)
+        public static bool operator <=(SemanticVersion version1, SemanticVersion version2)
         {
             return Compare(version1, version2) <= 0;
         }
@@ -127,7 +127,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// >
         /// </summary>
-        public static bool operator >(SimpleVersion version1, SimpleVersion version2)
+        public static bool operator >(SemanticVersion version1, SemanticVersion version2)
         {
             return Compare(version1, version2) > 0;
         }
@@ -135,12 +135,12 @@ namespace NuGet.Versioning
         /// <summary>
         /// >=
         /// </summary>
-        public static bool operator >=(SimpleVersion version1, SimpleVersion version2)
+        public static bool operator >=(SemanticVersion version1, SemanticVersion version2)
         {
             return Compare(version1, version2) >= 0;
         }
 
-        private static int Compare(SimpleVersion version1, SimpleVersion version2)
+        private static int Compare(SemanticVersion version1, SemanticVersion version2)
         {
             IVersionComparer comparer = new VersionComparer();
             return comparer.Compare(version1, version2);

@@ -10,12 +10,12 @@ namespace NuGet.Versioning.Test
 {
     public class GitMetadataComparer : IVersionComparer
     {
-        public bool Equals(SimpleVersion x, SimpleVersion y)
+        public bool Equals(SemanticVersion x, SemanticVersion y)
         {
             return Compare(x, y) == 0;
         }
 
-        public int GetHashCode(SimpleVersion obj)
+        public int GetHashCode(SemanticVersion obj)
         {
             NuGetVersion version = obj as NuGetVersion;
 
@@ -23,7 +23,7 @@ namespace NuGet.Versioning.Test
                 version.Major, version.Minor, version.Patch, version.Release, GetCommitFromMetadata(version.Metadata)).GetHashCode();
         }
 
-        public int Compare(SimpleVersion x, SimpleVersion y)
+        public int Compare(SemanticVersion x, SemanticVersion y)
         {
             NuGetVersion versionX = x as NuGetVersion;
             NuGetVersion versionY = y as NuGetVersion;

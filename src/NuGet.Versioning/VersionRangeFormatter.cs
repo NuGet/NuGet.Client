@@ -102,6 +102,9 @@ namespace NuGet.Versioning
                 case 'N':
                     s = GetNormalizedString(range);
                     break;
+                case 'D':
+                    s = GetLegacyString(range);
+                    break;
             }
 
             return s;
@@ -112,13 +115,21 @@ namespace NuGet.Versioning
         /// </summary>
         private string GetNormalizedString(VersionRange range)
         {
+            // TODO: write out the float version
             StringBuilder sb = new StringBuilder();
 
             sb.Append(range.HasLowerBound && range.IsMinInclusive ? '[' : '(');
 
             if (range.HasLowerBound)
             {
-                sb.AppendFormat(_versionFormatter, ZeroN, range.MinVersion);
+                if (range.IsFloating)
+                {
+                    sb.Append(range.Float.ToString());
+                }
+                else
+                {
+                    sb.AppendFormat(_versionFormatter, ZeroN, range.MinVersion);
+                }
             }
 
             sb.Append(", ");
@@ -159,6 +170,31 @@ namespace NuGet.Versioning
             return s;
         }
 
+        /// <summary>
+        /// Creates a legacy string that is compatible with NuGet 2.8.3
+        /// </summary>
+        private string GetLegacyString(VersionRangeBase range)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(range.HasLowerBound && range.IsMinInclusive ? '[' : '(');
+
+            if (range.HasLowerBound)
+            {
+                sb.AppendFormat(_versionFormatter, ZeroN, range.MinVersion);
+            }
+
+            sb.Append(", ");
+
+            if (range.HasUpperBound)
+            {
+                sb.AppendFormat(_versionFormatter, ZeroN, range.MaxVersion);
+            }
+
+            sb.Append(range.HasUpperBound && range.IsMaxInclusive ? ']' : ')');
+
+            return sb.ToString();
+        }
 
         /// <summary>
         /// A pretty print representation of the VersionRange.

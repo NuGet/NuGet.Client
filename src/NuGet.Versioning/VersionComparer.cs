@@ -9,7 +9,7 @@ namespace NuGet.Versioning
     /// </summary>
     public sealed class VersionComparer : IVersionComparer
     {
-        private VersionComparison _mode;
+        private readonly VersionComparison _mode;
 
         /// <summary>
         /// Creates a VersionComparer using the default mode.
@@ -31,7 +31,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Determines if both versions are equal.
         /// </summary>
-        public bool Equals(SimpleVersion x, SimpleVersion y)
+        public bool Equals(SemanticVersion x, SemanticVersion y)
         {
             return Compare(x, y) == 0;
         }
@@ -39,7 +39,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Compares the given versions using the VersionComparison mode.
         /// </summary>
-        public static int Compare(SimpleVersion version1, SimpleVersion version2, VersionComparison versionComparison)
+        public static int Compare(SemanticVersion version1, SemanticVersion version2, VersionComparison versionComparison)
         {
             IVersionComparer comparer = new VersionComparer(versionComparison);
             return comparer.Compare(version1, version2);
@@ -48,75 +48,39 @@ namespace NuGet.Versioning
         /// <summary>
         /// Gives a hash code based on the normalized version string.
         /// </summary>
-        public int GetHashCode(SimpleVersion obj)
+        public int GetHashCode(SemanticVersion version)
         {
-            if (Object.ReferenceEquals(obj, null))
+            if (Object.ReferenceEquals(version, null))
             {
                 return 0;
             }
 
             HashCodeCombiner combiner = new HashCodeCombiner();
 
-            SemanticVersion semVersion = obj as SemanticVersion;
-            NuGetVersion nuGetVersion = obj as NuGetVersion;
+            combiner.AddObject(version.Major);
+            combiner.AddObject(version.Minor);
+            combiner.AddObject(version.Patch);
 
-            if (semVersion != null)
+            NuGetVersion nuGetVersion = version as NuGetVersion;
+            if (nuGetVersion != null && nuGetVersion.Revision > 0)
             {
-                combiner.AddObject(semVersion.Major);
-                combiner.AddObject(semVersion.Minor);
-                combiner.AddObject(semVersion.Patch);
-
-                if (nuGetVersion != null && nuGetVersion.Revision > 0)
-                {
-                    combiner.AddObject(nuGetVersion.Revision);
-                }
-
-                if (_mode == VersionComparison.Default || _mode == VersionComparison.VersionRelease || _mode == VersionComparison.VersionReleaseMetadata)
-                {
-                    if (semVersion.IsPrerelease)
-                    {
-                        combiner.AddObject(semVersion.Release.ToUpperInvariant());
-                    }
-                }
-
-                if (_mode == VersionComparison.VersionReleaseMetadata)
-                {
-                    if (semVersion.HasMetadata)
-                    {
-                        combiner.AddObject(semVersion.Metadata);
-                    }
-                }
-
-                return combiner.CombinedHash;
+                combiner.AddObject(nuGetVersion.Revision);
             }
-            else
+
+            if (_mode == VersionComparison.Default || _mode == VersionComparison.VersionRelease || _mode == VersionComparison.VersionReleaseMetadata)
             {
-                // This is a new kind of version, fall back to using the formatter
-                string verString = string.Empty;
-
-                VersionFormatter formatter = new VersionFormatter();
-
-                if (_mode == VersionComparison.Default || _mode == VersionComparison.VersionRelease)
+                if (version.IsPrerelease)
                 {
-                    verString = obj.ToString("V-R", formatter).ToUpperInvariant();
+                    combiner.AddObject(version.Release.ToUpperInvariant());
                 }
-                else if (_mode == VersionComparison.Version)
-                {
-                    verString = obj.ToString("V", formatter);
-                }
-                else if (_mode == VersionComparison.VersionReleaseMetadata)
-                {
-                    verString = String.Format(CultureInfo.InvariantCulture, "{0}+{1}",
-                        obj.ToString("V-R", formatter).ToUpperInvariant(),
-                        obj.ToString("M", formatter));
-                }
+            }
 
-                if (String.IsNullOrEmpty(verString))
+            if (_mode == VersionComparison.VersionReleaseMetadata)
+            {
+                if (version.HasMetadata)
                 {
-                    verString = obj.ToNormalizedString().ToUpperInvariant();
+                    combiner.AddObject(version.Metadata);
                 }
-
-                combiner.AddObject(verString);
             }
 
             return combiner.CombinedHash;
@@ -125,15 +89,9 @@ namespace NuGet.Versioning
         /// <summary>
         /// Compare versions.
         /// </summary>
-        public int Compare(SimpleVersion x, SimpleVersion y)
+        public int Compare(SemanticVersion x, SemanticVersion y)
         {
             if (Object.ReferenceEquals(x, y))
-            {
-                return 0;
-            }
-
-            // null checks
-            if (Object.ReferenceEquals(x, null) && Object.ReferenceEquals(y, null))
             {
                 return 0;
             }
@@ -148,21 +106,18 @@ namespace NuGet.Versioning
                 return -1;
             }
 
-            SemanticVersion semX = x as SemanticVersion;
-            SemanticVersion semY = y as SemanticVersion;
-
-            if (semX != null && semY != null)
+            if (x != null && y != null)
             {
                 // compare version
-                int result = semX.Major.CompareTo(semY.Major);
+                int result = x.Major.CompareTo(y.Major);
                 if (result != 0)
                     return result;
 
-                result = semX.Minor.CompareTo(semY.Minor);
+                result = x.Minor.CompareTo(y.Minor);
                 if (result != 0)
                     return result;
 
-                result = semX.Patch.CompareTo(semY.Patch);
+                result = x.Patch.CompareTo(y.Patch);
                 if (result != 0)
                     return result;
 
@@ -176,15 +131,15 @@ namespace NuGet.Versioning
                 if (_mode != VersionComparison.Version)
                 {
                     // compare release labels
-                    if (semX.IsPrerelease && !semY.IsPrerelease)
+                    if (x.IsPrerelease && !y.IsPrerelease)
                         return -1;
 
-                    if (!semX.IsPrerelease && semY.IsPrerelease)
+                    if (!x.IsPrerelease && y.IsPrerelease)
                         return 1;
 
-                    if (semX.IsPrerelease && semY.IsPrerelease)
+                    if (x.IsPrerelease && y.IsPrerelease)
                     {
-                        result = CompareReleaseLabels(semX.ReleaseLabels, semY.ReleaseLabels);
+                        result = CompareReleaseLabels(x.ReleaseLabels, y.ReleaseLabels);
                         if (result != 0)
                             return result;
                     }
@@ -192,7 +147,7 @@ namespace NuGet.Versioning
                     // compare the metadata
                     if (_mode == VersionComparison.VersionReleaseMetadata)
                     {
-                        result = StringComparer.OrdinalIgnoreCase.Compare(semX.Metadata ?? string.Empty, semY.Metadata ?? string.Empty);
+                        result = StringComparer.OrdinalIgnoreCase.Compare(x.Metadata ?? string.Empty, y.Metadata ?? string.Empty);
                         if (result != 0)
                             return result;
                     }
@@ -229,46 +184,22 @@ namespace NuGet.Versioning
         /// <summary>
         /// A default comparer that compares metadata as strings.
         /// </summary>
-        public static IVersionComparer Default
-        {
-            get
-            {
-                return new VersionComparer(VersionComparison.Default);
-            }
-        }
+        public static readonly IVersionComparer Default = new VersionComparer(VersionComparison.Default);
 
         /// <summary>
         /// A comparer that uses only the version numbers.
         /// </summary>
-        public static IVersionComparer Version
-        {
-            get
-            {
-                return new VersionComparer(VersionComparison.Version);
-            }
-        }
+        public static readonly IVersionComparer Version = new VersionComparer(VersionComparison.Version);
 
         /// <summary>
         /// Compares versions without comparing the metadata.
         /// </summary>
-        public static IVersionComparer VersionRelease
-        {
-            get
-            {
-                return new VersionComparer(VersionComparison.VersionRelease);
-            }
-        }
+        public static readonly IVersionComparer VersionRelease = new VersionComparer(VersionComparison.VersionRelease);
 
         /// <summary>
         /// A version comparer that follows SemVer 2.0.0 rules.
         /// </summary>
-        public static IVersionComparer VersionReleaseMetadata
-        {
-            get
-            {
-                return new VersionComparer(VersionComparison.VersionReleaseMetadata);
-            }
-        }
+        public static IVersionComparer VersionReleaseMetadata = new VersionComparer(VersionComparison.VersionReleaseMetadata);
 
         /// <summary>
         /// Compares sets of release labels.
