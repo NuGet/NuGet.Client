@@ -7,7 +7,7 @@ namespace NuGet.LibraryModel
     {
         public string Name { get; set; }
 
-        public NuGetVersionRange VersionRange { get; set; }
+        public VersionRange VersionRange { get; set; }
 
         public string TypeConstraint { get; set; }
 

@@ -24,7 +24,7 @@ namespace NuGet.DependencyResolver
             var key = new LibraryRange
             {
                 Name = name,
-                VersionRange = new NuGetVersionRange(version)
+                VersionRange = new VersionRange(version)
             };
 
             var root = new GraphNode<Library>(key);

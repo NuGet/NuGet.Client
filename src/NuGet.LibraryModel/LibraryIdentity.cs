@@ -63,11 +63,7 @@ namespace NuGet.LibraryModel
             {
                 Name = library.Name,
                 TypeConstraint = library.Type,
-                VersionRange = library.Version == null ? null : new NuGetVersionRange
-                {
-                    MinVersion = library.Version,
-                    VersionFloatBehavior = NuGetVersionFloatBehavior.None
-                }
+                VersionRange = library.Version == null ? null : new VersionRange(library.Version, new FloatRange(NuGetVersionFloatBehavior.None, library.Version))
             };
         }
     }

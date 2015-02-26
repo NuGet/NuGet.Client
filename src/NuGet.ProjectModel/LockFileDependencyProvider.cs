@@ -79,7 +79,7 @@ namespace NuGet.ProjectModel
                         LibraryRange = new LibraryRange
                         {
                             Name = d.Id,
-                            VersionRange = d.VersionRange == null ? null : new NuGetVersionRange(d.VersionRange)
+                            VersionRange = d.VersionRange == null ? null : d.VersionRange
                         }
                     });
                 }

@@ -16,40 +16,40 @@ namespace NuGet.Packaging
             _path = path;
         }
         
-        public virtual string GetInstallPath(string packageId, SimpleVersion version)
+        public virtual string GetInstallPath(string packageId, SemanticVersion version)
         {
             return Path.Combine(_path, GetPackageDirectory(packageId, version));
         }
 
-        public string GetPackageFilePath(string packageId, SimpleVersion version)
+        public string GetPackageFilePath(string packageId, SemanticVersion version)
         {
             return Path.Combine(GetInstallPath(packageId, version),
                                 GetPackageFileName(packageId, version));
         }
 
-        public string GetManifestFilePath(string packageId, SimpleVersion version)
+        public string GetManifestFilePath(string packageId, SemanticVersion version)
         {
             return Path.Combine(GetInstallPath(packageId, version),
                                 GetManifestFileName(packageId, version));
         }
 
-        public string GetHashPath(string packageId, SimpleVersion version)
+        public string GetHashPath(string packageId, SemanticVersion version)
         {
             return Path.Combine(GetInstallPath(packageId, version),
                                 string.Format("{0}.{1}.nupkg.sha512", packageId, version));
         }
 
-        public virtual string GetPackageDirectory(string packageId, SimpleVersion version)
+        public virtual string GetPackageDirectory(string packageId, SemanticVersion version)
         {
             return Path.Combine(packageId, version.ToString());
         }
 
-        public virtual string GetPackageFileName(string packageId, SimpleVersion version)
+        public virtual string GetPackageFileName(string packageId, SemanticVersion version)
         {
             return string.Format("{0}.{1}.nupkg", packageId, version);
         }
 
-        public virtual string GetManifestFileName(string packageId, SimpleVersion version)
+        public virtual string GetManifestFileName(string packageId, SemanticVersion version)
         {
             return packageId + ".nuspec";
         }

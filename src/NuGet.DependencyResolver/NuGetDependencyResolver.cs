@@ -94,7 +94,7 @@ namespace NuGet.DependencyResolver
                         LibraryRange = new LibraryRange
                         {
                             Name = d.Id,
-                            VersionRange = d.VersionRange == null ? null : new NuGetVersionRange(d.VersionRange)
+                            VersionRange = (d.VersionRange == null ? null : d.VersionRange)
                         }
                     });
                 }
@@ -132,7 +132,7 @@ namespace NuGet.DependencyResolver
             return libraryDependencies;
         }
 
-        private LocalPackageInfo FindCandidate(string name, NuGetVersionRange versionRange)
+        private LocalPackageInfo FindCandidate(string name, VersionRange versionRange)
         {
             var packages = _repository.FindPackagesById(name);
 

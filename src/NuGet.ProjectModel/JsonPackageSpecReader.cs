@@ -173,13 +173,13 @@ namespace NuGet.ProjectModel
                         }
                     }
 
-                    NuGetVersionRange dependencyVersionRange = null;
+                    VersionRange dependencyVersionRange = null;
 
                     if (!string.IsNullOrEmpty(dependencyVersionValue))
                     {
                         try
                         {
-                            dependencyVersionRange = NuGetVersionRange.Parse(dependencyVersionValue);
+                            dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
                         }
                         catch (Exception ex)
                         {

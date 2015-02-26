@@ -42,7 +42,7 @@ namespace NuGet.DependencyResolver
             else
             {
                 if (node.Key.VersionRange != null &&
-                    node.Key.VersionRange.VersionFloatBehavior != NuGetVersionFloatBehavior.None)
+                    node.Key.VersionRange.IsFloating)
                 {
                     lock (cache)
                     {
@@ -150,7 +150,7 @@ namespace NuGet.DependencyResolver
                 return null;
             }
 
-            if (libraryRange.VersionRange.VersionFloatBehavior != NuGetVersionFloatBehavior.None)
+            if (libraryRange.VersionRange.IsFloating)
             {
                 // For snapshot dependencies, get the version remotely first.
                 var remoteMatch = await FindLibraryByVersion(libraryRange, framework, _context.RemoteLibraryProviders);
@@ -241,7 +241,7 @@ namespace NuGet.DependencyResolver
 
         private async Task<RemoteMatch> FindLibraryByVersion(LibraryRange libraryRange, NuGetFramework framework, IEnumerable<IRemoteDependencyProvider> providers)
         {
-            if (libraryRange.VersionRange.VersionFloatBehavior != NuGetVersionFloatBehavior.None)
+            if (libraryRange.VersionRange.IsFloating)
             {
                 // Don't optimize the non http path for floating versions or we'll miss things
                 return await FindLibrary(libraryRange, providers, provider => provider.FindLibrary(libraryRange, framework));
