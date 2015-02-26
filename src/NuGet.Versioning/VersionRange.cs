@@ -183,6 +183,12 @@ namespace NuGet.Versioning
                 return false;
             }
 
+            if (!Satisfies(considering))
+            {
+                // keep null over a value outside of the range
+                return false;
+            }
+
             if (Object.ReferenceEquals(current, null))
             {
                 return true;

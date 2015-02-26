@@ -8,6 +8,23 @@ namespace NuGet.Versioning.Test
 {
     public class FloatingRangeTests
     {
+        [Fact]
+        public void FloatRange_OutsideOfRange()
+        {
+            VersionRange range = VersionRange.Parse("[1.0.*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+            {
+                NuGetVersion.Parse("0.1.0"),
+                NuGetVersion.Parse("1.0.0-alpha.2"),
+                NuGetVersion.Parse("2.0.0"),
+                NuGetVersion.Parse("2.2.0"),
+                NuGetVersion.Parse("3.0.0"),
+            };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
         [Theory]
         [InlineData("1.0.0")]
         public void FloatRange_ParseBasic(string version)
