@@ -963,11 +963,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             bool isClr = false;
             
+            // always return false here until we fix clr support issue
             // Null properties on the DTE project item are a common source of bugs, make sure everything is non-null before attempting this check.    
             if (envDTEProject != null && envDTEProject.FullName != null)
             {
                 var vcx = new VcxProject(envDTEProject.FullName);
-                isClr = vcx.HasClrSupport();
             }
             return isClr;
         }
