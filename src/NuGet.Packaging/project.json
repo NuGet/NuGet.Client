@@ -18,13 +18,6 @@
                 "System.IO.Compression": ""
             }
         },
-        "aspnet50": {
-            "frameworkAssemblies": {
-                "System.Xml": "",
-                "System.Xml.Linq": "",
-                "System.IO.Compression": ""
-            }
-        },
         "aspnetcore50": {
             "dependencies": {
                 "System.IO.Compression": "4.0.0-beta-*",

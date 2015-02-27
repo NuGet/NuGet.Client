@@ -10,11 +10,6 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": {
-            "frameworkAssemblies": {
-                "System.Collections": { "version": "", "type": "build" }
-            }
-        },
         "aspnetcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*",

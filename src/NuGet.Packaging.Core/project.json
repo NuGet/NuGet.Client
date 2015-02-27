@@ -17,13 +17,6 @@
                 "System.IO.Compression": ""
             }
         },
-        "aspnet50": {
-            "frameworkAssemblies": {
-                "System.Xml": "",
-                "System.Xml.Linq": "",
-                "System.IO.Compression": ""
-            }
-        },
         "aspnetcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*",

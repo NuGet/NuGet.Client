@@ -14,13 +14,6 @@
                 "System.Xml.Linq": { "version": "", "type": "build" }
             }
         },
-        "aspnet50": {
-            "frameworkAssemblies": {
-                "System.IO.Compression": "",
-                "System.Xml": "",
-                "System.Xml.Linq": ""
-            }
-        },
         "aspnetcore50": {
             "dependencies": {
                 "System.Xml.XDocument": "4.0.10-beta-*",
