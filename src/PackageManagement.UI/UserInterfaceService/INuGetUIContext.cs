@@ -29,6 +29,6 @@ namespace NuGet.PackageManagement.UI
         UserSettings GetSettings(string key);
 
         // Persist settings 
-        void SaveSettings();
+        void PersistSettings();
     }
 }

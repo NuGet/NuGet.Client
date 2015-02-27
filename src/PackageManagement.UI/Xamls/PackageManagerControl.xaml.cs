@@ -33,7 +33,6 @@ namespace NuGet.PackageManagement.UI
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
 
-        // TODO: hook this back up
         private PackageRestoreBar _restoreBar;
 
         private IVsWindowSearchHost _windowSearchHost;
@@ -74,10 +73,6 @@ namespace NuGet.PackageManagement.UI
                 _windowSearchHost.IsVisible = true;
             }
 
-            _filter.Items.Add(Resx.Resources.Filter_All);
-            _filter.Items.Add(Resx.Resources.Filter_Installed);
-            _filter.Items.Add(Resx.Resources.Filter_UpgradeAvailable);
-
             AddRestoreBar();
 
             _packageDetail.Control = this;
@@ -86,6 +81,7 @@ namespace NuGet.PackageManagement.UI
             SetTitle();
 
             var settings = LoadSettings();
+            InitializeFilterList(settings);
             InitSourceRepoList(settings);
             ApplySettings(settings);
 
@@ -104,6 +100,22 @@ namespace NuGet.PackageManagement.UI
             {
                 _legalDisclaimer.Visibility = System.Windows.Visibility.Collapsed;
             }
+        }
+
+        private void InitializeFilterList(UserSettings settings)
+        {
+            _filter.DisplayMemberPath = "Text";
+            var items = new[] {
+                new FilterItem(Filter.All, Resx.Resources.Filter_All),
+                new FilterItem(Filter.Installed, Resx.Resources.Filter_Installed),
+                new FilterItem(Filter.UpdatesAvailable, Resx.Resources.Filter_UpgradeAvailable)
+            };
+            
+            foreach (var item in items)
+            {
+                _filter.Items.Add(item);               
+            }
+            _filter.SelectedItem = items.First(item => item.Filter == settings.SelectedFilter);
         }
 
         private bool IsUILegalDisclaimerSuppressed()
@@ -133,6 +145,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
+            _checkboxPrerelease.IsChecked = settings.IncludePrerelease;
 
             var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
                 .FirstOrDefault(d => d.Behavior == settings.DependencyBehavior);
@@ -240,6 +253,13 @@ namespace NuGet.PackageManagement.UI
             settings.ForceRemove = _detailModel.Options.ForceRemove;
             settings.DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior;
             settings.FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action;
+            settings.IncludePrerelease = _checkboxPrerelease.IsChecked == true;
+
+            var filterItem = _filter.SelectedItem as FilterItem;
+            if (filterItem != null)
+            {
+                settings.SelectedFilter = filterItem.Filter;
+            }
 
             string key = GetSettingsKey();
             Model.Context.AddSettings(key, settings);
@@ -416,7 +436,8 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return Resx.Resources.Filter_Installed.Equals(_filter.SelectedItem);
+                var filterItem = _filter.SelectedItem as FilterItem;
+                return filterItem != null && filterItem.Filter == Filter.Installed;
             }
         }
 
@@ -424,7 +445,8 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return Resx.Resources.Filter_UpgradeAvailable.Equals(_filter.SelectedItem);
+                var filterItem = _filter.SelectedItem as FilterItem;
+                return filterItem != null && filterItem.Filter == Filter.UpdatesAvailable;
             }
         }
 
@@ -442,19 +464,14 @@ namespace NuGet.PackageManagement.UI
             {
                 return _activeSource;
             }
-        }
+        }        
 
         private void SearchPackageInActivePackageSource(string searchText)
         {
-            Filter filter = Filter.All;
-            if (Resx.Resources.Filter_Installed.Equals(_filter.SelectedItem))
-            {
-                filter = Filter.Installed;
-            }
-            else if (Resx.Resources.Filter_UpgradeAvailable.Equals(_filter.SelectedItem))
-            {
-                filter = Filter.UpdatesAvailable;
-            }
+            var filterItem = _filter.SelectedItem as FilterItem;
+            Filter filter = filterItem != null ?
+                filterItem.Filter :
+                Filter.All;
 
             PackageLoaderOption option = new PackageLoaderOption(filter, IncludePrerelease);
             var loader = new PackageLoader(

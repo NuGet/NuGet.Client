@@ -102,6 +102,6 @@ namespace NuGet.PackageManagement.UI
 
         public abstract UserSettings GetSettings(string key);
 
-        public abstract void SaveSettings();
+        public abstract void PersistSettings();
     }
 }

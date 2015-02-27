@@ -109,7 +109,8 @@ namespace StandaloneUI
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            _packageManagerControl.Model.Context.SaveSettings();
+            _packageManagerControl.SaveSettings();
+            _packageManagerControl.Model.Context.PersistSettings();
         }
     }
 

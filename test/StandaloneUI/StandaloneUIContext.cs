@@ -66,7 +66,7 @@ namespace StandaloneUI
             }
         }
 
-        public override void SaveSettings()
+        public override void PersistSettings()
         {
             try
             {
