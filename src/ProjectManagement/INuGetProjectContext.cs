@@ -11,6 +11,9 @@ namespace NuGet.ProjectManagement
         /// Logs a message for the given project context
         /// </summary>
         void Log(MessageLevel level, string message, params object[] args);
+
+        void ReportError(string message);
+
         /// <summary>
         /// Resolves a file conflict for the given project context
         /// </summary>

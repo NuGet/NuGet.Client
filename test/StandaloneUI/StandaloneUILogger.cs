@@ -53,5 +53,10 @@ namespace StandaloneUI
         {
             Log(MessageLevel.Debug, "****** end *********");
         }
+
+        public void ReportError(string message)
+        {
+            Log(MessageLevel.Debug, "Report error: {0}", message);
+        }
     }
 }

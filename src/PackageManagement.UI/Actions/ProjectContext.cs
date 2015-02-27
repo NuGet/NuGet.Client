@@ -43,5 +43,9 @@ namespace NuGet.PackageManagement.UI
         {
             get { return null; }
         }
+
+        public void ReportError(string message)
+        {
+        }
     }
 }

@@ -32,5 +32,9 @@ namespace NuGet.ProjectManagement
         {
             get { return null; }
         }
+
+        public void ReportError(string message)
+        {   
+        }
     }
 }

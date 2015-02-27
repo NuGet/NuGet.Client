@@ -41,6 +41,10 @@ namespace Test.Utility
                 return TestExecutionContext;
             }
         }
+
+        public void ReportError(string message)
+        {            
+        }
     }
 
     public class TestExecutionContext : ExecutionContext

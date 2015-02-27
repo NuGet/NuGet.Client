@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI
         PackageIdentity SelectedPackage { get; }
 
         /// <summary>
-        /// Displays a modal dialog with the error message
+        /// Reports that an error has occurred.
         /// </summary>
         void ShowError(string message, string detail);
 

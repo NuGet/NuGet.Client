@@ -152,17 +152,16 @@
     <Compile Include="UserAction.cs" />
     <Compile Include="UserInterfaceService\INuGetUIContext.cs" />
     <Compile Include="UserInterfaceService\INuGetUIFactory.cs" />
+    <Compile Include="UserInterfaceService\INuGetUILogger.cs" />
     <Compile Include="UserInterfaceService\NuGetUI.cs" />
     <Compile Include="UserInterfaceService\NuGetUIContext.cs" />
     <Compile Include="UserInterfaceService\NuGetUIFactory.cs" />
+    <Compile Include="UserInterfaceService\NuGetUIProjectContext.cs" />
     <Compile Include="UserSettings.cs" />
     <Compile Include="VersionForDisplay.cs" />
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">
       <DependentUpon>ActionsAndVersions.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Xamls\ErrorReportingDialog.xaml.cs">
-      <DependentUpon>ErrorReportingDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\FileConflictDialog.xaml.cs">
       <DependentUpon>FileConflictDialog.xaml</DependentUpon>
@@ -214,10 +213,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\ActionsAndVersions.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Xamls\ErrorReportingDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

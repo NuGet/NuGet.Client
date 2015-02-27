@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
         private NuGetUIProjectContext _uiProjectContext;
 
         public NuGetUI(
-            INuGetUIContext context, 
+            INuGetUIContext context,             
             NuGetUIProjectContext projectContext)
         {
             _context = context;
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null);
                     });
-           }
+            }
             else
             {
                 MessageBox.Show("Options dialog is not available in the standalone UI");
@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.UI
         public void CloseProgressDialog()
         {
             _uiProjectContext.End();
-            }
+        }
 
         // TODO: rename it
         public NuGetUIProjectContext ProgressWindow
@@ -253,17 +253,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void ShowError(string message, string detail)
-        {
-            UIDispatcher.Invoke(() =>
-                    {
-                        var errorDialog = new ErrorReportingDialog(
-                                message,
-                                detail);
-                        errorDialog.ShowModal();
-                    });
-        }
-
         public async Task RefreshPackageStatus()
         {
             if (PackageManagerControl != null)
@@ -323,6 +312,13 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
         }
+
+        public void ShowError(string message, string detail)
+        {
+            _uiProjectContext.Log(MessageLevel.Error, detail);
+
+            _uiProjectContext.ReportError(message);
+        }
     }
 
     public static class UIUtility
@@ -352,128 +348,6 @@ namespace NuGet.PackageManagement.UI
         private static bool IsHttpUrl(Uri uri)
         {
             return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
-        }
-    }
-
-    // TODO: move to separate file
-    public interface INuGetUILogger
-    {
-        void Log(MessageLevel level, string message, params object[] args);
-
-        void Start();
-
-        void End();
-    }
-
-    // TODO: move to separate file
-    public class NuGetUIProjectContext : INuGetProjectContext
-    {
-        public FileConflictAction FileConflictAction
-        {
-            get;
-            set;
-        }
-
-        private readonly Dispatcher _uiDispatcher;
-        private readonly INuGetUILogger _logger;
-        private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
-        private readonly ICommonOperations _commonOperations;
-
-        public NuGetUIProjectContext(INuGetUILogger logger, ISourceControlManagerProvider sourceControlManagerProvider, ICommonOperations commonOperations)
-        {
-            _logger = logger;
-            _uiDispatcher = Dispatcher.CurrentDispatcher;
-            _sourceControlManagerProvider = sourceControlManagerProvider;
-            _commonOperations = commonOperations;
-            if (commonOperations != null)
-            {
-                ExecutionContext = new IDEExecutionContext(commonOperations);
-            }
-        }
-
-        public void Log(MessageLevel level, string message, params object[] args)
-        {
-            _logger.Log(level, message, args);
-        }
-
-        public FileConflictAction ShowFileConflictResolution(string message)
-        {
-            if (!_uiDispatcher.CheckAccess())
-            {
-                object result = _uiDispatcher.Invoke(
-                    new Func<string, FileConflictAction>(ShowFileConflictResolution),
-                    message);
-                return (FileConflictAction)result;
-            }
-
-            var fileConflictDialog = new FileConflictDialog()
-            {
-                Question = message
-            };
-
-            if (fileConflictDialog.ShowModal() == true)
-            {
-                return fileConflictDialog.UserSelection;
-            }
-            else
-            {
-                return FileConflictAction.IgnoreAll;
-            }
-        }
-
-        public FileConflictAction ResolveFileConflict(string message)
-        {
-            if (FileConflictAction == FileConflictAction.PromptUser)
-            {
-                var resolution = ShowFileConflictResolution(message);
-
-                if (resolution == FileConflictAction.IgnoreAll ||
-                    resolution == FileConflictAction.OverwriteAll)
-                {
-                    FileConflictAction = resolution;
-                }
-                return resolution;
-            }
-
-            return FileConflictAction;
-        }
-
-        // called when user clicks the action button
-        public void Start()
-        {
-            _logger.Start();
-        }
-
-        internal void End()
-        {
-            _logger.End();
-        }
-
-
-        public Packaging.PackageExtractionContext PackageExtractionContext
-        {
-            get;
-            set;
-        }
-
-
-        public ISourceControlManagerProvider SourceControlManagerProvider
-        {
-            get { return _sourceControlManagerProvider; }
-        }
-
-        public ICommonOperations CommonOperations
-        {
-            get
-            {
-                return _commonOperations;
-            }
-        }
-
-        public ExecutionContext ExecutionContext
-        {
-            get;
-            private set;
         }
     }
 }
