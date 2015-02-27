@@ -2729,3 +2729,73 @@ function Test-InstallPackageWithoutDependencyVersion
     Assert-Package $p A 1.0
     Assert-Package $p B 1.0.0
 }
+
+# Tests that passing in online path to a packages.config file to 
+# Install-Package works.
+function Test-InstallPackagesConfigOnline
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
+
+    # Assert
+    Assert-Package $p Newtonsoft.Json 4.0.1
+}
+
+# Tests that passing in local path to a packages.config file to 
+# Install-Package works.
+function Test-InstallPackagesConfigLocal
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+	$pathToPackagesConfig = Join-Path $context.RepositoryPath "packages.config"
+
+    # Act
+    $p | Install-Package $pathToPackagesConfig
+
+    # Assert
+    Assert-Package $p jQuery.validation 1.13.1
+	Assert-Package $p jQuery 2.1.3
+}
+
+# Tests that passing in online path to a .nupkg file to 
+# Install-Package works.
+function Test-InstallPackagesNupkgOnline
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    $p | Install-package https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+
+    # Assert
+    Assert-Package $p microsoft.aspnet.mvc 4.0.20505
+	Assert-Package $p microsoft.aspnet.webpages 2.0.20505
+	Assert-Package $p microsoft.aspnet.razor 2.0.20505
+	Assert-Package $p microsoft.web.infrastructure 1.0.0
+}
+
+# Tests that passing in local path to a .nupkg file to 
+# Install-Package works.
+function Test-InstallPackagesNupkgLocal
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+	$pathToPackagesNupkg = Join-Path $context.RepositoryPath "jQuery.2.0.2.nupkg"
+
+    # Act
+    $p | Install-Package $pathToPackagesNupkg
+
+    # Assert
+	Assert-Package $p jQuery 2.0.2
+}
