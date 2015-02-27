@@ -129,6 +129,9 @@
   <data name="ErrorOccurredRestoringPackages" xml:space="preserve">
     <value>Error occurred while restoring NuGet packages: {0}</value>
   </data>
+  <data name="Finished" xml:space="preserve">
+    <value>========== Finished ==========</value>
+  </data>
   <data name="ManagePackageForSolutionLabel" xml:space="preserve">
     <value>Manage NuGet Packages for &amp;Solution...</value>
   </data>

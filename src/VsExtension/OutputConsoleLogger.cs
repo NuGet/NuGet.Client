@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
@@ -22,15 +23,28 @@ namespace NuGetVSExtension
             private set;
         }
 
-        public OutputConsoleLogger()
+        public ErrorListProvider ErrorListProvider
         {
+            get;
+            private set;
+        }
+
+        public OutputConsoleLogger(IServiceProvider serviceProvider)
+        {
+            ErrorListProvider = new Microsoft.VisualStudio.Shell.ErrorListProvider(serviceProvider);
             var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
             OutputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
         }
 
         public void End()
         {
-            OutputConsole.WriteLine("========== Finished ==========");
+            OutputConsole.WriteLine(Resources.Finished);
+
+            if (ErrorListProvider.Tasks.Count > 0)
+            {
+                ErrorListProvider.BringToFront();
+                ErrorListProvider.ForceShowErrors();
+            }
         }
 
         public void Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args)
@@ -61,7 +75,19 @@ namespace NuGetVSExtension
         public void Start()
         {
             ActivateOutputWindow();
+            ErrorListProvider.Tasks.Clear();
             OutputConsole.Clear();
+        }
+
+        public void ReportError(string message)
+        {
+            ErrorTask retargetErrorTask = new ErrorTask();
+            retargetErrorTask.Text = message;
+            retargetErrorTask.ErrorCategory = TaskErrorCategory.Error;
+            retargetErrorTask.Category = TaskCategory.User;
+            retargetErrorTask.Priority = TaskPriority.High;
+            retargetErrorTask.HierarchyItem = null;
+            ErrorListProvider.Tasks.Add(retargetErrorTask);
         }
     }
 }

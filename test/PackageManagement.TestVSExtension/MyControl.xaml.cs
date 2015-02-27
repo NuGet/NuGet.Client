@@ -158,5 +158,10 @@ namespace NuGet.PackageManagement_TestVSExtension
         {
             get { return null; }
         }
+
+        public void ReportError(string message)
+        {
+            // no-op
+        }
     }
 }

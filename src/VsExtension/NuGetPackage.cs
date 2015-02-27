@@ -299,7 +299,10 @@ namespace NuGetVSExtension
                 }
             }
 
-            _uiProjectContext = new NuGetUIProjectContext(new OutputConsoleLogger(), SourceControlManagerProvider, CommonOperations);
+            _uiProjectContext = new NuGetUIProjectContext(
+                new OutputConsoleLogger(this), 
+                SourceControlManagerProvider, 
+                CommonOperations);
 
             /* ****
             // when NuGet loads, if the current solution has some package

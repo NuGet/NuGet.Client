@@ -1011,6 +1011,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get;
             protected set;
         }
+
+        public void ReportError(string message)
+        {
+            // no-op
+        }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>
