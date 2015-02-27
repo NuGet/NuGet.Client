@@ -599,7 +599,7 @@ namespace NuGet.Configuration
                 return;
             }
             var subSectionElement = GetSection(sectionElement, subSection);
-            if (subSection == null)
+            if (subSectionElement == null)
             {
                 return;
             }

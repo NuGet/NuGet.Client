@@ -1,17 +1,14 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using Xunit;
-using Xunit.Extensions;
-using Xunit.Sdk;
 
 namespace NuGet.Configuration.Test
 {
-    public class PackageServiceProviderTests
+    public class PackageSourceProviderTests
     {
         [Fact]
         public void PrimaryAndSecondaryAreAddedWhenNotPresent()
@@ -359,6 +356,82 @@ namespace NuGet.Configuration.Test
 
             //Clean up
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+        }
+
+        [Fact]
+        public async Task LoadPackageSourcesWithCredentials()
+        {
+            // Arrange
+            //Create nuget.config that has active package source defined
+            string nugetConfigFileFolder = NuGet.Configuration.Test.TestFilesystemUtility.CreateRandomTestFolder();
+            string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+
+            var configContent = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <apikeys>
+    <add key='https://www.nuget.org' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed-unstable/' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed/' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/package' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed/api/v2/package' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/' value='removed' />
+    <add key='http://nuget.gw.symbolsource.org/Public/NuGet' value='removed' />
+  </apikeys>
+  <packageRestore>
+    <add key='enabled' value='True' />
+    <add key='automatic' value='True' />
+  </packageRestore>
+  <activePackageSource>
+    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+  </activePackageSource>
+  <packageSources>
+    <add key='CodeCrackerUnstable' value='https://www.myget.org/F/codecrackerbuild/api/v2' />
+    <add key='CompanyFeedUnstable' value='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/' />
+    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+    <add key='AspNetVNextStable' value='https://www.myget.org/F/aspnetmaster/api/v2' />
+    <add key='AspNetVNextUnstable' value='https://www.myget.org/F/aspnetvnext/api/v2' />
+    <add key='CompanyFeed' value='https://www.myget.org/F/somecompanyfeed/api/v2/' />
+  </packageSources>
+  <packageSourceCredentials>
+    <CodeCrackerUnstable>
+      <add key='Username' value='myusername' />
+    </CodeCrackerUnstable>
+    <AspNetVNextUnstable>
+      <add key='Username' value='myusername' />
+    </AspNetVNextUnstable>
+    <AspNetVNextStable>
+      <add key='Username' value='myusername' />
+    </AspNetVNextStable>
+    <NuGet.org>
+      <add key='Username' value='myusername' />
+    </NuGet.org>
+    <CompanyFeedUnstable>
+      <add key='Username' value='myusername' />
+      <add key='ClearTextPassword' value='removed' />
+    </CompanyFeedUnstable>
+    <CompanyFeed>
+      <add key='Username' value='myusername' />
+      <add key='ClearTextPassword' value='removed' />
+    </CompanyFeed>
+  </packageSourceCredentials>
+</configuration>";
+
+            using (var stream = File.Create(nugetConfigFilePath))
+            {
+                var bytes = Encoding.UTF8.GetBytes(configContent);
+                await stream.WriteAsync(bytes, 0, configContent.Length);
+            }
+
+            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+            PackageSourceProvider psp = new PackageSourceProvider(settings);
+
+            var sources = psp.LoadPackageSources().ToList();
+
+            Assert.Equal(6, sources.Count);
+            Assert.NotNull(sources[1].Password);
+            Assert.True(String.Equals(sources[1].Password, "removed", StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(sources[5].Password);
+            Assert.True(String.Equals(sources[5].Password, "removed", StringComparison.OrdinalIgnoreCase));
         }
 
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
