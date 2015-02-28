@@ -33,7 +33,7 @@ namespace NuGetVSExtension
             _package.AddWindowSettings(key, obj);
         }
 
-        public override void SaveSettings()
+        public override void PersistSettings()
         {
             _package.SaveNuGetSettings();
         }
