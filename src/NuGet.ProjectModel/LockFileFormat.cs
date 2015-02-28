@@ -73,6 +73,8 @@ namespace NuGet.ProjectModel
         {
             var lockFile = new LockFile();
             lockFile.Islocked = ReadBool(cursor, "locked", defaultValue: false);
+            lockFile.ProjectFileDependencyGroups = ReadObject(cursor["projectFileDependencyGroups"] as JObject,
+                ReadProjectFileDependencyGroup);
             lockFile.Libraries = ReadObject(cursor["libraries"] as JObject, ReadLibrary);
             return lockFile;
         }
@@ -82,6 +84,8 @@ namespace NuGet.ProjectModel
             var json = new JObject();
             json["locked"] = new JValue(lockFile.Islocked);
             json["version"] = new JValue(1);
+            json["projectFileDependencyGroups"] = WriteObject(lockFile.ProjectFileDependencyGroups,
+                WriteProjectFileDependencyGroup);
             json["libraries"] = WriteObject(lockFile.Libraries, WriteLibrary);
             return json;
         }
@@ -114,6 +118,20 @@ namespace NuGet.ProjectModel
             return new JProperty(
                 library.Name + "/" + library.Version.ToString(),
                 json);
+        }
+
+        private static ProjectFileDependencyGroup ReadProjectFileDependencyGroup(string property, JToken json)
+        {
+            return new ProjectFileDependencyGroup(
+                property,
+                ReadArray(json as JArray, ReadString));
+        }
+
+        private static JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)
+        {
+            return new JProperty(
+                frameworkInfo.FrameworkName,
+                WriteArray(frameworkInfo.Dependencies, WriteString));
         }
 
         private static IList<FrameworkSpecificGroup> ReadFrameworkAssemblies(JObject json)
