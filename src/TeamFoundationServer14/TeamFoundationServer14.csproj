@@ -109,12 +109,15 @@
   <ItemGroup>
     <Reference Include="Microsoft.TeamFoundation.Client">
       <HintPath>..\..\lib\VS14\Microsoft.TeamFoundation.Client.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.TeamFoundation.Common">
       <HintPath>..\..\lib\VS14\Microsoft.TeamFoundation.Common.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.TeamFoundation.VersionControl.Client">
       <HintPath>..\..\lib\VS14\Microsoft.TeamFoundation.VersionControl.Client.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
