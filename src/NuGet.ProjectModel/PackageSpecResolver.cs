@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
     public class PackageSpecResolver : IPackageSpecResolver
     {
         private HashSet<string> _searchPaths = new HashSet<string>();
-        private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>();
 
         public PackageSpecResolver(string packageSpecPath)
         {
@@ -72,17 +72,18 @@ namespace NuGet.ProjectModel
 
                 foreach (var projectDirectory in directory.EnumerateDirectories())
                 {
-                    // Check if there is a project within this directory
+                    // Create the path to the project.json file.
                     var projectFilePath = Path.Combine(projectDirectory.FullName, PackageSpec.PackageSpecFileName);
-                    if (File.Exists(projectFilePath))
+                    
+                    // We INTENTIONALLY do not do an exists check here because it requires disk I/O
+                    // Instead, we'll do an exists check when we try to resolve 
+
+                    // The name of the folder is the project
+                    _projects[projectDirectory.Name] = new PackageSpecInformation
                     {
-                        // The name of the folder is the project
-                        _projects[projectDirectory.Name] = new PackageSpecInformation
-                        {
-                            Name = projectDirectory.Name,
-                            FullPath = projectFilePath
-                        };
-                    }
+                        Name = projectDirectory.Name,
+                        FullPath = projectFilePath
+                    };
                 }
             }
         }
