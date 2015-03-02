@@ -54,7 +54,7 @@
         <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
       	  <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       	  <Name>VisualStudio14</Name>
-	</ProjectReference>
+        </ProjectReference>
       </ItemGroup>
     </When>
   </Choose>
