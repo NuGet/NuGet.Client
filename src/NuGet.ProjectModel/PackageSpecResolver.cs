@@ -1,26 +1,27 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
 namespace NuGet.ProjectModel
 {
-    public class ProjectResolver : IProjectResolver
+    public class PackageSpecResolver : IPackageSpecResolver
     {
         private HashSet<string> _searchPaths = new HashSet<string>();
-        private Dictionary<string, ProjectInformation> _projects = new Dictionary<string, ProjectInformation>();
+        private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>();
 
-        public ProjectResolver(string projectPath)
+        public PackageSpecResolver(string packageSpecPath)
         {
-            var rootPath = ResolveRootDirectory(projectPath);
-            Initialize(projectPath, rootPath);
+            var rootPath = ResolveRootDirectory(packageSpecPath);
+            Initialize(packageSpecPath, rootPath);
         }
 
-        public ProjectResolver(string projectPath, string rootPath)
+        public PackageSpecResolver(string packageSpecPath, string rootPath)
         {
-            Initialize(projectPath, rootPath);
+            Initialize(packageSpecPath, rootPath);
         }
 
         public IEnumerable<string> SearchPaths
@@ -31,14 +32,14 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public bool TryResolveProject(string name, out PackageSpec project)
+        public bool TryResolvePackageSpec(string name, out PackageSpec project)
         {
             project = null;
 
-            ProjectInformation projectInfo;
+            PackageSpecInformation projectInfo;
             if (_projects.TryGetValue(name, out projectInfo))
             {
-                project = projectInfo.Project;
+                project = projectInfo.PackageSpec;
                 return true;
             }
 
@@ -72,13 +73,21 @@ namespace NuGet.ProjectModel
                 foreach (var projectDirectory in directory.EnumerateDirectories())
                 {
                     // The name of the folder is the project
-                    _projects[projectDirectory.Name] = new ProjectInformation
+                    _projects[projectDirectory.Name] = new PackageSpecInformation
                     {
                         Name = projectDirectory.Name,
                         FullPath = projectDirectory.FullName
                     };
                 }
             }
+        }
+
+        public static PackageSpecResolver ForPackageSpecDirectory(string packageSpecDirectory)
+        {
+            var packageSpecFile = Path.Combine(packageSpecDirectory, PackageSpec.PackageSpecFileName);
+            return new PackageSpecResolver(
+                packageSpecFile,
+                ResolveRootDirectory(packageSpecFile));
         }
 
         public static string ResolveRootDirectory(string projectPath)
@@ -101,9 +110,9 @@ namespace NuGet.ProjectModel
             return projectPath;
         }
 
-        private class ProjectInformation
+        private class PackageSpecInformation
         {
-            private PackageSpec _project;
+            private PackageSpec _packageSpec;
             private bool _initialized;
             private object _lockObj = new object();
 
@@ -111,11 +120,11 @@ namespace NuGet.ProjectModel
 
             public string FullPath { get; set; }
 
-            public PackageSpec Project
+            public PackageSpec PackageSpec
             {
                 get
                 {
-                    return LazyInitializer.EnsureInitialized(ref _project, ref _initialized, ref _lockObj, () =>
+                    return LazyInitializer.EnsureInitialized(ref _packageSpec, ref _initialized, ref _lockObj, () =>
                     {
                         PackageSpec project = null;
 

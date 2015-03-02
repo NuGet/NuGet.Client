@@ -12,18 +12,18 @@ using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
 {
-    public class ProjectReferenceDependencyProvider : IDependencyProvider
+    public class PackageSpecReferenceDependencyProvider : IDependencyProvider
     {
-        private readonly IProjectResolver _projectResolver;
+        private readonly IPackageSpecResolver _resolver;
 
-        public ProjectReferenceDependencyProvider(IProjectResolver projectResolver)
+        public PackageSpecReferenceDependencyProvider(IPackageSpecResolver projectResolver)
         {
-            _projectResolver = projectResolver;
+            _resolver = projectResolver;
         }
 
         public IEnumerable<string> GetAttemptedPaths(FrameworkName targetFramework)
         {
-            return _projectResolver.SearchPaths.Select(p => Path.Combine(p, "{name}", "project.json"));
+            return _resolver.SearchPaths.Select(p => Path.Combine(p, "{name}", "project.json"));
         }
 
         public bool SupportsType(string libraryType)
@@ -36,16 +36,16 @@ namespace NuGet.ProjectModel
         {
             string name = libraryRange.Name;
 
-            PackageSpec project;
+            PackageSpec packageSpec;
 
             // Can't find a project file with the name so bail
-            if (!_projectResolver.TryResolveProject(name, out project))
+            if (!_resolver.TryResolvePackageSpec(name, out packageSpec))
             {
                 return null;
             }
 
             // This never returns null
-            var targetFrameworkInfo = project.GetTargetFramework(targetFramework);
+            var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
             var targetFrameworkDependencies = targetFrameworkInfo.Dependencies;
 
             if (targetFramework.IsDesktop())
@@ -87,28 +87,28 @@ namespace NuGet.ProjectModel
                 });
             }
 
-            var dependencies = project.Dependencies.Concat(targetFrameworkDependencies).ToList();
+            var dependencies = packageSpec.Dependencies.Concat(targetFrameworkDependencies).ToList();
 
             // Mark the library as unresolved if there were specified frameworks
             // and none of them resolved
             bool unresolved = targetFrameworkInfo.FrameworkName == null &&
-                              project.TargetFrameworks.Any();
+                              packageSpec.TargetFrameworks.Any();
 
             var description = new Library
             {
                 LibraryRange = libraryRange,
                 Identity = new LibraryIdentity
                 {
-                    Name = project.Name,
-                    Version = project.Version,
+                    Name = packageSpec.Name,
+                    Version = packageSpec.Version,
                     Type = LibraryTypes.Project,
                 },
-                Path = project.FilePath,
+                Path = packageSpec.FilePath,
                 Dependencies = dependencies,
                 Resolved = !unresolved
             };
 
-            description.Items["project"] = project;
+            description.Items["project"] = packageSpec;
 
             return description;
         }

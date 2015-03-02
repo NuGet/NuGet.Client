@@ -6,10 +6,10 @@ using System.Collections.Generic;
 
 namespace NuGet.ProjectModel
 {
-    public interface IProjectResolver
+    public interface IPackageSpecResolver
     {
         IEnumerable<string> SearchPaths { get; }
 
-        bool TryResolveProject(string name, out PackageSpec project);
+        bool TryResolvePackageSpec(string name, out PackageSpec packageSpec);
     }
 }
