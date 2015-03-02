@@ -115,7 +115,15 @@ namespace NuGet.PackageManagement.UI
             {
                 _filter.Items.Add(item);               
             }
-            _filter.SelectedItem = items.First(item => item.Filter == settings.SelectedFilter);
+
+            if (settings != null)
+            {
+                _filter.SelectedItem = items.First(item => item.Filter == settings.SelectedFilter);
+            }
+            else
+            {
+                _filter.SelectedItem = items[0];
+            }
         }
 
         private bool IsUILegalDisclaimerSuppressed()
