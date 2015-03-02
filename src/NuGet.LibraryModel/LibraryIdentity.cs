@@ -17,7 +17,7 @@ namespace NuGet.LibraryModel
 
         public override string ToString()
         {
-            return Name + " " + Version?.ToString();
+            return Type + "/" + Name + " " + Version?.ToString();
         }
 
         public bool Equals(LibraryIdentity other)
