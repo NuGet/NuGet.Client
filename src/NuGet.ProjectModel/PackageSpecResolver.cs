@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
     public class PackageSpecResolver : IPackageSpecResolver
     {
         private HashSet<string> _searchPaths = new HashSet<string>();
-        private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>();
+        private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>(StringComparer.OrdinalIgnoreCase);
 
         public PackageSpecResolver(string packageSpecPath)
         {
@@ -72,22 +72,19 @@ namespace NuGet.ProjectModel
 
                 foreach (var projectDirectory in directory.EnumerateDirectories())
                 {
-                    // The name of the folder is the project
-                    _projects[projectDirectory.Name] = new PackageSpecInformation
+                    // Check if there is a project within this directory
+                    var projectFilePath = Path.Combine(projectDirectory.FullName, PackageSpec.PackageSpecFileName);
+                    if (File.Exists(projectFilePath))
                     {
-                        Name = projectDirectory.Name,
-                        FullPath = projectDirectory.FullName
-                    };
+                        // The name of the folder is the project
+                        _projects[projectDirectory.Name] = new PackageSpecInformation
+                        {
+                            Name = projectDirectory.Name,
+                            FullPath = projectFilePath
+                        };
+                    }
                 }
             }
-        }
-
-        public static PackageSpecResolver ForPackageSpecDirectory(string packageSpecDirectory)
-        {
-            var packageSpecFile = Path.Combine(packageSpecDirectory, PackageSpec.PackageSpecFileName);
-            return new PackageSpecResolver(
-                packageSpecFile,
-                ResolveRootDirectory(packageSpecFile));
         }
 
         public static string ResolveRootDirectory(string projectPath)
