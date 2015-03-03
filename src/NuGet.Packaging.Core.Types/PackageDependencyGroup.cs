@@ -47,6 +47,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException("packages");
             }
 
+            _targetFramework = targetFramework;
             _packages = packages;
         }
 
