@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using NuGet.PackageManagement;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.Frameworks;
-using NuGet.Client;
 using System.Threading;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Test
 {
@@ -44,11 +44,11 @@ namespace NuGet.Test
                 new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
             };
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providersA = new List<Lazy<INuGetResourceProvider,INuGetResourceProviderMetadata>>();
-            providersA.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packagesA), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providersA = new List<Lazy<INuGetResourceProvider>>();
+            providersA.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesA)));
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providersB = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providersB.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packagesB), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providersB = new List<Lazy<INuGetResourceProvider>>();
+            providersB.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesB)));
 
             List<SourceRepository> repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
@@ -95,11 +95,11 @@ namespace NuGet.Test
                 new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
             };
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providersA = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providersA.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packagesA), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providersA = new List<Lazy<INuGetResourceProvider>>();
+            providersA.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesA)));
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providersB = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providersB.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packagesB), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providersB = new List<Lazy<INuGetResourceProvider>>();
+            providersB.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesB)));
 
             List<SourceRepository> repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
@@ -145,11 +145,11 @@ namespace NuGet.Test
                 new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
             };
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providersA = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providersA.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packagesA), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providersA = new List<Lazy<INuGetResourceProvider>>();
+            providersA.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesA)));
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providersB = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providersB.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packagesB), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providersB = new List<Lazy<INuGetResourceProvider>>();
+            providersB.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesB)));
 
             List<SourceRepository> repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
@@ -194,14 +194,14 @@ namespace NuGet.Test
                 new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
             };
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers1 = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providers1.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packages1), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providers1 = new List<Lazy<INuGetResourceProvider>>();
+            providers1.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages1)));
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers2 = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providers2.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packages2), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providers2 = new List<Lazy<INuGetResourceProvider>>();
+            providers2.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages2)));
 
-            List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers3 = new List<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>>();
-            providers3.Add(new Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>(() => new TestDependencyInfoProvider(packages3), new TestAttribute()));
+            List<Lazy<INuGetResourceProvider>> providers3 = new List<Lazy<INuGetResourceProvider>>();
+            providers3.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages3)));
 
             List<SourceRepository> repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://1"), providers1));
@@ -220,49 +220,20 @@ namespace NuGet.Test
         }
     }
 
-
-
-    internal class TestAttribute : INuGetResourceProviderMetadata
-    {
-        public IEnumerable<string> After
-        {
-            get { return new string[0]; }
-        }
-
-        public IEnumerable<string> Before
-        {
-            get { return new string[0]; }
-        }
-
-        public string Name
-        {
-            get { return string.Empty; }
-        }
-
-        public Type ResourceType
-        {
-            get { return typeof(DepedencyInfoResource); }
-        }
-    }
-
-    internal class TestDependencyInfoProvider : INuGetResourceProvider
+    internal class TestDependencyInfoProvider : ResourceProvider
     {
         public List<PackageDependencyInfo> Packages { get; set; }
 
-        public TestDependencyInfoProvider(List<PackageDependencyInfo> packages)
+        public TestDependencyInfoProvider(List<PackageDependencyInfo> packages) 
+            : base(typeof(DepedencyInfoResource))
         {
             Packages = packages;
         }
 
-        public Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             var nuGetResource = new TestDependencyInfo(Packages);
             return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
-        }
-
-        public bool TryCreate(SourceRepository source, out INuGetResource resource)
-        {
-            throw new NotImplementedException();
         }
     }
 

@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using NuGet.Versioning;
-using NuGet.PackagingCore;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -15,7 +14,7 @@ namespace NuGet.PackageManagement.UI
 
         }
 
-        public PackageDependencyMetadata(PackageDependency serverData)
+        public PackageDependencyMetadata(NuGet.Packaging.Core.PackageDependency serverData)
         {
             Id = serverData.Id;
             Range = serverData.VersionRange;

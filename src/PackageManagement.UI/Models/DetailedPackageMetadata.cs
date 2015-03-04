@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using NuGet.Versioning;
-using NuGet.Client.VisualStudio;
 using System.Linq;
+using NuGet.Protocol.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {

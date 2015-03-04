@@ -10,8 +10,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using Resx = NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
-using NuGet.PackagingCore;
-using NuGet.Client.VisualStudio;
+using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
 {

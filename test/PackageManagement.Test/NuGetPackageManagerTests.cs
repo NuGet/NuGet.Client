@@ -2,7 +2,7 @@
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;

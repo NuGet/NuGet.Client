@@ -1,10 +1,10 @@
-﻿using NuGet.Client;
-using NuGet.Versioning;
+﻿using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using NuGet.Client.VisualStudio;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {

@@ -1,5 +1,5 @@
 ﻿using NuGet.Frameworks;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using System.Collections.Generic;

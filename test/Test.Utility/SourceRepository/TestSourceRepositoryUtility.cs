@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
+﻿using NuGet.Configuration;
 using NuGet.PackageManagement;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Reflection;
+using NuGet.Protocol.Core.Types;
 
 namespace Test.Utility
 {
@@ -17,7 +17,7 @@ namespace Test.Utility
         public TestSourceRepositoryUtility() {}
 
         [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
+        public Lazy<INuGetResourceProvider>[] ResourceProviders;
 
         private CompositionContainer Initialize()
         {

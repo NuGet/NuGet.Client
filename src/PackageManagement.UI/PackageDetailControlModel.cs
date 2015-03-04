@@ -6,7 +6,7 @@ using NuGet.Versioning;
 using NuGet.ProjectManagement;
 using System;
 using NuGet.Packaging;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
 {

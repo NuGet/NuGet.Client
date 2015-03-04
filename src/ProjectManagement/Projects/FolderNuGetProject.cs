@@ -1,6 +1,6 @@
 ﻿using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;

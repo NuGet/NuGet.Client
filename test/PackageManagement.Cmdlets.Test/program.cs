@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
+﻿using NuGet.Configuration;
 using NuGet.PackageManagement;
 using System;
 using System.Collections.Generic;
@@ -11,13 +10,14 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Text;
 using Test.Utility;
+using NuGet.Protocol.Core.Types;
 
 namespace PackageManagement.Cmdlets.Test
 {
     public class Program
     {
         [ImportMany]
-        public IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> ResourceProviders { get; set; }
+        public IEnumerable<Lazy<INuGetResourceProvider>> ResourceProviders { get; set; }
 
         private Runspace _runSpace;
 

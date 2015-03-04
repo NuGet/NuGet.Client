@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.PackagingCore;
+﻿using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI
 {

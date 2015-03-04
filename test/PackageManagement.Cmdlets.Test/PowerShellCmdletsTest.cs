@@ -1,10 +1,10 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
+﻿using NuGet.Configuration;
 using NuGet.PackageManagement;
 using System;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using Xunit;
+using NuGet.Protocol.Core.Types;
 
 namespace PackageManagement.Cmdlets.Test
 {

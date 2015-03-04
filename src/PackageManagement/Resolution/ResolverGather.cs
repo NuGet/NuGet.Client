@@ -1,6 +1,5 @@
-﻿using NuGet.Client;
-using NuGet.Frameworks;
-using NuGet.PackagingCore;
+﻿using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace StandaloneUI
 {

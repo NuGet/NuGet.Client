@@ -6,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Versioning;
 using NuGet.ProjectManagement;
-using NuGet.Client.VisualStudio;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using System.Threading;
+using NuGet.Protocol.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {

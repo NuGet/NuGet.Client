@@ -1,5 +1,4 @@
-﻿using NuGet.Client;
-using NuGet.PackageManagement.UI;
+﻿using NuGet.PackageManagement.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;

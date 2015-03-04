@@ -1,6 +1,6 @@
-﻿using NuGet.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {

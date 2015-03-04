@@ -1,8 +1,7 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
+﻿using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {

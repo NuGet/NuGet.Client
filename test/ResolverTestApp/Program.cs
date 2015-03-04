@@ -8,25 +8,22 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using NuGet.Client;
 using NuGet.Configuration;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using NuGet.Resolver;
 using NuGet.Packaging;
 using System.Diagnostics;
 using System.Threading;
+using NuGet.Protocol.Core.Types;
 
 namespace ResolverTestApp
 {
     public class Program
     {
-        //[Import]
-        //public SourceRepositoryProvider SourceRepositoryProvider;
-
         [ImportMany]
-        public Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>[] ResourceProviders;
+        public Lazy<INuGetResourceProvider>[] ResourceProviders;
 
         static void Main(string[] args)
         {

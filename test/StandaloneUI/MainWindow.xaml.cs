@@ -1,17 +1,16 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
-using System.Linq;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
-using NuGet.Frameworks;
-using System.Diagnostics;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
 using Test.Utility;
 
 namespace StandaloneUI
@@ -23,9 +22,6 @@ namespace StandaloneUI
     {
         [Import]
         public INuGetUIFactory _uiServiceFactory;
-
-        [ImportMany]
-        public IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> _resourceProviders;
 
         [Import]
         public ISettings _settings;
@@ -51,8 +47,8 @@ namespace StandaloneUI
             this.Title = "NuGet Standalone UI";
             Height = 800;
             Width = 1000;
-
-            var repositoryProvider = new SourceRepositoryProvider(_resourceProviders, _settings);
+            
+            var repositoryProvider = new SourceRepositoryProvider(_settings, Repository.Provider.GetVisualStudio());
             var settings = new DefaultSettings();
 
             var testSolutionManager = new TestSolutionManager(@"c:\temp\test");

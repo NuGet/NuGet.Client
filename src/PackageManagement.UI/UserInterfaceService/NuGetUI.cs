@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Windows;
 using NuGet.ProjectManagement;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using System.Diagnostics;
-using NuGet.Client;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI
 {

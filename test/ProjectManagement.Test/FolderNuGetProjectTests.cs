@@ -1,7 +1,7 @@
 ﻿using Ionic.Zip;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using System;

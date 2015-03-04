@@ -1,24 +1,17 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
-using System.Linq;
-using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
+using NuGet.Protocol.Core.Types;
 
 namespace PackageManagement.Cmdlets.Test
 {
     public class PowerShellCmdletsTestContext : IDisposable
     {
         [ImportMany]
-        public IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> ResourceProviders { get; set; }
+        public IEnumerable<Lazy<INuGetResourceProvider>> ResourceProviders { get; set; }
 
         public Runspace RunSpace {get; set;}
 

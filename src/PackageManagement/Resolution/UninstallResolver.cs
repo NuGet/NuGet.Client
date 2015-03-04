@@ -1,4 +1,4 @@
-﻿using NuGet.PackagingCore;
+﻿using NuGet.Packaging.Core;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
