@@ -40,7 +40,7 @@ namespace NuGet.ProjectModel
             if (_projects.TryGetValue(name, out projectInfo))
             {
                 project = projectInfo.PackageSpec;
-                return true;
+                return project != null;
             }
 
             return false;
