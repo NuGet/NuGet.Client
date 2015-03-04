@@ -1,22 +1,18 @@
 ﻿{
     "dependencies": {
         "NuGet.Versioning": "3.0.0-*",
-        "NuGet.Protocol": "3.0.0-*",
+        "NuGet.Protocol.Core.Types": "3.0.0-*",
         "xunit.runner.kre": "1.0.0-*",
-        "Moq": "4.2.1408.0717"
+        "Moq": "4.2.1408.0717",
+        "NuGet.Protocol.Core.v2": "3.0.0-*",
+        "NuGet.Protocol.Core.v3": "3.0.0-*",
+        "NuGet.Protocol.VisualStudio": "3.0.0-*"
     },
     "commands": {
         "run": "xunit.runner.kre",
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnetcore50": { },
-        "aspnet50": {
-            "dependencies": {
-                "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Diagnostics.Tracing": "4.0.10-beta-*"
-            }
-        }
+        "aspnet50": { }
     }
 }

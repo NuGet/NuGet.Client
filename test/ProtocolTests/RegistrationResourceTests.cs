@@ -1,4 +1,4 @@
-﻿using NuGet.Protocol;
+﻿using NuGet.Protocol.Core.Types;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using System;
@@ -6,19 +6,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using NuGet.Protocol.Core.v3;
 
 namespace Client.V3Test
 {
     public class RegistrationResourceTests : TestBase
     {
-        private const string PackageDisplayMetadataUriTemplate = "https://api.nuget.org/v3/registration0/{id-lower}/index.json";
-        private const string PackageVersionDisplayMetadataUriTemplate = "https://api.nuget.org/v3/registration0/{id-lower}/{version-lower}.json";
-
         [Fact]
         public async Task RegistrationResource_NotFound()
         {
-            ResourceSelector resourceSelector = new ResourceSelector(SourceRepository);
-            V3RegistrationResource resource = new V3RegistrationResource(resourceSelector, DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
+            var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var resource = repo.GetResource<RegistrationResourceV3>();
 
             var package = await resource.GetPackageMetadata(new PackageIdentity("notfound23lk4j23lk432j4l", new NuGetVersion(1, 0, 99)), CancellationToken.None);
 
@@ -28,8 +26,8 @@ namespace Client.V3Test
         [Fact]
         public async Task RegistrationResource_Tree()
         {
-            ResourceSelector resourceSelector = new ResourceSelector(SourceRepository);
-            V3RegistrationResource resource = new V3RegistrationResource(resourceSelector, DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
+            var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var resource = repo.GetResource<RegistrationResourceV3>();
 
             var packages = await resource.GetPackageMetadata("ravendb.client", true, false, CancellationToken.None);
 
@@ -41,8 +39,8 @@ namespace Client.V3Test
         [Fact]
         public async Task RegistrationResource_TreeFilterOnPre()
         {
-            ResourceSelector resourceSelector = new ResourceSelector(SourceRepository);
-            V3RegistrationResource resource = new V3RegistrationResource(resourceSelector, DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
+            var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var resource = repo.GetResource<RegistrationResourceV3>();
 
             var packages = await resource.GetPackageMetadata("ravendb.client", false, false, CancellationToken.None);
 
@@ -54,8 +52,8 @@ namespace Client.V3Test
         [Fact]
         public async Task RegistrationResource_NonTree()
         {
-            ResourceSelector resourceSelector = new ResourceSelector(SourceRepository);
-            V3RegistrationResource resource = new V3RegistrationResource(resourceSelector, DataClient, new[] { new Uri(PackageDisplayMetadataUriTemplate) }, new[] { new Uri(PackageVersionDisplayMetadataUriTemplate) });
+            var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var resource = repo.GetResource<RegistrationResourceV3>();
 
             var packagesPre = await resource.GetPackageMetadata("newtonsoft.json", true, false, CancellationToken.None);
             var packages = await resource.GetPackageMetadata("newtonsoft.json", false, false, CancellationToken.None);

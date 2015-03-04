@@ -1,4 +1,4 @@
-﻿using NuGet.Protocol.DependencyInfo;
+﻿using NuGet.Protocol.Core.v3.DependencyInfo;
 using NuGet.Versioning;
 using Xunit;
 using Xunit.Extensions;

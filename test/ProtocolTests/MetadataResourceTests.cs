@@ -1,4 +1,4 @@
-﻿//using NuGet.Protocol;
+﻿//using NuGet.Protocol.Core.Types;
 //using NuGet.Client.V2;
 //using NuGet.Packaging.Core;
 //using NuGet.Versioning;

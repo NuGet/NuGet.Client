@@ -4,15 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Configuration;
-using NuGet.Protocol.Data;
+using NuGet.Protocol.Core.v3.Data;
 using System.Net.Http;
 #if !ASPNETCORE50
 using System.Net.Cache;
 #endif
-using NuGet.Protocol;
-using NuGet.Protocol.Data;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
+using NuGet.Protocol.VisualStudio;
 
 namespace Client.V3Test
 {
@@ -64,22 +65,16 @@ namespace Client.V3Test
             {
                 if (_repo == null)
                 {
-                    throw new NotImplementedException();
-                    //_repo = GetSourceRepository(RCRootUrl);
+                    _repo = GetSourceRepository(RCRootUrl);
                 }
 
                 return _repo;
             }
         }
 
-        public SourceRepository GetSourceRepository(string SourceUrl)
+        public SourceRepository GetSourceRepository(string sourceUrl)
         {
-            //IEnumerable<Lazy<INuGetResourceProvider, INuGetResourceProviderMetadata>> providers = Container.GetExports<INuGetResourceProvider, INuGetResourceProviderMetadata>();
-            //Assert.True(providers.Any());
-            //PackageSource source = new PackageSource(SourceUrl, "mysource", true);
-            //SourceRepository repo = new SourceRepository(source, providers);
-            //return repo;
-            return null;
+            return Repository.Factory.GetVisualStudio(sourceUrl);
         }
 
     }

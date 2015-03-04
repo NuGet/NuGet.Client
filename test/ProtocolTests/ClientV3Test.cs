@@ -1,9 +1,10 @@
-﻿using NuGet.Protocol;
+﻿using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-//using NuGet.Protocol;
+//using NuGet.Protocol.Core.Types;
 using Xunit;
 //using Newtonsoft.Json.Linq;
 

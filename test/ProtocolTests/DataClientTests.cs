@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using NuGet.Protocol.Data;
+using NuGet.Protocol.Core.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

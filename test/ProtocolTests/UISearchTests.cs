@@ -1,4 +1,5 @@
-﻿using NuGet.Protocol;
+﻿using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
 using System;
 using System.Collections.Generic;
 using System.Linq;

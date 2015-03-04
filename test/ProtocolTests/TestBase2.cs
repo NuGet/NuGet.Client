@@ -9,8 +9,8 @@ using System.Net.Http;
 #if !ASPNETCORE50
 using System.Net.Cache;
 #endif
-using NuGet.Protocol.Data;
-using NuGet.Protocol;
+using NuGet.Protocol.Core.v3.Data;
+using NuGet.Protocol.Core.Types;
 
 namespace Client.V2Test
 {

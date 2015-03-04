@@ -14,7 +14,9 @@ using NuGet.Packaging.Core;
 using System.Threading;
 using NuGet;
 using System.IO;
-using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
+using System.Reflection;
 
 namespace V2V3ResourcesTest
 {
@@ -65,7 +67,7 @@ namespace V2V3ResourcesTest
                 p => p.Identity.Version == new NuGetVersion("4.0.0-beta1"));
 
             Assert.True(packageMetadata.DependencySets.Count() == 1);
-            Assert.True(packageMetadata.DependencySets.First().Dependencies.Count().Equals(12));
+            Assert.True(packageMetadata.DependencySets.First().Packages.Count().Equals(12));
 
             IEnumerable<UIPackageMetadata> packageMetadataList = resource.GetMetadata("Nuget.core", true, true, CancellationToken.None).Result;
             Assert.True(packageMetadataList != null);
@@ -135,12 +137,12 @@ namespace V2V3ResourcesTest
                 searchEnumerator.MoveNext();
                 latestEnumerator.MoveNext();
 
-                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Identity.Id, latestEnumerator.Current.Identity.Id);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Identity.Id, latestEnumerator.Current.Id);
                 Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.LicenseUrl, latestEnumerator.Current.LicenseUrl);
-                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.ReportAbuseUrl, latestEnumerator.Current.ReportAbuseUrl);
+                //Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.ReportAbuseUrl, latestEnumerator.Current.ReportAbuseUrl);
                 Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.RequireLicenseAcceptance, latestEnumerator.Current.RequireLicenseAcceptance);
                 Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Summary, latestEnumerator.Current.Summary);
-                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Authors, latestEnumerator.Current.Authors);
+                Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Authors, String.Join(" ", latestEnumerator.Current.Authors));
                 Assert.Equal(searchEnumerator.Current.LatestPackageMetadata.Title, latestEnumerator.Current.Title);
             }
 
@@ -238,7 +240,7 @@ namespace V2V3ResourcesTest
             Assert.True(packageMetadataList.All(item => item.RequireLicenseAcceptance.Equals(false)));
             Assert.True(packageMetadataList.All(item => item.ProjectUrl.ToString().Equals("http://nuget.codeplex.com/")));           
             Assert.True(packageMetadataList.Any(item => item.DependencySets.Count() == 1)); 
-            Assert.True(packageMetadataList.First(item => item.DependencySets.Count()==1).DependencySets.First().Dependencies.Any(item2 => item2.Id.Equals("Microsoft.Web.Xdt", StringComparison.OrdinalIgnoreCase)));
+            Assert.True(packageMetadataList.First(item => item.DependencySets.Count()==1).DependencySets.First().Packages.Any(item2 => item2.Id.Equals("Microsoft.Web.Xdt", StringComparison.OrdinalIgnoreCase)));
 
             //Check if downloadresource works fine.
             DownloadResource downloadResource = repo.GetResource<DownloadResource>();
@@ -289,12 +291,32 @@ namespace V2V3ResourcesTest
         #region PrivateHelpers
         private SourceRepository GetSourceRepository(string SourceUrl)
         {
-            return null;
+            return Repository.Factory.GetVisualStudio(SourceUrl);
         }
 
         private void SetupLocalShare(IEnumerable<PackageIdentity> packages)
         {
-            throw new NotImplementedException();
+            var repo = PackageRepositoryFactory.Default.CreateRepository(V2SourceUrl);
+
+            NuGet.MachineCache.Default.Clear();
+            foreach (var identity in packages)
+            {
+                string id = identity.Id;
+
+                var package = repo.FindPackagesById(id).Where(e => NuGetVersion.Parse(e.Version.ToString()) == identity.Version).FirstOrDefault();
+                new PackageManager(repo, Environment.CurrentDirectory).InstallPackage(package, false, true);
+            }
+        }
+
+        private static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
 
         #endregion PrivateHelpers

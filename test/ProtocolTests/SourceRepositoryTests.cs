@@ -1,4 +1,4 @@
-﻿//using NuGet.Protocol;
+﻿//using NuGet.Protocol.Core.Types;
 //using NuGet.Configuration;
 //using System;
 //using System.Collections.Generic;

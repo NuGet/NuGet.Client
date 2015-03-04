@@ -1,5 +1,6 @@
 ﻿using NuGet.Packaging.Core;
-using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
