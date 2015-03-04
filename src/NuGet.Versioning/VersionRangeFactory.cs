@@ -221,7 +221,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Returns the smallest range that includes all given versions.
         /// </summary>
-        public VersionRange Combine(IEnumerable<NuGetVersion> versions)
+        public static VersionRange Combine(IEnumerable<NuGetVersion> versions)
         {
             return Combine(versions, VersionComparer.Default);
         }
@@ -230,7 +230,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Returns the smallest range that includes all given versions.
         /// </summary>
-        public VersionRange Combine(IEnumerable<NuGetVersion> versions, IVersionComparer comparer)
+        public static VersionRange Combine(IEnumerable<NuGetVersion> versions, IVersionComparer comparer)
         {
             VersionRange result = VersionRange.None;
 
@@ -247,7 +247,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Returns the smallest range that includes all given ranges.
         /// </summary>
-        public VersionRange Combine(IEnumerable<VersionRange> ranges)
+        public static VersionRange Combine(IEnumerable<VersionRange> ranges)
         {
             return Combine(ranges, VersionComparer.Default);
         }
@@ -255,7 +255,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Returns the smallest range that includes all given ranges.
         /// </summary>
-        public VersionRange Combine(IEnumerable<VersionRange> ranges, IVersionComparer comparer)
+        public static VersionRange Combine(IEnumerable<VersionRange> ranges, IVersionComparer comparer)
         {
             VersionRange result = VersionRange.None;
 
