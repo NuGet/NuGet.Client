@@ -10,6 +10,7 @@
     <AssemblyName>NuGetConsole.Host.PowerShell</AssemblyName>
     <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
+    <NuGetPackageImportStamp>d946fd5a</NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -26,9 +27,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NuGet.Client">
+      <HintPath>..\..\..\packages\NuGet.Protocol.3.0.0-beta\lib\net45\NuGet.Client.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Client.BaseTypes">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NuGet.Protocol.Types.3.0.0-beta\lib\net45\NuGet.Client.BaseTypes.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.V2">
+      <HintPath>..\..\..\packages\NuGet.Protocol.3.0.0-beta\lib\net45\NuGet.Client.V2.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.V2.VisualStudio">
+      <HintPath>..\..\..\packages\NuGet.Protocol.3.0.0-beta\lib\net45\NuGet.Client.V2.VisualStudio.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Client.V3.VisualStudio">
+      <HintPath>..\..\..\packages\NuGet.Protocol.3.0.0-beta\lib\net45\NuGet.Client.V3.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Client.VisualStudio">
       <SpecificVersion>False</SpecificVersion>
@@ -37,6 +50,13 @@
     <Reference Include="NuGet.Configuration">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Data">
+      <HintPath>..\..\..\packages\NuGet.Protocol.3.0.0-beta\lib\net45\NuGet.Data.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Frameworks">
       <SpecificVersion>False</SpecificVersion>
@@ -71,6 +91,13 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Extensions">
+      <HintPath>..\..\..\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives">
+      <HintPath>..\..\..\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +207,13 @@
       <DebugConstants>$(MSBuildProjectDirectory)\DebugConstants.cs</DebugConstants>
     </PropertyGroup>
     <WriteLinesToFile File="$(DebugConstants)" Lines="#if DEBUG&#xD;&#xA;using System.IO%3B&#xD;&#xA;namespace NuGetConsole.Host.PowerShell {&#xD;&#xA;    public static class DebugConstants {&#xD;&#xA;        internal static string TestModulePath = Path.Combine(%40&quot;$(NuGetRoot)&quot;, %40&quot;test\EndToEnd\NuGet.Tests.psm1&quot;)%3B&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;#endif" Overwrite="true" />
+  </Target>
+  <Import Project="..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.  

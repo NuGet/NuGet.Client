@@ -6,6 +6,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.PackagingCore;
 using NuGet.ProjectManagement;
+using NuGet.Resolver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -335,15 +336,26 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     string packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
                     foreach (var package in sortedPackages)
                     {
-                        string toolsPath = Path.Combine(packagesFolderPath, package.ToString(), "tools");
+                        PackagePathResolver packagePathResolver = new PackagePathResolver(packagesFolderPath);
+                        string pathToPackage = packagePathResolver.GetInstalledPath(package);
+                        string toolsPath = Path.Combine(pathToPackage, "tools");
                         AddPathToEnvironment(toolsPath);
                         Runspace.ExecuteScript(toolsPath, PowerShellScripts.Init, package);
                     }
                 }
                 catch (Exception ex)
                 {
-                    // if execution of Init scripts fails, do not let it crash our console
-                    ReportError(ex);
+                    // When Packages folder is not present, NuGetResolverInputException will be thrown
+                    // as resolving DependencyInfo requires the presence of Packages folder.
+                    if (ex.InnerException is NuGetResolverInputException)
+                    {
+                        // Silently fail.
+                    }
+                    else
+                    {
+                        // if execution of Init scripts fails, do not let it crash our console
+                        ReportError(ex);
+                    }
 
                     ExceptionHelper.WriteToActivityLog(ex);
                 }

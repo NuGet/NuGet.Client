@@ -192,7 +192,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 string folderPath = Path.GetDirectoryName(fullPath);
 
                 Invoke(
-                   "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + PathUtility.EscapePSPath(fullPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
+                   "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + NuGet.ProjectManagement.PathUtility.EscapePSPath(fullPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
                    new object[] { installPath, folderPath, package },
                    outputResults: true);
             }
@@ -200,14 +200,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void ImportModule(string modulePath)
         {
-            Invoke("Import-Module " + PathUtility.EscapePSPath(modulePath), null, false);
+            Invoke("Import-Module " + NuGet.ProjectManagement.PathUtility.EscapePSPath(modulePath), null, false);
         }
 
         public void ChangePSDirectory(string directory)
         {
             if (!String.IsNullOrWhiteSpace(directory))
             {
-                Invoke("Set-Location " + PathUtility.EscapePSPath(directory), null, false);
+                Invoke("Set-Location " + NuGet.ProjectManagement.PathUtility.EscapePSPath(directory), null, false);
             }
         }
 
