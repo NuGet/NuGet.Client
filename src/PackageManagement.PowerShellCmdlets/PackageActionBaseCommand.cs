@@ -4,10 +4,10 @@ using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Client.VisualStudio;
 using NuGet.Packaging;
-using NuGet.PackagingCore;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets

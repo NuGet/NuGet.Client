@@ -1,15 +1,15 @@
-﻿using NuGet.PackageManagement;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
-using NuGet.PackagingCore;
-using NuGet.ProjectManagement;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement_TestVSExtension
 {

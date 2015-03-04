@@ -1,7 +1,5 @@
-﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
+﻿using System.Collections.Generic;
 using NuGet.Versioning;
-using System.Collections.Generic;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -20,6 +18,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Semantic Version of the package
         /// </summary>
-        Legacy.NuGet.SemanticVersion Version { get; set; }
+        SemanticVersion Version { get; set; }
     }
 }

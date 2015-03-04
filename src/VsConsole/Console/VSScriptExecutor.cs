@@ -1,19 +1,17 @@
-﻿using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.PackageManagement.PowerShellCmdlets;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
-using NuGet.PackagingCore;
-using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.PowerShellCmdlets;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGetConsole

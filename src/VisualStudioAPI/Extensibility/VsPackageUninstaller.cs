@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.ComponentModel.Composition;
 using System.Globalization;
-using EnvDTE;
-using NuGet.PackageManagement;
-using NuGet.Configuration;
-using NuGet.ProjectManagement;
-using NuGet.Resolver;
-using NuGet.Client;
+using System.Linq;
 using System.Threading;
+using EnvDTE;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio
 {

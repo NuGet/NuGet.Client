@@ -1,17 +1,12 @@
-﻿using NuGet.Configuration;
-using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using EnvDTEProject = EnvDTE.Project;
-using EnvDTEProperty = EnvDTE.Property;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Configuration;
+using NuGet.ProjectManagement;
+using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

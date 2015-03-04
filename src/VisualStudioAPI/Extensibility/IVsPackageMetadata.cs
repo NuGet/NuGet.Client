@@ -1,9 +1,7 @@
 ﻿extern alias Legacy;
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-
 using LegacyNuGet = Legacy.NuGet;
 
 namespace NuGet.VisualStudio
@@ -27,7 +25,7 @@ namespace NuGet.VisualStudio
         /// Do not use this property because it will require referencing NuGet.Core.dll assembly. Use the VersionString property instead.
         /// </remarks>
         [Obsolete("Do not use this property because it will require referencing NuGet.Core.dll assembly. Use the VersionString property instead.")]
-        Legacy.NuGet.SemanticVersion Version { get; }
+        LegacyNuGet.SemanticVersion Version { get; }
 
         /// <summary>
         /// Title of the package.

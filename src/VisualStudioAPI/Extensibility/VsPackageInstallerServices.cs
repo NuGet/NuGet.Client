@@ -1,6 +1,5 @@
 ﻿extern alias Legacy;
 using EnvDTE;
-using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Versioning;
@@ -11,6 +10,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using NuGet.Protocol.Core.Types;
 using LegacyNuGet = Legacy.NuGet;
 
 namespace NuGet.VisualStudio

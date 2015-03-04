@@ -1,19 +1,12 @@
 ﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
-
-using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
-using NuGet.VisualStudio.Resources;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Client.V2;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Resources;
+using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
@@ -51,8 +44,7 @@ namespace NuGet.VisualStudio
 
         public void AddFromRepository(Legacy.NuGet.IPackageRepository repo)
         {
-            V2PackageSource source = new V2PackageSource(repo.Source, () => repo);
-
+            var source = new NuGet.Protocol.Core.v2.V2PackageSource(repo.Source, () => repo);
             _repositories.Add(_provider.CreateRepository(source));
         }
 

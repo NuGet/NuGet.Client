@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet;
-using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGetVSExtension
 {

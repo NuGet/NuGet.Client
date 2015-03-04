@@ -1,7 +1,7 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
-using System;
+﻿using System;
 using System.Linq;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

@@ -1,5 +1,5 @@
-using NuGet.PackageManagement;
 using System;
+using NuGet.PackageManagement;
 
 namespace NuGetConsole
 {

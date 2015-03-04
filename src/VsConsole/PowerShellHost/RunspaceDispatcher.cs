@@ -8,9 +8,7 @@ using System.Management.Automation.Runspaces;
 using System.Threading;
 using Microsoft.PowerShell;
 using NuGet;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackagingCore;
-using System.Reflection;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
 namespace NuGetConsole.Host.PowerShell.Implementation

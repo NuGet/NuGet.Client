@@ -1,10 +1,10 @@
-﻿using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

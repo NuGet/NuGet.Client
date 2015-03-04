@@ -1,10 +1,8 @@
-﻿using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.ComponentModel.Composition;
 using System.Threading;
-using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

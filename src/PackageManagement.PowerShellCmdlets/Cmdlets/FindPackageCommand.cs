@@ -1,13 +1,11 @@
-﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
-using NuGet.Client.VisualStudio;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.VisualStudio;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -130,7 +128,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     package.Versions = versions.OrderByDescending(v => v);
                     if (package.Versions != null && package.Versions.Any())
                     {
-                        package.Version = Legacy.NuGet.SemanticVersion.Parse(package.Versions.FirstOrDefault().ToNormalizedString());
+                        package.Version = SemanticVersion.Parse(package.Versions.FirstOrDefault().ToNormalizedString());
                     }
                 }
             }
@@ -145,7 +143,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (nVersion != null)
                 {
                     package.Versions = new List<NuGetVersion>() { nVersion };
-                    package.Version = Legacy.NuGet.SemanticVersion.Parse(nVersion.ToNormalizedString());
+                    package.Version = SemanticVersion.Parse(nVersion.ToNormalizedString());
                 }
             }
             return package;

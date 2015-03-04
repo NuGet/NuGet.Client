@@ -3,14 +3,14 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Reflection;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.PowerShell;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackageManagement;
-using System.Reflection;
 using NuGet.Configuration;
-using NuGet.Client;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

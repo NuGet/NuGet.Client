@@ -1,13 +1,8 @@
-﻿using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
-using EnvDTEProjectItem = EnvDTE.ProjectItem;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 
 namespace NuGet.PackageManagement.VisualStudio

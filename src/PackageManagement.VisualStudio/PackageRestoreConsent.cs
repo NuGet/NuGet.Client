@@ -1,11 +1,6 @@
-﻿using NuGet.Configuration;
-using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

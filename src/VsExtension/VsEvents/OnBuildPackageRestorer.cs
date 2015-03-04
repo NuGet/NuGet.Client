@@ -1,23 +1,21 @@
-﻿using EnvDTE;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.ProjectManagement;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackagingCore;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO;
-using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 
 namespace NuGetVSExtension
 {

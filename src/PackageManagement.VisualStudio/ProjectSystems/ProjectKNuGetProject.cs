@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public async override Task<bool> InstallPackageAsync(PackagingCore.PackageIdentity packageIdentity, System.IO.Stream packageStream,
+        public async override Task<bool> InstallPackageAsync(Packaging.Core.PackageIdentity packageIdentity, System.IO.Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (!packageStream.CanSeek)
@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public async override Task<bool> UninstallPackageAsync(PackagingCore.PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public async override Task<bool> UninstallPackageAsync(Packaging.Core.PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             nuGetProjectContext.Log(MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
 
@@ -120,12 +120,12 @@ namespace NuGet.PackageManagement.VisualStudio
             var result = new List<Packaging.PackageReference>();
             foreach (object item in await _project.GetInstalledPackagesAsync(token))
             {
-                PackagingCore.PackageIdentity identity = null;
+                Packaging.Core.PackageIdentity identity = null;
 
                 var moniker = item as INuGetPackageMoniker;
                 if (moniker != null)
                 {
-                    identity = new PackagingCore.PackageIdentity(
+                    identity = new Packaging.Core.PackageIdentity(
                         moniker.Id,
                         NuGetVersion.Parse(moniker.Version));
                 }

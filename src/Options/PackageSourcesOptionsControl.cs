@@ -11,11 +11,8 @@ using System.Windows.Forms.VisualStyles;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
-using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Client;
-using NuGet.ProjectManagement;
-
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Options
 {

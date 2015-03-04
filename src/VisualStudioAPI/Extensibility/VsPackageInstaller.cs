@@ -1,24 +1,21 @@
 ﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
-using NuGet.PackageManagement;
 using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
-using NuGet.PackagingCore;
-using NuGet.Client;
-using System.Diagnostics;
-using NuGet.PackageManagement.VisualStudio;
-using System.IO;
-using System.Threading;
+using LegacyNuGet = Legacy.NuGet;
 
 namespace NuGet.VisualStudio
 {

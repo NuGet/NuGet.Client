@@ -1,14 +1,14 @@
-﻿using EnvDTE80;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.IO;
+using System.Linq;
+using EnvDTE80;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
 
 namespace NuGet.TeamFoundationServer
 {

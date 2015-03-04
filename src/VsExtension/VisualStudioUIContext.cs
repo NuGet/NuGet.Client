@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using NuGet.Client;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGetVSExtension
 {

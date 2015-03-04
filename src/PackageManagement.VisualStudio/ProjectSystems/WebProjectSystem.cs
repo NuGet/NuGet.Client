@@ -1,6 +1,6 @@
-﻿using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.IO;
+using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio

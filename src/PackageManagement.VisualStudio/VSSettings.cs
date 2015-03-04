@@ -1,9 +1,8 @@
-﻿using NuGet.Configuration;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

@@ -1,11 +1,5 @@
 using EnvDTE;
-using NuGet.Client;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
-using NuGet.PackagingCore;
-using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using System;
 using System.Collections.Generic;
@@ -18,6 +12,12 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.PackageManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.Configuration;
+using NuGet.ProjectManagement;
+using NuGet.Packaging.Core;
+using NuGet.Packaging;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

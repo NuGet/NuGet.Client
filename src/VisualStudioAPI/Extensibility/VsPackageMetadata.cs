@@ -1,10 +1,9 @@
 ﻿extern alias Legacy;
 using LegacyNuGet = Legacy.NuGet;
-
-using NuGet.PackagingCore;
 using System.Collections.Generic;
 using System.Linq;
-
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.VisualStudio
 {

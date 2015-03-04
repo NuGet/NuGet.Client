@@ -1,9 +1,8 @@
 ﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
-
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using EnvDTE;
+using LegacyNuGet = Legacy.NuGet;
 
 namespace NuGet.VisualStudio
 {

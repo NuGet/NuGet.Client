@@ -1,13 +1,13 @@
-﻿using NuGet.Client.VisualStudio;
-using NuGet.ProjectManagement;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.VisualStudio;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
