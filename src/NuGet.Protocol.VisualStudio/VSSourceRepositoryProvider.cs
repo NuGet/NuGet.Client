@@ -93,14 +93,9 @@ namespace NuGet.Protocol.VisualStudio
 
         public Configuration.IPackageSourceProvider PackageSourceProvider
         {
-            get { return _packageSourceProvider; }
-        }
-
-        Configuration.IPackageSourceProvider ISourceRepositoryProvider.PackageSourceProvider
-        {
             get
             {
-                throw new NotImplementedException();
+				return _packageSourceProvider;
             }
         }
 
