@@ -47,7 +47,7 @@
         </Members>
     </Type>
     <Type>
-        <Name>Microsoft.VisualStudio.Project.VS.Implementation.Package.Automation.OAProject</Name>
+        <Name>Microsoft.VisualStudio.ProjectSystem.VS.Implementation.Package.Automation.OAProject</Name>
         <Members>
             <CodeProperty>
                 <Name>ProjectName</Name>

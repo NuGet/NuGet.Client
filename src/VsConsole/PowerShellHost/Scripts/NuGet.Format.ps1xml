@@ -154,7 +154,7 @@
       <ViewSelectedBy>
         <TypeName>System.__ComObject#{866311e6-c887-4143-9833-645f5b93f6f1}</TypeName>
         <TypeName>Microsoft.VisualStudio.FSharp.ProjectSystem.Automation.OAProject</TypeName>
-        <TypeName>Microsoft.VisualStudio.Project.VS.Implementation.Package.Automation.OAProject</TypeName>
+        <TypeName>Microsoft.VisualStudio.ProjectSystem.VS.Implementation.Package.Automation.OAProject</TypeName>
       </ViewSelectedBy>
       <TableControl>
         <TableHeaders>
