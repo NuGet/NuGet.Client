@@ -469,14 +469,18 @@ function Test-InstallPackageWithGacReferencesIntoMultipleProjectTypes {
     )
 
     # Arrange
-    $projects = @((New-ClassLibrary), (New-WebSite), (New-FSharpLibrary))
+	$a = New-ClassLibrary
+	$b = New-WebSite
+	$c = New-FSharpLibrary
+	$projects = @($a, $b, $c)
     
-    # Act
-    $projects | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-    
+	# Act
+    $a | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
+	$b | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
+	$c | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
+	
     # Assert
     $projects | %{ Assert-Reference $_ System.Web }
-    Assert-Reference $projects[1] System.Web
 }
 
 function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {   

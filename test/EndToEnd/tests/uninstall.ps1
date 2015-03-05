@@ -841,15 +841,16 @@ function Test-FinishFailedUninstallOnSolutionOpenOfProjectLevelPackage
     # Arrange
     $p = New-ConsoleApplication
 
-    $packageManager = $host.PrivateData.packageManagerFactory.CreatePackageManager()
-    $localRepositoryPath = $packageManager.LocalRepository.Source
-    $physicalFileSystem = New-Object NuGet.PhysicalFileSystem($localRepositoryPath)
+    $componentService = Get-VSComponentModel
+	$solutionManager = $componentService.GetService([NuGet.PackageManagement.ISolutionManager])
+	$setting = $componentService.GetService([NuGet.Configuration.ISettings])
+	$packageFolderPath = [NuGet.PackageManagement.PackagesFolderPathUtility]::GetPackagesFolderPath($solutionManager, $setting)
 
     $p | Install-Package PackageWithTextFile -Version 1.0 -Source $context.RepositoryRoot
 
     # We will open a file handle preventing the deletion packages\PackageWithTextFile.1.0\content\text
     # causing the uninstall to fail to complete thereby forcing it to finish the next time the solution is opened
-    $filePath = Join-Path $localRepositoryPath "PackageWithTextFile.1.0\content\text"
+    $filePath = Join-Path $packageFolderPath "PackageWithTextFile.1.0\content\text"
     $fileStream = [System.IO.File]::Open($filePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
 
     try {
@@ -857,8 +858,8 @@ function Test-FinishFailedUninstallOnSolutionOpenOfProjectLevelPackage
         $p | Uninstall-Package PackageWithTextFile
 
         # Assert
-        Assert-True $physicalFileSystem.DirectoryExists("PackageWithTextFile.1.0")
-        Assert-True $physicalFileSystem.FileExists("PackageWithTextFile.1.0.deleteme")
+        Assert-True [NuGet.ProjectManagement.FileSystemUtility]::DirectoryExists("PackageWithTextFile.1.0.0.0")
+        Assert-True [NuGet.ProjectManagement.FileSystemUtility]::FileExists("PackageWithTextFile.1.0.0.0.deleteme")
 
     } finally {
         $fileStream.Close()
@@ -871,8 +872,8 @@ function Test-FinishFailedUninstallOnSolutionOpenOfProjectLevelPackage
     Open-Solution $solutionDir
 
     # Assert
-    Assert-False $physicalFileSystem.DirectoryExists("PackageWithTextFile.1.0")
-    Assert-False $physicalFileSystem.FileExists("PackageWithTextFile.1.0.deleteme")
+    Assert-False [NuGet.ProjectManagement.FileSystemUtility]::DirectoryExists("PackageWithTextFile.1.0.0.0")
+    Assert-False [NuGet.ProjectManagement.FileSystemUtility]::FileExists("PackageWithTextFile.1.0.0.0.deleteme")
 }
 
 

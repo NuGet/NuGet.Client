@@ -1396,25 +1396,26 @@ function Test-FinishFailedUpdateOnSolutionOpen
     # Arrange
     $p = New-ConsoleApplication
 
-    $packageManager = $host.PrivateData.packageManagerFactory.CreatePackageManager()
-    $localRepositoryPath = $packageManager.LocalRepository.Source
-    $physicalFileSystem = New-Object NuGet.PhysicalFileSystem($localRepositoryPath)
+    $componentService = Get-VSComponentModel
+	$solutionManager = $componentService.GetService([NuGet.PackageManagement.ISolutionManager])
+	$setting = $componentService.GetService([NuGet.Configuration.ISettings])
+	$packageFolderPath = [NuGet.PackageManagement.PackagesFolderPathUtility]::GetPackagesFolderPath($solutionManager, $setting)
 
-    $p | Install-Package SolutionOnlyPackage -Version 1.0 -Source $context.RepositoryRoot
+	$p | Install-Package TestUpdatePackage -Version 1.0 -Source $context.RepositoryRoot
 
     # We will open a file handle preventing the deletion packages\SolutionOnlyPackage.1.0\file1.txt
     # causing the uninstall to fail to complete thereby forcing it to finish the next time the solution is opened
-    $filePath = Join-Path $localRepositoryPath "SolutionOnlyPackage.1.0\file1.txt"
+    $filePath = Join-Path $packageFolderPath "TestUpdatePackage.1.0.0.0\content\readme.txt"
     $fileStream = [System.IO.File]::Open($filePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::Read)
 
     try {
         # Act
-        $p | Update-Package SolutionOnlyPackage -Source $context.RepositoryRoot
+        $p | Update-Package TestUpdatePackage -Source $context.RepositoryRoot
 
         # Assert
-        Assert-True $physicalFileSystem.DirectoryExists("SolutionOnlyPackage.1.0")
-        Assert-True $physicalFileSystem.FileExists("SolutionOnlyPackage.1.0.deleteme")
-        Assert-True $physicalFileSystem.DirectoryExists("SolutionOnlyPackage.2.0")
+        Assert-True [NuGet.ProjectManagement.FileSystemUtility]::DirectoryExists($packageFolderPath,"TestUpdatePackage.1.0.0.0")
+        Assert-True [NuGet.ProjectManagement.FileSystemUtility]::FileExists($packageFolderPath,"TestUpdatePackage.1.0.0.0.deleteme")
+        Assert-True [NuGet.ProjectManagement.FileSystemUtility]::DirectoryExists($packageFolderPath, "TestUpdatePackage.2.0.0.0")
     } finally {
         $fileStream.Close()
     }
@@ -1426,9 +1427,9 @@ function Test-FinishFailedUpdateOnSolutionOpen
     Open-Solution $solutionDir
 
     # Assert
-    Assert-False $physicalFileSystem.DirectoryExists("SolutionOnlyPackage.1.0")
-    Assert-False $physicalFileSystem.FileExists("SolutionOnlyPackage.1.0.deleteme")
-    Assert-True $physicalFileSystem.DirectoryExists("SolutionOnlyPackage.2.0")
+    Assert-False [NuGet.ProjectManagement.FileSystemUtility]::DirectoryExists($packageFolderPath,"TestUpdatePackage.1.0.0.0")
+    Assert-False [NuGet.ProjectManagement.FileSystemUtility]::FileExists($packageFolderPath,"TestUpdatePackage.1.0.0.0.deleteme")
+    Assert-True [NuGet.ProjectManagement.FileSystemUtility]::DirectoryExists($packageFolderPath, "TestUpdatePackage.2.0.0.0")
 }
 
 function Test-UpdatePackageThrowsIfMinClientVersionIsNotSatisfied

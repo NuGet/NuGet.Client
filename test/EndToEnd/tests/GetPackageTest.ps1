@@ -144,7 +144,7 @@ function Test-GetPackageForProjectReturnsCorrectPackages {
     # Assert
     Assert-AreEqual 1 $result.Count
     Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5" $result[0].Version
+    Assert-AreEqual "1.5.0" $result[0].Version
 }
 
 function Test-GetPackageForProjectReturnsCorrectPackages2 {
@@ -161,7 +161,7 @@ function Test-GetPackageForProjectReturnsCorrectPackages2 {
     # Assert
     Assert-AreEqual 1 $result.Count
     Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5" $result[0].Version
+    Assert-AreEqual "1.5.0" $result[0].Version
 }
 
 function Test-GetPackageForFSharpProjectReturnsCorrectPackages {
@@ -176,7 +176,7 @@ function Test-GetPackageForFSharpProjectReturnsCorrectPackages {
     # Assert
     Assert-AreEqual 1 $result.Count
     Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5" $result[0].Version
+    Assert-AreEqual "1.5.0" $result[0].Version
 }
 
 function Test-GetPackageForFSharpProjectReturnsCorrectPackages2 {
@@ -194,9 +194,9 @@ function Test-GetPackageForFSharpProjectReturnsCorrectPackages2 {
     # Assert
     Assert-AreEqual 2 $result.Count
     Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5" $result[0].Version
+    Assert-AreEqual "1.5.0" $result[0].Version
     Assert-AreEqual "MyAwesomeLibrary" $result[1].Id
-    Assert-AreEqual "1.0" $result[1].Version
+    Assert-AreEqual "1.0.0" $result[1].Version
 }
 
 function Test-GetPackageForProjectReturnsEmptyIfItHasNoInstalledPackage {
@@ -293,7 +293,7 @@ function Test-GetPackagesDoesNotShowPrereleasePackagesWhenSwitchIsNotSpecified {
     # Assert
     Assert-AreEqual 3 $packages.Count
     Assert-AreEqual "PackageWithDependencyOnPrereleaseTestPackage" $packages[0].Id
-    Assert-AreEqual "1.0" $packages[0].Version
+    Assert-AreEqual "1.0.0" $packages[0].Version
     Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
     Assert-AreEqual "1.0.0" $packages[1].Version
     Assert-AreEqual "PreReleaseTestPackage.A" $packages[2].Id
@@ -312,7 +312,7 @@ function Test-GetPackagesAllVersionsDoesNotShowPrereleasePackagesWhenSwitchIsNot
     # Assert
     Assert-AreEqual 3 $packages.Count
     Assert-AreEqual "PackageWithDependencyOnPrereleaseTestPackage" $packages[0].Id
-    Assert-AreEqual "1.0" $packages[0].Version
+    Assert-AreEqual "1.0.0" $packages[0].Version
     Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
     Assert-AreEqual "1.0.0" $packages[1].Version
     Assert-AreEqual "PreReleaseTestPackage.A" $packages[2].Id
@@ -330,7 +330,7 @@ function Test-GetPackagesWithPrereleaseSwitchShowsPrereleasePackages {
     # Assert
     Assert-AreEqual 3 $packages.Count
     Assert-AreEqual "PackageWithDependencyOnPrereleaseTestPackage" $packages[0].Id
-    Assert-AreEqual "1.0" $packages[0].Version
+    Assert-AreEqual "1.0.0" $packages[0].Version
     Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
     Assert-AreEqual "1.0.1-a" $packages[1].Version
     Assert-AreEqual "PreReleaseTestPackage.A" $packages[2].Id
@@ -348,7 +348,7 @@ function Test-GetPackagesWithAllAndPrereleaseSwitchShowsAllPackages {
     # Assert
     Assert-AreEqual 3 $packages.Count
     Assert-AreEqual "PackageWithDependencyOnPrereleaseTestPackage" $packages[0].Id
-    Assert-AreEqual "1.0" $packages[0].Version[0]
+    Assert-AreEqual "1.0.0" $packages[0].Version[0]
     
     Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
     Assert-AreEqual "1.0.0-a" $packages[1].Version[3]
