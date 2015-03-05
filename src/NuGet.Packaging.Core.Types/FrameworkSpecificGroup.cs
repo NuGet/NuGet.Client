@@ -1,4 +1,5 @@
 ﻿using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// A group of items/files from a nupkg with the same target framework.
     /// </summary>
-    public class FrameworkSpecificGroup
+    public class FrameworkSpecificGroup : IEquatable<FrameworkSpecificGroup>
     {
         private readonly NuGetFramework _targetFramework;
         private readonly IEnumerable<string> _items;
@@ -70,6 +71,55 @@ namespace NuGet.Packaging
             {
                 return _items;
             }
+        }
+
+        public bool Equals(FrameworkSpecificGroup other)
+        {
+            if (Object.ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (Object.ReferenceEquals(other, null))
+            {
+                return false;
+            }
+
+            return GetHashCode() == other.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            FrameworkSpecificGroup other = obj as FrameworkSpecificGroup;
+
+            if (other != null)
+            {
+                return Equals(other);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            if (Object.ReferenceEquals(this, null))
+            {
+                return 0;
+            }
+
+            HashCodeCombiner combiner = new HashCodeCombiner();
+
+            combiner.AddObject(TargetFramework);
+
+            if (Items != null)
+            {
+                foreach (int hash in Items.Select(e => e.GetHashCode()).OrderBy(e => e))
+                {
+                    combiner.AddObject(hash);
+                }
+            }
+
+            return combiner.CombinedHash;
         }
     }
 }

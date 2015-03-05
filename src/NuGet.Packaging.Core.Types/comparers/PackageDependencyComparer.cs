@@ -31,13 +31,7 @@ namespace NuGet.Packaging.Core
         /// Default comparer
         /// Null ranges and the All range are treated as equal.
         /// </summary>
-        public static PackageDependencyComparer Default
-        {
-            get
-            {
-                return new PackageDependencyComparer();
-            }
-        }
+        public static readonly PackageDependencyComparer Default = new PackageDependencyComparer();
 
         public bool Equals(PackageDependency x, PackageDependency y)
         {
@@ -63,6 +57,11 @@ namespace NuGet.Packaging.Core
 
         public int GetHashCode(PackageDependency obj)
         {
+            if (Object.ReferenceEquals(obj, null))
+            {
+                return 0;
+            }
+
             var combiner = new HashCodeCombiner();
 
             combiner.AddObject(obj.Id.ToUpperInvariant());

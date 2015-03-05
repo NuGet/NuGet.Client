@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Core
     /// Represents a package identity and the dependencies of a package.
     /// </summary>
     /// <remarks>This class does not support groups of dependencies, the group will need to be selected before populating this.</remarks>
-    public class PackageDependencyInfo : PackageIdentity
+    public class PackageDependencyInfo : PackageIdentity, IEquatable<PackageDependencyInfo>
     {
         private readonly PackageDependency[] _dependencies;
 
@@ -49,6 +49,11 @@ namespace NuGet.Packaging.Core
             {
                 return _dependencies;
             }
+        }
+
+        public bool Equals(PackageDependencyInfo other)
+        {
+            return PackageDependencyInfoComparer.Default.Equals(this, other);
         }
 
         public override bool Equals(object obj)

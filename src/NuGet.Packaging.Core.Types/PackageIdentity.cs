@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Core
         {
             get
             {
-                return new PackageIdentityComparer();
+                return PackageIdentityComparer.Default;
             }
         }
 

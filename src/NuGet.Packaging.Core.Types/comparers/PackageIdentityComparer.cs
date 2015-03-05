@@ -49,7 +49,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Default comparer that compares on the id, version, and version release labels.
         /// </summary>
-        public static IPackageIdentityComparer Default
+        public static PackageIdentityComparer Default
         {
             get
             {
@@ -67,8 +67,13 @@ namespace NuGet.Packaging.Core
                 return true;
             }
 
-            return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id)
-                && _versionComparer.Equals(x.Version, y.Version);
+            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+            {
+                return false;
+            }
+
+            return _versionComparer.Equals(x.Version, y.Version)
+                && StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
         }
 
         /// <summary>
