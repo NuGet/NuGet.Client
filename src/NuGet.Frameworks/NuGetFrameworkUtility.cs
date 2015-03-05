@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-    public class NuGetFrameworkUtility
+    public static class NuGetFrameworkUtility
     {
         public static T GetNearest<T>(IEnumerable<T> items, NuGetFramework framework, Func<T, NuGetFramework> selector) where T : class
         {

@@ -13,7 +13,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Package dependencies grouped to a target framework.
     /// </summary>
-    public class PackageDependencyGroup : IEquatable<PackageDependencyGroup>
+    public class PackageDependencyGroup : IEquatable<PackageDependencyGroup>, IFrameworkSpecific
     {
         private readonly NuGetFramework _targetFramework;
         private readonly IEnumerable<PackageDependency> _packages;

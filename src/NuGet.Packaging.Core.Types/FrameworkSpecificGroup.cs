@@ -11,7 +11,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// A group of items/files from a nupkg with the same target framework.
     /// </summary>
-    public class FrameworkSpecificGroup : IEquatable<FrameworkSpecificGroup>
+    public class FrameworkSpecificGroup : IEquatable<FrameworkSpecificGroup>, IFrameworkSpecific
     {
         private readonly NuGetFramework _targetFramework;
         private readonly IEnumerable<string> _items;
