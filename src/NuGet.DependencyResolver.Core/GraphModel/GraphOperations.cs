@@ -131,7 +131,7 @@ namespace NuGet.DependencyResolver
 
         public static void Dump<TItem>(this GraphNode<TItem> root, Action<string> write)
         {
-            DumpNode(root, write, level: 0, last: false);
+            DumpNode(root, write, level: 0);
             DumpChildren(root, write, level: 0);
         }
 
@@ -140,23 +140,23 @@ namespace NuGet.DependencyResolver
             var children = root.InnerNodes;
             for(int i = 0; i < children.Count; i++)
             {
-                DumpNode(children[i], write, level + 1, level == 0 && i == (children.Count - 1));
+                DumpNode(children[i], write, level + 1);
                 DumpChildren(children[i], write, level + 1);
             }
         }
 
-        private static void DumpNode<TItem>(GraphNode<TItem> node, Action<string> write, int level, bool last)
+        private static void DumpNode<TItem>(GraphNode<TItem> node, Action<string> write, int level)
         {
             StringBuilder output = new StringBuilder();
             if(level > 0)
             {
-                output.Append(last ? LIGHT_UP_AND_RIGHT : LIGHT_VERTICAL_AND_RIGHT);
+                output.Append(LIGHT_VERTICAL_AND_RIGHT);
                 output.Append(new string(LIGHT_HORIZONTAL, level));
                 output.Append(" ");
             }
 
-            output.Append(node.Key.ToString());
-            
+            output.Append($"{node.Key} ({node.Disposition})");
+
             if(node.Item != null && node.Item.Key != null)
             {
                 output.Append($" => {node.Item.Key.ToString()}");
