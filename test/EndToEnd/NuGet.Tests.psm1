@@ -87,7 +87,9 @@ function global:Run-Test {
         [parameter(ParameterSetName="File", Mandatory=$true, Position=1)]
         [string]$File,
         [parameter(Position=1)]
-        [bool]$LaunchResultsOnFailure=$true
+        [bool]$LaunchResultsOnFailure=$true,
+        [parameter(Position=2)]
+        $testContext
     )
     
     if (!(Test-Path $generatePackagesExePath)) {
@@ -205,7 +207,7 @@ function global:Run-Test {
                 }
 
                 try {
-                    $executionTime = measure-command { & $_ $context }
+                    $executionTime = measure-command { & $_ $context $testContext }
                 
                     Write-Host -ForegroundColor DarkGreen "Test $name Passed"
                 
