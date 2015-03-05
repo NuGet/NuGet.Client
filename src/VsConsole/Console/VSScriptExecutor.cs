@@ -88,7 +88,7 @@ namespace NuGetConsole
                 if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
                     _skipPSScriptExecution = await NuGetPackageManager.PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity,
-                        _solutionManager, nuGetProjectContext, CancellationToken.None);
+                        _solutionManager, CancellationToken.None);
                 }
                 else
                 {
