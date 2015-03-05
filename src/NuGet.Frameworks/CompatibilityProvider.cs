@@ -144,15 +144,12 @@ namespace NuGet.Frameworks
                 frameworkSet.Add(fw);
             }
 
-            var frameworkComparer = new NuGetFrameworkNameComparer();
-            var profileComparer = new NuGetFrameworkProfileComparer();
-
             // check all possible substitutions
             foreach (var curFramework in frameworkSet)
             {
                 // compare the frameworks
-                if (frameworkComparer.Equals(curFramework, other)
-                    && profileComparer.Equals(curFramework, other)
+                if (NuGetFramework.FrameworkNameComparer.Equals(curFramework, other)
+                    && StringComparer.OrdinalIgnoreCase.Equals(curFramework.Profile, other.Profile)
                     && IsVersionCompatible(curFramework, other))
                 {
                     // allow the other if it doesn't have a platform

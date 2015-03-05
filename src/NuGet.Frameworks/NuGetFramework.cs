@@ -364,53 +364,14 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
-        /// Full framework name comparison.
+        /// Full framework comparison of the identifier, version, profile, platform, and platform version
         /// </summary>
-        public static IEqualityComparer<NuGetFramework> Comparer
-        {
-            get
-            {
-                return new NuGetFrameworkFullComparer();
-            }
-        }
+        public static readonly IEqualityComparer<NuGetFramework> Comparer = new NuGetFrameworkFullComparer();
 
         /// <summary>
         /// Framework name only comparison.
         /// </summary>
-        public static IEqualityComparer<NuGetFramework> FrameworkNameComparer
-        {
-            get
-            {
-                return new NuGetFrameworkNameComparer();
-            }
-        }
-
-        /// <summary>
-        /// Framework name only comparison.
-        /// </summary>
-        public static IEqualityComparer<NuGetFramework> FrameworkProfileComparer
-        {
-            get
-            {
-                return new NuGetFrameworkProfileComparer();
-            }
-        }
-
-        private static Version NormalizeVersion(Version version)
-        {
-            Version normalized = version;
-
-            if (version.Build < 0 || version.Revision < 0)
-            {
-                normalized = new Version(
-                               version.Major,
-                               version.Minor,
-                               Math.Max(version.Build, 0),
-                               Math.Max(version.Revision, 0));
-            }
-
-            return normalized;
-        }
+        public static readonly IEqualityComparer<NuGetFramework> FrameworkNameComparer = new NuGetFrameworkNameComparer();
 
         public override string ToString()
         {
@@ -446,6 +407,22 @@ namespace NuGet.Frameworks
             {
                 return base.Equals(obj);
             }
+        }
+
+        private static Version NormalizeVersion(Version version)
+        {
+            Version normalized = version;
+
+            if (version.Build < 0 || version.Revision < 0)
+            {
+                normalized = new Version(
+                               version.Major,
+                               version.Minor,
+                               Math.Max(version.Build, 0),
+                               Math.Max(version.Revision, 0));
+            }
+
+            return normalized;
         }
     }
 }

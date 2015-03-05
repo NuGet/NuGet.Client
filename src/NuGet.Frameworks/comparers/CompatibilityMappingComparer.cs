@@ -20,13 +20,26 @@ namespace NuGet.Frameworks
                 return false;
             }
 
-            // TODO: improve this
-            return x.GetHashCode() == y.GetHashCode();
+            var comparer = new FrameworkRangeComparer();
+
+            return comparer.Equals(x.TargetFrameworkRange, y.TargetFrameworkRange) 
+                && comparer.Equals(x.SupportedFrameworkRange, y.SupportedFrameworkRange);
         }
 
         public int GetHashCode(OneWayCompatibilityMappingEntry obj)
         {
-            return obj.ToString().ToLowerInvariant().GetHashCode();
+            if (Object.ReferenceEquals(obj, null))
+            {
+                return 0;
+            }
+
+            HashCodeCombiner combiner = new HashCodeCombiner();
+            var comparer = new FrameworkRangeComparer();
+
+            combiner.AddObject(comparer.GetHashCode(obj.TargetFrameworkRange));
+            combiner.AddObject(comparer.GetHashCode(obj.SupportedFrameworkRange));
+
+            return combiner.CombinedHash;
         }
     }
 }

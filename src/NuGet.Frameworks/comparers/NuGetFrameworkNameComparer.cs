@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace NuGet.Frameworks
 {
     /// <summary>
-    /// A case insensitive compare of the framework, version, and profile
+    /// A case insensitive compare of the framework name only
     /// </summary>
     public class NuGetFrameworkNameComparer : IEqualityComparer<NuGetFramework>
     {
@@ -28,7 +28,12 @@ namespace NuGet.Frameworks
 
         public int GetHashCode(NuGetFramework obj)
         {
-            return obj.Framework.ToLowerInvariant().GetHashCode();
+            if (Object.ReferenceEquals(obj, null) || Object.ReferenceEquals(obj.Framework, null))
+            {
+                return 0;
+            }
+
+            return obj.Framework.ToUpperInvariant().GetHashCode();
         }
     }
 }

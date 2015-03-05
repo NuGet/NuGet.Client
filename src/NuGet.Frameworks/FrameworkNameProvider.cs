@@ -185,8 +185,6 @@ namespace NuGet.Frameworks
 
             profileNumber = -1;
 
-            var frameworkComparer = new NuGetFrameworkNameComparer();
-            var profileComparer = new NuGetFrameworkProfileComparer();
             HashSet<NuGetFramework> input = new HashSet<NuGetFramework>(supportedFrameworks, NuGetFramework.Comparer);
 
             foreach (var pair in _portableFrameworks)
@@ -203,8 +201,8 @@ namespace NuGet.Frameworks
                         foreach (var optional in GetOptionalFrameworks(pair.Key))
                         {
                             // TODO: profile check? Is the version check correct here?
-                            if (frameworkComparer.Equals(optional, curFw) 
-                                && profileComparer.Equals(optional, curFw)
+                            if (NuGetFramework.FrameworkNameComparer.Equals(optional, curFw) 
+                                && StringComparer.OrdinalIgnoreCase.Equals(optional.Profile, curFw.Profile)
                                 && curFw.Version >= optional.Version)
                             {
                                 isOptional = true;

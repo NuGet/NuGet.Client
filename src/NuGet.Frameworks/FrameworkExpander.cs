@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
+    /// <summary>
+    /// FrameworkExpander finds all equivalent and compatible frameworks for a NuGetFramework
+    /// </summary>
     public class FrameworkExpander
     {
         private readonly IFrameworkNameProvider _mappings;
