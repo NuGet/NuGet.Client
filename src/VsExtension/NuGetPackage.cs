@@ -86,7 +86,9 @@ namespace NuGetVSExtension
 
         private NuGetUIProjectContext _uiProjectContext;
 
-        NuGetSettings _nugetSettings;
+        private NuGetSettings _nugetSettings;
+
+        private OutputConsoleLogger _outputConsoleLogger;
 
         public NuGetPackage()
         {
@@ -284,8 +286,9 @@ namespace NuGetVSExtension
                 }
             }
 
+            _outputConsoleLogger = new OutputConsoleLogger(this);
             _uiProjectContext = new NuGetUIProjectContext(
-                new OutputConsoleLogger(this), 
+                _outputConsoleLogger, 
                 SourceControlManagerProvider, 
                 CommonOperations);
 

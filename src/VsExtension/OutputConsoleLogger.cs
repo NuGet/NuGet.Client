@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
@@ -16,6 +17,12 @@ namespace NuGetVSExtension
     {
         // Copied from EnvDTE interop
         private const string vsWindowKindOutput = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
+
+        // keeps a reference to BuildEvents so that our event handler
+        // won't get disconnected because of GC.
+        private BuildEvents _buildEvents;
+
+        private SolutionEvents _solutionEvents;
 
         public IConsole OutputConsole
         {
@@ -33,6 +40,19 @@ namespace NuGetVSExtension
         {
             ErrorListProvider = new Microsoft.VisualStudio.Shell.ErrorListProvider(serviceProvider);
             var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
+
+            var dte = ServiceLocator.GetInstance<DTE>();
+            _buildEvents = dte.Events.BuildEvents;
+            _buildEvents.OnBuildBegin += (obj, ev) =>
+            {
+                ErrorListProvider.Tasks.Clear();
+            };
+            _solutionEvents = dte.Events.SolutionEvents;
+            _solutionEvents.AfterClosing += () =>
+            {
+                ErrorListProvider.Tasks.Clear();
+            };
+
             OutputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
         }
 
