@@ -25,15 +25,33 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="includePrerelease">allow prerelease results</param>
         /// <param name="includeDelisted">allow unlisted packages</param>
         public SearchFilter(IEnumerable<string> supportedFrameworks, bool includePrerelease, bool includeDelisted)
+            : this(supportedFrameworks, includePrerelease, includeDelisted, Enumerable.Empty<string>())
+        {
+
+        }
+
+        /// <summary>
+        /// Search filter
+        /// </summary>
+        /// <param name="supportedFrameworks">filter to packages compatible with these frameworks</param>
+        /// <param name="includePrerelease">allow prerelease results</param>
+        /// <param name="includeDelisted">allow unlisted packages</param>
+        public SearchFilter(IEnumerable<string> supportedFrameworks, bool includePrerelease, bool includeDelisted, IEnumerable<string> packageTypes)
         {
             if (supportedFrameworks == null)
             {
                 throw new ArgumentNullException("supportedFrameworks");
             }
 
+            if (packageTypes == null)
+            {
+                throw new ArgumentNullException("packageTypes");
+            }
+
             SupportedFrameworks = supportedFrameworks.ToArray();
             IncludeDelisted = includeDelisted;
             IncludePrerelease = includePrerelease;
+            PackageTypes = packageTypes;
         }
 
         /// <summary>
@@ -50,5 +68,10 @@ namespace NuGet.Protocol.Core.Types
         /// Include unlisted packages in search
         /// </summary>
         public bool IncludeDelisted { get; set; }
+
+        /// <summary>
+        /// Restrict the search to certain package types.
+        /// </summary>
+        public IEnumerable<string> PackageTypes { get; set; }
     }
 }

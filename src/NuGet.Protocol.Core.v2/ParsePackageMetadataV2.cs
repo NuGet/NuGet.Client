@@ -39,9 +39,12 @@ namespace NuGet.Protocol.Core.v2
 
             int downloadCount = package.DownloadCount;
 
+            // This concept is not in v2 yet
+            IEnumerable<string> types = new string[] { "Package" };
+
             return new ServerPackageMetadata(
                 identity, title, summary, desc, authors, iconUrl, licenseUrl,
-                projectUrl, tags, Published, dependencySets, requiresLiceneseAcceptance, minClientVersion, downloadCount, -1, owners);
+                projectUrl, tags, Published, dependencySets, requiresLiceneseAcceptance, minClientVersion, downloadCount, -1, owners, types);
         }
 
         private static NuGet.Packaging.Core.PackageDependency GetVisualStudioUIPackageDependency(PackageDependency dependency)

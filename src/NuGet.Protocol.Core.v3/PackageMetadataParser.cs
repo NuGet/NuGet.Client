@@ -34,6 +34,7 @@ namespace NuGet.Protocol.Core.v3
             var tags = GetFieldAsArray(metadata, Properties.Tags);
             IEnumerable<PackageDependencyGroup> dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
             bool requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
+            IEnumerable<string> types = metadata.Value<string>(Properties.Type).Split(' ');
 
             //Uri reportAbuseUrl =
             //    _reportAbuseResource != null ?
@@ -53,7 +54,7 @@ namespace NuGet.Protocol.Core.v3
 
             return new ServerPackageMetadata(new PackageIdentity(id, version), title, summary, description, 
                 authors, iconUrl, licenseUrl, projectUrl, tags, published, dependencySets, 
-                requireLicenseAcceptance, minClientVersion, downloadCount, downloadCountForVersion, owners);
+                requireLicenseAcceptance, minClientVersion, downloadCount, downloadCountForVersion, owners, types);
         }
 
         private static IEnumerable<string> GetFieldAsArray(JObject json, string property)

@@ -60,6 +60,15 @@ namespace NuGet.Protocol.Core.v3
                                 fx => "supportedFramework=" + fx.ToString()));
                     queryString += "&" + frameworks;
                 }
+
+                if (filters.PackageTypes != null && filters.PackageTypes.Any())
+                {
+                    string types = String.Join("&",
+                            filters.PackageTypes.Select(
+                                s => "packageTypeFilter=" + s));
+                    queryString += "&" + types;
+                }
+
                 queryUrl.Query = queryString;
 
                 if (!cancellationToken.IsCancellationRequested)
