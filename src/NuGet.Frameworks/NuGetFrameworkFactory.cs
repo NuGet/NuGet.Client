@@ -127,7 +127,6 @@ namespace NuGet.Frameworks
                 {
                     string framework = null;
 
-                    // TODO: support number only folder names like 45
                     if (mappings.TryGetIdentifier(parts.Item1, out framework))
                     {
                         Version version = FrameworkConstants.EmptyVersion;

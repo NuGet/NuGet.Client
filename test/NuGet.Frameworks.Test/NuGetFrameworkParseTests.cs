@@ -140,5 +140,13 @@ namespace NuGet.Test
         {
             Assert.Equal("Unsupported, Version=v0.0", NuGetFramework.Parse(folderName).DotNetFrameworkName);
         }
+
+        [Fact]
+        public void NuGetFramework_ParsePCLTest()
+        {
+            var fw = NuGetFramework.Parse("portable-net40%2Bsl5%2Bwp80%2Bwin8%2Bwpa81");
+
+            Assert.Equal("portable-net4+sl5+win8+wp8+wpa81+monoandroid+monotouch", fw.GetShortFolderName());
+        }
     }
 }

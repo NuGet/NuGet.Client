@@ -81,10 +81,21 @@ namespace NuGet.Frameworks
                     else if (reduced.All(f => f.IsPCL))
                     {
                         // decide between PCLs
-                        // TODO: improve this
+                        if (framework.IsPCL)
+                        {
+                            reduced = GetNearestPCLtoPCL(framework, reduced);
+                        }
+                        else
+                        {
+                            reduced = GetNearestNonPCLtoPCL(framework, reduced);
+                        }
 
-                        // For now just find the compatible PCL with the fewest frameworks
-                        reduced = reduced.OrderBy(e => e.Profile.Split('+').Length).ThenBy(e => e.Profile.Length);
+                        if (reduced.Count() > 1)
+                        {
+                            // For scenarios where we are unable to decide between PCLs, choose the PCL with the 
+                            // least frameworks. Less frameworks means less compatibility which means it is nearer to the target.
+                            reduced = OrderPCL(reduced).Take(1);
+                        }
                     }
                 }
 
@@ -218,6 +229,106 @@ namespace NuGet.Frameworks
 
             // sort the results just to make this more deterministic for the callers
             return results.OrderBy(f => f.Framework, StringComparer.OrdinalIgnoreCase).ThenBy(f => f.ToString());
+        }
+
+        private IEnumerable<NuGetFramework> GetNearestNonPCLtoPCL(NuGetFramework framework, IEnumerable<NuGetFramework> reduced)
+        {
+            // If framework is not a PCL, find the PCL with the sub framework nearest to framework
+            // Collect all frameworks from all PCLs we are considering
+            var pclToFrameworks = ExplodePortableFrameworks(reduced);
+            IEnumerable<NuGetFramework> allPclFrameworks = pclToFrameworks.Values.SelectMany(f => f);
+
+            // Find the nearest (no PCLs are involved at this point)
+            Debug.Assert(allPclFrameworks.All(f => !f.IsPCL), "a PCL returned a PCL as its profile framework");
+            NuGetFramework nearestProfileFramework = GetNearest(framework, allPclFrameworks);
+
+            // Reduce to only PCLs that include the nearest match
+            reduced = pclToFrameworks.Where(pair =>
+                pair.Value.Contains(nearestProfileFramework, NuGetFramework.Comparer))
+                .Select(pair => pair.Key);
+            return reduced;
+        }
+
+        private IEnumerable<NuGetFramework> GetNearestPCLtoPCL(NuGetFramework framework, IEnumerable<NuGetFramework> reduced)
+        {
+            // Compare each framework in the target framework individually
+            // against the list of possible PCLs. This effectively lets
+            // each sub-framework vote on which PCL is nearest.
+            var subFrameworks = ExplodePortableFramework(framework);
+
+            // reduce the sub frameworks - this would only have an effect if the PCL is 
+            // poorly formed and contains duplicates such as portable-win8+win81
+            subFrameworks = Reduce(subFrameworks);
+
+            var currentPCLs = reduced.ToArray();
+            var scores = new Dictionary<NuGetFramework, int>(NuGetFramework.Comparer);
+
+            // find the nearest PCL for each framework
+            foreach (var sub in subFrameworks)
+            {
+                Debug.Assert(!sub.IsPCL, "a PCL returned a PCL as its profile framework");
+
+                var nearestForSub = GetNearest(sub, currentPCLs);
+
+                if (!scores.ContainsKey(nearestForSub))
+                {
+                    scores.Add(nearestForSub, 1);
+                }
+                else
+                {
+                    scores[nearestForSub]++;
+                }
+            }
+
+            // take the highest vote count, this will be at least one
+            reduced = scores.GroupBy(pair => pair.Value).OrderByDescending(g => g.Key).First().Select(e => e.Key);
+
+            return reduced;
+        }
+
+        /// <summary>
+        /// Create lookup of the given PCLs to their actual frameworks
+        /// </summary>
+        private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls)
+        {
+            var result = new Dictionary<NuGetFramework, IEnumerable<NuGetFramework>>(NuGetFramework.Comparer);
+
+            foreach (var pcl in pcls)
+            {
+                IEnumerable<NuGetFramework> frameworks = ExplodePortableFramework(pcl);
+                result.Add(pcl, frameworks);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// portable-net45+win8 -> net45, win8
+        /// </summary>
+        private IEnumerable<NuGetFramework> ExplodePortableFramework(NuGetFramework pcl)
+        {
+            IEnumerable<NuGetFramework> frameworks = null;
+            if (!_mappings.TryGetPortableFrameworks(pcl.Profile, true, out frameworks))
+            {
+                Debug.Fail("Unable to get portable frameworks from: " + pcl.ToString());
+                frameworks = Enumerable.Empty<NuGetFramework>();
+            }
+
+            return frameworks;
+        }
+
+        /// <summary>
+        /// Order PCLs when there is no other way to decide.
+        /// 
+        /// Lowest framework count wins
+        /// Known profiles with Profile= are next
+        /// As a last resort, the shortest profile wins
+        /// </summary>
+        private IEnumerable<NuGetFramework> OrderPCL(IEnumerable<NuGetFramework> reduced)
+        {
+            return reduced.OrderBy(f => ExplodePortableFramework(f).Count())
+                .ThenBy(f => f.Profile.IndexOf('+') == -1 ? 0 : 1)
+                .ThenBy(f => f.Profile.Length);
         }
     }
 }

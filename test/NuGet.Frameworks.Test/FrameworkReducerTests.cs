@@ -11,6 +11,90 @@ namespace NuGet.Test
 {
     public class FrameworkReducerTests
     {
+
+        [Fact]
+        public void FrameworkReducer_GetNearestPCLtoPCL2()
+        {
+            var project = NuGetFramework.Parse("portable-net45+sl5+monotouch+monoandroid");
+
+            var packageFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("portable-net45+sl5"),
+                NuGetFramework.Parse("portable-net40+sl5+monotouch"),
+                NuGetFramework.Parse("portable-net40+sl4+monotouch+monoandroid"),
+                NuGetFramework.Parse("portable-net40+sl4+monotouch+monoandroid+wp71"),
+            };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var nearest = reducer.GetNearest(project, packageFrameworks);
+
+            Assert.Equal(packageFrameworks[0], nearest);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestPCLtoPCL()
+        {
+            var project = NuGetFramework.Parse("portable-net45+win81");
+
+            var packageFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("portable-net45+win8"),
+                NuGetFramework.Parse("portable-net40+win8"),
+                NuGetFramework.Parse("portable-net40+win81"),
+            };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var nearest = reducer.GetNearest(project, packageFrameworks);
+
+            // net40+win81 is nearest since it is a real framework
+            Assert.Equal(packageFrameworks[2], nearest);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestNonPCLtoPCL()
+        {
+            var project = NuGetFramework.Parse("win9");
+
+            var packageFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("portable-net45+win8"),
+                NuGetFramework.Parse("portable-net45+win82"),
+                NuGetFramework.Parse("portable-net45+win81"),
+                NuGetFramework.Parse("portable-net45+win91"),
+            };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var nearest = reducer.GetNearest(project, packageFrameworks);
+
+            // win82 is the best match for win9
+            Assert.Equal(packageFrameworks[1], nearest);
+        }
+
+        [Fact]
+        public void FrameworkReducer_JsonNet701beta1()
+        {
+            var project = NuGetFramework.Parse("win81");
+
+            var packageFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net20"),
+                NuGetFramework.Parse("net35"),
+                NuGetFramework.Parse("net40"),
+                NuGetFramework.Parse("net45"),
+                NuGetFramework.Parse("portable-net40%2Bsl5%2Bwp80%2Bwin8%2Bwpa81"),
+                NuGetFramework.Parse("portable-net45%2Bwp80%2Bwin8%2Bwpa81%2Baspnetcore50")
+            };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var nearest = reducer.GetNearest(project, packageFrameworks);
+
+            Assert.Equal(packageFrameworks[5], nearest);
+        }
+
         [Fact]
         public void FrameworkReducer_GetNearestChooseFrameworkName()
         {

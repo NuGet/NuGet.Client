@@ -12,6 +12,7 @@ namespace NuGet.Test
 {
     public class CompatibilityTests
     {
+
         [Theory]
         [InlineData("net45", "net45-full")]
         [InlineData("net40-full", "net40-full")]
@@ -25,7 +26,7 @@ namespace NuGet.Test
             // verify that compatibility is inferred across all the mappings
             Assert.True(compat.IsCompatible(framework1, framework2));
 
-            // verify that this was a one way mapping
+            // verify that this was a two way mapping
             Assert.True(compat.IsCompatible(framework2, framework1));
         }
 
