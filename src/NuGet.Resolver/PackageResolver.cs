@@ -133,13 +133,16 @@ namespace NuGet.Resolver
 
             var solution = solver.FindSolution(grouped, comparer, ShouldRejectPackagePair);
 
-            var nonAbsentCandidates = solution.Where(c => !c.Absent);
-
-            if (nonAbsentCandidates.Any())
+            if (solution != null)
             {
-                var sortedSolution = TopologicalSort(nonAbsentCandidates);
+                var nonAbsentCandidates = solution.Where(c => !c.Absent);
 
-                return sortedSolution.ToArray();
+                if (nonAbsentCandidates.Any())
+                {
+                    var sortedSolution = TopologicalSort(nonAbsentCandidates);
+
+                    return sortedSolution.ToArray();
+                }
             }
 
             // no solution found
