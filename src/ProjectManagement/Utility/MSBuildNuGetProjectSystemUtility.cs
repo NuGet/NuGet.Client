@@ -83,7 +83,7 @@ namespace NuGet.ProjectManagement
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
             {
-                var zipArchiveEntryList = packageItemListAsArchiveEntryNames.Select(i => zipArchive.GetEntry(i)).ToList();
+                var zipArchiveEntryList = packageItemListAsArchiveEntryNames.Select(i => zipArchive.GetEntry(i)).Where(i => i != null).ToList();
                 try
                 {
                     var paths = zipArchiveEntryList.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
