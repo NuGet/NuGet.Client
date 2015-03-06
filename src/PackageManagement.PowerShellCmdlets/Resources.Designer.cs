@@ -502,6 +502,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no other projects to sync the package &apos;{0}&apos;..
+        /// </summary>
+        internal static string Cmdlets_NoProjectsToSyncPackage {
+            get {
+                return ResourceManager.GetString("Cmdlets_NoProjectsToSyncPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The project &apos;{0}&apos; does not support adding BindingRedirects..
         /// </summary>
         internal static string Cmdlets_NotSupportBindingRedirects {

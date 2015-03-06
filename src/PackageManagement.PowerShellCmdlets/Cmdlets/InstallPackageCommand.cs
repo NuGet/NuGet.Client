@@ -211,6 +211,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         identities = packageRefs.Select(v => v.PackageIdentity);
                     }
                 }
+
+                // Set _allowPrerelease to true if any of the identities is prerelease version.
+                if (identities != null && identities.Any())
+                {
+                    foreach (PackageIdentity identity in identities)
+                    {
+                        if (identity.Version.IsPrerelease)
+                        {
+                            _allowPrerelease = true;
+                            break;
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -252,6 +265,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     // Example: install-package c:\temp\packages\jQuery.1.10.2.nupkg
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"\");
                 }
+
+                // Set _allowPrerelease to true if identity parsed is prerelease version.
+                if (identity != null && identity.Version != null && identity.Version.IsPrerelease)
+                {
+                    _allowPrerelease = true;
+                }
             }
             catch (Exception ex)
             {
@@ -292,6 +311,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                 }
                 NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(builderForVersion.ToString().TrimEnd('.'));
+                // Set _allowPrerelease to true if nVersion is prerelease version.
+                if (nVersion != null && nVersion.IsPrerelease)
+                {
+                    _allowPrerelease = true;
+                }
                 return new PackageIdentity(builderForId.ToString().TrimEnd('.'), nVersion);
             }
             return null;
@@ -311,6 +335,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     _versionSpecifiedPrerelease = true;
                 }
             }
+            _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
         }
 
         /// <summary>
@@ -320,7 +345,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
                 _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false);
                 return _context;
             }

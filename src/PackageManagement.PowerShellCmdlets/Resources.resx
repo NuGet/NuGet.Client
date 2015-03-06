@@ -288,4 +288,7 @@
   <data name="Cmdlets_ErrorFindingUpdateVersion" xml:space="preserve">
     <value>Unable to get version update for Package '{0}' due to error {1}</value>
   </data>
+  <data name="Cmdlets_NoProjectsToSyncPackage" xml:space="preserve">
+    <value>There are no other projects to sync the package '{0}'.</value>
+  </data>
 </root>

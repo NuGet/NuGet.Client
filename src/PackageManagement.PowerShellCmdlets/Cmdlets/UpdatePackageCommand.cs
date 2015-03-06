@@ -343,6 +343,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                 }
             }
+            _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
         }
 
         /// <summary>
@@ -352,7 +353,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
                 _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false);
                 return _context;
             }

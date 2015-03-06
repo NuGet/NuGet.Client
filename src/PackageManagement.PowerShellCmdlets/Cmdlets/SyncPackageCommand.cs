@@ -17,13 +17,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public class SyncPackageCommand : PackageActionBaseCommand
     {
         private ResolutionContext _context;
+        private bool _allowPrerelease;
 
         public SyncPackageCommand()
             : base()
         {
         }
 
-        public List<NuGetProject> Projects;
+        private List<NuGetProject> Projects = new List<NuGetProject>();
 
         protected override void Preprocess()
         {
@@ -43,13 +44,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Preprocess();
 
             PackageIdentity identity = GetPackageIdentity().Result;
+
             SubscribeToProgressEvents();
-            if (identity == null)
+            if (Projects.Count == 0)
+            {
+                LogCore(MessageLevel.Info, string.Format(Resources.Cmdlets_NoProjectsToSyncPackage, Id));
+            }
+            else if (identity == null)
             {
                 LogCore(MessageLevel.Info, string.Format(Resources.Cmdlet_PackageNotInstalled, Id));
             }
             else
             {
+                _allowPrerelease = IncludePrerelease.IsPresent || identity.Version.IsPrerelease;
                 Task.Run(() => SyncPackages(Projects, identity));
                 WaitAndLogFromMessageQueue();
             }
@@ -108,7 +115,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), IncludePrerelease.IsPresent, false);
+                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false);
                 return _context;
             }
         }
