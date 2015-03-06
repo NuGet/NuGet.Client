@@ -106,25 +106,8 @@ function TestCases-InstallPackageOnProjectSystem {
 
             $testCase = New-Object PSObject -Property $testCaseValues
             $testCases += $testCase
-            #Run-Test InstallPackageOnProjectSystem $True $testContext
-            #Test-InstallPackageOnProjectSystem $null $testContext
         }
     }
 
     return $testCases
-}
-
-function Test-APass
-{
-    Write-Host 'This is test APass. Always passes'
-}
-
-function Test-BSkip
-{
-    throw "SKIP: "
-}
-
-function Test-CFail
-{
-    throw "Fail"
 }
