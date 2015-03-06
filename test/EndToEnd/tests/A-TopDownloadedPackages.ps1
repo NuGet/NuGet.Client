@@ -61,8 +61,8 @@ $projectSystemNames = (
     'New-ClassLibrary',
     'New-WebApplication',
     'New-Website',
-    #'New-JavaScriptWindowsPhoneApp81', // Failing due to a product bug
-    #'New-JavaScriptApplication', // Failing due to a product bug
+    'New-JavaScriptWindowsPhoneApp81', # Failing due to a product bug
+    'New-JavaScriptApplication', # Failing due to a product bug
     'New-MvcApplication'
     )
 
@@ -70,20 +70,20 @@ function Test-InstallPackageOnProjectSystem
 {
     param(
         $context,
-        $testContext
+        $testCaseObject
     )
 
     Write-Host 'Starting test...'
-    Write-Host $testContext
-    if(!$testContext)
+    Write-Host $testCaseObject
+    if(!$testCaseObject)
     {
         return
     }
 
     Write-Host 'Started test...'
 
-    $projectSystemName = $testContext.ProjectSystemName
-    $packageId = $testContext.PackageId
+    $projectSystemName = $testCaseObject.ProjectSystemName
+    $packageId = $testCaseObject.PackageId
 
     $project = &$projectSystemName
     Write-Host 'Installing ' $packageId ' on ' $projectSystemName '...'
@@ -92,30 +92,39 @@ function Test-InstallPackageOnProjectSystem
     Assert-Package $project $packageId
 }
 
-function Test-TopDownloadedPackages {
-    param(
-        $context
-    )
-    # Arrange    
-	Write-Host '************ Testing installation of top downloaded packages on multiple project systems...'
-
+function TestCases-InstallPackageOnProjectSystem {
+    $testCases = @()
     # Act
-    $i = 0
     foreach($projectSystemName in $projectSystemNames)
     {
         foreach($packageId in $topDownloadedPackageIds)
         {
-            $testContextValues = @{
+            $testCaseValues = @{
                 ProjectSystemName = $projectSystemName
                 PackageId = $packageId
             }
 
-            $testContext = New-Object PSObject -Property $testContextValues
-            Run-Test InstallPackageOnProjectSystem $True $testContext
+            $testCase = New-Object PSObject -Property $testCaseValues
+            $testCases += $testCase
+            #Run-Test InstallPackageOnProjectSystem $True $testContext
             #Test-InstallPackageOnProjectSystem $null $testContext
-            break
         }
     }
 
-    Write-Host 'Tested'
+    return $testCases
+}
+
+function Test-APass
+{
+    Write-Host 'This is test APass. Always passes'
+}
+
+function Test-BSkip
+{
+    throw "SKIP: "
+}
+
+function Test-CFail
+{
+    throw "Fail"
 }
