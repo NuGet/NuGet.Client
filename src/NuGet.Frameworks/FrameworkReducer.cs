@@ -289,7 +289,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Create lookup of the given PCLs to their actual frameworks
         /// </summary>
-        private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls)
+        private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls, bool includeOptional=true)
         {
             var result = new Dictionary<NuGetFramework, IEnumerable<NuGetFramework>>(NuGetFramework.Comparer);
 
@@ -305,10 +305,10 @@ namespace NuGet.Frameworks
         /// <summary>
         /// portable-net45+win8 -> net45, win8
         /// </summary>
-        private IEnumerable<NuGetFramework> ExplodePortableFramework(NuGetFramework pcl)
+        private IEnumerable<NuGetFramework> ExplodePortableFramework(NuGetFramework pcl, bool includeOptional=true)
         {
             IEnumerable<NuGetFramework> frameworks = null;
-            if (!_mappings.TryGetPortableFrameworks(pcl.Profile, true, out frameworks))
+            if (!_mappings.TryGetPortableFrameworks(pcl.Profile, includeOptional, out frameworks))
             {
                 Debug.Fail("Unable to get portable frameworks from: " + pcl.ToString());
                 frameworks = Enumerable.Empty<NuGetFramework>();
@@ -326,7 +326,7 @@ namespace NuGet.Frameworks
         /// </summary>
         private IEnumerable<NuGetFramework> OrderPCL(IEnumerable<NuGetFramework> reduced)
         {
-            return reduced.OrderBy(f => ExplodePortableFramework(f).Count())
+            return reduced.OrderBy(f => ExplodePortableFramework(f, false).Count())
                 .ThenBy(f => f.Profile.IndexOf('+') == -1 ? 0 : 1)
                 .ThenBy(f => f.Profile.Length);
         }

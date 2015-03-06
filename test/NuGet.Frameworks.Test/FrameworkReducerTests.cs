@@ -48,8 +48,8 @@ namespace NuGet.Test
 
             var nearest = reducer.GetNearest(project, packageFrameworks);
 
-            // net40+win81 is nearest since it is a real framework
-            Assert.Equal(packageFrameworks[2], nearest);
+            // net45+win8 is nearest. it beats net40+win81 since it is a known framework
+            Assert.Equal(packageFrameworks[0], nearest);
         }
 
         [Fact]
@@ -92,7 +92,8 @@ namespace NuGet.Test
 
             var nearest = reducer.GetNearest(project, packageFrameworks);
 
-            Assert.Equal(packageFrameworks[5], nearest);
+            // #4 has the least profile frameworks
+            Assert.Equal(packageFrameworks[4], nearest);
         }
 
         [Fact]
