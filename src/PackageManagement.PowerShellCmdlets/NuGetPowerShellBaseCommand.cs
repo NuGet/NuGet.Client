@@ -345,6 +345,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Project = _solutionManager.GetNuGetProject(projectName);
             }
+
+            if (Project == null)
+            {
+                string name = string.IsNullOrEmpty(projectName) ? "Default" : projectName;
+                ErrorHandler.WriteProjectNotFoundError(name, terminating: true);
+            }
         }
 
         protected IEnumerable<NuGetProject> GetNuGetProjectsByName(string[] projectNames)

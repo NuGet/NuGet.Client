@@ -105,8 +105,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // wait for Init() to finish so that NuGetAndEnvDTEProjectCache is created.
             _initFinished.WaitOne();
 
-            NuGetProject nuGetProject;
-            NuGetAndEnvDTEProjectCache.TryGetNuGetProject(nuGetProjectSafeName, out nuGetProject);
+            NuGetProject nuGetProject = null;
+            // NuGetAndEnvDTEProjectCache could be null when solution is not open.
+            if (NuGetAndEnvDTEProjectCache != null)
+            {
+                NuGetAndEnvDTEProjectCache.TryGetNuGetProject(nuGetProjectSafeName, out nuGetProject);
+            }
             return nuGetProject;
         }
 

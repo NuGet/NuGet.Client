@@ -120,9 +120,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NuGet.PackageManagement.3.0.0-beta\lib\net45\NuGet.PackageManagement.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.PackageManagement.PowerShellCmdlets">
-      <HintPath>..\..\..\packages\NuGet.PackageManagement.PowerShellCmdlets.3.0.0-beta\lib\net45\NuGet.PackageManagement.PowerShellCmdlets.dll</HintPath>
-    </Reference>
     <Reference Include="NuGet.PackageManagement.UI">
       <HintPath>..\..\..\packages\NuGet.PackageManagement.UI.3.0.0-beta\lib\net45\NuGet.PackageManagement.UI.dll</HintPath>
     </Reference>
