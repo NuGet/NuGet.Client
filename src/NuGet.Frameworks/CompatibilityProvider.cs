@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HashCombiner = NuGet.Frameworks.HashCodeCombiner;
 
 namespace NuGet.Frameworks
 {
@@ -11,11 +10,13 @@ namespace NuGet.Frameworks
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
         private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
+        private readonly Dictionary<int, bool> _cache;
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
             _mappings = mappings;
             _expander = new FrameworkExpander(mappings);
+            _cache = new Dictionary<int, bool>();
         }
 
         /// <summary>
@@ -36,13 +37,49 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException("other");
             }
 
+            bool? result = null;
+
+            // check the cache for a solution
+            int cacheKey = GetCacheKey(framework, other);
+
+            lock (_cache)
+            {
+                bool cachedResult = false;
+                if (_cache.TryGetValue(cacheKey, out cachedResult))
+                {
+                    result = cachedResult;
+                }
+            }
+
+            if (result == null)
+            {
+                result = IsCompatibleCore(framework, other);
+
+                lock (_cache)
+                {
+                    // double check that the result hasn't been cached by another thread
+                    if (!_cache.ContainsKey(cacheKey))
+                    {
+                        _cache.Add(cacheKey, result == true);
+                    }
+                }
+            }
+
+            return result == true;
+        }
+
+        /// <summary>
+        /// Actual compatibility check without caching
+        /// </summary>
+        protected virtual bool? IsCompatibleCore(NuGetFramework framework, NuGetFramework other)
+        {
+            bool? result = null;
+
             // check if they are the exact same
             if (_fullComparer.Equals(framework, other))
             {
                 return true;
             }
-
-            bool? result = null;
 
             // special cased frameworks
             if (!framework.IsSpecificFramework || !other.IsSpecificFramework)
@@ -64,7 +101,7 @@ namespace NuGet.Frameworks
                 }
             }
 
-            return result == true;
+            return result;
         }
 
         protected virtual bool? SpecialFrameworkCompare(NuGetFramework framework, NuGetFramework other)
@@ -177,6 +214,18 @@ namespace NuGet.Frameworks
         private bool IsVersionCompatible(Version framework, Version other)
         {
             return other == FrameworkConstants.EmptyVersion || other <= framework;
+        }
+
+        private static int GetCacheKey(NuGetFramework framework, NuGetFramework other)
+        {
+            HashCombiner combiner = new HashCombiner();
+
+            // create the cache key from the hash codes of both frameworks
+            // the order is important here since compatibility is usually one way
+            combiner.AddObject(framework);
+            combiner.AddObject(other);
+
+            return combiner.CombinedHash;
         }
     }
 }
