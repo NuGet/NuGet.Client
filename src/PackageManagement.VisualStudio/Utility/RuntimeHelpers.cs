@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio
             visitedProjects.Add(envDTEProjectUniqueName);
         }
 
-        private static IEnumerable<AssemblyBinding> AddBindingRedirects(
+        public static IEnumerable<AssemblyBinding> AddBindingRedirects(
             ISolutionManager solutionManager,
             EnvDTEProject envDTEProject,
             AppDomain domain,

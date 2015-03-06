@@ -128,7 +128,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     package.Versions = versions.OrderByDescending(v => v);
                     if (package.Versions != null && package.Versions.Any())
                     {
-                        package.Version = SemanticVersion.Parse(package.Versions.FirstOrDefault().ToNormalizedString());
+                        SemanticVersion sVersion;
+                        SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
+                        package.Version = sVersion;
                     }
                 }
             }
@@ -143,7 +145,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (nVersion != null)
                 {
                     package.Versions = new List<NuGetVersion>() { nVersion };
-                    package.Version = SemanticVersion.Parse(nVersion.ToNormalizedString());
+                    SemanticVersion sVersion;
+                    SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                    package.Version = sVersion;
                 }
             }
             return package;

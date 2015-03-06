@@ -1,4 +1,6 @@
-﻿using NuGet.ProjectManagement;
+﻿using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.VisualStudio;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,15 +9,15 @@ using System.Management.Automation;
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     [Cmdlet(VerbsCommon.Add, "BindingRedirect")]
-    //[OutputType(typeof(AssemblyBinding))]
+    [OutputType(typeof(AssemblyBinding))]
     public class AddBindingRedirectCommand : NuGetPowerShellBaseCommand
     {
-        //private readonly IFileSystemProvider _fileSystemProvider;
-        //private readonly IVsFrameworkMultiTargeting _frameworkMultiTargeting;
+        private readonly IVsFrameworkMultiTargeting _frameworkMultiTargeting;
 
         public AddBindingRedirectCommand()
             : base()
         {
+            _frameworkMultiTargeting = ServiceLocator.GetGlobalService<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
         }
 
         [Parameter(Position = 0, ValueFromPipelineByPropertyName = true)]
@@ -34,48 +36,44 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             CheckForSolutionOpen();
 
-            var projects = new List<NuGetProject>();
+            var projects = new List<Project>();
 
             // if no project specified, use default
             if (ProjectName == null)
             {
-                NuGetProject project = VsSolutionManager.DefaultNuGetProject;
+                Project defaultProject = GetDefaultProject();
 
                 // if no default project (empty solution), throw terminating
-                if (project == null)
+                if (defaultProject == null)
                 {
                     ErrorHandler.ThrowNoCompatibleProjectsTerminatingError();
                 }
 
-                projects.Add(project);
+                projects.Add(defaultProject);
             }
             else
             {
                 // get matching projects, expanding wildcards
-                projects.AddRange(GetNuGetProjectsByName(ProjectName));
+                projects.AddRange(GetProjectsByName(ProjectName));
             }
 
-            foreach (NuGetProject project in projects)
+            // Create a new app domain so we don't load the assemblies into the host app domain
+            AppDomain domain = AppDomain.CreateDomain("domain");
+
+            try
             {
-                string projectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-                try
+                foreach (Project project in projects)
                 {
-                    // App domain loading and unloading is handled at the RuntimeHelpers class.
-                    MSBuildNuGetProject msbuildProject = project as MSBuildNuGetProject;
-                    if (msbuildProject != null)
-                    {
-                        msbuildProject.AddBindingRedirects();
-                        LogCore(MessageLevel.Info, string.Format(Resources.Cmdlets_AddedBindingRedirects, projectName));
-                    }
-                    else
-                    {
-                        LogCore(MessageLevel.Error, Resources.Cmdlets_NotSupportBindingRedirects);
-                    }
+                    var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+                    var redirects = RuntimeHelpers.AddBindingRedirects(VsSolutionManager, project, domain, projectAssembliesCache, _frameworkMultiTargeting, this);
+
+                    // Print out what we did
+                    WriteObject(redirects, enumerateCollection: true);
                 }
-                catch (Exception ex)
-                {
-                    LogCore(MessageLevel.Error, string.Format(Resources.Cmdlets_FailedBindingRedirects, projectName, ex.Message));
-                }
+            }
+            finally
+            {
+                AppDomain.Unload(domain);
             }
         }
     }
