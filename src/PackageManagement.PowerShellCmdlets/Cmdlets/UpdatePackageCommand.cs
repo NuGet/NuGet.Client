@@ -80,8 +80,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void Preprocess()
         {
-            ParseUserInputForVersion();
             base.Preprocess();
+            ParseUserInputForVersion();
             if (!_projectSpecified)
             {
                 Projects = VsSolutionManager.GetNuGetProjects().ToList();
@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            base.ProcessRecordCore();
+            Preprocess();
 
             SubscribeToProgressEvents();
             PerformPackageUpdatesOrReinstalls();
@@ -225,7 +225,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                Log(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
         }
 
@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                        Log(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
                     }
                 }
                 else
@@ -280,7 +280,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         }
                         else
                         {
-                            Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                            Log(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
                         }
                     }
                 }

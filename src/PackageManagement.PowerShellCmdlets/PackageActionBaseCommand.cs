@@ -49,21 +49,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public DependencyBehavior? DependencyVersion { get; set; }
 
-        /// <summary>
-        /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by NuGetBaseCmdlet.
-        /// </summary>
-        protected override void ProcessRecordCore()
-        {
-            Preprocess();
-            CheckForSolutionOpen();
-        }
-
         protected override void Preprocess()
         {
             base.Preprocess();
+            CheckForSolutionOpen();
             UpdateActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
+        }
+
+        protected override void ProcessRecordCore()
+        {
         }
 
         /// <summary>

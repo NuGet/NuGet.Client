@@ -40,6 +40,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void Preprocess()
         {
             base.Preprocess();
+            CheckForSolutionOpen();
             UpdateActiveSourceRepository();
             GetNuGetProject(ProjectName);
         }
@@ -47,8 +48,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void ProcessRecordCore()
         {
             Preprocess();
-
-            CheckForSolutionOpen();
 
             SubscribeToProgressEvents();
             Task.Run(() => UnInstallPackage());

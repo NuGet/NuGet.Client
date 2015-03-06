@@ -193,7 +193,7 @@
     <value>No packages installed.</value>
   </data>
   <data name="Cmdlet_NoPackageUpdates" xml:space="preserve">
-    <value>No package updates are available from the current package source.</value>
+    <value>No package updates are available from the current package source for project '{0}'.</value>
   </data>
   <data name="Cmdlet_NoSolution" xml:space="preserve">
     <value>The current environment doesn't have a solution open.</value>

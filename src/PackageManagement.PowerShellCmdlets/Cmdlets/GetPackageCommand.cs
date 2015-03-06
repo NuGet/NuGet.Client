@@ -285,7 +285,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates);
+                LogCore(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
         }
 

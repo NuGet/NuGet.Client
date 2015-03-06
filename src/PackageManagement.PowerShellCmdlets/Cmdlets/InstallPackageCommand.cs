@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            base.ProcessRecordCore();
+            Preprocess();
 
             SubscribeToProgressEvents();
             if (!_readFromPackagesConfig && !_readFromDirectPackagePath && _nugetVersion == null)

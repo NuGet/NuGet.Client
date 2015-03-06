@@ -35,14 +35,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void Preprocess()
         {
             base.Preprocess();
+            CheckForSolutionOpen();
             GetNuGetProject();
         }
 
         protected override void ProcessRecordCore()
         {
             Preprocess();
-
-            CheckForSolutionOpen();
 
             if (All.IsPresent)
             {

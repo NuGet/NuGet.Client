@@ -344,12 +344,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 Project = _solutionManager.GetNuGetProject(projectName);
-            }
-
-            if (Project == null)
-            {
-                string name = string.IsNullOrEmpty(projectName) ? "Default" : projectName;
-                ErrorHandler.WriteProjectNotFoundError(name, terminating: true);
+                if (_solutionManager.IsSolutionOpen && Project == null)
+                {
+                    ErrorHandler.WriteProjectNotFoundError(projectName, terminating: true);
+                }
             }
         }
 

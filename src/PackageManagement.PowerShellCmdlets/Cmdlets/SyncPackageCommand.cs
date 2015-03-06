@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            base.ProcessRecordCore();
+            Preprocess();
 
             PackageIdentity identity = GetPackageIdentity().Result;
             SubscribeToProgressEvents();
