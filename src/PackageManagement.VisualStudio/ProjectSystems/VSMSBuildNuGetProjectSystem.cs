@@ -282,9 +282,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (reference != null)
                 {
-                    // This happens if the assembly appears in any of the search paths that VS uses to locate assembly references.
+                    var path = GetReferencePath(reference);
+
+                    // If path != fullPath, we need to set CopyLocal thru msbuild by setting Private 
+                    // to true.
+                    // This happens if the assembly appears in any of the search paths that VS uses to 
+                    // locate assembly references.
                     // Most commonly, it happens if this assembly is in the GAC or in the output path.
-                    if (reference.Path != null && !reference.Path.Equals(fullPath, StringComparison.OrdinalIgnoreCase))
+                    if (path != null && !path.Equals(fullPath, StringComparison.OrdinalIgnoreCase))
                     {
                         // Get the msbuild project for this project
                         MicrosoftBuildEvaluationProject buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(EnvDTEProject);
@@ -315,8 +320,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                     else
                     {
-                        TrySetSpecificVersion(reference);
                         TrySetCopyLocal(reference);
+                        TrySetSpecificVersion(reference);
                     }
                 }
 
@@ -444,12 +449,38 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             catch (NotSupportedException)
             {
-
             }
             catch (NotImplementedException)
             {
-
             }
+            catch (RuntimeBinderException)
+            {
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+            }
+        }
+
+        private static string GetReferencePath(dynamic reference)
+        {
+            try
+            {
+                return reference.Path;
+            }
+            catch (NotSupportedException)
+            {
+            }
+            catch (NotImplementedException)
+            {
+            }
+            catch (RuntimeBinderException)
+            {
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+            }
+
+            return null;
         }
 
         // Set SpecificVersion to true
@@ -463,15 +494,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             catch (NotSupportedException)
             {
-
             }
             catch (NotImplementedException)
             {
-
             }
             catch (RuntimeBinderException)
             {
-
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
             }
         }
 
