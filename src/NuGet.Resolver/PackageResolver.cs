@@ -87,7 +87,7 @@ namespace NuGet.Resolver
             // Solve
             var solver = new CombinationSolver<ResolverPackage>();
 
-            CompareWrapper<ResolverPackage> comparer = new CompareWrapper<ResolverPackage>(Compare);
+            var comparer = new ResolverComparer(_dependencyBehavior, _installedPackages, _newPackageIds);
 
             List<List<ResolverPackage>> grouped = new List<List<ResolverPackage>>();
 
@@ -186,84 +186,6 @@ namespace NuGet.Resolver
             }
 
             return result;
-        }
-
-        private int Compare(ResolverPackage x, ResolverPackage y)
-        {
-            Debug.Assert(string.Equals(x.Id, y.Id, StringComparison.OrdinalIgnoreCase));
-
-            // The absent package comes first in the sort order
-            bool isXAbsent = x.Absent;
-            bool isYAbsent = y.Absent;
-            if (isXAbsent && !isYAbsent)
-            {
-                return -1;
-            }
-            if (!isXAbsent && isYAbsent)
-            {
-                return 1;
-            }
-            if (isXAbsent && isYAbsent)
-            {
-                return 0;
-            }
-
-            if (_installedPackages != null)
-            {
-                //Already installed packages come next in the sort order.
-                bool xInstalled = _installedPackages.Contains(x);
-                bool yInstalled = _installedPackages.Contains(y);
-                if (xInstalled && !yInstalled)
-                {
-                    return -1;
-                }
-
-                if (!xInstalled && yInstalled)
-                {
-                    return 1;
-                }
-            }
-
-            var xv = x.Version;
-            var yv = y.Version;
-
-            DependencyBehavior packageBehavior = _dependencyBehavior;
-
-            // for new packages use the highest version
-            if (_newPackageIds.Contains(x.Id))
-            {
-                packageBehavior = DependencyBehavior.Highest;
-            }
-
-            switch (_dependencyBehavior)
-            {
-                case DependencyBehavior.Lowest:
-                    return VersionComparer.Default.Compare(xv, yv);
-                case DependencyBehavior.Ignore:
-                case DependencyBehavior.Highest:
-                    return -1 * VersionComparer.Default.Compare(xv, yv);
-                case DependencyBehavior.HighestMinor:
-                    {
-                        if (VersionComparer.Default.Equals(xv, yv)) return 0;
-
-                        //TODO: This is surely wrong...
-                        return new[] { x, y }.OrderBy(p => p.Version.Major)
-                                           .ThenByDescending(p => p.Version.Minor)
-                                           .ThenByDescending(p => p.Version.Patch).FirstOrDefault() == x ? -1 : 1;
-
-                    }
-                case DependencyBehavior.HighestPatch:
-                    {
-                        if (VersionComparer.Default.Equals(xv, yv)) return 0;
-
-                        //TODO: This is surely wrong...
-                        return new[] { x, y }.OrderBy(p => p.Version.Major)
-                                             .ThenBy(p => p.Version.Minor)
-                                             .ThenByDescending(p => p.Version.Patch).FirstOrDefault() == x ? -1 : 1;
-                    }
-                default:
-                    throw new InvalidOperationException("Unknown DependencyBehavior value.");
-            }
         }
 
         private static bool ShouldRejectPackagePair(ResolverPackage p1, ResolverPackage p2)

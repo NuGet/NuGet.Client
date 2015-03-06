@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Resolver
 {
-    public class ResolverPackage : PackageDependencyInfo
+    public class ResolverPackage : PackageDependencyInfo, IEquatable<ResolverPackage>
     {
         public bool Absent { get; set; }
 
@@ -74,6 +74,38 @@ namespace NuGet.Resolver
         public override string ToString()
         {
             return String.Format(CultureInfo.InvariantCulture, "{0} {1}", Id, Version);
+        }
+
+        public bool Equals(ResolverPackage other)
+        {
+            if (Object.ReferenceEquals(other, null))
+            {
+                return false;
+            }
+
+            return this.Absent == other.Absent && base.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            HashCodeCombiner combiner = new HashCodeCombiner();
+
+            combiner.AddObject(Absent);
+            combiner.AddObject(base.GetHashCode());
+
+            return combiner.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            ResolverPackage other = obj as ResolverPackage;
+
+            if (other != null)
+            {
+                return Equals(other);
+            }
+
+            return false;
         }
     }
 }
