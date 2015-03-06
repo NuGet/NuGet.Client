@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.UI
                     await ExecuteActions(actions, uiService.ProgressWindow, userAction, token);
 
                     // update
-                    await uiService.RefreshPackageStatus();
+                    uiService.RefreshPackageStatus();
                 }
             }
             catch (Exception ex)

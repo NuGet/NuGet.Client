@@ -253,13 +253,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task RefreshPackageStatus()
+        public void RefreshPackageStatus()
         {
             if (PackageManagerControl != null)
             {
-                await UIDispatcher.Invoke(async () =>
+                UIDispatcher.Invoke(() =>
                 {
-                    await PackageManagerControl.UpdatePackageStatus();
+                    PackageManagerControl.UpdatePackageStatus();
                 });
             }
 

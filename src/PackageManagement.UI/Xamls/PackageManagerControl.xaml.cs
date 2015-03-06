@@ -344,13 +344,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
+        private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
             // TODO: PackageRestoreManager fires this event even when solution is closed.
             // Don't do anything if solution is closed.
             if (!e.PackagesMissing)
             {
-                await UpdateAfterPackagesMissingStatusChanged();
+                UpdateAfterPackagesMissingStatusChanged();
             }
         }
 
@@ -358,19 +358,19 @@ namespace NuGet.PackageManagement.UI
         // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
         // the VsSolutionManager.Init() method, which is scheduled on the thread pool. So this
         // method needs to use _uiDispatcher.
-        private async Task UpdateAfterPackagesMissingStatusChanged()
+        private void UpdateAfterPackagesMissingStatusChanged()
         {
             if (!_uiDispatcher.CheckAccess())
             {
-                await _uiDispatcher.Invoke(async () =>
+                _uiDispatcher.Invoke(() =>
                 {
-                    await this.UpdateAfterPackagesMissingStatusChanged();
+                    this.UpdateAfterPackagesMissingStatusChanged();
                 });
 
                 return;
             }
 
-            await UpdatePackageStatus();
+            UpdatePackageStatus();
             _packageDetail.Refresh();
         }
 
@@ -474,7 +474,7 @@ namespace NuGet.PackageManagement.UI
             }
         }        
 
-        private void SearchPackageInActivePackageSource(string searchText)
+        private async void SearchPackageInActivePackageSource(string searchText)
         {
             var filterItem = _filter.SelectedItem as FilterItem;
             Filter filter = filterItem != null ?
@@ -488,7 +488,8 @@ namespace NuGet.PackageManagement.UI
                 Model.Context.Projects,
                 _activeSource,
                 searchText);
-            _packageList.Loader = loader;
+            await loader.Initialize();
+            _packageList.Load(loader);
         }
 
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
@@ -571,12 +572,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal async Task UpdatePackageStatus()
+        internal void UpdatePackageStatus()
         {
             if (ShowInstalled || ShowUpdatesAvailable)
             {
                 // refresh the whole package list
-                await _packageList.Reload();
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             }
             else
             {

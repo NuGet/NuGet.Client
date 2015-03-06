@@ -62,34 +62,19 @@ namespace NuGet.PackageManagement.UI
 
         private ILoader _loader;
 
-        public ILoader Loader
+        // Load items using the specified loader
+        public async void Load(ILoader loader)
         {
-            get
-            {
-                return _loader;
-            }
-            set
-            {
-                _loader = value;
-                _loadingStatusIndicator.LoadingMessage = _loader.LoadingMessage;
-                var _ = Reload();
-            }
-        }
+            _loader = loader;
+            _loadingStatusIndicator.LoadingMessage = _loader.LoadingMessage;            
 
-        // Reload items starting with index 0
-        public async Task Reload()
-        {
             var selectedItem = _list.SelectedItem as SearchResultPackageMetadata;
 
             _items.Clear();
             _items.Add(_loadingStatusIndicator);
-            _startIndex = 0;
+            _startIndex = 0;            
 
-            // we need to load installed packages so that the package status can be
-            // calculated.
-            await _loader.LoadInstalledPackagesAsync();
-
-            // now reload the package list
+            // now the package list
             await Load();
 
             if (selectedItem != null)
@@ -137,7 +122,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // run Loader.LoadItems in background thread. Otherwise if the
                 // source if V2, the UI can get blocked a little bit.
-                var r = await Task.Run(async () => await Loader.LoadItems(_startIndex, _cts.Token));
+                var r = await Task.Run(async () => await _loader.LoadItems(_startIndex, _cts.Token));
 
                 // multiple loads may occur at the same time
                 if (!token.IsCancellationRequested && currentLoader == _loader)
@@ -290,8 +275,6 @@ namespace NuGet.PackageManagement.UI
         Task<LoadResult> LoadItems(int startIndex, CancellationToken ct);
 
         string LoadingMessage { get; }
-
-        Task LoadInstalledPackagesAsync();
     }
 
     public enum LoadingStatus

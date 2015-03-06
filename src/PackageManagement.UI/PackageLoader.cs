@@ -34,8 +34,10 @@ namespace NuGet.PackageManagement.UI
 
         private NuGetProject[] _projects;
 
+        // The list of all installed packages. This variable is used for the package status calculation.
         private HashSet<PackageIdentity> _installedPackages;
         private HashSet<string> _installedPackageIds;
+
         private NuGetPackageManager _packageManager;
 
         private PackageLoaderOption _option;
@@ -433,11 +435,10 @@ namespace NuGet.PackageManagement.UI
 
             return PackageStatus.NotInstalled;
         }
-
-
-        public async Task LoadInstalledPackagesAsync()
+        
+        public async Task Initialize()
         {
-            // Load up the packages from the project for the package status
+            // create _installedPackages and _installedPackageIds
             foreach (var project in _projects)
             {
                 var installedPackagesInProject = await project.GetInstalledPackagesAsync(CancellationToken.None);
