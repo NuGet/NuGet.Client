@@ -94,7 +94,7 @@ namespace NuGet.DependencyResolver
                         LibraryRange = new LibraryRange
                         {
                             Name = d.Id,
-                            VersionRange = (d.VersionRange == null ? null : d.VersionRange)
+                            VersionRange = d.VersionRange
                         }
                     });
                 }
