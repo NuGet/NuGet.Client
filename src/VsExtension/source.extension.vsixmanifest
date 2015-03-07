@@ -7,7 +7,7 @@
     <Icon>Resources/nuget_96.png</Icon>
     <PreviewImage>Resources/nuget_256.png</PreviewImage>
   </Metadata>
-  <Installation InstalledByMsi="false">
+  <Installation InstalledByMsi="false" AllUsers="false">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[12.0]" />
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[14.0]" />
   </Installation>
