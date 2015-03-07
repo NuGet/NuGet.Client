@@ -31,7 +31,7 @@ namespace NuGet.ProjectModel
             var authors = rawPackageSpec["authors"];
             var owners = rawPackageSpec["owners"];
             var tags = rawPackageSpec["tags"];
-            var buildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION");
+            var buildVersion = Environment.GetEnvironmentVariable("DNX_BUILD_VERSION");
 
             packageSpec.Name = name;
             packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
