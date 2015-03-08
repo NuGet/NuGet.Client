@@ -29,12 +29,14 @@ namespace NuGet.Test
         {
             var fw1 = NuGetFramework.Parse("portable-net45+win8+wp8+wpa81+monotouch+monoandroid");
             var fw2 = NuGetFramework.Parse("portable-net45+win8+wp8+wpa81");
-            var fw3 = NuGetFramework.Parse(".NETPortable, Version=v0.0, Profile=Profile259");
+            var fw3 = NuGetFramework.Parse(".NETPortable, Version=v0.0, Profile=net45+wp8+win8+wpa");
+            var fw4 = NuGetFramework.Parse(".NETPortable, Version=v0.0, Profile=Profile259");
 
             var comparer = new NuGetFrameworkFullComparer();
 
             Assert.True(comparer.Equals(fw1, fw2));
             Assert.True(comparer.Equals(fw1, fw3));
+            Assert.True(comparer.Equals(fw1, fw4));
         }
     }
 }

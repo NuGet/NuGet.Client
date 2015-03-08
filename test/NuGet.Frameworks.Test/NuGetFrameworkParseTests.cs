@@ -166,5 +166,20 @@ namespace NuGet.Test
 
             Assert.Equal("portable-net4+sl5+win8+wp8+wpa81", fw.GetShortFolderName());
         }
+
+        [Theory]
+        [InlineData("portable-net45+wp8+win+wpa")]
+        [InlineData("portable-net45+win8+wp8+wpa81")]
+        [InlineData("portable-net45+wp8+win8+wpa")]
+        [InlineData("portable-net45+win8+wp8+wpa81+monotouch+monoandroid")]
+        [InlineData(".NETPortable, Version=v0.0, Profile=Profile259")]
+        // TODO: should bad framework names be supported?
+        //[InlineData(".NETPortable, Version=v0.0, Profile=net45+wp8+win8+wpa+monotouch+monoandroid")]
+        //[InlineData(".NETPortable, Version=v0.0, Profile=net45+wp8+win+wpa")]
+        //[InlineData(".NETPortable, Version=v0.0, Profile=net45+wp8+win8+wpa81")]
+        public void NuGetFramework_ParsePCLNormalizeTest(string framework)
+        {
+            Assert.Equal("Profile259", NuGetFramework.Parse(framework).Profile);
+        }
     }
 }

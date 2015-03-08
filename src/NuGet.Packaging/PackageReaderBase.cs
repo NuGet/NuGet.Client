@@ -123,7 +123,7 @@ namespace NuGet.Packaging
 
             if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".dll"))
             {
-                if (!path.EndsWith(".resource.dll", StringComparison.OrdinalIgnoreCase))
+                if (!path.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase))
                 {
                     result = true;
                 }

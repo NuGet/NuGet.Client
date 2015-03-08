@@ -78,8 +78,27 @@ namespace NuGet.Packaging
             // legacy behavior
             if (!groupFound)
             {
-                var packages = MetadataNode.Elements(XName.Get(Dependencies, ns))
-                    .Elements(XName.Get(Dependency, ns)).Select(n => new PackageDependency(GetAttributeValue(n, Id), VersionRange.Parse(GetAttributeValue(n, Version)))).ToArray();
+                var depNodes = MetadataNode.Elements(XName.Get(Dependencies, ns))
+                    .Elements(XName.Get(Dependency, ns));
+
+                var packages = new List<PackageDependency>();
+
+                foreach (var depNode in depNodes)
+                {
+                    VersionRange range = null;
+
+                    var rangeNode = GetAttributeValue(depNode, Version);
+
+                    if (!String.IsNullOrEmpty(rangeNode))
+                    {
+                        if (!VersionRange.TryParse(rangeNode, out range))
+                        {
+                            // TODO: error handling
+                        }
+                    }
+
+                    packages.Add(new PackageDependency(GetAttributeValue(depNode, Id), range));
+                }
 
                 if (packages.Any())
                 {
