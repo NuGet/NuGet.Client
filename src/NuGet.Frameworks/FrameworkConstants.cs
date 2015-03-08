@@ -31,6 +31,9 @@ namespace NuGet.Frameworks
             public const string WindowsPhone = "WindowsPhone";
             public const string Windows = "Windows";
             public const string WindowsPhoneApp = "WindowsPhoneApp";
+            public const string CoreCLR = "CoreCLR";
+            public const string Dnx = "DNX";
+            public const string DnxCore = "DNXCore";
             public const string AspNet = "ASP.NET";
             public const string AspNetCore = "ASP.NETCore";
             public const string Silverlight = "Silverlight";
@@ -46,10 +49,6 @@ namespace NuGet.Frameworks
             public const string XamarinXbox360 = "Xamarin.Xbox360";
             public const string XamarinXboxOne = "Xamarin.XboxOne";
         }
-
-        // public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
-        // public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*([0-9]+\.([0-9]+))*)*)?$", RegexFlags);
-        // public static readonly Regex ProfileNumberRegex = new Regex(@"^Profile(?<ProfileNumber>[0-9]+)$", RegexFlags);
 
         /// <summary>
         /// Interned frameworks that are commonly used in NuGet
@@ -82,6 +81,16 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework AspNetCore = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, EmptyVersion);
             public static readonly NuGetFramework AspNet50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(5, 0, 0, 0));
             public static readonly NuGetFramework AspNetCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(5, 0, 0, 0));
+
+            public static readonly NuGetFramework Dnx = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, EmptyVersion);
+            public static readonly NuGetFramework Dnx451 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, new Version(4, 5, 1, 0));
+            public static readonly NuGetFramework Dnx452 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, new Version(4, 5, 2, 0));
+            public static readonly NuGetFramework DnxCore = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, EmptyVersion);
+            public static readonly NuGetFramework DnxCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, new Version(5, 0, 0, 0));
         }
+
+        // public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
+        // public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*([0-9]+\.([0-9]+))*)*)?$", RegexFlags);
+        // public static readonly Regex ProfileNumberRegex = new Regex(@"^Profile(?<ProfileNumber>[0-9]+)$", RegexFlags);
     }
 }

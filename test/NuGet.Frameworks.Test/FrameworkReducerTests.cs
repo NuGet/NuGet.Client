@@ -468,16 +468,30 @@ namespace NuGet.Test
         }
 
         [Theory]
+        [InlineData("dnx451", "aspnet50")]
+        [InlineData("dnx451", "aspnet5")]
+        [InlineData("dnx451", "aspnet")]
+        [InlineData("dnx", "aspnet50")]
+        [InlineData("dnx", "net45")]
+        [InlineData("dnx", "portable-net45+win8")]
+        [InlineData("dnx", "portable-win8+net45")]
+        [InlineData("dnx", "portable-win8+net45+sl4")]
+        [InlineData("dnx50", "dnx50")]
+        [InlineData("dnx50", "dnx5")]
+        [InlineData("dnx50", "dnx")]
+        [InlineData("dnx", "net45")]
+        [InlineData("dnx", "portable-net45+win8")]
+        [InlineData("dnx", "portable-win8+net45")]
+        [InlineData("dnx", "portable-win8+net45+sl4")]
         [InlineData("aspnet50", "aspnet50")]
         [InlineData("aspnet50", "aspnet5")]
         [InlineData("aspnet50", "aspnet")]
         [InlineData("aspnet", "aspnet50")]
         [InlineData("aspnet", "net45")]
-        [InlineData("aspnet", "net99")]
         [InlineData("aspnet", "portable-net45+win8")]
         [InlineData("aspnet", "portable-win8+net45")]
         [InlineData("aspnet", "portable-win8+net45+sl4")]
-        public void FrameworkReducer_GetNearestAsp(string project, string framework)
+        public void FrameworkReducer_GetNearestDnx(string project, string framework)
         {
             FrameworkReducer reducer = new FrameworkReducer();
 

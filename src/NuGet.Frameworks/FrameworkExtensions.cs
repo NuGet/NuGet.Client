@@ -11,7 +11,9 @@ namespace NuGet.Frameworks
         /// </summary>
         public static bool IsDesktop(this NuGetFramework framework)
         {
-            return framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Net, StringComparison.OrdinalIgnoreCase);
+            return framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Net, StringComparison.OrdinalIgnoreCase)
+                || framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.AspNet, StringComparison.OrdinalIgnoreCase)
+                || framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Dnx, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
