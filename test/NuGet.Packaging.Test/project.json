@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "3.0.0-*",
     "dependencies": {
         "NuGet.Packaging": "3.0.0-*",
@@ -10,14 +10,14 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": {
                 "System.IO.Compression": "",
                 "System.Xml": "",
                 "System.Xml.Linq": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.IO.Compression": "4.0.0-*",
                 "System.Xml.XDocument": "4.0.10-beta-*"

@@ -1,15 +1,15 @@
-{
+﻿{
     "version": "3.0.0-*",
     "dependencies": {
         "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": {
                 "System.IO.Compression": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.IO.Compression.ZipFile": "4.0.0-beta-*",
                 "System.IO.FileSystem": "4.0.0-beta-*"

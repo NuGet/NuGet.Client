@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "3.0.0-*",
     "description": "NuGet's implementation for reading nupkg package and nuspec package specification files.",
     "authors": [ "NuGet" ],
@@ -18,7 +18,7 @@
                 "System.IO.Compression": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.IO.Compression": "4.0.0-beta-*",
                 "System.IO.FileSystem": "4.0.0-beta-*",

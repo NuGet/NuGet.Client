@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "3.0.0-*",
     "description": "NuGet's dependency resolver within the NuGet.Packaging package",
     "authors": [ "NuGet" ],
@@ -10,6 +10,6 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnetcore50": { }
+        "dnxcore50": { }
     }
 }

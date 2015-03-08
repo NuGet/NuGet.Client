@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "3.0.0-*",
     "description": "The core data structures for NuGet.Packaging",
     "authors": [ "NuGet" ],
@@ -17,7 +17,7 @@
                 "System.IO.Compression": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",

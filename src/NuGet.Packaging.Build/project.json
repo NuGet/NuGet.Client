@@ -14,7 +14,7 @@
                 "System.Xml.Linq": { "version": "", "type": "build" }
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Xml.XDocument": "4.0.10-beta-*",
                 "System.IO.Compression": "4.0.0-*"
