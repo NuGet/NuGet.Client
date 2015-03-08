@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "3.0.0-*",
     "authors": [ "NuGet" ],
     "description": "NuGet's implementation of Semantic Versioning.",
@@ -8,7 +8,7 @@
     "tags": [ "semver", "semantic versioning" ],
     "frameworks": {
         "net45": { },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
