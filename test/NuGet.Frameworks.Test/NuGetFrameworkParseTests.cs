@@ -20,6 +20,24 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public void NuGetFramework_PortableRoundTrip()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable-net45+win8+wp8+wpa81");
+
+            Assert.Equal("portable-net45+win8+wp8+wpa81", framework.GetShortFolderName());
+        }
+
+        [Fact]
+        public void NuGetFramework_PortableNormalizeOptional()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable-net45+win8+wp8+wpa81+monotouch+monoandroid");
+
+            // Optional frameworks are removed by default
+            Assert.Equal("portable-net45+win8+wp8+wpa81", framework.GetShortFolderName());
+        }
+
+
+        [Fact]
         public void NuGetFramework_PortableWithOptional()
         {
             NuGetFramework framework = NuGetFramework.Parse("portable-net4%2Bsl5%2Bwp8%2Bwin8%2Bwpa81%2Bmonotouch%2Bmonoandroid");
@@ -146,7 +164,7 @@ namespace NuGet.Test
         {
             var fw = NuGetFramework.Parse("portable-net40%2Bsl5%2Bwp80%2Bwin8%2Bwpa81");
 
-            Assert.Equal("portable-net4+sl5+win8+wp8+wpa81+monoandroid+monotouch", fw.GetShortFolderName());
+            Assert.Equal("portable-net4+sl5+win8+wp8+wpa81", fw.GetShortFolderName());
         }
     }
 }

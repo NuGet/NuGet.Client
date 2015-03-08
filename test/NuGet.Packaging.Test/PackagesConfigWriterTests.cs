@@ -48,7 +48,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("2.0.0", packages[1].PackageIdentity.Version.ToNormalizedString());
 
             Assert.Equal("net45", packages[0].TargetFramework.GetShortFolderName());
-            Assert.Equal("portable-net45+win8+monoandroid+monotouch", packages[1].TargetFramework.GetShortFolderName());
+            Assert.Equal("portable-net45+win8", packages[1].TargetFramework.GetShortFolderName());
         }
 
         [Fact]

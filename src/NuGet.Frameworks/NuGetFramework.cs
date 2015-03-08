@@ -210,14 +210,18 @@ namespace NuGet.Frameworks
                     {
                         HashSet<NuGetFramework> required = new HashSet<NuGetFramework>(frameworks, NuGetFramework.Comparer);
 
-                        mappings.TryGetPortableFrameworks(Profile, true, out frameworks);
-                        HashSet<NuGetFramework> optional = new HashSet<NuGetFramework>(frameworks.Where(e => !required.Contains(e)), NuGetFramework.Comparer);
+                        // Normalize by removing all optional frameworks
+                        mappings.TryGetPortableFrameworks(Profile, false, out frameworks);
+
+                        // TODO: is there a scenario where optional frameworks are still needed in the string?
+                        // mappings.TryGetPortableFrameworks(Profile, true, out frameworks);
+                        // HashSet<NuGetFramework> optional = new HashSet<NuGetFramework>(frameworks.Where(e => !required.Contains(e)), NuGetFramework.Comparer);
 
                         // sort the PCL frameworks by alphabetical order
                         List<string> sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
 
                         // add optional frameworks at the end
-                        sortedFrameworks.AddRange(optional.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+                        // sortedFrameworks.AddRange(optional.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
 
                         sb.Append(String.Join("+", sortedFrameworks));
                     }
