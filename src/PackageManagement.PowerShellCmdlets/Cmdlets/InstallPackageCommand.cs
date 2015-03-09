@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (UriHelper.IsHttpSource(Id))
                     {
                         _isHttp = true;
-                        Source = PackageManager.PackagesFolderSourceRepository.PackageSource.Source;
+                        Source = Path.GetTempPath();
                     }
                     else
                     {
