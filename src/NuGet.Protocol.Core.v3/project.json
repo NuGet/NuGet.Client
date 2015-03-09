@@ -9,7 +9,7 @@
     "dependencies": {
         "NuGet.Versioning": "3.0.0-*",
         "NuGet.Configuration": "3.0.0-*",
-        "NuGet.Packaging.Core.Types": "3.0.0-*",
+        "NuGet.Packaging.Core.Types": "3.0.1-*",
         "NuGet.Protocol.Core.Types": "3.0.0-*",
         "Newtonsoft.Json": "6.0.4"
     },

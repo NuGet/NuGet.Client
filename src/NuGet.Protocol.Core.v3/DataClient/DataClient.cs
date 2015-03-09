@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if !ASPNETCORE50
+#if !DNXCORE50
 using System.Net.Cache;
 #endif
 
@@ -123,8 +123,8 @@ namespace NuGet.Protocol.Core.v3.Data
         {
             get
             {
-#if !ASPNETCORE50
-                return new WebRequestHandler()
+#if !DNXCORE50
+				return new WebRequestHandler()
                 {
                     CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default)
                 };
@@ -138,8 +138,8 @@ namespace NuGet.Protocol.Core.v3.Data
         {
             get
             {
-#if !ASPNETCORE50
-                return new WebRequestHandler()
+#if !DNXCORE50
+				return new WebRequestHandler()
                 {
                     CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache)
                 };

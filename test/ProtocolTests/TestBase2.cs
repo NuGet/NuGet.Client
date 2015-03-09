@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using NuGet.Configuration;
 using System.Net.Http;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using System.Net.Cache;
 #endif
 using NuGet.Protocol.Core.v3.Data;
@@ -36,8 +36,8 @@ namespace Client.V2Test
                 {
                     HttpMessageHandler handler = new HttpClientHandler();
 
-#if !ASPNETCORE50
-                    handler = new WebRequestHandler()
+#if !DNXCORE50
+					handler = new WebRequestHandler()
                     {
                         // aggressive caching that doesn't check for updates
                         // CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable)

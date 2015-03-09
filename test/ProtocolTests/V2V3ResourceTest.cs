@@ -223,8 +223,8 @@ namespace V2V3ResourcesTest
 
             string curDir = string.Empty;
 
-#if !ASPNETCORE50
-            curDir = Environment.CurrentDirectory;
+#if !DNXCORE50
+			curDir = Environment.CurrentDirectory;
 #endif
 
             SourceRepository repo = GetSourceRepository(curDir);

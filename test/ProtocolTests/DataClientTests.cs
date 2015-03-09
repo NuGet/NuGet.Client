@@ -18,9 +18,9 @@ namespace DataTest
 
         public DataClientTests()
         {
-#if !ASPNETCORE50
-            // remove trace listeners to avoid asserts
-            List<TraceListener> listeners = new List<TraceListener>();
+#if !DNXCORE50
+			// remove trace listeners to avoid asserts
+			List<TraceListener> listeners = new List<TraceListener>();
             foreach (TraceListener t in Debug.Listeners)
             {
                 listeners.Add(t);

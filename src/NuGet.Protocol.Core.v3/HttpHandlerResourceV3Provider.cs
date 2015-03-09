@@ -26,17 +26,17 @@ namespace NuGet.Protocol.Core.v3
         {
             HttpHandlerResourceV3 curResource = null;
 
-#if !ASPNETCORE50
-            // Everyone gets a dataclient
-            var HttpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
+#if !DNXCORE50
+			// Everyone gets a dataclient
+			var HttpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
             curResource = new HttpHandlerResourceV3(HttpHandler);
 #endif
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
         }
 
-#if !ASPNETCORE50
-        private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource) 
+#if !DNXCORE50
+		private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource) 
         {
             Uri uri = new Uri(packageSource.Source);
             var proxy = ProxyCache.Instance.GetProxy(uri);
