@@ -198,7 +198,7 @@ function global:Run-Test {
 
             # Write to log file as we run tests
             "$(Get-Date -format o) Running Test $testName... ($testIndex / $($tests.Count))" + $testCasesInfoString >> $testLogFile
-            "Running Test " + $testName + $testCasesInfoString
+            "Running Test " + $testName + " ($testIndex / $($tests.Count))" + $testCasesInfoString
 
             $testCaseIndex = 0
             $testCases | %{
@@ -214,10 +214,10 @@ function global:Run-Test {
                     {
                         $name += "(" + [system.string]::join("_", $noteProperties) + ")"
                     }
-                    "Running Test case $name..."
                     $testCaseIndex++
+                    "Running Test case $name... ($testCaseIndex / $($testCases.Count))"
                     # Write to log file as we run tests
-                    "$(Get-Date -format o) Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile                    
+                    "$(Get-Date -format o) Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
                 }
                 
                 $repositoryPath = Join-Path $testRepositoryPath $name
@@ -242,7 +242,7 @@ function global:Run-Test {
                 $context = New-Object PSObject -Property $values
 
                 # Some tests are flaky. We give failed tests another chance to succeed.
-                for ($counter = 0; $counter -le 0; $counter++)
+                for ($counter = 0; $counter -le 1; $counter++)
                 {
                     if ($counter -eq 1)
                     {

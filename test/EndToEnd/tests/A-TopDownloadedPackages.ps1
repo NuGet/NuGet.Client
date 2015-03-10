@@ -57,13 +57,13 @@ $topDownloadedPackageIds = (
     )
 
 $projectSystemNames = (
+    'New-MvcApplication',
     'New-ConsoleApplication',
     'New-ClassLibrary',
     'New-WebApplication',
     'New-Website',
     'New-JavaScriptWindowsPhoneApp81', # Failing due to a product bug
-    'New-JavaScriptApplication', # Failing due to a product bug
-    'New-MvcApplication'
+    'New-JavaScriptApplication' # Failing due to a product bug
     )
 
 function Test-InstallPackageOnProjectSystem
