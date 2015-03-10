@@ -269,6 +269,7 @@ namespace NuGet.PackageManagement
             }
 
             List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
+            if (!packageTargetIdsForResolver.Any()) return nuGetProjectActions;
             // TODO: these sources should be ordered
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
