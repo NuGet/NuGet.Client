@@ -2740,6 +2740,7 @@ function Test-InstallPackagesConfigOnline
     $p = New-ClassLibrary
 
     # Act
+	$p | Install-Package Newtonsoft.Json
     $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
 
     # Assert
@@ -2762,6 +2763,7 @@ function Test-InstallPackagesConfigLocal
     # Assert
     Assert-Package $p jQuery.validation 1.13.1
 	Assert-Package $p jQuery 2.1.3
+	Assert-Package $p EntityFramework 6.1.3-beta1
 }
 
 # Tests that passing in online path to a .nupkg file to 
@@ -2777,7 +2779,7 @@ function Test-InstallPackagesNupkgOnline
     $p | Install-package https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
 
     # Assert
-    Assert-Package $p microsoft.aspnet.mvc 4.0.20505
+    Assert-Package $p microsoft.aspnet.mvc 4.0.20505.0
 	Assert-Package $p microsoft.aspnet.webpages 2.0.20505
 	Assert-Package $p microsoft.aspnet.razor 2.0.20505
 	Assert-Package $p microsoft.web.infrastructure 1.0.0
