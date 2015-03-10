@@ -848,8 +848,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public void Log(MessageLevel level, string message, params object[] args)
         {
             string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
-            logQueue.Enqueue(Tuple.Create(level, formattedMessage));
-            logQueueSemaphore.Release();
+            blockingCollection.Add(new LogMessage(level, formattedMessage));
         }
 
         /// <summary>
@@ -880,61 +879,42 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Wait for messageQueue and completeEvent (ManualResetEvent).
+        /// Wait for package actions and log messages.
         /// </summary>
-        protected void WaitAndLogFromMessageQueue()
+        protected void WaitAndLogPackageActions()
         {
-            while (true)
+            try
             {
-                int index = WaitHandle.WaitAny(new WaitHandle[] { completeEvent, scriptStartSemaphore, logQueueSemaphore });
-                if (index == 0)
+                while (true)
                 {
-                    int count = logQueue.Count;
-                    if (count != 0)
+                    var message = blockingCollection.Take();
+                    if (message is ExecutionCompleteMessage)
                     {
-                        for (int i = 0; i < count; i++)
-                        {
-                            LogFromMessageQueue();
-                        }
+                        break;
                     }
-                    break;
-                }
-                else if (index == 1)
-                {
-                    ExecutePSScript();
-                }
-                else
-                {
-                    LogFromMessageQueue();
+                    else if (message is ScriptMessage)
+                    {
+                        ScriptMessage scriptMessage = message as ScriptMessage;
+                        ExecutePSScriptInternal(scriptMessage.ScriptPath);
+                    }
+                    else if (message is LogMessage)
+                    {
+                        LogMessage logMessage = message as LogMessage;
+                        LogCore(logMessage.Level, logMessage.Content); 
+                    }
                 }
             }
-        }
-
-        /// <summary>
-        /// Execute PowerShell script. Called by PowerShell execution thread.
-        /// </summary>
-        private void ExecutePSScript()
-        {
-            Tuple<MessageLevel,string> messageFromQueue;
-            logQueue.TryDequeue(out messageFromQueue);
-            ExecutePSScriptInternal(messageFromQueue.Item2);
-        }
-
-        /// <summary>
-        /// Log from the message queue. Called by PowerShell execution thread.
-        /// </summary>
-        private void LogFromMessageQueue()
-        {
-            Tuple<MessageLevel, string> messageFromQueue;
-            logQueue.TryDequeue(out messageFromQueue);
-            LogCore(messageFromQueue.Item1, messageFromQueue.Item2);
+            catch (InvalidOperationException ex)
+            {
+                LogCore(MessageLevel.Error, ex.Message);
+            }
         }
 
         /// <summary>
         /// Execute PowerShell script internally by PowerShell execution thread.
         /// </summary>
         /// <param name="path"></param>
-        private void ExecutePSScriptInternal(string path)
+        public void ExecutePSScriptInternal(string path)
         {
             try
             {
@@ -962,13 +942,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected ConcurrentQueue<Tuple<MessageLevel, string>> logQueue = new ConcurrentQueue<Tuple<MessageLevel, string>>();
-
-        protected ManualResetEvent completeEvent = new ManualResetEvent(false);
-
-        protected Semaphore logQueueSemaphore = new Semaphore(0, Int32.MaxValue);
-
-        protected Semaphore scriptStartSemaphore = new Semaphore(0, Int32.MaxValue);
+        protected BlockingCollection<Message> blockingCollection = new BlockingCollection<Message>();
 
         protected Semaphore scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
         #endregion
@@ -992,9 +966,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public void ExecutePSScript(string scriptPath)
         {
-            logQueue.Enqueue(Tuple.Create(MessageLevel.Info, scriptPath));
-            scriptStartSemaphore.Release();
-            
+            blockingCollection.Add(new ScriptMessage(scriptPath));
+
             WaitHandle.WaitAny(new WaitHandle[] { scriptEndSemaphore });
 
             if (_scriptException != null)

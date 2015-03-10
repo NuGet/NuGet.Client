@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 IEnumerable<PackageIdentity> identities = GetPackageIdentities();
                 Task.Run(() => InstallPackages(identities));
             }
-            WaitAndLogFromMessageQueue();
+            WaitAndLogPackageActions();
             UnsubscribeFromProgressEvents();
         }
 
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                completeEvent.Set();
+                blockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                completeEvent.Set();
+                blockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 

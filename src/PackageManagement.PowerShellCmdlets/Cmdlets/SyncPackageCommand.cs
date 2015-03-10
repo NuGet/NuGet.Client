@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 _allowPrerelease = IncludePrerelease.IsPresent || identity.Version.IsPrerelease;
                 Task.Run(() => SyncPackages(Projects, identity));
-                WaitAndLogFromMessageQueue();
+                WaitAndLogPackageActions();
             }
             UnsubscribeFromProgressEvents();
         }
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                completeEvent.Set();
+                blockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 

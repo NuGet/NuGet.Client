@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             SubscribeToProgressEvents();
             Task.Run(() => UnInstallPackage());
-            WaitAndLogFromMessageQueue();
+            WaitAndLogPackageActions();
             UnsubscribeFromProgressEvents();
         }
 
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                completeEvent.Set();
+                blockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 

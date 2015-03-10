@@ -117,7 +117,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Task.Run(() => UpdateOrReinstallSinglePackage());
             }
-            WaitAndLogFromMessageQueue();
+            WaitAndLogPackageActions();
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                completeEvent.Set();
+                blockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 
@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                completeEvent.Set();
+                blockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 
