@@ -5,4 +5,6 @@ if (![string]::IsNullOrEmpty($env:BuildCounter))
     Write-Host "DNX_BUILD_VERSION $env:DNX_BUILD_VERSION"
 }
 
+.\build.cmd
+
 exit 0
