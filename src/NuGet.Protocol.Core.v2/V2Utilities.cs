@@ -60,7 +60,8 @@ namespace NuGet.Protocol.Core.v2
 
         public static async Task<string> GetContent(Uri address)
         {
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient(
+                new HttpClientHandler(){ UseDefaultCredentials = true });
             var response = await client.GetAsync(address);
             return await response.Content.ReadAsStringAsync();
         }
