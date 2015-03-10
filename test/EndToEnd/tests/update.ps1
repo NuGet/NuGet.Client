@@ -751,14 +751,14 @@ function Test-UpdateAllPackagesInASingleProjectWithMultipleProjects {
     Update-Package -Source $context.RepositoryPath -ProjectName $p1.Name
 
     # Assert
-    Assert-Package $p1 jQuery 1.6.1
+    Assert-Package $p1 jQuery 2.1.3
     Assert-Package $p2 jQuery 1.5.1
-    Assert-Package $p1 jQuery.UI.Combined 1.8.13
+    Assert-Package $p1 jQuery.UI.Combined 1.11.3
     Assert-Package $p2 jQuery.UI.Combined 1.8.11
     Assert-SolutionPackage jQuery 1.5.1
-    Assert-SolutionPackage jQuery 1.6.1
+    Assert-SolutionPackage jQuery 2.1.3
     Assert-SolutionPackage jQuery.UI.Combined 1.8.11
-    Assert-SolutionPackage jQuery.UI.Combined 1.8.13
+    Assert-SolutionPackage jQuery.UI.Combined 1.11.3
 }
 
 function Test-UpdateAllPackagesInASingleProjectWithSafeFlagAndMultipleProjects {
