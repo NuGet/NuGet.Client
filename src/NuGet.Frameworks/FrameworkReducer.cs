@@ -214,10 +214,24 @@ namespace NuGet.Frameworks
                     {
                         NuGetFramework y = input[j];
 
-                        // remove frameworks that are compatible with other framworks in the list
+                        // remove frameworks that are compatible with other frameworks in the list
                         // do not remove frameworks which tie with others, for example: net40 and net40-client
                         // these equivalent frameworks should both be returned to let the caller decide between them
-                        dupe = isCompat(x, y) && !isCompat(y, x);
+                        if (isCompat(x, y))
+                        {
+                            bool revCompat = isCompat(y, x);
+
+                            dupe = !revCompat;
+
+                            // for scenarios where the framework identifiers are the same dupe the zero version
+                            // Ex: win, win8 - these are equivalent, but only one is needed
+                            if (revCompat && _fwNameComparer.Equals(x, y))
+                            {
+                                // Throw out the zero version
+                                // Profile, Platform, and all other aspects should have been covered by the compat check already
+                                dupe = x.Version == FrameworkConstants.EmptyVersion && y.Version != FrameworkConstants.EmptyVersion;
+                            }
+                        }
                     }
                 }
 

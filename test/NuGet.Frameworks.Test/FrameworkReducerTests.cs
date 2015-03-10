@@ -11,6 +11,28 @@ namespace NuGet.Test
 {
     public class FrameworkReducerTests
     {
+        [Fact]
+        public void FrameworkReducer_ReduceToHighest()
+        {
+            // both frameworks are equivalent
+            var fw1 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.EmptyVersion);
+            var fw2 = FrameworkConstants.CommonFrameworks.Win8;
+
+            var packageFrameworks = new List<NuGetFramework>()
+            {
+                fw1,
+                fw2
+            };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            // the non-zero version should win in both cases
+            var upwards = reducer.ReduceUpwards(packageFrameworks).Single();
+            var downwards = reducer.ReduceUpwards(packageFrameworks).Single();
+
+            Assert.Equal(fw2, upwards);
+            Assert.Equal(fw2, downwards);
+        }
 
         [Fact]
         public void FrameworkReducer_GetNearestPCLtoPCL2()
