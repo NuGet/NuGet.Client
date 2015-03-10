@@ -1,18 +1,18 @@
 ﻿{
-    "dependencies": {
-        "NuGet.Versioning": "3.0.0-*",
-        "NuGet.Protocol.Core.Types": "3.0.0-*",
-        "xunit.runner.kre": "1.0.0-*",
-        "Moq": "4.2.1408.0717",
-        "NuGet.Protocol.Core.v2": "3.0.0-*",
-        "NuGet.Protocol.Core.v3": "3.0.0-*",
-        "NuGet.Protocol.VisualStudio": "3.0.0-*"
-    },
-    "commands": {
-        "run": "xunit.runner.kre",
-        "test": "xunit.runner.kre"
-    },
-    "frameworks": {
-        "dnx451": { }
-    }
-}
+	"dependencies": {
+		"NuGet.Versioning": "3.0.0-*",
+		"NuGet.Protocol.Core.Types": "3.0.0-*",
+		"xunit.runner.kre": "1.0.0-*",
+		"Moq": "4.2.1408.0717",
+		"NuGet.Protocol.Core.v2": "3.0.0-*",
+		"NuGet.Protocol.Core.v3": "3.0.0-*",
+		"NuGet.Protocol.VisualStudio": "3.0.0-*"
+	},
+	"commands": {
+		"run": "xunit.runner.kre",
+		"_comment": "Temporarily disable tests. To add back, add \"test\": \"xunit.runner.kre\""
+		},
+		"frameworks": {
+			"dnx451": { }
+		}
+	}
