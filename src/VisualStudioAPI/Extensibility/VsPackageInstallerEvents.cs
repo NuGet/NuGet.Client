@@ -35,6 +35,8 @@ namespace NuGet.VisualStudio
             _eventSource.PackageUninstalling += Source_PackageUninstalling;
         }
 
+        // TODO: If the extra metadata fields are needed use: PackageManagementHelpers.CreateMetadata()
+
         private void Source_PackageUninstalling(object sender, PackageEventArgs e)
         {
             NotifyUninstalling(new PackageOperationEventArgs(e.InstallPath, e.Identity, null));
@@ -99,12 +101,18 @@ namespace NuGet.VisualStudio
 
         internal void NotifyReferenceAdded(PackageOperationEventArgs e)
         {
-            PackageReferenceAdded(new VsPackageMetadata(e.Package, e.InstallPath));
+            if (PackageReferenceAdded != null)
+            {
+                PackageReferenceAdded(new VsPackageMetadata(e.Package, e.InstallPath));
+            }
         }
 
         internal void NotifyReferenceRemoved(PackageOperationEventArgs e)
         {
-            PackageReferenceRemoved(new VsPackageMetadata(e.Package, e.InstallPath));
+            if (PackageReferenceRemoved != null)
+            {
+                PackageReferenceRemoved(new VsPackageMetadata(e.Package, e.InstallPath));
+            }
         }
     }
 }

@@ -354,6 +354,8 @@ namespace NuGet.VisualStudio
                 // install the package
                 foreach (PackageIdentity package in packages)
                 {
+                    // TODO: use skipAssemblyReferences in PM
+
                     await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
                 }
             }

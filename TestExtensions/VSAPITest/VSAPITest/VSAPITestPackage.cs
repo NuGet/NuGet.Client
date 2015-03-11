@@ -82,7 +82,7 @@ namespace MicrosoftCorp.VSAPITest
 
             DisplayMessage("Packages in solution", String.Join(", ", allPackages.Select(p => String.Format("[{0} {1}]", p.Id, p.InstallPath))));
 
-            foreach (EnvDTE.project project in dte.Solution.Projects)
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
                 var projPackages = services.GetInstalledPackages(project);
 

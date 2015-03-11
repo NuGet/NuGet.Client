@@ -208,12 +208,10 @@ namespace NuGet.VisualStudio
             // RepositorySettings = null in unit tests
             if (EnvDTEProjectUtility.IsWebSite(project))
             {
-                // TODO: respect SkipAssemblyReferences and add them here
-
-                // CreateRefreshFilesInBin(
-                //    project,
-                //    repositoryPath,
-                //    configuration.Packages.Where(p => p.SkipAssemblyReferences));
+                CreateRefreshFilesInBin(
+                   project,
+                   repositoryPath,
+                   configuration.Packages.Where(p => p.SkipAssemblyReferences));
 
                 CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
             }
@@ -281,15 +279,17 @@ namespace NuGet.VisualStudio
                 {
                     var refGroup = groups.Where(e => fwComparer.Equals(targetGroupFramework, e.TargetFramework)).FirstOrDefault();
 
+                    var root = EnvDTEProjectUtility.GetFullPath(project);
+
                     foreach (string refItem in refGroup.Items)
                     {
                         string sourcePath = Path.Combine(packageFolder.FullName, refItem);
 
-                        // TODO: change this back to adding refresh files in bulk
-                        projectSystem.AddReference(sourcePath);
+                        // projectSystem.AddReference(sourcePath);
 
                         // create one refresh file for each assembly reference, as per required by Website projects
                         // projectSystem.CreateRefreshFile(assemblyPath);
+                        RefreshFileUtility.CreateRefreshFile(root, sourcePath, context);
                     }
                 }
             }
