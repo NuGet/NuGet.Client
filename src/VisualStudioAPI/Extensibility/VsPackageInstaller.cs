@@ -343,7 +343,11 @@ namespace NuGet.VisualStudio
                 // find the project
                 NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project);
 
-                VSAPIProjectContext projectContext = new VSAPIProjectContext();
+                // Skip assembly references and disable binding redirections should be done together
+                bool disableBindingRedirects = skipAssemblyReferences;
+
+                VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+                
 
                 if (nuGetProject == null)
                 {
@@ -354,8 +358,6 @@ namespace NuGet.VisualStudio
                 // install the package
                 foreach (PackageIdentity package in packages)
                 {
-                    // TODO: use skipAssemblyReferences in PM
-
                     await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
                 }
             }

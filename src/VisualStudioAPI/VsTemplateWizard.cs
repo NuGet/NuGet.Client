@@ -265,7 +265,8 @@ namespace NuGet.VisualStudio
                 string solutionRepositoryPath = null;
                 if (_dte.Solution != null && _dte.Solution.IsOpen)
                 {
-                    solutionRepositoryPath = RepositorySettings.Value.RepositoryPath;
+                    //solutionRepositoryPath = RepositorySettings.Value.RepositoryPath;
+                    solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _settings);
                 }
                 else
                 {
