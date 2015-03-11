@@ -229,12 +229,22 @@ function global:Run-Test {
                     NuGetExe = $nugetExePath
                 }
                 
+                $generatePackagesExitCode = 0
                 if (Test-Path $repositoryPath) {            
                     pushd 
                     Set-Location $repositoryPath
                     # Generate any packages that might be in the repository dir
                     Get-ChildItem $repositoryPath\* -Include *.dgml,*.nuspec | %{
-                        & $generatePackagesExePath $testObject.FullName | Out-Null
+                        Write-Host 'Running GenerateTestPackages.exe on ' $_.FullName '...'
+                        $p = Start-Process $generatePackagesExePath -wait -NoNewWindow -PassThru -ArgumentList $_.FullName
+                        if($p.ExitCode -ne 0)
+                        {
+                            $generatePackagesExitCode = $p.ExitCode
+                            Write-Host -ForegroundColor Red 'GenerateTestPackages.exe failed. Exit code is ' + $generatePackagesExitCode
+                        }
+                        else {
+                            Write-Host 'GenerateTestPackages.exe on ' $_.FullName ' succeeded'
+                        }
                     } 
                     popd
                 }
@@ -250,6 +260,10 @@ function global:Run-Test {
                     }
 
                     try {
+                        if($generatePackagesExitCode -ne 0)
+                        {
+                            throw 'GenerateTestPackages.exe failed. Exit code is ' + $generatePackagesExitCode
+                        }
                         $executionTime = measure-command { & $testObject $context $testCaseObject }
                     
                         Write-Host -ForegroundColor DarkGreen "Test $name Passed"
@@ -278,7 +292,7 @@ function global:Run-Test {
                                 Test = $name
                                 Error = $_
                             }
-                            Write-Host -ForegroundColor Red "$($testObject.InvocationInfo.InvocationName) Failed: $testObject"
+                            Write-Host -ForegroundColor Red "$($testObject.InvocationInfo.InvocationName) Failed: $testObject. Exception message: $_"
                             $testSucceeded = $false
                         }
                     }
