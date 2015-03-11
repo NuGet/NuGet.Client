@@ -102,13 +102,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                string packageId = packageIds.Where(p => string.Equals(p, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(packageId))
+                if (packageIds.Any())
                 {
-                    IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, packageId);
-                    if (package.Versions != null && package.Versions.Any())
+                    string packageId = packageIds.Where(p => string.Equals(p, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    if (!string.IsNullOrEmpty(packageId))
                     {
-                        WriteObject(package);
+                        IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, packageId);
+                        if (package.Versions != null && package.Versions.Any())
+                        {
+                            WriteObject(package);
+                        }
                     }
                 }
             }
@@ -122,27 +125,30 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private IPowerShellPackage GetIPowerShellPackageFromRemoteSource(PSAutoCompleteResource autoCompleteResource, string id)
         {
-            Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
-            IEnumerable<NuGetVersion> versions = versionTask.Result;
+            IEnumerable<NuGetVersion> versions = Enumerable.Empty<NuGetVersion>();
+            try
+            {
+                Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
+                versions = versionTask.Result;
+            }
+            catch (Exception) { }
+
             IPowerShellPackage package = new PowerShellPackage();
             package.Id = id;
             if (AllVersions.IsPresent)
             {
-                if (versions != null)
+                if (versions != null && versions.Any())
                 {
                     package.Versions = versions.OrderByDescending(v => v);
-                    if (package.Versions != null && package.Versions.Any())
-                    {
-                        SemanticVersion sVersion;
-                        SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
-                        package.Version = sVersion;
-                    }
+                    SemanticVersion sVersion;
+                    SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
+                    package.Version = sVersion;
                 }
             }
             else
             {
                 NuGetVersion nVersion = null;
-                if (versions != null)
+                if (versions != null && versions.Any())
                 {
                     nVersion = versions.OrderByDescending(v => v).FirstOrDefault();
                 }
