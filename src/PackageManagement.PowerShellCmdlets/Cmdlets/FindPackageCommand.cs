@@ -79,8 +79,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Preprocess();
 
             PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>();
-            Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
-            IEnumerable<string> packageIds = task.Result;            
+            IEnumerable<string> packageIds = Enumerable.Empty<string>();
+            try
+            {
+                Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
+                packageIds = task.Result;
+            }
+            catch (Exception) { }
 
             if (!ExactMatch.IsPresent)
             {
