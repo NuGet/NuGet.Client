@@ -282,7 +282,7 @@ namespace NuGet.VisualStudio
 
                     foreach (string refItem in refGroup.Items)
                     {
-                        string sourcePath = Path.Combine(packageFolder.FullName, refItem);
+                        string sourcePath = Path.Combine(packageFolder.FullName, refItem.Replace('/', Path.DirectorySeparatorChar));
 
                         // projectSystem.AddReference(sourcePath);
 
