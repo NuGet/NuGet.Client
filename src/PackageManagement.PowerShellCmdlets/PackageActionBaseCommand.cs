@@ -9,6 +9,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -75,30 +76,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected async Task InstallPackageByIdentityAsync(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
+            List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
+            // For Install-Package -Force
+            if (isForce)
+            {
+                PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
+                    StringComparer.OrdinalIgnoreCase.Equals(identity.Id, p.PackageIdentity.Id)).FirstOrDefault();
+                if (installedReference != null)
+                {
+                    actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, installedReference.PackageIdentity, uninstallContext, projectContext, CancellationToken.None));
+                }
+                NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identity, ActiveSourceRepository);
+                actions.Add(installAction);
+            }
+            else
+            {
+                actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
+            }
+
             if (isPreview)
             {
-                List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
-                if (isForce)
-                {
-                    actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, identity.Id, uninstallContext, projectContext, CancellationToken.None));
-                    // Temporarily work around the issue of Install -Force -WhatIf, where the package was not actually uninstalled in the first step.
-                    // TODO: Fix the logic and add the concept of Force Install to Resolver after Beta. And Remove the hack here.
-                    NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identity, ActiveSourceRepository);
-                    actions.Add(installAction);
-                }
-                else
-                {
-                    actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
-                }
                 PreviewNuGetPackageActions(actions);
             }
             else
             {
-                if (isForce)
-                {
-                    await PackageManager.UninstallPackageAsync(project, identity.Id, uninstallContext, projectContext, CancellationToken.None);
-                }
-                await PackageManager.InstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
+                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
             }
         }
 
@@ -115,32 +117,36 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected async Task InstallPackageByIdAsync(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
-            if (isPreview)
+            List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
+            // For Install-Package -Force
+            if (isForce)
             {
-                List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
-                if (isForce)
+                PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
+                    StringComparer.OrdinalIgnoreCase.Equals(packageId, p.PackageIdentity.Id)).FirstOrDefault();
+                if (installedReference != null)
                 {
                     actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None));
-                    // Temporarily work around the issue of Install -Force -WhatIf, where the package was not uninstalled in the first step.
-                    // TODO: Fix the logic and add the concept of Force Install to Resolver after Beta. And Remove the hack here.
-                    PackageReference identity = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
-                        StringComparer.OrdinalIgnoreCase.Equals(packageId, p.PackageIdentity.Id)).FirstOrDefault();
-                    NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identity.PackageIdentity, ActiveSourceRepository);
+                }
+                NuGetVersion nVersion = PowerShellCmdletsUtility.GetLastestVersionForPackageId(ActiveSourceRepository, packageId, project, resolutionContext.IncludePrerelease);
+                if (nVersion != null)
+                {
+                    PackageIdentity identityToInstall = new PackageIdentity(packageId, nVersion);
+                    NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identityToInstall, ActiveSourceRepository);
                     actions.Add(installAction);
                 }
-                else
-                {
-                    actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
-                }
+            }
+            else
+            {
+                actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
+            }
+
+            if (isPreview)
+            {
                 PreviewNuGetPackageActions(actions);
             }
             else
             {
-                if (isForce)
-                {
-                    await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
-                }
-                await PackageManager.InstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None);
+                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
             }
         }
 
