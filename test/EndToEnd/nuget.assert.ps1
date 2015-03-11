@@ -91,7 +91,7 @@ function Get-ProjectPackage {
     
     if($Version) {
         $actualVersion = [NuGet.Versioning.NuGetVersion]::Parse($Version)
-        $packages = $packages | ?{ $_.Version -eq $actualVersion }
+        $packages = $packages | ?{ $_.PackageIdentity.Version -eq $actualVersion }
     }
     
     $packages
