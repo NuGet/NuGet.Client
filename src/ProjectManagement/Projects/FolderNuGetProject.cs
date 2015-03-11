@@ -156,7 +156,7 @@ namespace NuGet.ProjectManagement
                 FileSystemUtility.DeleteFile(packageFilePath, nuGetProjectContext);
 
                 // Delete the package directory if any
-                FileSystemUtility.DeleteDirectorySafe(packageDirectoryPath, recursive: false, nuGetProjectContext: nuGetProjectContext);
+                FileSystemUtility.DeleteDirectorySafe(packageDirectoryPath, recursive: true, nuGetProjectContext: nuGetProjectContext);
 
                 // If this is the last package delete the package directory
                 // If this is the last package delete the package directory
