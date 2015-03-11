@@ -212,6 +212,13 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.UnknownPackage, packageId));
             }
 
+            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
+            var installedPackageReference = projectInstalledPackageReferences.Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageId)).FirstOrDefault();
+            if(installedPackageReference != null && installedPackageReference.PackageIdentity.Version > latestVersion)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, packageId));
+            }
+
             // Step-2 : Call InstallPackage(project, packageIdentity)
             return await PreviewInstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
                 nuGetProjectContext, primarySourceRepository, secondarySources, token);
@@ -650,12 +657,18 @@ namespace NuGet.PackageManagement
             {
                 try
                 {
+                    bool downgradeAllowed = false;
                     var packageTargetsForResolver = new HashSet<PackageIdentity>(oldListOfInstalledPackages, PackageIdentity.Comparer);
                     // Note: resolver needs all the installed packages as targets too. And, metadata should be gathered for the installed packages as well
                     var installedPackageWithSameId = packageTargetsForResolver.Where(p => p.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     if(installedPackageWithSameId != null)
                     {
                         packageTargetsForResolver.Remove(installedPackageWithSameId);
+                        if(installedPackageWithSameId.Version > packageIdentity.Version)
+                        {
+                            // Looks like the installed package is of higher version than one being installed. So, we take it that downgrade is allowed
+                            downgradeAllowed = true;
+                        }
                     }
                     packageTargetsForResolver.Add(packageIdentity);
 
@@ -719,9 +732,22 @@ namespace NuGet.PackageManagement
                     // based on newPackages obtained in Step-2 and project.GetInstalledPackages                    
 
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallPackage, packageIdentity);
-                    var newPackagesToUninstall = oldListOfInstalledPackages
-                        .Where(op => newListOfInstalledPackages
-                            .Where(np => op.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) && !op.Version.Equals(np.Version)).Any());
+                    var newPackagesToUninstall = new List<PackageIdentity>();
+                    foreach(var oldInstalledPackage in oldListOfInstalledPackages)
+                    {
+                        var newPackageWithSameId = newListOfInstalledPackages
+                            .Where(np => oldInstalledPackage.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) &&
+                            !oldInstalledPackage.Version.Equals(np.Version)).FirstOrDefault();
+
+                        if(newPackageWithSameId != null)
+                        {
+                            if(!downgradeAllowed && oldInstalledPackage.Version > newPackageWithSameId.Version)
+                            {
+                                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, newPackageWithSameId.Id));
+                            }
+                            newPackagesToUninstall.Add(oldInstalledPackage);
+                        }
+                    }
                     var newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
 
                     foreach (PackageIdentity newPackageToUninstall in newPackagesToUninstall)

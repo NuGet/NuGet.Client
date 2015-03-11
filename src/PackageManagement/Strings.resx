@@ -222,4 +222,7 @@
   <data name="Warning_RollingBack" xml:space="preserve">
     <value>Install failed. Rolling back...</value>
   </data>
+  <data name="NewerVersionAlreadyReferenced" xml:space="preserve">
+    <value>Already referencing a newer version of '{0}'..</value>
+  </data>
 </root>
