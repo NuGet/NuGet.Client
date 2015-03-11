@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Test.Utility
 {
-    public class TestNuGetProjectContext : INuGetProjectContext
+    public class TestNuGetProjectContext : IMSBuildNuGetProjectContext
     {
         public TestExecutionContext TestExecutionContext { get; set; }
         public void Log(MessageLevel level, string message, params object[] args)
@@ -40,6 +40,18 @@ namespace Test.Utility
             {
                 return TestExecutionContext;
             }
+        }
+
+        public bool SkipAssemblyReferences
+        {
+            get;
+            set;
+        }
+
+        public bool BindingRedirectsDisabled
+        {
+            get;
+            set;
         }
 
         public void ReportError(string message)

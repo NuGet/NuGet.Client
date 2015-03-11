@@ -76,6 +76,7 @@
     <Compile Include="FileModifiers\XmlTransformer.cs" />
     <Compile Include="INuGetProjectContext.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectSystem.cs" />
+    <Compile Include="Projects\IMSBuildNuGetProjectContext.cs" />
     <Compile Include="Projects\MSBuildNuGetProject.cs" />
     <Compile Include="Projects\FolderNuGetProject.cs" />
     <Compile Include="NuGetProject.cs" />

@@ -47,12 +47,12 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <returns></returns>
         public abstract Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token);
-        public virtual Task PreProcessAsync()
+        public virtual Task PreProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Do Nothing by default
             return Task.FromResult(0);
         }
-        public virtual Task PostProcessAsync()
+        public virtual Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Do Nothing by default
             return Task.FromResult(0);

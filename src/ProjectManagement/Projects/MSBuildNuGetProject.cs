@@ -95,6 +95,32 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystem.AddBindingRedirects();
         }
 
+        private static IMSBuildNuGetProjectContext GetMSBuildNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
+        {
+            if (nuGetProjectContext != null)
+            {
+                var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
+                if (msBuildNuGetProjectContext != null)
+                {
+                    return msBuildNuGetProjectContext;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsBindingRedirectsDisabled(INuGetProjectContext nuGetProjectContext)
+        {
+            var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
+            return msBuildNuGetProjectContext != null ? msBuildNuGetProjectContext.BindingRedirectsDisabled : false;
+        }
+
+        private static bool IsSkipAssemblyReferences(INuGetProjectContext nuGetProjectContext)
+        {
+            var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
+            return msBuildNuGetProjectContext != null ? msBuildNuGetProjectContext.SkipAssemblyReferences : false;
+        }
+
         public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
@@ -216,7 +242,7 @@ namespace NuGet.ProjectManagement
 
             // Step-6: MSBuildNuGetProjectSystem operations
             // Step-6.1: Add references to project
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup) && !IsSkipAssemblyReferences(nuGetProjectContext))
             {
                 foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
                 {
@@ -418,10 +444,13 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public override Task PostProcessAsync()
+        public override Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            MSBuildNuGetProjectSystem.AddBindingRedirects();
-            return base.PostProcessAsync();
+            if (!IsBindingRedirectsDisabled(nuGetProjectContext))
+            {
+                MSBuildNuGetProjectSystem.AddBindingRedirects();
+            }
+            return base.PostProcessAsync(nuGetProjectContext, token);
         }
 
         private static string GetTargetFrameworkLogString(NuGetFramework targetFramework)
