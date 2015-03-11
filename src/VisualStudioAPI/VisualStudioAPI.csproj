@@ -162,7 +162,6 @@
     <Compile Include="Extensibility\VsPackageSourceProvider.cs" />
     <Compile Include="Extensibility\VsPackageUninstaller.cs" />
     <Compile Include="ExtensionManagerShim.cs" />
-    <Compile Include="IRepositorySettings.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerEvents.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerServices.cs" />
@@ -183,7 +182,6 @@
     <Compile Include="PreinstalledRepositoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistryKeyWrapper.cs" />
-    <Compile Include="RepositorySettings.cs" />
     <Compile Include="Resources\VsResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

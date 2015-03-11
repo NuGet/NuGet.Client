@@ -141,7 +141,6 @@ namespace NuGet.VisualStudio
             IVsPackageInstaller packageInstaller,
             Project project,
             PreinstalledPackageConfiguration configuration,
-            Lazy<IRepositorySettings> repositorySettings,
             Action<string> warningHandler,
             Action<string> errorHandler)
         {
