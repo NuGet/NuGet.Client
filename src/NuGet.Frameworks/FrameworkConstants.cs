@@ -8,6 +8,7 @@ namespace NuGet.Frameworks
         public const string GreaterThanOrEqualTo = "\u2265";
         public static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
         public static readonly Version MaxVersion = new Version(Int32.MaxValue, 0, 0, 0);
+        public static readonly Version Version5 = new Version(5, 0, 0, 0);
 
         public static class SpecialIdentifiers
         {
@@ -79,14 +80,17 @@ namespace NuGet.Frameworks
 
             public static readonly NuGetFramework AspNet = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, EmptyVersion);
             public static readonly NuGetFramework AspNetCore = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, EmptyVersion);
-            public static readonly NuGetFramework AspNet50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, new Version(5, 0, 0, 0));
-            public static readonly NuGetFramework AspNetCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, new Version(5, 0, 0, 0));
+            public static readonly NuGetFramework AspNet50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, Version5);
+            public static readonly NuGetFramework AspNetCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, Version5);
 
             public static readonly NuGetFramework Dnx = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, EmptyVersion);
             public static readonly NuGetFramework Dnx451 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, new Version(4, 5, 1, 0));
             public static readonly NuGetFramework Dnx452 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, new Version(4, 5, 2, 0));
             public static readonly NuGetFramework DnxCore = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, EmptyVersion);
-            public static readonly NuGetFramework DnxCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, new Version(5, 0, 0, 0));
+            public static readonly NuGetFramework DnxCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, Version5);
+
+            public static readonly NuGetFramework Core = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, EmptyVersion);
+            public static readonly NuGetFramework Core50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, Version5);
         }
 
         // public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;

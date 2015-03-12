@@ -294,15 +294,23 @@ namespace NuGet.Frameworks
         {
             framework = null;
 
-            if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnet") || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnet50"))
+            if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "core50")
+                || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "core")
+                || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "core5"))
             {
-                framework = FrameworkConstants.CommonFrameworks.AspNet50;
+                framework = FrameworkConstants.CommonFrameworks.Core50;
             }
-            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnetcore") || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "aspnetcore50"))
+            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnx") || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnx451"))
             {
-                framework = FrameworkConstants.CommonFrameworks.AspNetCore50;
+                framework = FrameworkConstants.CommonFrameworks.Dnx451;
             }
-            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net40"))
+            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnxcore") 
+                || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnxcore50")
+                || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnxcore5"))
+            {
+                framework = FrameworkConstants.CommonFrameworks.DnxCore50;
+            }
+            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net40") || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net4"))
             {
                 framework = FrameworkConstants.CommonFrameworks.Net4;
             }

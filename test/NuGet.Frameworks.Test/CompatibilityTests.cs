@@ -12,6 +12,70 @@ namespace NuGet.Test
 {
     public class CompatibilityTests
     {
+        [Theory]
+        [InlineData("dnx46", "dnx451")]
+        [InlineData("dnx452", "dnx451")]
+        [InlineData("dnx452", "dnx")]
+        [InlineData("dnxcore", "core50")]
+        [InlineData("dnxcore", "core")]
+        [InlineData("net46", "core50")]
+        [InlineData("dnx46", "core50")]
+        public void Compatibility_SimpleOneWay(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // verify that compatibility is inferred across all the mappings
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // verify that this was a one way mapping
+            Assert.True(!compat.IsCompatible(framework2, framework1));
+        }
+
+        [Theory]
+        [InlineData("net45", "dnx451")]
+        [InlineData("net45", "net46")]
+        [InlineData("core50", "net4")]
+        public void Compatibility_SimpleNonCompat(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.False(compat.IsCompatible(framework1, framework2));
+        }
+
+        [Fact]
+        public void Compatibility_DnxNoCompat()
+        {
+            var framework1 = NuGetFramework.Parse("dnx451");
+            var framework2 = NuGetFramework.Parse("dnxcore50");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.False(compat.IsCompatible(framework1, framework2));
+
+            Assert.False(compat.IsCompatible(framework2, framework1));
+        }
+
+        [Fact]
+        public void Compatibility_DnxAsp()
+        {
+            var framework1 = NuGetFramework.Parse("dnxcore50");
+            var framework2 = NuGetFramework.Parse("aspnetcore50");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // dnx supports asp
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // asp does not support dnx
+            Assert.False(compat.IsCompatible(framework2, framework1));
+        }
+
 
         [Theory]
         [InlineData("net45", "net45-full")]
@@ -44,11 +108,30 @@ namespace NuGet.Test
             Assert.True(compat.IsCompatible(framework1, framework2));
         }
 
-        [Fact]
-        public void Compatibility_InferredCoreAspLegacy()
+        [Theory]
+        [InlineData("net45")]
+        [InlineData("netcore45")]
+        [InlineData("win8")]
+        [InlineData("native")]
+        [InlineData("dnx451")]
+        public void Compatibility_CoreCompatNeg(string framework)
         {
-            // dnxcore50 -> coreclr -> native
-            var framework1 = NuGetFramework.Parse("aspnetcore50");
+            var framework1 = NuGetFramework.Parse(framework);
+            var framework2 = NuGetFramework.Parse("core50");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.False(compat.IsCompatible(framework1, framework2));
+        }
+
+        [Theory]
+        [InlineData("net46")]
+        [InlineData("dnx46")]
+        [InlineData("dnxcore50")]
+        [InlineData("dnxcore")]
+        public void Compatibility_CoreCompat(string framework)
+        {
+            var framework1 = NuGetFramework.Parse(framework);
             var framework2 = NuGetFramework.Parse("core50");
 
             var compat = DefaultCompatibilityProvider.Instance;
@@ -133,13 +216,12 @@ namespace NuGet.Test
         [Theory]
         [InlineData("net45", "native")]
         [InlineData("net", "native")]
-        [InlineData("aspnet", "native")]
-        [InlineData("aspnet5", "native")]
-        [InlineData("aspnet50", "net45")]
-        [InlineData("aspnet50", "netcore45")]
-        [InlineData("aspnet50", "native")]
-        //[InlineData("aspnetcore50", "portable-win8+net45+sl4")]
-        [InlineData("aspnetcore50", "native")]
+        [InlineData("dnx46", "native")]
+        [InlineData("dnx452", "native")]
+        [InlineData("dnx451", "net45")]
+        [InlineData("dnx451", "netcore45")]
+        [InlineData("dnx451", "native")]
+        [InlineData("dnxcore50", "native")]
         public void Compatibility_OneWayMappings(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);

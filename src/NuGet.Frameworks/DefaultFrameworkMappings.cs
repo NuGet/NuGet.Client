@@ -177,6 +177,11 @@ namespace NuGet.Frameworks
                                                     FrameworkConstants.CommonFrameworks.DnxCore,
                                                     FrameworkConstants.CommonFrameworks.DnxCore50),
 
+                        // core <-> core50
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    FrameworkConstants.CommonFrameworks.Core,
+                                                    FrameworkConstants.CommonFrameworks.Core50),
+
                         // TODO: remove these rules post-RC
                         // aspnet <-> aspnet50
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
@@ -187,16 +192,6 @@ namespace NuGet.Frameworks
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
                                                     FrameworkConstants.CommonFrameworks.AspNetCore,
                                                     FrameworkConstants.CommonFrameworks.AspNetCore50),
-
-                        // aspnet <-> dnx
-                        new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    FrameworkConstants.CommonFrameworks.Dnx,
-                                                    FrameworkConstants.CommonFrameworks.AspNet),
-
-                        // aspnetcore <-> dnxcore
-                        new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                                    FrameworkConstants.CommonFrameworks.DnxCore,
-                                                    FrameworkConstants.CommonFrameworks.AspNetCore),
                     };
                 }
 
@@ -272,6 +267,30 @@ namespace NuGet.Frameworks
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion))),
+
+                        // Net46 supports Core50
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 6, 0, 0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.MaxVersion)),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5))),
+
+                        // DNX supports AspNet
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, FrameworkConstants.MaxVersion)),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.EmptyVersion))),
+
+                        // DNXCore supports AspNetCore
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, FrameworkConstants.MaxVersion)),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.EmptyVersion))),
                     };
                 }
 

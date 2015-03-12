@@ -505,14 +505,6 @@ namespace NuGet.Test
         [InlineData("dnx", "portable-net45+win8")]
         [InlineData("dnx", "portable-win8+net45")]
         [InlineData("dnx", "portable-win8+net45+sl4")]
-        [InlineData("aspnet50", "aspnet50")]
-        [InlineData("aspnet50", "aspnet5")]
-        [InlineData("aspnet50", "aspnet")]
-        [InlineData("aspnet", "aspnet50")]
-        [InlineData("aspnet", "net45")]
-        [InlineData("aspnet", "portable-net45+win8")]
-        [InlineData("aspnet", "portable-win8+net45")]
-        [InlineData("aspnet", "portable-win8+net45+sl4")]
         public void FrameworkReducer_GetNearestDnx(string project, string framework)
         {
             FrameworkReducer reducer = new FrameworkReducer();
