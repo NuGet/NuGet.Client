@@ -14,6 +14,7 @@ namespace NuGet.ProjectModel
         public IList<string> ProjectPaths { get; private set; }
         public string PackagesPath { get; private set; }
         public string FilePath { get; private set; }
+        public string RootPath {  get { return Path.GetDirectoryName(FilePath); } }
 
         public static bool TryGetGlobalSettings(string path, out GlobalSettings globalSettings)
         {
@@ -39,10 +40,10 @@ namespace NuGet.ProjectModel
 
             string json = File.ReadAllText(globalJsonPath);
             var settings = JObject.Parse(json);
-            var sources = settings["sources"];
+            var projects = settings["projects"];
             var dependencies = settings["dependencies"] as JObject;
 
-            globalSettings.ProjectPaths = sources == null ? new string[] { } : sources.ValueAsArray<string>();
+            globalSettings.ProjectPaths = projects == null ? new string[] { } : projects.ValueAsArray<string>();
             globalSettings.PackagesPath = settings.Value<string>("packages");
             globalSettings.FilePath = globalJsonPath;
 

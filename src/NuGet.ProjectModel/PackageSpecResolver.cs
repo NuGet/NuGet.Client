@@ -12,6 +12,7 @@ namespace NuGet.ProjectModel
     {
         private HashSet<string> _searchPaths = new HashSet<string>();
         private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>();
+        private GlobalSettings _globalSettings;
 
         public PackageSpecResolver(string packageSpecPath)
         {
@@ -29,6 +30,14 @@ namespace NuGet.ProjectModel
             get
             {
                 return _searchPaths;
+            }
+        }
+
+        public GlobalSettings GlobalSettings
+        {
+            get
+            {
+                return _globalSettings;
             }
         }
 
@@ -50,11 +59,9 @@ namespace NuGet.ProjectModel
         {
             _searchPaths.Add(Path.GetDirectoryName(projectPath));
 
-            GlobalSettings global;
-
-            if (GlobalSettings.TryGetGlobalSettings(rootPath, out global))
+            if (GlobalSettings.TryGetGlobalSettings(rootPath, out _globalSettings))
             {
-                foreach (var sourcePath in global.ProjectPaths)
+                foreach (var sourcePath in _globalSettings.ProjectPaths)
                 {
                     _searchPaths.Add(Path.Combine(rootPath, sourcePath));
                 }

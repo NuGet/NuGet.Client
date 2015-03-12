@@ -108,7 +108,7 @@ namespace NuGet.ProjectModel
                 Resolved = !unresolved
             };
 
-            description.Items["project"] = packageSpec;
+            description.Items[KnownLibraryProperties.PackageSpec] = packageSpec;
 
             return description;
         }

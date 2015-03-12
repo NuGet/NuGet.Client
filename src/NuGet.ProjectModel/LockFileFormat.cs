@@ -83,7 +83,7 @@ namespace NuGet.ProjectModel
         {
             var json = new JObject();
             json["locked"] = new JValue(lockFile.Islocked);
-            json["version"] = new JValue(1);
+            json["version"] = new JValue(-10000);
             json["projectFileDependencyGroups"] = WriteObject(lockFile.ProjectFileDependencyGroups,
                 WriteProjectFileDependencyGroup);
             json["libraries"] = WriteObject(lockFile.Libraries, WriteLibrary);
@@ -100,26 +100,45 @@ namespace NuGet.ProjectModel
                 library.Version = NuGetVersion.Parse(parts[1]);
             }
             library.Sha = ReadString(json["sha"]);
-            library.DependencyGroups = ReadObject(json["dependencySets"] as JObject, ReadPackageDependencySet);
-            library.FrameworkReferenceGroups = ReadFrameworkAssemblies(json["frameworkAssemblies"] as JObject);
-            library.ReferenceGroups = ReadArray(json["packageAssemblyReferences"] as JArray, ReadPackageReferenceSet);
-            library.Files = ReadObject(json["contents"] as JObject, ReadPackageFile);
-            return library;
+            library.FrameworkGroups = ReadObject(json["frameworks"] as JObject, ReadFrameworkGroup);
+            library.Files = ReadArray(json["files"] as JArray, ReadString);
+            return library;;
         }
 
         private static JProperty WriteLibrary(LockFileLibrary library)
         {
             var json = new JObject();
             json["sha"] = WriteString(library.Sha);
-            WriteObject(json, "dependencySets", library.DependencyGroups, WritePackageDependencySet);
-            WriteFrameworkAssemblies(json, "frameworkAssemblies", library.FrameworkReferenceGroups);
-            WriteArray(json, "packageAssemblyReferences", library.ReferenceGroups, WritePackageReferenceSet);
-            json["contents"] = WriteObject(library.Files, WritePackageFile);
+            WriteObject(json, "frameworks", library.FrameworkGroups, WriteFrameworkGroup);
+            WriteArray(json, "files", library.Files, WriteString);
             return new JProperty(
                 library.Name + "/" + library.Version.ToString(),
                 json);
         }
 
+        private static LockFileFrameworkGroup ReadFrameworkGroup(string property, JToken json)
+        {
+            var group = new LockFileFrameworkGroup();
+
+            group.TargetFramework = NuGetFramework.Parse(property);
+            group.Dependencies = ReadObject(json["dependencies"] as JObject, ReadPackageDependency);
+            group.FrameworkAssemblies = ReadArray(json["frameworkAssemblies"] as JArray, ReadString);
+            group.RuntimeAssemblies = ReadArray(json["runtimeAssemblies"] as JArray, ReadString);
+            group.CompileTimeAssemblies = ReadArray(json["compileAssemblies"] as JArray, ReadString);
+
+            return group;
+        }
+
+        private static JProperty WriteFrameworkGroup(LockFileFrameworkGroup group)
+        {
+            var json = new JObject();
+            json["dependencies"] = WriteObject(group.Dependencies, WritePackageDependency);
+            json["frameworkAssemblies"] = WriteArray(group.FrameworkAssemblies, WriteString);
+            json["runtimeAssemblies"] = WriteArray(group.RuntimeAssemblies, WriteString);
+            json["compileAssemblies"] = WriteArray(group.CompileTimeAssemblies, WriteString);
+
+            return new JProperty(group.TargetFramework.DotNetFrameworkName, json);
+        }
         private static ProjectFileDependencyGroup ReadProjectFileDependencyGroup(string property, JToken json)
         {
             return new ProjectFileDependencyGroup(
@@ -132,35 +151,6 @@ namespace NuGet.ProjectModel
             return new JProperty(
                 frameworkInfo.FrameworkName,
                 WriteArray(frameworkInfo.Dependencies, WriteString));
-        }
-
-        private static IList<FrameworkSpecificGroup> ReadFrameworkAssemblies(JObject json)
-        {
-            var frameworkSets = ReadObject(json, (property, child) => new
-            {
-                FrameworkName = property,
-                AssemblyNames = ReadArray(child as JArray, ReadString)
-            });
-
-            return frameworkSets.Select(frameworkSet =>
-            {
-                if (frameworkSet.FrameworkName == "*")
-                {
-                    return new FrameworkSpecificGroup(NuGetFramework.AnyFramework, frameworkSet.AssemblyNames);
-                }
-                else
-                {
-                    return new FrameworkSpecificGroup(frameworkSet.FrameworkName, frameworkSet.AssemblyNames);
-                }
-            }).ToList();
-        }
-
-        private static void WriteFrameworkAssemblies(JToken json, string property, IList<FrameworkSpecificGroup> frameworkAssemblies)
-        {
-            if (frameworkAssemblies.Any())
-            {
-                json[property] = WriteFrameworkAssemblies(frameworkAssemblies);
-            }
         }
 
         private static JToken WriteFrameworkAssemblies(IList<FrameworkSpecificGroup> groups)

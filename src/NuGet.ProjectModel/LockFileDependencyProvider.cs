@@ -29,6 +29,20 @@ namespace NuGet.ProjectModel
 
             if (library != null)
             {
+                IEnumerable<LibraryDependency> dependencies;
+                bool resolved = true;
+                var frameworkGroup = library.FrameworkGroups.FirstOrDefault(g => g.TargetFramework.Equals(targetFramework));
+                if (frameworkGroup == null)
+                {
+                    // Library does not exist for this target framework
+                    dependencies = Enumerable.Empty<LibraryDependency>();
+                    resolved = false;
+                }
+                else
+                {
+                    dependencies = GetDependencies(frameworkGroup);
+                }
+
                 var description = new Library
                 {
                     LibraryRange = libraryRange,
@@ -38,11 +52,15 @@ namespace NuGet.ProjectModel
                         Version = library.Version,
                         Type = LibraryTypes.Package
                     },
-                    Dependencies = GetDependencies(library, targetFramework)
+                    Resolved = resolved,
+                    Dependencies = dependencies 
                 };
 
-                description.Items["package"] = library;
-                description.Items["files"] = library.Files;
+                description.Items[KnownLibraryProperties.LockFileLibrary] = library;
+                if (frameworkGroup != null)
+                {
+                    description.Items[KnownLibraryProperties.LockFileFrameworkGroup] = frameworkGroup;
+                }
 
                 return description;
             }
@@ -50,29 +68,13 @@ namespace NuGet.ProjectModel
             return null;
         }
 
-        private IList<LibraryDependency> GetDependencies(LockFileLibrary library, NuGetFramework targetFramework)
-        {
-            var dependencies = NuGetFrameworkUtility.GetNearest(library.DependencyGroups,
-                                                      targetFramework,
-                                                      item => item.TargetFramework);
-
-            var frameworkAssemblies = NuGetFrameworkUtility.GetNearest(library.FrameworkReferenceGroups,
-                                                             targetFramework,
-                                                             item => item.TargetFramework);
-
-            return GetDependencies(targetFramework, dependencies, frameworkAssemblies);
-        }
-
-        // TODO: Figure out how to share this
-        private static IList<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
-                                                                PackageDependencyGroup dependencies,
-                                                                FrameworkSpecificGroup frameworkAssemblies)
+        private IList<LibraryDependency> GetDependencies(LockFileFrameworkGroup frameworkGroup)
         {
             var libraryDependencies = new List<LibraryDependency>();
 
-            if (dependencies != null)
+            if (frameworkGroup.Dependencies != null)
             {
-                foreach (var d in dependencies.Packages)
+                foreach (var d in frameworkGroup.Dependencies)
                 {
                     libraryDependencies.Add(new LibraryDependency
                     {
@@ -85,12 +87,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (frameworkAssemblies == null)
-            {
-                return libraryDependencies;
-            }
-
-            if (frameworkAssemblies.TargetFramework.AnyPlatform && !targetFramework.IsDesktop())
+            if (!frameworkGroup.TargetFramework.IsDesktop())
             {
                 // REVIEW: This isn't 100% correct since none *can* mean 
                 // any in theory, but in practice it means .NET full reference assembly
@@ -102,7 +99,7 @@ namespace NuGet.ProjectModel
                 return libraryDependencies;
             }
 
-            foreach (var name in frameworkAssemblies.Items)
+            foreach (var name in frameworkGroup.FrameworkAssemblies)
             {
                 libraryDependencies.Add(new LibraryDependency
                 {
