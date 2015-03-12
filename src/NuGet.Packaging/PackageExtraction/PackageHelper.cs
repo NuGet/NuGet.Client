@@ -165,7 +165,7 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// This returns all the installed package files and the installed satellite files
+        /// This returns all the installed package files (does not include satellite files)
         /// </summary>
         /// <param name="packageIdentity"></param>
         /// <param name="packagePathResolver"></param>
@@ -173,7 +173,7 @@ namespace NuGet.Packaging
         /// <param name="packageSaveMode"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<ZipFilePair>> GetAllInstalledPackageFiles(Stream packageStream,
+        public static async Task<IEnumerable<ZipFilePair>> GetInstalledPackageFiles(Stream packageStream,
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageSaveModes packageSaveMode,
@@ -185,17 +185,26 @@ namespace NuGet.Packaging
             var packageFiles = await GetPackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
             installedPackageFiles.AddRange(GetInstalledPackageFiles(packageFiles));
 
-            // Add satellite files from the runtime package directory too if any
+            return installedPackageFiles;
+        }
+
+        public static async Task<Tuple<string, IEnumerable<ZipFilePair>>> GetInstalledSatelliteFiles(Stream packageStream,
+            PackageIdentity packageIdentity,
+            PackagePathResolver packagePathResolver,
+            PackageSaveModes packageSaveMode,
+            CancellationToken token)
+        {
+            List<ZipFilePair> installedSatelliteFiles = new List<ZipFilePair>();
             string language;
             string runtimePackageDirectory;
             IEnumerable<ZipArchiveEntry> satelliteFileEntries;
             if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
             {
                 var satelliteFiles = await GetPackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
-                installedPackageFiles.AddRange(GetInstalledPackageFiles(satelliteFiles));
+                installedSatelliteFiles.AddRange(GetInstalledPackageFiles(satelliteFiles));
             }
 
-            return installedPackageFiles;
+            return new Tuple<string, IEnumerable<ZipFilePair>>(runtimePackageDirectory, installedSatelliteFiles);
         }
 
         internal static async Task<string> CreatePackageFile(string packageFileFullPath, Stream inputStream, CancellationToken token)
