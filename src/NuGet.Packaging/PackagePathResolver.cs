@@ -31,8 +31,7 @@ namespace NuGet.Packaging
             string directoryName = packageIdentity.Id;
             if (_useSideBySidePaths)
             {
-                // For legacy support do not normalize the version string
-                directoryName += "." + packageIdentity.Version.ToString();
+                directoryName += "." + packageIdentity.Version.ToNormalizedString();
             }
 
             return directoryName;

@@ -81,7 +81,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException("packagePathResolver");
             }
 
-            string nupkgFilePath = Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), packagePathResolver.GetPackageFileName(packageIdentity));
+            string nupkgFilePath = packagePathResolver.GetInstalledPackageFilePath(packageIdentity);
             if(File.Exists(nupkgFilePath))
             {
                 using(var packageStream = File.OpenRead(nupkgFilePath))
