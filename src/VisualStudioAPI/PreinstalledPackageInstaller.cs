@@ -254,6 +254,10 @@ namespace NuGet.VisualStudio
                 return;
             }
 
+            VSAPIProjectContext context = new VSAPIProjectContext();
+            WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(project, context);
+
+            var root = EnvDTEProjectUtility.GetFullPath(project);
 
             foreach (var packageName in packageNames)
             {
@@ -265,9 +269,6 @@ namespace NuGet.VisualStudio
 
                 var frameworkGroups = reader.GetReferenceItems();
 
-                VSAPIProjectContext context = new VSAPIProjectContext();
-                WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(project, context);
-
                 var groups = reader.GetReferenceItems();
 
                 var fwComparer = new NuGetFrameworkFullComparer();
@@ -278,17 +279,13 @@ namespace NuGet.VisualStudio
                 {
                     var refGroup = groups.Where(e => fwComparer.Equals(targetGroupFramework, e.TargetFramework)).FirstOrDefault();
 
-                    var root = EnvDTEProjectUtility.GetFullPath(project);
-
                     foreach (string refItem in refGroup.Items)
                     {
                         string sourcePath = Path.Combine(packageFolder.FullName, refItem.Replace('/', Path.DirectorySeparatorChar));
 
-                        // projectSystem.AddReference(sourcePath);
-
                         // create one refresh file for each assembly reference, as per required by Website projects
                         // projectSystem.CreateRefreshFile(assemblyPath);
-                        RefreshFileUtility.CreateRefreshFile(root, sourcePath, context);
+                        RefreshFileUtility.CreateRefreshFile(projectSystem, sourcePath, context);
                     }
                 }
             }
