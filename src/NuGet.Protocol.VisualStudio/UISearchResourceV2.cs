@@ -36,7 +36,8 @@ namespace NuGet.Protocol.VisualStudio
                         filters.SupportedFrameworks,
                         filters.IncludePrerelease);
 
-                    // V2 sometimes requires that we also use an OData filter for latest/latest prerelease version
+					// V2 sometimes requires that we also use an OData filter for 
+					// latest /latest prerelease version
                     if (filters.IncludePrerelease)
                     {
                         query = query.Where(p => p.IsAbsoluteLatestVersion);
@@ -45,48 +46,27 @@ namespace NuGet.Protocol.VisualStudio
                     {
                         query = query.Where(p => p.IsLatestVersion);
                     }
+					query = query.OrderByDescending(p => p.DownloadCount)
+						.ThenBy(p => p.Id);
+
+					// Some V2 sources, e.g. NuGet.Server, local repository, the result contains all 
+					// versions of each package. So we need to group the result by Id.
+					var collapsedQuery = query.AsEnumerable().AsCollapsed();
 
                     // execute the query
-                    var allPackages = query
-                        .Skip(skip)
+                    var allPackages = collapsedQuery
+						.Skip(skip)
                         .Take(take)
                         .ToList();
 
-                    // Some V2 sources, e.g. NuGet.Server, local repository, the result contains all 
-                    // versions of each package. So we need to explicitly select the latest version
-                    // on the client side.
-                    Dictionary<string, IPackage> latestVersion = new Dictionary<string, IPackage>(StringComparer.OrdinalIgnoreCase);
+					// fetch version info in parallel
+					Queue<Task<UISearchMetadata>> tasks = new Queue<Task<UISearchMetadata>>();					
+					foreach (var p in allPackages)
+					{
+						tasks.Enqueue(CreatePackageSearchResult(p, filters, cancellationToken));
+					}
 
-                    // this is used to maintain the order of the packages
-                    List<string> packageIds = new List<string>();
-
-                    foreach (var package in allPackages)
-                    {
-                        IPackage existingPackage;
-                        if (latestVersion.TryGetValue(package.Id, out existingPackage))
-                        {
-                            if (package.Version > existingPackage.Version)
-                            {
-                                latestVersion[package.Id] = package;
-                            }
-                        }
-                        else
-                        {
-                            latestVersion[package.Id] = package;
-                            packageIds.Add(package.Id);
-                        }
-                    }
-
-                    Queue<Task<UISearchMetadata>> tasks = new Queue<Task<UISearchMetadata>>();
-
-                    // fetch version info in parallel
-                    foreach (string id in packageIds)
-                    {
-                        tasks.Enqueue(CreatePackageSearchResult(latestVersion[id], filters, cancellationToken));
-                    }
-
-                    List<UISearchMetadata> results = new List<UISearchMetadata>();
-
+					List<UISearchMetadata> results = new List<UISearchMetadata>();
                     while (tasks.Count > 0)
                     {
                         UISearchMetadata metadata = await tasks.Dequeue();
