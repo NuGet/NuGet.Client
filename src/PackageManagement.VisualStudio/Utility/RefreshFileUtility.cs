@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Adds the file to disk ONLY!</remarks>
         /// <param name="root">the root path is dte full path</param>
         /// <param name="assemblyPath">The relative path to the assembly being added</param>
-        public static void CreateRefreshFile(string root, string assemblyPath, INuGetProjectContext nuGetProjectContext)
+        public static void CreateRefreshFile(string root, string assemblyPath, IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem)
         {
             string refreshFilePath = CreateRefreshFilePath(root, assemblyPath);
 
@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     using (var stream = CreateRefreshFileStream(root, assemblyPath))
                     {
-                        FileSystemUtility.AddFile(root, refreshFilePath, stream, nuGetProjectContext);
+                        msbuildNuGetProjectSystem.AddFile(refreshFilePath, stream);
                     }
                 }
                 catch (UnauthorizedAccessException exception)

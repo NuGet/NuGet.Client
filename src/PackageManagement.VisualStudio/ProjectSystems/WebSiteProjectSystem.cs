@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // Always create a refresh file. Vs does this for us in most cases, however for GACed binaries, it resorts to adding a web.config entry instead.
                 // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
-                RefreshFileUtility.CreateRefreshFile(root, PathUtility.GetAbsolutePath(EnvDTEProjectUtility.GetFullPath(EnvDTEProject), referencePath), NuGetProjectContext);
+                RefreshFileUtility.CreateRefreshFile(root, PathUtility.GetAbsolutePath(EnvDTEProjectUtility.GetFullPath(EnvDTEProject), referencePath), this);
 
                 NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
             }
