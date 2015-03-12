@@ -65,11 +65,25 @@
         <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>NuGetAPITest</ButtonText>
+          <ButtonText>NuGetAPI GetInstalledPackages</ButtonText>
         </Strings>
       </Button>
 
+      <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIInstallPackage" priority="0x0200" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Install Package</ButtonText>
+        </Strings>
+      </Button>
 
+       <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIInstallBadSource" priority="0x0300" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Install Bad Source</ButtonText>
+        </Strings>
+      </Button>
 
     </Buttons>
    
@@ -99,6 +113,8 @@
 
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="cmdidNuGetAPITest" value="0x0100" />
+      <IDSymbol name="cmdidNuGetAPIInstallPackage" value="0x0200" />
+      <IDSymbol name="cmdidNuGetAPIInstallBadSource" value="0x0300" />
     </GuidSymbol>
     
     

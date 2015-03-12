@@ -67,13 +67,53 @@ namespace MicrosoftCorp.VSAPITest
             {
                 // Create the command for the menu item.
                 CommandID menuCommandID = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPITest);
-                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
+                MenuCommand menuItem = new MenuCommand(GetInstalledPackagesTest, menuCommandID );
                 mcs.AddCommand( menuItem );
+
+                CommandID installPackageId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIInstallPackage);
+                MenuCommand installPackageITem = new MenuCommand(InstallPackageTest, installPackageId);
+                mcs.AddCommand(installPackageITem);
+
+                CommandID installBadSrcId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIInstallBadSource);
+                MenuCommand installBadSrcItem = new MenuCommand(InstallBadSourceTest, installBadSrcId);
+                mcs.AddCommand(installBadSrcItem);
             }
         }
         #endregion
 
-        private void MenuItemCallback(object sender, EventArgs e)
+        private void InstallPackageAsyncTest(object sender, EventArgs e)
+        {
+            // A new signed NuGet.VisualStudio package is required for this
+
+            //EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            //IVsPackageInstaller2 services = ServiceLocator.GetInstance<IVsPackageInstaller>() as IVsPackageInstaller2;
+        }
+
+        private void InstallPackageTest(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                var task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("https://api.nuget.org/v2/", project, "newtonsoft.json", "6.0.4", false));
+                return;
+            }
+        }
+
+        private void InstallBadSourceTest(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                var task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("http://packagesource", project, "newtonsoft.json", "6.0.4", false));
+                return;
+            }
+        }
+
+        private void GetInstalledPackagesTest(object sender, EventArgs e)
         {
             EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             IVsPackageInstallerServices services = ServiceLocator.GetInstance<IVsPackageInstallerServices>();
@@ -89,6 +129,7 @@ namespace MicrosoftCorp.VSAPITest
                 DisplayMessage("Project Packages", String.Join(", ", allPackages.Select(p => String.Format("[{0} {1}]", p.Id, p.InstallPath))));
             }
         }
+
 
         private void DisplayMessage(string test, string message)
         {
