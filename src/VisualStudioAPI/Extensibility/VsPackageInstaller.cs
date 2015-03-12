@@ -361,14 +361,8 @@ namespace NuGet.VisualStudio
                     await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.Fail(ex.ToString());
-            }
             finally
             {
-                // TODO: log errors
-
                 // collapse nodes
                 VsHierarchyHelper.CollapseAllNodes(_solutionManager, expandedNodes);
             }
