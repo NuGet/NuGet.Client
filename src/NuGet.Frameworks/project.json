@@ -5,11 +5,24 @@
     "copyright": "Copyright Outercurve Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
+    "preprocess": "../../compiler/preprocess/*.cs",
     "dependencies": {
         "NuGet.Versioning": "3.0.0-*"
     },
     "frameworks": {
         "net45": { },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Collections": "",
+                "System.Runtime": { "version": "", "type": "build" },
+                "System.Threading.Tasks": { "version": "", "type": "build" },
+                "System.Text.Encoding": { "version": "", "type": "build" }
+            },
+            "dependencies": {
+                "Microsoft.Framework.Runtime.Roslyn.Interfaces": { "version": "1.0.0-*", "type": "build" },
+                "Newtonsoft.Json": { "version": "6.0.4", "type": "build" }
+            }
+        },
         "dnxcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*",
