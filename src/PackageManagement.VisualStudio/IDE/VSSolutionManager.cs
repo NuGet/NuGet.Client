@@ -68,6 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 ErrorHandler.ThrowOnFailure(hr);
             }
 
+            IsSolutionOpening = false;
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
             _solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
@@ -169,8 +170,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 return _dte != null &&
                        _dte.Solution != null &&
                        _dte.Solution.IsOpen &&
-                       !IsSolutionSavedAsRequired();
+                       !IsSolutionSavedAsRequired() &&
+                       IsSolutionOpening;
             }
+        }
+
+        private bool IsSolutionOpening
+        {
+            get;
+            set;
         }
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
@@ -227,6 +235,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public event EventHandler SolutionOpened;
+        public event EventHandler SolutionOpening;
 
         /// <summary>
         /// Checks whether the current solution is saved to disk, as opposed to be in memory.
@@ -265,11 +274,17 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // we can skip the init if this has already been called
             _initNeeded = false;
+            IsSolutionOpening = true;
+            if (SolutionOpening != null)
+            {
+                SolutionOpening(this, EventArgs.Empty);
+            }
 
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
             if (!IsSolutionOpen)
             {
+                IsSolutionOpening = false;
                 return;
             }
 
@@ -291,6 +306,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnBeforeClosing()
         {
+            IsSolutionOpening = false;
             DefaultNuGetProjectName = null;
             NuGetAndEnvDTEProjectCache.Clear();
             NuGetAndEnvDTEProjectCache = null;
@@ -302,7 +318,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRenamed(EnvDTEProject envDTEProject, string oldName)
         {
-            if (!String.IsNullOrEmpty(oldName))
+            if (!String.IsNullOrEmpty(oldName) && IsSolutionOpen)
             {
                 EnsureNuGetAndEnvDTEProjectCache();
 
@@ -345,7 +361,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectAdded(EnvDTEProject envDTEProject)
         {
-            if (EnvDTEProjectUtility.IsSupported(envDTEProject) && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject))
+            if (IsSolutionOpen && EnvDTEProjectUtility.IsSupported(envDTEProject) && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject))
             {
                 EnsureNuGetAndEnvDTEProjectCache();
                 AddEnvDTEProjectToCache(envDTEProject);

@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager = solutionManager;
             MachineWideSettings = machineWideSettings;
             ResetSolutionSettings();
-            SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
+            SolutionManager.SolutionOpening += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }        
 
