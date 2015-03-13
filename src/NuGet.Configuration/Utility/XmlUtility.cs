@@ -51,7 +51,7 @@ namespace NuGet.Configuration
         {
             var safeSettings = new XmlReaderSettings
             {
-#if NET45
+#if !DNXCORE50
                 XmlResolver = null,
 #endif
                 DtdProcessing = DtdProcessing.Prohibit,

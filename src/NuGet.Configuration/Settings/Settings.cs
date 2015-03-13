@@ -177,7 +177,7 @@ namespace NuGet.Configuration
             if (configFileName == null)
             {
                 // load %AppData%\NuGet\NuGet.config
-#if NET45
+#if !DNXCORE50
                 string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #else
                 string appDataPath = Environment.GetEnvironmentVariable("AppData");
