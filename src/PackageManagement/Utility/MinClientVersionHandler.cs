@@ -25,12 +25,4 @@ namespace NuGet.PackageManagement
             }
         }
     }
-
-    public class NuGetVersionNotSatisfiedException : Exception
-    {
-        public NuGetVersionNotSatisfiedException(string message)
-            : base(message)
-        {
-        }
-    }
 }

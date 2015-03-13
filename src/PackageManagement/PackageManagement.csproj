@@ -99,6 +99,7 @@
     <Compile Include="Resolution\ResolverGather.cs" />
     <Compile Include="Resolution\SourceDependencyInfo.cs" />
     <Compile Include="Resolution\UninstallResolver.cs" />
+    <Compile Include="Utility\CustomExceptions.cs" />
     <Compile Include="Utility\ExceptionUtility.cs" />
     <Compile Include="Utility\NuGetEvent.cs" />
     <Compile Include="Utility\NuGetEventTrigger.cs" />
