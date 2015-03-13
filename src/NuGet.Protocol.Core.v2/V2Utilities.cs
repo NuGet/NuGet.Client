@@ -26,14 +26,7 @@ namespace NuGet.Protocol.Core.v2
             }
             var result = await GetContent(url);
 
-            if (result != null && result.IndexOf("Packages", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return true;
         }
 
         public static IPackageRepository GetV2SourceRepository(Configuration.PackageSource source)
