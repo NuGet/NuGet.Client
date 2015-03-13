@@ -11,6 +11,33 @@ namespace NuGet.Test
 {
     public class NuGetFrameworkParseTests
     {
+        [Theory]
+        [InlineData("11")]
+        [InlineData("46")]
+        [InlineData("30")]
+        [InlineData("4.5")]
+        [InlineData("4")]
+        [InlineData("2")]
+        public void NuGetFramework_NumericUnsupported(string input)
+        {
+            // These frameworks are deprecated and unsupported
+            string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
+
+            Assert.Equal(NuGetFramework.UnsupportedFramework.DotNetFrameworkName, actual);
+        }
+
+        [Theory]
+        [InlineData("45", "net45")]
+        [InlineData("40", "net4")]
+        [InlineData("35", "net35")]
+        [InlineData("20", "net2")]
+        public void NuGetFramework_Numeric(string input, string expected)
+        {
+            string actual = NuGetFramework.Parse(input).GetShortFolderName();
+
+            Assert.Equal(expected, actual);
+        }
+
         [Fact]
         public void NuGetFramework_SpecialNamesToDotNetFrameworkName()
         {
@@ -149,7 +176,6 @@ namespace NuGet.Test
         [InlineData("foo")]
         [InlineData("foo45")]
         [InlineData("foo45-client")]
-        [InlineData("45")]
         [InlineData("foo.45")]
         [InlineData("foo4.5.1.2.3")]
         [InlineData("portable-net($3747!4")]

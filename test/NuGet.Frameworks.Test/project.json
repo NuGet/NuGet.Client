@@ -9,7 +9,11 @@
         "test": "xunit.runner.kre"
     },
     "frameworks": {
-        "dnx451": { },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Collections": ""
+            }
+        },
         "dnxcore50": { }
     }
 }

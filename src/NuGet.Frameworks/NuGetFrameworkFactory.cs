@@ -164,9 +164,46 @@ namespace NuGet.Frameworks
                         }
                     }
                 }
+                else
+                {
+                    // If the framework was not recognized check if it is a deprecated framework
+                    NuGetFramework deprecated = null;
+
+                    if (TryParseDeprecatedFramework(folderName, out deprecated))
+                    {
+                        result = deprecated;
+                    }
+                }
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Attempt to parse a common but deprecated framework using an exact string match
+        /// Support for these should be dropped as soon as possible.
+        /// </summary>
+        private static bool TryParseDeprecatedFramework(string s, out NuGetFramework framework)
+        {
+            framework = null;
+
+            switch (s)
+            {
+                case "45":
+                    framework = FrameworkConstants.CommonFrameworks.Net45;
+                    break;
+                case "40":
+                    framework = FrameworkConstants.CommonFrameworks.Net4;
+                    break;
+                case "35":
+                    framework = FrameworkConstants.CommonFrameworks.Net35;
+                    break;
+                case "20":
+                    framework = FrameworkConstants.CommonFrameworks.Net2;
+                    break;
+            }
+
+            return framework != null;
         }
 
         private static Tuple<string, string, string> RawParse(string s)

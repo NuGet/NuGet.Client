@@ -56,6 +56,8 @@ namespace NuGet.Frameworks
         /// </summary>
         public static class CommonFrameworks
         {
+            public static readonly NuGetFramework Net11 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(1, 1, 0, 0));
+            public static readonly NuGetFramework Net2 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(2, 0, 0, 0));
             public static readonly NuGetFramework Net35 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(3, 5, 0, 0));
             public static readonly NuGetFramework Net4 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0, 0, 0));
             public static readonly NuGetFramework Net403 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0, 3, 0));
