@@ -1,4 +1,5 @@
 {
+    "preprocess": "../../compiler/preprocess/*.cs",
     "dependencies": {
         "NuGet.Configuration": "1.0.0-*",
         "xunit.runner.kre": "1.0.0-*"
