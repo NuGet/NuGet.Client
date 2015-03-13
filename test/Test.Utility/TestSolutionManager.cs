@@ -116,5 +116,6 @@ namespace Test.Utility
         public event EventHandler SolutionClosing;
 
         public event EventHandler SolutionOpened;
+        public event EventHandler SolutionOpening;
     }
 }

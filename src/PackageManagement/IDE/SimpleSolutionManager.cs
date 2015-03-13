@@ -9,6 +9,7 @@ namespace NuGet.PackageManagement
 {
     public class SimpleSolutionManager : ISolutionManager
     {
+        public event EventHandler SolutionOpening;
         public event EventHandler SolutionOpened;
 
         public event EventHandler SolutionClosing;

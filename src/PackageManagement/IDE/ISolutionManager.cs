@@ -11,6 +11,7 @@ namespace NuGet.PackageManagement
 {
     public interface ISolutionManager
     {
+        event EventHandler SolutionOpening;
         event EventHandler SolutionOpened;
         event EventHandler SolutionClosing;
         event EventHandler SolutionClosed;
