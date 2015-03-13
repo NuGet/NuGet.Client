@@ -34,7 +34,7 @@ namespace NuGet.CommonModules.StrongNaming
                 {
                     bool delaySign = delaySignString != null && StringComparer.OrdinalIgnoreCase.Equals("true", delaySignString);
 
-                    Console.WriteLine("Signing assembly with: {0} Delay sign: {1}", keyFile.FullName, delaySign ? "true" : "false");
+                    // Console.WriteLine("Signing assembly with: {0} Delay sign: {1}", keyFile.FullName, delaySign ? "true" : "false");
 
                     var parms = new CspParameters();
                     parms.KeyNumber = 2;
