@@ -108,9 +108,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core, Version=2.8.60314.59, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\NuGet.Core.2.8.5-beta-00001\lib\net45\NuGet.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\NuGet.Core.2.8.5-beta-00002\lib\net45\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Frameworks, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
