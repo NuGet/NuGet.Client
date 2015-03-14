@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.22609.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.VisualStudio", "src\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
@@ -22,8 +22,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellHostProvider", "src\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj", "{A5E7AEB3-738F-4C39-A459-00F90483B2FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3EF356B5-E2D3-45E3-B515-99F4611ACBDA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.TestVSExtension", "test\PackageManagement.TestVSExtension\PackageManagement.TestVSExtension.csproj", "{9713B86C-A35A-4417-A681-466F87544DB6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Options", "src\Options\Options.csproj", "{53AB7187-CDF3-48B5-B90E-8919D3CB904D}"
 EndProject
@@ -162,16 +160,6 @@ Global
 		{A5E7AEB3-738F-4C39-A459-00F90483B2FE}.Mono Release|Any CPU.Build.0 = Mono Release|Any CPU
 		{A5E7AEB3-738F-4C39-A459-00F90483B2FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5E7AEB3-738F-4C39-A459-00F90483B2FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Coverage|Any CPU.Build.0 = Release|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Mono Release|Any CPU.Build.0 = Release|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9713B86C-A35A-4417-A681-466F87544DB6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Coverage|Any CPU.ActiveCfg = Coverage|Any CPU
 		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Coverage|Any CPU.Build.0 = Coverage|Any CPU
 		{53AB7187-CDF3-48B5-B90E-8919D3CB904D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -227,7 +215,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{9713B86C-A35A-4417-A681-466F87544DB6} = {3EF356B5-E2D3-45E3-B515-99F4611ACBDA}
 		{72887A16-F39B-4B21-9B76-33AE5004DE0B} = {3EF356B5-E2D3-45E3-B515-99F4611ACBDA}
 		{CB95A418-1524-48D7-96F5-3A3E733E41CC} = {72887A16-F39B-4B21-9B76-33AE5004DE0B}
 		{83AEE32C-FFCC-43A6-898B-D7DF81774C25} = {72887A16-F39B-4B21-9B76-33AE5004DE0B}
