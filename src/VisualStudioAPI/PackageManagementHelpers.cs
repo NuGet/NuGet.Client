@@ -1,6 +1,7 @@
 ﻿using EnvDTE;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -19,11 +20,27 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Finds the NuGetProject from a DTE project
         /// </summary>
-        public static NuGetProject GetProject(ISolutionManager solution, Project project)
+        public static NuGetProject GetProject(ISolutionManager solution, Project project, VSAPIProjectContext projectContext=null)
         {
-            return solution.GetNuGetProjects()
-                    .Where(p => StringComparer.Ordinal.Equals(solution.GetNuGetProjectSafeName(p), project.UniqueName))
-                    .SingleOrDefault();
+            if (solution == null)
+            {
+                throw new ArgumentNullException("solution");
+            }
+
+            var matchingProjects = solution.GetNuGetProjects().Where(p => StringComparer.Ordinal.Equals(solution.GetNuGetProjectSafeName(p), project.UniqueName));
+
+            Debug.Assert(matchingProjects.Count() < 2, "Duplicate projects");
+
+            NuGetProject nuGetProject = matchingProjects.FirstOrDefault();
+
+            // if the project does not exist in the solution (this is true for new templates) create it manually
+            if (nuGetProject == null)
+            {
+                VSNuGetProjectFactory factory = new VSNuGetProjectFactory(solution);
+                nuGetProject = factory.CreateNuGetProject(project, projectContext);
+            }
+
+            return nuGetProject;
         }
 
         public static string GetInstallPath(ISolutionManager solution, ISettings settings, Project project, PackageIdentity identity)

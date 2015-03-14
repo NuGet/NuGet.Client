@@ -22,16 +22,19 @@ namespace NuGet.VisualStudio
 
         public IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled)
         {
+            List<KeyValuePair<string, string>> sources = new List<KeyValuePair<string, string>>();
+
             foreach (PackageSource source in _packageSourceProvider.LoadPackageSources())
             {
                 if ((source.IsOfficial || includeUnOfficial) && (source.IsEnabled || includeDisabled))
                 {
                     // Name -> Source Uri
-                    yield return new KeyValuePair<string, string>(source.Name, source.Source);
+                    var pair = new KeyValuePair<string, string>(source.Name, source.Source);
+                    sources.Add(pair);
                 }
             }
 
-            yield break;
+            return sources;
         }
 
         public event EventHandler SourcesChanged;

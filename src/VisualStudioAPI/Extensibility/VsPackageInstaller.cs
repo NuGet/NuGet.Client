@@ -340,20 +340,13 @@ namespace NuGet.VisualStudio
 
                 NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, dir);
 
-                // find the project
-                NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project);
-
                 // Skip assembly references and disable binding redirections should be done together
                 bool disableBindingRedirects = skipAssemblyReferences;
 
                 VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
-                
 
-                if (nuGetProject == null)
-                {
-                    VSNuGetProjectFactory factory = new VSNuGetProjectFactory(_solutionManager);
-                    nuGetProject = factory.CreateNuGetProject(project, projectContext);
-                }
+                // find the project
+                NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, projectContext);
 
                 // install the package
                 foreach (PackageIdentity package in packages)

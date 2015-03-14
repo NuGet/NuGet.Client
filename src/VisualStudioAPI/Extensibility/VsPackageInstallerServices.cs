@@ -14,6 +14,7 @@ using NuGet.Protocol.Core.Types;
 using LegacyNuGet = Legacy.NuGet;
 using NuGet.ProjectManagement;
 using NuGet.Packaging;
+using System.Diagnostics;
 
 namespace NuGet.VisualStudio
 {
@@ -36,23 +37,32 @@ namespace NuGet.VisualStudio
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages()
         {
-            InitializePackageManagerAndPackageFolderPath();
+            List<IVsPackageMetadata> packages = new List<IVsPackageMetadata>();
 
-            foreach (var project in _solutionManager.GetNuGetProjects())
+            // Debug.Assert(_solutionManager.SolutionDirectory != null, "SolutionDir is null");
+
+            // Calls may occur in the template wizard before the solution is actually created, in that case return no projects
+            if (_solutionManager != null && !String.IsNullOrEmpty(_solutionManager.SolutionDirectory))
             {
-                var task = System.Threading.Tasks.Task.Run(async () => await project.GetInstalledPackagesAsync(CancellationToken.None));
-                task.Wait();
+                InitializePackageManagerAndPackageFolderPath();
 
-                foreach (var package in task.Result)
+                foreach (var project in _solutionManager.GetNuGetProjects())
                 {
-                    // find packages using the solution level packages folder
-                    string installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
+                    var task = System.Threading.Tasks.Task.Run(async () => await project.GetInstalledPackagesAsync(CancellationToken.None));
+                    task.Wait();
 
-                    yield return new VsPackageMetadata(package.PackageIdentity, installPath);
+                    foreach (var package in task.Result)
+                    {
+                        // find packages using the solution level packages folder
+                        string installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
+
+                        var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
+                        packages.Add(metadata);
+                    }
                 }
             }
 
-            yield break;
+            return packages;
         }
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages(Project project)
@@ -62,46 +72,54 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("project");
             }
 
-            InitializePackageManagerAndPackageFolderPath();
+            List<IVsPackageMetadata> packages = new List<IVsPackageMetadata>();
 
-            foreach (var curProject in _solutionManager.GetNuGetProjects())
+            // Debug.Assert(_solutionManager.SolutionDirectory != null, "SolutionDir is null");
+
+            if (_solutionManager != null && !String.IsNullOrEmpty(_solutionManager.SolutionDirectory))
             {
-                if (StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(curProject), project.UniqueName))
+                InitializePackageManagerAndPackageFolderPath();
+
+                foreach (var curProject in _solutionManager.GetNuGetProjects())
                 {
-                    var task = System.Threading.Tasks.Task.Run(async () => await curProject.GetInstalledPackagesAsync(CancellationToken.None));
-                    task.Wait();
-
-                    foreach (var package in task.Result)
+                    if (StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(curProject), project.UniqueName))
                     {
-                        // Get the install path for package
-                        string installPath = string.Empty;
+                        var task = System.Threading.Tasks.Task.Run(async () => await curProject.GetInstalledPackagesAsync(CancellationToken.None));
+                        task.Wait();
 
-                        FolderNuGetProject folderProject = curProject as FolderNuGetProject;
-
-                        if (folderProject != null)
+                        foreach (var package in task.Result)
                         {
-                            // get the path from the project directly if possible
-                            installPath = folderProject.GetInstalledPath(package.PackageIdentity);
-                        }
-                        else
-                        {
-                            // use the solution directory if needed
-                            installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
-                        }
+                            // Get the install path for package
+                            string installPath = string.Empty;
 
-                        if (!String.IsNullOrEmpty(installPath))
-                        {
-                            // normalize the path and take the dir if the nupkg path was given
-                            var dir = new DirectoryInfo(installPath);
-                            installPath = dir.FullName;
-                        }
+                            FolderNuGetProject folderProject = curProject as FolderNuGetProject;
 
-                        yield return new VsPackageMetadata(package.PackageIdentity, installPath);
+                            if (folderProject != null)
+                            {
+                                // get the path from the project directly if possible
+                                installPath = folderProject.GetInstalledPath(package.PackageIdentity);
+                            }
+                            else
+                            {
+                                // use the solution directory if needed
+                                installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
+                            }
+
+                            if (!String.IsNullOrEmpty(installPath))
+                            {
+                                // normalize the path and take the dir if the nupkg path was given
+                                var dir = new DirectoryInfo(installPath);
+                                installPath = dir.FullName;
+                            }
+
+                            var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
+                            packages.Add(metadata);
+                        }
                     }
                 }
             }
 
-            yield break;
+            return packages;
         }
 
         private void InitializePackageManagerAndPackageFolderPath()
