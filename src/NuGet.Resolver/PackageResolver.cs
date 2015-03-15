@@ -116,9 +116,14 @@ namespace NuGet.Resolver
             // Sort the packages to make this process as deterministic as possible
             resolverPackages.Sort(PackageIdentityComparer.Default);
 
+            // Keep track of the ids we have added
+            HashSet<string> groupsAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             // group the packages by id
-            foreach (var group in resolverPackages.GroupBy(e => e.Id))
+            foreach (var group in resolverPackages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
             {
+                groupsAdded.Add(group.Key);
+
                 List<ResolverPackage> curSet = group.ToList();
 
                 // add an absent package for non-targets
@@ -129,6 +134,19 @@ namespace NuGet.Resolver
                 }
 
                 grouped.Add(curSet);
+            }
+
+            // find all needed dependencies
+            var dependencyIds = resolverPackages.Where(e => e.Dependencies != null).SelectMany(e => e.Dependencies.Select(d => d.Id).Distinct(StringComparer.OrdinalIgnoreCase));
+
+            foreach (string depId in dependencyIds)
+            {
+                // packages which are unavailable need to be added as absent packages
+                // ex: if A -> B  and B is not found anywhere in the source repositories we add B as absent
+                if (!groupsAdded.Contains(depId))
+                {
+                    grouped.Add(new List<ResolverPackage>() { new ResolverPackage(depId, null, null, true) });
+                }
             }
 
             var solution = solver.FindSolution(grouped, comparer, ShouldRejectPackagePair);

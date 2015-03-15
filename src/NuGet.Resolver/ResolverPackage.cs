@@ -3,6 +3,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,8 @@ namespace NuGet.Resolver
         public ResolverPackage(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies, bool absent=false)
             : base(id, version, dependencies)
         {
+            Debug.Assert(!Absent || (version == null && dependencies == null), "Invalid absent package");
+
             Absent = absent;
         }
 
@@ -57,23 +60,30 @@ namespace NuGet.Resolver
         /// <returns></returns>
         public VersionRange FindDependencyRange(string id)
         {
+            VersionRange range = null;
+
+            Debug.Assert(Dependencies.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).Count() < 2, "Duplicate dependencies");
+
             var dependency = Dependencies.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).SingleOrDefault();
-            if (dependency == null)
+
+            if (dependency != null)
             {
-                return null;
+                range = dependency.VersionRange == null ? VersionRange.All : dependency.VersionRange;
             }
 
-            if (dependency.VersionRange == null)
-            {
-                return VersionRange.Parse("0.0"); //Any version allowed
-            }
-
-            return dependency.VersionRange;
+            return range;
         }
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0} {1}", Id, Version);
+            if (Absent)
+            {
+                return String.Format(CultureInfo.InvariantCulture, "Absent {0}", Id);
+            }
+            else
+            {
+                return String.Format(CultureInfo.InvariantCulture, "{0} {1}", Id, Version);
+            }
         }
 
         public bool Equals(ResolverPackage other)

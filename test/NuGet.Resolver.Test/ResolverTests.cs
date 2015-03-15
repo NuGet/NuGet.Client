@@ -15,6 +15,74 @@ namespace NuGet.Resolver.Test
     public class ResolverTests
     {
         [Fact]
+        public void Resolver_MissingPackage2()
+        {
+            // No version constraints for any dependency
+            // A -> B 2.0 -> (C, D)
+            // A -> B 1.0 -> Missing Package
+
+            var packageA = CreatePackage("A", "2.0", new Dictionary<string, string>() { { "B", "0.0" } });
+            var packageB = CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", "0.0" }, { "D", "0.0" } });
+            var packageC = CreatePackage("C", "2.0");
+            var packageD = CreatePackage("D", "2.0");
+
+            // OldB is the lowest but it has a missing dependency
+            var packageOldB = CreatePackage("B", "1.0", new Dictionary<string, string>() { { "E", "0.0" } });
+
+            var sourceRepository = new List<ResolverPackage>() {
+                packageA,
+                packageB,
+                packageC,
+                packageD,
+                packageOldB
+            };
+
+            var resolver = new PackageResolver(DependencyBehavior.Lowest);
+            var packages = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+
+            // Assert
+            Assert.Equal(4, packages.Count());
+            Assert.NotNull(packages["A"]);
+            Assert.NotNull(packages["B"]);
+            Assert.NotNull(packages["C"]);
+            Assert.NotNull(packages["D"]);
+        }
+
+        [Fact]
+        public void Resolver_MissingPackage()
+        {
+            // No version constraints for any dependency
+            // A -> B 2.0 -> (C, D)
+            // A -> B 1.0 -> Missing Package
+
+            var packageA = CreatePackage("A", "2.0", new Dictionary<string, string>() { { "B", null } });
+            var packageB = CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", null }, { "D", null } });
+            var packageC = CreatePackage("C", "2.0");
+            var packageD = CreatePackage("D", "2.0");
+
+            // OldB is the lowest but it has a missing dependency
+            var packageOldB = CreatePackage("B", "1.0", new Dictionary<string, string>() { { "E", null } });
+
+            var sourceRepository = new List<ResolverPackage>() {
+                packageA,
+                packageB,
+                packageC,
+                packageD,
+                packageOldB
+            };
+
+            var resolver = new PackageResolver(DependencyBehavior.Lowest);
+            var packages = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+
+            // Assert
+            Assert.Equal(4, packages.Count());
+            Assert.NotNull(packages["A"]);
+            Assert.NotNull(packages["B"]);
+            Assert.NotNull(packages["C"]);
+            Assert.NotNull(packages["D"]);
+        }
+
+        [Fact]
         public void Resolver_IgnoreDependencies()
         {
             var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", null }, { "C", null } });
@@ -305,28 +373,6 @@ namespace NuGet.Resolver.Test
             Assert.Equal("1.0.0", packages["A"].Version.ToNormalizedString());
         }
 
-        private ResolverPackage CreatePackage(string id, string version, IDictionary<string, string> dependencies = null)
-        {
-            List<NuGet.Packaging.Core.PackageDependency> deps = new List<NuGet.Packaging.Core.PackageDependency>();
-
-            if (dependencies != null)
-            {
-                foreach (var dep in dependencies)
-                {
-                    VersionRange range = null;
-
-                    if (dep.Value != null)
-                    {
-                        range = VersionRange.Parse(dep.Value);
-                    }
-
-                    deps.Add(new NuGet.Packaging.Core.PackageDependency(dep.Key, range));
-                }
-            }
-
-            return new ResolverPackage(id, NuGetVersion.Parse(version), deps);
-        }
-
         [Fact]
         public void Resolver_Basic()
         {
@@ -360,9 +406,29 @@ namespace NuGet.Resolver.Test
 
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
 
-            var solution = resolver.Resolve(new ResolverPackage[] { target }, possible, CancellationToken.None);
+            Assert.Throws<NuGetResolverConstraintException>(() => resolver.Resolve(new ResolverPackage[] { target }, possible, CancellationToken.None));
+        }
 
-            Assert.Equal(0, solution.Count());
+        private ResolverPackage CreatePackage(string id, string version, IDictionary<string, string> dependencies = null)
+        {
+            List<NuGet.Packaging.Core.PackageDependency> deps = new List<NuGet.Packaging.Core.PackageDependency>();
+
+            if (dependencies != null)
+            {
+                foreach (var dep in dependencies)
+                {
+                    VersionRange range = null;
+
+                    if (dep.Value != null)
+                    {
+                        range = VersionRange.Parse(dep.Value);
+                    }
+
+                    deps.Add(new NuGet.Packaging.Core.PackageDependency(dep.Key, range));
+                }
+            }
+
+            return new ResolverPackage(id, NuGetVersion.Parse(version), deps);
         }
     }
 }
