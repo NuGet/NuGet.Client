@@ -26,12 +26,13 @@ namespace NuGet.Packaging
             }
         }
 
-        public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
+        public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity, bool useLegacyPackageInstallPath = false)
         {
             string directoryName = packageIdentity.Id;
             if (_useSideBySidePaths)
             {
-                directoryName += "." + packageIdentity.Version.ToNormalizedString();
+                directoryName += ".";
+                directoryName += useLegacyPackageInstallPath ? packageIdentity.Version.ToString() : packageIdentity.Version.ToNormalizedString();
             }
 
             return directoryName;
@@ -49,9 +50,9 @@ namespace NuGet.Packaging
             return fileNameBase + PackagingCoreConstants.NupkgExtension;
         }
 
-        public virtual string GetInstallPath(PackageIdentity packageIdentity)
+        public virtual string GetInstallPath(PackageIdentity packageIdentity, bool useLegacyPackageInstallPath=false)
         {
-            return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
+            return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity, useLegacyPackageInstallPath));
         }
 
         public virtual string GetInstalledPath(PackageIdentity packageIdentity)

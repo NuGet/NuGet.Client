@@ -43,7 +43,7 @@ namespace NuGet.Packaging
             // TODO: Support overwriting files also?
             long nupkgStartPosition = packageStream.Position;
             var zipArchive = new ZipArchive(packageStream);
-            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentity));
+            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentity, packageExtractionContext.UseLegacyPackageInstallPath));
             string packageDirectory = packageDirectoryInfo.FullName;
 
             filesAdded.AddRange(await PackageHelper.CreatePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token));

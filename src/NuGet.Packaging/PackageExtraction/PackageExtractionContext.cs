@@ -10,7 +10,18 @@ namespace NuGet.Packaging
     {
         // TODO: Move PackagePathResolver into this context as well
         public bool CopySatelliteFiles { get; set; }
-        public PackageExtractionContext() { }
+
+        /// <summary>
+        /// If True package folder paths will use the non-normalized version path, 
+        /// even for new installs.
+        /// </summary>
+        public bool UseLegacyPackageInstallPath { get; set; }
+
+        public PackageExtractionContext()
+        {
+            CopySatelliteFiles = false;
+            UseLegacyPackageInstallPath = false;
+        }
     }
 
     [Flags]
