@@ -173,6 +173,10 @@ Missing packages: {0}</value>
   <data name="PackageRestoreFinishedWithError" xml:space="preserve">
     <value>NuGet package restore failed.</value>
   </data>
+  <data name="PackageRestoreOptOutMessage" xml:space="preserve">
+    <value>Restoring NuGet packages...
+To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
+  </data>
   <data name="RestoredPackage" xml:space="preserve">
     <value>Restored NuGet package {0}.</value>
   </data>

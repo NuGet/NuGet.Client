@@ -225,6 +225,16 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restoring NuGet packages...
+        ///To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck &apos;Allow NuGet to download missing packages during build.&apos;.
+        /// </summary>
+        internal static string PackageRestoreOptOutMessage {
+            get {
+                return ResourceManager.GetString("PackageRestoreOptOutMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restored NuGet package {0}..
         /// </summary>
         internal static string RestoredPackage {

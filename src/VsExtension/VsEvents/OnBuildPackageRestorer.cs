@@ -24,6 +24,7 @@ namespace NuGetVSExtension
         private const string LogEntrySource = "NuGet PackageRestorer";
 
         private DTE _dte;
+        private bool _outputOptOutMessage;
 
         // The value of the "MSBuild project build output verbosity" setting 
         // of VS. From 0 (quiet) to 4 (Diagnostic).
@@ -123,6 +124,7 @@ namespace NuGetVSExtension
                     return;
                 }
 
+                _outputOptOutMessage = true;
                 await RestorePackagesOrCheckForMissingPackages(scope);
             }
             catch (Exception ex)
@@ -194,15 +196,20 @@ namespace NuGetVSExtension
                         TotalCount = (await PackageRestoreManager.GetMissingPackagesInSolution(token)).ToList().Count;
                         if (TotalCount > 0)
                         {
-                            _waitDialog.StartWaitDialog(
-                                    Resources.DialogTitle,
-                                    Resources.RestoringPackages,
-                                    String.Empty,
-                                    varStatusBmpAnim: null,
-                                    szStatusBarText: null,
-                                    iDelayToShowDialog: 0,
-                                    fIsCancelable: true,
-                                    fShowMarqueeProgress: true);
+                            if (_outputOptOutMessage)
+                            {
+                                _waitDialog.StartWaitDialog(
+                                        Resources.DialogTitle,
+                                        Resources.RestoringPackages,
+                                        String.Empty,
+                                        varStatusBmpAnim: null,
+                                        szStatusBarText: null,
+                                        iDelayToShowDialog: 0,
+                                        fIsCancelable: true,
+                                        fShowMarqueeProgress: true);
+                                WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
+                                _outputOptOutMessage = false;
+                            }
 
                             System.Threading.Tasks.Task waitDialogCanceledCheckTask = System.Threading.Tasks.Task.Run(() => 
                                 {
