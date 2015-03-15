@@ -182,8 +182,16 @@ namespace NuGet.VisualStudio
                         List<PackageIdentity> toInstall = new List<PackageIdentity>();
                         toInstall.Add(new PackageIdentity(package.Id, package.Version));
 
+                        // Skip assembly references and disable binding redirections should be done together
+                        bool disableBindingRedirects = package.SkipAssemblyReferences;
+
+                        VSAPIProjectContext projectContext = new VSAPIProjectContext(package.SkipAssemblyReferences, disableBindingRedirects);
+
+                        // Old templates have hardcoded non-normalized paths
+                        projectContext.PackageExtractionContext.UseLegacyPackageInstallPath = true;
+
                         // This runs from the UI thread
-                        var task = System.Threading.Tasks.Task.Run(async () => await _installer.InstallInternal(project, toInstall, repos, package.SkipAssemblyReferences, package.IgnoreDependencies, CancellationToken.None));
+                        var task = System.Threading.Tasks.Task.Run(async () => await _installer.InstallInternal(project, toInstall, repos, projectContext, package.IgnoreDependencies, CancellationToken.None));
                         task.Wait();
                     }
                     catch (InvalidOperationException exception)

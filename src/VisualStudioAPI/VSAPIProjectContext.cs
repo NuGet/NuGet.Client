@@ -16,13 +16,18 @@ namespace NuGet.VisualStudio
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
 
         public VSAPIProjectContext()
-            : this(false, false)
+            : this(false, false, true)
         {
 
         }
 
-        public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled)
+        public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled, bool useLegacyInstallPaths=true)
         {
+            PackageExtractionContext = new Packaging.PackageExtractionContext();
+
+            // many templates depend on legacy paths, for the VS API and template wizard we unfortunately need to keep them
+            PackageExtractionContext.UseLegacyPackageInstallPath = useLegacyInstallPaths;
+
             _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
             _skipAssemblyReferences = skipAssemblyReferences;
             _bindingRedirectsDisabled = bindingRedirectsDisabled;

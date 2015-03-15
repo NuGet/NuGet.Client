@@ -65,7 +65,10 @@ namespace NuGet.VisualStudio
 
             List<PackageIdentity> toInstall = new List<PackageIdentity>() { new PackageIdentity(packageId, semVer) };
 
-            await InstallInternal(project, toInstall, sourceProvider, false, ignoreDependencies, token);
+            // Normalize the install folder for new installs (this only happens for IVsPackageInstaller2. IVsPackageInstaller keeps legacy behavior)
+            VSAPIProjectContext projectContext = new VSAPIProjectContext(false, false, false);
+
+            await InstallInternal(project, toInstall, sourceProvider, projectContext, ignoreDependencies, token);
         }
 
         // Legacy methods
@@ -112,7 +115,9 @@ namespace NuGet.VisualStudio
             List<PackageIdentity> toInstall = new List<PackageIdentity>();
             toInstall.Add(new PackageIdentity(packageId, version));
 
-            Task task = Task.Run(async () => await InstallInternal(project, toInstall, GetSources(sources), false, ignoreDependencies, CancellationToken.None));
+            VSAPIProjectContext projectContext = new VSAPIProjectContext();
+
+            Task task = Task.Run(async () => await InstallInternal(project, toInstall, GetSources(sources), projectContext, ignoreDependencies, CancellationToken.None));
             task.Wait();
         }
 
@@ -150,7 +155,12 @@ namespace NuGet.VisualStudio
 
             List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
 
-            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None));
+            // Skip assembly references and disable binding redirections should be done together
+            bool disableBindingRedirects = skipAssemblyReferences;
+
+            VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+
+            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, projectContext, ignoreDependencies, CancellationToken.None));
             task.Wait();
         }
 
@@ -181,7 +191,12 @@ namespace NuGet.VisualStudio
 
             List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
 
-            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, skipAssemblyReferences, ignoreDependencies, CancellationToken.None));
+            // Skip assembly references and disable binding redirections should be done together
+            bool disableBindingRedirects = skipAssemblyReferences;
+
+            VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+
+            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, projectContext, ignoreDependencies, CancellationToken.None));
             task.Wait();
         }
 
@@ -320,10 +335,15 @@ namespace NuGet.VisualStudio
                 }
             }
 
-            await InstallInternal(project, idToIdentity.Values.ToList(), repoProvider, skipAssemblyReferences, ignoreDependencies, token);
+            // Skip assembly references and disable binding redirections should be done together
+            bool disableBindingRedirects = skipAssemblyReferences;
+
+            VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+
+            await InstallInternal(project, idToIdentity.Values.ToList(), repoProvider, projectContext, ignoreDependencies, token);
         }
 
-        internal async Task InstallInternal(Project project, List<PackageIdentity> packages, ISourceRepositoryProvider repoProvider, bool skipAssemblyReferences, bool ignoreDependencies, CancellationToken token)
+        internal async Task InstallInternal(Project project, List<PackageIdentity> packages, ISourceRepositoryProvider repoProvider, VSAPIProjectContext projectContext, bool ignoreDependencies, CancellationToken token)
         {
             // store expanded node state
             IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = VsHierarchyHelper.GetAllExpandedNodes(_solutionManager);
@@ -339,11 +359,6 @@ namespace NuGet.VisualStudio
                 var dir = _solutionManager.SolutionDirectory;
 
                 NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, dir);
-
-                // Skip assembly references and disable binding redirections should be done together
-                bool disableBindingRedirects = skipAssemblyReferences;
-
-                VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
 
                 // find the project
                 NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, projectContext);
