@@ -276,7 +276,7 @@ namespace NuGet.ProjectManagement
 
         public static IEnumerable<string> GetFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter, bool recursive)
         {
-            return FileSystemUtility.GetFiles(msBuildNuGetProjectSystem.ProjectFullPath, path, filter, recursive);
+            return msBuildNuGetProjectSystem.GetFiles(path, filter, recursive);
         }
 
         public static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
@@ -313,26 +313,7 @@ namespace NuGet.ProjectManagement
 
         public static IEnumerable<string> GetDirectories(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
         {
-            try
-            {
-                path = PathUtility.EnsureTrailingSlash(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path));
-                if (!Directory.Exists(path))
-                {
-                    return Enumerable.Empty<string>();
-                }
-                return Directory.EnumerateDirectories(path)
-                                .Select(p => p.Substring(msBuildNuGetProjectSystem.ProjectFullPath.Length).TrimStart(Path.DirectorySeparatorChar));
-            }
-            catch (UnauthorizedAccessException)
-            {
-
-            }
-            catch (DirectoryNotFoundException)
-            {
-
-            }
-
-            return Enumerable.Empty<string>();
+            return msBuildNuGetProjectSystem.GetDirectories(path);
         }
 
         public static void DeleteDirectorySafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
@@ -354,6 +335,7 @@ namespace NuGet.ProjectManagement
                 msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_DirectoryNotEmpty, path);
                 return;
             }
+            msBuildNuGetProjectSystem.DeleteDirectory(path, recursive);
 
             // Workaround for update-package TFS issue. If we're bound to TFS, do not try and delete directories.
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(msBuildNuGetProjectSystem.NuGetProjectContext);

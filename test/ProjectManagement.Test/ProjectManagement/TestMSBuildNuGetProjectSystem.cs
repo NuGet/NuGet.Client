@@ -198,5 +198,20 @@ namespace Test.Utility
             ProcessedFiles = FilesInProcessing;
             FilesInProcessing = null;
         }
+
+        public void DeleteDirectory(string path, bool recursive)
+        {
+            // no-op
+        }
+
+        public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
+        {
+            return Files.Where(f => f.StartsWith(path));
+        }
+
+        public IEnumerable<string> GetDirectories(string path)
+        {
+            return GetFiles(path, "*.*", recursive: true);
+        }
     }
 }

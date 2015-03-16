@@ -40,6 +40,18 @@ namespace NuGet.ProjectManagement
         void BeginProcessing(IEnumerable<string> files);
         void EndProcessing();
 
+        void DeleteDirectory(string path, bool recursive);
+
+        // The returned file names are relative paths.
+        IEnumerable<string> GetFiles(string path, string filter, bool recursive);
+
+        /// <summary>
+        /// Returns the directories under the directory <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">The directory under which to search for subdirectories.</param>
+        /// <returns>The list of subdirectories in relative path.</returns>
+        IEnumerable<string> GetDirectories(string path);
+
         // LIKELY, THERE HAS TO MORE STUFF HERE like 'IsSupportedFile' and 'IsBindingRedirectsEnabled'
         // IMO, there are hacks introduced to special case based on project systems like 'websites' and 'silverlight'
     }
