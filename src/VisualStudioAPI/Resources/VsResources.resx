@@ -389,19 +389,7 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
     <value>Search Online for NuGet Packages matching '{0}'</value>
   </data>
-  <data name="NuGetSearchProvider_CategoryShortcut" xml:space="preserve">
-    <value>nuget</value>
-  </data>
-  <data name="NuGetSearchProvider_Description" xml:space="preserve">
-    <value>Search NuGet packages</value>
-  </data>
-  <data name="NuGetSearchProvider_DisplayText" xml:space="preserve">
-    <value>NuGet Packages</value>
-  </data>
-  <data name="NuGetSearchProvider_Name" xml:space="preserve">
-    <value>NuGet Search</value>
-  </data>
-  <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
-    <value>Search Online for NuGet Packages matching '{0}'</value>
+  <data name="InvalidPackageList" xml:space="preserve">
+    <value>Package list contains invalid or duplicate entries.</value>
   </data>
 </root>

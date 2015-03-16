@@ -85,6 +85,38 @@
         </Strings>
       </Button>
 
+       <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIInstallPackageAsync" priority="0x0400" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Install Async</ButtonText>
+        </Strings>
+      </Button>
+      
+       <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIGetSources" priority="0x0500" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Get Sources</ButtonText>
+        </Strings>
+      </Button>
+      
+    <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIGetOfficialSources" priority="0x0600" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Get Official Sources</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPICheck" priority="0x9900" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Check Result</ButtonText>
+        </Strings>
+      </Button>
+
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -115,6 +147,10 @@
       <IDSymbol name="cmdidNuGetAPITest" value="0x0100" />
       <IDSymbol name="cmdidNuGetAPIInstallPackage" value="0x0200" />
       <IDSymbol name="cmdidNuGetAPIInstallBadSource" value="0x0300" />
+      <IDSymbol name="cmdidNuGetAPIInstallPackageAsync" value="0x0400" />
+      <IDSymbol name="cmdidNuGetAPIGetSources" value="0x0500" />
+      <IDSymbol name="cmdidNuGetAPIGetOfficialSources" value="0x0600" />
+      <IDSymbol name="cmdidNuGetAPICheck" value="0x9900" />
     </GuidSymbol>
     
     

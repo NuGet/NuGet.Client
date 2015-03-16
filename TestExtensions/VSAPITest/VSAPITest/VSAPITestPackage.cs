@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using System.Linq;
+using System.Threading;
 
 namespace MicrosoftCorp.VSAPITest
 {
@@ -77,16 +78,81 @@ namespace MicrosoftCorp.VSAPITest
                 CommandID installBadSrcId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIInstallBadSource);
                 MenuCommand installBadSrcItem = new MenuCommand(InstallBadSourceTest, installBadSrcId);
                 mcs.AddCommand(installBadSrcItem);
+
+                CommandID installAsyncId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIInstallPackageAsync);
+                MenuCommand installAsyncItem = new MenuCommand(InstallPackageAsyncTest, installAsyncId);
+                mcs.AddCommand(installAsyncItem);
+
+                CommandID sourcesId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIGetSources);
+                MenuCommand sourcesItem = new MenuCommand(GetSourcesTest, sourcesId);
+                mcs.AddCommand(sourcesItem);
+
+                CommandID officialId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIGetOfficialSources);
+                MenuCommand officialItem = new MenuCommand(GetOfficialSourcesTest, officialId);
+                mcs.AddCommand(officialItem);
+
+                CommandID checkId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPICheck);
+                MenuCommand checkItem = new MenuCommand(CheckResult, checkId);
+                mcs.AddCommand(checkItem);
             }
         }
         #endregion
 
+        private System.Threading.Tasks.Task _task;
+
+        private void CheckResult(object sender, EventArgs e)
+        {
+            if (_task != null)
+            {
+                try
+                {
+                    _task.Wait();
+                }
+                catch (Exception ex)
+                {
+                    DisplayMessage("check", ex.ToString());
+                }
+
+                DisplayMessage("check", _task.Status.ToString());
+            }
+        }
+
+        private void GetOfficialSourcesTest(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageSourceProvider sourceProvider = ServiceLocator.GetInstance<IVsPackageSourceProvider>() as IVsPackageSourceProvider;
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                var sources = sourceProvider.GetSources(false, false);
+                DisplayMessage("Official enabled sources", String.Join(", ", sources.Select(p => String.Format("[{0} {1}]", p.Key, p.Value))));
+                return;
+            }
+        }
+
+        private void GetSourcesTest(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageSourceProvider sourceProvider = ServiceLocator.GetInstance<IVsPackageSourceProvider>() as IVsPackageSourceProvider;
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                var sources = sourceProvider.GetSources(true, true);
+                DisplayMessage("All sources", String.Join(", ", sources.Select(p => String.Format("[{0} {1}]", p.Key, p.Value))));
+                return;
+            }
+        }
+
         private void InstallPackageAsyncTest(object sender, EventArgs e)
         {
-            // A new signed NuGet.VisualStudio package is required for this
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller2 installer2 = ServiceLocator.GetInstance<IVsPackageInstaller>() as IVsPackageInstaller2;
 
-            //EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-            //IVsPackageInstaller2 services = ServiceLocator.GetInstance<IVsPackageInstaller>() as IVsPackageInstaller2;
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                _task = installer2.InstallPackageAsync(project, new string[] { "https://api.nuget.org/v2/" }, "dotnetrdf", "[1.0.0, )", false, CancellationToken.None);
+                return;
+            }
         }
 
         private void InstallPackageTest(object sender, EventArgs e)
@@ -96,7 +162,7 @@ namespace MicrosoftCorp.VSAPITest
 
             foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
-                var task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("https://api.nuget.org/v2/", project, "newtonsoft.json", "6.0.4", false));
+                _task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("https://api.nuget.org/v2/", project, "newtonsoft.json", "6.0.4", false));
                 return;
             }
         }
@@ -108,7 +174,7 @@ namespace MicrosoftCorp.VSAPITest
 
             foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
-                var task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("http://packagesource", project, "newtonsoft.json", "6.0.4", false));
+                _task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("http://packagesource", project, "newtonsoft.json", "6.0.4", false));
                 return;
             }
         }

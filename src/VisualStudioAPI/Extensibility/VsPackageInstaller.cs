@@ -16,6 +16,8 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using LegacyNuGet = Legacy.NuGet;
+using NuGet.VisualStudio.Resources;
+using System.Globalization;
 
 namespace NuGet.VisualStudio
 {
@@ -36,39 +38,45 @@ namespace NuGet.VisualStudio
             _projectContext = new VSAPIProjectContext();
         }
 
-        public async Task InstallPackageAsync(Project project, IEnumerable<string> sources, string packageId, string versionSpec, bool ignoreDependencies, CancellationToken token)
+        public Task InstallPackageAsync(Project project, IEnumerable<string> sources, string packageId, string versionSpec, bool ignoreDependencies, CancellationToken token)
         {
-            var sourceProvider = GetSources(sources);
-
-            VersionRange versionRange = VersionRange.All;
-
-            if (!String.IsNullOrEmpty(versionSpec))
+            return Task.Run(async () =>
             {
-                versionRange = VersionRange.Parse(versionSpec);
-            }
+                var sourceProvider = GetSources(sources);
 
-            List<PackageDependency> toInstall = new List<PackageDependency>() { new PackageDependency(packageId, versionRange) };
+                VersionRange versionRange = VersionRange.All;
 
-            await InstallInternal(project, toInstall, sourceProvider, false, ignoreDependencies, token);
+                if (!String.IsNullOrEmpty(versionSpec))
+                {
+                    versionRange = VersionRange.Parse(versionSpec);
+                }
+
+                List<PackageDependency> toInstall = new List<PackageDependency>() { new PackageDependency(packageId, versionRange) };
+
+                await InstallInternal(project, toInstall, sourceProvider, false, ignoreDependencies, token);
+            });
         }
 
-        public async Task InstallPackageAsync(IEnumerable<string> sources, Project project, string packageId, string version, bool ignoreDependencies, CancellationToken token)
+        public Task InstallPackageAsync(IEnumerable<string> sources, Project project, string packageId, string version, bool ignoreDependencies, CancellationToken token)
         {
-            var sourceProvider = GetSources(sources);
-
-            NuGetVersion semVer = null;
-
-            if (!String.IsNullOrEmpty(version))
+            return Task.Run(async () =>
             {
-                semVer = NuGetVersion.Parse(version);
-            }
+                var sourceProvider = GetSources(sources);
 
-            List<PackageIdentity> toInstall = new List<PackageIdentity>() { new PackageIdentity(packageId, semVer) };
+                NuGetVersion semVer = null;
 
-            // Normalize the install folder for new installs (this only happens for IVsPackageInstaller2. IVsPackageInstaller keeps legacy behavior)
-            VSAPIProjectContext projectContext = new VSAPIProjectContext(false, false, false);
+                if (!String.IsNullOrEmpty(version))
+                {
+                    semVer = NuGetVersion.Parse(version);
+                }
 
-            await InstallInternal(project, toInstall, sourceProvider, projectContext, ignoreDependencies, token);
+                List<PackageIdentity> toInstall = new List<PackageIdentity>() { new PackageIdentity(packageId, semVer) };
+
+                // Normalize the install folder for new installs (this only happens for IVsPackageInstaller2. IVsPackageInstaller keeps legacy behavior)
+                VSAPIProjectContext projectContext = new VSAPIProjectContext(false, false, false);
+
+                await InstallInternal(project, toInstall, sourceProvider, projectContext, ignoreDependencies, token);
+            });
         }
 
         // Legacy methods
@@ -292,46 +300,66 @@ namespace NuGet.VisualStudio
 
         internal async Task InstallInternal(Project project, List<PackageDependency> packages, ISourceRepositoryProvider repoProvider, bool skipAssemblyReferences, bool ignoreDependencies, CancellationToken token)
         {
-            Dictionary<string, PackageIdentity> idToIdentity =  new Dictionary<string, PackageIdentity>();
-
-            // add packages limited to a single version
-            foreach (var dep in packages.Where(e => e.VersionRange.IsMaxInclusive && e.VersionRange.IsMinInclusive 
-                && VersionComparer.Default.Equals(e.VersionRange.MinVersion, e.VersionRange.MaxVersion)))
+            foreach (var group in packages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
             {
-                idToIdentity.Add(dep.Id, new PackageIdentity(dep.Id, NuGetVersion.Parse(dep.VersionRange.MinVersion.ToNormalizedString())));
-            }
-
-            // find the latest package
-            foreach (SourceRepository repo in repoProvider.GetRepositories())
-            {
-                foreach (string id in idToIdentity.Where(e => e.Value == null).Select(e => e.Key).ToArray())
+                if (group.Count() > 1)
                 {
-                    MetadataResource resource = await repo.GetResourceAsync<MetadataResource>();
-                    var versions = await resource.GetVersions(id, token);
-
-                    var dep = packages.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).SingleOrDefault();
-
-                    // find the highest version
-                    foreach (var version in versions.OrderByDescending(e => e, VersionComparer.Default))
-                    {
-                        if (dep.VersionRange == null || dep.VersionRange.Satisfies(version))
-                        {
-                            if (idToIdentity[id] == null || VersionComparer.VersionRelease.Compare(idToIdentity[id].Version, version) < 0)
-                            {
-                                idToIdentity[id] = new PackageIdentity(id, version);
-                                break;
-                            }
-                        }
-                    }
+                    // throw if a package id appears more than once
+                    throw new InvalidOperationException(VsResources.InvalidPackageList);
                 }
             }
 
-            foreach (var pair in idToIdentity)
+            // find the latest package
+            List<MetadataResource> metadataResources = new List<MetadataResource>();
+
+            // create the resources for looking up the latest version
+            foreach (var repo in repoProvider.GetRepositories())
             {
-                if (pair.Value == null)
+                MetadataResource resource = await repo.GetResourceAsync<MetadataResource>();
+                if (resource != null)
                 {
-                    // TODO: add message
-                    throw new InvalidOperationException();
+                    metadataResources.Add(resource);
+                }
+            }
+
+            // find the highest version within the ranges
+            var idToIdentity = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var dep in packages)
+            {
+                NuGetVersion highestVersion = null;
+
+                if (dep.VersionRange != null 
+                    && VersionComparer.Default.Equals(dep.VersionRange.MinVersion, dep.VersionRange.MaxVersion) 
+                    && dep.VersionRange.MinVersion != null)
+                {
+                    // this is a single version, not a range
+                    highestVersion = dep.VersionRange.MinVersion;
+                }
+                else
+                {
+                    var tasks = new List<Task<IEnumerable<NuGetVersion>>>();
+
+                    List<NuGetVersion> versions = new List<NuGetVersion>();
+
+                    foreach (var resource in metadataResources)
+                    {
+                        tasks.Add(resource.GetVersions(dep.Id, token));
+                    }
+
+                    Task.WaitAll(tasks.ToArray());
+
+                    highestVersion = tasks.SelectMany(t => t.Result).Where(v => dep.VersionRange.Satisfies(v)).Max();
+                }
+
+                if (highestVersion == null)
+                {
+                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, VsResources.UnknownPackage, dep.Id));
+                }
+
+                if (!idToIdentity.ContainsKey(dep.Id))
+                {
+                    idToIdentity.Add(dep.Id, new PackageIdentity(dep.Id, highestVersion));
                 }
             }
 
@@ -343,6 +371,9 @@ namespace NuGet.VisualStudio
             await InstallInternal(project, idToIdentity.Values.ToList(), repoProvider, projectContext, ignoreDependencies, token);
         }
 
+        /// <summary>
+        /// Core install method. All installs from the VS API and template wizard end up here.
+        /// </summary>
         internal async Task InstallInternal(Project project, List<PackageIdentity> packages, ISourceRepositoryProvider repoProvider, VSAPIProjectContext projectContext, bool ignoreDependencies, CancellationToken token)
         {
             // store expanded node state
