@@ -1,37 +1,37 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22609.0
+VisualStudioVersion = 14.0.22711.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{4A83D327-A984-4FE4-8821-2E37A7947A83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{732517AB-A96A-4775-B671-6B2CB2849BCE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.Types", "src\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.kproj", "{37C02980-2278-4494-8FF7-208D8078C21E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.Types", "src\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.xproj", "{37C02980-2278-4494-8FF7-208D8078C21E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v2", "src\NuGet.Protocol.Core.v2\NuGet.Protocol.Core.v2.kproj", "{47120CFB-BAFA-4FCC-B35A-AC62907D3AF4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v2", "src\NuGet.Protocol.Core.v2\NuGet.Protocol.Core.v2.xproj", "{47120CFB-BAFA-4FCC-B35A-AC62907D3AF4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProtocolTests", "test\ProtocolTests\ProtocolTests.kproj", "{3995A981-4E8F-4959-8D15-A1BEFD6ADD00}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProtocolTests", "test\ProtocolTests\ProtocolTests.xproj", "{3995A981-4E8F-4959-8D15-A1BEFD6ADD00}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.PowerShellGet", "src\NuGet.Protocol.PowerShellGet\NuGet.Protocol.PowerShellGet.kproj", "{EBB8B60D-8552-4E10-9983-F881C4A7ED33}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.PowerShellGet", "src\NuGet.Protocol.PowerShellGet\NuGet.Protocol.PowerShellGet.xproj", "{EBB8B60D-8552-4E10-9983-F881C4A7ED33}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.VisualStudio", "src\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.kproj", "{DE390D30-B8FF-44D7-8411-A4553B38A0B1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.VisualStudio", "src\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.xproj", "{DE390D30-B8FF-44D7-8411-A4553B38A0B1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v3", "src\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.kproj", "{020F4C88-3A5C-4B89-9868-089E867CC223}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v3", "src\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.xproj", "{020F4C88-3A5C-4B89-9868-089E867CC223}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Gallery", "src\NuGet.Protocol.Gallery\NuGet.Protocol.Gallery.kproj", "{F6ED913A-2214-4910-80DD-CD7D40B54BBE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Gallery", "src\NuGet.Protocol.Gallery\NuGet.Protocol.Gallery.xproj", "{F6ED913A-2214-4910-80DD-CD7D40B54BBE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PowerShellGet.Tests", "test\PowerShellGet.Tests\PowerShellGet.Tests.kproj", "{E507E913-8C42-440D-9493-129C493BAD84}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PowerShellGet.Tests", "test\PowerShellGet.Tests\PowerShellGet.Tests.xproj", "{E507E913-8C42-440D-9493-129C493BAD84}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Test.Utility", "test\Test.Utility\Test.Utility.kproj", "{5E68B169-168F-4EDC-98A7-2E1F9EB7505F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Test.Utility", "test\Test.Utility\Test.Utility.xproj", "{5E68B169-168F-4EDC-98A7-2E1F9EB7505F}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Versioning", "..\NuGet.Versioning\src\NuGet.Versioning\NuGet.Versioning.kproj", "{24E62AB7-64E4-4975-9417-883559D1BC19}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.ApiApps", "src\NuGet.Protocol.ApiApps\NuGet.Protocol.ApiApps.kproj", "{B53869A9-9E77-48EC-B601-4B78E53F9381}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.ApiApps", "src\NuGet.Protocol.ApiApps\NuGet.Protocol.ApiApps.xproj", "{B53869A9-9E77-48EC-B601-4B78E53F9381}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Configuration", "..\NuGet.Configuration\src\NuGet.Configuration\NuGet.Configuration.kproj", "{0EEA201F-F4CB-4B1E-9462-2FE58C540513}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApiApps.Tests", "test\ApiApps.Tests\ApiApps.Tests.kproj", "{5F08F85C-8F15-4EF1-8816-14B32AF98D07}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApiApps.Tests", "test\ApiApps.Tests\ApiApps.Tests.xproj", "{5F08F85C-8F15-4EF1-8816-14B32AF98D07}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Core.Types", "..\NuGet.Packaging\src\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.kproj", "{46275450-3B62-4E89-8F7E-3FE2EE8513D2}"
 EndProject
@@ -83,14 +83,14 @@ Global
 		{24E62AB7-64E4-4975-9417-883559D1BC19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24E62AB7-64E4-4975-9417-883559D1BC19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24E62AB7-64E4-4975-9417-883559D1BC19}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B53869A9-9E77-48EC-B601-4B78E53F9381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B53869A9-9E77-48EC-B601-4B78E53F9381}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B53869A9-9E77-48EC-B601-4B78E53F9381}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B53869A9-9E77-48EC-B601-4B78E53F9381}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EEA201F-F4CB-4B1E-9462-2FE58C540513}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5F08F85C-8F15-4EF1-8816-14B32AF98D07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5F08F85C-8F15-4EF1-8816-14B32AF98D07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F08F85C-8F15-4EF1-8816-14B32AF98D07}.Release|Any CPU.ActiveCfg = Release|Any CPU
