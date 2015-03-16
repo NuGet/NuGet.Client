@@ -53,6 +53,9 @@
           <Project>{3dd213f7-999b-4c15-9560-bf9c96cb8c52}</Project>
           <Name>VisualStudio12</Name>
         </ProjectReference>
+	<Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      	<EmbedInteropTypes>True</EmbedInteropTypes>
+    	</Reference>
       </ItemGroup>
     </When>
     <When Condition="$(VisualStudioVersion)=='14.0'">
@@ -63,6 +66,9 @@
           <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
           <Name>VisualStudio14</Name>
         </ProjectReference>
+	<Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      	<EmbedInteropTypes>True</EmbedInteropTypes>
+    	</Reference>
       </ItemGroup>
     </When>
   </Choose>
@@ -107,9 +113,6 @@
       <HintPath>..\..\..\..\Windows\assembly\GAC\Microsoft.VisualStudio.Shell.Interop.8.0\8.0.0.0__b03f5f7f11d50a3a\microsoft.visualstudio.shell.interop.8.0.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="Microsoft.Web.XmlTransform">
       <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
