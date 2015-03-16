@@ -98,6 +98,12 @@
       <HintPath>..\..\lib\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only">
+      <HintPath>..\..\lib\VS14\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Threading">
+      <HintPath>..\..\lib\VS14\Microsoft.VisualStudio.Threading.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Windows\assembly\GAC\Microsoft.VisualStudio.Shell.Interop\7.1.40304.0__b03f5f7f11d50a3a\Microsoft.VisualStudio.Shell.Interop.dll</HintPath>
@@ -213,6 +219,7 @@
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="SourceControl\ITFSSourceControlManagerProvider.cs" />
+    <Compile Include="SourceControl\IVsSourceControlTracker.cs" />
     <Compile Include="SourceControl\TFSSourceControlManagerProviderPicker.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="IEnvironmentVariableReader.cs" />
@@ -245,6 +252,7 @@
     <Compile Include="Setting\SettingsStoreWrapper.cs" />
     <Compile Include="Setting\WritableSettingsStoreWrapper.cs" />
     <Compile Include="SourceControl\DTESourceControlUtility.cs" />
+    <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
     <Compile Include="Utility\MessageHelper.cs" />

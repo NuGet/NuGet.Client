@@ -73,6 +73,7 @@ namespace NuGetVSExtension
 
         private ISettings _settings;
         private ISourceControlManagerProvider _sourceControlManagerProvider;
+        private IVsSourceControlTracker _vsSourceControlTracker;
         private ICommonOperations _commonOperations;
         private ISolutionManager _solutionManager;
         //*** private IDeleteOnRestartManager _deleteOnRestart;
@@ -165,6 +166,18 @@ namespace NuGetVSExtension
                     _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
                 }
                 return _sourceControlManagerProvider;
+            }
+        }
+
+        private IVsSourceControlTracker VSSourceControlTracker
+        {
+            get
+            {
+                if(_vsSourceControlTracker == null)
+                {
+                    _vsSourceControlTracker = ServiceLocator.GetInstanceSafe<IVsSourceControlTracker>();
+                }
+                return _vsSourceControlTracker;
             }
         }
 
@@ -306,6 +319,8 @@ namespace NuGetVSExtension
             //       Exported IPackageRestoreManager is used by UI manual restore, Powershell manual restore and by VS extensibility package restore
             // var packageRestoreManagerForOnBuildPackageRestorer = new PackageRestoreManager(SourceRepositoryProvider, Settings, SolutionManager);
             OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this);
+
+            var vsSourceControlTracker = VSSourceControlTracker;
 
             LoadNuGetSettings();
         }
