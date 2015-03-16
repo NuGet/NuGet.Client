@@ -1,6 +1,8 @@
 ﻿using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio;
+#if VS14
 using Microsoft.VisualStudio.ProjectSystem;
+#endif
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
@@ -556,6 +558,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // There is no reason to call this for pre-Dev12 project systems.
             if (VSVersionHelper.VsMajorVersion >= 12)
             {
+#if VS14
                 // Switch to UI thread to update Import Stamp for Dev14.
                 if (isCpsProjectSystem && VSVersionHelper.IsVisualStudio2014)
                 {
@@ -571,6 +574,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         ExceptionHelper.WriteToActivityLog(ex);
                     }
                 }
+#endif
 
                 IVsBuildPropertyStorage propStore = VsHierarchyUtility.ToVsHierarchy(envDTEProject) as IVsBuildPropertyStorage;
                 if (propStore != null)
