@@ -24,6 +24,7 @@ using System.Runtime.Versioning;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Project.Designers;
 using Microsoft.VisualStudio.Project;
+using System.Text.RegularExpressions;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -918,6 +919,34 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
             return envDTEProjects;
+        }
+
+        public static IEnumerable<EnvDTEProjectItem> GetChildItems(EnvDTEProject envDTEProject, string path, string filter, string desiredKind)
+        {
+            EnvDTEProjectItems projectItems = GetProjectItems(envDTEProject, path);
+
+            if (projectItems == null)
+            {
+                return Enumerable.Empty<EnvDTEProjectItem>();
+            }
+
+            Regex matcher = filter.Equals("*.*", StringComparison.OrdinalIgnoreCase) ? null : GetFilterRegex(filter);
+
+            return from EnvDTEProjectItem p in projectItems
+                   where desiredKind.Equals(p.Kind, StringComparison.OrdinalIgnoreCase) &&
+                         (matcher == null || matcher.IsMatch(p.Name))
+                   select p;
+        }
+
+        internal static Regex GetFilterRegex(string wildcard)
+        {
+            string pattern = String.Join(String.Empty, wildcard.Split('.').Select(GetPattern));
+            return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+        }
+
+        private static string GetPattern(string token)
+        {
+            return token == "*" ? @"(.*)" : @"(" + token + ")";
         }
 
         #endregion // Get "Project" Information

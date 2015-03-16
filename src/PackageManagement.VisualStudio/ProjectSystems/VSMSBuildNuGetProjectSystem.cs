@@ -615,5 +615,42 @@ namespace NuGet.PackageManagement.VisualStudio
         public virtual void EndProcessing()
         {
         }
+
+        public void DeleteDirectory(string path, bool recursive)
+        {
+            // Only delete this folder if it is empty and we didn't specify that we want to recurse
+            if (!recursive && (FileSystemUtility.GetFiles(ProjectFullPath, path, "*.*", recursive).Any() || FileSystemUtility.GetDirectories(ProjectFullPath, path).Any()))
+            {
+                NuGetProjectContext.Log(MessageLevel.Warning, NuGet.ProjectManagement.Strings.Warning_DirectoryNotEmpty, path);
+                return;
+            }
+
+            // Workaround for TFS update issue. If we're bound to TFS, do not try and delete directories.
+            if (SourceControlUtility.GetSourceControlManager(NuGetProjectContext) == null && EnvDTEProjectUtility.DeleteProjectItem(EnvDTEProject, path))
+            {
+                NuGetProjectContext.Log(MessageLevel.Debug, NuGet.ProjectManagement.Strings.Debug_RemovedFolder, path);
+            }
+        }
+
+        public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
+        {
+            if (recursive)
+            {
+                throw new NotSupportedException();
+            }
+            else
+            {
+                // Get all physical files
+                return from p in EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, filter, NuGetVSConstants.VsProjectItemKindPhysicalFile)
+                       select p.Name;
+            }
+        }
+
+        public IEnumerable<string> GetDirectories(string path)
+        {
+            // Get all physical folders
+            return from p in EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, "*.*", NuGetVSConstants.VsProjectItemKindPhysicalFolder)
+                   select p.Name;
+        }
     }
 }
