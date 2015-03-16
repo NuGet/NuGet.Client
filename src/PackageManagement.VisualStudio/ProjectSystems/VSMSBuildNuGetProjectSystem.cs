@@ -551,13 +551,13 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Sets NuGetPackageImportStamp to a new random guid. This is a hack to let the project system know it is out of date.
         /// The value does not matter, it just needs to change.
         /// </summary>
-        protected static void UpdateImportStamp(EnvDTEProject envDTEProject)
+        protected static void UpdateImportStamp(EnvDTEProject envDTEProject, bool isCpsProjectSystem = false)
         {
             // There is no reason to call this for pre-Dev12 project systems.
             if (VSVersionHelper.VsMajorVersion >= 12)
             {
                 // Switch to UI thread to update Import Stamp for Dev14.
-                if (VSVersionHelper.IsVisualStudio2014)
+                if (isCpsProjectSystem && VSVersionHelper.IsVisualStudio2014)
                 {
                     try
                     {
