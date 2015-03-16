@@ -45,8 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
             else
             {
                 AddImportStatementForVS2013(location, relativeTargetPath);
-            }
-            
+            }      
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

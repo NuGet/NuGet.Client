@@ -1,5 +1,6 @@
 ﻿using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
@@ -22,6 +23,8 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VSMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
     {
         private const string BinDir = "bin";
+        private const string NuGetImportStamp = "NuGetPackageImportStamp";
+
         public VSMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
             if(envDTEProject == null)
@@ -553,12 +556,46 @@ namespace NuGet.PackageManagement.VisualStudio
             // There is no reason to call this for pre-Dev12 project systems.
             if (VSVersionHelper.VsMajorVersion >= 12)
             {
+                // Switch to UI thread to update Import Stamp for Dev14.
+                if (VSVersionHelper.IsVisualStudio2014)
+                {
+                    try
+                    {
+                        var projectServiceAccessor = ServiceLocator.GetInstance<IProjectServiceAccessor>();
+                        ProjectService projectService = projectServiceAccessor.GetProjectService();
+                        IThreadHandling threadHandling = projectService.Services.ThreadingPolicy;
+                        threadHandling.SwitchToUIThread();
+                    }
+                    catch (Exception ex)
+                    {
+                        ExceptionHelper.WriteToActivityLog(ex);
+                    }
+                }
+
                 IVsBuildPropertyStorage propStore = VsHierarchyUtility.ToVsHierarchy(envDTEProject) as IVsBuildPropertyStorage;
                 if (propStore != null)
                 {
                     // <NuGetPackageImportStamp>af617720</NuGetPackageImportStamp>
                     string stamp = Guid.NewGuid().ToString().Split('-')[0];
-                    ErrorHandler.ThrowOnFailure(propStore.SetPropertyValue("NuGetPackageImportStamp", string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE, stamp));
+                    try
+                    {
+                        int r1 = propStore.SetPropertyValue(NuGetImportStamp, string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE, stamp);
+                    }
+                    catch (Exception ex1)
+                    {
+                        ExceptionHelper.WriteToActivityLog(ex1);
+                    }
+
+                    // Remove the NuGetImportStamp so that VC++ project file won't be updated with this stamp on disk,
+                    // which causes unnecessary source control pending changes. 
+                    try
+                    {
+                        int r2 = propStore.RemoveProperty(NuGetImportStamp, string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE);
+                    }
+                    catch (Exception ex2)
+                    {
+                        ExceptionHelper.WriteToActivityLog(ex2);
+                    }
                 }
             }
         }
