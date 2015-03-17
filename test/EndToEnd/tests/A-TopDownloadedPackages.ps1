@@ -61,9 +61,9 @@ $projectSystemNames = (
     'New-ConsoleApplication',
     'New-ClassLibrary',
     'New-WebApplication',
-    'New-Website',
-    'New-JavaScriptWindowsPhoneApp81', # Failing due to a product bug
-    'New-JavaScriptApplication' # Failing due to a product bug
+    'New-Website'
+    #'New-JavaScriptWindowsPhoneApp81', # At least 35 out of the 53 packages in the list cannot be installed on this project type
+    #'New-JavaScriptApplication' # At least 35 out of the 53 packages in the list cannot be installed on this project type
     )
 
 function Test-InstallPackageOnProjectSystem
