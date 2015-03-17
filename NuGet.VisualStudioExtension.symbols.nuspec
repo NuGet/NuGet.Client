@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.VisualStudioExtension.Symbols</id>
+    <version>1.0.0</version>
+    <title>Symbols package for NuGet vsix</title>
+    <authors>NuGet</authors>
+    <copyright>Copyright Outercurve Foundation. All rights reserved.</copyright>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.VisualStudioExtension/</projectUrl>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/nuget_release_eula.htm</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Symbols package for NuGet vsix</description>	
+  </metadata>
+  <files>
+	<file src="**.cs" target="src" />
+	<file src="**\bin\**.pdb" target="lib" />
+  </files>
+</package>
