@@ -340,16 +340,14 @@ namespace NuGet.VisualStudio
                 {
                     var tasks = new List<Task<IEnumerable<NuGetVersion>>>();
 
-                    List<NuGetVersion> versions = new List<NuGetVersion>();
-
                     foreach (var resource in metadataResources)
                     {
                         tasks.Add(resource.GetVersions(dep.Id, token));
                     }
 
-                    Task.WaitAll(tasks.ToArray());
+                    var versions = await Task.WhenAll(tasks.ToArray());
 
-                    highestVersion = tasks.SelectMany(t => t.Result).Where(v => dep.VersionRange.Satisfies(v)).Max();
+                    highestVersion = versions.SelectMany(v => v).Where(v => dep.VersionRange.Satisfies(v)).Max();
                 }
 
                 if (highestVersion == null)
