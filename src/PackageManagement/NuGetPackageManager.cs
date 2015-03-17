@@ -1314,18 +1314,8 @@ namespace NuGet.PackageManagement
                 tasks.Add(Task.Run(async () => await GetLatestVersionCoreAsync(packageId, resolutionContext, source, token)));
             }
 
-            List<NuGetVersion> latestVersions = new List<NuGetVersion>();
-
-            foreach (var task in tasks)
-            {
-                var version = await task;
-                if (version != null)
-                {
-                    latestVersions.Add(version);
-                }
-            }
-
-            return latestVersions.Max<NuGetVersion>();
+            var versions = await Task.WhenAll(tasks);
+            return versions.Where(v => v != null).Max();
         }
 
         private static async Task<NuGetVersion> GetLatestVersionCoreAsync(string packageId, ResolutionContext resolutionContext, SourceRepository source, CancellationToken token)
