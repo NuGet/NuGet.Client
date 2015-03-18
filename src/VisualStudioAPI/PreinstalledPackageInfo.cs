@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio
             Debug.Assert(!String.IsNullOrWhiteSpace(version));
 
             Id = id;
-            Version = new NuGetVersion(version);
+            Version = NuGetVersion.Parse(version);
             SkipAssemblyReferences = skipAssemblyReferences;
             IgnoreDependencies = ignoreDependencies;
         }

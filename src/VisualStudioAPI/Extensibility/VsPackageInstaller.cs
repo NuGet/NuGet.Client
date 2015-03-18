@@ -67,7 +67,7 @@ namespace NuGet.VisualStudio
 
                 if (!String.IsNullOrEmpty(version))
                 {
-                    semVer = NuGetVersion.Parse(version);
+                    NuGetVersion.TryParse(version, out semVer);
                 }
 
                 List<PackageIdentity> toInstall = new List<PackageIdentity>() { new PackageIdentity(packageId, semVer) };
@@ -96,9 +96,9 @@ namespace NuGet.VisualStudio
         {
             NuGetVersion semVer = null;
 
-            if (version != null)
+            if (!String.IsNullOrEmpty(version))
             {
-                semVer = new NuGetVersion(version);
+                NuGetVersion.TryParse(version, out semVer);
             }
 
             InstallPackage(source, project, packageId, semVer, ignoreDependencies);
@@ -395,7 +395,14 @@ namespace NuGet.VisualStudio
                 // install the package
                 foreach (PackageIdentity package in packages)
                 {
-                    await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                    if (package.Version == null)
+                    {
+                        await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                    }
+                    else
+                    {
+                        await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                    }
                 }
             }
             finally
