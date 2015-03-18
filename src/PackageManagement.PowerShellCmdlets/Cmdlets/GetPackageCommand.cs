@@ -1,4 +1,8 @@
-﻿using System;
+﻿using NuGet.Packaging;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.VisualStudio;
+using NuGet.Versioning;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -6,10 +10,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Threading;
-using NuGet.Packaging;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.VisualStudio;
-using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {

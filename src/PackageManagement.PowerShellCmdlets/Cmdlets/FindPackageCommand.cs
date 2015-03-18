@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias Legacy;
+using LegacyNuGet = Legacy.NuGet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
@@ -140,8 +142,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (versions != null && versions.Any())
                 {
                     package.Versions = versions.OrderByDescending(v => v);
-                    SemanticVersion sVersion;
-                    SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
+                    LegacyNuGet.SemanticVersion sVersion;
+                    LegacyNuGet.SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
                     package.Version = sVersion;
                 }
             }
@@ -156,8 +158,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (nVersion != null)
                 {
                     package.Versions = new List<NuGetVersion>() { nVersion };
-                    SemanticVersion sVersion;
-                    SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                    LegacyNuGet.SemanticVersion sVersion;
+                    LegacyNuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
                     package.Version = sVersion;
                 }
             }
