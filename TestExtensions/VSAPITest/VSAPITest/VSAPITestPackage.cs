@@ -91,6 +91,10 @@ namespace MicrosoftCorp.VSAPITest
                 MenuCommand officialItem = new MenuCommand(GetOfficialSourcesTest, officialId);
                 mcs.AddCommand(officialItem);
 
+                CommandID emptyId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIInstallPackageEmptyVersion);
+                MenuCommand emptyItem = new MenuCommand(InstallPackageEmptyVersionTest, emptyId);
+                mcs.AddCommand(emptyItem);
+
                 CommandID checkId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPICheck);
                 MenuCommand checkItem = new MenuCommand(CheckResult, checkId);
                 mcs.AddCommand(checkItem);
@@ -163,6 +167,18 @@ namespace MicrosoftCorp.VSAPITest
             foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
                 _task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("https://api.nuget.org/v2/", project, "newtonsoft.json", "6.0.4", false));
+                return;
+            }
+        }
+
+        private void InstallPackageEmptyVersionTest(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                _task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("https://api.nuget.org/v2/", project, "newtonsoft.json", "", false));
                 return;
             }
         }

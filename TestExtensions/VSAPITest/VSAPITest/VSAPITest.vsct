@@ -93,6 +93,14 @@
         </Strings>
       </Button>
       
+      <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIInstallPackageEmptyVersion" priority="0x610" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Install Empty Version</ButtonText>
+        </Strings>
+      </Button>
+      
        <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIGetSources" priority="0x0500" type="Button">
         <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
@@ -150,6 +158,7 @@
       <IDSymbol name="cmdidNuGetAPIInstallPackageAsync" value="0x0400" />
       <IDSymbol name="cmdidNuGetAPIGetSources" value="0x0500" />
       <IDSymbol name="cmdidNuGetAPIGetOfficialSources" value="0x0600" />
+      <IDSymbol name="cmdidNuGetAPIInstallPackageEmptyVersion" value="0x0601" />
       <IDSymbol name="cmdidNuGetAPICheck" value="0x9900" />
     </GuidSymbol>
     

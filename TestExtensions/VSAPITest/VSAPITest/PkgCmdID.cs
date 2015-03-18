@@ -14,6 +14,8 @@ namespace MicrosoftCorp.VSAPITest
         public const uint cmdidNuGetAPIGetSources = 0x500;
         public const uint cmdidNuGetAPIGetOfficialSources = 0x600;
 
+        public const uint cmdidNuGetAPIInstallPackageEmptyVersion = 0x601;
+
         public const uint cmdidNuGetAPICheck = 0x9900;
     };
 }
