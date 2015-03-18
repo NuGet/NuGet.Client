@@ -340,6 +340,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (string.IsNullOrEmpty(projectName))
             {
                 Project = _solutionManager.DefaultNuGetProject;
+                if (_solutionManager.IsSolutionOpen && Project == null)
+                {
+                    ErrorHandler.WriteProjectNotFoundError("Default", terminating: true);
+                }
             }
             else
             {
