@@ -59,9 +59,9 @@ namespace NuGet.Test
 
         private List<PackageIdentity> LatestAspNetPackages = new List<PackageIdentity>()
         {
-            new PackageIdentity("Microsoft.AspNet.Mvc", new NuGetVersion("6.0.0-beta2")),
-            new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta2")),
-            new PackageIdentity("Microsoft.AspNet.Mvc.Core",  new NuGetVersion("6.0.0-beta2")),
+            new PackageIdentity("Microsoft.AspNet.Mvc", new NuGetVersion("6.0.0-beta3")),
+            new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta3")),
+            new PackageIdentity("Microsoft.AspNet.Mvc.Core",  new NuGetVersion("6.0.0-beta3")),
         };
 
         [Fact]
@@ -1692,7 +1692,7 @@ namespace NuGet.Test
             var projectTargetFramework = NuGetFramework.Parse("aspnetcore50");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
-            var packageIdentity = LatestAspNetPackages[0]; // Microsoft.AspNet.Mvc.6.0.0-beta2
+            var packageIdentity = LatestAspNetPackages[0]; // Microsoft.AspNet.Mvc.6.0.0-beta3
 
             // Pre-Assert
             // Check that the packages.config file does not exist
@@ -1718,6 +1718,58 @@ namespace NuGet.Test
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallMvcTargetingNet45()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var packageIdentity = LatestAspNetPackages[0]; // Microsoft.AspNet.Mvc.6.0.0-beta3
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true);
+
+            Exception exception = null;
+            try
+            {
+                // Act
+                await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
+                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            Assert.NotNull(exception);
+            Assert.True(exception is InvalidOperationException);
+            var errorMessage = String.Format(CultureInfo.CurrentCulture,
+                           Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
+            Assert.Equal(errorMessage, exception.Message);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomPackagesConfigPath, randomPackagesConfigFolderPath);
         }
 
         [Fact]

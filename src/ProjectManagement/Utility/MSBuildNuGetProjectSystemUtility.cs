@@ -37,8 +37,7 @@ namespace NuGet.ProjectManagement
 
         internal static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
         {
-            // It is possible for a compatible frameworkSpecificGroup, there are no items
-            return (frameworkSpecificGroup != null && frameworkSpecificGroup.Items != null);
+            return (frameworkSpecificGroup != null && frameworkSpecificGroup.Items != null && frameworkSpecificGroup.Items.Any());
         }
 
         internal static void TryAddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Func<Stream> content)

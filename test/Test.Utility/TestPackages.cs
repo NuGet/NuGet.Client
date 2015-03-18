@@ -63,6 +63,19 @@ namespace Test.Utility
             return fileInfo;
         }
 
+        public static FileInfo GetEmptyNet45TestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
+        {
+            ZipFile zipFile;
+            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            zipFile.AddEntry("lib/net45/", new byte[] { 0 });
+
+            SetSimpleNuspec(zipFile, packageId, packageVersion);
+            zipFile.Save();
+
+            return fileInfo;
+        }
+
         public static FileInfo GetLegacyContentPackage(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
@@ -154,7 +167,6 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
-            zipFile.AddEntry("lib/net45", new byte[] { 0 });
             zipFile.AddEntry("tools/init.ps1", new byte[] { 0 });
             zipFile.AddEntry("tools/net45/install.ps1", new byte[] { 0 });
             zipFile.AddEntry("tools/net45/uninstall.ps1", new byte[] { 0 });
