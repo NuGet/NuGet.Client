@@ -193,6 +193,10 @@ namespace NuGet.ProjectManagement
                         {
                             if (transformer != null)
                             {
+                                // TODO: use the framework from packages.config instead of the current framework
+                                // which may have changed during re-targeting
+                                NuGetFramework projectFramework = msBuildNuGetProjectSystem.TargetFramework;
+
                                 List<InternalZipFileInfo> matchingFiles = new List<InternalZipFileInfo>();
                                 foreach(var otherPackagePath in otherPackagesPath)
                                 {
@@ -200,8 +204,10 @@ namespace NuGet.ProjectManagement
                                     {
                                         var otherPackageZipArchive = new ZipArchive(otherPackageStream);
                                         var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
-                                        var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(packageTargetFramework, otherPackageZipReader.GetContentItems(), altDirSeparator: true);
-                                        if(IsValid(mostCompatibleContentFilesGroup))
+
+                                        // use the project framework to find the group that would have been installed
+                                        var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(projectFramework, otherPackageZipReader.GetContentItems(), altDirSeparator: true);
+                                        if(mostCompatibleContentFilesGroup != null && IsValid(mostCompatibleContentFilesGroup))
                                         {
                                             foreach(var otherPackageItem in mostCompatibleContentFilesGroup.Items)
                                             {
@@ -212,7 +218,7 @@ namespace NuGet.ProjectManagement
                                                 }
                                             }
                                         }
-                                    }                                    
+                                    }
                                 }
 
                                 try
