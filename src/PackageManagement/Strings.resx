@@ -225,4 +225,13 @@
   <data name="NewerVersionAlreadyReferenced" xml:space="preserve">
     <value>Already referencing a newer version of '{0}'..</value>
   </data>
+  <data name="SuccessfullyExecutedPackageAction" xml:space="preserve">
+    <value>Successfully {0}ed '{1}' {2}.</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>from</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>to</value>
+  </data>
 </root>
