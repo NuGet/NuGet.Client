@@ -1,4 +1,4 @@
-﻿using NuGet.PackageManagement;
+﻿using NuGet.ProjectManagement;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
@@ -16,9 +16,9 @@ namespace NuGet.VisualStudio
 
         public event VsPackageEventHandler PackageUninstalled;
 
-        public event VsPackageEventHandler PackageReferenceAdded = delegate { };
+        public event VsPackageEventHandler PackageReferenceAdded;
 
-        public event VsPackageEventHandler PackageReferenceRemoved = delegate { };
+        public event VsPackageEventHandler PackageReferenceRemoved;
 
         private readonly PackageEvents _eventSource;
 
