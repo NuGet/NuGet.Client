@@ -315,7 +315,11 @@ namespace NuGet.PackageManagement.UI
 
         public void ShowError(Exception ex)
         {
-            if (ex is NuGet.Resolver.NuGetResolverConstraintException)
+            if (ex is NuGet.Resolver.NuGetResolverConstraintException ||
+                ex is PackageAlreadyInstalledException ||
+                ex is NuGetVersionNotSatisfiedException ||
+                ex is NuGet.Frameworks.FrameworkException ||
+                ex is NuGet.Packaging.Core.PackagingException)
             {
                 // for exceptions that are known to be normal error cases, just
                 // display the message.
