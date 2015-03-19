@@ -110,10 +110,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            if (_versions.Count > 0)
-            {
-                SelectedVersion = _versions[0];
-            }
+            SelectVersion();            
             OnPropertyChanged("Versions");
         }
 
