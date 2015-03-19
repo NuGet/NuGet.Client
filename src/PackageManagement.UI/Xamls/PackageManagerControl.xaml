@@ -97,7 +97,8 @@
                         VerticalAlignment="Center"
                         x:Name="_searchControlParent"
                         MinHeight="22"
-                        MinWidth="224" />
+                        MinWidth="224"
+                        MaxWidth="224"/>
 
                     <Button
                         Margin="24,0"
