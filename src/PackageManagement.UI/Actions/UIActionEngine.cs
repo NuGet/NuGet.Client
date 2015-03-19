@@ -90,7 +90,7 @@ namespace NuGet.PackageManagement.UI
             }
             catch (Exception ex)
             {
-                uiService.ShowError(ex.Message, ex.ToString());
+                uiService.ShowError(ex);
             }
             finally
             {

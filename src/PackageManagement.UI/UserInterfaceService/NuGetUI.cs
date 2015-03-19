@@ -313,11 +313,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void ShowError(string message, string detail)
+        public void ShowError(Exception ex)
         {
-            _uiProjectContext.Log(MessageLevel.Error, detail);
+            if (ex is NuGet.Resolver.NuGetResolverConstraintException)
+            {
+                // for exceptions that are known to be normal error cases, just
+                // display the message.
+                _uiProjectContext.Log(MessageLevel.Info, ex.Message);
+            }
+            else
+            {
+                _uiProjectContext.Log(MessageLevel.Error, ex.ToString());
+            }
 
-            _uiProjectContext.ReportError(message);
+            _uiProjectContext.ReportError(ex.Message);
         }
     }
 

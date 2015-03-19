@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Reports that an error has occurred.
         /// </summary>
-        void ShowError(string message, string detail);
+        void ShowError(Exception ex);
 
         /// <summary>
         /// File conflict option
