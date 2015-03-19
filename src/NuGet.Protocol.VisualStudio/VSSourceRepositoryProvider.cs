@@ -26,7 +26,7 @@ namespace NuGet.Protocol.VisualStudio
         };
 
         private static Configuration.PackageSource[] DefaultSecondarySources = new [] {
-            new Configuration.PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, isEnabled:true, isOfficial: true)
+            new Configuration.PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, isEnabled:false, isOfficial: true)
             {
                 Description = Strings.v2sourceDescription
             }
