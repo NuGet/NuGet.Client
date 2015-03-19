@@ -138,8 +138,20 @@ namespace NuGet.Configuration
             if (settingsValue != null && settingsValue.Any())
             {
                 // get list of disabled packages
-                var disabledSources = (Settings.GetSettingValues(DisabledPackageSourcesSectionName) ?? Enumerable.Empty<SettingValue>())
-                    .ToDictionary(s => s.Key, StringComparer.CurrentCultureIgnoreCase);
+                var disabledSetting = Settings.GetSettingValues(DisabledPackageSourcesSectionName) ?? Enumerable.Empty<SettingValue>();
+
+                Dictionary<string, SettingValue> disabledSources = new Dictionary<string, SettingValue>();
+                foreach (var setting in disabledSetting)
+                {
+                    if (disabledSources.ContainsKey(setting.Key.ToLower()))
+                    {
+                        disabledSources[setting.Key.ToLower()] = setting;
+                    }
+                    else
+                    {
+                        disabledSources.Add(setting.Key.ToLower(), setting);
+                    }
+                }
                 loadedPackageSources = settingsValue.
                     Select(p =>
                     {
