@@ -94,7 +94,7 @@ namespace NuGet.ProjectModel
             bool unresolved = targetFrameworkInfo.FrameworkName == null &&
                               packageSpec.TargetFrameworks.Any();
 
-            var description = new Library
+            var library = new Library
             {
                 LibraryRange = libraryRange,
                 Identity = new LibraryIdentity
@@ -105,12 +105,12 @@ namespace NuGet.ProjectModel
                 },
                 Path = packageSpec.FilePath,
                 Dependencies = dependencies,
-                Resolved = !unresolved
+                Resolved = !unresolved,
+
+                [KnownLibraryProperties.PackageSpec] = packageSpec
             };
 
-            description.Items[KnownLibraryProperties.PackageSpec] = packageSpec;
-
-            return description;
+            return library;
         }
     }
 }

@@ -11,8 +11,6 @@ namespace NuGet.LibraryModel
 
         public LibraryDependencyType Type { get; set; } = LibraryDependencyType.Default;
 
-        public LibraryIdentity Library { get; set; }
-
         public string Name
         {
             get
@@ -26,12 +24,6 @@ namespace NuGet.LibraryModel
             var sb = new StringBuilder();
             sb.Append(LibraryRange);
             sb.Append(" ");
-
-            if (Library != null)
-            {
-                sb.Append("(" + Library + ")");
-                sb.Append(" ");
-            }
 
             sb.Append(Type);
             return sb.ToString();

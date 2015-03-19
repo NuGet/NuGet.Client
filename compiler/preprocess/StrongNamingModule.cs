@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if DNX451
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -82,3 +83,4 @@ namespace NuGet.CommonModules.StrongNaming
         }
     }
 }
+#endif

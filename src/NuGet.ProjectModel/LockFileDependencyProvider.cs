@@ -53,7 +53,10 @@ namespace NuGet.ProjectModel
                         Type = LibraryTypes.Package
                     },
                     Resolved = resolved,
-                    Dependencies = dependencies 
+                    Dependencies = dependencies,
+
+                    [KnownLibraryProperties.LockFileLibrary] = library,
+                    [KnownLibraryProperties.LockFileFrameworkGroup] = frameworkGroup
                 };
 
                 description.Items[KnownLibraryProperties.LockFileLibrary] = library;
