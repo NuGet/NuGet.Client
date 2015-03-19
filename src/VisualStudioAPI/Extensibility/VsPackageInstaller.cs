@@ -125,8 +125,7 @@ namespace NuGet.VisualStudio
 
             VSAPIProjectContext projectContext = new VSAPIProjectContext();
 
-            Task task = Task.Run(async () => await InstallInternal(project, toInstall, GetSources(sources), projectContext, ignoreDependencies, CancellationToken.None));
-            task.Wait();
+            PackageManagementHelpers.RunSync(async () => await InstallInternal(project, toInstall, GetSources(sources), projectContext, ignoreDependencies, CancellationToken.None));
         }
 
         public void InstallPackage(LegacyNuGet.IPackageRepository repository, Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences)
@@ -168,8 +167,7 @@ namespace NuGet.VisualStudio
 
             VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
 
-            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, projectContext, ignoreDependencies, CancellationToken.None));
-            task.Wait();
+            PackageManagementHelpers.RunSync(async () => await InstallInternal(project, toInstall, repoProvider, projectContext, ignoreDependencies, CancellationToken.None));
         }
 
         public void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions)
@@ -204,8 +202,7 @@ namespace NuGet.VisualStudio
 
             VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
 
-            Task task = Task.Run(async () => await InstallInternal(project, toInstall, repoProvider, projectContext, ignoreDependencies, CancellationToken.None));
-            task.Wait();
+            PackageManagementHelpers.RunSync(async () => await InstallInternal(project, toInstall, repoProvider, projectContext, ignoreDependencies, CancellationToken.None));
         }
 
         private static List<PackageIdentity> GetIdentitiesFromDict(IDictionary<string, string> packageVersions)

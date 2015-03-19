@@ -16,6 +16,10 @@ namespace MicrosoftCorp.VSAPITest
 
         public const uint cmdidNuGetAPIInstallPackageEmptyVersion = 0x601;
 
+        public const uint cmdidNuGetAPIUninstallPackage = 0x602;
+        public const uint cmdidNuGetAPIUninstallPackageNoDep = 0x603;
+        public const uint cmdidNuGetAPIUninstallPackageNoForce = 0x604;
+
         public const uint cmdidNuGetAPICheck = 0x9900;
     };
 }

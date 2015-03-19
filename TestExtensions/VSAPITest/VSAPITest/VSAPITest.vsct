@@ -125,6 +125,30 @@
         </Strings>
       </Button>
 
+      <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIUninstallPackage" priority="0x0700" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Uninstall package</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIUninstallPackageNoDep" priority="0x0701" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Uninstall package no dependencies</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIUninstallPackageNoForce" priority="0x0702" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Uninstall package no force</ButtonText>
+        </Strings>
+      </Button>
+
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -139,10 +163,6 @@
     </Bitmaps>
  
   </Commands>
-
-
-
-
 
   <Symbols>
     <!-- This is the package guid. -->
@@ -159,11 +179,12 @@
       <IDSymbol name="cmdidNuGetAPIGetSources" value="0x0500" />
       <IDSymbol name="cmdidNuGetAPIGetOfficialSources" value="0x0600" />
       <IDSymbol name="cmdidNuGetAPIInstallPackageEmptyVersion" value="0x0601" />
+      <IDSymbol name="cmdidNuGetAPIUninstallPackage" value="0x0602" />
+      <IDSymbol name="cmdidNuGetAPIUninstallPackageNoDep" value="0x0603" />
+      <IDSymbol name="cmdidNuGetAPIUninstallPackageNoForce" value="0x0604" />
       <IDSymbol name="cmdidNuGetAPICheck" value="0x9900" />
     </GuidSymbol>
-    
-    
-    
+
     <GuidSymbol name="guidImages" value="{e8462db7-de98-4d4f-b677-d3dc006e4ed4}" >
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />

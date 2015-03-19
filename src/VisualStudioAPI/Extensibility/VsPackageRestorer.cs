@@ -39,8 +39,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                var task = System.Threading.Tasks.Task.Run(async () => await _restoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None));
-                task.Wait();
+                PackageManagementHelpers.RunSync(async () => await _restoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None));
             }
             catch (Exception ex)
             {

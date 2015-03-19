@@ -38,26 +38,17 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageId"));
             }
 
-            try
-            {
-                NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+            NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
 
-                // find the project
-                NuGetProject nuGetProject = _solutionManager.GetNuGetProjects()
-                    .Where(p => StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(p), project.UniqueName))
-                    .SingleOrDefault();
 
-                UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
-                INuGetProjectContext projectContext = new VSAPIProjectContext();
+            UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
+            VSAPIProjectContext projectContext = new VSAPIProjectContext();
 
-                // uninstall the package
-                var task = System.Threading.Tasks.Task.Run(async () => await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None));
-                task.Wait();
-            }
-            finally
-            {
-                // TODO: log errors
-            }
+            // find the project
+            NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, projectContext);
+
+            // uninstall the package
+            PackageManagementHelpers.RunSync(async () => await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None));
         }
     }
 }

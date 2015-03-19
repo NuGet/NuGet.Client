@@ -98,6 +98,21 @@ namespace MicrosoftCorp.VSAPITest
                 CommandID checkId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPICheck);
                 MenuCommand checkItem = new MenuCommand(CheckResult, checkId);
                 mcs.AddCommand(checkItem);
+
+                //cmdidNuGetAPIUninstallPackage
+                CommandID uninstallId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIUninstallPackage);
+                MenuCommand uninstallItem = new MenuCommand(UninstallPackage, uninstallId);
+                mcs.AddCommand(uninstallItem);
+
+                //cmdidNuGetAPIUninstallPackageNoDep
+                CommandID uninstallNoDepId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIUninstallPackageNoDep);
+                MenuCommand uninstallNoDepItem = new MenuCommand(UninstallPackageNoDep, uninstallNoDepId);
+                mcs.AddCommand(uninstallNoDepItem);
+
+                //cmdidNuGetAPIUninstallPackageNoForce
+                CommandID uninstallNoForceId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIUninstallPackageNoForce);
+                MenuCommand uninstallNoForceItem = new MenuCommand(UninstallPackageNoForce, uninstallNoForceId);
+                mcs.AddCommand(uninstallNoForceItem);
             }
         }
         #endregion
@@ -114,10 +129,62 @@ namespace MicrosoftCorp.VSAPITest
                 }
                 catch (Exception ex)
                 {
-                    DisplayMessage("check", ex.ToString());
+                    DisplayMessage("check", ex.InnerException.ToString());
                 }
 
                 DisplayMessage("check", _task.Status.ToString());
+            }
+        }
+
+        private void UninstallPackage(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            IVsPackageUninstaller uninstaller = ServiceLocator.GetInstance<IVsPackageUninstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                _task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    services.InstallPackage("https://api.nuget.org/v2/", project, "windowsazure.storage", "4.3.0", false);
+                    uninstaller.UninstallPackage(project, "windowsazure.storage", true);
+                });
+
+                return;
+            }
+        }
+
+        private void UninstallPackageNoDep(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            IVsPackageUninstaller uninstaller = ServiceLocator.GetInstance<IVsPackageUninstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                _task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    services.InstallPackage("https://api.nuget.org/v2/", project, "windowsazure.storage", "4.3.0", false);
+                    uninstaller.UninstallPackage(project, "windowsazure.storage", false);
+                });
+                return;
+            }
+        }
+
+        private void UninstallPackageNoForce(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            IVsPackageUninstaller uninstaller = ServiceLocator.GetInstance<IVsPackageUninstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                _task = System.Threading.Tasks.Task.Run(() =>
+                {
+                    services.InstallPackage("https://api.nuget.org/v2/", project, "windowsazure.storage", "4.3.0", false);
+                    uninstaller.UninstallPackage(project, "newtonsoft.json", true);
+                });
+                return;
             }
         }
 

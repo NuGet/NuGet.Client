@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio
@@ -104,6 +105,22 @@ namespace NuGet.VisualStudio
             }
 
             return new VsPackageMetadata(package, title, authors, description, installPath);
+        }
+
+
+        /// <summary>
+        /// Run a package management task sync and unwrap the aggregate exceptions
+        /// </summary>
+        public static void RunSync(Func<Task> createTask)
+        {
+            TaskFactory taskFactory = new TaskFactory(CancellationToken.None,
+                  TaskCreationOptions.None,
+                  TaskContinuationOptions.None,
+                  TaskScheduler.Default);
+
+            var task = taskFactory.StartNew<Task>(createTask);
+
+            task.Unwrap().GetAwaiter().GetResult();
         }
 
         private static string GetNuspecValue(IEnumerable<KeyValuePair<string, string>> metadata, string field)
