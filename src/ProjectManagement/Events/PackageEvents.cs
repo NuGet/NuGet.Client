@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement
+namespace NuGet.ProjectManagement
 {
     /// <summary>
     /// Package events relayed to the public IVsPackageInstallerEvents
@@ -81,12 +76,18 @@ namespace NuGet.PackageManagement
 
         internal void NotifyReferenceAdded(PackageEventArgs e)
         {
-            PackageReferenceAdded(this, e);
+            if (PackageReferenceAdded != null)
+            {
+                PackageReferenceAdded(this, e);
+            }
         }
 
         internal void NotifyReferenceRemoved(PackageEventArgs e)
         {
-            PackageReferenceRemoved(this, e);
+            if (PackageReferenceRemoved != null)
+            {
+                PackageReferenceRemoved(this, e);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
@@ -13,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -23,23 +23,6 @@ namespace NuGet.PackageManagement
     /// </summary>
     public class NuGetPackageManager
     {
-        /// <summary>
-        /// Event to be raised while installing a package
-        /// </summary>
-        public event EventHandler<PackageOperationEventArgs> PackageInstalling;
-        /// <summary>
-        /// Event to be raised while installing a package
-        /// </summary>
-        public event EventHandler<PackageOperationEventArgs> PackageInstalled;
-        /// <summary>
-        /// Event to be raised while installing a package
-        /// </summary>
-        public event EventHandler<PackageOperationEventArgs> PackageUninstalling;
-        /// <summary>
-        /// Event to be raised while installing a package
-        /// </summary>
-        public event EventHandler<PackageOperationEventArgs> PackageUninstalled;
-
         private ISourceRepositoryProvider SourceRepositoryProvider { get; set; }
 
         private ISolutionManager SolutionManager { get; set; }
@@ -1175,14 +1158,6 @@ namespace NuGet.PackageManagement
             // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback
             MinClientVersionHandler.CheckMinClientVersion(packageStream, packageIdentity);
 
-            var packageOperationEventArgs = new PackageOperationEventArgs(packageIdentity);
-            if(PackageInstalling != null)
-            {
-                PackageInstalling(this, packageOperationEventArgs);
-            }
-
-            PackageEventsProvider.Instance.NotifyInstalling(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
-
             packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
             await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);            
 
@@ -1191,31 +1166,15 @@ namespace NuGet.PackageManagement
             //{
             //    return;
             //}
-
-            if(PackageInstalled != null)
-            {
-                PackageInstalled(this, packageOperationEventArgs);
-            }
-
-            PackageEventsProvider.Instance.NotifyInstalled(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
         }
 
         private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            // Step-1: Raise package uninstalling event
-            var packageOperationEventArgs = new PackageOperationEventArgs(packageIdentity);
-            if (PackageUninstalling != null)
-            {
-                PackageUninstalling(this, packageOperationEventArgs);
-            }
-
-            PackageEventsProvider.Instance.NotifyUninstalling(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
-
-            // Step-2: Call nuGetProject.UninstallPackage
+            // Step-1: Call nuGetProject.UninstallPackage
             await nuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
-            // Step-3: Check if the package directory could be deleted
+            // Step-2: Check if the package directory could be deleted
             if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
                 !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token))
             {
@@ -1227,14 +1186,6 @@ namespace NuGet.PackageManagement
             //{
             //    return;
             //}
-
-            // Step-4: Raise PackageUninstalled event
-            if (PackageUninstalled != null)
-            {
-                PackageUninstalled(this, packageOperationEventArgs);
-            }
-
-            PackageEventsProvider.Instance.NotifyUninstalled(new PackageEventArgs(this, nuGetProject, packageIdentity, null));
         }
 
         /// <summary>
@@ -1371,21 +1322,6 @@ namespace NuGet.PackageManagement
                     ideExecutionContext.IDEDirectInstall = null;
                 }
             }
-        }
-    }
-
-    /// <summary>
-    /// The event args class used in raising package operation events
-    /// </summary>
-    public  class PackageOperationEventArgs : EventArgs
-    {
-        PackageIdentity PackageIdentity { get; set; }
-        /// <summary>
-        /// Creates a package operation event args object for given <param name="packageIdentity"></param>
-        /// </summary>
-        public PackageOperationEventArgs(PackageIdentity packageIdentity)
-        {
-            PackageIdentity = packageIdentity;
         }
     }
 }

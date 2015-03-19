@@ -1,16 +1,10 @@
 ﻿using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement
+namespace NuGet.ProjectManagement
 {
     public class PackageEventArgs : EventArgs
     {
-        private readonly NuGetPackageManager _packageManager;
         private readonly PackageIdentity _identity;
         private readonly NuGetProject _project;
         private readonly string _installPath;
@@ -18,15 +12,14 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Default constructor for events where no info is known
         /// </summary>
-        public PackageEventArgs(NuGetPackageManager packageManager)
-            : this(packageManager, null, null, null)
+        public PackageEventArgs()
+            : this(null, null, null)
         {
 
         }
 
-        public PackageEventArgs(NuGetPackageManager packageManager, NuGetProject project, PackageIdentity identity, string installPath)
+        public PackageEventArgs(NuGetProject project, PackageIdentity identity, string installPath)
         {
-            _packageManager = packageManager;
             _identity = identity;
             _installPath = installPath;
             _project = project;
@@ -62,14 +55,6 @@ namespace NuGet.PackageManagement
             get
             {
                 return _project;
-            }
-        }
-
-        public NuGetPackageManager PackageManager
-        {
-            get
-            {
-                return _packageManager;
             }
         }
     }

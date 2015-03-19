@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.Composition;
 
-namespace NuGet.PackageManagement
+namespace NuGet.ProjectManagement
 {
     /// <summary>
     /// Provider for the PackageEvents singleton
