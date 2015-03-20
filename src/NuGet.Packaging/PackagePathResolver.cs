@@ -32,7 +32,8 @@ namespace NuGet.Packaging
             if (_useSideBySidePaths)
             {
                 directoryName += ".";
-                directoryName += useLegacyPackageInstallPath ? packageIdentity.Version.ToString() : packageIdentity.Version.ToNormalizedString();
+                // Always use legacy package install path. Otherwise, restore may be broken for packages like 'Microsoft.Web.Infrastructure.1.0.0.0', installed using old clients
+                directoryName += packageIdentity.Version.ToString(); // useLegacyPackageInstallPath ? packageIdentity.Version.ToString() : packageIdentity.Version.ToNormalizedString();
             }
 
             return directoryName;
