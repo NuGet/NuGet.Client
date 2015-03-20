@@ -73,7 +73,7 @@ namespace StandaloneUI
 
             PackageManagerModel model = new PackageManagerModel(uiController, context);
             model.SolutionName = "test solution";
-            _packageManagerControl = new PackageManagerControl(model);
+            _packageManagerControl = new PackageManagerControl(model, _settings);
             layoutGrid.Children.Add(_packageManagerControl);
         }
 

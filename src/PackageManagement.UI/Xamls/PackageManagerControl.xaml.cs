@@ -13,6 +13,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using Resx = NuGet.PackageManagement.UI;
+using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -44,12 +45,15 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerModel Model { get; private set; }
 
-        public PackageManagerControl(PackageManagerModel model)
-            : this(model, new SimpleSearchBoxFactory())
+        public PackageManagerControl(PackageManagerModel model, NuGet.Configuration.ISettings nugetSettings)
+            : this(model, nugetSettings, new SimpleSearchBoxFactory())
         {
         }
 
-        public PackageManagerControl(PackageManagerModel model, IVsWindowSearchHostFactory searchFactory)
+        public PackageManagerControl(
+            PackageManagerModel model, 
+            NuGet.Configuration.ISettings nugetSettings, 
+            IVsWindowSearchHostFactory searchFactory)
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             Model = model;
@@ -83,7 +87,7 @@ namespace NuGet.PackageManagement.UI
             var settings = LoadSettings();
             InitializeFilterList(settings);
             InitSourceRepoList(settings);
-            ApplySettings(settings);
+            ApplySettings(settings, nugetSettings);
 
             _initialized = true;
 
@@ -143,10 +147,46 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void ApplySettings(UserSettings settings)
+        protected DependencyBehavior GetDependencyBehaviorFromConfig(
+            NuGet.Configuration.ISettings nugetSettings)
+        {
+            string dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
+            DependencyBehavior behavior;
+            bool success = Enum.TryParse<DependencyBehavior>(dependencySetting, true, out behavior);
+            if (success)
+            {
+                return behavior;
+            }
+            else
+            {
+                // Default to Lowest
+                return DependencyBehavior.Lowest;
+            }
+        }
+
+        private void SetSelectedDepencyBehavior(DependencyBehavior dependencyBehavior)
+        {
+            var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
+                    .FirstOrDefault(d => d.Behavior == dependencyBehavior);
+            if (selectedDependencyBehavior != null)
+            {
+                _detailModel.Options.SelectedDependencyBehavior = selectedDependencyBehavior;
+            }
+        }
+
+        private void ApplySettings(
+            UserSettings settings, 
+            NuGet.Configuration.ISettings nugetSettings)
         {
             if (settings == null)
             {
+                if (nugetSettings == null)
+                {
+                    return;
+                }
+
+                // set depency behavior to the value from nugetSettings
+                SetSelectedDepencyBehavior(GetDependencyBehaviorFromConfig(nugetSettings));
                 return;
             }
 
@@ -155,12 +195,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _checkboxPrerelease.IsChecked = settings.IncludePrerelease;
 
-            var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
-                .FirstOrDefault(d => d.Behavior == settings.DependencyBehavior);
-            if (selectedDependencyBehavior != null)
-            {
-                _detailModel.Options.SelectedDependencyBehavior = selectedDependencyBehavior;
-            }
+            SetSelectedDepencyBehavior(settings.DependencyBehavior);
 
             var selectedFileConflictAction = _detailModel.Options.FileConflictActions.
                 FirstOrDefault(a => a.Action == settings.FileConflictAction);

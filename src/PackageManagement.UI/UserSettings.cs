@@ -7,6 +7,9 @@ namespace NuGet.PackageManagement.UI
     [Serializable]
     public class UserSettings
     {
+        /// <summary>
+        /// Represents the user settings persisted in suo files.
+        /// </summary>
         public UserSettings()
         {
             IncludePrerelease = true;
