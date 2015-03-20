@@ -2247,5 +2247,42 @@ namespace NuGet.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
         }
+
+        [Fact]
+        public async Task TestPacManPreviewInstallDependencyVersionHighestAndPrerelease()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var primarySourceRepository = sourceRepositoryProvider.GetRepositories().First();
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var dotnetrdfPackageIdentity = new PackageIdentity("dotnetrdf", new NuGetVersion("1.0.8-prerelease1"));
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, includePrelease: true);
+
+            var newtonsoftJsonPackageId = "newtonsoft.json";
+
+            // Act
+            NuGetVersion latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
+            var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
+
+            var nuGetProjectActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, dotnetrdfPackageIdentity, resolutionContext,
+                new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None)).ToList();
+
+            // Assert
+            Assert.Equal(4, nuGetProjectActions.Count);
+            var newtonsoftJsonAction = nuGetProjectActions.Where(a => a.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
+
+            Assert.NotNull(newtonsoftJsonAction);
+        }
     }
 }
