@@ -60,7 +60,7 @@ namespace NuGet.Frameworks
                     _identifierShortNames = new KeyValuePair<string, string>[]
                     {
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, "net"),
-                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "netcore"),
+                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, "nfcore"),
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetMicro, "netmf"),
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Silverlight, "sl"),
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Portable, "portable"),
@@ -83,6 +83,8 @@ namespace NuGet.Frameworks
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Dnx, "dnx"),
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.DnxCore, "dnxcore"),
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.CoreCLR, "core"),
+                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "netcore"),   // legacy
+                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"),       // legacy
                     };
                 }
 
@@ -128,14 +130,39 @@ namespace NuGet.Frameworks
                         // win8 <-> f:netcore45 p:win8
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
                                                     FrameworkConstants.CommonFrameworks.Win8,
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, new Version(4, 5, 0, 0),
                                                         FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 0, 0, 0))),
 
                         // win81 <-> f:netcore451 p:win81
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
                                                     FrameworkConstants.CommonFrameworks.Win81,
-                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, new Version(4, 5, 1, 0),
                                                         FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 1, 0, 0))),
+
+                        // win8 <-> netcore45
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    FrameworkConstants.CommonFrameworks.Win8,
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0))),
+
+                        // netcore45 <-> winrt45
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0)),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0))),
+
+                        // netcore <-> netcore45
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.EmptyVersion),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0))),
+
+                        // winrt <-> winrt45
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0))),
+
+                        // win81 <-> netcore451
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    FrameworkConstants.CommonFrameworks.Win81,
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0))),
 
                         // wp <-> wp7
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
@@ -229,7 +256,7 @@ namespace NuGet.Frameworks
                     _subSetFrameworks = new KeyValuePair<string, string>[]
                     {
                         // .NETCore is a subset of the .NET framework
-                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.FrameworkIdentifiers.Net),
+                        new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, FrameworkConstants.FrameworkIdentifiers.Net),
 
                         // .NET is a subset of DNX
                         new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.FrameworkIdentifiers.Dnx),
@@ -254,8 +281,8 @@ namespace NuGet.Frameworks
                     {
                         // .NETFramework projects support native references
                         new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.EmptyVersion),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.MaxVersion)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, FrameworkConstants.MaxVersion)),
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion))),
@@ -291,6 +318,30 @@ namespace NuGet.Frameworks
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.EmptyVersion),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.EmptyVersion))),
+
+                        // Win projects support WinRT
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.MaxVersion)),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0)))),
+
+                        // Win projects support Native
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.MaxVersion)),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion))),
+
+                        // NetCore supports native
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.MaxVersion)),
+                            new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Native, FrameworkConstants.EmptyVersion))),
                     };
                 }
 

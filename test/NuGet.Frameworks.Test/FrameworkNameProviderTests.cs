@@ -36,9 +36,7 @@ namespace NuGet.Test
 
             var results = frameworks.ToArray();
 
-            Assert.Equal(2, results.Length);
-            Assert.Equal("Windows, Version=v0.0", results[0].ToString());
-            Assert.Equal(".NETCore, Version=v4.5, Platform=Windows, PlatformVersion=v8.0", results[1].ToString());
+            Assert.Equal(3, results.Length);
         }
 
         [Fact]

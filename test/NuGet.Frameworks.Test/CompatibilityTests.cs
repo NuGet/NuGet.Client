@@ -176,12 +176,12 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("win", "netcore")]
-        [InlineData("win81", "netcore")]
-        [InlineData("win8", "netcore")]
-        [InlineData("win", "netcore45")]
-        [InlineData("win", "netcore4")]
-        [InlineData("win81", "netcore4")]
+        [InlineData("win", "nfcore")]
+        [InlineData("win81", "nfcore")]
+        [InlineData("win8", "nfcore")]
+        [InlineData("win", "nfcore45")]
+        [InlineData("win", "nfcore4")]
+        [InlineData("win81", "nfcore4")]
         public void Compatibility_Inferred(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);
@@ -219,7 +219,7 @@ namespace NuGet.Test
         [InlineData("dnx46", "native")]
         [InlineData("dnx452", "native")]
         [InlineData("dnx451", "net45")]
-        [InlineData("dnx451", "netcore45")]
+        [InlineData("dnx451", "nfcore45")]
         [InlineData("dnx451", "native")]
         [InlineData("dnxcore50", "native")]
         public void Compatibility_OneWayMappings(string fw1, string fw2)
@@ -381,7 +381,7 @@ namespace NuGet.Test
             // Arrange
             var packageFramework = NuGetFramework.Parse(identifier);
 
-            var projectFramework = NuGetFramework.Parse("netcore45");
+            var projectFramework = NuGetFramework.Parse("nfcore45");
             var compat = DefaultCompatibilityProvider.Instance;
 
             // Act && Assert

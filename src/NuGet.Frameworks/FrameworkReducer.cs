@@ -113,7 +113,10 @@ namespace NuGet.Frameworks
                 Debug.Assert(reduced.Count() < 2, "Unable to find the nearest framework: " + String.Join(", ", reduced));
 
                 // if we have reduced down to a single framework, use that
-                nearest = reduced.SingleOrDefault();
+                if (reduced.Count() == 1)
+                {
+                    nearest = reduced.Single();
+                }
 
                 // this should be a very rare occurrence
                 // at this point we are unable to decide between the remaining frameworks in any useful way

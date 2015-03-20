@@ -26,7 +26,9 @@ namespace NuGet.Frameworks
         public static class FrameworkIdentifiers
         {
             public const string Net = ".NETFramework";
-            public const string NetCore = ".NETCore";
+            public const string NetFrameworkCore = "NETFrameworkCore"; // the actual .NET Core
+            public const string NetCore = ".NETCore"; // deprecated
+            public const string WinRT = "WinRT"; // deprecated
             public const string NetMicro = ".NETMicroFramework";
             public const string Portable = ".NETPortable";
             public const string WindowsPhone = "WindowsPhone";
