@@ -2284,5 +2284,47 @@ namespace NuGet.Test
 
             Assert.NotNull(newtonsoftJsonAction);
         }
+
+        [Fact]
+        public async Task TestPacManUpdateDependencyToPrereleaseVersion()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+            var primarySourceRepository = sourceRepositoryProvider.GetRepositories().First();
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var webgreasePackageIdentity = new PackageIdentity("WebGrease", new NuGetVersion("1.6.0"));
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true);
+
+            var newtonsoftJsonPackageId = "newtonsoft.json";
+
+            // Act
+            NuGetVersion latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
+            var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
+
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, webgreasePackageIdentity, resolutionContext,
+                new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None);
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(3, packagesInPackagesConfig.Count);
+
+            // Main Act - Update newtonsoft.json to latest pre-release
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonLatestPrereleasePackageIdentity, resolutionContext,
+                new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None);
+        }
     }
 }

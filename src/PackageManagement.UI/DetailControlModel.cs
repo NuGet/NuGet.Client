@@ -293,7 +293,7 @@ namespace NuGet.PackageManagement.UI
             if (SelectedAction == Resources.Action_Install)
             {
                 versionToSelect = _versions
-                    .Where(v => v.Version.Equals(_searchResultPackage.Version))
+                    .Where(v => v != null && v.Version.Equals(_searchResultPackage.Version))
                     .FirstOrDefault();
                 if (versionToSelect == null)
                 {

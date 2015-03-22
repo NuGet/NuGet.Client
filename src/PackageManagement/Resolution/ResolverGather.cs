@@ -217,7 +217,7 @@ namespace NuGet.PackageManagement
                 var source = data.Item1;
                 var packages = await data.Item2;
 
-                ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages);
+                ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages, context.IncludePrerelease);
             }
         }
 
@@ -276,7 +276,7 @@ namespace NuGet.PackageManagement
                 var source = data.Item1;
                 var packages = await data.Item2;
 
-                ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages);
+                ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages, context.IncludePrerelease);
             }
 
             return complete;
@@ -286,11 +286,26 @@ namespace NuGet.PackageManagement
         /// Helper that combines the results into the hashsets, which are passed by reference.
         /// ***NOTE: Parameters combinedResults and foundIds may get updated before the return of this call
         /// </summary>
-        private static void ProcessResults(HashSet<SourceDependencyInfo> combinedResults, SourceRepository source, HashSet<string> foundIds, IEnumerable<PackageDependencyInfo> packages)
+        private static void ProcessResults(HashSet<SourceDependencyInfo> combinedResults, SourceRepository source, HashSet<string> foundIds,
+            IEnumerable<PackageDependencyInfo> packages, bool includePrerelease)
         {
             foreach (var package in packages)
             {
-                SourceDependencyInfo depInfo = new SourceDependencyInfo(package, source);
+                // Set the includePrerelease on the version range on every single package dependency to context.IncludePreerelease
+                var packageDependencies = package.Dependencies;
+                var modifiedPackageDependencies = new List<PackageDependency>();
+                foreach(var packageDependency in packageDependencies)
+                {
+                    var versionRange = packageDependency.VersionRange;
+                    var modifiedVersionRange = new Versioning.VersionRange(versionRange.MinVersion, versionRange.IsMinInclusive, versionRange.MaxVersion,
+                        versionRange.IsMaxInclusive, includePrerelease, versionRange.Float);
+
+                    var modifiedPackageDependency = new PackageDependency(packageDependency.Id, modifiedVersionRange);
+                    modifiedPackageDependencies.Add(modifiedPackageDependency);
+                }
+
+                var modifiedPackageDependencyInfo = new PackageDependencyInfo(new PackageIdentity(package.Id, package.Version), modifiedPackageDependencies);
+                SourceDependencyInfo depInfo = new SourceDependencyInfo(modifiedPackageDependencyInfo, source);
 
                 // add this to the final results
                 combinedResults.Add(depInfo);
