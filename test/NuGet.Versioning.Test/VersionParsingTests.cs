@@ -12,6 +12,19 @@ namespace NuGet.Versioning.Test
     public class VersionParsingTests
     {
         [Theory]
+        [InlineData("2")]
+        [InlineData("2.0")]
+        [InlineData("2.0.0")]
+        [InlineData("2.0.0.0")]
+        public void VersionLength(string version)
+        {
+            // Arrange & Act
+            var semVer = new NuGetVersion(version);
+
+           Assert.Equal("2.0.0", semVer.ToNormalizedString());
+        }
+
+        [Theory]
         [InlineData("1.0.0-Beta")]
         [InlineData("1.0.0-Beta.2")]
         [InlineData("1.0.0+MetaOnly")]

@@ -89,7 +89,6 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [InlineData("1")]
         [InlineData("1beta")]
         [InlineData("1.2Av^c")]
         [InlineData("1.2..")]

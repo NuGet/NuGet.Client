@@ -13,6 +13,17 @@ namespace NuGet.Versioning.Test
     public class VersionRangeTests
     {
         [Fact]
+        public void ParseVersionRangeSingleDigit()
+        {
+            // Act
+            var versionInfo = VersionRange.Parse("[1,3)");
+            Assert.Equal("1.0.0", versionInfo.MinVersion.ToNormalizedString());
+            Assert.True(versionInfo.IsMinInclusive);
+            Assert.Equal("3.0.0", versionInfo.MaxVersion.ToNormalizedString());
+            Assert.False(versionInfo.IsMaxInclusive);
+        }
+
+        [Fact]
         public void VersionRange_Exact()
         {
             // Act 
@@ -274,8 +285,8 @@ namespace NuGet.Versioning.Test
         public void ParseVersionRangeIntegerRanges()
         {
             // Assert
-            var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse("   [1, 2]  "));
-            Assert.Equal("'   [1, 2]  ' is not a valid version string.", exception.Message);
+            var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse("   [-1, 2]  "));
+            Assert.Equal("'   [-1, 2]  ' is not a valid version string.", exception.Message);
         }
 
         [Fact]

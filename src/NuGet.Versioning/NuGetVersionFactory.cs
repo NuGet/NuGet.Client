@@ -42,35 +42,46 @@ namespace NuGet.Versioning
                 Tuple<string, string[], string> sections = ParseSections(value.Trim());
 
                 // null indicates the string did not meet the rules
-                if (sections != null && Version.TryParse(sections.Item1, out systemVersion))
+                if (sections != null && !string.IsNullOrEmpty(sections.Item1))
                 {
-                    // labels
-                    if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s, false)))
+                    string versionPart = sections.Item1;
+
+                    if (versionPart.IndexOf('.') < 0)
                     {
-                        return false;
+                        // System.Version requires at least a 2 part version to parse.
+                        versionPart += ".0";
                     }
 
-                    // build metadata
-                    if (sections.Item3 != null && !IsValid(sections.Item3, true))
+                    if (Version.TryParse(versionPart, out systemVersion))
                     {
-                        return false;
+                        // labels
+                        if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s, false)))
+                        {
+                            return false;
+                        }
+
+                        // build metadata
+                        if (sections.Item3 != null && !IsValid(sections.Item3, true))
+                        {
+                            return false;
+                        }
+
+                        Version ver = NormalizeVersionValue(systemVersion);
+
+                        string originalVersion = value;
+
+                        if (originalVersion.IndexOf(' ') > -1)
+                        {
+                            originalVersion = value.Replace(" ", "");
+                        }
+
+                        version = new NuGetVersion(version: ver,
+                                                    releaseLabels: sections.Item2,
+                                                    metadata: sections.Item3 ?? string.Empty,
+                                                    originalVersion: originalVersion);
+
+                        return true;
                     }
-
-                    Version ver = NormalizeVersionValue(systemVersion);
-
-                    string originalVersion = value;
-
-                    if (originalVersion.IndexOf(' ') > -1)
-                    {
-                        originalVersion = value.Replace(" ", "");
-                    }
-
-                    version = new NuGetVersion(version: ver,
-                                                releaseLabels: sections.Item2,
-                                                metadata: sections.Item3 ?? string.Empty,
-                                                originalVersion: originalVersion);
-
-                    return true;
                 }
             }
 
