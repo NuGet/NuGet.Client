@@ -2326,5 +2326,151 @@ namespace NuGet.Test
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonLatestPrereleasePackageIdentity, resolutionContext,
                 new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None);
         }
+
+        [Fact]
+        public async Task TestPacManPreviewInstallWithAllowedVersionsConstraint()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var newtonsoftJsonPackageId = "newtonsoft.json";
+            var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
+            var primarySourceRepository = sourceRepositoryProvider.GetRepositories().Single();
+            var resolutionContext = new ResolutionContext();
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonPackageIdentity,
+                resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, packagesInPackagesConfig.Count);
+            Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            var installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
+            var newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
+
+            Assert.Null(newtonsoftJsonPackageReference.AllowedVersions);
+
+            const string newPackagesConfig = @"<?xml version='1.0' encoding='utf-8'?>
+  <packages>
+    <package id='Newtonsoft.Json' version='4.5.11' allowedVersions='[4.0,5.0)' targetFramework='net45' />
+  </packages> ";
+
+            File.WriteAllText(randomPackagesConfigPath, newPackagesConfig);
+
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, packagesInPackagesConfig.Count);
+            Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+            installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
+            newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
+
+            Assert.NotNull(newtonsoftJsonPackageReference.AllowedVersions);
+
+            Exception exception = null;
+            try
+            {
+                // Main Act
+                await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, newtonsoftJsonPackageId,
+                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            Assert.NotNull(exception);
+        }
+
+        [Fact]
+        public async Task TestPacManPreviewUpdateWithAllowedVersionsConstraint()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var newtonsoftJsonPackageId = "newtonsoft.json";
+            var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
+            var primarySourceRepository = sourceRepositoryProvider.GetRepositories().Single();
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest);
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonPackageIdentity,
+                resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, new PackageIdentity("Microsoft.Web.Infrastructure", new NuGetVersion("1.0.0.0")),
+                resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(2, packagesInPackagesConfig.Count);
+            Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
+            var installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
+            var newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
+
+            Assert.Null(newtonsoftJsonPackageReference.AllowedVersions);
+
+            const string newPackagesConfig = @"<?xml version='1.0' encoding='utf-8'?>
+  <packages>
+    <package id='Microsoft.Web.Infrastructure' version='1.0.0.0' targetFramework='net45' />
+    <package id='Newtonsoft.Json' version='4.5.11' allowedVersions='[4.0,5.0)' targetFramework='net45' />    
+  </packages> ";
+
+            File.WriteAllText(randomPackagesConfigPath, newPackagesConfig);
+
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(2, packagesInPackagesConfig.Count);
+            Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
+            installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
+            newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
+
+            Assert.NotNull(newtonsoftJsonPackageReference.AllowedVersions);
+
+            // Main Act
+            var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<string>() { newtonsoftJsonPackageId, "Microsoft.Web.Infrastructure" }, msBuildNuGetProject,
+                resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
+
+            // Microsoft.Web.Infrastructure has no updates. However, newtonsoft.json has updates but does not satisfy the version range
+            // Hence, no nuget project actions to perform
+            Assert.Equal(0, nuGetProjectActions.Count);
+        }
     }
 }

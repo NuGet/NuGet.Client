@@ -1,4 +1,5 @@
-﻿using NuGet.Packaging.Core;
+﻿using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,17 @@ namespace NuGet.PackageManagement
                 {
                     result = RemoveAllPrereleaseVersionsForId(result, group.Key);
                 }
+            }
+
+            return result;
+        }
+
+        public static IEnumerable<SourceDependencyInfo> PruneDisallowedVersions(IEnumerable<SourceDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
+        {
+            IEnumerable<SourceDependencyInfo> result = packages;
+            foreach(var packageReference in packageReferences)
+            {
+                result = RemoveDisallowedVersions(result, packageReference);
             }
 
             return result;
@@ -61,6 +73,17 @@ namespace NuGet.PackageManagement
 
             return packages.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(minimum.Id, p.Id) ||
                 (StringComparer.OrdinalIgnoreCase.Equals(minimum.Id, p.Id) && comparer.Compare(p.Version, minimum.Version) >= 0));
+        }
+
+        // TODO: Consider removing elements from the collection and check if that is better in performance
+        public static IEnumerable<SourceDependencyInfo> RemoveDisallowedVersions(IEnumerable<SourceDependencyInfo> packages, PackageReference packageReference)
+        {
+            if (packageReference.AllowedVersions != null)
+            {
+                return packages.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(p.Id, packageReference.PackageIdentity.Id)
+                || packageReference.AllowedVersions.Satisfies(p.Version));
+            }
+            return packages;
         }
     }
 }

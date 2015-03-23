@@ -296,6 +296,9 @@ namespace NuGet.PackageManagement
                         projectInstalledPackageReferences.Select(p => p.PackageIdentity));
                 }
 
+                // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
+                prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
+
                 // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
                 // TODO: Consider using IPackageResolver once it is extensible
                 var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
@@ -429,6 +432,9 @@ namespace NuGet.PackageManagement
                 }
 
                 // TODO: prune down level packages?
+
+                // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
+                prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
                 // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages                
                 // TODO: Consider using IPackageResolver once it is extensible
@@ -687,6 +693,9 @@ namespace NuGet.PackageManagement
                     {
                         prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, packageTargetsForResolver);
                     }
+
+                    // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
+                    prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
                     // TODO: prune down level packages?
 
