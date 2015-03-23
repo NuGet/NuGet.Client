@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement
                 // First, check for primary targets alone against primary source repositories alone
                 var primaryIdsAsAllDiscoveredIds = new HashSet<string>(primaryTargetIds);
                 await ProcessMissingPackageIds(combinedResults, primaryIdsAsAllDiscoveredIds, sourceToPackageIdsChecked,
-                    primaryDependencyResources, targetFramework, context, token);
+                    primaryDependencyResources, targetFramework, context, false, token);
 
                 string missingPrimaryPackageId = primaryTargetIds.Where(p => !combinedResults.Any(c => c.Id.Equals(p, StringComparison.OrdinalIgnoreCase))).FirstOrDefault();
                 if (!String.IsNullOrEmpty(missingPrimaryPackageId))
@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement
 
                 var allIdsAsAllDiscoveredIds = new HashSet<string>(allTargetIds);
                 await ProcessMissingPackageIds(combinedResults, allIdsAsAllDiscoveredIds, sourceToPackageIdsChecked,
-                    primaryDependencyResources, targetFramework, context, token);
+                    primaryDependencyResources, targetFramework, context, false, token);
             }
             else
             {
@@ -144,7 +144,7 @@ namespace NuGet.PackageManagement
 
                 // First, check for primary targets alone against primary source repositories alone
                 await ProcessMissingPackageIdentities(combinedResults, primaryTargets, sourceToPackageIdsChecked,
-                    primaryDependencyResources, targetFramework, context, token);
+                    primaryDependencyResources, targetFramework, context, false, token);
 
                 PackageIdentity missingPrimaryPackageIdentity = primaryTargets.Where(p => !combinedResults.Any(c => c.Equals(p))).FirstOrDefault();
                 if (missingPrimaryPackageIdentity != null)
@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement
                 }
 
                 await ProcessMissingPackageIdentities(combinedResults, allTargets, sourceToPackageIdsChecked,
-                    allDependencyResources, targetFramework, context, token);
+                    allDependencyResources, targetFramework, context, true, token);
             }
 
             // loop until we finish a full iteration with no new ids discovered
@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement
             while (!complete)
             {
                 HashSet<string> allDiscoveredIds = new HashSet<string>(sourceToPackageIdsChecked.SelectMany(e => e.Value), StringComparer.OrdinalIgnoreCase);
-                complete = await ProcessMissingPackageIds(combinedResults, allDiscoveredIds, sourceToPackageIdsChecked, allDependencyResources, targetFramework, context, token);
+                complete = await ProcessMissingPackageIds(combinedResults, allDiscoveredIds, sourceToPackageIdsChecked, allDependencyResources, targetFramework, context, true, token);
             }
 
             return combinedResults;
@@ -174,6 +174,7 @@ namespace NuGet.PackageManagement
             List<Tuple<SourceRepository, DepedencyInfoResource>> dependencyResources,
             NuGetFramework targetFramework,
             ResolutionContext context,
+            bool ignoreExceptions,
             CancellationToken token)
         {
             // results need to be kept in order
@@ -215,9 +216,23 @@ namespace NuGet.PackageManagement
             {
                 var data = results.Dequeue();
                 var source = data.Item1;
-                var packages = await data.Item2;
 
-                ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages, context.IncludePrerelease);
+                var task = data.Item2;
+
+                try
+                {
+                    var packages = await task;
+
+                    ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages, context.IncludePrerelease);
+                }
+                catch (Exception ex)
+                {
+                    // swallow exceptions for secondary repositories
+                    if (!ignoreExceptions)
+                    {
+                        throw;
+                    }
+                }
             }
         }
 
@@ -230,6 +245,7 @@ namespace NuGet.PackageManagement
             List<Tuple<SourceRepository, DepedencyInfoResource>> dependencyResources,
             NuGetFramework targetFramework,
             ResolutionContext context,
+            bool ignoreExceptions,
             CancellationToken token)
         {
             bool complete = true;
@@ -274,9 +290,23 @@ namespace NuGet.PackageManagement
             {
                 var data = results.Dequeue();
                 var source = data.Item1;
-                var packages = await data.Item2;
 
-                ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages, context.IncludePrerelease);
+                var task = data.Item2;
+
+                try
+                {
+                    var packages = await task;
+
+                    ProcessResults(combinedResults, source, sourceToPackageIdsChecked[source], packages, context.IncludePrerelease);
+                }
+                catch (Exception ex)
+                {
+                    // swallow exceptions for secondary repositories
+                    if (!ignoreExceptions)
+                    {
+                        throw;
+                    }
+                }
             }
 
             return complete;
@@ -289,32 +319,35 @@ namespace NuGet.PackageManagement
         private static void ProcessResults(HashSet<SourceDependencyInfo> combinedResults, SourceRepository source, HashSet<string> foundIds,
             IEnumerable<PackageDependencyInfo> packages, bool includePrerelease)
         {
-            foreach (var package in packages)
+            if (packages != null)
             {
-                // Set the includePrerelease on the version range on every single package dependency to context.IncludePreerelease
-                var packageDependencies = package.Dependencies;
-                var modifiedPackageDependencies = new List<PackageDependency>();
-                foreach(var packageDependency in packageDependencies)
+                foreach (var package in packages)
                 {
-                    var versionRange = packageDependency.VersionRange;
-                    var modifiedVersionRange = new Versioning.VersionRange(versionRange.MinVersion, versionRange.IsMinInclusive, versionRange.MaxVersion,
-                        versionRange.IsMaxInclusive, includePrerelease, versionRange.Float);
+                    // Set the includePrerelease on the version range on every single package dependency to context.IncludePreerelease
+                    var packageDependencies = package.Dependencies;
+                    var modifiedPackageDependencies = new List<PackageDependency>();
+                    foreach (var packageDependency in packageDependencies)
+                    {
+                        var versionRange = packageDependency.VersionRange;
+                        var modifiedVersionRange = new Versioning.VersionRange(versionRange.MinVersion, versionRange.IsMinInclusive, versionRange.MaxVersion,
+                            versionRange.IsMaxInclusive, includePrerelease, versionRange.Float);
 
-                    var modifiedPackageDependency = new PackageDependency(packageDependency.Id, modifiedVersionRange);
-                    modifiedPackageDependencies.Add(modifiedPackageDependency);
+                        var modifiedPackageDependency = new PackageDependency(packageDependency.Id, modifiedVersionRange);
+                        modifiedPackageDependencies.Add(modifiedPackageDependency);
+                    }
+
+                    var modifiedPackageDependencyInfo = new PackageDependencyInfo(new PackageIdentity(package.Id, package.Version), modifiedPackageDependencies);
+                    SourceDependencyInfo depInfo = new SourceDependencyInfo(modifiedPackageDependencyInfo, source);
+
+                    // add this to the final results
+                    combinedResults.Add(depInfo);
+
+                    // mark that we found this id
+                    foundIds.Add(depInfo.Id);
+
+                    // mark that all dependant ids were also checked by the metadata client
+                    foundIds.UnionWith(depInfo.Dependencies.Select(p => p.Id));
                 }
-
-                var modifiedPackageDependencyInfo = new PackageDependencyInfo(new PackageIdentity(package.Id, package.Version), modifiedPackageDependencies);
-                SourceDependencyInfo depInfo = new SourceDependencyInfo(modifiedPackageDependencyInfo, source);
-
-                // add this to the final results
-                combinedResults.Add(depInfo);
-
-                // mark that we found this id
-                foundIds.Add(depInfo.Id);
-
-                // mark that all dependant ids were also checked by the metadata client
-                foundIds.UnionWith(depInfo.Dependencies.Select(p => p.Id));
             }
         }
 
