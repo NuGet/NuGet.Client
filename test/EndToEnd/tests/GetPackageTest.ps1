@@ -237,7 +237,7 @@ function Test-GetPackageForProjectThrowIfProjectNameIsInvalid {
     $p1 = New-ConsoleApplication
  
     # Act & Assert
-    Assert-Throws { Get-Package -ProjectName "invalidname" } "No compatible project(s) found in the active solution."
+    Assert-Throws { Get-Package -ProjectName "invalidname" } "Project 'invalidname' is not found."
 }
 
 function Test-GetPackageWithoutProjectNameReturnsInstalledPackagesInTheSolution {
@@ -406,7 +406,7 @@ function Test-GetPackageUpdatesReturnPrereleasePackagesIfFlagIsSpecified {
     # Assert
     Assert-AreEqual 1 $updates.Count
     Assert-AreEqual 'PrereleaseTestPackage' $updates[0].Id
-    Assert-AreEqual '1.0.1-a' $updates[0].Version.ToNormalizedString()
+    Assert-AreEqual '1.0.1-a' $updates[0].Version.ToString()
 }
 
 function Test-GetPackageDoesNotThrowIfSolutionIsTemporary {
@@ -438,7 +438,7 @@ function Test-GetPackageUpdatesReturnAllVersionsIfFlagIsSpecified
     # Assert
     Assert-AreEqual 1 $updates.Count
     Assert-AreEqual 'PrereleaseTestPackage' $updates[0].Id
-    Assert-AreEqual '1.0.0' $updates[0].Version.ToNormalizedString()
+    Assert-AreEqual '1.0.0' $updates[0].Version.ToString()
 }
 
 function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsAreSpecified 
@@ -461,10 +461,10 @@ function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsA
     Assert-AreEqual 2 $updates.Count
 
     Assert-AreEqual 'PrereleaseTestPackage' $updates[0].Id
-    Assert-AreEqual '1.0.0' $updates[0].Version.ToNormalizedString()
+    Assert-AreEqual '1.0.0' $updates[0].Version.ToString()
 
     Assert-AreEqual 'PrereleaseTestPackage' $updates[1].Id
-    Assert-AreEqual '1.0.1-a' $updates[1].Version.ToNormalizedString()
+    Assert-AreEqual '1.0.1-a' $updates[1].Version.ToString()
 }
 
 function Test-GetInstalledPackageWithFilterReturnsCorrectPackage

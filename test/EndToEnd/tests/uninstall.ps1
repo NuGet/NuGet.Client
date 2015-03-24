@@ -150,7 +150,7 @@ function Test-UninstallPackageThatIsNotInstalledThrows {
     $p = New-ClassLibrary
 
     # Act & Assert
-    Assert-Throws { $p | Uninstall-Package elmah } "Unable to find package 'elmah'."
+    Assert-Throws { $p | Uninstall-Package elmah } ("Package 'elmah' to be uninstalled could not be found in project '" + $p.Name + "'")
 }
 
 function Test-UninstallPackageThatIsInstalledInAnotherProjectThrows {
@@ -160,10 +160,11 @@ function Test-UninstallPackageThatIsInstalledInAnotherProjectThrows {
     $p1 | Install-Package elmah -Version 1.1
 
     # Act & Assert
-    Assert-Throws { $p2 | Uninstall-Package elmah } "Unable to find package 'elmah' in '$($p2.Name)'."
+    Assert-Throws { $p2 | Uninstall-Package elmah } ("Package 'elmah' to be uninstalled could not be found in project '" + $p2.Name + "'")
 }
 
-function Test-UninstallSolutionOnlyPackage {
+#function Test-UninstallSolutionOnlyPackage {
+function UninstallSolutionOnlyPackage {
     param(
         $context
     )
@@ -180,7 +181,7 @@ function Test-UninstallSolutionOnlyPackage {
 }
 
 #function Test-UninstallSpecificPackageThrowsIfNotInstalledInProject {
-function Test-UninstallSpecificPackageThrowsIfNotInstalledInProject {
+function UninstallSpecificPackageThrowsIfNotInstalledInProject {
     # Arrange
     $p1 = New-ClassLibrary
     $p2 = New-FSharpLibrary
@@ -207,7 +208,8 @@ function Test-UninstallSpecificVersionOfPackage {
     Assert-SolutionPackage Antlr 3.1.3.42154
 }
 
-function Test-UninstallSolutionOnlyPackageWhenAmbiguous {
+#function Test-UninstallSolutionOnlyPackageWhenAmbiguous {
+function UninstallSolutionOnlyPackageWhenAmbiguous {    
     param(
         $context
     )
@@ -246,11 +248,11 @@ function Test-UninstallPackageWorksWithPackagesHavingSameNames {
     $p5 = New-ConsoleApplication 'ProjectA'
 
     # Act
-    Get-ProjectName -All | Install-Package elmah -Version 1.1
+    Get-Project -All | Install-Package elmah -Version 1.1
     $all = @( $p1, $p2, $p3, $p4, $p5 )
     $all | % { Assert-Package $_ elmah }
 
-    Get-ProjectName -All | Uninstall-Package elmah
+    Get-Project -All | Uninstall-Package elmah
 
     # Assert
     $all | % { Assert-Null (Get-ProjectPackage $_ elmah) }
@@ -556,7 +558,8 @@ function Test-UninstallPackageInvokeInstallScriptWhenProjectNameHasBrackets {
     Remove-Variable UninstallPackageMessages -Scope Global
 }
 
-function Test-UninstallPackageRemoveSolutionPackagesConfig
+#function Test-UninstallPackageRemoveSolutionPackagesConfig
+function UninstallPackageRemoveSolutionPackagesConfig
 {
     param(
         $context
@@ -746,7 +749,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveConten
     $projectName = $p.Name
     $p.Properties.Item("TargetFrameworkMoniker").Value = '.NETFramework,Version=3.5'
 
-    $p = Get-ProjectName $projectName
+    $p = Get-Project $projectName
 
     Uninstall-Package 'PackageA' -ProjectName $projectName -RemoveDependencies
     
@@ -778,7 +781,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveAssemb
     $projectName = $p.Name
     $p.Properties.Item("TargetFrameworkMoniker").Value = '.NETFramework,Version=3.5'
 
-    $p = Get-ProjectName $projectName
+    $p = Get-Project $projectName
 
     Uninstall-Package 'PackageA' -ProjectName $projectName -RemoveDependencies
     
@@ -808,7 +811,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToInvokeUninst
 
     $global:UninstallVar = 0
 
-    $p = Get-ProjectName $projectName
+    $p = Get-Project $projectName
     Uninstall-Package 'PackageA' -ProjectName $projectName
     
     # Assert
@@ -905,7 +908,9 @@ function Test-UnInstallPackageWithXdtTransformUnTransformsTheFile
     Assert-AreEqual "true" $content.configuration["system.web"].compilation.debug
     Assert-Null $content.configuration["system.web"].customErrors
 }
-function Test-UninstallPackageHonorPackageReferencesAccordingToProjectFramework
+
+#function Test-UninstallPackageHonorPackageReferencesAccordingToProjectFramework
+function UninstallPackageHonorPackageReferencesAccordingToProjectFramework
 {
     param ($context)
     

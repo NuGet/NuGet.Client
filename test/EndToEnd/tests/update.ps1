@@ -180,10 +180,11 @@ function Test-UpdateWithoutPackageInstalledThrows {
     $p = New-ClassLibrary
 
     # Act & Assert
-    Assert-Throws { $p | Update-Package elmah } "Unable to find package 'elmah'."
+    Assert-Throws { $p | Update-Package elmah } ("'elmah' was not installed in any project. Update failed.")
 }
 
-function Test-UpdateSolutionOnlyPackage {
+#function Test-UpdateSolutionOnlyPackage {
+function UpdateSolutionOnlyPackage {    
     param(
         $context
     )
@@ -203,7 +204,8 @@ function Test-UpdateSolutionOnlyPackage {
     Assert-PathExists (Join-Path $solutionDir packages\SolutionOnlyPackage.2.0\file2.txt)
 }
 
-function Test-UpdateSolutionOnlyPackageWhenAmbiguous {
+#function Test-UpdateSolutionOnlyPackageWhenAmbiguous {
+function UpdateSolutionOnlyPackageWhenAmbiguous {
     param(
         $context
     )
@@ -741,7 +743,7 @@ function Test-UpdatingDependentPackagesPicksLowestCompatiblePackages {
 function Test-UpdateAllPackagesInASingleProjectWithMultipleProjects {
     param(
         $context
-        
+
     )
     # Arrange
     $p1 = New-WebApplication
@@ -1453,7 +1455,8 @@ function Test-UpdatePackageThrowsIfMinClientVersionIsNotSatisfied
     Assert-Package $p "Kitty" -Version 1.0.0
 }
 
-function Test-UpdatePackageWhenAnUnusedVersionOfPackageIsPresentInPackagesFolder
+#function Test-UpdatePackageWhenAnUnusedVersionOfPackageIsPresentInPackagesFolder
+function UpdatePackageWhenAnUnusedVersionOfPackageIsPresentInPackagesFolder
 {
     param($context)
 
@@ -1485,7 +1488,8 @@ function Test-UpdatePackageWhenAnUnusedVersionOfPackageIsPresentInPackagesFolder
     Assert-SolutionPackage TestUpdatePackage 2.0.0
 }
 
-function Test-UpdatePackageThrowsWhenOnlyUnusedVersionsOfAPackageIsPresentInPackagesFolder
+#function Test-UpdatePackageThrowsWhenOnlyUnusedVersionsOfAPackageIsPresentInPackagesFolder
+function UpdatePackageThrowsWhenOnlyUnusedVersionsOfAPackageIsPresentInPackagesFolder
 {
     param($context)
 
