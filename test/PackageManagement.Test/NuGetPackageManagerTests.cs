@@ -2472,5 +2472,49 @@ namespace NuGet.Test
             // Hence, no nuget project actions to perform
             Assert.Equal(0, nuGetProjectActions.Count);
         }
+
+        [Fact]
+        public async Task TestPacManInstallAspNetRazorJa()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigPath);
+            var aspnetrazorjaPackageIdentity = new PackageIdentity("Microsoft.AspNet.Razor.ja", new NuGetVersion("3.2.3"));
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, aspnetrazorjaPackageIdentity,
+                new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            // Assert
+            // Check that the packages.config file exists after the installation
+            Assert.True(File.Exists(randomPackagesConfigPath));
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(2, packagesInPackagesConfig.Count);
+            Assert.Equal(aspnetrazorjaPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
     }
 }
