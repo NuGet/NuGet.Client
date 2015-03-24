@@ -288,7 +288,7 @@ function Test-TabExpansionForVersionForUninstallPackage {
     $suggestion = TabExpansion "Uninstall-Package elmah -Version "
 
     # Assert
-    Assert-AreEqual '1.1' $suggestion
+    Assert-AreEqual '1.1.0' $suggestion
 }
 
 function Test-TabExpansionForProjectsReturnsBothUniqueNamesAndSafeNames {
@@ -426,11 +426,12 @@ function Test-InstallPackageCommandShowTabExpansionForDependencyVersion {
     $suggestions = @(TabExpansion 'Install-Package -DependencyVersion ')
 
     # Assert
-    Assert-AreEqual 4 $suggestions.Count
+    Assert-AreEqual 5 $suggestions.Count
     Assert-AreEqual 'Highest' $suggestions[0]
 	Assert-AreEqual 'HighestMinor' $suggestions[1]
 	Assert-AreEqual 'HighestPatch' $suggestions[2]
-	Assert-AreEqual 'Lowest' $suggestions[3]
+	Assert-AreEqual 'Ignore' $suggestions[3]
+	Assert-AreEqual 'Lowest' $suggestions[4]
 }
 
 function Test-InstallPackageCommandShowTabExpansionForFileConflictAction {
@@ -438,10 +439,12 @@ function Test-InstallPackageCommandShowTabExpansionForFileConflictAction {
     $suggestions = @(TabExpansion 'Install-Package -FileConflictAction ')
 
     # Assert
-    Assert-AreEqual 3 $suggestions.Count
+    Assert-AreEqual 5 $suggestions.Count
     Assert-AreEqual 'Ignore' $suggestions[0]
-	Assert-AreEqual 'None' $suggestions[1]
-	Assert-AreEqual 'Overwrite' $suggestions[2]
+    Assert-AreEqual 'IgnoreAll' $suggestions[1]
+    Assert-AreEqual 'Overwrite' $suggestions[2]
+    Assert-AreEqual 'OverwriteAll' $suggestions[3]
+    Assert-AreEqual 'PromptUser' $suggestions[4]
 }
 
 function Test-UpdatePackageCommandShowTabExpansionForFileConflictAction {
@@ -449,9 +452,11 @@ function Test-UpdatePackageCommandShowTabExpansionForFileConflictAction {
     $suggestions = @(TabExpansion 'Update-Package -FileConflictAction ')
 
     # Assert
-    Assert-AreEqual 3 $suggestions.Count
+    Assert-AreEqual 5 $suggestions.Count
     Assert-AreEqual 'Ignore' $suggestions[0]
-	Assert-AreEqual 'None' $suggestions[1]
-	Assert-AreEqual 'Overwrite' $suggestions[2]
+    Assert-AreEqual 'IgnoreAll' $suggestions[1]
+    Assert-AreEqual 'Overwrite' $suggestions[2]
+    Assert-AreEqual 'OverwriteAll' $suggestions[3]
+    Assert-AreEqual 'PromptUser' $suggestions[4]
 }
 
