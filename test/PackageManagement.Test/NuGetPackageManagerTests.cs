@@ -148,13 +148,13 @@ namespace NuGet.Test
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
 
-            PackageAlreadyInstalledException alreadyInstalledException = null;
+            InvalidOperationException alreadyInstalledException = null;
             try
             {
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
             new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
             }
-            catch (PackageAlreadyInstalledException ex)
+            catch (InvalidOperationException ex)
             {
                 alreadyInstalledException = ex;
             }
