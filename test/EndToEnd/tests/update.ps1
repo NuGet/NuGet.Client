@@ -240,7 +240,8 @@ function Test-UpdatePackageResolvesDependenciesAcrossSources {
     Assert-Package $p Antlr
 }
 
-function Test-UpdateAmbiguousProjectLevelPackageNoInstalledInProjectThrows {
+#function Test-UpdateAmbiguousProjectLevelPackageNoInstalledInProjectThrows {
+function UpdateAmbiguousProjectLevelPackageNoInstalledInProjectThrows {
     # Arrange
     $p1 = New-ClassLibrary
     $p2 = New-FSharpLibrary
@@ -740,6 +741,7 @@ function Test-UpdatingDependentPackagesPicksLowestCompatiblePackages {
 function Test-UpdateAllPackagesInASingleProjectWithMultipleProjects {
     param(
         $context
+        
     )
     # Arrange
     $p1 = New-WebApplication
@@ -753,12 +755,12 @@ function Test-UpdateAllPackagesInASingleProjectWithMultipleProjects {
     # Assert
     Assert-Package $p1 jQuery 2.1.3
     Assert-Package $p2 jQuery 1.5.1
-    Assert-Package $p1 jQuery.UI.Combined 1.11.3
+    Assert-Package $p1 jQuery.UI.Combined 1.11.4
     Assert-Package $p2 jQuery.UI.Combined 1.8.11
     Assert-SolutionPackage jQuery 1.5.1
     Assert-SolutionPackage jQuery 2.1.3
     Assert-SolutionPackage jQuery.UI.Combined 1.8.11
-    Assert-SolutionPackage jQuery.UI.Combined 1.11.3
+    Assert-SolutionPackage jQuery.UI.Combined 1.11.4
 }
 
 function Test-UpdateAllPackagesInASingleProjectWithSafeFlagAndMultipleProjects {
@@ -1360,7 +1362,8 @@ function Test-ReinstallAllPackagesInAllProjectsInvokeUninstallAndInstallScripts
     Remove-Variable UninstallMagicScript -Scope Global 
 }
 
-function Test-ReinstallPackageReinstallPrereleaseDependencyPackages
+#function Test-ReinstallPackageReinstallPrereleaseDependencyPackages
+function ReinstallPackageReinstallPrereleaseDependencyPackages
 {
     param($context) 
     
