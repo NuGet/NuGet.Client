@@ -672,8 +672,8 @@ namespace NuGet.PackageManagement
                     ResolutionContext contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
 
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
-                        primaryPackages,
-                        packageTargetsForResolver,
+                        primaryPackages.Select(p => p.Id),
+                        packageTargetsForResolver.Select(p => p.Id),
                         targetFramework,
                         primarySources,
                         effectiveSources,
