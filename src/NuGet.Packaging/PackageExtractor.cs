@@ -1,4 +1,5 @@
 ﻿using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,8 +47,12 @@ namespace NuGet.Packaging
 
             // default to non-legacy paths
             bool useLegacyPaths = packageExtractionContext == null ? false : packageExtractionContext.UseLegacyPackageInstallPath;
+            
+            var packageReader = new PackageReader(zipArchive);
+            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+            NuGetVersion packageVersionFromNuspec = nuspecReader.GetVersion();
 
-            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentity, useLegacyPaths));
+            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(new PackageIdentity(packageIdentity.Id, packageVersionFromNuspec), useLegacyPaths));
             string packageDirectory = packageDirectoryInfo.FullName;
 
             filesAdded.AddRange(await PackageHelper.CreatePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token));
