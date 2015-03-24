@@ -28,14 +28,16 @@ namespace NuGet.VisualStudio
         private ISettings _settings;
         private ISolutionManager _solutionManager;
         private INuGetProjectContext _projectContext;
+        private IVsPackageInstallerServices _packageServices;
 
         [ImportingConstructor]
-        public VsPackageInstaller(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
+        public VsPackageInstaller(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager, IVsPackageInstallerServices packageServices)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
             _projectContext = new VSAPIProjectContext();
+            _packageServices = packageServices;
         }
 
         public Task InstallPackageAsync(Project project, IEnumerable<string> sources, string packageId, string versionSpec, bool ignoreDependencies, CancellationToken token)
@@ -394,11 +396,17 @@ namespace NuGet.VisualStudio
                 {
                     if (package.Version == null)
                     {
-                        await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                        if (!_packageServices.IsPackageInstalled(project, package.Id))
+                        {
+                            await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                        }
                     }
                     else
                     {
-                        await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                        if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToString()))
+                        {
+                            await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                        }
                     }
                 }
             }
