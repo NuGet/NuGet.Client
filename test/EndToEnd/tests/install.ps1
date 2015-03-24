@@ -1783,7 +1783,8 @@ function Test-InstallPackageExecuteCorrectInstallScriptsAccordingToTargetFramewo
     
     # Assert
     Assert-Package $project TestTargetFxPSScripts
-    Assert-True ($global:InstallVar -eq 100)
+    Write-Host 'net40 folder will be chosen over silverlight'
+    Assert-True ($global:InstallVar -eq 1)
 
     # Clean up
     Remove-Variable InstallVar -Scope Global

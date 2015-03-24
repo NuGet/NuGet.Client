@@ -32,7 +32,7 @@ function Test-OpenPackagePageOpenReportAbuseUrlIfReportAbuseParameterIsSet {
 	}
 	else 
 	{
-		$expectedString = 'https://www.nuget.org/Package/ReportAbuse/elmah/1.1.0'
+		$expectedString = 'https://www.nuget.org/packages/elmah/1.1.0/ReportAbuse'
 	}
     
     # Assert
