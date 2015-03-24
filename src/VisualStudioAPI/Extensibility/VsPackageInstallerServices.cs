@@ -15,6 +15,7 @@ using LegacyNuGet = Legacy.NuGet;
 using NuGet.ProjectManagement;
 using NuGet.Packaging;
 using System.Diagnostics;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.VisualStudio
 {
@@ -80,42 +81,24 @@ namespace NuGet.VisualStudio
             {
                 InitializePackageManagerAndPackageFolderPath();
 
-                foreach (var curProject in _solutionManager.GetNuGetProjects())
+                var nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, new VSAPIProjectContext());
+                var task = System.Threading.Tasks.Task.Run(async () => await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None));
+                task.Wait();
+
+                foreach (var package in task.Result)
                 {
-                    if (StringComparer.Ordinal.Equals(_solutionManager.GetNuGetProjectSafeName(curProject), project.UniqueName))
+                    // Get the install path for package
+                    string installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
+
+                    if (!String.IsNullOrEmpty(installPath))
                     {
-                        var task = System.Threading.Tasks.Task.Run(async () => await curProject.GetInstalledPackagesAsync(CancellationToken.None));
-                        task.Wait();
-
-                        foreach (var package in task.Result)
-                        {
-                            // Get the install path for package
-                            string installPath = string.Empty;
-
-                            FolderNuGetProject folderProject = curProject as FolderNuGetProject;
-
-                            if (folderProject != null)
-                            {
-                                // get the path from the project directly if possible
-                                installPath = folderProject.GetInstalledPath(package.PackageIdentity);
-                            }
-                            else
-                            {
-                                // use the solution directory if needed
-                                installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
-                            }
-
-                            if (!String.IsNullOrEmpty(installPath))
-                            {
-                                // normalize the path and take the dir if the nupkg path was given
-                                var dir = new DirectoryInfo(installPath);
-                                installPath = dir.FullName;
-                            }
-
-                            var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
-                            packages.Add(metadata);
-                        }
+                        // normalize the path and take the dir if the nupkg path was given
+                        var dir = new DirectoryInfo(installPath);
+                        installPath = dir.FullName;
                     }
+
+                    var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
+                    packages.Add(metadata);
                 }
             }
 

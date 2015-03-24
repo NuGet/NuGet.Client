@@ -21,23 +21,20 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Finds the NuGetProject from a DTE project
         /// </summary>
-        public static NuGetProject GetProject(ISolutionManager solution, Project project, VSAPIProjectContext projectContext=null)
+        public static NuGetProject GetProject(ISolutionManager solutionManager, Project project, VSAPIProjectContext projectContext=null)
         {
-            if (solution == null)
+            if (solutionManager == null)
             {
                 throw new ArgumentNullException("solution");
             }
 
-            var matchingProjects = solution.GetNuGetProjects().Where(p => StringComparer.Ordinal.Equals(solution.GetNuGetProjectSafeName(p), project.UniqueName));
-
-            Debug.Assert(matchingProjects.Count() < 2, "Duplicate projects");
-
-            NuGetProject nuGetProject = matchingProjects.FirstOrDefault();
+            var projectSafeName = EnvDTEProjectUtility.GetCustomUniqueName(project);
+            NuGetProject nuGetProject = solutionManager.GetNuGetProject(projectSafeName);
 
             // if the project does not exist in the solution (this is true for new templates) create it manually
             if (nuGetProject == null)
             {
-                VSNuGetProjectFactory factory = new VSNuGetProjectFactory(solution);
+                VSNuGetProjectFactory factory = new VSNuGetProjectFactory(solutionManager);
                 nuGetProject = factory.CreateNuGetProject(project, projectContext);
             }
 
