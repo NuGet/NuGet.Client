@@ -179,6 +179,7 @@ function Test-UninstallSolutionOnlyPackage {
     Assert-Null (Get-SolutionPackage SolutionOnlyPackage 2.0)
 }
 
+#function Test-UninstallSpecificPackageThrowsIfNotInstalledInProject {
 function Test-UninstallSpecificPackageThrowsIfNotInstalledInProject {
     # Arrange
     $p1 = New-ClassLibrary
@@ -587,7 +588,7 @@ function Test-UninstallPackageRemoveSolutionPackagesConfig
     Assert-False (Test-Path $configFile)
 }
 
-function Test-UninstallPackageRemoveEntryFromSolutionPackagesConfig
+function Test-UninstallSolutionPackageRemoveEntryFromProjectPackagesConfig
 {
     param(
         $context
@@ -602,7 +603,7 @@ function Test-UninstallPackageRemoveEntryFromSolutionPackagesConfig
     $solutionFile = Get-SolutionPath
     $solutionDir = Split-Path $solutionFile -Parent
 
-    $configFile = "$solutionDir\.nuget\packages.config"
+    $configFile = "$solutionDir\" + $a.Name + "\packages.config"
     
     Assert-True (Test-Path $configFile)
 
@@ -610,8 +611,8 @@ function Test-UninstallPackageRemoveEntryFromSolutionPackagesConfig
     Assert-AreEqual 5 $content.Length
     Assert-AreEqual '<?xml version="1.0" encoding="utf-8"?>' $content[0]
     Assert-AreEqual '<packages>' $content[1]
-    Assert-AreEqual '  <package id="RazorGenerator.MsBuild" version="1.3.2.0" />' $content[2]
-    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" />' $content[3]
+    Assert-AreEqual '  <package id="RazorGenerator.MsBuild" version="1.3.2" targetFramework="net45" userInstalled="true" />' $content[2]
+    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net45" userInstalled="true" />' $content[3]
     Assert-AreEqual '</packages>' $content[4]
 
     # Act

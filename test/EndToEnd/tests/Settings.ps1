@@ -32,15 +32,16 @@ function Test-GetRepositoryPathFromVsSettings {
 	Open-Solution $solutionFile
 	Write-Host 'Open solution'
 	$p2 = Get-Project
-	$p2 | Install-Package elmah -Version 1.1
+	$p2 | Install-Package elmah -Version 1.2.2
 
 	$vsSetting = [NuGet.PackageManagement.VisualStudio.SettingsHelper]::GetVsSettings()
 	$v = $vsSetting.GetValue("config", "repositoryPath")
 
 	# Assert
-	Write-Host 'Expected: ' $repoPath
+	Write-Host 'Expected:' $repoPath
 	Write-Host 'Actual:' $v
 	Assert-AreEqual $repoPath $v
+        Write-Host 'Testing if $repoPath exists'
 	Assert-True (Test-Path $repoPath)
-	Assert-True (Test-Path (Join-Path $repoPath "elmah.1.1"))
+	Assert-True (Test-Path (Join-Path $repoPath "elmah.1.2.2"))
 }

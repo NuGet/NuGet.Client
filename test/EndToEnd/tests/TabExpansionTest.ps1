@@ -6,7 +6,7 @@ function Test-TabExpansionForInstallPackageShowSuggestionsForPackageId {
     $suggestions = TabExpansion 'Install-Package ' ''
 
     # Assert
-    Assert-True ($suggestions.Count -eq 30)
+    Assert-True ($suggestions.Count -eq 20)
 }
 
 function Test-TabExpansionForInstallPackageShowSuggestionsForPackageIdWithFilter {
