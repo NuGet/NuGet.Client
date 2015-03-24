@@ -197,6 +197,18 @@ namespace NuGet.VisualStudio
                     {
                         failedPackageErrors.Add(package.Id + "." + package.Version + " : " + exception.Message);
                     }
+                    catch (AggregateException aggregateEx)
+                    {
+                        var ex = aggregateEx.Flatten().InnerExceptions.FirstOrDefault();
+                        if (ex is InvalidOperationException)
+                        {
+                            failedPackageErrors.Add(package.Id + "." + package.Version + " : " + ex.Message);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
 
@@ -313,7 +325,7 @@ namespace NuGet.VisualStudio
             {
                 string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
 
-                CopyNativeBinaries(projectSystem, repositoryPath, 
+                CopyNativeBinaries(projectSystem, repositoryPath,
                     Path.Combine(repositoryPath, packagePath));
             }
         }
