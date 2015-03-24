@@ -266,6 +266,8 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-5: Raise PackageInstalling event
+            // At this point, GetInstalledPath is pointless since the package is, likely, not already installed. It will be empty
+            // Using PackagePathResolver.GetInstallPath would be wrong, since, package version from the nuspec is always used
             var packageEventArgs = new PackageEventArgs(FolderNuGetProject, packageIdentity, FolderNuGetProject.GetInstalledPath(packageIdentity));
             if (PackageInstalling != null)
             {
@@ -277,6 +279,8 @@ namespace NuGet.ProjectManagement
             await FolderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
 
             // Step-7: Raise PackageInstalled event
+            // Call GetInstalledPath again, to get the package installed path
+            packageEventArgs = new PackageEventArgs(FolderNuGetProject, packageIdentity, FolderNuGetProject.GetInstalledPath(packageIdentity));
             if (PackageInstalled != null)
             {
                 PackageInstalled(this, packageEventArgs);
