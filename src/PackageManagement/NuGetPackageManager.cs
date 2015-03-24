@@ -316,13 +316,9 @@ namespace NuGet.PackageManagement
             {
                 throw;
             }
-            catch (AggregateException)
+            catch (AggregateException aggregateEx)
             {
-                throw;
-            }
-            catch (NuGetResolverConstraintException)
-            {
-                throw;
+                throw new InvalidOperationException(aggregateEx.Message, aggregateEx);
             }
             catch (Exception ex)
             {
@@ -477,13 +473,9 @@ namespace NuGet.PackageManagement
             {
                 throw;
             }
-            catch (AggregateException)
+            catch (AggregateException aggregateEx)
             {
-                throw;
-            }
-            catch (NuGetResolverConstraintException)
-            {
-                throw;
+                throw new InvalidOperationException(aggregateEx.Message, aggregateEx);
             }
             catch (Exception ex)
             {
@@ -633,7 +625,7 @@ namespace NuGet.PackageManagement
             {
                 string projectName;
                 nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out projectName);
-                throw new PackageAlreadyInstalledException(String.Format(NuGet.ProjectManagement.Strings.PackageAlreadyExistsInProject, packageIdentity, projectName ?? String.Empty));
+                throw new InvalidOperationException(String.Format(NuGet.ProjectManagement.Strings.PackageAlreadyExistsInProject, packageIdentity, projectName ?? String.Empty));
             }
 
             List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
@@ -767,13 +759,9 @@ namespace NuGet.PackageManagement
                 {
                     throw;
                 }
-                catch (AggregateException)
+                catch (AggregateException aggregateEx)
                 {
-                    throw;
-                }
-                catch (NuGetResolverException)
-                {
-                    throw;
+                    throw new InvalidOperationException(aggregateEx.Message, aggregateEx);
                 }
                 catch (Exception ex)
                 {
