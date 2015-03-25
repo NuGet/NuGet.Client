@@ -1,83 +1,33 @@
 param (
-    [string]$PushTarget=$env:NUGET_PUSH_TARGET,
+	# the additional package source used to restore packages.
+	# if it's a directory, the generated packages are also copied there	
+	[string]$PushTarget,
+
     [ValidateSet("debug", "release")][string]$Configuration="release",
     [switch]$SkipTests,
-    [switch]$SkipBuild,
     [string]$PFXPath,
     [switch]$DelaySign,
-    [switch]$Stable,
-    [string]$Version,
-    [switch]$NoLock
+    [string]$Version
 )
 
-function Pack([string]$Id)
+# build the specified project to create the nupkg
+function Pack(
+	# the project from which the nupkg is created 
+	[string]$ProjectFile,
+	
+	# the id of the package
+	[string]$Id, 
+	
+	# true if -IncludeReferencedProjects is passed to nuget pack command
+	[Boolean]$IncludeReferencedProjects)
 {
     # assembly containing the release file version to use for the package
     $workingDir = (Get-Item -Path ".\" -Verbose).FullName;
 
-    # read settings.xml for repo specific settings
-    [xml]$xml = Get-Content "settings.xml"
-    $projectPathSetting = Select-Xml "/nupkgs/nupkg[@id='$Id']/csprojPath" $xml | % { $_.Node.'#text' } | Select-Object -first 1
-    $primaryAssemblySetting = Select-Xml "/nupkgs/nupkg[@id='$Id']/dllName" $xml | % { $_.Node.'#text' } | Select-Object -first 1
-
     # build the csproj and dll full paths
-    $projectPath = Join-Path $workingDir $projectPathSetting
-    $projectRoot = Split-Path -parent $projectPath
-    $primaryAssemblyDir = Join-Path $projectRoot "\bin\$Configuration"
-    $primaryAssemblyPath = Join-Path $primaryAssemblyDir $primaryAssemblySetting
+    $projectPath = Join-Path $workingDir $ProjectFile    
 
-    Write-Host "Project: $projectPath"
-    Write-Host "Target: $primaryAssemblyPath"
-
-    # check signature
-    Write-Host "Signature check" -ForegroundColor Cyan
-    $snPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools\x64\sn.exe"
-    Start-Process $snPath "-Tp $primaryAssemblyPath" -Wait -NoNewWindow
-
-    # find the current git branch
-    $gitBranch = "ci"
-
-    git branch | foreach {
-        if ($_ -match "^\*(.*)") {
-            $gitBranch = $matches[1].Trim()
-        }
-    }
-
-    # prerelease labels can have a max length of 20
-    # shorten the branch to 8 chars if needed
-    if ($gitBranch.Length -gt 8) {
-        $gitBranch = $gitBranch.SubString(0, 8)
-    }
-
-    Write-Host "Git branch: $gitBranch" 
-
-    if (!$Version) {
-        # find the release version from the target assembly
-        $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($primaryAssemblyPath).FileVersion
-
-        if (!$version) {
-            Write-Error "Unable to find the file version!"
-            exit 1
-        }
-
-        $now = [System.DateTime]::UtcNow
-
-        # (git branch)-(last digit of the year)(day of year)(hour)(minute)
-        $version = $version.TrimEnd('0').TrimEnd('.')
-
-        if (!$Stable)
-        {
-            # prerelease labels can have a max length of 20
-            $now = [System.DateTime]::UtcNow
-            $version += "-" + $now.ToString("pre-yyyyMMddHHmmss")
-
-            if ($Configuration -eq "debug")
-            {
-                $version += "-d"
-            }
-        }
-    }
-
+    Write-Host "Project to build: $projectPath" -ForegroundColor Cyan
     Write-Host "Package version: $version" -ForegroundColor Cyan
 
     # create the output folder
@@ -86,33 +36,16 @@ function Pack([string]$Id)
     }
 
     # Pack
-    .\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
-
-    # Find the path of the nupkg we just built
-    $nupkgPath = Get-ChildItem .\nupkgs -filter "$Id.$version.nupkg" | % { $_.FullName }
-
-    Write-Host $nupkgPath -ForegroundColor Cyan
-
-    if (!$Stable -And !$NoLock)
-    {
-        Write-Host "Locking dependencies down"
-        .\tools\NupkgLock\NupkgLock.exe "$Id.nuspec" $nupkgPath
-    }
-
-    if ($PushTarget)
-    {
-        Write-Host "Pushing: $nupkgPath" -ForegroundColor Cyan
-        # use nuget.exe setApiKey <key> before running this
-        .\.nuget\nuget.exe push $nupkgPath -source $PushTarget
-    }
-    else
-    {
-        Write-Warning "Package not uploaded. Specify -PushTarget to upload this package"
-    }
+	Write-Host "Project path is $ProjectPath"
+	if ($IncludeReferencedProjects) {		
+		.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version -IncludeReferencedProjects 
+	}
+	else {
+		.\.nuget\nuget.exe pack $projectPath -Properties configuration=$Configuration -symbols -OutputDirectory nupkgs -version $version
+	}
 }
 
-# build
-if (!$SkipBuild)
+function Build()
 {
     if ($SkipTests)
     {
@@ -133,10 +66,18 @@ if (!$SkipBuild)
         }
     }
 
+	$env:NUGET_PUSH_TARGET="$PushTarget"
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
-    Start-Process "cmd.exe" "/c build.cmd /p:Configuration=$Configuration" -Wait -NoNewWindow
+    & msbuild "build\build.msbuild" "/p:Configuration=$Configuration"
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
 }
 
-Pack("NuGet.PackageManagement")
-Pack("NuGet.PackageManagement.UI")
+Build
+Pack "src\PackageManagement\PackageManagement.csproj" "NuGet.PackageManagement" $true
+Pack "src\PackageManagement.UI\PackageManagement.UI.csproj" "NuGet.PackageManagement.UI" $false
+
+# copy packages to $PushTarget if $PushTarget is a directory
+if (Test-Path $PushTarget)
+{
+	Copy-Item "nupkgs\*.nupkg" $PushTarget
+}
