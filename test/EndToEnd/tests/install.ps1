@@ -1136,7 +1136,7 @@ function Test-PackageInstallAcceptsSourceName {
     $project = New-ConsoleApplication
     
     # Act
-    Install-Package FakeItEasy -Project $project.Name -Source 'v3.nuget.org' -Version 1.8.0
+    Install-Package FakeItEasy -Project $project.Name -Source 'api.nuget.org' -Version 1.8.0
     
     # Assert
     Assert-Reference $project Castle.Core
@@ -2122,7 +2122,7 @@ function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
     $currentSemanticVersion = Get-HostSemanticVersion
 
     # Act & Assert
-    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'."
+    Assert-Throws { $p | Install-Package Kitty -Version 1.0.0 -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'."
     Assert-NoPackage $p "Kitty"
 }
 
