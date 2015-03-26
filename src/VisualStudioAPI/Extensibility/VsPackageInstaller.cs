@@ -384,9 +384,7 @@ namespace NuGet.VisualStudio
 
                 ResolutionContext resolution = new ResolutionContext(depBehavior, includePrerelease, false);
 
-                var dir = _solutionManager.SolutionDirectory;
-
-                NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, dir);
+                NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, _settings, _solutionManager);
 
                 // find the project
                 NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, projectContext);
