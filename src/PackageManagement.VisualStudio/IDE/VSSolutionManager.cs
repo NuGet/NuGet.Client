@@ -1,21 +1,17 @@
-﻿using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
+using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -29,10 +25,42 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsMonitorSelection _vsMonitorSelection;
         private readonly uint _solutionLoadedUICookie;
         private readonly IVsSolution _vsSolution;
-        private bool _initNeeded;
+        private bool _initialized;
+
         private NuGetAndEnvDTEProjectCache NuGetAndEnvDTEProjectCache { get; set; }
 
-        private ManualResetEvent _initFinished;
+        private bool IsSolutionOpening { get; set; }
+
+        public INuGetProjectContext NuGetProjectContext { get; set; }
+
+        public NuGetProject DefaultNuGetProject
+        {
+            get
+            {
+                Init();
+
+                if (String.IsNullOrEmpty(DefaultNuGetProjectName))
+                {
+                    return null;
+                }
+
+                NuGetProject defaultNuGetProject;
+                NuGetAndEnvDTEProjectCache.TryGetNuGetProject(DefaultNuGetProjectName, out defaultNuGetProject);
+                return defaultNuGetProject;
+            }
+        }
+
+        public string DefaultNuGetProjectName { get; set; }
+
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
+
+        public event EventHandler SolutionClosed;
+        public event EventHandler SolutionClosing;
+        public event EventHandler SolutionOpened;
+        public event EventHandler SolutionOpening;
+
 
         public VSSolutionManager()
             : this(
@@ -42,14 +70,13 @@ namespace NuGet.PackageManagement.VisualStudio
         {
         }
 
-        public VSSolutionManager(DTE dte, IVsSolution vsSolution, IVsMonitorSelection vsMonitorSelection)
+        private VSSolutionManager(DTE dte, IVsSolution vsSolution, IVsMonitorSelection vsMonitorSelection)
         {
             if (dte == null)
             {
                 throw new ArgumentNullException("dte");
             }
 
-            _initNeeded = true;
             _dte = dte;
             _vsSolution = vsSolution;
             _vsMonitorSelection = vsMonitorSelection;
@@ -68,43 +95,21 @@ namespace NuGet.PackageManagement.VisualStudio
                 ErrorHandler.ThrowOnFailure(hr);
             }
 
-            IsSolutionOpening = false;
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
             _solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
             _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
-
-            // Run the init on another thread to avoid an endless loop of SolutionManager -> Project System -> VSPackageManager -> SolutionManager            
-            // TODO: fix the cyclic reference problem; then remove _initFinished.
-            _initFinished = new ManualResetEvent(false);
-            ThreadPool.QueueUserWorkItem(new WaitCallback(Init));
-        }
-
-        public NuGetProject DefaultNuGetProject
-        {
-            get
-            {
-                if (String.IsNullOrEmpty(DefaultNuGetProjectName))
-                {
-                    return null;
-                }
-                NuGetProject defaultNuGetProject;
-                NuGetAndEnvDTEProjectCache.TryGetNuGetProject(DefaultNuGetProjectName, out defaultNuGetProject);
-                return defaultNuGetProject;
-            }
-        }
-
-        public string DefaultNuGetProjectName
-        {
-            get;
-            set;
         }
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
         {
-            // wait for Init() to finish so that NuGetAndEnvDTEProjectCache is created.
-            _initFinished.WaitOne();
+            if (string.IsNullOrEmpty(nuGetProjectSafeName))
+            {
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "nuGetProjectSafeName");
+            }
+
+            Init();
 
             NuGetProject nuGetProject = null;
             // NuGetAndEnvDTEProjectCache could be null when solution is not open.
@@ -122,6 +127,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException("nuGetProject");
             }
 
+            Init();
+
             // Try searching for simple names first
             string name = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
             EnvDTEProjectName envDTEProjectName;
@@ -133,8 +140,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public Project GetDTEProject(string nuGetProjectSafeName)
         {
-            // wait for Init() to finish so that NuGetAndEnvDTEProjectCache is created.
-            _initFinished.WaitOne();
+            if (string.IsNullOrEmpty(nuGetProjectSafeName))
+            {
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "nuGetProjectSafeName");
+            }
+
+            Init();
 
             Project dteProject;
             NuGetAndEnvDTEProjectCache.TryGetDTEProject(nuGetProjectSafeName, out dteProject);
@@ -143,7 +154,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<NuGetProject> GetNuGetProjects()
         {
-            if(IsSolutionOpen)
+            Init();
+
+            if (IsSolutionOpen)
             {
                 EnsureNuGetAndEnvDTEProjectCache();
                 return NuGetAndEnvDTEProjectCache.GetNuGetProjects();
@@ -154,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal IEnumerable<EnvDTEProject> GetEnvDTEProjects()
         {
-            if(IsSolutionOpen)
+            if (IsSolutionOpen)
             {
                 EnsureNuGetAndEnvDTEProjectCache();
                 return NuGetAndEnvDTEProjectCache.GetEnvDTEProjects();
@@ -174,20 +187,6 @@ namespace NuGet.PackageManagement.VisualStudio
                        IsSolutionOpening;
             }
         }
-
-        private bool IsSolutionOpening
-        {
-            get;
-            set;
-        }
-
-        public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
-        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
-        public event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
-
-        public event EventHandler SolutionClosed;
-
-        public event EventHandler SolutionClosing;
 
         public string SolutionDirectory
         {
@@ -234,9 +233,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return solutionFilePath;
         }
 
-        public event EventHandler SolutionOpened;
-        public event EventHandler SolutionOpening;
-
         /// <summary>
         /// Checks whether the current solution is saved to disk, as opposed to be in memory.
         /// </summary>
@@ -272,8 +268,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnSolutionOpened()
         {
-            // we can skip the init if this has already been called
-            _initNeeded = false;
             IsSolutionOpening = true;
             if (SolutionOpening != null)
             {
@@ -322,7 +316,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 EnsureNuGetAndEnvDTEProjectCache();
 
-                if(EnvDTEProjectUtility.IsSupported(envDTEProject))
+                if (EnvDTEProjectUtility.IsSupported(envDTEProject))
                 {
                     RemoveEnvDTEProjectFromCache(oldName);
                     AddEnvDTEProjectToCache(envDTEProject);
@@ -459,22 +453,24 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void Init(object state)
+        private void Init()
         {
             try
             {
-                if (_initNeeded && _dte.Solution.IsOpen)
+                if (!_initialized)
                 {
-                    OnSolutionOpened();
+                    _initialized = true;
+
+                    if (_dte.Solution.IsOpen)
+                    {
+                        OnSolutionOpened();
+                    }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-            }
-            finally
-            {
-                // siginal that Init is finished
-                _initFinished.Set();
+                // ignore errors
+                Debug.Fail(ex.ToString());
             }
         }
 
@@ -497,12 +493,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal IDictionary<string, List<EnvDTEProject>> GetDependentEnvDTEProjectsDictionary()
         {
+            Init();
+
             var dependentEnvDTEProjectsDictionary = new Dictionary<string, List<Project>>();
 
             // Get all of the projects in the solution and build the reverse graph. i.e.
             // if A has a project reference to B (A -> B) the this will return B -> A
             // We need to run this on the ui thread so that it doesn't freeze for websites. Since there might be a 
-            // large number of references.           
+            // large number of references.
             ThreadHelper.Generic.Invoke(() =>
             {
                 foreach (EnvDTEProject envDTEProj in GetEnvDTEProjects())
@@ -560,13 +558,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return VSConstants.S_OK;
         }
 
-        #endregion 
-    
-
-        public INuGetProjectContext NuGetProjectContext
-        {
-            get;
-            set;
-        }
+        #endregion
     }
 }
