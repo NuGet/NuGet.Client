@@ -11,7 +11,6 @@ namespace NuGet.Configuration
     public class ConfigurationDefaults
     {
         private ISettings _settingsManager = NullSettings.Instance;
-        private const string ConfigurationDefaultsFile = "NuGetDefaults.config";
         private static readonly ConfigurationDefaults _instance = InitializeInstance();
 
         private bool _defaultPackageSourceInitialized;
@@ -25,7 +24,7 @@ namespace NuGet.Configuration
 #else
             var baseDirectory = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "NuGet");
 #endif
-            return new ConfigurationDefaults(baseDirectory, ConfigurationDefaultsFile);
+            return new ConfigurationDefaults(baseDirectory, ConfigurationContants.ConfigurationDefaultsFile);
         }
 
         // TODO: Make this internal again
@@ -67,8 +66,8 @@ namespace NuGet.Configuration
                 if (_defaultPackageSources == null)
                 {
                     _defaultPackageSources = new List<PackageSource>();
-                    IList<SettingValue> disabledPackageSources = _settingsManager.GetSettingValues("disbaledPackageSources");
-                    IList<SettingValue> packageSources = _settingsManager.GetSettingValues("packageSources");
+                    IList<SettingValue> disabledPackageSources = _settingsManager.GetSettingValues(ConfigurationContants.DisabledPackageSources);
+                    IList<SettingValue> packageSources = _settingsManager.GetSettingValues(ConfigurationContants.PackageSources);
 
                     foreach (var settingValue in packageSources)
                     {
@@ -90,7 +89,7 @@ namespace NuGet.Configuration
                 if (_defaultPushSource == null && !_defaultPackageSourceInitialized)
                 {
                     _defaultPackageSourceInitialized = true;
-                    _defaultPushSource = _settingsManager.GetValue("config", "DefaultPushSource");
+                    _defaultPushSource = _settingsManager.GetValue(ConfigurationContants.Config, ConfigurationContants.DefaultPushSource);
                 }
                 return _defaultPushSource;
             }
@@ -100,7 +99,7 @@ namespace NuGet.Configuration
         {
             get
             {
-                return _settingsManager.GetValue("packageRestore", "enabled");
+                return _settingsManager.GetValue(ConfigurationContants.PackageRestore, ConfigurationContants.enabled);
             }
         }
     }

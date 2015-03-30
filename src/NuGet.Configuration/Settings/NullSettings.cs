@@ -23,7 +23,7 @@ namespace NuGet.Configuration
             return String.Empty;
         }
 
-        public IList<SettingValue> GetSettingValues(string section)
+        public IList<SettingValue> GetSettingValues(string section, bool isPath)
         {
             return new List<SettingValue>().AsReadOnly();
         }

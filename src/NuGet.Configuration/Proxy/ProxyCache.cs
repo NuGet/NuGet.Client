@@ -8,10 +8,7 @@ namespace NuGet.Configuration
 {
     public class ProxyCache : IProxyCache
     {
-        private const string HostKey = "http_proxy";
-        private const string UserKey = "http_proxy.user";
-        private const string PasswordKey = "http_proxy.password";
-
+       
         /// <summary>
         /// Capture the default System Proxy so that it can be re-used by the IProxyFinder
         /// because we can't rely on WebRequest.DefaultWebProxy since someone can modify the DefaultWebProxy
@@ -91,13 +88,13 @@ namespace NuGet.Configuration
         internal WebProxy GetUserConfiguredProxy()
         {
             // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy_user, http_proxy_password
-            var host = _settings.GetValue(SettingsUtility.ConfigSection, HostKey);
+            var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.HostKey);
             if (!String.IsNullOrEmpty(host))
             {
                 // The host is the minimal value we need to assume a user configured proxy. 
                 var webProxy = new WebProxy(host);
-                string userName = _settings.GetValue(SettingsUtility.ConfigSection, UserKey);
-                string password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, PasswordKey);
+                string userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.UserKey);
+                string password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationContants.PasswordKey);
 
                 if (!String.IsNullOrEmpty(userName) && !String.IsNullOrEmpty(password))
                 {
@@ -107,7 +104,7 @@ namespace NuGet.Configuration
             }
 
             // Next try reading from the environment variable http_proxy. This would be specified as http://<username>:<password>@proxy.com
-            host = _environment.GetEnvironmentVariable(HostKey);
+            host = _environment.GetEnvironmentVariable(ConfigurationContants.HostKey);
             Uri uri;
             if (!String.IsNullOrEmpty(host) && Uri.TryCreate(host, UriKind.Absolute, out uri))
             {
