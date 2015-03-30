@@ -14,6 +14,15 @@ namespace NuGet.Configuration
     public class ConfigurationDefaultsTests 
     {
         [Fact]
+        public void CreateConfigurationDefaultsReturnsNonNullConfigurationDefaults()
+        {
+            // Arrange
+            ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(@"<configuration></configuration>");
+
+            // Act & Assert
+            Assert.NotNull(ConfigurationDefaults);
+        }
+        [Fact]
         public void ConfigDefaultsAreProperlyReadFromConfigDefaultsFile()
         {
             //Arrange
@@ -98,6 +107,56 @@ namespace NuGet.Configuration
         }
 
         [Fact]
+        public void GetDefaultPushSourceReadsTheCorrectValue()
+        {
+            // Arrange
+            string configurationDefaultsContent = @"
+<configuration>
+     <config>
+        <add key='DefaultPushSource' value='http://contoso.com/packages/' />
+    </config>
+</configuration>";
+
+            // Act & Assert
+            ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent);
+
+            Assert.Equal(ConfigurationDefaults.DefaultPushSource, "http://contoso.com/packages/");
+        }
+
+        [Fact]
+        public void GetDefaultPackageSourcesReturnsValidPackageSources()
+        {
+            // Arrange
+            string configurationDefaultsContent = @"
+<configuration>
+    <packageSources>
+        <add key='Contoso Package Source' value='http://contoso.com/packages/' />
+        <add key='NuGet Official Feed' value='http://www.nuget.org/api/v2/' />
+    </packageSources>
+    <disabledPackageSources>
+        <add key='NuGet Official Feed' value='true' />
+    </disabledPackageSources>
+</configuration>";
+            System.Diagnostics.Debugger.Launch();
+            // Act & Assert
+            ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent);
+
+            Assert.NotNull(ConfigurationDefaults.DefaultPackageSources);
+
+            List<PackageSource> defaultPackageSources = ConfigurationDefaults.DefaultPackageSources.ToList();
+
+            Assert.Equal(defaultPackageSources.Count, 2);
+
+            Assert.Equal(defaultPackageSources[0].Name, "Contoso Package Source");
+            Assert.True(defaultPackageSources[0].IsEnabled);
+            Assert.True(defaultPackageSources[0].IsOfficial);
+
+            Assert.Equal(defaultPackageSources[1].Name, "NuGet Official Feed");
+            Assert.False(defaultPackageSources[1].IsEnabled);
+            Assert.True(defaultPackageSources[1].IsOfficial);
+        }
+
+        [Fact]
         public void GetDefaultPackageSourcesReturnsEmptyList()
         {
             //Arrange
@@ -156,6 +215,21 @@ namespace NuGet.Configuration
                 Assert.Equal(ps.Source, feeds[index]);
                 index++;
             }
+        }
+
+        private ConfigurationDefaults GetConfigurationDefaults(string configurationDefaultsContent)
+        {          
+            var configurationDefaultsPath = "NuGetDefaults.config";
+            var mockBaseDirectory = @"C:\MockBaseDirectory\";
+            Directory.CreateDirectory(mockBaseDirectory);
+
+            using(FileStream file = File.Create(mockBaseDirectory + configurationDefaultsPath))
+            {
+                Byte[] info = new UTF8Encoding(true).GetBytes(configurationDefaultsContent);
+                file.Write(info, 0, info.Count());
+            }
+
+            return new ConfigurationDefaults(mockBaseDirectory, configurationDefaultsPath);
         }
     }
 }
