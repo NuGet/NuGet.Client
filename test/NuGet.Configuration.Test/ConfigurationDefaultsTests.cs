@@ -137,7 +137,6 @@ namespace NuGet.Configuration
         <add key='NuGet Official Feed' value='true' />
     </disabledPackageSources>
 </configuration>";
-            System.Diagnostics.Debugger.Launch();
             // Act & Assert
             ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent);
 
