@@ -217,12 +217,12 @@ namespace NuGet.Configuration
         }
 
         private ConfigurationDefaults GetConfigurationDefaults(string configurationDefaultsContent)
-        {          
+        {
             var configurationDefaultsPath = "NuGetDefaults.config";
-            var mockBaseDirectory = @"C:\MockBaseDirectory\";
+            var mockBaseDirectory = Test.TestFilesystemUtility.CreateRandomTestFolder();
             Directory.CreateDirectory(mockBaseDirectory);
 
-            using(FileStream file = File.Create(mockBaseDirectory + configurationDefaultsPath))
+            using (FileStream file = File.Create(Path.Combine(mockBaseDirectory, configurationDefaultsPath)))
             {
                 Byte[] info = new UTF8Encoding(true).GetBytes(configurationDefaultsContent);
                 file.Write(info, 0, info.Count());
