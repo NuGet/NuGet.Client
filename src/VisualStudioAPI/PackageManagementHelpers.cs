@@ -1,18 +1,17 @@
-﻿using EnvDTE;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using EnvDTE;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio
 {
@@ -31,10 +30,12 @@ namespace NuGet.VisualStudio
             var projectSafeName = EnvDTEProjectUtility.GetCustomUniqueName(project);
             NuGetProject nuGetProject = solutionManager.GetNuGetProject(projectSafeName);
 
+            var settings = ServiceLocator.GetInstance<ISettings>();
+
             // if the project does not exist in the solution (this is true for new templates) create it manually
             if (nuGetProject == null)
             {
-                VSNuGetProjectFactory factory = new VSNuGetProjectFactory(solutionManager);
+                VSNuGetProjectFactory factory = new VSNuGetProjectFactory(() => PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings));
                 nuGetProject = factory.CreateNuGetProject(project, projectContext);
             }
 

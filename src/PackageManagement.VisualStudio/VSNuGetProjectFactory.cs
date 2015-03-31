@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
@@ -12,28 +11,19 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class VSNuGetProjectFactory
     {
-        private ISolutionManager SolutionManager { get; set; }
-        private ISettings Settings { get; set; }
+        private readonly Func<string> _packagesPath;
+
         private EmptyNuGetProjectContext EmptyNuGetProjectContext { get; set; }
 
         // TODO: Add IDeleteOnRestartManager, VsPackageInstallerEvents and IVsFrameworkMultiTargeting to constructor
-        public VSNuGetProjectFactory(ISolutionManager solutionManager)
-            : this(solutionManager, ServiceLocator.GetInstance<ISettings>()) { }
-
-        public VSNuGetProjectFactory(ISolutionManager solutionManager, ISettings settings)
+        public VSNuGetProjectFactory(Func<string> packagesPath)
         {
-            if(solutionManager == null)
+            if (packagesPath == null)
             {
-                throw new ArgumentNullException("solutionManager");
+                throw new ArgumentNullException("packagesPath");
             }
 
-            if(settings == null)
-            {
-                throw new ArgumentNullException("settings");
-            }
-
-            SolutionManager = solutionManager;
-            Settings = settings;
+            _packagesPath = packagesPath;
             EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         }
 
@@ -51,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
-            var folderNuGetProjectFullPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
+            var folderNuGetProjectFullPath = _packagesPath();
             var packagesConfigFiles = EnvDTEProjectUtility.GetPackageReferenceFileFullPaths(envDTEProject);
 
             // Item1 is path to "packages.<projectName>.config". Item2 is path to "packages.config"

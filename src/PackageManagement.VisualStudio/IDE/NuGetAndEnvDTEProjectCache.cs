@@ -1,19 +1,20 @@
-﻿using EnvDTE;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using EnvDTE;
+using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Cache that stores project based on multiple names. i.e. EnvDTEProject can be retrieved by name (if non conflicting), unique name and custom unique name.
+    /// Projects are added from the main thread, on solution opened event, so concurrent dictionaries are not needed
     /// </summary>
     internal class NuGetAndEnvDTEProjectCache
     {
-        private VSNuGetProjectFactory VSNuGetProjectFactory { get; set; }
         private readonly Dictionary<EnvDTEProjectName, NuGetProject> _nuGetProjectCache = new Dictionary<EnvDTEProjectName, NuGetProject>();
+
         // Mapping from project name structure to project instance
         private readonly Dictionary<EnvDTEProjectName, EnvDTEProject> _envDTEProjectCache = new Dictionary<EnvDTEProjectName, EnvDTEProject>();
 
@@ -23,14 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<EnvDTEProjectName>> _shortNameCache = new Dictionary<string, HashSet<EnvDTEProjectName>>(StringComparer.OrdinalIgnoreCase);
 
-        public NuGetAndEnvDTEProjectCache(ISolutionManager solutionManager)
-        {
-            if(solutionManager == null)
-            {
-                throw new ArgumentNullException("solutionManager");
-            }
-            VSNuGetProjectFactory = new VSNuGetProjectFactory(solutionManager);
-        }
+        public bool IsInitialized { get; private set; }
 
         public bool TryGetNuGetProject(string name, out NuGetProject nuGetProject)
         {
@@ -122,7 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="project">project to add to the cache.</param>
         /// <returns>The project name of the added project.</returns>
-        public EnvDTEProjectName AddProject(EnvDTEProject project)
+        public EnvDTEProjectName AddProject(EnvDTEProject project, VSNuGetProjectFactory factory)
         {
             // First create a project name from the project
             var EnvDTEProjectName = new EnvDTEProjectName(project);
@@ -141,7 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Add the entry mapping project name to the actual project
             _envDTEProjectCache[EnvDTEProjectName] = project;
-            _nuGetProjectCache[EnvDTEProjectName] = VSNuGetProjectFactory.CreateNuGetProject(project);
+            _nuGetProjectCache[EnvDTEProjectName] = factory.CreateNuGetProject(project);
 
             return EnvDTEProjectName;
         }
@@ -213,13 +207,23 @@ namespace NuGet.PackageManagement.VisualStudio
             _nuGetProjectCache.Remove(envDTEProjectName);
         }
 
+        public void Initialize(IEnumerable<Project> projects, VSNuGetProjectFactory factory)
+        {
+            foreach (EnvDTEProject project in projects)
+            {
+                AddProject(project, factory);
+            }
+
+            IsInitialized = true;
+        }
+
         public void Clear()
         {
             _nuGetProjectCache.Clear();
             _envDTEProjectCache.Clear();
             _projectNamesCache.Clear();
             _shortNameCache.Clear();
+            IsInitialized = false;
         }
     }
-
 }
