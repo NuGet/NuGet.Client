@@ -278,6 +278,9 @@
         <command:parameter required="false" position="named">
           <maml:name>ExactMatch</maml:name>
         </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>StartWith</maml:name>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
 
@@ -332,6 +335,12 @@
           <maml:para>Indicates whether to return packages with the exact packageID (case-insensitive).</maml:para>
         </maml:description>
       </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>StartWith</maml:name>
+        <maml:description>
+          <maml:para>Indicates whether to return packages with packageId starting with the specified string.</maml:para>
+        </maml:description>
+      </command:parameter>
     </command:parameters>
 
     <!-- Examples section  -->
@@ -343,7 +352,7 @@
           <maml:para>
             Description
             ------------------------------------------------------------------
-            Returns packages available from the package source.
+            Returns packages with keyword Elmah from the package source.
           </maml:para>
           <maml:para></maml:para>
           <maml:para></maml:para>
@@ -357,6 +366,19 @@
             Description
             ------------------------------------------------------------------
             Returns jquery package with all versions available from the package source.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 3  ----------</maml:title>
+        <dev:code>PM&gt; Find-Package Elmah -StartWith</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Description
+            ------------------------------------------------------------------
+            Returns package with Ids starting with the word of 'Elmah'.
           </maml:para>
           <maml:para></maml:para>
           <maml:para></maml:para>

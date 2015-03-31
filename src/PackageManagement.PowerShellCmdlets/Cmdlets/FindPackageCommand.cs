@@ -50,6 +50,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter ExactMatch { get; set; }
 
+        /// <summary>
+        /// Find packages by AutoComplete endpoint, starting with Id.
+        /// Used for tab expansion.
+        /// </summary>
+        [Parameter]
+        public SwitchParameter StartWith { get; set; }
+
         [Parameter]
         [ValidateRange(0, Int32.MaxValue)]
         public virtual int First { get; set; }
@@ -63,7 +70,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.Preprocess();
             // Since this is used for intellisense, we need to limit the number of packages that we return. Otherwise,
             // typing InstallPackage TAB would download the entire feed.
-            First = MaxReturnedPackages;
+            if (First == 0)
+            {
+                First = MaxReturnedPackages;
+            }
             if (Id == null)
             {
                 Id = string.Empty;
@@ -80,12 +90,52 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
+            if (StartWith.IsPresent)
+            {
+                FindPackageStartWithId();
+            }
+            else
+            {
+                FindPackagesByPSSearchService();
+            }
+        }
+
+        private void FindPackagesByPSSearchService()
+        {
+            VersionType versionType;
+            IEnumerable<PSSearchMetadata> remotePackages = GetPackagesFromRemoteSource(Id, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, Skip, First);
+            if (ExactMatch.IsPresent)
+            {
+                remotePackages = remotePackages.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (AllVersions.IsPresent)
+            {
+                versionType = VersionType.all;
+            }
+            else
+            {
+                versionType = VersionType.latest;
+            }
+            var view = PowerShellRemotePackage.GetPowerShellPackageView(remotePackages, versionType);
+            if (view.Any())
+            {
+                WriteObject(view, enumerateCollection: true);
+            }
+        }
+
+        private void FindPackageStartWithId()
+        {
             PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>();
             IEnumerable<string> packageIds = Enumerable.Empty<string>();
             try
             {
                 Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
                 packageIds = task.Result;
+                if (packageIds != null && packageIds.Any())
+                {
+                    packageIds = packageIds.Skip(Skip).Take(First);
+                }
             }
             catch (Exception) { }
 
