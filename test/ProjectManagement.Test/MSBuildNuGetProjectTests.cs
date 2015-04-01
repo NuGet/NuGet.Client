@@ -914,8 +914,8 @@ namespace ProjectManagement.Test
             // Check that the ps script install.ps1 has been executed
             var keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
             Assert.Equal(2, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
-            Assert.Equal("tools\\init.ps1", keys[0]);
-            Assert.Equal("tools\\net45\\install.ps1", keys[1]);
+            Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\init.ps1", keys[0]));
+            Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\install.ps1", keys[1]));
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
 
@@ -966,8 +966,8 @@ namespace ProjectManagement.Test
             // Check that the ps script install.ps1 has been executed
             var keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
             Assert.Equal(2, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
-            Assert.Equal("tools\\init.ps1", keys[0]);
-            Assert.Equal("tools\\net45\\install.ps1", keys[1]);
+            Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\init.ps1", keys[0]));
+            Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\install.ps1", keys[1]));
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
 
@@ -983,9 +983,9 @@ namespace ProjectManagement.Test
             // Check that the ps script install.ps1 has been executed
             Assert.Equal(3, msBuildNuGetProjectSystem.ScriptsExecuted.Count);
             keys = msBuildNuGetProjectSystem.ScriptsExecuted.Keys.ToList();
-            Assert.Equal("tools\\init.ps1", keys[0]);
-            Assert.Equal("tools\\net45\\install.ps1", keys[1]);
-            Assert.Equal("tools\\net45\\uninstall.ps1", keys[2]);
+            Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\init.ps1", keys[0]));
+            Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\install.ps1", keys[1]));
+            Assert.True(StringComparer.OrdinalIgnoreCase.Equals("tools\\net45\\uninstall.ps1", keys[2]));
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[0]]);
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[2]]);
