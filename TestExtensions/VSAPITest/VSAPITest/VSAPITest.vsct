@@ -84,6 +84,14 @@
           <ButtonText>NuGetAPI Install Bad Source</ButtonText>
         </Strings>
       </Button>
+      
+      <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIInstallNoSource" priority="0x0301" type="Button">
+        <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>NuGetAPI Install Null Source</ButtonText>
+        </Strings>
+      </Button>
 
        <Button guid="guidVSAPITestCmdSet" id="cmdidNuGetAPIInstallPackageAsync" priority="0x0400" type="Button">
         <Parent guid="guidVSAPITestCmdSet" id="MyMenuGroup" />
@@ -182,6 +190,7 @@
       <IDSymbol name="cmdidNuGetAPIUninstallPackage" value="0x0602" />
       <IDSymbol name="cmdidNuGetAPIUninstallPackageNoDep" value="0x0603" />
       <IDSymbol name="cmdidNuGetAPIUninstallPackageNoForce" value="0x0604" />
+      <IDSymbol name="cmdidNuGetAPIInstallNoSource" value="0x0301" />
       <IDSymbol name="cmdidNuGetAPICheck" value="0x9900" />
     </GuidSymbol>
 

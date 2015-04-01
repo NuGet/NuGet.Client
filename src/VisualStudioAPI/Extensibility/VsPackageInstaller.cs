@@ -247,33 +247,26 @@ namespace NuGet.VisualStudio
         /// </summary>
         private ISourceRepositoryProvider GetSources(IEnumerable<string> sources)
         {
-            PreinstalledRepositoryProvider provider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
-
-            IPackageSourceProvider sourceProvider = new PackageSourceProvider(_settings);
-
-            PackageSource[] packageSources = sourceProvider.LoadPackageSources().ToArray();
+            ISourceRepositoryProvider provider = null;
 
             // add everything enabled if null
             if (sources == null)
             {
-                foreach (var packageSource in packageSources)
-                {
-                    if (packageSource.IsEnabled)
-                    {
-                        foreach (string source in sources)
-                        {
-                            provider.AddFromSource(GetSource(source));
-                        }
-                    }
-                }
+                // Use the default set of sources
+                provider = _sourceRepositoryProvider;
             }
             else
             {
-                // TODO: disallow disabled sources even if they were provided by the caller?
+                // Create a custom source provider for the VS API install
+                var customProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
+
+                // Create sources using the given set of sources
                 foreach (string source in sources)
                 {
-                    provider.AddFromSource(GetSource(source));
+                    customProvider.AddFromSource(GetSource(source));
                 }
+
+                provider = customProvider;
             }
 
             return provider;
