@@ -488,3 +488,22 @@ function Test-GetInstalledPackageWithFilterReturnsCorrectPackage
     Assert-AreEqual 'PrereleaseTestPackage' $packages[0].Id
     Assert-AreEqual '1.0.0-b' $packages[0].Version
 }
+
+function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPackageId
+{
+    param
+    (
+        $context
+    )
+
+    # Arrange
+    $p = New-ClassLibrary
+    
+    $p | Install-Package antlr -Version '3.1.1' -Source api.nuget.org
+    
+    # Act
+    $packages = @(Get-Package -updates -Source 'https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/')
+
+    # Assert
+    Assert-AreEqual 0 $packages.Count
+}

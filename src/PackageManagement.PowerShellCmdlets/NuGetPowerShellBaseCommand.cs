@@ -535,7 +535,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 PSSearchMetadata metadata = GetPackagesFromRemoteSource(package.PackageIdentity.Id, targetFrameworks, includePrerelease, skip, take)
                     .Where(p => string.Equals(p.Identity.Id, package.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                updates.Add(metadata, package.PackageIdentity.Version);
+                if (metadata != null)
+                {
+                    updates.Add(metadata, package.PackageIdentity.Version);
+                }
             }
 
             return updates;
