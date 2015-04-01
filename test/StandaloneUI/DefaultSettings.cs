@@ -33,9 +33,9 @@ namespace StandaloneUI
             return Instance.GetNestedValues(section, subSection);
         }
 
-        public IList<SettingValue> GetSettingValues(string section)
+        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
         {
-            return Instance.GetSettingValues(section);
+            return Instance.GetSettingValues(section, isPath);
         }
 
         public string GetValue(string section, string key, bool isPath = false)
