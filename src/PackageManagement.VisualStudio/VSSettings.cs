@@ -68,9 +68,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return SolutionSettings.GetNestedValues(section, subSection);
         }
 
-        public IList<SettingValue> GetSettingValues(string section)
+        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
         {
-            return SolutionSettings.GetSettingValues(section);
+            return SolutionSettings.GetSettingValues(section, isPath);
         }
 
         public string GetValue(string section, string key, bool isPath = false)
