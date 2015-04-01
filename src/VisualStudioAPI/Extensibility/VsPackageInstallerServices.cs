@@ -66,6 +66,30 @@ namespace NuGet.VisualStudio
             return packages;
         }
 
+        private IEnumerable<PackageReference> GetInstalledPackageReferences(Project project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException("project");
+            }
+
+            List<PackageReference> packages = new List<PackageReference>();
+
+            if (_solutionManager != null && !String.IsNullOrEmpty(_solutionManager.SolutionDirectory))
+            {
+                InitializePackageManagerAndPackageFolderPath();
+
+                var nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, new VSAPIProjectContext());
+                var task = System.Threading.Tasks.Task.Run(async () => await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None));
+                task.Wait();
+
+                packages.AddRange(task.Result);
+                                
+            }
+
+            return packages;
+        }
+
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages(Project project)
         {
             if (project == null)
@@ -147,7 +171,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageId");
             }
 
-            var packages = GetInstalledPackages(project).Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, packageId));
+            var packages = GetInstalledPackageReferences(project).Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId));
 
             if (version != null)
             {
@@ -157,7 +181,7 @@ namespace NuGet.VisualStudio
                     throw new ArgumentException(VsResources.InvalidSemanticVersionString, "version");
                 }
 
-                packages = packages.Where(p => VersionComparer.VersionRelease.Equals(NuGetVersion.Parse(p.VersionString), semVer));
+                packages = packages.Where(p => VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, semVer));
             }
 
             return packages.Any();
