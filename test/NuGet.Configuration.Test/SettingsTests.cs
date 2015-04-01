@@ -348,7 +348,7 @@ namespace NuGet.Configuration.Test
             settings.SetValue("NewSectionName", "key", "value");
 
             // Assert
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
@@ -356,7 +356,8 @@ namespace NuGet.Configuration.Test
   <NewSectionName>
     <add key=""key"" value=""value"" />
   </NewSectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
         }
 
         [Fact]
@@ -378,13 +379,14 @@ namespace NuGet.Configuration.Test
             settings.SetValue("SectionName", "keyTwo", "valueTwo");
 
             // Assert
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
         }
 
         [Fact]
@@ -406,12 +408,13 @@ namespace NuGet.Configuration.Test
             settings.SetValue("SectionName", "key", "NewValue");
 
             // Assert
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""NewValue"" />
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
         }
 
         [Fact]
@@ -481,7 +484,7 @@ namespace NuGet.Configuration.Test
             settings.SetValues("NewSectionName", values);
 
             // Assert
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
@@ -489,7 +492,8 @@ namespace NuGet.Configuration.Test
   <NewSectionName>
     <add key=""key"" value=""value"" />
   </NewSectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -512,13 +516,14 @@ namespace NuGet.Configuration.Test
             settings.SetValues("SectionName", values);
 
             // Assert
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -542,12 +547,13 @@ namespace NuGet.Configuration.Test
             settings.SetValues("SectionName", values);
 
             // Assert
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""NewValue"" />
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -572,14 +578,15 @@ namespace NuGet.Configuration.Test
             settings.SetValues("SectionName", values);
 
             // Assert
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""Value"" />
     <add key=""key1"" value=""Value1"" />
     <add key=""key2"" value=""Value2"" />
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -600,8 +607,7 @@ namespace NuGet.Configuration.Test
             settings.SetNestedValues("SectionName", "MyKey", values);
 
             // Assert
-            Assert.Equal(
-@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <MyKey>
@@ -609,7 +615,8 @@ namespace NuGet.Configuration.Test
       <add key=""key2"" value=""Value2"" />
     </MyKey>
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -636,8 +643,7 @@ namespace NuGet.Configuration.Test
             settings.SetNestedValues("SectionName", "MyKey2", values);
 
             // Assert
-            Assert.Equal(
-@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <MyKey>
@@ -649,7 +655,8 @@ namespace NuGet.Configuration.Test
       <add key=""key4"" value=""Value4"" />
     </MyKey2>
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -676,8 +683,7 @@ namespace NuGet.Configuration.Test
             settings.SetNestedValues("SectionName", "MyKey", values);
 
             // Assert
-            Assert.Equal(
-@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <MyKey>
@@ -687,7 +693,8 @@ namespace NuGet.Configuration.Test
       <add key=""key4"" value=""Value4"" />
     </MyKey>
   </SectionName>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -779,7 +786,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             Assert.True(settings.DeleteValue("SectionName", "DeleteMe"));
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""keyNotToDelete"" value=""value"" />
@@ -787,7 +794,8 @@ namespace NuGet.Configuration.Test
   <SectionName2>
     <add key=""key"" value=""value"" />
   </SectionName2>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -845,12 +853,13 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             Assert.True(settings.DeleteSection("SectionName"));
-            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName2>
     <add key=""key"" value=""value"" />
   </SectionName2>
-</configuration>", ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+</configuration>";
+            Assert.Equal(RemovedLineEndings(result), ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -1381,9 +1390,14 @@ namespace NuGet.Configuration.Test
             {
                 using (var streamReader = new StreamReader(fs))
                 {
-                    return streamReader.ReadToEnd();
+                    return RemovedLineEndings(streamReader.ReadToEnd());
                 }
             }
+        }
+        // this method is for removing LineEndings for CI build
+        private string RemovedLineEndings(string result)
+        {
+            return result.Replace("\n", "").Replace("\r", "");
         }
 
         private void AssertEqualCollections(IList<SettingValue> actual, string[] expected)
