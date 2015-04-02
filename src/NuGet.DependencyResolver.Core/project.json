@@ -1,5 +1,6 @@
 ﻿{
     "version": "3.0.0-*",
+    "preprocess": "../../compiler/preprocess/*.cs",
     "dependencies": {
         "NuGet.LibraryModel": "3.0.0-*",
         "NuGet.Frameworks": "3.0.0-*",

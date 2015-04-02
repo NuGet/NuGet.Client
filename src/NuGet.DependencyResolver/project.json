@@ -1,5 +1,6 @@
 ﻿{
     "version": "3.0.0-*",
+    "preprocess": "../../compiler/preprocess/*.cs",
     "dependencies": {
         "NuGet.Packaging": "3.0.0-*",
         "NuGet.DependencyResolver.Core": "3.0.0-*"

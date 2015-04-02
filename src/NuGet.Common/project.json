@@ -1,12 +1,24 @@
 ﻿{
     "version": "3.0.0-*",
     "shared": "*.cs",
+    "preprocess": "../../compiler/preprocess/*.cs",
     "dependencies": {
     },
 
     "frameworks": {
         "net45": { },
-        "dnx451": { },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": { "version": "", "type": "build" },
+                "System.Threading.Tasks": { "version": "", "type": "build" },
+                "System.Text.Encoding": { "version": "", "type": "build" },
+                "System.Linq": { "version": "", "type": "build" }
+            },
+            "dependencies": {
+                "Microsoft.Framework.Runtime.Roslyn.Interfaces": { "version": "1.0.0-*", "type": "build" },
+                "Newtonsoft.Json": { "version": "6.0.4", "type": "build" }
+            }
+        },
         "dnxcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-*"
