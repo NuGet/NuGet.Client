@@ -373,10 +373,10 @@ namespace NuGetVSExtension
                 OleMenuCommand generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
 
-                // menu command for Package Visualizer
-                CommandID visualizerCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdVisualizer);
-                OleMenuCommand visualizerCommand = new OleMenuCommand(ExecuteVisualizer, null, QueryStatusForVisualizer, visualizerCommandID);
-                _mcs.AddCommand(visualizerCommand);
+                //// menu command for Package Visualizer
+                //CommandID visualizerCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdVisualizer);
+                //OleMenuCommand visualizerCommand = new OleMenuCommand(ExecuteVisualizer, null, QueryStatusForVisualizer, visualizerCommandID);
+                //_mcs.AddCommand(visualizerCommand);
             }
         }
 
