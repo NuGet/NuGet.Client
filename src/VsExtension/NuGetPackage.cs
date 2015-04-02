@@ -373,7 +373,8 @@ namespace NuGetVSExtension
                 OleMenuCommand generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
 
-                //// menu command for Package Visualizer
+                // menu command for Package Visualizer
+                // Package Visualizer is not implemented using the new API yet, so comment out for 3.0-rc.
                 //CommandID visualizerCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdVisualizer);
                 //OleMenuCommand visualizerCommand = new OleMenuCommand(ExecuteVisualizer, null, QueryStatusForVisualizer, visualizerCommandID);
                 //_mcs.AddCommand(visualizerCommand);
