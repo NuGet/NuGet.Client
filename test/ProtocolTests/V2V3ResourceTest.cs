@@ -51,7 +51,7 @@ namespace V2V3ResourcesTest
             MetadataResource resource = repo.GetResource<MetadataResource>();
             Assert.True(resource != null);
             NuGetVersion latestVersion = await resource.GetLatestVersion("Nuget.core", true, true, CancellationToken.None);            
-            Assert.True(latestVersion.ToNormalizedString().Contains("2.8.3"));
+            Assert.True(latestVersion.ToNormalizedString().Contains("2.8.5"));
         }
 
         [Theory]
@@ -71,7 +71,7 @@ namespace V2V3ResourcesTest
 
             IEnumerable<UIPackageMetadata> packageMetadataList = resource.GetMetadata("Nuget.core", true, true, CancellationToken.None).Result;
             Assert.True(packageMetadataList != null);
-            Assert.True(packageMetadataList.Count() == 46);
+            Assert.Equal(47, packageMetadataList.Count());
         }
 
         [Theory]
@@ -109,9 +109,9 @@ namespace V2V3ResourcesTest
             //check if the resource is of type IVsSearch.
             SearchFilter filter = new SearchFilter(); //create a dummy filter.
             List<FrameworkName> fxNames = new List<FrameworkName>();
-            fxNames.Add(new FrameworkName(".NET Framework, Version=4.0"));
+            fxNames.Add(new FrameworkName(".NETFramework, Version=4.5"));
             filter.SupportedFrameworks = fxNames.Select(e => e.ToString());
-            string SearchTerm = "Elmah";
+            string SearchTerm = "dotnetrdf";
             
             IEnumerable<UISearchMetadata> uiSearchResults = await resource.Search(SearchTerm, filter, 0, 100, new CancellationToken());
             var latestSearchResults = await latestResource.Search(SearchTerm, filter, 0, 100, CancellationToken.None);
@@ -151,8 +151,8 @@ namespace V2V3ResourcesTest
             SimpleSearchResource simpleSearch = repo.GetResource<SimpleSearchResource>();
             IEnumerable<SimpleSearchMetadata> simpleSearchResults = await simpleSearch.Search(SearchTerm, filter, 0, 100, new System.Threading.CancellationToken());
             //Check that exact search results are returned irrespective of search resource ( UI, powershell and commandline).
-            Assert.True(uiSearchResults.Count() == psSearchResults.Count());
-            Assert.True(psSearchResults.Count() == simpleSearchResults.Count());
+            Assert.Equal(uiSearchResults.Count(), psSearchResults.Count());
+            Assert.Equal(psSearchResults.Count(), simpleSearchResults.Count());
         }
 
         [Theory]
@@ -213,7 +213,7 @@ namespace V2V3ResourcesTest
         {
            
             List<PackageIdentity> packages = new List<PackageIdentity>();        
-            packages.Add(new PackageIdentity("Nuget.core", new NuGetVersion("2.8.3")));
+            packages.Add(new PackageIdentity("Nuget.core", new NuGetVersion("2.8.5")));
             packages.Add(new PackageIdentity("Nuget.core", new NuGetVersion("2.5.0")));
 
             //create a local package source by downloading the specific packages from remote feed.
@@ -235,7 +235,7 @@ namespace V2V3ResourcesTest
            //check if UIPackageMetadata works fine.
             IEnumerable<UIPackageMetadata> packageMetadataList =  resource.GetMetadata("Nuget.core", true, true, CancellationToken.None).Result;
             Assert.True(packageMetadataList != null);
-            Assert.True(packageMetadataList.Count() == 2);
+            Assert.Equal(3, packageMetadataList.Count());
             Assert.True(packageMetadataList.All(item => item.Tags.Contains("nuget")));
             Assert.True(packageMetadataList.All(item => item.RequireLicenseAcceptance.Equals(false)));
             Assert.True(packageMetadataList.All(item => item.ProjectUrl.ToString().Equals("http://nuget.codeplex.com/")));           
@@ -251,7 +251,7 @@ namespace V2V3ResourcesTest
            //Check if metadata resource works fine.
             MetadataResource metadataResource = repo.GetResource<MetadataResource>();
             NuGetVersion latestVersion = await  metadataResource.GetLatestVersion("Nuget.core", true, false, CancellationToken.None);
-            Assert.True(latestVersion.ToNormalizedString().Contains("2.8.3"));
+            Assert.True(latestVersion.ToNormalizedString().Contains("2.8.5"));
         }
 
        [Theory]

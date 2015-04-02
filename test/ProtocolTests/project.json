@@ -9,8 +9,7 @@
 		"NuGet.Protocol.VisualStudio": "3.0.0-*"
 	},
 	"commands": {
-		"testDisabled": "xunit.runner.aspnet",
-		"_comment": "Temporarily disable tests. To add back, add \"test\": \"xunit.runner.kre\""
+		"test": "xunit.runner.aspnet"
 		},
 		"frameworks": {
 			"dnx451": { }

@@ -70,7 +70,7 @@ namespace NuGet.Protocol.Core.v2
             return await Task.Run(() =>
                 // year check workaround for p.Listed showing as False for online packages
                 V2Client.FindPackagesById(packageId).Where(p => includeUnlisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
-                .Select(p => new NuGetVersion(p.Version.Version, p.Version.SpecialVersion))
+                .Select(p => V2Utilities.SafeToNuGetVer(p.Version))
                 .Where(v => includePrerelease || !v.IsPrerelease).ToArray());
         }
 

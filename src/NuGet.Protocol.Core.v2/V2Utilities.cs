@@ -65,10 +65,9 @@ namespace NuGet.Protocol.Core.v2
             {
                 return null;
             }
-            return new NuGetVersion(
-                semanticVersion.Version,
-                semanticVersion.SpecialVersion);
-        }
 
+            // Parse using the original version string to support non-normalized scenarios.
+            return NuGetVersion.Parse(semanticVersion.ToString());
+        }
     }
 }

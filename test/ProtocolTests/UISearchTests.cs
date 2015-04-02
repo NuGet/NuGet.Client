@@ -28,7 +28,7 @@ namespace Client.V3Test
             Assert.True(results[0].Versions.Count() > 3);
 
             Assert.Equal("Newtonsoft.Json", results[1].Identity.Id);
-            Assert.Equal("jQuery", results[2].Identity.Id);
+            Assert.Equal("Microsoft.AspNet.Mvc", results[2].Identity.Id);
 
             // Null for now
             //Assert.True(first.LatestPackageMetadata.Description.Length > 10);
