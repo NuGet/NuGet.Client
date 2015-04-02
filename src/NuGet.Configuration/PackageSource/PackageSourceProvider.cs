@@ -90,7 +90,7 @@ namespace NuGet.Configuration
         {
             var sources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var settingsValue = new List<SettingValue>();
-            IList<SettingValue> values = Settings.GetSettingValues(ConfigurationContants.PackageSources);
+            IList<SettingValue> values = Settings.GetSettingValues(ConfigurationContants.PackageSources, isPath: true);
             var machineWideSourcesCount = 0;
 
             if (values != null && values.Any())
@@ -131,16 +131,16 @@ namespace NuGet.Configuration
                 // get list of disabled packages
                 var disabledSetting = Settings.GetSettingValues(ConfigurationContants.DisabledPackageSources) ?? Enumerable.Empty<SettingValue>();
 
-                Dictionary<string, SettingValue> disabledSources = new Dictionary<string, SettingValue>();
+                Dictionary<string, SettingValue> disabledSources = new Dictionary<string, SettingValue>(StringComparer.OrdinalIgnoreCase);
                 foreach (var setting in disabledSetting)
                 {
-                    if (disabledSources.ContainsKey(setting.Key.ToLower()))
+                    if (disabledSources.ContainsKey(setting.Key))
                     {
-                        disabledSources[setting.Key.ToLower()] = setting;
+                        disabledSources[setting.Key] = setting;
                     }
                     else
                     {
-                        disabledSources.Add(setting.Key.ToLower(), setting);
+                        disabledSources.Add(setting.Key, setting);
                     }
                 }
                 loadedPackageSources = settingsValue.
@@ -369,13 +369,14 @@ namespace NuGet.Configuration
 
             foreach (PackageSource packageSource in _providerDefaultPrimarySources)
             {
-                packageSource.IsEnabled = (areProviderDefaultSourcesEnabled == true) ? areProviderDefaultSourcesEnabled : packageSource.IsEnabled;
+                packageSource.IsEnabled = areProviderDefaultSourcesEnabled;
                 packageSource.IsOfficial = true;
             }
 
             //Mark secondary sources as official but not enable them
             foreach (PackageSource secondaryPackageSource in _providerDefaultSecondarySources)
             {
+                secondaryPackageSource.IsEnabled = false;
                 secondaryPackageSource.IsOfficial = true;
             }
         }
