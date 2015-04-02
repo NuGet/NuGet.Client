@@ -20,7 +20,7 @@ namespace PowerShellGet.Tests
         {
             Dictionary<string, string> responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexJson);
-            responses.Add("https://api-v3search-0.nuget.org/query?q=test&skip=0&take=10&includePrerelease=false", JsonData.ExamplePSMetadata);
+            responses.Add("https://api-v3search-0.nuget.org/query?q=test&skip=0&take=10&prerelease=false", JsonData.ExamplePSMetadata);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetPowerShell(), responses);
 
@@ -63,7 +63,7 @@ namespace PowerShellGet.Tests
         {
             Dictionary<string, string> responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexJson);
-            responses.Add("https://api-v3search-0.nuget.org/query?q=test&skip=0&take=10&includePrerelease=false", JsonData.NonPSMetadata);
+            responses.Add("https://api-v3search-0.nuget.org/query?q=test&skip=0&take=10&prerelease=false", JsonData.NonPSMetadata);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetPowerShell(), responses);
 

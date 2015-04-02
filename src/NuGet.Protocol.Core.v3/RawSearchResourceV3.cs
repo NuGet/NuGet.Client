@@ -46,7 +46,7 @@ namespace NuGet.Protocol.Core.v3
                     "q=" + searchTerm +
                     "&skip=" + skip.ToString() +
                     "&take=" + take.ToString() +
-                    "&includePrerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
+                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
                 if (filters.IncludeDelisted)
                 {
                     queryString += "&includeDelisted=true";
