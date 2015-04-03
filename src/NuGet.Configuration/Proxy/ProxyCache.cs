@@ -85,7 +85,7 @@ namespace NuGet.Configuration
         }
 
 #if !BOOTSTRAPPER
-        internal WebProxy GetUserConfiguredProxy()
+        public WebProxy GetUserConfiguredProxy()
         {
             // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy_user, http_proxy_password
             var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.HostKey);
