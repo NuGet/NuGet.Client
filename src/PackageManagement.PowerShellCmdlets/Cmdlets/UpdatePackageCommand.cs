@@ -243,7 +243,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // If package Id exists in Packages folder but is not actually installed to the current project, throw.
             if (installedPackage == null)
             {
-                Log(MessageLevel.Error, string.Format(Resources.PackageNotInstalledInAnyProject, Id));
+                Log(MessageLevel.Info, string.Format(Resources.Cmdlet_PackageNotInstalled, Id, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
             else
             {
@@ -273,15 +273,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         // Update-Package Id
                         NormalizePackageId(project);
-                        NuGetVersion latestVersion = PowerShellCmdletsUtility.GetLastestVersionForPackageId(ActiveSourceRepository, Id, project, _allowPrerelease);
-                        if (latestVersion > installedPackage.PackageIdentity.Version)
-                        {
-                            await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
-                        }
-                        else
-                        {
-                            Log(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
-                        }
+                        await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
                     }
                 }
             }
