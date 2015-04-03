@@ -53,8 +53,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                string envValue = PathValidator.SafeTrim(_environmentReader.GetEnvironmentVariable(EnvironmentVariableName));
-                return IsGrantedInSettings || IsSet(envValue);
+                string envValue = _environmentReader.GetEnvironmentVariable(EnvironmentVariableName);
+
+                return IsGrantedInSettings || IsSet(envValue, false);
             }
         }
 
@@ -65,21 +66,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 string settingsValue = _settings.GetValue(PackageRestoreSection, PackageRestoreConsentKey);
                 if (String.IsNullOrWhiteSpace(settingsValue))
                 {
-                    settingsValue = _configurationDefaults.DefaultPackageRestoreConsent;
-                }
-                settingsValue = PathValidator.SafeTrim(settingsValue);
-
-                if (String.IsNullOrEmpty(settingsValue))
-                {
-                    // default value of user consent is true.
-                    return true;
+                    settingsValue = _configurationDefaults.DefaultPackageRestoreConsent ?? string.Empty;
                 }
 
-                return IsSet(settingsValue);
+                return IsSet(settingsValue, true);
             }
             set
             {
-                _settings.SetValue(PackageRestoreSection, PackageRestoreConsentKey, value.ToString());
+                _settings.SetValue(PackageRestoreSection, PackageRestoreConsentKey, value.ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -88,25 +82,31 @@ namespace NuGet.PackageManagement.VisualStudio
             get
             {
                 string settingsValue = _settings.GetValue(PackageRestoreSection, PackageRestoreAutomaticKey);
-                if (String.IsNullOrWhiteSpace(settingsValue))
-                {
-                    return IsGrantedInSettings;
-                }
-                settingsValue = PathValidator.SafeTrim(settingsValue);
-                return IsSet(settingsValue);
+
+                return IsSet(settingsValue, IsGrantedInSettings);
             }
             set
             {
-                _settings.SetValue(PackageRestoreSection, PackageRestoreAutomaticKey, value.ToString());
+                _settings.SetValue(PackageRestoreSection, PackageRestoreAutomaticKey, value.ToString(CultureInfo.InvariantCulture));
             }
         }
 
-        private static bool IsSet(string value)
+        private static bool IsSet(string value, bool defaultValue)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return defaultValue;
+            }
+
+            value = value.Trim();
+
             bool boolResult;
             int intResult;
-            return ((Boolean.TryParse(value, out boolResult) && boolResult) ||
+
+            var result = ((Boolean.TryParse(value, out boolResult) && boolResult) ||
                    (Int32.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
+
+            return result;
         }
     }
 }
