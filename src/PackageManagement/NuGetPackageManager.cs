@@ -625,7 +625,8 @@ namespace NuGet.PackageManagement
             {
                 string projectName;
                 nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out projectName);
-                throw new InvalidOperationException(String.Format(NuGet.ProjectManagement.Strings.PackageAlreadyExistsInProject, packageIdentity, projectName ?? String.Empty));
+                string alreadyInstalledMessage = String.Format(NuGet.ProjectManagement.Strings.PackageAlreadyExistsInProject, packageIdentity, projectName ?? String.Empty);
+                throw new InvalidOperationException(alreadyInstalledMessage, new PackageAlreadyInstalledException(alreadyInstalledMessage));
             }
 
             List<NuGetProjectAction> nuGetProjectActions = new List<NuGetProjectAction>();
