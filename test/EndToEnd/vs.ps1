@@ -253,7 +253,7 @@ function New-JavaScriptApplication
 
     try 
     {
-        if ($dte.Version -eq '12.0' -or $dte.Version -eq '14.0')
+        if ($dte.Version -eq '12.0')
         {
             $SolutionFolder | New-Project WinJSBlue $ProjectName
         }
