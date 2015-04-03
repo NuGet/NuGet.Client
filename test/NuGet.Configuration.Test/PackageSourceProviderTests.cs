@@ -582,7 +582,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("awesomesource", savedSettingValues[2].Value);
         }
 
-        [Fact]
+        
         public void SavePackageSourcesTest()
         {
             // Arrange
