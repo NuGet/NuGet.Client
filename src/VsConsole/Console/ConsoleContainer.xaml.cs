@@ -11,12 +11,12 @@ namespace NuGetConsole
     /// </summary>
     public partial class ConsoleContainer : UserControl
     {
-        public ConsoleContainer(IProductUpdateService productUpdateService, IPackageRestoreManager packageRestoreManager)
+        public ConsoleContainer(ISolutionManager solutionManager, IProductUpdateService productUpdateService, IPackageRestoreManager packageRestoreManager)
         {
             InitializeComponent();
 
             RootLayout.Children.Add(new ProductUpdateBar(productUpdateService));
-            RootLayout.Children.Add(new PackageRestoreBar(packageRestoreManager));
+            RootLayout.Children.Add(new PackageRestoreBar(solutionManager, packageRestoreManager));
 
             // Set DynamicResource binding in code 
             // The reason we can't set it in XAML is that the VsBrushes class come from either 

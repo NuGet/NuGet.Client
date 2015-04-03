@@ -189,6 +189,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet package restore canceled..
+        /// </summary>
+        internal static string PackageRestoreCanceled {
+            get {
+                return ResourceManager.GetString("PackageRestoreCanceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet Package restore failed for project {0}: {1}..
         /// </summary>
         internal static string PackageRestoreFailedForProject {
