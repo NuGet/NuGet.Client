@@ -1149,6 +1149,80 @@ namespace NuGet.Configuration.Test
             AssertPackageSource(values[2], "three", "threesource", true);
         }
 
+        // Test that a source added in a high priority config file is not 
+        // disabled by <disabledPackageSources> in a low priority file.
+        [Fact]
+        public void HighPrioritySourceNotDisabled()
+        {
+            // Arrange
+            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+            var configContent1 = @"<configuration>
+    <disabledPackageSources>
+        <add key='a' value='true' />
+    </disabledPackageSources>
+</configuration>";
+            var configContent2 = @"<configuration>
+    <packageSources>
+        <add key='a' value='http://a' />
+    </packageSources>
+</configuration>";
+            TestFilesystemUtility.CreateConfigurationFile("nuget.config",Path.Combine(mockBaseDirectory,@"a\b"), configContent1);
+            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent2);
+
+            var settings = Settings.LoadDefaultSettings(
+                Path.Combine(mockBaseDirectory, @"a\b\c"),
+                configFileName: null,
+                machineWideSettings: null);
+
+            var provider = CreatePackageSourceProvider(settings);
+            // Act
+            var values = provider.LoadPackageSources().ToList();
+
+            // Assert
+            Assert.Equal(1, values.Count);
+            Assert.True(values[0].IsEnabled);
+            Assert.Equal("a", values[0].Name);
+            Assert.Equal("http://a", values[0].Source);
+        }
+
+        // Test that a source added in a low priority config file is disabled
+        // if it's listed in <disabledPackageSources> in a high priority file.
+        [Fact]
+        public void LowPrioritySourceDisabled()
+        {
+            // Arrange
+            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+            var configContent1 = @"<configuration>
+    <disabledPackageSources>
+        <add key='a' value='true' />
+    </disabledPackageSources>
+</configuration>";
+            var configContent2 = @"<configuration>
+    <packageSources>
+        <add key='a' value='http://a' />
+    </packageSources>
+</configuration>";
+            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent2);
+            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent1);
+
+
+            var settings = Settings.LoadDefaultSettings(
+                Path.Combine(mockBaseDirectory, @"a\b\c"),
+                configFileName: null,
+                machineWideSettings: null);
+
+            var provider = CreatePackageSourceProvider(settings);
+
+            // Act
+            var values = provider.LoadPackageSources().ToList();
+
+            // Assert
+            Assert.Equal(1, values.Count);
+            Assert.False(values[0].IsEnabled);
+            Assert.Equal("a", values[0].Name);
+            Assert.Equal("http://a", values[0].Source);
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             StringBuilder nugetConfigBaseString = new StringBuilder();
