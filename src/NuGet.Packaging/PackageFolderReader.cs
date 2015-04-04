@@ -33,7 +33,7 @@ namespace NuGet.Packaging
         /// </summary>
         public override Stream GetNuspec()
         {
-            FileInfo nuspecFile = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly).SingleOrDefault();
+            FileInfo nuspecFile = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
 
             if (nuspecFile == null)
             {

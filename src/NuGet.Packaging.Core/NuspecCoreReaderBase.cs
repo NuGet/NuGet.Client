@@ -47,7 +47,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public string GetId()
         {
-            var node = MetadataNode.Elements(XName.Get(Id, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
+            var node = MetadataNode.Elements(XName.Get(Id, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : node.Value;
         }
 
@@ -56,7 +56,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public NuGetVersion GetVersion()
         {
-            var node = MetadataNode.Elements(XName.Get(Version, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
+            var node = MetadataNode.Elements(XName.Get(Version, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : NuGetVersion.Parse(node.Value);
         }
 
@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Core
                 if (_metadataNode == null)
                 {
                     // find the metadata node regardless of the NS, some legacy packages have the NS here instead of on package
-                    _metadataNode = _xml.Root.Elements().Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, Metadata)).SingleOrDefault();
+                    _metadataNode = _xml.Root.Elements().Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, Metadata)).FirstOrDefault();
 
                     if (_metadataNode == null)
                     {

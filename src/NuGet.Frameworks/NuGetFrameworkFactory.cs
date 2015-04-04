@@ -79,8 +79,8 @@ namespace NuGet.Frameworks
                 Version version = new Version(0, 0);
                 string profile = null;
 
-                string versionPart = parts.Where(s => s.IndexOf("Version=", StringComparison.OrdinalIgnoreCase) == 0).SingleOrDefault();
-                string profilePart = parts.Where(s => s.IndexOf("Profile=", StringComparison.OrdinalIgnoreCase) == 0).SingleOrDefault();
+                string versionPart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Version=", StringComparison.OrdinalIgnoreCase) == 0));
+                string profilePart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Profile=", StringComparison.OrdinalIgnoreCase) == 0));
 
                 if (!String.IsNullOrEmpty(versionPart))
                 {
@@ -96,6 +96,14 @@ namespace NuGet.Frameworks
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Creates a NuGetFramework from a folder name using the default mappings.
+        /// </summary>
+        public static NuGetFramework ParseFolder(string folderName)
+        {
+            return ParseFolder(folderName, DefaultFrameworkNameProvider.Instance);
         }
 
         /// <summary>
@@ -190,15 +198,21 @@ namespace NuGet.Frameworks
             switch (s)
             {
                 case "45":
+                case "4.5":
                     framework = FrameworkConstants.CommonFrameworks.Net45;
                     break;
                 case "40":
+                case "4.0":
+                case "4":
                     framework = FrameworkConstants.CommonFrameworks.Net4;
                     break;
                 case "35":
+                case "3.5":
                     framework = FrameworkConstants.CommonFrameworks.Net35;
                     break;
                 case "20":
+                case "2":
+                case "2.0":
                     framework = FrameworkConstants.CommonFrameworks.Net2;
                     break;
             }
@@ -357,6 +371,16 @@ namespace NuGet.Frameworks
             }
 
             return framework != null;
+        }
+
+        private static string SingleOrDefaultSafe(IEnumerable<string> items)
+        {
+            if (items.Count() == 1)
+            {
+                return items.Single();
+            }
+
+            return null;
         }
     }
 }

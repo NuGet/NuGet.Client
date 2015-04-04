@@ -32,17 +32,19 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<NuGetFramework> GetSupportedFrameworks()
         {
-            var libFrameworks = GetLibItems().Select(g => g.TargetFramework).Where(tf => !tf.IsUnsupported).Distinct(NuGetFramework.Comparer);
+            HashSet<NuGetFramework> frameworks = new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer());
 
-            // TODO: improve this
-            if (!libFrameworks.Any() && GetContentItems().Any())
-            {
-                return new NuGetFramework[] { NuGetFramework.AgnosticFramework };
-            }
-            else
-            {
-                return libFrameworks;
-            }
+            frameworks.UnionWith(GetLibItems().Select(g => g.TargetFramework));
+
+            frameworks.UnionWith(GetBuildItems().Select(g => g.TargetFramework));
+
+            frameworks.UnionWith(GetContentItems().Select(g => g.TargetFramework));
+
+            frameworks.UnionWith(GetToolItems().Select(g => g.TargetFramework));
+
+            frameworks.UnionWith(GetFrameworkItems().Select(g => g.TargetFramework));
+
+            return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, new NuGetFrameworkSorter());
         }
 
         public IEnumerable<FrameworkSpecificGroup> GetFrameworkItems()
@@ -157,12 +159,12 @@ namespace NuGet.Packaging
             if (referenceGroups.Any())
             {
                 // the 'any' group from references, for pre2.5 nuspecs this will be the only group
-                var fallbackGroup = referenceGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).SingleOrDefault();
+                var fallbackGroup = referenceGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
 
                 foreach (FrameworkSpecificGroup fileGroup in fileGroups)
                 {
                     // check for a matching reference group to use for filtering
-                    var referenceGroup = referenceGroups.Where(g => g.TargetFramework.Equals(fileGroup.TargetFramework)).SingleOrDefault();
+                    var referenceGroup = referenceGroups.Where(g => g.TargetFramework.Equals(fileGroup.TargetFramework)).FirstOrDefault();
 
                     if (referenceGroup == null)
                     {
@@ -234,19 +236,8 @@ namespace NuGet.Packaging
 
             foreach (string path in GetFiles(folder))
             {
-                NuGetFramework framework = NuGetFramework.Parse(GetFrameworkFromPath(path, allowSubFolders));
-
-                // Content allows both random folder names and framework folder names.
-                // It's nearly impossible to tell the difference and stay consistent over
-                // time as the frameworks change, but to make the best attempt we can
-                // compare the folder name to the known frameworks
-                if (isContentFolder)
-                {
-                    if (!framework.IsSpecificFramework)
-                    {
-                        framework = NuGetFramework.AnyFramework;
-                    }
-                }
+                // Use the known framework or if the folder did not parse, use the Any framework and consider it a sub folder
+                NuGetFramework framework = GetFrameworkFromPath(path, allowSubFolders);
 
                 List<string> items = null;
                 if (!groups.TryGetValue(framework, out items))
@@ -258,9 +249,10 @@ namespace NuGet.Packaging
                 items.Add(path);
             }
 
-            foreach (NuGetFramework framework in groups.Keys)
+            // Sort the groups by framework, and the items by ordinal string compare to keep things deterministic
+            foreach (NuGetFramework framework in groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter()))
             {
-                yield return new FrameworkSpecificGroup(framework, groups[framework]);
+                yield return new FrameworkSpecificGroup(framework, groups[framework].OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
             }
 
             yield break;
@@ -292,24 +284,23 @@ namespace NuGet.Packaging
             return path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
         }
 
-        private static string GetFrameworkFromPath(string path, bool allowSubFolders = false)
+        private static NuGetFramework GetFrameworkFromPath(string path, bool allowSubFolders = false)
         {
-            string framework = PackagingConstants.AnyFramework;
+            NuGetFramework framework = NuGetFramework.AnyFramework;
 
             string[] parts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             // ignore paths that are too short, and ones that have additional sub directories
             if (parts.Length == 3 || (parts.Length > 3 && allowSubFolders))
             {
-                framework = parts[1].ToLowerInvariant();
+                string folderName = parts[1];
 
-                // TODO: add support for digit only frameworks
-                Match match = PackagingConstants.FrameworkRegex.Match(framework);
+                var parsedFramework = NuGetFramework.ParseFolder(folderName);
 
-                if (!match.Success)
+                if (parsedFramework.IsSpecificFramework)
                 {
-                    // this is not a framework and should be ignored
-                    framework = PackagingConstants.AnyFramework;
+                    // the folder name is a known target framework
+                    framework = parsedFramework;
                 }
             }
 

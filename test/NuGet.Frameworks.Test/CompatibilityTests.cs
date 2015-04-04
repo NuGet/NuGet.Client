@@ -148,7 +148,7 @@ namespace NuGet.Test
         {
             // dnxcore50 -> coreclr -> native
             var framework1 = NuGetFramework.Parse("dnxcore50");
-            var framework2 = NuGetFramework.Parse("native");
+            var framework2 = NuGetFramework.Parse("core50");
 
             var compat = DefaultCompatibilityProvider.Instance;
 
@@ -214,14 +214,10 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("net45", "native")]
-        [InlineData("net", "native")]
-        [InlineData("dnx46", "native")]
-        [InlineData("dnx452", "native")]
+        [InlineData("dnx451", "net4")]
+        [InlineData("dnx451", "net451")]
         [InlineData("dnx451", "net45")]
         [InlineData("dnx451", "nfcore45")]
-        [InlineData("dnx451", "native")]
-        [InlineData("dnxcore50", "native")]
         public void Compatibility_OneWayMappings(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);

@@ -123,10 +123,7 @@ namespace NuGet.Packaging
 
                 string[] items = group.Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
-                if (items.Length > 0)
-                {
-                    yield return new FrameworkSpecificGroup(groupFramework, items);
-                }
+                yield return new FrameworkSpecificGroup(groupFramework, items);
             }
 
             // pre-2.5 flat list of references, this should only be used if there are no groups
@@ -146,18 +143,60 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetFrameworkReferenceGroups()
         {
+            var results = new List<FrameworkSpecificGroup>();
+
             string ns = Xml.Root.GetDefaultNamespace().NamespaceName;
+
+            var groups = new Dictionary<NuGetFramework, HashSet<string>>(new NuGetFrameworkFullComparer());
 
             foreach (var group in MetadataNode.Elements(XName.Get(FrameworkAssemblies, ns)).Elements(XName.Get(FrameworkAssembly, ns))
                 .GroupBy(n => GetAttributeValue(n, TargetFramework)))
             {
-                yield return new FrameworkSpecificGroup(group.Key, group.Select(n => GetAttributeValue(n, AssemblyName)).Where(n => !String.IsNullOrEmpty(n)).ToArray());
+                // Framework references may have multiple comma delimited frameworks
+                List<NuGetFramework> frameworks = new List<NuGetFramework>();
+
+                // Empty frameworks go under Any
+                if (String.IsNullOrEmpty(group.Key))
+                {
+                    frameworks.Add(NuGetFramework.AnyFramework);
+                }
+                else
+                {
+                    foreach (var fwString in group.Key.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        frameworks.Add(NuGetFramework.Parse(fwString.Trim()));
+                    }
+                }
+
+                // apply items to each framework
+                foreach (var framework in frameworks)
+                {
+                    HashSet<string> items = null;
+                    if (!groups.TryGetValue(framework, out items))
+                    {
+                        items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        groups.Add(framework, items);
+                    }
+
+                    // Merge items and ignore duplicates
+                    items.UnionWith(group.Select(item => GetAttributeValue(item, AssemblyName)).Where(item => !String.IsNullOrEmpty(item)));
+                }
             }
+
+            // Sort items to make this deterministic for the caller
+            foreach (var framework in groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter()))
+            {
+                var group = new FrameworkSpecificGroup(framework, groups[framework].OrderBy(item => item, StringComparer.OrdinalIgnoreCase));
+
+                results.Add(group);
+            }
+
+            return results;
         }
 
         public string GetLanguage()
         {
-            var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).SingleOrDefault();
+            var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : node.Value;
         }
 

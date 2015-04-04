@@ -11,13 +11,26 @@ namespace NuGet.Test
 {
     public class NuGetFrameworkParseTests
     {
+        [Fact]
+        public void NuGetFramework_Mixed()
+        {
+            string actual = NuGetFramework.Parse(".NETFramework3.5").GetShortFolderName();
+
+            Assert.Equal("net35", actual);
+        }
+
+        [Fact]
+        public void NuGetFramework_Decimals()
+        {
+            string actual = NuGetFramework.Parse("Win10.1.2.3").GetShortFolderName();
+
+            Assert.Equal("win10.1.2.3", actual);
+        }
+
         [Theory]
         [InlineData("11")]
         [InlineData("46")]
         [InlineData("30")]
-        [InlineData("4.5")]
-        [InlineData("4")]
-        [InlineData("2")]
         public void NuGetFramework_NumericUnsupported(string input)
         {
             // These frameworks are deprecated and unsupported
@@ -31,6 +44,12 @@ namespace NuGet.Test
         [InlineData("40", "net4")]
         [InlineData("35", "net35")]
         [InlineData("20", "net2")]
+        [InlineData("4.5", "net45")]
+        [InlineData("4", "net4")]
+        [InlineData("4.0", "net4")]
+        [InlineData("3.5", "net35")]
+        [InlineData("2", "net2")]
+        [InlineData("2.0", "net2")]
         public void NuGetFramework_Numeric(string input, string expected)
         {
             string actual = NuGetFramework.Parse(input).GetShortFolderName();
@@ -162,6 +181,10 @@ namespace NuGet.Test
         [Theory]
         [InlineData("net45", ".NETFramework, Version=v4.5")]
         [InlineData("net20", ".NETFramework, Version=v2.0")]
+        [InlineData("net40", ".NETFramework, Version=v4.0")]
+        [InlineData("net35", ".NETFramework, Version=v3.5")]
+        [InlineData("net40-full", ".NETFramework, Version=v4.0")]
+        [InlineData("net40-client", ".NETFramework, Version=v4.0, Profile=Client")]
         [InlineData("net", ".NETFramework, Version=v0.0")]
         [InlineData("net10.1.2.3", ".NETFramework, Version=v10.1.2.3")]
         [InlineData("net45-cf", ".NETFramework, Version=v4.5, Profile=CompactFramework")]

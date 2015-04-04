@@ -192,7 +192,7 @@ namespace NuGet.Packaging
         // Get an attribute that may or may not be present
         private static bool TryGetAttribute(XElement node, string name, out string value)
         {
-            var attribute = node.Attributes(XName.Get(name)).SingleOrDefault();
+            var attribute = node.Attributes(XName.Get(name)).FirstOrDefault();
 
             if (attribute != null && !String.IsNullOrEmpty(attribute.Value))
             {
