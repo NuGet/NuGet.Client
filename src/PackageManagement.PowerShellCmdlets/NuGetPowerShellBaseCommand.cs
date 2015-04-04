@@ -607,16 +607,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected override void StopProcessing()
+        protected override void EndProcessing()
         {
             IsExecuting = false;
             UnsubscribeEvents();
-            base.StopProcessing();
+            base.EndProcessing();
         }
 
         protected void UnsubscribeEvents()
         {
-            IsExecuting = false;
+
             if (_httpClientEvents != null)
             {
                 _httpClientEvents.SendingRequest -= OnSendingRequest;
