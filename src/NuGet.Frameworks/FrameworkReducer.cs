@@ -102,9 +102,20 @@ namespace NuGet.Frameworks
                 // Profile reduce
                 if (reduced.Count() > 1 && !reduced.Any(f => f.IsPCL))
                 {
+                    // Prefer the same framework and profile
+                    if (framework.HasProfile)
+                    {
+                        var sameProfile = reduced.Where(f => _fwNameComparer.Equals(framework, f)
+                            && StringComparer.OrdinalIgnoreCase.Equals(framework.Profile, f.Profile));
+
+                        if (sameProfile.Any())
+                        {
+                            reduced = sameProfile;
+                        }
+                    }
+
                     // Prefer frameworks without profiles
-                    // TODO: should we try to match against the profile of the input framework?
-                    if (reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
+                    if (reduced.Count() > 1 && reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
                     {
                         reduced = reduced.Where(f => !f.HasProfile);
                     }
@@ -121,9 +132,9 @@ namespace NuGet.Frameworks
                 // this should be a very rare occurrence
                 // at this point we are unable to decide between the remaining frameworks in any useful way
                 // just take the first one by rev alphabetical order if we can't narrow it down at all
-                if (nearest != null && reduced.Any())
+                if (nearest == null && reduced.Any())
                 {
-                    nearest = reduced.OrderByDescending(f => f.Framework, StringComparer.OrdinalIgnoreCase).ThenBy(f => f.GetHashCode()).First();
+                    nearest = reduced.OrderByDescending(f => f, new NuGetFrameworkSorter()).ThenBy(f => f.GetHashCode()).First();
                 }
             }
 
@@ -263,6 +274,7 @@ namespace NuGet.Frameworks
             reduced = pclToFrameworks.Where(pair =>
                 pair.Value.Contains(nearestProfileFramework, NuGetFramework.Comparer))
                 .Select(pair => pair.Key);
+
             return reduced;
         }
 
@@ -277,7 +289,10 @@ namespace NuGet.Frameworks
             // poorly formed and contains duplicates such as portable-win8+win81
             subFrameworks = Reduce(subFrameworks);
 
-            var currentPCLs = reduced.ToArray();
+            // Find all frameworks in all PCLs
+            var pclToFrameworks = ExplodePortableFrameworks(reduced);
+            IEnumerable<NuGetFramework> allPclFrameworks = pclToFrameworks.Values.SelectMany(f => f).Distinct(_fullComparer);
+
             var scores = new Dictionary<NuGetFramework, int>(NuGetFramework.Comparer);
 
             // find the nearest PCL for each framework
@@ -285,15 +300,23 @@ namespace NuGet.Frameworks
             {
                 Debug.Assert(!sub.IsPCL, "a PCL returned a PCL as its profile framework");
 
-                var nearestForSub = GetNearest(sub, currentPCLs);
+                // from all possible frameworks, find the best match
+                var nearestForSub = GetNearest(sub, allPclFrameworks);
 
-                if (!scores.ContainsKey(nearestForSub))
+                // +1 each framework containing the best match
+                foreach (var pair in pclToFrameworks)
                 {
-                    scores.Add(nearestForSub, 1);
-                }
-                else
-                {
-                    scores[nearestForSub]++;
+                    if (pair.Value.Contains(nearestForSub, _fullComparer))
+                    {
+                        if (!scores.ContainsKey(pair.Key))
+                        {
+                            scores.Add(pair.Key, 1);
+                        }
+                        else
+                        {
+                            scores[pair.Key]++;
+                        }
+                    }
                 }
             }
 

@@ -30,11 +30,10 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.Equal(4, expanded.Length);
+            Assert.Equal(3, expanded.Length);
             Assert.Equal(".NETFramework, Version=v4.5, Profile=Client", expanded[0].ToString());
             Assert.Equal(".NETFramework, Version=v4.5, Profile=Full", expanded[1].ToString());
             Assert.Equal("NETFrameworkCore, Version=v4.5", expanded[2].ToString());
-            Assert.Equal("native, Version=v0.0", expanded[3].ToString());
         }
 
         [Fact]
@@ -45,7 +44,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.Equal<int>(7, expanded.Length);
+            Assert.Equal<int>(6, expanded.Length);
         }
 
         [Fact]
@@ -56,8 +55,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.Equal(1, expanded.Length);
-            Assert.Equal("native, Version=v0.0", expanded[0].ToString());
+            Assert.Equal(0, expanded.Length);
         }
     }
 }

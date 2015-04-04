@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Core
 
         public virtual Stream GetNuspec()
         {
-            string path = GetFiles().Where(f => f.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
+            string path = GetFiles().Where(f => f.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
             if (String.IsNullOrEmpty(path))
             {

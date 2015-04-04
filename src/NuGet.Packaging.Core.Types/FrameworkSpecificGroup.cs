@@ -15,14 +15,15 @@ namespace NuGet.Packaging
     /// </summary>
     public class FrameworkSpecificGroup : IEquatable<FrameworkSpecificGroup>, IFrameworkSpecific
     {
+        private const string EmptyFolder = "/_._";
         private readonly NuGetFramework _targetFramework;
-        private readonly IEnumerable<string> _items;
+        private readonly string[] _items;
 
         public FrameworkSpecificGroup(string targetFramework, IEnumerable<string> items)
         {
             if (items == null)
             {
-                throw new ArgumentException("items");
+                throw new ArgumentNullException("items");
             }
 
             if (String.IsNullOrEmpty(targetFramework))
@@ -34,23 +35,26 @@ namespace NuGet.Packaging
                 _targetFramework = NuGetFramework.Parse(targetFramework);
             }
 
-            _items = items;
+            // Remove empty folder markers here
+            _items = items.Where(item => !item.EndsWith(EmptyFolder, StringComparison.Ordinal)).ToArray();
         }
 
         public FrameworkSpecificGroup(NuGetFramework targetFramework, IEnumerable<string> items)
         {
             if (targetFramework == null)
             {
-                throw new ArgumentException("framework");
+                throw new ArgumentNullException("framework");
             }
 
             if (items == null)
             {
-                throw new ArgumentException("items");
+                throw new ArgumentNullException("items");
             }
 
             _targetFramework = targetFramework;
-            _items = items;
+
+            // Remove empty folder markers here
+            _items = items.Where(item => !item.EndsWith(EmptyFolder, StringComparison.Ordinal)).ToArray();
         }
 
         /// <summary>

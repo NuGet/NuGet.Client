@@ -14,9 +14,5 @@ namespace NuGet.Packaging
         public const string AgnosticFramework = "agnostic";
 
         public const string TargetFrameworkPropertyKey = "targetframework";
-
-        // should this logic be taken out of packaging?
-        public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
-        public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*)*)?$", RegexFlags);
     }
 }

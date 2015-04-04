@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using HashCombiner = NuGet.Frameworks.HashCodeCombiner;
@@ -10,13 +11,13 @@ namespace NuGet.Frameworks
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
         private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
-        private readonly Dictionary<int, bool> _cache;
+        private readonly ConcurrentDictionary<int, bool> _cache;
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
             _mappings = mappings;
             _expander = new FrameworkExpander(mappings);
-            _cache = new Dictionary<int, bool>();
+            _cache = new ConcurrentDictionary<int, bool>();
         }
 
         /// <summary>
@@ -37,33 +38,13 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException("other");
             }
 
-            bool? result = null;
-
             // check the cache for a solution
             int cacheKey = GetCacheKey(framework, other);
 
-            lock (_cache)
+            bool? result = _cache.GetOrAdd(cacheKey, (key) =>
             {
-                bool cachedResult = false;
-                if (_cache.TryGetValue(cacheKey, out cachedResult))
-                {
-                    result = cachedResult;
-                }
-            }
-
-            if (result == null)
-            {
-                result = IsCompatibleCore(framework, other);
-
-                lock (_cache)
-                {
-                    // double check that the result hasn't been cached by another thread
-                    if (!_cache.ContainsKey(cacheKey))
-                    {
-                        _cache.Add(cacheKey, result == true);
-                    }
-                }
-            }
+                return IsCompatibleCore(framework, other) == true;
+            });
 
             return result == true;
         }

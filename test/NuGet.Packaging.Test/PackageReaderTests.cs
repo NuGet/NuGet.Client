@@ -14,6 +14,75 @@ namespace NuGet.Packaging.Test
     public class PackageReaderTests
     {
         [Fact]
+        public void PackageReader_LegacyFolders()
+        {
+            // Verify legacy folder names such as 40 and 35 parse to frameworks
+            var zip = TestPackages.GetZip(TestPackages.GetLegacyFolderPackage());
+
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                var groups = reader.GetReferenceItems().ToArray();
+
+                Assert.Equal(4, groups.Count());
+
+                Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
+
+                Assert.Equal(NuGetFramework.Parse("net35"), groups[1].TargetFramework);
+                Assert.Equal("lib/35/b.dll", groups[1].Items.ToArray()[0]);
+
+                Assert.Equal(NuGetFramework.Parse("net4"), groups[2].TargetFramework);
+                Assert.Equal("lib/40/test40.dll", groups[2].Items.ToArray()[0]);
+                Assert.Equal("lib/40/x86/testx86.dll", groups[2].Items.ToArray()[1]);
+
+                Assert.Equal(NuGetFramework.Parse("net45"), groups[3].TargetFramework);
+                Assert.Equal("lib/45/a.dll", groups[3].Items.ToArray()[0]);
+            }
+        }
+
+        [Fact]
+        public void PackageReader_NestedReferenceItemsMixed()
+        {
+            var zip = TestPackages.GetZip(TestPackages.GetLibEmptyFolderPackage());
+
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                var groups = reader.GetReferenceItems().ToArray();
+
+                Assert.Equal(3, groups.Count());
+
+                Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                Assert.Equal(2, groups[0].Items.Count());
+                Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
+                Assert.Equal("lib/x86/b.dll", groups[0].Items.ToArray()[1]);
+
+                Assert.Equal(NuGetFramework.Parse("net40"), groups[1].TargetFramework);
+                Assert.Equal(2, groups[1].Items.Count());
+                Assert.Equal("lib/net40/test40.dll", groups[1].Items.ToArray()[0]);
+                Assert.Equal("lib/net40/x86/testx86.dll", groups[1].Items.ToArray()[1]);
+
+                Assert.Equal(NuGetFramework.Parse("net45"), groups[2].TargetFramework);
+                Assert.Equal(0, groups[2].Items.Count());
+            }
+        }
+
+        // Verify empty target framework folders under lib are returned
+        [Fact]
+        public void PackageReader_EmptyLibFolder()
+        {
+            var zip = TestPackages.GetZip(TestPackages.GetLibEmptyFolderPackage());
+
+            using (PackageReader reader = new PackageReader(zip))
+            {
+                var groups = reader.GetReferenceItems().ToArray();
+
+                var emptyGroup = groups.Where(g => g.TargetFramework == NuGetFramework.ParseFolder("net45")).Single();
+
+                Assert.Equal(0, emptyGroup.Items.Count());
+            }
+        }
+
+        [Fact]
         public void PackageReader_NestedReferenceItems()
         {
             var zip = TestPackages.GetZip(TestPackages.GetLibSubFolderPackage());
@@ -167,22 +236,22 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Any, Version=v0.0", frameworks[0]);
                 Assert.Equal(".NETFramework, Version=v4.0", frameworks[1]);
                 Assert.Equal(".NETFramework, Version=v4.5", frameworks[2]);
-                Assert.Equal(frameworks.Length, 3);
+                Assert.Equal(3, frameworks.Length);
             }
         }
 
-        [Fact]
-        public void PackageReader_AgnosticFramework()
-        {
-            var zip = TestPackages.GetZip(TestPackages.GetLegacyContentPackage());
+        //[Fact]
+        //public void PackageReader_AgnosticFramework()
+        //{
+        //    var zip = TestPackages.GetZip(TestPackages.GetLegacyContentPackage());
 
-            using (PackageReader reader = new PackageReader(zip))
-            {
-                string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
+        //    using (PackageReader reader = new PackageReader(zip))
+        //    {
+        //        string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
 
-                Assert.Equal("Agnostic, Version=v0.0", frameworks[0]);
-                Assert.Equal(frameworks.Length, 1);
-            }
-        }
+        //        Assert.Equal("Agnostic, Version=v0.0", frameworks[0]);
+        //        Assert.Equal(frameworks.Length, 1);
+        //    }
+        //}
     }
 }

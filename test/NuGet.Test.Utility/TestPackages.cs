@@ -13,6 +13,36 @@ namespace NuGet.Test.Utility
             return new ZipArchive(file.OpenRead());
         }
 
+        public static FileInfo GetLegacyFolderPackage()
+        {
+            string file = Path.GetTempFileName() + ".nupkg";
+            FileInfo result = new FileInfo(file);
+
+            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("lib/a.dll", new byte[] { 0 });
+                zip.AddEntry("lib/35/b.dll", new byte[] { 0 });
+                zip.AddEntry("lib/40/test40.dll", new byte[] { 0 });
+                zip.AddEntry("lib/40/x86/testx86.dll", new byte[] { 0 });
+                zip.AddEntry("lib/45/a.dll", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>packageA</id>
+                                <version>2.0.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return result;
+        }
+
         public static FileInfo GetLegacyTestPackage()
         {
             string file = Path.GetTempFileName() + ".nupkg";
@@ -107,6 +137,47 @@ namespace NuGet.Test.Utility
             {
                 zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/x86/testx86.dll", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>packageA</id>
+                                <version>2.0.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                                <dependencies> 
+                                   <group>
+                                      <dependency id=""RouteMagic"" version=""1.1.0"" />
+                                   </group>
+                                   <group targetFramework=""net40"">
+                                      <dependency id=""jQuery"" />
+                                      <dependency id=""WebActivator"" />
+                                   </group>
+                                   <group targetFramework=""sl30"">
+                                   </group>
+                                </dependencies>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return result;
+        }
+
+        public static FileInfo GetLibEmptyFolderPackage()
+        {
+            string file = Path.GetTempFileName() + ".nupkg";
+            FileInfo result = new FileInfo(file);
+
+            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
+                zip.AddEntry("lib/net40/x86/testx86.dll", new byte[] { 0 });
+                zip.AddEntry("lib/a.dll", new byte[] { 0 });
+                zip.AddEntry("lib/x86/b.dll", new byte[] { 0 });
+                zip.AddEntry("lib/net45/_._", new byte[] { 0 });
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
