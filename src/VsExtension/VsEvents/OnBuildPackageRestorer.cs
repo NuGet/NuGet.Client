@@ -159,7 +159,7 @@ namespace NuGetVSExtension
             {
                 bool canceled = false;
                 Interlocked.Increment(ref CurrentCount);
-                
+
                 // The rate at which the packages are restored is much higher than the rate at which a wait dialog can be updated
                 // And, this event is raised by multiple threads
                 // So, only try to update the wait dialog if an update is not already in progress. Use the int 'WaitDialogUpdateGate' for this purpose
@@ -184,69 +184,62 @@ namespace NuGetVSExtension
         {
             _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
             var waitDialogFactory = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
-            waitDialogFactory.CreateInstance(out _waitDialog);            
+            waitDialogFactory.CreateInstance(out _waitDialog);
             var token = CancellationTokenSource.Token;
 
             try
             {
                 if (IsConsentGranted())
                 {
-                    if (scope == vsBuildScope.vsBuildScopeSolution || scope == vsBuildScope.vsBuildScopeBatch || scope == vsBuildScope.vsBuildScopeProject)
+                    TotalCount = (await PackageRestoreManager.GetMissingPackagesInSolution(token)).ToList().Count;
+                    if (TotalCount > 0)
                     {
-                        TotalCount = (await PackageRestoreManager.GetMissingPackagesInSolution(token)).ToList().Count;
-                        if (TotalCount > 0)
+                        if (_outputOptOutMessage)
                         {
-                            if (_outputOptOutMessage)
-                            {
-                                _waitDialog.StartWaitDialog(
-                                        Resources.DialogTitle,
-                                        Resources.RestoringPackages,
-                                        String.Empty,
-                                        varStatusBmpAnim: null,
-                                        szStatusBarText: null,
-                                        iDelayToShowDialog: 0,
-                                        fIsCancelable: true,
-                                        fShowMarqueeProgress: true);
-                                WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
-                                _outputOptOutMessage = false;
-                            }
+                            _waitDialog.StartWaitDialog(
+                                    Resources.DialogTitle,
+                                    Resources.RestoringPackages,
+                                    String.Empty,
+                                    varStatusBmpAnim: null,
+                                    szStatusBarText: null,
+                                    iDelayToShowDialog: 0,
+                                    fIsCancelable: true,
+                                    fShowMarqueeProgress: true);
+                            WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
+                            _outputOptOutMessage = false;
+                        }
 
-                            System.Threading.Tasks.Task waitDialogCanceledCheckTask = System.Threading.Tasks.Task.Run(() => 
-                                {
+                        System.Threading.Tasks.Task waitDialogCanceledCheckTask = System.Threading.Tasks.Task.Run(() =>
+                            {
                                     // Just create an extra task that can keep checking if the wait dialog was cancelled
                                     // If so, cancel the CancellationTokenSource
                                     bool canceled = false;
-                                    try
+                                try
+                                {
+                                    while (!canceled && CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested && _waitDialog != null)
                                     {
-                                        while (!canceled && CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested && _waitDialog != null)
-                                        {
-                                            _waitDialog.HasCanceled(out canceled);
+                                        _waitDialog.HasCanceled(out canceled);
                                             // Wait on the cancellation handle for 100ms to avoid checking on the wait dialog too frequently
                                             CancellationTokenSource.Token.WaitHandle.WaitOne(100);
-                                        }
-
-                                        CancellationTokenSource.Cancel();
                                     }
-                                    catch (Exception)
-                                    {
+
+                                    CancellationTokenSource.Cancel();
+                                }
+                                catch (Exception)
+                                {
                                         // Catch all and don't throw
                                         // There is a slight possibility that the _waitDialog was set to null by another thread right after the check for null
                                         // So, it could be null or disposed. Just ignore all errors
                                     }
-                                });
+                            });
 
-                            System.Threading.Tasks.Task whenAllTaskForRestorePackageTasks =
-                                System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject, token)));
+                        System.Threading.Tasks.Task whenAllTaskForRestorePackageTasks =
+                            System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject, token)));
 
-                            await System.Threading.Tasks.Task.WhenAny(whenAllTaskForRestorePackageTasks, waitDialogCanceledCheckTask);
-                            // Once all the tasks are completed, just cancel the CancellationTokenSource
-                            // This will prevent the wait dialog from getting updated
-                            CancellationTokenSource.Cancel();                            
-                        }
-                    }
-                    else
-                    {
-                        throw new NotImplementedException();
+                        await System.Threading.Tasks.Task.WhenAny(whenAllTaskForRestorePackageTasks, waitDialogCanceledCheckTask);
+                        // Once all the tasks are completed, just cancel the CancellationTokenSource
+                        // This will prevent the wait dialog from getting updated
+                        CancellationTokenSource.Cancel();
                     }
                 }
                 else
