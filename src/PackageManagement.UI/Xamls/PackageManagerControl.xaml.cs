@@ -362,7 +362,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (Model.Context.PackageRestoreManager != null)
             {
-                _restoreBar = new PackageRestoreBar(Model.Context.PackageRestoreManager);
+                _restoreBar = new PackageRestoreBar(Model.Context.SolutionManager, Model.Context.PackageRestoreManager);
                 _root.Children.Add(_restoreBar);
                 Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
             }

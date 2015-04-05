@@ -1,10 +1,11 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -13,12 +14,14 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Gets a value indicating whether the current solution is configured for Package Restore mode.
         /// </summary>
+        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
         bool IsCurrentSolutionEnabledForRestore { get; }
 
         /// <summary>
         /// Configures the current solution for Package Restore mode.
         /// </summary>
         /// <param name="fromActivation">if set to <c>false</c>, the method will not show any error message, and will not set package restore consent.</param>
+        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
         void EnableCurrentSolutionForRestore(bool fromActivation);
 
         /// <summary>
@@ -26,37 +29,53 @@ namespace NuGet.PackageManagement
         /// </summary>
         event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
 
+        /// <summary>
+        /// PackageRestoredEvent which is raised after a package is restored.
+        /// </summary>
         event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
 
-        Task<IEnumerable<PackageReference>> GetMissingPackagesInSolution(CancellationToken token);
+        /// <summary>
+        /// PackageRestoredEvent which is raised if a package restore failed.
+        /// </summary>
+        event EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent;
 
-        Task<IEnumerable<PackageReference>> GetMissingPackages(NuGetProject nuGetProject, CancellationToken token);
+        /// <summary>
+        /// Get the missing packages in the solution given the <paramref name="solutionDirectory"></paramref>.
+        /// </summary>
+        /// <returns>Returns a read-only dictionary of missing package references and the corresponding project names on which each missing package is installed.
+        /// </returns>
+        Task<MissingPackagesInfo> GetMissingPackagesInSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
         /// Checks the current solution if there is any package missing.
         /// </summary>
-        /// <returns></returns>
-        Task RaisePackagesMissingEventForSolution(CancellationToken token);
+        Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
-        /// Restores the missing packages for the current solution. Returns true if atleast one package was restored
+        /// Restores the missing packages for the current solution.
         /// </summary>
-        Task<bool> RestoreMissingPackagesInSolutionAsync(CancellationToken token);
+        /// <remarks>Best use case is the restore button that shows up in the UI or powershell when certain packages are missing</remarks>
+        /// <returns>Returns true if atleast one package was restored.</returns>
+        Task<bool> RestoreMissingPackagesInSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
-        /// Restores the missing packages for a project. Returns true if atleast one package was restored
+        /// Restores the missing packages for a project. Returns true if atleast one package was restored.
         /// </summary>
-        Task<bool> RestoreMissingPackagesAsync(NuGetProject nuGetProject, CancellationToken token);
+        /// <remarks>Best use case is 'nuget.exe restore packages.config'</remarks>
+        Task<bool> RestoreMissingPackagesAsync(string solutionDirectory, NuGetProject nuGetProject, CancellationToken token);
 
         /// <summary>
-        /// Restores the passed in missing packages. Returns true if atleast one package was restored
+        /// Restores the package references if they are missing
         /// </summary>
-        // TODO : Use IEnumerable<PackageIdentity> instead of IEnumerable<PackageReference>
-        Task<bool> RestoreMissingPackagesAsync(IEnumerable<PackageReference> packageReferences, CancellationToken token);
+        /// <param name="missingPackagesInfo">This parameter is the list of package referneces mapped to the list of project names a package is installed on. This is most likely obtained by calling GetMissingPackagesInSolutionAsync</param>
+        /// <remarks>Best use case is when GetMissingPackagesInSolutionAsync was already called, the result can be used in this method</remarks>
+        /// <returns>Returns true if at least one package is restored. Raised package restored failed event with the list of project names.</returns>
+        Task<bool> RestoreMissingPackagesAsync(string solutionDirectory,
+            MissingPackagesInfo missingPackagesInfo,
+            CancellationToken token);
     }
 
     /// <summary>
-    /// To be raised when package restore for 'Package' did not fail
     /// If 'Restored' is false, it means that the package was already restored
     /// If 'Restored' is true, the package was restored and successfully
     /// </summary>
@@ -66,6 +85,11 @@ namespace NuGet.PackageManagement
         public bool Restored { get; private set; }
         public PackageRestoredEventArgs(PackageIdentity packageIdentity, bool restored)
         {
+            if(packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
             Package = packageIdentity;
             Restored = restored;
         }

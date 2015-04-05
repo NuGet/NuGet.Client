@@ -28,6 +28,11 @@ namespace NuGet.PackageManagement
 
         public static string GetPackagesFolderPath(string solutionDirectory, ISettings settings)
         {
+            if (String.IsNullOrEmpty(solutionDirectory))
+            {
+                throw new ArgumentException(String.Format(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, solutionDirectory));
+            }
+
             if (settings == null)
             {
                 throw new ArgumentNullException("settings");
