@@ -203,15 +203,24 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
                                     if (frameworkComparer.Equals(currentFramework, targetFramework))
                                     {
-                                        foreach (JObject dependencyObj in dependencyGroupObj["dependencies"])
-                                        {
-                                            DependencyInfo dependencyInfo = new DependencyInfo();
-                                            dependencyInfo.Id = dependencyObj["id"].ToString();
-                                            dependencyInfo.Range = Utils.CreateVersionRange((string)dependencyObj["range"], range.IncludePrerelease);
-                                            dependencyInfo.RegistrationUri = dependencyObj["registration"].ToObject<Uri>();
+                                        JToken dependenciesObj = null;
 
-                                            packageInfo.Dependencies.Add(dependencyInfo);
+                                        // Packages with no dependencies have 'dependencyGroups' but no 'dependencies'
+                                        if (dependencyGroupObj.TryGetValue("dependencies", out dependenciesObj))
+                                        {
+                                            foreach (JObject dependencyObj in dependenciesObj)
+                                            {
+                                                DependencyInfo dependencyInfo = new DependencyInfo();
+                                                dependencyInfo.Id = dependencyObj["id"].ToString();
+                                                dependencyInfo.Range = Utils.CreateVersionRange((string)dependencyObj["range"], range.IncludePrerelease);
+                                                dependencyInfo.RegistrationUri = dependencyObj["registration"].ToObject<Uri>();
+
+                                                packageInfo.Dependencies.Add(dependencyInfo);
+                                            }
                                         }
+
+                                        // Take the first group that matches
+                                        break;
                                     }
                                 }
                             }
