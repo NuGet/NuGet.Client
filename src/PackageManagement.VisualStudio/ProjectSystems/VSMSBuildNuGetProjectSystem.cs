@@ -312,7 +312,10 @@ namespace NuGet.PackageManagement.VisualStudio
                             if (item != null)
                             {
                                 // Add the <HintPath> metadata item as a relative path
-                                item.SetMetadataValue("HintPath", referencePath);
+                                string projectPath = PathUtility.EnsureTrailingSlash(ProjectFullPath);
+                                string relativePath = PathUtility.GetRelativePath(projectPath, referencePath);
+
+                                item.SetMetadataValue("HintPath", relativePath);
 
                                 // Set <Private> to true
                                 item.SetMetadataValue("Private", "True");
