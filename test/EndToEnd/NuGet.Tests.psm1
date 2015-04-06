@@ -86,7 +86,9 @@ function global:Run-Test {
         [string]$Test,
         [parameter(ParameterSetName="File", Mandatory=$true, Position=1)]
         [string]$File,
-        [parameter(Position=1)]
+		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=1)]
+        [string]$Exclude,
+        [parameter(Position=2)]
         [bool]$LaunchResultsOnFailure=$true
     )
     
@@ -127,9 +129,16 @@ function global:Run-Test {
     }
 
     # Load all of the test scripts
-    Get-ChildItem $testPath -Filter $File | %{ 
+	if (!$Exclude) {
+        Get-ChildItem $testPath -Filter $File | %{ 
         . $_.FullName
-    } 
+		} 
+	}
+	else {
+	    Get-ChildItem $testPath -Exclude $Exclude | %{ 
+        . $_.FullName
+		} 
+	}
         
     # If no tests were specified just run all
     if(!$test) {
