@@ -25,17 +25,17 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PowerShellGet.Tests", "test
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Test.Utility", "test\Test.Utility\Test.Utility.xproj", "{5E68B169-168F-4EDC-98A7-2E1F9EB7505F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Versioning", "..\NuGet.Versioning\src\NuGet.Versioning\NuGet.Versioning.kproj", "{24E62AB7-64E4-4975-9417-883559D1BC19}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Versioning", "..\NuGet.Versioning\src\NuGet.Versioning\NuGet.Versioning.xproj", "{24E62AB7-64E4-4975-9417-883559D1BC19}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.ApiApps", "src\NuGet.Protocol.ApiApps\NuGet.Protocol.ApiApps.xproj", "{B53869A9-9E77-48EC-B601-4B78E53F9381}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Configuration", "..\NuGet.Configuration\src\NuGet.Configuration\NuGet.Configuration.kproj", "{0EEA201F-F4CB-4B1E-9462-2FE58C540513}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Configuration", "..\NuGet.Configuration\src\NuGet.Configuration\NuGet.Configuration.xproj", "{0EEA201F-F4CB-4B1E-9462-2FE58C540513}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApiApps.Tests", "test\ApiApps.Tests\ApiApps.Tests.xproj", "{5F08F85C-8F15-4EF1-8816-14B32AF98D07}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Core.Types", "..\NuGet.Packaging\src\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.kproj", "{46275450-3B62-4E89-8F7E-3FE2EE8513D2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Core.Types", "..\NuGet.Packaging\src\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.xproj", "{46275450-3B62-4E89-8F7E-3FE2EE8513D2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Frameworks", "..\NuGet.Packaging\src\NuGet.Frameworks\NuGet.Frameworks.kproj", "{9A9A9F26-597A-4FA6-A4F1-415063484D9C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Frameworks", "..\NuGet.Packaging\src\NuGet.Frameworks\NuGet.Frameworks.xproj", "{9A9A9F26-597A-4FA6-A4F1-415063484D9C}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Protocol.Core.v3.Tests", "test\Protocol.Core.v3.Tests\Protocol.Core.v3.Tests.xproj", "{61410428-A76E-4EAF-9CF6-7BE7DBF6A374}"
 EndProject
