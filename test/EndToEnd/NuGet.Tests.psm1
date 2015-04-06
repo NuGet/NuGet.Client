@@ -125,7 +125,7 @@ function global:Run-Test {
 
     if ($SourceNuGet -eq $null) 
     {
-        $SourceNuGet = "nuget.org"
+        $SourceNuGet = "api.nuget.org"
     }
 
     # Load all of the test scripts

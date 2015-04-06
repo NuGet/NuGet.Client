@@ -270,7 +270,9 @@ function Test-ZipPackageLoadsReleaseNotesAttribute {
     $p = Get-Package -ListAvailable -Source $context.RepositoryRoot -Filter ReleaseNotesPackage
 
     # Assert
-    Assert-AreEqual "This is a release note." $p.ReleaseNotes
+	# Starting NuGet 3.0, IPackage interface has been deprecated. 
+	# We are now returning IPowerShellPackage which does not contain a ReleaseNotes property. Hence updated the test.
+    Assert-AreEqual "ReleaseNotesPackage" $p.Id
 }
 
 function Test-GetPackagesWithNoUpdatesReturnPackagesWithIsUpdateNotSet {    
@@ -337,6 +339,7 @@ function Test-GetPackagesWithPrereleaseSwitchShowsPrereleasePackages {
     Assert-AreEqual "1.0.0" $packages[2].Version
 }
 
+# Starting NuGet 3.0, Get-Package is returning Versions property which contains a list of Versions.
 function Test-GetPackagesWithAllAndPrereleaseSwitchShowsAllPackages {
     param(
         $context
@@ -348,25 +351,15 @@ function Test-GetPackagesWithAllAndPrereleaseSwitchShowsAllPackages {
     # Assert
     Assert-AreEqual 3 $packages.Count
     Assert-AreEqual "PackageWithDependencyOnPrereleaseTestPackage" $packages[0].Id
-    Assert-AreEqual "1.0.0" $packages[0].Version[0]
-    
-    Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
-    Assert-AreEqual "1.0.0-a" $packages[1].Version[3]
+	Assert-AreEqual "1.0.0" $packages[0].Version
 
     Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
-    Assert-AreEqual "1.0.0-b" $packages[1].Version[2]
-
-    Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
-    Assert-AreEqual "1.0.0" $packages[1].Version[1]
-
-    Assert-AreEqual "PreReleaseTestPackage" $packages[1].Id
-    Assert-AreEqual "1.0.1-a" $packages[1].Version[0]
+    Assert-AreEqual "1.0.1-a 1.0.0 1.0.0-b 1.0.0-a" $packages[1].Versions
+	Assert-AreEqual "1.0.1-a" $packages[1].Version
 
     Assert-AreEqual "PreReleaseTestPackage.A" $packages[2].Id
-    Assert-AreEqual "1.0.0-a" $packages[2].Version[1]
-
-    Assert-AreEqual "PreReleaseTestPackage.A" $packages[2].Id
-    Assert-AreEqual "1.0.0" $packages[2].Version[0]
+	Assert-AreEqual "1.0.0 1.0.0-a" $packages[2].Versions
+    Assert-AreEqual "1.0.0" $packages[2].Version
 }
 
 function Test-GetPackageUpdatesDoNotReturnPrereleasePackagesIfFlagIsNotSpecified {
@@ -499,7 +492,7 @@ function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPac
     # Arrange
     $p = New-ClassLibrary
     
-    $p | Install-Package antlr -Version '3.1.1' -Source api.nuget.org
+    $p | Install-Package antlr -Version '3.1.1' -Source 'api.nuget.org'
     
     # Act
     $packages = @(Get-Package -updates -Source 'https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/')

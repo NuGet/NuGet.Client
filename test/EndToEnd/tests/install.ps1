@@ -1136,7 +1136,7 @@ function Test-PackageInstallAcceptsSourceName {
     $project = New-ConsoleApplication
     
     # Act
-    Install-Package FakeItEasy -Project $project.Name -Source 'v3.nuget.org' -Version 1.8.0
+    Install-Package FakeItEasy -Project $project.Name -Source 'api.nuget.org' -Version 1.8.0
     
     # Assert
     Assert-Reference $project Castle.Core
