@@ -1,6 +1,7 @@
+extern alias Legacy;
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
+
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -18,8 +20,6 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using Resx = NuGet.PackageManagement.UI.Resources;
@@ -927,6 +927,9 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
+
+            // Clean up optimized zips used by NuGet.Core as part of the V2 Protocol
+            Legacy.NuGet.OptimizedZipPackage.PurgeCache();
         }
 
         int IVsPersistSolutionOpts.LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
