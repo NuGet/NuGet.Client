@@ -2758,7 +2758,7 @@ function Test-InstallPackagesConfigLocal
 
     # Arrange
     $p = New-ClassLibrary
-	$pathToPackagesConfig = Join-Path $context.RepositoryPath "packages.config"
+    $pathToPackagesConfig = Join-Path $context.RepositoryRoot "InstallPackagesConfigLocal\packages.config"
 
     # Act
     $p | Install-Package $pathToPackagesConfig
@@ -2796,13 +2796,13 @@ function Test-InstallPackagesNupkgLocal
 
     # Arrange
     $p = New-ClassLibrary
-	$pathToPackagesNupkg = Join-Path $context.RepositoryPath "jQuery.2.0.2.nupkg"
+    $pathToPackagesNupkg = Join-Path $context.RepositoryRoot "PackageWithFolder.1.0.nupkg"
 
     # Act
     $p | Install-Package $pathToPackagesNupkg
 
     # Assert
-	Assert-Package $p jQuery 2.0.2
+    Assert-Package $p PackageWithFolder 1.0
 }
 
 # Tests that Install-Package -Force and Install-Package -Force -WhatIf works.
