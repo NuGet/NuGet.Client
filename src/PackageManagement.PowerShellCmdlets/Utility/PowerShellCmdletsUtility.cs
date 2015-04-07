@@ -144,7 +144,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Resources.Cmdlets_ErrorFindingUpdateVersion, identity.Id, ex.Message));
             }
 
-            return identity;
+            return safeUpdate;
         }
 
         /// <summary>

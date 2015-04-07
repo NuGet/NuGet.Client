@@ -273,7 +273,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         // Update-Package Id
                         NormalizePackageId(project);
-                        await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                        PackageIdentity update = GetPackageUpdate(installedPackage, project, _allowPrerelease, Safe.IsPresent, null, true, GetDependencyBehavior());
+                        await InstallPackageByIdentityAsync(project, update, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
                     }
                 }
             }
@@ -363,17 +364,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Return dependecy behavior for Update-Package command. Scenarios include Update-Package and Update-Package -Safe.
+        /// Return dependecy behavior for Update-Package command. 
         /// </summary>
         /// <returns></returns>
         protected override DependencyBehavior GetDependencyBehavior()
         {
-            // Return DependencyBehavior.HighestPatch for -Safe switch
-            if (Safe.IsPresent)
-            {
-                return DependencyBehavior.HighestPatch;
-            }
-
             // Return DependencyBehavior.Highest for Update-Package
             if (!_idSpecified && !Reinstall.IsPresent)
             {
