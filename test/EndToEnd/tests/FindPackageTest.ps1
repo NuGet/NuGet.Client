@@ -49,7 +49,7 @@ function Test-FindPackageByIdAndPrereleaseVersion {
     $packages = Find-Package TestPackage.AlwaysPrerelease
     
     # Assert 1
-	Assert-True $packages.Count -eq 0
+	Assert-Null $packages
 
 	# Act 2
     $packages = Find-Package TestPackage.AlwaysPrerelease -Pre

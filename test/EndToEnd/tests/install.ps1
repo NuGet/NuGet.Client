@@ -984,9 +984,13 @@ function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRo
     {
         $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone71"
     }
-    elseif ($dte.Version -eq "12.0" -or $dte.Version -eq "14.0")
+    elseif ($dte.Version -eq "12.0")
     {
         $profile = "WindowsPhone,Version=v8.0"
+    }
+	elseif ($dte.Version -eq "14.0")
+	{
+        $profile = "WindowsPhoneApp, Version=v8.1"
     }
 
     Assert-Throws { $p2 | Install-Package NuGet.Core -Version 1.4.20615.9012 } "Could not install package 'NuGet.Core 1.4.20615.9012'. You are trying to install this package into a project that targets '$Profile', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
