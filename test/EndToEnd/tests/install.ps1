@@ -2839,3 +2839,19 @@ function Test-InstallPackageUsingForceSwitch
     # Assert 2
 	Assert-Package $p jQuery 2.1.3
 }
+
+function Test-InstallPackageWithScriptAddImportFile
+{
+	param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+	#Act
+	$p | Install-Package Microsoft.Bcl.build -version 1.0.14
+	Build-Solution
+
+    # Assert
+    $errorlist = Get-Errors
+    Assert-AreEqual 0 $errorlist.Count
+}
