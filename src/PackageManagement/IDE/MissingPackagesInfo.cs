@@ -7,7 +7,7 @@ namespace NuGet.PackageManagement
     public class MissingPackagesInfo
     {
         internal static readonly MissingPackagesInfo Empty = new MissingPackagesInfo(new Dictionary<PackageReference, IReadOnlyCollection<string>>(new PackageReferenceComparer()));
-        internal Dictionary<PackageReference, IReadOnlyCollection<string>> InternalPackageReferences { get; }
+        internal Dictionary<PackageReference, IReadOnlyCollection<string>> InternalPackageReferences { get; private set; }
         public IReadOnlyDictionary<PackageReference, IReadOnlyCollection<string>> PackageReferences
         {
             get
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement
         {
             if(packageReferences == null)
             {
-                throw new ArgumentNullException(nameof(packageReferences));
+                throw new ArgumentNullException("packageReferences");
             }
 
             InternalPackageReferences = packageReferences;
