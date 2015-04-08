@@ -85,6 +85,8 @@
     <Compile Include="Context\IDEExecutionContext.cs" />
     <Compile Include="Context\UninstallationContext.cs" />
     <Compile Include="IDE\ICommonOperations.cs" />
+    <Compile Include="IDE\MissingPackagesInfo.cs" />
+    <Compile Include="IDE\PackageRestoreFailedEventArgs.cs" />
     <Compile Include="IDE\SimpleSolutionManager.cs" />
     <Compile Include="IDE\IPackageRestoreManager.cs" />
     <Compile Include="IDE\IProductUpdateService.cs" />

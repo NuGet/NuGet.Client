@@ -181,7 +181,7 @@
     <value>Restoring NuGet package {0}.</value>
   </data>
   <data name="SolutionDirectoryNotAvailable" xml:space="preserve">
-    <value>Unable to locate the solution directory. Please ensure that the solution has been saved.</value>
+    <value>Solution is not opened or not saved. Please ensure you have an open and saved solution.</value>
   </data>
   <data name="SolutionManagerNotAvailableForUninstall" xml:space="preserve">
     <value>Uninstall is not supported when SolutionManager is not available</value>

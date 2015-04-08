@@ -167,9 +167,9 @@ namespace Test.Utility
             ZipFile zipFile;
             FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
-            zipFile.AddEntry("tools/init.ps1", new byte[] { 0 });
-            zipFile.AddEntry("tools/net45/install.ps1", new byte[] { 0 });
-            zipFile.AddEntry("tools/net45/uninstall.ps1", new byte[] { 0 });
+            zipFile.AddEntry("tools/InIT.ps1", new byte[] { 0 });
+            zipFile.AddEntry("tools/net45/inSTAll.ps1", new byte[] { 0 });
+            zipFile.AddEntry("tools/net45/UNinSTAll.ps1", new byte[] { 0 });
             SetSimpleNuspec(zipFile, packageId, packageVersion);
             zipFile.Save();
 

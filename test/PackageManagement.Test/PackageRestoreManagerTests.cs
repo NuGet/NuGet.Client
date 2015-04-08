@@ -1,15 +1,16 @@
-﻿using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.PackageManagement;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using System.Threading;
 
 namespace NuGet.Test
 {
@@ -48,21 +49,21 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
-            
-            // Act            
-            var packageReferencesFromSolution = (await packageRestoreManager.GetPackageReferencesFromSolution(token)).ToList();
-            var missingPackagesFromSolution = (await packageRestoreManager.GetMissingPackagesInSolution(token)).ToList();
 
-            Assert.Equal(2, packageReferencesFromSolution.Count);
-            Assert.Equal(0, missingPackagesFromSolution.Count);
+            // Act
+            var packageReferencesFromSolution = await packageRestoreManager.GetPackagesInfoSolutionAsync(token);
+            var missingPackagesFromSolution = await packageRestoreManager.GetMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, token);
+
+            Assert.Equal(1, packageReferencesFromSolution.PackageReferences.Count);
+            Assert.Equal(0, missingPackagesFromSolution.PackageReferences.Count);
 
             // Delete packages folder
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
-            packageReferencesFromSolution = (await packageRestoreManager.GetPackageReferencesFromSolution(token)).ToList();
-            missingPackagesFromSolution = (await packageRestoreManager.GetMissingPackagesInSolution(token)).ToList();
-            Assert.Equal(2, packageReferencesFromSolution.Count);
-            Assert.Equal(1, missingPackagesFromSolution.Count);
+            packageReferencesFromSolution = await packageRestoreManager.GetPackagesInfoSolutionAsync(token);
+            missingPackagesFromSolution = await packageRestoreManager.GetMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, token);
+            Assert.Equal(1, packageReferencesFromSolution.PackageReferences.Count);
+            Assert.Equal(1, missingPackagesFromSolution.PackageReferences.Count);
         }
 
         [Fact]
@@ -106,7 +107,7 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None);
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, CancellationToken.None);
 
             Assert.Equal(1, restoredPackages.Count);
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
@@ -147,7 +148,7 @@ namespace NuGet.Test
             };
 
             // Act
-            await packageRestoreManager.RaisePackagesMissingEventForSolution(token);
+            await packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
 
             // Assert
             Assert.Equal(1, packagesMissingEventCount);
@@ -157,7 +158,7 @@ namespace NuGet.Test
             Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
 
             // Act
-            await packageRestoreManager.RaisePackagesMissingEventForSolution(token);
+            await packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
 
             // Assert
             Assert.Equal(2, packagesMissingEventCount);
@@ -196,9 +197,119 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None);
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, CancellationToken.None);
 
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
+        }
+
+        /// <summary>
+        /// This test installs 2 packages that can be restored into projectA and projectB
+        /// Install 1 test package which cannot be restored into projectB and projectC
+        /// Another one that cannot be restored into projectA and projectC
+        /// </summary>
+        [Fact]
+        public async Task Test_PackageRestoreFailure_WithRaisedEvents()
+        {
+            // Arrange
+            var testSolutionManager = new TestSolutionManager();
+            var projectA = testSolutionManager.AddNewMSBuildProject("projectA");
+            var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
+            var projectC = testSolutionManager.AddNewMSBuildProject("projectC");
+
+            var jQuery144 = Packages[0];
+            var jQueryValidation = Packages[2];
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSettings = NullSettings.Instance;
+            var resolutionContext = new ResolutionContext();
+            var token = CancellationToken.None;
+
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+
+            await nuGetPackageManager.InstallPackageAsync(projectA, jQueryValidation,
+                resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+            await nuGetPackageManager.InstallPackageAsync(projectB, jQueryValidation,
+                resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var testPackage1 = new PackageIdentity("package1A", new NuGetVersion("1.0.0"));
+            var testPackage2 = new PackageIdentity("package1B", new NuGetVersion("1.0.0"));
+
+
+            var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
+                testPackage1.Id, testPackage1.Version.ToNormalizedString());
+            using (var packageStream = packageFileInfo.OpenRead())
+            {
+                // Act
+                await projectB.InstallPackageAsync(testPackage1, packageStream, testNuGetProjectContext, token);
+                await projectC.InstallPackageAsync(testPackage1, packageStream, testNuGetProjectContext, token);
+            }
+
+            packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
+                testPackage2.Id, testPackage2.Version.ToNormalizedString());
+            using (var packageStream = packageFileInfo.OpenRead())
+            {
+                // Act
+                await projectA.InstallPackageAsync(testPackage2, packageStream, testNuGetProjectContext, token);
+                await projectC.InstallPackageAsync(testPackage2, packageStream, testNuGetProjectContext, token);
+            }
+
+            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var restoredPackages = new List<PackageIdentity>();
+            packageRestoreManager.PackageRestoredEvent += delegate (object sender, PackageRestoredEventArgs args)
+            {
+                restoredPackages.Add(args.Package);
+            };
+
+            var restoreFailedPackages = new Dictionary<PackageReference, IReadOnlyCollection<string>>(new PackageReferenceComparer());
+            packageRestoreManager.PackageRestoreFailedEvent += delegate (object sender, PackageRestoreFailedEventArgs args)
+            {
+                restoreFailedPackages.Add(args.RestoreFailedPackageReference, args.ProjectNames);
+            };
+
+            Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(jQueryValidation));
+
+            // Delete packages folder
+            Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
+
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(jQuery144));
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(jQueryValidation));
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(testPackage1));
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(testPackage2));
+
+            // Act
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, CancellationToken.None);
+
+            // Assert
+            Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(jQuery144));
+            Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(jQueryValidation));
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(testPackage1));
+            Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(testPackage2));
+
+            Assert.Equal(4, restoredPackages.Count);
+            // The ordering is not guaranteed and can vary. Do not assert based on that
+            Assert.True(restoredPackages.Contains(jQuery144));
+            Assert.True(restoredPackages.Contains(jQueryValidation));
+            Assert.True(restoredPackages.Contains(testPackage1));
+            Assert.True(restoredPackages.Contains(testPackage2));
+
+            Assert.Equal(2, restoreFailedPackages.Count);
+
+            // The ordering is not guaranteed and can vary. Do not assert based on that
+            var restoreFailedPackageKeys = restoreFailedPackages.Keys;
+            var testPackage1Key = restoreFailedPackageKeys.Where(r => r.PackageIdentity.Equals(testPackage1)).First();
+            var testPackage1ProjectNames = restoreFailedPackages[testPackage1Key].ToList();
+
+            Assert.Equal(2, testPackage1ProjectNames.Count);
+            Assert.True(testPackage1ProjectNames.Contains("projectB", StringComparer.OrdinalIgnoreCase));
+            Assert.True(testPackage1ProjectNames.Contains("projectC", StringComparer.OrdinalIgnoreCase));
+
+            var testPackage2Key = restoreFailedPackageKeys.Where(r => r.PackageIdentity.Equals(testPackage2)).First();
+            var testPackage2ProjectNames = restoreFailedPackages[testPackage2Key].ToList();
+
+            Assert.Equal(2, testPackage2ProjectNames.Count);
+            Assert.True(testPackage2ProjectNames.Contains("projectA", StringComparer.OrdinalIgnoreCase));
+            Assert.True(testPackage2ProjectNames.Contains("projectC", StringComparer.OrdinalIgnoreCase));
         }
     }
 }

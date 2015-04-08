@@ -356,7 +356,7 @@ namespace NuGet.ProjectManagement
             if(anyFrameworkToolsGroup != null)
             {
                 string initPS1RelativePath = anyFrameworkToolsGroup.Items.Where(p =>
-                    p.StartsWith(PowerShellScripts.InitPS1RelativePath)).FirstOrDefault();
+                    p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 if (!String.IsNullOrEmpty(initPS1RelativePath))
                 {
                     initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
@@ -367,7 +367,7 @@ namespace NuGet.ProjectManagement
             if(MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
             {
                 string installPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
-                    p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install)).FirstOrDefault();
+                    p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 if(!String.IsNullOrEmpty(installPS1RelativePath))
                 {                    
                     await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this);
@@ -498,7 +498,7 @@ namespace NuGet.ProjectManagement
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
                 {
                     string uninstallPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
-                        p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall)).FirstOrDefault();
+                        p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     if (!String.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
                         string packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);

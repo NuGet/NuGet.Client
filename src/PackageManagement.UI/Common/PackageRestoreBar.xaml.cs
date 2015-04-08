@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement;
-using System.Threading;
 using System.Windows.Threading;
+using Microsoft.VisualStudio.Shell;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -15,12 +15,14 @@ namespace NuGet.PackageManagement.UI
     public partial class PackageRestoreBar : UserControl
     {
         private readonly IPackageRestoreManager _packageRestoreManager;
+        private readonly ISolutionManager _solutionManager;
         private Dispatcher _uiDispatcher;
 
-        public PackageRestoreBar(IPackageRestoreManager packageRestoreManager)
+        public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
         {
             InitializeComponent();
             _uiDispatcher = Dispatcher.CurrentDispatcher;
+            _solutionManager = solutionManager;
             _packageRestoreManager = packageRestoreManager;
 
             if (_packageRestoreManager != null)
@@ -48,8 +50,9 @@ namespace NuGet.PackageManagement.UI
         {
             if (_packageRestoreManager != null)
             {
+                var solutionDirectory = _solutionManager.SolutionDirectory;
                 // when the control is first loaded, check for missing packages
-                await _packageRestoreManager.RaisePackagesMissingEventForSolution(CancellationToken.None);
+                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
             }
         }
 
@@ -81,14 +84,15 @@ namespace NuGet.PackageManagement.UI
             await RestorePackages();
         }
 
-        private async System.Threading.Tasks.Task RestorePackages()
+        private async Task RestorePackages()
         {
             TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             try
             {
-                await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None);
+                var solutionDirectory = _solutionManager.SolutionDirectory;
+                await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
                 // Check for missing packages again
-                await _packageRestoreManager.RaisePackagesMissingEventForSolution(CancellationToken.None);
+                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
             }
             catch (Exception ex)
             {

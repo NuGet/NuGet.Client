@@ -162,6 +162,7 @@ namespace NuGet.Test
             Assert.NotNull(alreadyInstalledException);
             Assert.Equal(String.Format(NuGet.ProjectManagement.Strings.PackageAlreadyExistsInProject, packageIdentity, msBuildNuGetProjectSystem.ProjectName),
                 alreadyInstalledException.Message);
+            Assert.Equal(alreadyInstalledException.InnerException.GetType(), typeof(PackageAlreadyInstalledException));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
@@ -896,6 +897,55 @@ namespace NuGet.Test
             Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(dependentPackage)));
             Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageLatest)));
             Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(packageIdentity0)));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallPackageWhichUpdatesParent()
+        {
+            // https://github.com/NuGet/Home/issues/127
+            // Repro step:
+            // 1.Install-Package jquery.validation -Version 1.8
+            // 2.Update-package jquery -version 2.0.3
+            // Expected: jquery.validation was updated to 1.8.0.1
+            // jquery 1.8 is unique because it allows only a single version of jquery
+
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var resolutionContext = new ResolutionContext();
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+            var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+            var projectA = testSolutionManager.AddNewMSBuildProject();
+            var jqueryValidation18 = new PackageIdentity("jquery.validation", NuGetVersion.Parse("1.8"));
+            var jquery203 = new PackageIdentity("jquery", NuGetVersion.Parse("2.0.3"));
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(projectA, jqueryValidation18,
+                resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            // Assert
+            var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(2, projectAInstalled.Count);
+            Assert.Equal(jqueryValidation18, projectAInstalled[1].PackageIdentity);
+            Assert.True(File.Exists(packagePathResolver.GetInstalledPackageFilePath(jqueryValidation18)));
+
+            // Main Act
+            await nuGetPackageManager.InstallPackageAsync(projectA, jquery203,
+                resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            // Assert
+            projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(2, projectAInstalled.Count);
+            Assert.Equal(new PackageIdentity("jquery.validation", NuGetVersion.Parse("1.8.0.1")), projectAInstalled[1].PackageIdentity);
+            Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(jqueryValidation18)));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
