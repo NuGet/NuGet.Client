@@ -57,7 +57,7 @@ namespace NuGet.ProjectModel
 
         private void Initialize(string projectPath, string rootPath)
         {
-            _searchPaths.Add(Path.GetDirectoryName(projectPath));
+            _searchPaths.Add(new DirectoryInfo(projectPath).Parent.FullName);
 
             if (GlobalSettings.TryGetGlobalSettings(rootPath, out _globalSettings))
             {
