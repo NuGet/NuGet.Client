@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -121,6 +121,11 @@ namespace NuGet.ProjectModel
         {
             var packages = _libraries[libraryRange.Name];
             return packages.FindBestMatch(libraryRange.VersionRange, library => library?.Version);
+        }
+
+        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
+        {
+            throw new NotImplementedException();
         }
     }
 }

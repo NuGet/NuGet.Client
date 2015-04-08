@@ -138,5 +138,13 @@ namespace NuGet.DependencyResolver
 
             return packages.FindBestMatch(versionRange, info => info?.Version);
         }
+
+        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
+        {
+            return new[]
+            {
+                Path.Combine(_repository.RepositoryRoot, "{name}", "{version}", "{name}.nuspec")
+            };
+        }
     }
 }

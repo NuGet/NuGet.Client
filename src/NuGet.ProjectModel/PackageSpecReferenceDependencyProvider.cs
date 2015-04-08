@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -21,7 +20,7 @@ namespace NuGet.ProjectModel
             _resolver = projectResolver;
         }
 
-        public IEnumerable<string> GetAttemptedPaths(FrameworkName targetFramework)
+        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
         {
             return _resolver.SearchPaths.Select(p => Path.Combine(p, "{name}", "project.json"));
         }
