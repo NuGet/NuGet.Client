@@ -53,9 +53,9 @@
           <Project>{3dd213f7-999b-4c15-9560-bf9c96cb8c52}</Project>
           <Name>VisualStudio12</Name>
         </ProjectReference>
-	      <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      	  <EmbedInteropTypes>True</EmbedInteropTypes>
-    	  </Reference>
+        <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
       </ItemGroup>
     </When>
     <When Condition="$(VisualStudioVersion)=='14.0'">
@@ -66,9 +66,9 @@
           <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
           <Name>VisualStudio14</Name>
         </ProjectReference>
-	      <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      	  <EmbedInteropTypes>True</EmbedInteropTypes>
-    	  </Reference>
+        <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only">
           <HintPath>..\..\lib\VS14\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
         </Reference>
@@ -204,19 +204,18 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CommonResources.cs" />
-    <Compile Include="ConfigurationDefaults.cs" />
-    <Compile Include="EnvironmentVariableWrapper.cs" />
     <Compile Include="IDE\NuGetAndEnvDTEProjectCache.cs" />
     <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\IScriptExecutor.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
+    <Compile Include="IScriptPackage.cs" />
+    <Compile Include="ScriptPackage.cs" />
     <Compile Include="SourceControl\ITFSSourceControlManagerProvider.cs" />
     <Compile Include="SourceControl\IVsSourceControlTracker.cs" />
     <Compile Include="SourceControl\TFSSourceControlManagerProviderPicker.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
-    <Compile Include="IEnvironmentVariableReader.cs" />
     <Compile Include="OptionsPageActivator.cs" />
     <Compile Include="PackageRestoreConsent.cs" />
     <Compile Include="ProductUpdate\IProductUpdateSettings.cs" />

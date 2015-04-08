@@ -253,7 +253,7 @@ function New-JavaScriptApplication
 
     try 
     {
-        if ($dte.Version -eq '12.0' -or $dte.Version -eq '14.0')
+        if ($dte.Version -eq '12.0')
         {
             $SolutionFolder | New-Project WinJSBlue $ProjectName
         }
@@ -435,7 +435,12 @@ function New-WindowsPhoneClassLibrary {
     )
 
     try {
-        $SolutionFolder | New-Project WindowsPhoneClassLibrary $ProjectName
+	    if ($dte.Version -eq '14.0') {
+			$SolutionFolder | New-Project WindowsPhoneClassLibrary81 $ProjectName
+		}
+		else {
+			$SolutionFolder | New-Project WindowsPhoneClassLibrary $ProjectName
+		}
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed

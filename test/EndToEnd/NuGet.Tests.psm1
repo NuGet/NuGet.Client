@@ -86,7 +86,9 @@ function global:Run-Test {
         [string]$Test,
         [parameter(ParameterSetName="File", Mandatory=$true, Position=1)]
         [string]$File,
-        [parameter(Position=1)]
+		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=1)]
+        [string]$Exclude,
+        [parameter(Position=2)]
         [bool]$LaunchResultsOnFailure=$true
     )
     
@@ -123,13 +125,20 @@ function global:Run-Test {
 
     if ($SourceNuGet -eq $null) 
     {
-        $SourceNuGet = "nuget.org"
+        $SourceNuGet = "api.nuget.org"
     }
 
     # Load all of the test scripts
-    Get-ChildItem $testPath -Filter $File | %{ 
+	if (!$Exclude) {
+        Get-ChildItem $testPath -Filter $File | %{ 
         . $_.FullName
-    } 
+		} 
+	}
+	else {
+	    Get-ChildItem $testPath -Exclude $Exclude | %{ 
+        . $_.FullName
+		} 
+	}
         
     # If no tests were specified just run all
     if(!$test) {
@@ -571,7 +580,7 @@ function Get-PackageRepository
     )
 
     $componentModel = Get-VSComponentModel
-    $repositoryProvider = $componentModel.GetService([NuGet.Client.ISourceRepositoryProvider])
+    $repositoryProvider = $componentModel.GetService([NuGet.Protocol.Core.Types.ISourceRepositoryProvider])
 	$packageSource = New-Object -TypeName NuGet.Configuration.PackageSource -ArgumentList @([System.String]::$source)
     $repositoryProvider.CreateRepository($packageSource)
 }

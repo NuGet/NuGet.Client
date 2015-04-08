@@ -367,7 +367,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package with the Id &apos;{0}&apos; is not installed to the current project..
+        ///   Looks up a localized string similar to Package with the Id &apos;{0}&apos; is not installed to project &apos;{1}&apos;..
         /// </summary>
         internal static string Cmdlet_PackageNotInstalled {
             get {

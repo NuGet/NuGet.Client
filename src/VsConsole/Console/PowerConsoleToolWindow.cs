@@ -53,6 +53,14 @@ namespace NuGetConsole.Implementation
             }
         }
 
+        private ISolutionManager SolutionManager
+        {
+            get
+            {
+                return ComponentModel.GetService<ISolutionManager>();
+            }
+        }
+
         private PowerConsoleWindow PowerConsoleWindow
         {
             get
@@ -553,7 +561,7 @@ namespace NuGetConsole.Implementation
             {
                 if (_consoleParentPane == null)
                 {
-                    _consoleParentPane = new ConsoleContainer(ProductUpdateService, PackageRestoreManager);
+                    _consoleParentPane = new ConsoleContainer(SolutionManager, ProductUpdateService, PackageRestoreManager);
                 }
                 return _consoleParentPane;
             }

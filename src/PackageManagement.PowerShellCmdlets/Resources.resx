@@ -217,7 +217,7 @@
     <value>Package with the Id '{0}' is not found in the specified source.</value>
   </data>
   <data name="Cmdlet_PackageNotInstalled" xml:space="preserve">
-    <value>Package with the Id '{0}' is not installed to the current project.</value>
+    <value>Package with the Id '{0}' is not installed to project '{1}'.</value>
   </data>
   <data name="Cmdlet_PackageOperation" xml:space="preserve">
     <value>{0} {1}</value>

@@ -161,6 +161,9 @@
 
 Missing packages: {0}</value>
   </data>
+  <data name="PackageRestoreCanceled" xml:space="preserve">
+    <value>NuGet package restore canceled.</value>
+  </data>
   <data name="PackageRestoreFailedForProject" xml:space="preserve">
     <value>NuGet Package restore failed for project {0}: {1}.</value>
   </data>

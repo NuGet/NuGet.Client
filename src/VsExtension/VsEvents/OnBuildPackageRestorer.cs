@@ -5,17 +5,20 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetVSExtension
 {
@@ -38,9 +41,9 @@ namespace NuGetVSExtension
 
         private ErrorListProvider _errorListProvider;
 
-        private IVsThreadedWaitDialog2 _waitDialog;
+        private IProgress<ThreadedWaitDialogProgressData> ThreadedWaitDialogProgress { get; set; }
 
-        private CancellationTokenSource CancellationTokenSource { get; set; }
+        private CancellationToken Token { get; set; }
 
         private IPackageRestoreManager PackageRestoreManager { get; set; }
 
@@ -50,7 +53,8 @@ namespace NuGetVSExtension
 
         private int CurrentCount;
 
-        private int WaitDialogUpdateGate = 0;
+        private bool HasErrors { get; set; }
+        private bool Canceled { get; set; }
 
         enum VerbosityLevel
         {
@@ -74,10 +78,6 @@ namespace NuGetVSExtension
             _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
 
             _errorListProvider = new ErrorListProvider(serviceProvider);
-
-            // Create a non-null but cancelled CancellationTokenSource
-            CancellationTokenSource = new CancellationTokenSource();
-            CancellationTokenSource.Cancel();
         }
 
         OutputWindowPane GetBuildOutputPane()
@@ -101,13 +101,13 @@ namespace NuGetVSExtension
             _errorListProvider.Tasks.Clear();
         }
 
-        private async void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction Action)
+        private void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction Action)
         {
-            CancellationTokenSource = new CancellationTokenSource();
             try
             {
                 _errorListProvider.Tasks.Clear();
                 PackageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
+                PackageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
@@ -125,7 +125,13 @@ namespace NuGetVSExtension
                 }
 
                 _outputOptOutMessage = true;
-                await RestorePackagesOrCheckForMissingPackages(scope);
+
+                var solutionDirectory = SolutionManager.SolutionDirectory;
+
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await RestorePackagesOrCheckForMissingPackagesAsync(solutionDirectory);
+                });
             }
             catch (Exception ex)
             {
@@ -145,7 +151,7 @@ namespace NuGetVSExtension
             finally
             {
                 PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
-                CancellationTokenSource.Cancel();
+                PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
             }
         }
 
@@ -154,132 +160,141 @@ namespace NuGetVSExtension
         /// </summary>
         private void PackageRestoreManager_PackageRestored(object sender, PackageRestoredEventArgs args)
         {
-            PackageIdentity packageIdentity = args.Package;
-            if (args.Restored && CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested)
+            if(Token.IsCancellationRequested)
             {
-                bool canceled = false;
-                Interlocked.Increment(ref CurrentCount);
-                
-                // The rate at which the packages are restored is much higher than the rate at which a wait dialog can be updated
-                // And, this event is raised by multiple threads
-                // So, only try to update the wait dialog if an update is not already in progress. Use the int 'WaitDialogUpdateGate' for this purpose
-                // Always, set it to 1 below and gets its old value. If the old value is 0, go and update, otherwise, bail
-                if (Interlocked.Equals(Interlocked.Exchange(ref WaitDialogUpdateGate, 1), 0))
-                {
-                    _waitDialog.UpdateProgress(
-                        String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity.ToString()),
-                        String.Empty,
-                        szStatusBarText: null,
-                        iCurrentStep: CurrentCount,
-                        iTotalSteps: TotalCount,
-                        fDisableCancel: false,
-                        pfCanceled: out canceled);
+                Canceled = true;
+                return;
+            }
 
-                    Interlocked.Exchange(ref WaitDialogUpdateGate, 0);
-                }
+            if (args.Restored)
+            {
+                PackageIdentity packageIdentity = args.Package;
+                Interlocked.Increment(ref CurrentCount);
+
+                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var progressData = new ThreadedWaitDialogProgressData(String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity.ToString()),
+                            String.Empty, String.Empty, isCancelable: true, currentStep: CurrentCount, totalSteps: TotalCount);
+                    ThreadedWaitDialogProgress.Report(progressData);
+                });
             }
         }
 
-        private async System.Threading.Tasks.Task RestorePackagesOrCheckForMissingPackages(vsBuildScope scope)
+        private void PackageRestoreManager_PackageRestoreFailedEvent(object sender, PackageRestoreFailedEventArgs args)
         {
+            if (Token.IsCancellationRequested)
+            {
+                // If an operation is canceled, a single message gets shown in the summary that package restore has been canceled
+                // Do not report it as separate errors
+                Canceled = true;
+                return;
+            }
+
+            if (args.ProjectNames.Any())
+            {
+                // HasErrors will be used to show a message in the output window, that, Package restore failed
+                // If Canceled is not already set to true
+                HasErrors = true;
+                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    // Switch to main thread to update the error list window or output window
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    foreach (var projectName in args.ProjectNames)
+                    {
+                        var exceptionMessage = _msBuildOutputVerbosity >= (int)VerbosityLevel.Detailed ?
+                            args.Exception.ToString() :
+                            args.Exception.Message;
+                        var message = String.Format(
+                            CultureInfo.CurrentCulture,
+                            Resources.PackageRestoreFailedForProject, projectName,
+                            exceptionMessage);
+
+                        WriteLine(VerbosityLevel.Quiet, message);
+                        ActivityLog.LogError(LogEntrySource, message);
+                        ShowError(_errorListProvider, TaskErrorCategory.Error,
+                            TaskPriority.High, message, hierarchyItem: null);
+                        WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
+                    }
+                });
+            }
+        }
+
+        private async Task RestorePackagesOrCheckForMissingPackagesAsync(string solutionDirectory)
+        {
+            // To be sure, switch to main thread before doing anything on this method
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
             var waitDialogFactory = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
-            waitDialogFactory.CreateInstance(out _waitDialog);            
-            var token = CancellationTokenSource.Token;
 
-            try
+            if (String.IsNullOrEmpty(solutionDirectory))
             {
-                if (IsConsentGranted())
+                // If the solution is closed, SolutionDirectory will be unavailable. Just return. Do nothing
+                return;
+            }
+
+            var missingPackagesInfo = await PackageRestoreManager.GetMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
+
+            if (IsConsentGranted())
+            {
+                HasErrors = false;
+                Canceled = false;
+                CurrentCount = 0;
+                TotalCount = missingPackagesInfo.PackageReferences.Count;
+                if (TotalCount > 0)
                 {
-                    if (scope == vsBuildScope.vsBuildScopeSolution || scope == vsBuildScope.vsBuildScopeBatch || scope == vsBuildScope.vsBuildScopeProject)
+                    if (_outputOptOutMessage)
                     {
-                        TotalCount = (await PackageRestoreManager.GetMissingPackagesInSolution(token)).ToList().Count;
-                        if (TotalCount > 0)
+                        // Only show the wait dialog, when there are some packages to restore
+                        using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
+                            waitCaption: Resources.DialogTitle,
+                            initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
+                                String.Empty, String.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
                         {
-                            if (_outputOptOutMessage)
-                            {
-                                _waitDialog.StartWaitDialog(
-                                        Resources.DialogTitle,
-                                        Resources.RestoringPackages,
-                                        String.Empty,
-                                        varStatusBmpAnim: null,
-                                        szStatusBarText: null,
-                                        iDelayToShowDialog: 0,
-                                        fIsCancelable: true,
-                                        fShowMarqueeProgress: true);
-                                WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
-                                _outputOptOutMessage = false;
-                            }
+                            // Only write the PackageRestoreOptOutMessage to output window, if, there are packages to restore
+                            WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
+                            _outputOptOutMessage = false;
 
-                            System.Threading.Tasks.Task waitDialogCanceledCheckTask = System.Threading.Tasks.Task.Run(() => 
-                                {
-                                    // Just create an extra task that can keep checking if the wait dialog was cancelled
-                                    // If so, cancel the CancellationTokenSource
-                                    bool canceled = false;
-                                    try
-                                    {
-                                        while (!canceled && CancellationTokenSource != null && !CancellationTokenSource.IsCancellationRequested && _waitDialog != null)
-                                        {
-                                            _waitDialog.HasCanceled(out canceled);
-                                            // Wait on the cancellation handle for 100ms to avoid checking on the wait dialog too frequently
-                                            CancellationTokenSource.Token.WaitHandle.WaitOne(100);
-                                        }
+                            Token = threadedWaitDialogSession.UserCancellationToken;
+                            ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
 
-                                        CancellationTokenSource.Cancel();
-                                    }
-                                    catch (Exception)
-                                    {
-                                        // Catch all and don't throw
-                                        // There is a slight possibility that the _waitDialog was set to null by another thread right after the check for null
-                                        // So, it could be null or disposed. Just ignore all errors
-                                    }
-                                });
+                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, missingPackagesInfo, Token);
 
-                            System.Threading.Tasks.Task whenAllTaskForRestorePackageTasks =
-                                System.Threading.Tasks.Task.WhenAll(SolutionManager.GetNuGetProjects().Select(nuGetProject => RestorePackagesInProject(nuGetProject, token)));
-
-                            await System.Threading.Tasks.Task.WhenAny(whenAllTaskForRestorePackageTasks, waitDialogCanceledCheckTask);
-                            // Once all the tasks are completed, just cancel the CancellationTokenSource
-                            // This will prevent the wait dialog from getting updated
-                            CancellationTokenSource.Cancel();                            
+                            WriteLine(canceled: Canceled, hasMissingPackages: true, hasErrors: HasErrors);
                         }
-                    }
-                    else
-                    {
-                        throw new NotImplementedException();
                     }
                 }
                 else
                 {
-                    _waitDialog.StartWaitDialog(
-                                    Resources.DialogTitle,
-                                    Resources.RestoringPackages,
-                                    String.Empty,
-                                    varStatusBmpAnim: null,
-                                    szStatusBarText: null,
-                                    iDelayToShowDialog: 0,
-                                    fIsCancelable: true,
-                                    fShowMarqueeProgress: true);
-                    CheckForMissingPackages((await PackageRestoreManager.GetMissingPackagesInSolution(token)).ToList());
+                    WriteLine(canceled: false, hasMissingPackages: false, hasErrors: false);
                 }
             }
-            finally
+            else
             {
-                int canceled;
-                _waitDialog.EndWaitDialog(out canceled);
-                _waitDialog = null;
+                // When the user consent is not granted, missing packages may not be restored.
+                // So, we just check for them, and report them as warning(s) on the error list window
+
+                using (var twd = waitDialogFactory.StartWaitDialog(
+                    waitCaption: Resources.DialogTitle,
+                    initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
+                        String.Empty, String.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
+                {
+                    CheckForMissingPackages(missingPackagesInfo.PackageReferences.Keys);
+                }
             }
 
-            await PackageRestoreManager.RaisePackagesMissingEventForSolution(CancellationToken.None);
+            await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
         }
 
         /// <summary>
         /// Checks if there are missing packages that should be restored. If so, a warning will 
         /// be added to the error list.
         /// </summary>
-        private void CheckForMissingPackages(List<PackageReference> missingPackages)
+        private void CheckForMissingPackages(IEnumerable<PackageReference> missingPackages)
         {
-            if (missingPackages.Count > 0)
+            if (missingPackages.Any())
             {
                 var errorText = String.Format(CultureInfo.CurrentCulture,
                     Resources.PackageNotRestoredBecauseOfNoConsent,
@@ -288,52 +303,12 @@ namespace NuGetVSExtension
             }
         }
 
-        private async System.Threading.Tasks.Task RestorePackagesInProject(NuGetProject nuGetProject, CancellationToken token)
+        private async Task RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
+            MissingPackagesInfo missingPackagesInfo,
+            CancellationToken token)
         {
-            if (token.IsCancellationRequested)
-                return;
-
-            var projectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-            bool hasMissingPackages = false;
-            try
-            {
-                hasMissingPackages = await PackageRestoreManager.RestoreMissingPackagesAsync(nuGetProject, token);
-                WriteLine(hasMissingPackages, error: false);
-            }
-            catch (Exception ex)
-            {
-                var exceptionMessage = _msBuildOutputVerbosity >= (int)VerbosityLevel.Detailed ?
-                    ex.ToString() :
-                    ex.Message;
-                var message = String.Format(
-                    CultureInfo.CurrentCulture,
-                    Resources.PackageRestoreFailedForProject, projectName,
-                    exceptionMessage);
-                WriteLine(VerbosityLevel.Quiet, message);
-                ActivityLog.LogError(LogEntrySource, message);
-                ShowError(_errorListProvider, TaskErrorCategory.Error,
-                    TaskPriority.High, message, hierarchyItem: null);
-                WriteLine(hasMissingPackages, error: true);
-            }
-            finally
-            {
-                WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
-            }
-        }
-
-        private bool HasCanceled()
-        {
-            if (_waitDialog != null)
-            {
-                bool canceled;
-                _waitDialog.HasCanceled(out canceled);
-
-                return canceled;
-            }
-            else
-            {
-                return false;
-            }
+            await TaskScheduler.Default;
+            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, missingPackagesInfo, Token);
         }
 
         /// <summary>
@@ -370,20 +345,27 @@ namespace NuGetVSExtension
             //return File.Exists(Path.Combine(nugetSolutionFolder, "nuget.targets"));
         }
 
-        private void WriteLine(bool hasMissingPackages, bool error)
+        private void WriteLine(bool canceled, bool hasMissingPackages, bool hasErrors)
         {
-            if (hasMissingPackages)
+            if(canceled)
             {
-                WriteLine(VerbosityLevel.Normal, Resources.NothingToRestore);
-            }
-
-            if (error)
-            {
-                WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinishedWithError);
+                WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreCanceled);
             }
             else
             {
-                WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinished);
+                if (!hasMissingPackages)
+                {
+                    WriteLine(VerbosityLevel.Minimal, Resources.NothingToRestore);
+                }
+
+                if (hasErrors)
+                {
+                    WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinishedWithError);
+                }
+                else
+                {
+                    WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinished);
+                }
             }
         }
 
@@ -397,6 +379,7 @@ namespace NuGetVSExtension
         /// <param name="args">An array of objects to write using format. </param>
         private void WriteLine(VerbosityLevel verbosity, string format, params object[] args)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var outputPane = GetBuildOutputPane();
             if (outputPane == null)
             {

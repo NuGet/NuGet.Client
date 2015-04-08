@@ -113,6 +113,11 @@ namespace MicrosoftCorp.VSAPITest
                 CommandID uninstallNoForceId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIUninstallPackageNoForce);
                 MenuCommand uninstallNoForceItem = new MenuCommand(UninstallPackageNoForce, uninstallNoForceId);
                 mcs.AddCommand(uninstallNoForceItem);
+
+                // cmdidNuGetAPIInstallPackageNoSource
+                CommandID installNoSrcId = new CommandID(GuidList.guidVSAPITestCmdSet, (int)PkgCmdIDList.cmdidNuGetAPIInstallPackageNoSource);
+                MenuCommand installNoSrcItem = new MenuCommand(InstallNoSourceTest, installNoSrcId);
+                mcs.AddCommand(installNoSrcItem);
             }
         }
         #endregion
@@ -258,6 +263,19 @@ namespace MicrosoftCorp.VSAPITest
             foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
                 _task = System.Threading.Tasks.Task.Run(() => services.InstallPackage("http://packagesource", project, "newtonsoft.json", "6.0.4", false));
+                return;
+            }
+        }
+
+        private void InstallNoSourceTest(object sender, EventArgs e)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                // install the package from any available source
+                _task = System.Threading.Tasks.Task.Run(() => services.InstallPackage(null, project, "newtonsoft.json", "6.0.4", false));
                 return;
             }
         }

@@ -984,9 +984,13 @@ function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRo
     {
         $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone71"
     }
-    elseif ($dte.Version -eq "12.0" -or $dte.Version -eq "14.0")
+    elseif ($dte.Version -eq "12.0")
     {
         $profile = "WindowsPhone,Version=v8.0"
+    }
+	elseif ($dte.Version -eq "14.0")
+	{
+        $profile = "WindowsPhoneApp, Version=v8.1"
     }
 
     Assert-Throws { $p2 | Install-Package NuGet.Core -Version 1.4.20615.9012 } "Could not install package 'NuGet.Core 1.4.20615.9012'. You are trying to install this package into a project that targets '$Profile', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
@@ -2122,7 +2126,7 @@ function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
     $currentSemanticVersion = Get-HostSemanticVersion
 
     # Act & Assert
-    Assert-Throws { $p | Install-Package Kitty -Version 1.0.0 -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'."
+    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'."
     Assert-NoPackage $p "Kitty"
 }
 
@@ -2269,7 +2273,9 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
     Assert-BindingRedirect $p app.config System.Web.Razor '0.0.0.0-3.0.0.0' '3.0.0.0'
 }
 
-function Test-InstallPackageIntoJavaScriptApplication
+# Temporarily comment out the test that's hang VS (during Javascript project creation)
+# NuGet is not involved in that step. We may need to update the template.
+function InstallPackageIntoJavaScriptApplication
 {
     if ($dte.Version -eq "10.0")
     {
@@ -2756,7 +2762,7 @@ function Test-InstallPackagesConfigLocal
 
     # Arrange
     $p = New-ClassLibrary
-	$pathToPackagesConfig = Join-Path $context.RepositoryRoot "InstallPackagesConfigLocal\packages.config"
+    $pathToPackagesConfig = Join-Path $context.RepositoryRoot "InstallPackagesConfigLocal\packages.config"
 
     # Act
     $p | Install-Package $pathToPackagesConfig
@@ -2794,13 +2800,13 @@ function Test-InstallPackagesNupkgLocal
 
     # Arrange
     $p = New-ClassLibrary
-	$pathToPackagesNupkg = Join-Path $context.RepositoryRoot "PackageWithFolder.1.0.nupkg"
+    $pathToPackagesNupkg = Join-Path $context.RepositoryRoot "PackageWithFolder.1.0.nupkg"
 
     # Act
     $p | Install-Package $pathToPackagesNupkg
 
     # Assert
-	Assert-Package $p PackageWithFolder 1.0
+    Assert-Package $p PackageWithFolder 1.0
 }
 
 # Tests that Install-Package -Force and Install-Package -Force -WhatIf works.
@@ -2832,4 +2838,20 @@ function Test-InstallPackageUsingForceSwitch
 
     # Assert 2
 	Assert-Package $p jQuery 2.1.3
+}
+
+function Test-InstallPackageWithScriptAddImportFile
+{
+	param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+	#Act
+	$p | Install-Package Microsoft.Bcl.build -version 1.0.14
+	Build-Solution
+
+    # Assert
+    $errorlist = Get-Errors
+    Assert-AreEqual 0 $errorlist.Count
 }

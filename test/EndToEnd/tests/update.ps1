@@ -1104,7 +1104,7 @@ function Test-UpdatePackageInstallCorrectDependencyPackageBasedOnTargetFramework
     Assert-NoPackage $project TestEmptyToolsFolder
 
     # Act
-    Update-Package TestDependencyTargetFramework -Version 2.0 -Project $project.Name -Source $context.RepositoryPath
+    Update-Package TestDependencyTargetFramework -Version 2.0 -Project $project.Name -Source $context.RepositoryPath -FileConflictAction OverwriteAll
 
     # Assert
     Assert-Package $project TestDependencyTargetFramework -Version 2.0

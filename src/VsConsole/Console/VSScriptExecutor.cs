@@ -68,6 +68,7 @@ namespace NuGetConsole
             if (File.Exists(fullScriptPath))
             {
                 PackageIdentity packageIdentity = null;
+                ScriptPackage package = null;
                 if (envDTEProject != null)
                 {
                     NuGetFramework targetFramework;
@@ -80,11 +81,11 @@ namespace NuGetConsole
 
                     nuGetProjectContext.Log(MessageLevel.Debug, NuGet.ProjectManagement.Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
                         envDTEProject.Name, shortFramework);
-
-                    //logger.Log(MessageLevel.Debug, NuGetResources.Debug_TargetFrameworkInfo_PowershellScripts,
-                    //    Path.GetDirectoryName(scriptFile.Path), VersionUtility.GetTargetFrameworkLogString(scriptFile.TargetFramework));
                 }
-
+                if (packageIdentity != null)
+                {
+                    package = new ScriptPackage(packageIdentity.Id, packageIdentity.Version.ToString());
+                }
                 if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
                     _skipPSScriptExecution = await NuGetPackageManager.PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity,
@@ -106,7 +107,7 @@ namespace NuGetConsole
                         // set temp variables to pass to the script
                         psVariable.Set("__rootPath", packageInstallPath);
                         psVariable.Set("__toolsPath", toolsPath);
-                        psVariable.Set("__package", packageZipArchive);
+                        psVariable.Set("__package", package);
                         psVariable.Set("__project", envDTEProject);
 
                         psNuGetProjectContext.ExecutePSScript(fullScriptPath);
@@ -117,7 +118,7 @@ namespace NuGetConsole
                             + PathUtility.EscapePSPath(fullScriptPath)
                             + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0";
 
-                        object[] inputs = new object[] { packageInstallPath, toolsPath, packageZipArchive, envDTEProject };
+                        object[] inputs = new object[] { packageInstallPath, toolsPath, package, envDTEProject };
                         string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
 
                         // logging to both the Output window and progress window.

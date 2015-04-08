@@ -6,6 +6,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.VisualStudio
 {
@@ -35,11 +36,13 @@ namespace NuGet.VisualStudio
 
         public void RestorePackages(Project project)
         {
-            NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
-
             try
             {
-                PackageManagementHelpers.RunSync(async () => await _restoreManager.RestoreMissingPackagesInSolutionAsync(CancellationToken.None));
+                var solutionDirectory = _solutionManager.SolutionDirectory;
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
+                });
             }
             catch (Exception ex)
             {

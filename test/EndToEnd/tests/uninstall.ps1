@@ -626,7 +626,7 @@ function Test-UninstallSolutionPackageRemoveEntryFromProjectPackagesConfig
     Assert-AreEqual 4 $content.Length
     Assert-AreEqual '<?xml version="1.0" encoding="utf-8"?>' $content[0]
     Assert-AreEqual '<packages>' $content[1]
-    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" />' $content[2]
+    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net45" userInstalled="true" />' $content[2]
     Assert-AreEqual '</packages>' $content[3]
 }
 

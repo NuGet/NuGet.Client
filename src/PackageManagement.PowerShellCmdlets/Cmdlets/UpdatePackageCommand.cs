@@ -188,12 +188,33 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                // Update-Package -> get list of installed package ids
-                IEnumerable<string> idsToUpdate = Enumerable.Empty<string>();
-                idsToUpdate = await GeneratePackageIdListForUpdate(project, token);
-                // Preview Update-Package actions
-                actions = await PackageManager.PreviewUpdatePackagesAsync(idsToUpdate, project, ResolutionContext,
-                this, ActiveSourceRepository, null, token);
+                if (Safe.IsPresent)
+                {
+                    // Update-Package -Safe -> get list of installed package references
+                    IEnumerable<PackageReference> installedReferences = Enumerable.Empty<PackageReference>();
+                    installedReferences = await project.GetInstalledPackagesAsync(token);
+                    foreach (PackageReference reference in installedReferences)
+                    {
+                        PackageIdentity update = GetPackageUpdate(reference, project, _allowPrerelease, true, null, false, DependencyBehavior.HighestPatch);
+                        if (update.Version > reference.PackageIdentity.Version)
+                        {
+                            IEnumerable<NuGetProjectAction> packageActions = await PackageManager.PreviewInstallPackageAsync(project, update, ResolutionContext, this, ActiveSourceRepository, null, token);
+                            if (packageActions != null && packageActions.Any())
+                            {
+                                actions = actions.Concat(packageActions);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Update-Package -> get list of installed package ids
+                    IEnumerable<string> idsToUpdate = Enumerable.Empty<string>();
+                    idsToUpdate = await GeneratePackageIdListForUpdate(project, token);
+                    // Preview Update-Package actions
+                    actions = await PackageManager.PreviewUpdatePackagesAsync(idsToUpdate, project, ResolutionContext,
+                    this, ActiveSourceRepository, null, token);
+                }
             }
 
             if (actions.Any())
@@ -243,7 +264,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // If package Id exists in Packages folder but is not actually installed to the current project, throw.
             if (installedPackage == null)
             {
-                Log(MessageLevel.Error, string.Format(Resources.PackageNotInstalledInAnyProject, Id));
+                Log(MessageLevel.Info, string.Format(Resources.Cmdlet_PackageNotInstalled, Id, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
             else
             {
@@ -267,20 +288,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         // Update-Package Id -Reinstall
                         PackageIdentity identity = installedPackage.PackageIdentity;
-                        await InstallPackageByIdentityAsync(project, identity, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                        await InstallPackageByIdentityAsync(project, identity, ResolutionContext, this, WhatIf.IsPresent, true, UninstallContext);
                     }
                     else
                     {
                         // Update-Package Id
                         NormalizePackageId(project);
-                        NuGetVersion latestVersion = PowerShellCmdletsUtility.GetLastestVersionForPackageId(ActiveSourceRepository, Id, project, _allowPrerelease);
-                        if (latestVersion > installedPackage.PackageIdentity.Version)
+                        if (Safe.IsPresent)
                         {
-                            await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                            PackageIdentity update = GetPackageUpdate(installedPackage, project, _allowPrerelease, true, null, false, GetDependencyBehavior());
+                            await InstallPackageByIdentityAsync(project, update, ResolutionContext, this, WhatIf.IsPresent, false, UninstallContext);
                         }
                         else
                         {
-                            Log(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                            await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, false, UninstallContext);
                         }
                     }
                 }
@@ -371,17 +392,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Return dependecy behavior for Update-Package command. Scenarios include Update-Package and Update-Package -Safe.
+        /// Return dependecy behavior for Update-Package command. 
         /// </summary>
         /// <returns></returns>
         protected override DependencyBehavior GetDependencyBehavior()
         {
-            // Return DependencyBehavior.HighestPatch for -Safe switch
-            if (Safe.IsPresent)
-            {
-                return DependencyBehavior.HighestPatch;
-            }
-
             // Return DependencyBehavior.Highest for Update-Package
             if (!_idSpecified && !Reinstall.IsPresent)
             {

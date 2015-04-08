@@ -150,7 +150,7 @@ function GetPackages($context) {
         $parameters.IncludePreRelease = $true 
     }
 
-    return Find-Package @parameters -AllVersions -ErrorAction SilentlyContinue
+    return Find-Package @parameters -StartWith -AllVersions -ErrorAction SilentlyContinue
 }
 
 function GetProjectNames {
@@ -190,7 +190,7 @@ function GetRemotePackageIds($context) {
 
 function GetPackageSources() {
     $componentModel = Get-VSComponentModel
-    $repositoryProvider = $componentModel.GetService([NuGet.Client.ISourceRepositoryProvider])
+    $repositoryProvider = $componentModel.GetService([NuGet.Protocol.Core.Types.ISourceRepositoryProvider])
     $allSources = $repositoryProvider.PackageSourceProvider.LoadPackageSources()
     $allSources | Select-Object -ExpandProperty Name
 }
@@ -231,7 +231,7 @@ function GetRemotePackageVersions($context) {
             $parameters.IncludePreRelease = $true 
         }
         $parameters.AllVersions = $true
-        GetAndSortVersions(Find-Package @parameters -ExactMatch -ErrorAction SilentlyContinue)
+        GetAndSortVersions(Find-Package @parameters -StartWith -ExactMatch -ErrorAction SilentlyContinue)
     }
 }
 

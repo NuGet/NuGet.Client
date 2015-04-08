@@ -535,7 +535,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 PSSearchMetadata metadata = GetPackagesFromRemoteSource(package.PackageIdentity.Id, targetFrameworks, includePrerelease, skip, take)
                     .Where(p => string.Equals(p.Identity.Id, package.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                updates.Add(metadata, package.PackageIdentity.Version);
+                if (metadata != null)
+                {
+                    updates.Add(metadata, package.PackageIdentity.Version);
+                }
             }
 
             return updates;
@@ -604,16 +607,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected override void StopProcessing()
+        protected override void EndProcessing()
         {
             IsExecuting = false;
             UnsubscribeEvents();
-            base.StopProcessing();
+            base.EndProcessing();
         }
 
         protected void UnsubscribeEvents()
         {
-            IsExecuting = false;
+
             if (_httpClientEvents != null)
             {
                 _httpClientEvents.SendingRequest -= OnSendingRequest;

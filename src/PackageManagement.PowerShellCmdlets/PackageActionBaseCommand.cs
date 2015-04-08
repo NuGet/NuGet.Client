@@ -76,31 +76,45 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected async Task InstallPackageByIdentityAsync(NuGetProject project, PackageIdentity identity, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
-            List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
-            // For Install-Package -Force
-            if (isForce)
+            try
             {
-                PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
-                    StringComparer.OrdinalIgnoreCase.Equals(identity.Id, p.PackageIdentity.Id)).FirstOrDefault();
-                if (installedReference != null)
+                List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
+                // For Install-Package -Force
+                if (isForce)
                 {
-                    actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, installedReference.PackageIdentity, uninstallContext, projectContext, CancellationToken.None));
+                    PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
+                        StringComparer.OrdinalIgnoreCase.Equals(identity.Id, p.PackageIdentity.Id)).FirstOrDefault();
+                    if (installedReference != null)
+                    {
+                        actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, installedReference.PackageIdentity, uninstallContext, projectContext, CancellationToken.None));
+                    }
+                    NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identity, ActiveSourceRepository);
+                    actions.Add(installAction);
                 }
-                NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identity, ActiveSourceRepository);
-                actions.Add(installAction);
-            }
-            else
-            {
-                actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
-            }
+                else
+                {
+                    actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
+                }
 
-            if (isPreview)
-            {
-                PreviewNuGetPackageActions(actions);
+                if (isPreview)
+                {
+                    PreviewNuGetPackageActions(actions);
+                }
+                else
+                {
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                }
             }
-            else
+            catch (InvalidOperationException ex)
             {
-                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                if (ex.InnerException is PackageAlreadyInstalledException)
+                {
+                    Log(MessageLevel.Info, ex.Message);
+                }
+                else
+                {
+                    throw ex;
+                }
             }
         }
 
@@ -117,36 +131,50 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected async Task InstallPackageByIdAsync(NuGetProject project, string packageId, ResolutionContext resolutionContext, INuGetProjectContext projectContext, bool isPreview, bool isForce = false, UninstallationContext uninstallContext = null)
         {
-            List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
-            // For Install-Package -Force
-            if (isForce)
+            try
             {
-                PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
-                    StringComparer.OrdinalIgnoreCase.Equals(packageId, p.PackageIdentity.Id)).FirstOrDefault();
-                if (installedReference != null)
+                List<NuGetProjectAction> actions = new List<NuGetProjectAction>();
+                // For Install-Package -Force
+                if (isForce)
                 {
-                    actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None));
+                    PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
+                        StringComparer.OrdinalIgnoreCase.Equals(packageId, p.PackageIdentity.Id)).FirstOrDefault();
+                    if (installedReference != null)
+                    {
+                        actions.AddRange(await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None));
+                    }
+                    NuGetVersion nVersion = PowerShellCmdletsUtility.GetLastestVersionForPackageId(ActiveSourceRepository, packageId, project, resolutionContext.IncludePrerelease);
+                    if (nVersion != null)
+                    {
+                        PackageIdentity identityToInstall = new PackageIdentity(packageId, nVersion);
+                        NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identityToInstall, ActiveSourceRepository);
+                        actions.Add(installAction);
+                    }
                 }
-                NuGetVersion nVersion = PowerShellCmdletsUtility.GetLastestVersionForPackageId(ActiveSourceRepository, packageId, project, resolutionContext.IncludePrerelease);
-                if (nVersion != null)
+                else
                 {
-                    PackageIdentity identityToInstall = new PackageIdentity(packageId, nVersion);
-                    NuGetProjectAction installAction = NuGetProjectAction.CreateInstallProjectAction(identityToInstall, ActiveSourceRepository);
-                    actions.Add(installAction);
+                    actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
                 }
-            }
-            else
-            {
-                actions.AddRange(await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, ActiveSourceRepository, null, CancellationToken.None));
-            }
 
-            if (isPreview)
-            {
-                PreviewNuGetPackageActions(actions);
+                if (isPreview)
+                {
+                    PreviewNuGetPackageActions(actions);
+                }
+                else
+                {
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                }
             }
-            else
+            catch (InvalidOperationException ex)
             {
-                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                if (ex.InnerException is PackageAlreadyInstalledException)
+                {
+                    Log(MessageLevel.Info, ex.Message);
+                }
+                else
+                {
+                    throw ex;
+                }
             }
         }
 
