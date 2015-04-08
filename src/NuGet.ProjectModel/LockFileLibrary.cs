@@ -1,7 +1,8 @@
-﻿using System;
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -12,6 +13,8 @@ namespace NuGet.ProjectModel
         public string Name { get; set; }
 
         public NuGetVersion Version { get; set; }
+
+        public bool IsServiceable { get; set; }
 
         public string Sha { get; set; }
 

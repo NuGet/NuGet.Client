@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -15,11 +14,12 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public static class LockFileFormat
+    public class LockFileFormat
     {
+        public const int Version = -9998;
         public const string LockFileName = "project.lock.json";
 
-        public static LockFile Read(string filePath)
+        public LockFile Read(string filePath)
         {
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -27,27 +27,38 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public static LockFile Read(Stream stream)
+        public LockFile Read(Stream stream)
         {
             using (var textReader = new StreamReader(stream))
             {
-                using (var jsonReader = new JsonTextReader(textReader))
+                try
                 {
-                    while (jsonReader.TokenType != JsonToken.StartObject)
+                    using (var jsonReader = new JsonTextReader(textReader))
                     {
-                        if (!jsonReader.Read())
+                        while (jsonReader.TokenType != JsonToken.StartObject)
                         {
-                            //TODO: throw exception
-                            return null;
+                            if (!jsonReader.Read())
+                            {
+                                throw new InvalidDataException();
+                            }
                         }
+                        var token = JToken.Load(jsonReader);
+                        return ReadLockFile(token as JObject);
                     }
-                    var token = JToken.Load(jsonReader);
-                    return ReadLockFile(token as JObject);
+                }
+                catch
+                {
+                    // Ran into parsing errors, mark it as unlocked and out-of-date
+                    return new LockFile
+                    {
+                        Islocked = false,
+                        Version = int.MinValue
+                    };
                 }
             }
         }
 
-        public static void Write(string filePath, LockFile lockFile)
+        public void Write(string filePath, LockFile lockFile)
         {
             using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
@@ -55,7 +66,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public static void Write(Stream stream, LockFile lockFile)
+        public void Write(Stream stream, LockFile lockFile)
         {
             using (var textWriter = new StreamWriter(stream))
             {
@@ -69,28 +80,29 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static LockFile ReadLockFile(JObject cursor)
+        private LockFile ReadLockFile(JObject cursor)
         {
             var lockFile = new LockFile();
             lockFile.Islocked = ReadBool(cursor, "locked", defaultValue: false);
+            lockFile.Version = ReadInt(cursor, "version", defaultValue: int.MinValue);
             lockFile.ProjectFileDependencyGroups = ReadObject(cursor["projectFileDependencyGroups"] as JObject,
                 ReadProjectFileDependencyGroup);
             lockFile.Libraries = ReadObject(cursor["libraries"] as JObject, ReadLibrary);
             return lockFile;
         }
 
-        private static JObject WriteLockFile(LockFile lockFile)
+        private JObject WriteLockFile(LockFile lockFile)
         {
             var json = new JObject();
             json["locked"] = new JValue(lockFile.Islocked);
-            json["version"] = new JValue(-10000);
+            json["version"] = new JValue(Version);
             json["projectFileDependencyGroups"] = WriteObject(lockFile.ProjectFileDependencyGroups,
                 WriteProjectFileDependencyGroup);
             json["libraries"] = WriteObject(lockFile.Libraries, WriteLibrary);
             return json;
         }
 
-        private static LockFileLibrary ReadLibrary(string property, JToken json)
+        private LockFileLibrary ReadLibrary(string property, JToken json)
         {
             var library = new LockFileLibrary();
             var parts = property.Split(new[] { '/' }, 2);
@@ -99,77 +111,72 @@ namespace NuGet.ProjectModel
             {
                 library.Version = NuGetVersion.Parse(parts[1]);
             }
+            library.IsServiceable = ReadBool(json, "serviceable", defaultValue: false);
             library.Sha = ReadString(json["sha"]);
             library.FrameworkGroups = ReadObject(json["frameworks"] as JObject, ReadFrameworkGroup);
-            library.Files = ReadArray(json["files"] as JArray, ReadString);
-            return library;;
+            library.Files = ReadPathArray(json["files"] as JArray, ReadString);
+            return library;
         }
 
-        private static JProperty WriteLibrary(LockFileLibrary library)
+        private JProperty WriteLibrary(LockFileLibrary library)
         {
             var json = new JObject();
+            WriteBool(json, "serviceable", library.IsServiceable);
             json["sha"] = WriteString(library.Sha);
             WriteObject(json, "frameworks", library.FrameworkGroups, WriteFrameworkGroup);
-            WriteArray(json, "files", library.Files, WriteString);
+            WritePathArray(json, "files", library.Files, WriteString);
             return new JProperty(
                 library.Name + "/" + library.Version.ToString(),
                 json);
         }
 
-        private static LockFileFrameworkGroup ReadFrameworkGroup(string property, JToken json)
+        private LockFileFrameworkGroup ReadFrameworkGroup(string property, JToken json)
         {
             var group = new LockFileFrameworkGroup();
 
             group.TargetFramework = NuGetFramework.Parse(property);
             group.Dependencies = ReadObject(json["dependencies"] as JObject, ReadPackageDependency);
             group.FrameworkAssemblies = ReadArray(json["frameworkAssemblies"] as JArray, ReadString);
-            group.RuntimeAssemblies = ReadArray(json["runtimeAssemblies"] as JArray, ReadString);
-            group.CompileTimeAssemblies = ReadArray(json["compileAssemblies"] as JArray, ReadString);
+            group.RuntimeAssemblies = ReadPathArray(json["runtimeAssemblies"] as JArray, ReadString);
+            group.CompileTimeAssemblies = ReadPathArray(json["compileAssemblies"] as JArray, ReadString);
 
             return group;
         }
 
-        private static JProperty WriteFrameworkGroup(LockFileFrameworkGroup group)
+        private JProperty WriteFrameworkGroup(LockFileFrameworkGroup group)
         {
             var json = new JObject();
             json["dependencies"] = WriteObject(group.Dependencies, WritePackageDependency);
             json["frameworkAssemblies"] = WriteArray(group.FrameworkAssemblies, WriteString);
-            json["runtimeAssemblies"] = WriteArray(group.RuntimeAssemblies, WriteString);
-            json["compileAssemblies"] = WriteArray(group.CompileTimeAssemblies, WriteString);
+            json["runtimeAssemblies"] = WritePathArray(group.RuntimeAssemblies, WriteString);
+            json["compileAssemblies"] = WritePathArray(group.CompileTimeAssemblies, WriteString);
 
             return new JProperty(group.TargetFramework.DotNetFrameworkName, json);
         }
-        private static ProjectFileDependencyGroup ReadProjectFileDependencyGroup(string property, JToken json)
+
+        private ProjectFileDependencyGroup ReadProjectFileDependencyGroup(string property, JToken json)
         {
             return new ProjectFileDependencyGroup(
                 property,
                 ReadArray(json as JArray, ReadString));
         }
 
-        private static JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)
+        private JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)
         {
             return new JProperty(
                 frameworkInfo.FrameworkName,
                 WriteArray(frameworkInfo.Dependencies, WriteString));
         }
 
-        private static JToken WriteFrameworkAssemblies(IList<FrameworkSpecificGroup> groups)
+        private PackageDependencyGroup ReadPackageDependencyGroup(string property, JToken json)
         {
-            return WriteObject(groups, group =>
-            {
-                return new JProperty(group.TargetFramework?.ToString() ?? "*", group.Items.Select(x => new JValue(x)));
-            });
-        }
-
-        private static PackageDependencyGroup ReadPackageDependencySet(string property, JToken json)
-        {
-            var targetFramework = string.Equals(property, "*") ? null : property;
+            var targetFramework = string.Equals(property, "*") ? null : new NuGetFramework(property);
             return new PackageDependencyGroup(
                 targetFramework,
                 ReadObject(json as JObject, ReadPackageDependency));
         }
 
-        private static JProperty WritePackageDependencySet(PackageDependencyGroup item)
+        private JProperty WritePackageDependencyGroup(PackageDependencyGroup item)
         {
             return new JProperty(
                 item.TargetFramework?.ToString() ?? "*",
@@ -177,14 +184,15 @@ namespace NuGet.ProjectModel
         }
 
 
-        private static PackageDependency ReadPackageDependency(string property, JToken json)
+        private PackageDependency ReadPackageDependency(string property, JToken json)
         {
+            var versionStr = json.Value<string>();
             return new PackageDependency(
                 property,
-                VersionRange.Parse(json.Value<string>()));
+                versionStr == null ? null : VersionRange.Parse(versionStr));
         }
 
-        private static JProperty WritePackageDependency(PackageDependency item)
+        private JProperty WritePackageDependency(PackageDependency item)
         {
             string versionRange = null;
 
@@ -205,43 +213,7 @@ namespace NuGet.ProjectModel
                 WriteString(versionRange));
         }
 
-        private static IEnumerable<FrameworkSpecificGroup> ReadFrameworkAssemblyReference(string property, JToken json)
-        {
-            var supportedFrameworks = ReadArray(json["supportedFrameworks"] as JArray, ReadFrameworkName);
-            if (supportedFrameworks != null && supportedFrameworks.Any())
-            {
-                return supportedFrameworks
-                    .Select(x => new FrameworkSpecificGroup(property, new[] { x.ToString() }))
-                    .ToList();
-            }
-            return new[] { new FrameworkSpecificGroup(property, Enumerable.Empty<string>()) };
-        }
-
-        private static FrameworkSpecificGroup ReadPackageReferenceSet(JToken json)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static JToken WritePackageReferenceSet(FrameworkSpecificGroup item)
-        {
-            var json = new JObject();
-            json["targetFramework"] = item.TargetFramework?.ToString();
-            json["references"] = WriteArray(item.Items, WriteString);
-            return json;
-        }
-
-        private static string ReadPackageFile(string property, JToken json)
-        {
-            return property;
-        }
-
-        private static JProperty WritePackageFile(string path)
-        {
-            var json = new JObject();
-            return new JProperty(path, new JObject());
-        }
-
-        private static IList<TItem> ReadArray<TItem>(JArray json, Func<JToken, TItem> readItem)
+        private IList<TItem> ReadArray<TItem>(JArray json, Func<JToken, TItem> readItem)
         {
             if (json == null)
             {
@@ -255,7 +227,12 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static void WriteArray<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
+        private IList<string> ReadPathArray(JArray json, Func<JToken, string> readItem)
+        {
+            return ReadArray(json, readItem).Select(f => GetPathWithDirectorySeparator(f)).ToList();
+        }
+
+        private void WriteArray<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
         {
             if (items.Any())
             {
@@ -263,7 +240,12 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static JArray WriteArray<TItem>(IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
+        private void WritePathArray(JToken json, string property, IEnumerable<string> items, Func<string, JToken> writeItem)
+        {
+            WriteArray(json, property, items.Select(f => GetPathWithForwardSlashes(f)), writeItem);
+        }
+
+        private JArray WriteArray<TItem>(IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
         {
             var array = new JArray();
             foreach (var item in items)
@@ -273,7 +255,12 @@ namespace NuGet.ProjectModel
             return array;
         }
 
-        private static IList<TItem> ReadObject<TItem>(JObject json, Func<string, JToken, TItem> readItem)
+        private JArray WritePathArray(IEnumerable<string> items, Func<string, JToken> writeItem)
+        {
+            return WriteArray(items.Select(f => GetPathWithForwardSlashes(f)), writeItem);
+        }
+
+        private IList<TItem> ReadObject<TItem>(JObject json, Func<string, JToken, TItem> readItem)
         {
             if (json == null)
             {
@@ -287,7 +274,7 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static void WriteObject<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JProperty> writeItem)
+        private void WriteObject<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JProperty> writeItem)
         {
             if (items.Any())
             {
@@ -295,7 +282,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static JObject WriteObject<TItem>(IEnumerable<TItem> items, Func<TItem, JProperty> writeItem)
+        private JObject WriteObject<TItem>(IEnumerable<TItem> items, Func<TItem, JProperty> writeItem)
         {
             var array = new JObject();
             foreach (var item in items)
@@ -305,7 +292,7 @@ namespace NuGet.ProjectModel
             return array;
         }
 
-        private static bool ReadBool(JToken cursor, string property, bool defaultValue)
+        private bool ReadBool(JToken cursor, string property, bool defaultValue)
         {
             var valueToken = cursor[property];
             if (valueToken == null)
@@ -315,38 +302,71 @@ namespace NuGet.ProjectModel
             return valueToken.Value<bool>();
         }
 
-        private static string ReadString(JToken json)
+        private int ReadInt(JToken cursor, string property, int defaultValue)
+        {
+            var valueToken = cursor[property];
+            if (valueToken == null)
+            {
+                return defaultValue;
+            }
+            return valueToken.Value<int>();
+        }
+
+        private string ReadString(JToken json)
         {
             return json.Value<string>();
         }
 
-        private static NuGetVersion ReadSemanticVersion(JToken json, string property)
+        private SemanticVersion ReadSemanticVersion(JToken json, string property)
         {
             var valueToken = json[property];
             if (valueToken == null)
             {
                 throw new Exception(string.Format("TODO: lock file missing required property {0}", property));
             }
-            return NuGetVersion.Parse(valueToken.Value<string>());
+            return SemanticVersion.Parse(valueToken.Value<string>());
         }
 
-        private static void WriteBool(JToken token, string property, bool value)
+        private void WriteBool(JToken token, string property, bool value)
         {
             token[property] = new JValue(value);
         }
 
-        private static JToken WriteString(string item)
+        private JToken WriteString(string item)
         {
             return item != null ? new JValue(item) : JValue.CreateNull();
         }
 
-        private static NuGetFramework ReadFrameworkName(JToken json)
+        private NuGetFramework ReadFrameworkName(JToken json)
         {
-            return json == null ? null : NuGetFramework.Parse(json.Value<string>());
+            return json == null ? null : new NuGetFramework(json.Value<string>());
         }
-        private static JToken WriteFrameworkName(FrameworkName item)
+        private JToken WriteFrameworkName(NuGetFramework item)
         {
             return item != null ? new JValue(item.ToString()) : JValue.CreateNull();
         }
+
+        private static string GetPathWithForwardSlashes(string path)
+        {
+            return path.Replace('\\', '/');
+        }
+
+        private static string GetPathWithBackSlashes(string path)
+        {
+            return path.Replace('/', '\\');
+        }
+
+        private static string GetPathWithDirectorySeparator(string path)
+        {
+            if (Path.DirectorySeparatorChar == '/')
+            {
+                return GetPathWithForwardSlashes(path);
+            }
+            else
+            {
+                return GetPathWithBackSlashes(path);
+            }
+        }
+
     }
 }
