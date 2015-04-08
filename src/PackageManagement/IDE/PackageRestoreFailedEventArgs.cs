@@ -14,17 +14,17 @@ namespace NuGet.PackageManagement
         {
             if (restoredFailedPackageReference == null)
             {
-                throw new ArgumentNullException(nameof(restoredFailedPackageReference));
+                throw new ArgumentNullException("restoredFailedPackageReference");
             }
 
             if (exception == null)
             {
-                throw new ArgumentNullException(nameof(exception));
+                throw new ArgumentNullException("exception");
             }
 
             if (projectNames == null)
             {
-                throw new ArgumentNullException(nameof(projectNames));
+                throw new ArgumentNullException("projectNames");
             }
 
             RestoreFailedPackageReference = restoredFailedPackageReference;
