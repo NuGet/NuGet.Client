@@ -21,7 +21,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Gets all the values under section
         /// </summary>
-        IList<SettingValue> GetSettingValues(string section);
+        IList<SettingValue> GetSettingValues(string section, bool isPath = false);
         /// <summary>
         /// Gets all the values under section
         /// </summary>

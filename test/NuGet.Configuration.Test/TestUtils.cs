@@ -1,5 +1,7 @@
-﻿﻿using System;
+﻿using System;
 using System.IO;
+using System.Text;
+using System.Linq;
 
 namespace NuGet.Configuration.Test
 {
@@ -31,6 +33,32 @@ namespace NuGet.Configuration.Test
             {
                 Directory.Delete(randomTestPath, recursive: true);
             }
+        }
+
+        public static void CreateConfigurationFile(string configurationPath, string mockBaseDirectory, string configurationContent)
+        {
+            Directory.CreateDirectory(mockBaseDirectory);
+            using (FileStream file = File.Create(Path.Combine(mockBaseDirectory, configurationPath)))
+            {
+                Byte[] info = new UTF8Encoding(true).GetBytes(configurationContent);
+                file.Write(info, 0, info.Count());
+            }
+        }
+
+        public static string ReadConfigurationFile(string path)
+        {
+            using (FileStream fs = File.OpenRead(path))
+            {
+                using (var streamReader = new StreamReader(fs))
+                {
+                    return RemovedLineEndings(streamReader.ReadToEnd());
+                }
+            }
+        }
+        // this method is for removing LineEndings for CI build
+        public static string RemovedLineEndings(string result)
+        {
+            return result.Replace("\n", "").Replace("\r", "");
         }
     }
 }

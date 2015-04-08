@@ -303,7 +303,7 @@ namespace NuGet.Configuration
             return ret;
         }
 
-        public IList<SettingValue> GetSettingValues(string section)
+        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
         {
             if (String.IsNullOrEmpty(section))
             {
@@ -314,7 +314,7 @@ namespace NuGet.Configuration
             var curr = this;
             while (curr != null)
             {
-                curr.PopulateValues(section, settingValues);
+                curr.PopulateValues(section, settingValues, isPath);
                 curr = curr._next;
             }
 
@@ -582,12 +582,12 @@ namespace NuGet.Configuration
             return Path.Combine(configDirectory, value);
         }
 
-        private void PopulateValues(string section, List<SettingValue> current)
+        private void PopulateValues(string section, List<SettingValue> current, bool isPath)
         {
             var sectionElement = GetSection(ConfigXDocument.Root, section);
             if (sectionElement != null)
             {
-                ReadSection(sectionElement, current);
+                ReadSection(sectionElement, current, isPath);
             }
         }
 
@@ -603,10 +603,10 @@ namespace NuGet.Configuration
             {
                 return;
             }
-            ReadSection(subSectionElement, current);
+            ReadSection(subSectionElement, current, isPath: false);
         }
 
-        private void ReadSection(XContainer sectionElement, ICollection<SettingValue> values)
+        private void ReadSection(XContainer sectionElement, ICollection<SettingValue> values, bool isPath)
         {
             var elements = sectionElement.Elements();
 
@@ -615,7 +615,7 @@ namespace NuGet.Configuration
                 string elementName = element.Name.LocalName;
                 if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase))
                 {
-                    var v = ReadValue(element);
+                    var v = ReadValue(element, isPath);
                     values.Add(new SettingValue(v.Key, v.Value, IsMachineWideSettings, _priority));
                 }
                 else if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
@@ -625,7 +625,7 @@ namespace NuGet.Configuration
             }
         }
 
-        private KeyValuePair<string, string> ReadValue(XElement element)
+        private KeyValuePair<string, string> ReadValue(XElement element, bool isPath)
         {
             var keyAttribute = element.Attribute("key");
             var valueAttribute = element.Attribute("value");
@@ -636,12 +636,12 @@ namespace NuGet.Configuration
             }
 
             var value = valueAttribute.Value;
-            //Uri uri;
-            //if (isPath && Uri.TryCreate(value, UriKind.Relative, out uri))
-            //{
-            //    string configDirectory = Path.GetDirectoryName(ConfigFilePath);
-            //    value = _fileSystem.GetFullPath(Path.Combine(configDirectory, value));
-            //}
+            Uri uri;
+            if (isPath && Uri.TryCreate(value, UriKind.Relative, out uri))
+            {
+                string configDirectory = Path.GetDirectoryName(ConfigFilePath);
+                value = Path.Combine(Root, Path.Combine(configDirectory, value));
+            }
 
             return new KeyValuePair<string, string>(keyAttribute.Value, value);
         }

@@ -227,7 +227,6 @@ namespace NuGet.Configuration
                 Byte[] info = new UTF8Encoding(true).GetBytes(configurationDefaultsContent);
                 file.Write(info, 0, info.Count());
             }
-
             return new ConfigurationDefaults(mockBaseDirectory, configurationDefaultsPath);
         }
     }

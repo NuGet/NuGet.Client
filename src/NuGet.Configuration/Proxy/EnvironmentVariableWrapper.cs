@@ -3,7 +3,7 @@ using System.Security;
 
 namespace NuGet.Configuration
 {
-    internal class EnvironmentVariableWrapper : IEnvironmentVariableReader
+    public class EnvironmentVariableWrapper : IEnvironmentVariableReader
     {
         public string GetEnvironmentVariable(string variable)
         {
