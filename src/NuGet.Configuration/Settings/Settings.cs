@@ -711,7 +711,7 @@ namespace NuGet.Configuration
         /// <remarks>
         /// Order is most significant (e.g. applied last) to least significant (applied first)
         /// ex:
-        /// c:\foo\nuget.config
+        /// c:\someLocation\nuget.config
         /// c:\nuget.config
         /// </remarks>
         private static IEnumerable<string> GetSettingsFileNames(string root)
@@ -760,7 +760,7 @@ namespace NuGet.Configuration
                     // decision here is to proceed even if we were not able to get mutex ownership
                     // and let the potential IO errors bubble up. Reasoning is that failure to get
                     // ownership probably means faulty hardware and in this case it's better to report
-                    // back than hang
+                    // back than stop responding
                     ioOperation();
                 }
                 finally
