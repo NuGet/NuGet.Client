@@ -18,43 +18,34 @@ namespace NuGet.PackageManagement
         /// Sets <param name="targetPackageStream"></param> for a given <param name="packageIdentity"></param> 
         /// from the given <param name="sourceRepository"></param>. If successfully set, returns true. Otherwise, false
         /// </summary>
-        public static async Task<bool> GetPackageStream(SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream, CancellationToken token)
+        public static async Task GetPackageStreamAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream, CancellationToken token)
         {
-            // TODO: Tie up machine cache with CacheClient?!
+            token.ThrowIfCancellationRequested();
 
-            try
+            using (var downloadStream = await GetDownloadStreamAsync(sourceRepository, packageIdentity, token))
             {
                 token.ThrowIfCancellationRequested();
-                // Step-1 : Get the download stream for packageIdentity
-                Stream downloadStream = await GetDownloadStream(sourceRepository, packageIdentity, token);
 
-                if(downloadStream == null)
-                {
-                    return false;
-                }
-
-                token.ThrowIfCancellationRequested();
-                // Step-2: Copy download stream to targetPackageStream if it is not null
                 await downloadStream.CopyToAsync(targetPackageStream);
-                return true;
             }
-            catch (Exception)
-            {
-                return false;
-            } 
         }
 
-        private static async Task<Stream> GetDownloadStream(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
+        private static async Task<Stream> GetDownloadStreamAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
         {
-            Stream downloadStream = null;
             DownloadResource downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
-            if(downloadResource != null)
+
+            if (downloadResource == null)
             {
-                downloadStream = await downloadResource.GetStream(packageIdentity, token);
-                return downloadStream;
+                throw new InvalidOperationException("Download resource not found");
             }
 
-            return null;
+            var downloadStream = await downloadResource.GetStream(packageIdentity, token);
+            if (downloadStream == null)
+            {
+                throw new InvalidOperationException("Download stream is null");
+            }
+
+            return downloadStream;
         }
     }
 }
