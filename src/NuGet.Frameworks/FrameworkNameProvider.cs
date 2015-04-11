@@ -241,15 +241,16 @@ namespace NuGet.Frameworks
                 NuGetFramework current = frameworks.First();
                 NuGetFramework[] remaining = frameworks.Skip(1).ToArray();
 
-                // find all equivalent frameworks for the current one
-                HashSet<NuGetFramework> equalFrameworks = null;
-                if (!_equivalentFrameworks.TryGetValue(current, out equalFrameworks))
-                {
-                    equalFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
-                }
-
+                HashSet<NuGetFramework> equalFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
                 // include ourselves
                 equalFrameworks.Add(current);
+
+                // find all equivalent frameworks for the current one
+                HashSet<NuGetFramework> curFrameworks = null;
+                if (_equivalentFrameworks.TryGetValue(current, out curFrameworks))
+                {
+                    equalFrameworks.UnionWith(curFrameworks);
+                }
 
                 foreach (var fw in equalFrameworks)
                 {
