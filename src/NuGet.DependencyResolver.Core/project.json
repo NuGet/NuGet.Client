@@ -9,6 +9,18 @@
 
     "frameworks": {
         "net45": { },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": { "version": "", "type": "build" },
+                "System.Threading.Tasks": { "version": "", "type": "build" },
+                "System.Text.Encoding": { "version": "", "type": "build" },
+                "System.Linq": { "version": "", "type": "build" }
+            },
+            "dependencies": {
+                "Microsoft.Framework.Runtime.Roslyn.Interfaces": { "version": "1.0.0-*", "type": "build" },
+                "Newtonsoft.Json": { "version": "6.0.4", "type": "build" }
+            }
+        },
         "dnxcore50": { }
     }
 }
