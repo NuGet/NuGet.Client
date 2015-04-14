@@ -188,6 +188,7 @@ namespace NuGet.ProjectManagement
             packageStream.Seek(0, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
             PackageReader packageReader = new PackageReader(zipArchive);
+            IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
             IEnumerable<FrameworkSpecificGroup> referenceItemGroups = packageReader.GetReferenceItems();
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
             IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
@@ -197,6 +198,8 @@ namespace NuGet.ProjectManagement
             // Step-3: Get the most compatible items groups for all items groups
             bool hasCompatibleProjectLevelContent = false;
 
+            FrameworkSpecificGroup compatibleLibItemsGroup =
+                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, libItemGroups);
             FrameworkSpecificGroup compatibleReferenceItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, referenceItemGroups);
             FrameworkSpecificGroup compatibleFrameworkReferencesGroup =
@@ -208,14 +211,14 @@ namespace NuGet.ProjectManagement
             FrameworkSpecificGroup compatibleToolItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, toolItemGroups);
 
-            hasCompatibleProjectLevelContent = MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup) ||
+            hasCompatibleProjectLevelContent = MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
                 MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
 
             // Check if package has any content for project
-            bool hasProjectLevelContent = referenceItemGroups.Any() || frameworkReferenceGroups.Any()
-                || contentFileGroups.Any() || buildFileGroups.Any();            
+            bool hasProjectLevelContent = libItemGroups.Any() || frameworkReferenceGroups.Any()
+                || contentFileGroups.Any() || buildFileGroups.Any();
             bool onlyHasCompatibleTools = false;
             bool onlyHasDependencies = false;
 
