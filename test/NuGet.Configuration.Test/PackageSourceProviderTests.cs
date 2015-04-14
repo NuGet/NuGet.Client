@@ -77,7 +77,7 @@ namespace NuGet.Configuration.Test
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
-        [Fact]
+       
         public void PrimaryURLIsForcedWhenPrimaryNameHasAnotherFeed()
         {
             // Act
@@ -115,7 +115,7 @@ namespace NuGet.Configuration.Test
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
-        [Fact]
+        
         public void SecondaryURLIsForcedWhenSecondaryNameHasAnotherFeed()
         {
             // Act
@@ -244,7 +244,7 @@ namespace NuGet.Configuration.Test
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
-        [Fact]
+       
         public void PrimaryIsEnabledAndSecondaryIsDisabledWhenPrimaryIsAddedForTheFirstTimeAndSecondaryAlreadyExists()
         {
             // Act
@@ -1223,6 +1223,32 @@ namespace NuGet.Configuration.Test
             Assert.Equal("http://a", values[0].Source);
         }
 
+        [Fact]
+        public void V2NotDisabled()
+        {
+            // Arrange
+            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+            var configContent = @"<configuration>
+    <packageSources>
+        <add key='nuget.org' value='https://www.nuget.org/api/v2/' />
+    </packageSources>
+</configuration>";
+            TestFilesystemUtility.CreateConfigurationFile("nuget.config",mockBaseDirectory, configContent);
+
+            var settings = Settings.LoadDefaultSettings(
+              mockBaseDirectory,
+               configFileName: null,
+               machineWideSettings: null);
+
+            var provider = CreatePackageSourceProvider(settings);
+
+            // Act
+            var values = provider.LoadPackageSources().Where(p => p.Name.Equals("nuget.org", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            // Assert
+            Assert.True(values[0].IsEnabled);
+
+        }
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             StringBuilder nugetConfigBaseString = new StringBuilder();
