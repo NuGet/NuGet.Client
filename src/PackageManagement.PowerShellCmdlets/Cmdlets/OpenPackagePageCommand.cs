@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
             }
 
-            if (package != null)
+            if (package != null && package.Identity != null)
             {
                 Uri targetUrl = null;
                 if (License.IsPresent)
@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_UrlMissing, Id + " " + Version));
+                    WriteError(String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_UrlMissing, package.Identity.Id + " " + package.Identity.Version));
                 }
             }
             else
