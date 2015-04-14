@@ -80,6 +80,7 @@ namespace NuGet.PackageManagement.UI
         {
             var action = GetUserAction();
             Control.IsEnabled = false;
+            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
             try
             {
                 await Task.Run(() =>
@@ -91,6 +92,7 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
+                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                 Control.IsEnabled = true;
             }
         }

@@ -353,8 +353,9 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<LoadResult> LoadItems(int startIndex, CancellationToken ct)
         {
-            ct.ThrowIfCancellationRequested();            
+            ct.ThrowIfCancellationRequested();
 
+            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
             List<SearchResultPackageMetadata> packages = new List<SearchResultPackageMetadata>();
             var results = await Search(startIndex, ct);
             int resultCount = 0;
@@ -403,6 +404,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             ct.ThrowIfCancellationRequested();
+            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
             return new LoadResult()
             {
                 Items = packages,
