@@ -3,7 +3,13 @@
     <PropertyGroup>
       <RootDir>$(MSBuildStartupDirectory)</RootDir>
     </PropertyGroup>
-    <UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+	
+	<!-- This works for msbuild 12 
+    <UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll"> -->
+	
+	<!-- This workds for msbuild 14 -->
+	<UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+	
        <ParameterGroup>
            <OutputFilename ParameterType="System.String" Required="true" />
        </ParameterGroup>
