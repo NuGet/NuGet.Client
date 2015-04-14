@@ -1377,7 +1377,7 @@ namespace NuGet.Test
 
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
-            Assert.Equal("Package 'DoesNotExist.1.0.0' is not found", exception.Message);
+            Assert.Equal("Package 'DoesNotExist' is not found", exception.Message);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
@@ -1888,7 +1888,8 @@ namespace NuGet.Test
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
         }
 
-        [Fact]
+        // [Fact] -- This test performs update but verifies for a specific version
+        //           This is not going to work as newer versions are uploaded
         public async Task TestPacManPreviewUpdatePackages()
         {
             // Arrange

@@ -1015,7 +1015,7 @@ namespace NuGet.PackageManagement
                     {
                         using (var targetPackageStream = new MemoryStream())
                         {
-                            await PackageDownloader.GetPackageStream(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
+                            await PackageDownloader.GetPackageStreamAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
                             await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                         }
                     }
@@ -1132,7 +1132,7 @@ namespace NuGet.PackageManagement
             token.ThrowIfCancellationRequested();
             using (var targetPackageStream = new MemoryStream())
             {
-                await PackageDownloader.GetPackageStream(sourceRepository, packageIdentity, targetPackageStream, token);
+                await PackageDownloader.GetPackageStreamAsync(sourceRepository, packageIdentity, targetPackageStream, token);
                 // If you already downloaded the package, just restore it, don't cancel the operation now
                 await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, targetPackageStream, nuGetProjectContext, token);
             }
