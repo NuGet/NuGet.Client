@@ -259,6 +259,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter cannot be zero or negative.
+        /// </summary>
+        internal static string ParameterCannotBeZeroOrNegative {
+            get {
+                return ResourceManager.GetString("ParameterCannotBeZeroOrNegative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resolved actions to install package &apos;{0}&apos;.
         /// </summary>
         internal static string ResolvedActionsToInstallPackage {

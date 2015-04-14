@@ -234,4 +234,7 @@
   <data name="To" xml:space="preserve">
     <value>to</value>
   </data>
+  <data name="ParameterCannotBeZeroOrNegative" xml:space="preserve">
+    <value>Parameter cannot be zero or negative</value>
+  </data>
 </root>
