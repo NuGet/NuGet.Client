@@ -213,31 +213,36 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
             }
 
-            IEnumerable<SourceRepository> repoes = Enumerable.Empty<SourceRepository>();
-            if (_resourceRepositoryProvider != null)
+            IEnumerable<PackageSource> packageSources = Enumerable.Empty<PackageSource>();
+            if (_resourceRepositoryProvider != null && _resourceRepositoryProvider.PackageSourceProvider != null)
             {
-                repoes = _resourceRepositoryProvider.GetRepositories();
-            }
-               
-            if (!string.IsNullOrEmpty(source))
-            {
-                // Look through all available sources (including those disabled) by matching source name and url
-                ActiveSourceRepository = repoes
-                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Name, source) ||
-                    StringComparer.OrdinalIgnoreCase.Equals(p.PackageSource.Source, source))
-                    .FirstOrDefault();
+                packageSources = _resourceRepositoryProvider.PackageSourceProvider.LoadPackageSources();
 
-                if(ActiveSourceRepository == null)
+                if (!string.IsNullOrEmpty(source))
                 {
-                    try
+                    // Look through all available sources (including those disabled) by matching source name and url
+                    var matchingSource = packageSources
+                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
+                        StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
+                        .FirstOrDefault();
+                    if (matchingSource != null)
                     {
-                        // source should be the format of url here; otherwise it cannot resolve from name anyways.
-                        ActiveSourceRepository = CreateRepositoryFromSource(source);
+                        ActiveSourceRepository = _resourceRepositoryProvider.CreateRepository(matchingSource);
                     }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
+                }
+            }
+
+            // If specified source is not one of the registered package sources, then create from the source string(URL).
+            if (ActiveSourceRepository == null)
+            {
+                try
+                {
+                    // source should be the format of url here; otherwise it cannot resolve from name anyways.
+                    ActiveSourceRepository = CreateRepositoryFromSource(source);
+                }
+                catch (Exception)
+                {
+                    throw;
                 }
             }
         }
