@@ -18,6 +18,8 @@ namespace StandaloneUI
             Instance = Settings.LoadDefaultSettings(null, null, null);
         }
 
+        public event EventHandler SettingsChanged;
+
         public bool DeleteSection(string section)
         {
             return Instance.DeleteSection(section);

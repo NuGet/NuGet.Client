@@ -127,7 +127,7 @@ namespace StandaloneUI
             return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://api.nuget.org/v3/index.json", "nuget.org v3") };
         }
 
-        public event EventHandler PackageSourcesSaved;
+        public event EventHandler PackageSourcesChanged;
 
         public void SavePackageSources(IEnumerable<NuGet.Configuration.PackageSource> sources)
         {

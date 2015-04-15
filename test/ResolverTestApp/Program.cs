@@ -129,7 +129,7 @@ namespace ResolverTestApp
                 return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3") };
             }
 
-            public event EventHandler PackageSourcesSaved;
+            public event EventHandler PackageSourcesChanged;
 
             public void SavePackageSources(IEnumerable<NuGet.Configuration.PackageSource> sources)
             {

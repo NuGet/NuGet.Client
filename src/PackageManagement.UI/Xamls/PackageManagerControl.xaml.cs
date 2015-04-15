@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI
                 controller.PackageManagerControl = this;
             }
 
-            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesSaved += Sources_PackageSourcesChanged;
+            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
             if (IsUILegalDisclaimerSuppressed())
             {

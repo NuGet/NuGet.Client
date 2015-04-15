@@ -88,14 +88,14 @@ namespace Test.Utility
             return PackageSources;
         }
 
-        public event EventHandler PackageSourcesSaved;
+        public event EventHandler PackageSourcesChanged;
 
         public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
             PackageSources = sources;
-            if(PackageSourcesSaved != null)
+            if (PackageSourcesChanged != null)
             {
-                PackageSourcesSaved(this, null);
+                PackageSourcesChanged(this, null);
             }
         }
 
