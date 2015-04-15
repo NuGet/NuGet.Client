@@ -1,4 +1,4 @@
-﻿function Test-SinglePackageInstallIntoSingleProject {
+function Test-SinglePackageInstallIntoSingleProject {
     # Arrange
     $project = New-ConsoleApplication
     
@@ -1618,8 +1618,8 @@ function Test-InstallSatellitePackageCopiesFilesToRuntimeFolderWhenInstalledAsDe
     $p | Install-Package PackageWithStrongNamedLib.ja-jp -Source $context.RepositoryPath
 
     # Assert (the resources from the satellite package are copied into the runtime package's folder)
-    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\lib\ja-jp\Core.resources.dll)
-    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\lib\ja-jp\Core.xml)
+    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\lib\ja-jp\Core.resources.dll)
+    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\lib\ja-jp\Core.xml)
 }
 
 function Test-InstallSatellitePackageCopiesFilesToExistingRuntimePackageFolder
@@ -1637,8 +1637,8 @@ function Test-InstallSatellitePackageCopiesFilesToExistingRuntimePackageFolder
     $p | Install-Package PackageWithStrongNamedLib.ja-jp -Source $context.RepositoryPath
 
     # Assert (the resources from the satellite package are copied into the runtime package's folder)
-    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\lib\ja-jp\Core.resources.dll)
-    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\lib\ja-jp\Core.xml)
+    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\lib\ja-jp\Core.resources.dll)
+    Assert-PathExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\lib\ja-jp\Core.xml)
 }
 
 function Test-InstallingSatellitePackageOnlyCopiesCultureSpecificLibFolderContents
@@ -1655,10 +1655,10 @@ function Test-InstallingSatellitePackageOnlyCopiesCultureSpecificLibFolderConten
     $p | Install-Package PackageWithStrongNamedLib.ja-jp -Source $context.RepositoryPath
 
     # Assert (the resources from the satellite package are copied into the runtime package's folder)
-    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\RootFile.txt)
-    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\content\ja-jp\file.txt)
-    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\content\ja-jp.txt)
-    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1.0\lib\ja-jp.txt)
+    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\RootFile.txt)
+    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\content\ja-jp\file.txt)
+    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\content\ja-jp.txt)
+    Assert-PathNotExists (Join-Path $solutionDir packages\PackageWithStrongNamedLib.1.1\lib\ja-jp.txt)
 }
 
 function Test-InstallWithConflictDoesNotUpdateToPrerelease {
