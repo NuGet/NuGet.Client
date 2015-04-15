@@ -106,51 +106,48 @@ namespace NuGet.Versioning
                 return -1;
             }
 
-            if (x != null && y != null)
+            // compare version
+            int result = x.Major.CompareTo(y.Major);
+            if (result != 0)
+                return result;
+
+            result = x.Minor.CompareTo(y.Minor);
+            if (result != 0)
+                return result;
+
+            result = x.Patch.CompareTo(y.Patch);
+            if (result != 0)
+                return result;
+
+            NuGetVersion legacyX = x as NuGetVersion;
+            NuGetVersion legacyY = y as NuGetVersion;
+
+            result = CompareLegacyVersion(legacyX, legacyY);
+            if (result != 0)
+                return result;
+
+            if (_mode != VersionComparison.Version)
             {
-                // compare version
-                int result = x.Major.CompareTo(y.Major);
-                if (result != 0)
-                    return result;
+                // compare release labels
+                if (x.IsPrerelease && !y.IsPrerelease)
+                    return -1;
 
-                result = x.Minor.CompareTo(y.Minor);
-                if (result != 0)
-                    return result;
+                if (!x.IsPrerelease && y.IsPrerelease)
+                    return 1;
 
-                result = x.Patch.CompareTo(y.Patch);
-                if (result != 0)
-                    return result;
-
-                NuGetVersion legacyX = x as NuGetVersion;
-                NuGetVersion legacyY = y as NuGetVersion;
-
-                result = CompareLegacyVersion(legacyX, legacyY);
-                if (result != 0)
-                    return result;
-
-                if (_mode != VersionComparison.Version)
+                if (x.IsPrerelease && y.IsPrerelease)
                 {
-                    // compare release labels
-                    if (x.IsPrerelease && !y.IsPrerelease)
-                        return -1;
+                    result = CompareReleaseLabels(x.ReleaseLabels, y.ReleaseLabels);
+                    if (result != 0)
+                        return result;
+                }
 
-                    if (!x.IsPrerelease && y.IsPrerelease)
-                        return 1;
-
-                    if (x.IsPrerelease && y.IsPrerelease)
-                    {
-                        result = CompareReleaseLabels(x.ReleaseLabels, y.ReleaseLabels);
-                        if (result != 0)
-                            return result;
-                    }
-
-                    // compare the metadata
-                    if (_mode == VersionComparison.VersionReleaseMetadata)
-                    {
-                        result = StringComparer.OrdinalIgnoreCase.Compare(x.Metadata ?? string.Empty, y.Metadata ?? string.Empty);
-                        if (result != 0)
-                            return result;
-                    }
+                // compare the metadata
+                if (_mode == VersionComparison.VersionReleaseMetadata)
+                {
+                    result = StringComparer.OrdinalIgnoreCase.Compare(x.Metadata ?? string.Empty, y.Metadata ?? string.Empty);
+                    if (result != 0)
+                        return result;
                 }
             }
 
