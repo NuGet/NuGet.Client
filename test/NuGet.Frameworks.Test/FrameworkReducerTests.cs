@@ -12,6 +12,40 @@ namespace NuGet.Test
     public class FrameworkReducerTests
     {
         [Theory]
+        [InlineData("dnx452", "net45")]
+        [InlineData("dnxcore50", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
+        [InlineData("net20", "net2")]
+        [InlineData("net451", "net45")]
+        [InlineData("sl5", "portable-net4+sl5+win8+wp8+wpa81")]
+        [InlineData("wp81", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
+        [InlineData("win81", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
+        public void FrameworkReducer_JsonNetGetNearestLibGroup(string projectFramework, string expectedFramework)
+        {
+            // Arrange
+
+            // Get nearest lib group for newtonsoft.json 7.0.1-beta2
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var project = NuGetFramework.Parse(projectFramework);
+
+            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("net20"),
+                NuGetFramework.Parse("net35"),
+                NuGetFramework.Parse("net40"),
+                NuGetFramework.Parse("net45"),
+                NuGetFramework.Parse("portable-net40+wp80+win8+wpa81+sl5"),
+                NuGetFramework.Parse("portable-net45+wp80+win8+wpa81+aspnetcore50")
+            };
+
+            // Act
+            var result = reducer.GetNearest(project, frameworks);
+
+            // Assert
+            Assert.Equal(expectedFramework, result.GetShortFolderName());
+        }
+
+        [Theory]
         [InlineData("dnx452", "aspnet5")]
         [InlineData("dnx451", "aspnet5")]
         [InlineData("dnx45", "aspnet5")]
@@ -24,6 +58,8 @@ namespace NuGet.Test
         [InlineData("sl5", "sl5")]
         public void FrameworkReducer_AutoMapperGetNearestLibGroup(string projectFramework, string expectedFramework)
         {
+            // Arrange
+
             // Get nearest lib group for AutoMapper 4.0.0-ci1026
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -44,8 +80,10 @@ namespace NuGet.Test
                 NuGetFramework.Parse("Xamarin.iOS10")
             };
 
+            // Act
             var result = reducer.GetNearest(project, frameworks);
 
+            // Assert
             Assert.Equal(expectedFramework, result.GetShortFolderName());
         }
 
@@ -205,6 +243,7 @@ namespace NuGet.Test
         [Fact]
         public void FrameworkReducer_GetNearestPCLtoPCL()
         {
+            // Arrange
             var project = NuGetFramework.Parse("portable-net45+win81");
 
             var packageFrameworks = new List<NuGetFramework>()
@@ -216,9 +255,11 @@ namespace NuGet.Test
 
             FrameworkReducer reducer = new FrameworkReducer();
 
+            // Act
             var nearest = reducer.GetNearest(project, packageFrameworks);
 
-            // net45+win8 is nearest. it beats net40+win81 since it is a known framework
+            // Assert
+            // net45+win8 is nearest since net45 wins over net40
             Assert.Equal(packageFrameworks[0], nearest);
         }
 
@@ -263,28 +304,58 @@ namespace NuGet.Test
             Assert.Equal(packageFrameworks[1], nearest);
         }
 
+
+
         [Fact]
-        public void FrameworkReducer_JsonNet701beta1()
+        public void FrameworkReducer_GetNearestNonPCLtoPCLBasedOnOtherVersions()
         {
-            var project = NuGetFramework.Parse("win81");
+            // Arrange
+            var project = NuGetFramework.Parse("win8");
 
             var packageFrameworks = new List<NuGetFramework>()
             {
-                NuGetFramework.Parse("net20"),
-                NuGetFramework.Parse("net35"),
-                NuGetFramework.Parse("net40"),
-                NuGetFramework.Parse("net45"),
-                NuGetFramework.Parse("portable-net40%2Bsl5%2Bwp80%2Bwin8%2Bwpa81"),
-                NuGetFramework.Parse("portable-net45%2Bwp80%2Bwin8%2Bwpa81%2Baspnetcore50")
+                NuGetFramework.Parse("portable-net45+win8+wpa81"),
+                NuGetFramework.Parse("portable-net45+win8+wpa82"),
+                NuGetFramework.Parse("portable-net45+win8+wpa9"),
+                NuGetFramework.Parse("portable-net45+win8+wpa10.0"),
+                NuGetFramework.Parse("portable-net45+win8+wpa11.0+sl5")
             };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
+            // Act
             var nearest = reducer.GetNearest(project, packageFrameworks);
 
-            // #4 has the least profile frameworks
-            Assert.Equal(packageFrameworks[4], nearest);
+            // Assert
+            // portable-net45+win8+wpa10.0 is the best match since it has the highest
+            // version of WPA, and the least frameworks
+            Assert.Equal(packageFrameworks[3], nearest);
         }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestNonPCLtoPCLUncertain()
+        {
+            // Arrange
+            var project = NuGetFramework.Parse("win8");
+
+            var packageFrameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("portable-net45+win8+sl6"),
+                NuGetFramework.Parse("portable-net45+win8+dnxcore50"),
+                NuGetFramework.Parse("portable-net45+win8+native"),
+            };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            // Act
+            var nearest = reducer.GetNearest(project, packageFrameworks);
+
+            // Assert
+            // There is no certain way to relate these frameworks to each other, but the same one
+            // should always come back from this compare.
+            Assert.Equal(packageFrameworks[1], nearest);
+        }
+
 
         [Fact]
         public void FrameworkReducer_GetNearestChooseFrameworkName()

@@ -94,7 +94,7 @@ namespace NuGet.Frameworks
                         {
                             // For scenarios where we are unable to decide between PCLs, choose the PCL with the 
                             // least frameworks. Less frameworks means less compatibility which means it is nearer to the target.
-                            reduced = OrderPCL(reduced).Take(1);
+                            reduced = new NuGetFramework[] { GetBestPCL(reduced) };
                         }
                     }
                 }
@@ -359,16 +359,110 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// Order PCLs when there is no other way to decide.
-        /// 
-        /// Lowest framework count wins
-        /// Known profiles with Profile= are next
-        /// As a last resort, the shortest profile wins
         /// </summary>
-        private IEnumerable<NuGetFramework> OrderPCL(IEnumerable<NuGetFramework> reduced)
+        private NuGetFramework GetBestPCL(IEnumerable<NuGetFramework> reduced)
         {
-            return reduced.OrderBy(f => ExplodePortableFramework(f, false).Count())
-                .ThenBy(f => f.Profile.IndexOf('+') == -1 ? 0 : 1)
-                .ThenBy(f => f.Profile.Length);
+            NuGetFramework current = null;
+
+            foreach (var considering in reduced)
+            {
+                if (current == null || IsBetterPCL(current, considering))
+                {
+                    current = considering;
+                }
+            }
+
+            return current;
+        }
+
+        /// <summary>
+        /// Sort PCLs using these criteria
+        /// 1. Lowest number of frameworks (highest surface area) wins first
+        /// 2. Profile with the highest version numbers wins next
+        /// 3. String compare is used as a last resort
+        /// </summary>
+        private bool IsBetterPCL(NuGetFramework current, NuGetFramework considering)
+        {
+            Debug.Assert(considering.IsPCL && current.IsPCL, "This method should be used only to compare PCLs");
+
+            // Find all frameworks in the profile
+            var consideringFrameworks = ExplodePortableFramework(considering, false);
+
+            var currentFrameworks = ExplodePortableFramework(current, false);
+
+            // The PCL with the least frameworks (highest surface area) goes first
+            if (consideringFrameworks.Count() < currentFrameworks.Count())
+            {
+                return true;
+            }
+            else if (currentFrameworks.Count() < consideringFrameworks.Count())
+            {
+                return false;
+            }
+
+            // If both frameworks have the same number of frameworks take the framework that has the highest 
+            // overall set of framework versions
+
+            // Find Frameworks that both profiles have in common
+            var sharedFrameworkIds = consideringFrameworks.Select(f => f.Framework)
+                .Where(f =>
+                    currentFrameworks.Any(consideringFramework => StringComparer.OrdinalIgnoreCase.Equals(f, consideringFramework.Framework)));
+
+            int consideringHighest = 0;
+            int currentHighest = 0;
+
+            // Determine which framework has the highest version of each shared framework
+            foreach (string sharedId in sharedFrameworkIds)
+            {
+                var consideringFramework = consideringFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId)).First();
+                var currentFramework = currentFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId)).First();
+
+                if (consideringFramework.Version < currentFramework.Version)
+                {
+                    currentHighest++;
+                }
+                else if (currentFramework.Version < consideringFramework.Version)
+                {
+                    consideringHighest++;
+                }
+            }
+
+            // Prefer the highest count
+            if (currentHighest < consideringHighest)
+            {
+                return true;
+            }
+            else if (consideringHighest < currentHighest)
+            {
+                return false;
+            }
+
+            // Take the highest version of .NET if no winner could be determined, this is usually a good indicator of which is newer
+            var consideringNet = consideringFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, FrameworkConstants.FrameworkIdentifiers.Net)).First();
+            var currentNet = currentFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, FrameworkConstants.FrameworkIdentifiers.Net)).First();
+
+            // Compare using .NET only if both frameworks have it. PCLs should always have .NET, but since users can make these strings up we should
+            // try to handle that as best as possible.
+            if (consideringNet != null && currentNet != null)
+            {
+                if (currentNet.Version < consideringNet.Version)
+                {
+                    return true;
+                }
+                else if (consideringNet.Version < currentNet.Version)
+                {
+                    return false;
+                }
+            }
+
+            // In the very rare case that both frameworks are still equal, we have to pick one. 
+            // There is nothing but we need to be deterministic, so compare the profiles as strings.
+            if (StringComparer.OrdinalIgnoreCase.Compare(considering.GetShortFolderName(_mappings), current.GetShortFolderName(_mappings)) < 0)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
