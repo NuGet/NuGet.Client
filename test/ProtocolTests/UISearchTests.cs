@@ -20,7 +20,7 @@ namespace Client.V3Test
 
             var filter = new SearchFilter();
             filter.IncludePrerelease = false;
-
+                        
             var results = (await resource.Search(string.Empty, filter, 0, 10, CancellationToken.None)).ToList();
 
             Assert.Equal(10, results.Count);
@@ -28,7 +28,8 @@ namespace Client.V3Test
             Assert.True(results[0].Versions.Count() > 3);
 
             Assert.Equal("Newtonsoft.Json", results[1].Identity.Id);
-            Assert.Equal("Microsoft.AspNet.Mvc", results[2].Identity.Id);
+            Assert.Equal("bootstrap", results[2].Identity.Id);
+            Assert.Equal("Microsoft.AspNet.Mvc", results[3].Identity.Id);
 
             // Null for now
             //Assert.True(first.LatestPackageMetadata.Description.Length > 10);
