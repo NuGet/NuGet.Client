@@ -73,7 +73,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             InitializeSources();
 
-            _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesSaved += PackageSourceProvider_PackageSourcesSaved;
+            _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesChanged += PackageSourceProvider_PackageSourcesChanged;
         }
 
         private void InitializeSources()
@@ -505,7 +505,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return _sourceRepositories.Select(repo => repo.PackageSource.Name).ToArray();
         }
 
-        private void PackageSourceProvider_PackageSourcesSaved(object sender, EventArgs e)
+        private void PackageSourceProvider_PackageSourcesChanged(object sender, EventArgs e)
         {
             _sourceRepositories = _sourceRepositoryProvider
                 .GetRepositories()

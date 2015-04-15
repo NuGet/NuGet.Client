@@ -17,7 +17,7 @@ namespace NuGet.VisualStudio
         public VsPackageSourceProvider(ISettings settings)
         {
             _packageSourceProvider = new PackageSourceProvider(settings);
-            _packageSourceProvider.PackageSourcesSaved += PackageSourcesSaved;
+            _packageSourceProvider.PackageSourcesChanged += PackageSourcesChanged;
         }
 
         public IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled)
@@ -39,7 +39,7 @@ namespace NuGet.VisualStudio
 
         public event EventHandler SourcesChanged;
 
-        private void PackageSourcesSaved(object sender, EventArgs e)
+        private void PackageSourcesChanged(object sender, EventArgs e)
         {
             if (SourcesChanged != null)
             {

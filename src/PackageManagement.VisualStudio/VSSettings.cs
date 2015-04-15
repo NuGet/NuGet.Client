@@ -13,6 +13,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private ISolutionManager SolutionManager { get; set; }
         private IMachineWideSettings MachineWideSettings { get; set; }
 
+        public event EventHandler SettingsChanged;
+
         public VSSettings(ISolutionManager solutionManager)
             : this(solutionManager, machineWideSettings: null)
         {
@@ -51,6 +53,12 @@ namespace NuGet.PackageManagement.VisualStudio
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
             ResetSolutionSettings();
+
+            // raises event SettingsChanged
+            if (SettingsChanged != null)
+            {
+                SettingsChanged(this, EventArgs.Empty);
+            }
         }
 
         public bool DeleteSection(string section)
