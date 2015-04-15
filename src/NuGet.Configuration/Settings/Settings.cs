@@ -65,6 +65,8 @@ namespace NuGet.Configuration
             IsMachineWideSettings = isMachineWideSettings;
         }
 
+        public event EventHandler SettingsChanged;
+
         /// <summary>
         /// Folder under which the config file is present
         /// </summary>

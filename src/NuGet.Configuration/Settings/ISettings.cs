@@ -33,5 +33,9 @@ namespace NuGet.Configuration
         bool DeleteValue(string section, string key);
         bool DeleteSection(string section);
 
+        /// <summary>
+        /// Event raised when the setting have been changed.
+        /// </summary>
+        event EventHandler SettingsChanged;
     }
 }

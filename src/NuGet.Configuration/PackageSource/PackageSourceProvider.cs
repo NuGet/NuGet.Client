@@ -51,6 +51,10 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException("settings");
             }
             Settings = settings;
+            Settings.SettingsChanged += (_, __) =>
+            {
+                OnPackageSourcesChanged();
+            };
             _providerDefaultPrimarySources = providerDefaultPrimarySources ?? Enumerable.Empty<PackageSource>();
             _providerDefaultSecondarySources = providerDefaultSecondarySources ?? Enumerable.Empty<PackageSource>();
             _migratePackageSources = migratePackageSources;
@@ -397,9 +401,17 @@ namespace NuGet.Configuration
                 });
             }
 
-            if (PackageSourcesSaved != null)
+            OnPackageSourcesChanged();
+        }
+
+        /// <summary>
+        /// Fires event PackageSourcesChanged
+        /// </summary>
+        private void OnPackageSourcesChanged()
+        {
+            if (PackageSourcesChanged != null)
             {
-                PackageSourcesSaved(this, EventArgs.Empty);
+                PackageSourcesChanged(this, EventArgs.Empty);
             }
         }
 
@@ -485,6 +497,6 @@ namespace NuGet.Configuration
             }
         }
 
-        public event EventHandler PackageSourcesSaved;
+        public event EventHandler PackageSourcesChanged;
     }
 }

@@ -7,7 +7,8 @@ namespace NuGet.Configuration
     {
         IEnumerable<PackageSource> LoadPackageSources();
 
-        event EventHandler PackageSourcesSaved;
+        event EventHandler PackageSourcesChanged;        
+
         void SavePackageSources(IEnumerable<PackageSource> sources);
         void DisablePackageSource(PackageSource source);
         bool IsPackageSourceEnabled(PackageSource source);

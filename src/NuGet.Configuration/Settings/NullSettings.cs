@@ -8,6 +8,8 @@ namespace NuGet.Configuration
     {
         private static readonly NullSettings _settings = new NullSettings();
 
+        public event EventHandler SettingsChanged;
+
         public static NullSettings Instance
         {
             get { return _settings; }
