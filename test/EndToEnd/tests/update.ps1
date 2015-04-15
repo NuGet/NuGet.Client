@@ -1087,7 +1087,7 @@ function Test-UpdatePackageDontMakeExcessiveNetworkRequests
     }
 }
 
-function Test-UpdatePackageInstallCorrectDependencyPackageBasedOnTargetFramework
+function Test-UpdatePackageDoesNotUninstallDependencyOfPreviousVersion
 {
     param($context)
 
@@ -1109,7 +1109,7 @@ function Test-UpdatePackageInstallCorrectDependencyPackageBasedOnTargetFramework
     # Assert
     Assert-Package $project TestDependencyTargetFramework -Version 2.0
     Assert-Package $project TestEmptyToolsFolder
-    Assert-NoPackage $project TestEmptyLibFolder
+    Assert-Package $project TestEmptyLibFolder
     Assert-NoPackage $project TestEmptyContentFolder
 }
 
