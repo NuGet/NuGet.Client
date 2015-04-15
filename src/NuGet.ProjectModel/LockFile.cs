@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
 {
@@ -38,19 +39,19 @@ namespace NuGet.ProjectModel
                 // If the framework name is empty, the associated dependencies are shared by all frameworks
                 if (string.IsNullOrEmpty(group.FrameworkName))
                 {
-                    actualDependencies = spec.Dependencies.Select(x => x.LibraryRange.ToString()).OrderBy(x => x);
+                    actualDependencies = spec.Dependencies.Select(x => RuntimeStyleLibraryRangeToString(x.LibraryRange)).OrderBy(x => x);
                 }
                 else
                 {
                     var framework = actualTargetFrameworks
                         .FirstOrDefault(f =>
-                            string.Equals(f.FrameworkName.ToString(), group.FrameworkName, StringComparison.Ordinal));
+                            string.Equals(f.FrameworkName.ToString(), group.FrameworkName, StringComparison.OrdinalIgnoreCase));
                     if (framework == null)
                     {
                         return false;
                     }
 
-                    actualDependencies = framework.Dependencies.Select(d => d.LibraryRange.ToString()).OrderBy(x => x);
+                    actualDependencies = framework.Dependencies.Select(d => RuntimeStyleLibraryRangeToString(d.LibraryRange)).OrderBy(x => x);
                 }
 
                 if (!actualDependencies.SequenceEqual(expectedDependencies))
@@ -60,6 +61,32 @@ namespace NuGet.ProjectModel
             }
 
             return true;
+        }
+
+        // DNU REFACTORING TODO: temp hack to make generated lockfile work with runtime lockfile validation
+        private static string RuntimeStyleLibraryRangeToString(LibraryRange libraryRange)
+        {
+            var minVersion = libraryRange.VersionRange.MinVersion;
+            var maxVersion = libraryRange.VersionRange.MaxVersion;
+            var sb = new System.Text.StringBuilder();
+            sb.Append(libraryRange.Name);
+            sb.Append(" >= ");
+            if (libraryRange.VersionRange.IsFloating)
+            {
+                sb.Append(libraryRange.VersionRange.Float.ToString());
+            }
+            else
+            {
+                sb.Append(minVersion.ToString());
+            }
+
+            if (maxVersion != null)
+            {
+                sb.Append(libraryRange.VersionRange.IsMaxInclusive ? "<= " : "< ");
+                sb.Append(maxVersion.Version.ToString());
+            }
+
+            return sb.ToString();
         }
     }
 }

@@ -150,11 +150,11 @@ namespace NuGet.Frameworks
                         parts.Add(String.Format(CultureInfo.InvariantCulture, "Profile={0}", Profile));
                     }
 
-                    result = String.Join(", ", parts);
+                    result = String.Join(",", parts);
                 }
                 else
                 {
-                    result = String.Format(CultureInfo.InvariantCulture, "{0}, Version=v0.0", Framework);
+                    result = String.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", Framework);
                 }
 
                 return result;

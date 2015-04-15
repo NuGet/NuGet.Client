@@ -55,8 +55,8 @@ namespace NuGet.ProjectModel
             }
 
             packageSpec.Description = rawPackageSpec.GetValue<string>("description");
-            packageSpec.Authors = authors == null ? new string[] { } : authors.Value<string[]>();
-            packageSpec.Owners = owners == null ? new string[] { } : owners.Value<string[]>();
+            packageSpec.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
+            packageSpec.Owners = owners == null ? new string[] { } : owners.ValueAsArray<string>();
             packageSpec.Dependencies = new List<LibraryDependency>();
             packageSpec.ProjectUrl = rawPackageSpec.GetValue<string>("projectUrl");
             packageSpec.IconUrl = rawPackageSpec.GetValue<string>("iconUrl");

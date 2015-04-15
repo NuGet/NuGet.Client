@@ -31,9 +31,9 @@ namespace NuGet.Test
             var expanded = expander.Expand(framework).ToArray();
 
             Assert.Equal(3, expanded.Length);
-            Assert.Equal(".NETFramework, Version=v4.5, Profile=Client", expanded[0].ToString());
-            Assert.Equal(".NETFramework, Version=v4.5, Profile=Full", expanded[1].ToString());
-            Assert.Equal("NETFrameworkCore, Version=v4.5", expanded[2].ToString());
+            Assert.Equal(".NETFramework,Version=v4.5,Profile=Client", expanded[0].ToString());
+            Assert.Equal(".NETFramework,Version=v4.5,Profile=Full", expanded[1].ToString());
+            Assert.Equal("NETFrameworkCore,Version=v4.5", expanded[2].ToString());
         }
 
         [Fact]
