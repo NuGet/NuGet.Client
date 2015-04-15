@@ -68,7 +68,7 @@ namespace NuGet.Protocol.VisualStudio
             Init();
 
             // Hook up event to refresh package sources when the package sources changed
-            packageSourceProvider.PackageSourcesSaved += (sender, e) =>
+            packageSourceProvider.PackageSourcesChanged += (sender, e) =>
             {
                 Init();
             };
