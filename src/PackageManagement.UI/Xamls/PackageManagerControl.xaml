@@ -56,6 +56,7 @@
                         MinWidth="130"
                         MinHeight="22"
                         Grid.Column="1"
+                        AutomationProperties.Name="{x:Static resx:Resources.Label_Repository}"
                         SelectionChanged="_sourceRepoList_SelectionChanged">
                         <ComboBox.ToolTip>
                             <ToolTip x:Name="_sourceTooltip" >
@@ -78,6 +79,7 @@
                         x:Name="_filter"
                         MinWidth="130"
                         MinHeight="22"
+                        AutomationProperties.Name="{x:Static resx:Resources.Label_Filter}"
                         SelectionChanged="_filter_SelectionChanged" />
 
                     <CheckBox

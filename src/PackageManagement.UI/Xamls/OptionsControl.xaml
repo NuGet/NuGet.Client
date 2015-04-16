@@ -67,6 +67,7 @@
                 HorizontalAlignment="Left"
                 MinHeight="22"
                 MinWidth="150"
+                AutomationProperties.Name="{x:Static resx:Resources.Label_DependencyBehavior}"
                 ItemsSource="{Binding Path=Options.DependencyBehaviors}"
                 SelectedItem="{Binding Path=Options.SelectedDependencyBehavior}"
                 />
@@ -83,6 +84,7 @@
                 MinHeight="22"
                 MinWidth="150"
                 HorizontalAlignment="Left"
+                AutomationProperties.Name="{x:Static resx:Resources.Label_FileConflictAction}"
                 ItemsSource="{Binding Path=Options.FileConflictActions}"
                 SelectedItem="{Binding Path=Options.SelectedFileConflictAction}"
                 />

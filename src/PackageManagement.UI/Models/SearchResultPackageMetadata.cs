@@ -62,5 +62,10 @@ namespace NuGet.PackageManagement.UI
         {
             _source = source;
         }
+
+        public override string ToString()
+        {
+            return Id;
+        }
     }
 }
