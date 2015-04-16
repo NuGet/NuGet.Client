@@ -7,7 +7,9 @@ using System.Text.RegularExpressions;
 namespace NuGet.Configuration
 {
     public class PackageSourceProvider : IPackageSourceProvider
-    {  
+    {
+        private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
+
         private ISettings Settings { get; set; }
         private readonly IEnumerable<PackageSource> _providerDefaultPrimarySources;
         private readonly IEnumerable<PackageSource> _providerDefaultSecondarySources;
@@ -64,6 +66,12 @@ namespace NuGet.Configuration
         private IEnumerable<PackageSource> LoadConfigurationDefaultSources()
         {
 #if !DNXCORE50
+            // Global default NuGet source doesn't make sense on Mono
+            if (_isMono.Value)
+            {
+                return Enumerable.Empty<PackageSource>();
+            }
+
             var baseDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NuGet");
 #else
             var baseDirectory = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "NuGet");
