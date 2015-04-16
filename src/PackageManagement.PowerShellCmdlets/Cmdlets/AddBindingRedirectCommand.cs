@@ -25,15 +25,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "PowerShell API requirement")]
         public string[] ProjectName { get; set; }
 
-        protected override void Preprocess()
-        {
-            base.Preprocess();
-        }
-
         protected override void ProcessRecordCore()
         {
-            Preprocess();
-
             CheckForSolutionOpen();
 
             var projects = new List<Project>();

@@ -42,9 +42,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter IncludePrerelease { get; set; }
 
-        protected override void Preprocess()
+        private void Preprocess()
         {
-            base.Preprocess();
             UpdateActiveSourceRepository(Source);
             LogCore(MessageLevel.Warning, string.Format(Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
         }

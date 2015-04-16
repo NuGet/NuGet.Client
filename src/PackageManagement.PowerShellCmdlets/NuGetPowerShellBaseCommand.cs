@@ -1,4 +1,14 @@
-﻿using System;
+﻿using EnvDTE;
+using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
+using NuGet.Resolver;
+using NuGet.Versioning;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,15 +21,6 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
-using NuGet.Configuration;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
-using NuGet.Resolver;
-using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -29,11 +30,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public abstract class NuGetPowerShellBaseCommand : PSCmdlet, IPSNuGetProjectContext, IErrorHandler
     {
         #region Members
-        private PackageManagementContext _packageManagementContext;
-        private ISourceRepositoryProvider _resourceRepositoryProvider;
-        private ISolutionManager _solutionManager;
-        private ISettings _settings;
-        private ICommonOperations _commonOperations;
+        private readonly ISourceRepositoryProvider _resourceRepositoryProvider;
+        private readonly ISolutionManager _solutionManager;
+        private readonly ISettings _settings;
+        private readonly ICommonOperations _commonOperations;
+        private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
         private DTE _dte;
         // TODO: Hook up DownloadResource.Progress event
         private readonly IHttpClientEvents _httpClientEvents;
@@ -43,12 +44,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         internal const string PowerConsoleHostName = "Package Manager Host";
         internal const string ActivePackageSourceKey = "activePackageSource";
         internal const string SyncModeKey = "IsSyncMode";
-        internal const string PackageManagementContextKey = "PackageManagementContext";
-        internal const string DTEKey = "DTE";
         #endregion
 
         public NuGetPowerShellBaseCommand()
         {
+            _resourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+            _settings = ServiceLocator.GetInstance<ISettings>();
+            _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            _dte = ServiceLocator.GetInstance<DTE>();
+            _sourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
+            _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
+
+            if (_commonOperations != null)
+            {
+                ExecutionContext = new IDEExecutionContext(_commonOperations);
+            }
         }
 
         #region Properties
@@ -180,26 +190,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by NuGetPowerShellBaseCommand.
         /// </summary>
         protected abstract void ProcessRecordCore();
-
-        /// <summary>
-        /// Preprocess to get resourceRepositoryProvider and solutionManager from packageManagementContext.
-        /// </summary>
-        protected virtual void Preprocess()
-        {
-            _packageManagementContext = (PackageManagementContext)GetPropertyValueFromHost(PackageManagementContextKey);
-            if (_packageManagementContext != null)
-            {
-                _resourceRepositoryProvider = _packageManagementContext.SourceRepositoryProvider;
-                _solutionManager = _packageManagementContext.VsSolutionManager;
-                _settings = _packageManagementContext.Settings;
-                _commonOperations = _packageManagementContext.CommonOperations;
-                if (_commonOperations != null)
-                {
-                    ExecutionContext = new IDEExecutionContext(_commonOperations);
-                }
-            }
-            _dte = (DTE)GetPropertyValueFromHost(DTEKey);
-        }
 
         #region Cmdlets base APIs
         /// <summary>
@@ -974,12 +964,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-
         public ISourceControlManagerProvider SourceControlManagerProvider
         {
-            get { return _packageManagementContext.SourceControlManagerProvider; }
+            get { return _sourceControlManagerProvider; }
         }
-
 
         public ProjectManagement.ExecutionContext ExecutionContext
         {

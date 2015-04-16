@@ -37,9 +37,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter RemoveDependencies { get; set; }
 
-        protected override void Preprocess()
+        private void Preprocess()
         {
-            base.Preprocess();
             CheckForSolutionOpen();
             GetNuGetProject(ProjectName);
         }

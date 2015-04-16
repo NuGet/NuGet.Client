@@ -81,9 +81,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public List<NuGetProject> Projects { get; set; }
 
-        protected override void Preprocess()
+        private void Preprocess()
         {
-            base.Preprocess();
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
             UseRemoteSource = ListAvailable.IsPresent || Updates.IsPresent || !String.IsNullOrEmpty(Source);
             CollapseVersions = !AllVersions.IsPresent;

@@ -65,9 +65,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [ValidateRange(0, Int32.MaxValue)]
         public int Skip { get; set; }
 
-        protected override void Preprocess()
+        private void Preprocess()
         {
-            base.Preprocess();
             // Since this is used for intellisense, we need to limit the number of packages that we return. Otherwise,
             // typing InstallPackage TAB would download the entire feed.
             if (First == 0)

@@ -32,9 +32,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(Mandatory = true, ParameterSetName = ParameterSetAllProjects)]
         public SwitchParameter All { get; set; }
 
-        protected override void Preprocess()
+        private void Preprocess()
         {
-            base.Preprocess();
             CheckForSolutionOpen();
             GetNuGetProject();
         }

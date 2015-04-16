@@ -50,9 +50,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public DependencyBehavior? DependencyVersion { get; set; }
 
-        protected override void Preprocess()
+        protected virtual void Preprocess()
         {
-            base.Preprocess();
             CheckForSolutionOpen();
             UpdateActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
