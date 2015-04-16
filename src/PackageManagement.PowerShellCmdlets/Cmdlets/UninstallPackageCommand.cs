@@ -41,7 +41,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             base.Preprocess();
             CheckForSolutionOpen();
-            UpdateActiveSourceRepository();
             GetNuGetProject(ProjectName);
         }
 

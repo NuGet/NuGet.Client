@@ -500,3 +500,19 @@ function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPac
     # Assert
     Assert-AreEqual 0 $packages.Count
 }
+
+# Get available packages from the current remote source, when -Source is not specified
+# This is to test that the call of UpdateActiveSourceRepository(null) is setting the correct active package source repository.
+function Test-GetPackageWhenSourceSwitchNotSpecified
+{
+    param
+    (
+        $context
+    )
+    
+    # Act
+    $packages = @(Get-Package -listavailable -First 5)
+
+    # Assert
+    Assert-AreEqual 5 $packages.Count
+}

@@ -203,46 +203,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         #region Cmdlets base APIs
         /// <summary>
-        /// Get the active source repository for PowerShell cmdlets, which is passed in by the host.
+        /// Get the active source repository for PowerShell cmdlets, based on the source string.
         /// </summary>
-        /// <param name="source"></param>
-        protected void UpdateActiveSourceRepository(string source = null)
+        /// <param name="source">The source string specified by -Source switch.</param>
+        protected void UpdateActiveSourceRepository(string source)
         {
-            if (string.IsNullOrEmpty(source))
-            {
-                source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
-            }
+            // If source string is not specified, get the current active package source from the host
+            source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
 
-            IEnumerable<PackageSource> packageSources = Enumerable.Empty<PackageSource>();
-            if (_resourceRepositoryProvider != null && _resourceRepositoryProvider.PackageSourceProvider != null)
+            if (!string.IsNullOrEmpty(source))
             {
-                packageSources = _resourceRepositoryProvider.PackageSourceProvider.LoadPackageSources();
+                var packageSources = _resourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
 
-                if (!string.IsNullOrEmpty(source))
+                // Look through all available sources (including those disabled) by matching source name and url
+                var matchingSource = packageSources
+                    ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
+                    StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
+                    .FirstOrDefault();
+
+                if (matchingSource != null)
                 {
-                    // Look through all available sources (including those disabled) by matching source name and url
-                    var matchingSource = packageSources
-                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
-                        StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
-                        .FirstOrDefault();
-                    if (matchingSource != null)
-                    {
-                        ActiveSourceRepository = _resourceRepositoryProvider.CreateRepository(matchingSource);
-                    }
+                    ActiveSourceRepository = _resourceRepositoryProvider?.CreateRepository(matchingSource);
                 }
-            }
-
-            // If specified source is not one of the registered package sources, then create from the source string(URL).
-            if (ActiveSourceRepository == null)
-            {
-                try
+                else
                 {
                     // source should be the format of url here; otherwise it cannot resolve from name anyways.
                     ActiveSourceRepository = CreateRepositoryFromSource(source);
-                }
-                catch (Exception)
-                {
-                    throw;
                 }
             }
         }
