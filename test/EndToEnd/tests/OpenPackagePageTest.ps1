@@ -100,20 +100,24 @@ function Test-OpenPackagePageFailsIfLicenseUrlIsNotAvailable {
 }
 
 function Test-OpenPackagePageAcceptSourceName {
+    # For nuget.org, there is a bug that the project Url was saved to Database with an extra / at the end.
+	# TODO: Remove the if else condition below when bug https://github.com/NuGet/NuGetGallery/issues/2409 is fixed.
 	if ($SourceNuGet -eq 'nuget.org')
 	{
 		$source = 'nUGet.OrG'  # keep the coverage that the source name is case insensitive
+		$expectedUrl = 'http://elmah.googlecode.com/'
 	}
 	else 
 	{
-	   $source = $SourceNuGet
+	    $source = $SourceNuGet
+	    $expectedUrl = 'http://elmah.googlecode.com'
 	}
 
     # Act
     $p = Open-PackagePage 'elmah' -Source $source -WhatIf -PassThru
 
     # Assert
-    Assert-AreEqual 'http://elmah.googlecode.com/' $p.OriginalString
+    Assert-AreEqual $expectedUrl $p.OriginalString
 
     # Act
     $p = Open-PackagePage 'elmah' -License -Source $source -WhatIf -PassThru

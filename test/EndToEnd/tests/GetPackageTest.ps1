@@ -451,13 +451,10 @@ function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsA
     $updates = @(Get-Package -Updates -AllVersions -Prerelease -Source $context.RepositoryRoot)
 
     # Assert
-    Assert-AreEqual 2 $updates.Count
+    Assert-AreEqual 1 $updates.Count
 
     Assert-AreEqual 'PrereleaseTestPackage' $updates[0].Id
-    Assert-AreEqual '1.0.0' $updates[0].Version.ToString()
-
-    Assert-AreEqual 'PrereleaseTestPackage' $updates[1].Id
-    Assert-AreEqual '1.0.1-a' $updates[1].Version.ToString()
+    Assert-AreEqual '1.0.1-a 1.0.0' $updates[0].Versions
 }
 
 function Test-GetInstalledPackageWithFilterReturnsCorrectPackage
