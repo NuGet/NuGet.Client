@@ -1030,22 +1030,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static bool IsSharedProject(EnvDTEProject envDTEProject)
         {
-            bool isShared = false;
             var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            // VSHPROPID_ProjectCapabilities is a space delimited list of capabilities (Dev11+)
-            object capObj;
-            if (ErrorHandler.Succeeded(hier.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID5.VSHPROPID_ProjectCapabilities, out capObj)) && capObj != null)
-            {
-                string cap = capObj as string;
-
-                if (!String.IsNullOrEmpty(cap))
-                {
-                    isShared = cap.Split(' ').Any(s => StringComparer.OrdinalIgnoreCase.Equals("SharedAssetsProject", s));
-                }
-            }
-
-            return isShared;
+            return hier.IsCapabilityMatch("SharedAssetsProject");
         }
 
         public static bool SupportsINuGetProjectSystem(EnvDTEProject envDTEProject)

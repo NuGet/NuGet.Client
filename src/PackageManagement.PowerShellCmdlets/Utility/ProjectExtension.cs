@@ -85,22 +85,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         public static bool IsSharedProject(this Project project)
         {
-            bool isShared = false;
             var hier = project.ToVsHierarchy();
 
-            // VSHPROPID_ProjectCapabilities is a space delimited list of capabilities (Dev11+)
-            object capObj;
-            if (ErrorHandler.Succeeded(hier.GetProperty(root, (int)__VSHPROPID5.VSHPROPID_ProjectCapabilities, out capObj)) && capObj != null)
-            {
-                string cap = capObj as string;
-
-                if (!String.IsNullOrEmpty(cap))
-                {
-                    isShared = cap.Split(' ').Any(s => StringComparer.OrdinalIgnoreCase.Equals("SharedAssetsProject", s));
-                }
-            }
-
-            return isShared;
+            return hier.IsCapabilityMatch("SharedAssetsProject");
         }
 
         public static IVsHierarchy ToVsHierarchy(this Project project)
