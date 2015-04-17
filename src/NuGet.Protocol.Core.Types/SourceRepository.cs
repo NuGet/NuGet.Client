@@ -55,6 +55,11 @@ namespace NuGet.Protocol.Core.Types
         {
         }
 
+        public override string ToString()
+        {
+            return _source.Name;
+        }
+
         /// <summary>
         /// Package source
         /// </summary>
