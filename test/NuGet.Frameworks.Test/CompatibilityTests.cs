@@ -20,6 +20,7 @@ namespace NuGet.Test
         [InlineData("dnxcore", "core")]
         [InlineData("net46", "core50")]
         [InlineData("dnx46", "core50")]
+        [InlineData("aspnet50", "net40")]
         public void Compatibility_SimpleOneWay(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);
@@ -72,8 +73,7 @@ namespace NuGet.Test
             // dnx supports asp
             Assert.True(compat.IsCompatible(framework1, framework2));
 
-            // asp does not support dnx
-            Assert.False(compat.IsCompatible(framework2, framework1));
+            Assert.True(compat.IsCompatible(framework2, framework1));
         }
 
 

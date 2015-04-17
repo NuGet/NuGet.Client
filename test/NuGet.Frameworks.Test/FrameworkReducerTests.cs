@@ -11,6 +11,45 @@ namespace NuGet.Test
 {
     public class FrameworkReducerTests
     {
+        [Theory]
+        [InlineData("dnx452", "aspnet5")]
+        [InlineData("dnx451", "aspnet5")]
+        [InlineData("dnx45", "aspnet5")]
+        [InlineData("net45", "net4")]
+        [InlineData("dnxcore5", "aspnetcore5")]
+        [InlineData("win8", "portable-net4+sl5+win8+wp8")]
+        [InlineData("MonoAndroid40", "monoandroid")]
+        [InlineData("win81", "win81")]
+        [InlineData("wpa81", "wpa81")]
+        [InlineData("sl5", "sl5")]
+        public void FrameworkReducer_AutoMapperGetNearestLibGroup(string projectFramework, string expectedFramework)
+        {
+            // Get nearest lib group for AutoMapper 4.0.0-ci1026
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var project = NuGetFramework.Parse(projectFramework);
+
+            List<NuGetFramework> frameworks = new List<NuGetFramework>()
+            {
+                NuGetFramework.Parse("aspnet50"),
+                NuGetFramework.Parse("aspnetcore50"),
+                NuGetFramework.Parse("MonoAndroid"),
+                NuGetFramework.Parse("MonoTouch"),
+                NuGetFramework.Parse("net40"),
+                NuGetFramework.Parse("portable-windows8%2Bnet40%2Bwp8%2Bsl5%2BMonoAndroid%2BMonoTouch"),
+                NuGetFramework.Parse("portable-windows8%2Bnet40%2Bwp8%2Bwpa81%2Bsl5%2BMonoAndroid%2BMonoTouch"),
+                NuGetFramework.Parse("sl5"),
+                NuGetFramework.Parse("windows81"),
+                NuGetFramework.Parse("wpa81"),
+                NuGetFramework.Parse("Xamarin.iOS10")
+            };
+
+            var result = reducer.GetNearest(project, frameworks);
+
+            Assert.Equal(expectedFramework, result.GetShortFolderName());
+        }
+
+
         [Fact]
         public void FrameworkReducer_GetNearestDuplicatePCL()
         {

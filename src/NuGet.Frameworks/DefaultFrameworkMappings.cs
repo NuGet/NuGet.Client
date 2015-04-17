@@ -219,6 +219,16 @@ namespace NuGet.Frameworks
                         new KeyValuePair<NuGetFramework, NuGetFramework>(
                                                     FrameworkConstants.CommonFrameworks.AspNetCore,
                                                     FrameworkConstants.CommonFrameworks.AspNetCore50),
+
+                        // dnx451 <-> aspnet50
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    FrameworkConstants.CommonFrameworks.Dnx451,
+                                                    FrameworkConstants.CommonFrameworks.AspNet50),
+
+                        // dnxcore50 <-> aspnetcore50
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    FrameworkConstants.CommonFrameworks.DnxCore50,
+                                                    FrameworkConstants.CommonFrameworks.AspNetCore50),
                     };
                 }
 
@@ -286,22 +296,6 @@ namespace NuGet.Frameworks
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5))),
-
-                        // DNX supports AspNet
-                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, FrameworkConstants.EmptyVersion),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, FrameworkConstants.MaxVersion)),
-                            new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.EmptyVersion),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, FrameworkConstants.EmptyVersion))),
-
-                        // DNXCore supports AspNetCore
-                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, FrameworkConstants.EmptyVersion),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, FrameworkConstants.MaxVersion)),
-                            new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.EmptyVersion),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, FrameworkConstants.EmptyVersion))),
 
                         // Win projects support WinRT
                         new OneWayCompatibilityMappingEntry(new FrameworkRange(
