@@ -1,16 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using Resx = NuGet.PackageManagement.UI;
-using NuGet.ProjectManagement;
-using NuGet.Packaging.Core;
+using Microsoft.VisualStudio.Shell;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -76,25 +70,28 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async void ActionButtonClicked(object sender, RoutedEventArgs e)
+        private void ActionButtonClicked(object sender, RoutedEventArgs e)
         {
-            var action = GetUserAction();
-            Control.IsEnabled = false;
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
-            try
+            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await Task.Run(() =>
-                    Control.Model.Context.UIActionEngine.PerformAction(
-                        Control.Model.UIController,
-                        action,
-                        this,
-                        CancellationToken.None));
-            }
-            finally
-            {
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
-                Control.IsEnabled = true;
-            }
+                var action = GetUserAction();
+                Control.IsEnabled = false;
+                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
+                try
+                {
+                    await Task.Run(() =>
+                        Control.Model.Context.UIActionEngine.PerformActionAsync(
+                            Control.Model.UIController,
+                            action,
+                            this,
+                            CancellationToken.None));
+                }
+                finally
+                {
+                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
+                    Control.IsEnabled = true;
+                }
+            });
         }
 
         public PackageManagerControl Control

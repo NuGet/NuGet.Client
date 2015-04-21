@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI
         /// Perform a user action.
         /// </summary>
         /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
-        public async Task PerformAction(INuGetUI uiService, UserAction userAction, DependencyObject windowOwner, CancellationToken token)
+        public async Task PerformActionAsync(INuGetUI uiService, UserAction userAction, DependencyObject windowOwner, CancellationToken token)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI
 
                 ResolutionContext resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted);
 
-                IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActions(
+                IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActionsAsync(
                     uiService,
                     projects,
                     userAction,
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                bool accepted = await CheckLicenseAcceptance(uiService, results, token);
+                bool accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
                 if (!accepted)
                 {
                     return;
@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.UI
                 if (!token.IsCancellationRequested)
                 {
                     // execute the actions
-                    await ExecuteActions(actions, uiService.ProgressWindow, userAction, token);
+                    await ExecuteActionsAsync(actions, uiService.ProgressWindow, userAction, token);
 
                     // update
                     uiService.RefreshPackageStatus();
@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Returns false if user doesn't accept license agreements.
-        private async Task<bool> CheckLicenseAcceptance(
+        private async Task<bool> CheckLicenseAcceptanceAsync(
             INuGetUI uiService,
             IEnumerable<PreviewResult> results,
             CancellationToken token)
@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.UI
                     licenseCheck.Add(pkg.New);
                 }
             }
-            IEnumerable<UIPackageMetadata> licenseMetadata = await GetPackageMetadata(licenseCheck, token);
+            IEnumerable<UIPackageMetadata> licenseMetadata = await GetPackageMetadataAsync(licenseCheck, token);
 
             // show license agreement
             if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="projectContext"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        protected async Task ExecuteActions(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions,
+        protected async Task ExecuteActionsAsync(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions,
             NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
         {
             HashSet<PackageIdentity> processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
@@ -190,7 +190,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActions(
+        protected async Task<IEnumerable<Tuple<NuGetProject, NuGetProjectAction>>> GetActionsAsync(
             INuGetUI uiService,
             IEnumerable<NuGetProject> targets,
             UserAction userAction,
@@ -302,14 +302,14 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
-        private async Task<List<UIPackageMetadata>> GetPackageMetadata(IEnumerable<PackageIdentity> packages, CancellationToken token)
+        private async Task<List<UIPackageMetadata>> GetPackageMetadataAsync(IEnumerable<PackageIdentity> packages, CancellationToken token)
         {
             var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
             List<UIPackageMetadata> results = new List<UIPackageMetadata>();
             foreach (var package in packages)
             {
-                var metadata = await GetPackageMetadata(sources, package, token);
+                var metadata = await GetPackageMetadataAsync(sources, package, token);
                 if (metadata == null)
                 {
                     throw new InvalidOperationException(
@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        private async Task<UIPackageMetadata> GetPackageMetadata(
+        private async Task<UIPackageMetadata> GetPackageMetadataAsync(
             IEnumerable<SourceRepository> sources,
             PackageIdentity package,
             CancellationToken token)

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
-using NuGet.Versioning;
-using NuGet.ProjectManagement;
-using NuGet.Packaging.Core;
 using System.Threading;
+using Microsoft.VisualStudio.Shell;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
+using NuGet.Versioning;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
     internal abstract class DetailControlModel : INotifyPropertyChanged
     {
         protected IEnumerable<NuGetProject> _nugetProjects;
-        
+
         // all versions of the _searchResultPackage
         protected List<NuGetVersion> _allPackages;
 
@@ -54,14 +54,16 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
-                foreach(var project in _nugetProjects)
+                return ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    var task = project.GetInstalledPackagesAsync(CancellationToken.None);
-                    task.Wait();
-                    installedPackages.AddRange(task.Result);
-                }
-                return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                    List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
+                    foreach (var project in _nugetProjects)
+                    {
+                        var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                        installedPackages.AddRange(projectInstalledPackages);
+                    }
+                    return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                });
             }
         }
 
@@ -79,7 +81,7 @@ namespace NuGet.PackageManagement.UI
         /// Whether or not the package can be updated to a new version (combined upgrade/downgrade scenario)
         /// </summary>
         protected abstract bool CanUpdate();
-        
+
         /// <summary>
         /// Whether or not the package can be upgraded to a newer version
         /// </summary>
@@ -188,9 +190,9 @@ namespace NuGet.PackageManagement.UI
 
         public DetailedPackageMetadata PackageMetadata
         {
-            get 
-            { 
-                return _packageMetadata; 
+            get
+            {
+                return _packageMetadata;
             }
             set
             {
@@ -220,7 +222,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         protected abstract void CreateVersions();
-        
+
         // indicates whether the selected action is install or uninstall.
         bool _selectedActionIsInstall;
 
@@ -315,7 +317,7 @@ namespace NuGet.PackageManagement.UI
         {
             var downloadCountDict = _searchResultPackage.Versions.ToDictionary(
                 v => v.Version,
-                v => v.DownloadCount);                
+                v => v.DownloadCount);
 
             var dict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
             if (metadataResource != null)

@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
-using NuGet.Versioning;
-using System.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -59,14 +57,20 @@ namespace NuGet.PackageManagement.UI
             UpdateProjectList();
         }
 
+        /// <summary>
+        /// This method is called from several methods that are called from properties and LINQ queries
+        /// It is likely not called more than once in an action. So, consolidating the use of JTF.Run in this method
+        /// </summary>
         private PackageReference GetInstalledPackage(NuGetProject project, string id)
         {
-            var installedPackagesTask = project.GetInstalledPackagesAsync(CancellationToken.None);
-            installedPackagesTask.Wait();
-            var installedPackage = installedPackagesTask.Result
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id))
-                .FirstOrDefault();
-            return installedPackage;
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                var installedPackage = installedPackages
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id))
+                    .FirstOrDefault();
+                return installedPackage;
+            });
         }
 
         protected override void CreateVersions()
@@ -110,7 +114,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            SelectVersion();            
+            SelectVersion();
             OnPropertyChanged("Versions");
         }
 
@@ -140,11 +144,8 @@ namespace NuGet.PackageManagement.UI
 
         private bool IsInstalled(NuGetProject project, string id)
         {
-            var installedPackagesTask = project.GetInstalledPackagesAsync(CancellationToken.None);
-            installedPackagesTask.Wait();
-            var installed = installedPackagesTask.Result
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id));
-            return installed.Any();
+            var packageReference = GetInstalledPackage(project, id);
+            return packageReference != null;
         }
 
         protected override bool CanInstall()

@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.UI
             private set;
         }
 
-        private async Task<IEnumerable<UISearchMetadata>> Search(int startIndex, CancellationToken ct)
+        private async Task<IEnumerable<UISearchMetadata>> SearchAsync(int startIndex, CancellationToken ct)
         {
             List<UISearchMetadata> results = new List<UISearchMetadata>();
 
@@ -95,11 +95,11 @@ namespace NuGet.PackageManagement.UI
             if (_option.Filter == Filter.Installed)
             {
                 // show only the installed packages
-                return await SearchInstalled(startIndex, ct);
+                return await SearchInstalledAsync(startIndex, ct);
             }
             else if (_option.Filter == Filter.UpdatesAvailable)
             {
-                return await SearchUpdates(startIndex, ct);
+                return await SearchUpdatesAsync(startIndex, ct);
             }
             else
             {
@@ -182,7 +182,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="latest">If true, the latest version is returned. Otherwise, the oldest
         /// version is returned.</param>
         /// <returns></returns>
-        private async Task<IEnumerable<PackageIdentity>> GetInstalledPackages(bool latest, CancellationToken token)
+        private async Task<IEnumerable<PackageIdentity>> GetInstalledPackagesAsync(bool latest, CancellationToken token)
         {
             Dictionary<string, PackageIdentity> installedPackages = new Dictionary<string, PackageIdentity>(
                 StringComparer.OrdinalIgnoreCase);
@@ -224,9 +224,9 @@ namespace NuGet.PackageManagement.UI
             return installedPackages.Values;
         }
 
-        private async Task<IEnumerable<UISearchMetadata>> SearchInstalled(int startIndex, CancellationToken ct)
+        private async Task<IEnumerable<UISearchMetadata>> SearchInstalledAsync(int startIndex, CancellationToken ct)
         {
-            var installedPackages = (await GetInstalledPackages(latest: true, token: ct))
+            var installedPackages = (await GetInstalledPackagesAsync(latest: true, token: ct))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
                 .Skip(startIndex)
@@ -303,18 +303,18 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Search in installed packages that have updates available
-        private async Task<IEnumerable<UISearchMetadata>> SearchUpdates(int startIndex, CancellationToken ct)
+        private async Task<IEnumerable<UISearchMetadata>> SearchUpdatesAsync(int startIndex, CancellationToken ct)
         {
             if (_packagesWithUpdates == null)
             {
-                await CreatePackagesWithUpdates(ct);
+                await CreatePackagesWithUpdatesAsync(ct);
             }
 
             return _packagesWithUpdates.Skip(startIndex).Take(_pageSize);
         }
 
         // Creates the list of installed packages that have updates available
-        private async Task CreatePackagesWithUpdates(CancellationToken ct)
+        private async Task CreatePackagesWithUpdatesAsync(CancellationToken ct)
         {
             _packagesWithUpdates = new List<UISearchMetadata>();
             var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
@@ -323,7 +323,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            var installedPackages = (await GetInstalledPackages(latest: false, token: ct))
+            var installedPackages = (await GetInstalledPackagesAsync(latest: false, token: ct))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id);
             foreach (var package in installedPackages)
@@ -351,13 +351,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task<LoadResult> LoadItems(int startIndex, CancellationToken ct)
+        public async Task<LoadResult> LoadItemsAsync(int startIndex, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
             List<SearchResultPackageMetadata> packages = new List<SearchResultPackageMetadata>();
-            var results = await Search(startIndex, ct);
+            var results = await SearchAsync(startIndex, ct);
             int resultCount = 0;
             foreach (var package in results)
             {
@@ -438,7 +438,7 @@ namespace NuGet.PackageManagement.UI
             return PackageStatus.NotInstalled;
         }
         
-        public async Task Initialize()
+        public async Task InitializeAsync()
         {
             // create _installedPackages and _installedPackageIds
             foreach (var project in _projects)

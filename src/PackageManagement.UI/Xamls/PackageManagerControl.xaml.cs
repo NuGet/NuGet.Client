@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
-using Resx = NuGet.PackageManagement.UI;
 using NuGet.Resolver;
+using Resx = NuGet.PackageManagement.UI;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -51,8 +52,8 @@ namespace NuGet.PackageManagement.UI
         }
 
         public PackageManagerControl(
-            PackageManagerModel model, 
-            NuGet.Configuration.ISettings nugetSettings, 
+            PackageManagerModel model,
+            NuGet.Configuration.ISettings nugetSettings,
             IVsWindowSearchHostFactory searchFactory)
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -114,10 +115,10 @@ namespace NuGet.PackageManagement.UI
                 new FilterItem(Filter.Installed, Resx.Resources.Filter_Installed),
                 new FilterItem(Filter.UpdatesAvailable, Resx.Resources.Filter_UpgradeAvailable)
             };
-            
+
             foreach (var item in items)
             {
-                _filter.Items.Add(item);               
+                _filter.Items.Add(item);
             }
 
             if (settings != null)
@@ -175,7 +176,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         private void ApplySettings(
-            UserSettings settings, 
+            UserSettings settings,
             NuGet.Configuration.ISettings nugetSettings)
         {
             if (settings == null)
@@ -507,24 +508,30 @@ namespace NuGet.PackageManagement.UI
             {
                 return _activeSource;
             }
-        }        
+        }
 
-        private async void SearchPackageInActivePackageSource(string searchText)
+        /// <summary>
+        /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
+        /// </summary>
+        private void SearchPackageInActivePackageSource(string searchText)
         {
-            var filterItem = _filter.SelectedItem as FilterItem;
-            Filter filter = filterItem != null ?
-                filterItem.Filter :
-                Filter.All;
+            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                var filterItem = _filter.SelectedItem as FilterItem;
+                Filter filter = filterItem != null ?
+                    filterItem.Filter :
+                    Filter.All;
 
-            PackageLoaderOption option = new PackageLoaderOption(filter, IncludePrerelease);
-            var loader = new PackageLoader(
-                option,
-                Model.Context.PackageManager,
-                Model.Context.Projects,
-                _activeSource,
-                searchText);
-            await loader.Initialize();
-            _packageList.Load(loader);
+                PackageLoaderOption option = new PackageLoaderOption(filter, IncludePrerelease);
+                var loader = new PackageLoader(
+                    option,
+                    Model.Context.PackageManager,
+                    Model.Context.Projects,
+                    _activeSource,
+                    searchText);
+                await loader.InitializeAsync();
+                await _packageList.LoadAsync(loader);
+            });
         }
 
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
@@ -532,15 +539,18 @@ namespace NuGet.PackageManagement.UI
             Model.UIController.LaunchNuGetOptionsDialog();
         }
 
-        private async void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            await UpdateDetailPane();
+            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await UpdateDetailPaneAsync();
+            });
         }
 
         /// <summary>
         /// Updates the detail pane based on the selected package
         /// </summary>
-        private async Task UpdateDetailPane()
+        private async Task UpdateDetailPaneAsync()
         {
             var selectedPackage = _packageList.SelectedItem as SearchResultPackageMetadata;
             if (selectedPackage == null)
@@ -555,7 +565,8 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.DataContext = _detailModel;
                 _packageDetail.ScrollToHome();
 
-                await _detailModel.LoadPackageMetadaAsync(await _activeSource.GetResourceAsync<UIMetadataResource>(), CancellationToken.None);
+                var uiMetadataResource = await _activeSource.GetResourceAsync<UIMetadataResource>();
+                await _detailModel.LoadPackageMetadaAsync(uiMetadataResource, CancellationToken.None);
             }
         }
 
@@ -647,43 +658,44 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<NuGetProject> projects,
             IEnumerable<VersionInfo> allVersions)
         {
-            var latestStableVersion = allVersions
-                .Where(p => !p.Version.IsPrerelease)
-                .Max(p => p.Version);
-
-            List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
-            foreach (var project in projects)
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var task = project.GetInstalledPackagesAsync(CancellationToken.None);
-                task.Wait();
-                installedPackages.AddRange(task.Result);
-            }
-
-            // Get the minimum version installed in any target project/solution
-            var minimumInstalledPackage = installedPackages
-                .Where(p => p != null)
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
-                .OrderBy(r => r.PackageIdentity.Version)
-                .FirstOrDefault();
-
-            PackageStatus status;
-            if (minimumInstalledPackage != null)
-            {
-                if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
+                var latestStableVersion = allVersions
+                    .Where(p => !p.Version.IsPrerelease)
+                    .Max(p => p.Version);
+                List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
+                foreach (var project in projects)
                 {
-                    status = PackageStatus.UpdateAvailable;
+                    var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                    installedPackages.AddRange(projectInstalledPackages);
+                }
+
+                // Get the minimum version installed in any target project/solution
+                var minimumInstalledPackage = installedPackages
+                    .Where(p => p != null)
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
+                    .OrderBy(r => r.PackageIdentity.Version)
+                    .FirstOrDefault();
+
+                PackageStatus status;
+                if (minimumInstalledPackage != null)
+                {
+                    if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
+                    {
+                        status = PackageStatus.UpdateAvailable;
+                    }
+                    else
+                    {
+                        status = PackageStatus.Installed;
+                    }
                 }
                 else
                 {
-                    status = PackageStatus.Installed;
+                    status = PackageStatus.NotInstalled;
                 }
-            }
-            else
-            {
-                status = PackageStatus.NotInstalled;
-            }
 
-            return status;
+                return status;
+            });
         }
 
         private void _searchControl_SearchStart(object sender, EventArgs e)

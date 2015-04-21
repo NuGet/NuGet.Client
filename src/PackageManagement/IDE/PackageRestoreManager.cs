@@ -46,24 +46,6 @@ namespace NuGet.PackageManagement
             SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
             SolutionManager = solutionManager;
-
-
-            SolutionManager.NuGetProjectAdded += OnNuGetProjectAdded;
-            SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
-            SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
-        }
-        private async void OnSolutionOpenedOrClosed(object sender, EventArgs e)
-        {
-            // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
-            // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            var solutionDirectory = SolutionManager.SolutionDirectory;
-            await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-        }
-
-        private async void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
-        {
-            var solutionDirectory = SolutionManager.SolutionDirectory;
-            await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
         }
 
         [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]

@@ -46,13 +46,16 @@ namespace NuGet.PackageManagement.UI
                 _packageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
             }
         }
-        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (_packageRestoreManager != null)
             {
-                var solutionDirectory = _solutionManager.SolutionDirectory;
-                // when the control is first loaded, check for missing packages
-                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    var solutionDirectory = _solutionManager.SolutionDirectory;
+                    // when the control is first loaded, check for missing packages
+                    await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                });
             }
         }
 
@@ -71,20 +74,23 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            RestoreBar.Visibility = packagesMissing ? Visibility.Visible : Visibility.Collapsed;            
+            RestoreBar.Visibility = packagesMissing ? Visibility.Visible : Visibility.Collapsed;
             if (packagesMissing)
             {
                 ResetUI();
             }
         }
 
-        private async void OnRestoreLinkClick(object sender, RoutedEventArgs e)
+        private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
             ShowProgressUI();
-            await RestorePackages();
+            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await RestorePackagesAsync();
+            });
         }
 
-        private async Task RestorePackages()
+        private async Task RestorePackagesAsync()
         {
             TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             try

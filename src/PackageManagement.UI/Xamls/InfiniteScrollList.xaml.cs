@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -29,7 +31,7 @@ namespace NuGet.PackageManagement.UI
 
         public static Style PackageItemStyle;
         public static Style LoadingStatusIndicatorStyle;
-        
+
         public InfiniteScrollList()
         {
             InitializeComponent();
@@ -63,19 +65,19 @@ namespace NuGet.PackageManagement.UI
         private ILoader _loader;
 
         // Load items using the specified loader
-        public async void Load(ILoader loader)
+        public async Task LoadAsync(ILoader loader)
         {
             _loader = loader;
-            _loadingStatusIndicator.LoadingMessage = _loader.LoadingMessage;            
+            _loadingStatusIndicator.LoadingMessage = _loader.LoadingMessage;
 
             var selectedItem = _list.SelectedItem as SearchResultPackageMetadata;
 
             _items.Clear();
             _items.Add(_loadingStatusIndicator);
-            _startIndex = 0;            
+            _startIndex = 0;
 
             // now the package list
-            await Load();
+            await LoadAsync();
 
             if (selectedItem != null)
             {
@@ -97,7 +99,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task Load()
+        private async Task LoadAsync()
         {
             if (_cts != null)
             {
@@ -106,10 +108,10 @@ namespace NuGet.PackageManagement.UI
             }
 
             _cts = new CancellationTokenSource();
-            await LoadWork(_cts.Token);
+            await LoadWorkAsync(_cts.Token);
         }
 
-        private async Task LoadWork(CancellationToken token)
+        private async Task LoadWorkAsync(CancellationToken token)
         {
             if (token.IsCancellationRequested)
             {
@@ -122,7 +124,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // run Loader.LoadItems in background thread. Otherwise if the
                 // source if V2, the UI can get blocked a little bit.
-                var r = await Task.Run(async () => await _loader.LoadItems(_startIndex, _cts.Token));
+                var r = await Task.Run(async () => await _loader.LoadItemsAsync(_startIndex, _cts.Token));
 
                 // multiple loads may occur at the same time
                 if (!token.IsCancellationRequested && currentLoader == _loader)
@@ -239,24 +241,30 @@ namespace NuGet.PackageManagement.UI
             _scrollViewer.ScrollChanged += _scrollViewer_ScrollChanged;
         }
 
-        private async void _scrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        private void _scrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (_loadingStatusIndicator.Status != LoadingStatus.Ready)
+            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                return;
-            }
+                if (_loadingStatusIndicator.Status != LoadingStatus.Ready)
+                {
+                    return;
+                }
 
-            var first = _scrollViewer.VerticalOffset;
-            var last = _scrollViewer.ViewportHeight + first;
-            if (last >= _items.Count)
-            {
-                await Load();
-            }
+                var first = _scrollViewer.VerticalOffset;
+                var last = _scrollViewer.ViewportHeight + first;
+                if (last >= _items.Count)
+                {
+                    await LoadAsync();
+                }
+            });
         }
 
-        private async void RetryButtonClicked(object sender, RoutedEventArgs e)
+        private void RetryButtonClicked(object sender, RoutedEventArgs e)
         {
-            await Load();
+            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await LoadAsync();
+            });
         }
     }
 
@@ -272,7 +280,7 @@ namespace NuGet.PackageManagement.UI
     public interface ILoader
     {
         // The second value tells us whether there are more items to load
-        Task<LoadResult> LoadItems(int startIndex, CancellationToken ct);
+        Task<LoadResult> LoadItemsAsync(int startIndex, CancellationToken ct);
 
         string LoadingMessage { get; }
     }
