@@ -24,6 +24,8 @@ namespace NuGetVSExtension
 
         private SolutionEvents _solutionEvents;
 
+        private const string LogEntrySource = "NuGet Package Manager";
+
         public IConsole OutputConsole
         {
             get;
@@ -71,6 +73,11 @@ namespace NuGetVSExtension
         {
             var s = string.Format(CultureInfo.CurrentCulture, message, args);
             OutputConsole.WriteLine(s);
+
+            if (level == NuGet.ProjectManagement.MessageLevel.Error)
+            {
+                ActivityLog.LogError(LogEntrySource, s);
+            }
         }
 
         private void ActivateOutputWindow()

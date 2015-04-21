@@ -177,6 +177,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
+                ExceptionHelper.WriteToActivityLog(ex);
+
                 // unhandled exceptions should be terminating
                 ErrorHandler.HandleException(ex, terminating: true);
             }
