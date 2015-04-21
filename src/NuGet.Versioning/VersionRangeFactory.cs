@@ -87,14 +87,14 @@ namespace NuGet.Versioning
 
             versionRange = null;
 
-            value = value.Trim();
+            var trimmedValue = value.Trim();
 
-            char[] charArray = value.ToCharArray();
+            char[] charArray = trimmedValue.ToCharArray();
 
             // * is the only range below 3 chars
             if (allowFloating && charArray.Length == 1 && charArray[0] == '*')
             {
-                versionRange = AllStableFloating;
+                versionRange = new VersionRange(null, true, null, true, false, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: value);
                 return true;
             }
 
@@ -141,10 +141,10 @@ namespace NuGet.Versioning
                 }
 
                 // Get rid of the two brackets
-                value = value.Substring(1, value.Length - 2);
+                trimmedValue = trimmedValue.Substring(1, trimmedValue.Length - 2);
 
                 // Split by comma, and make sure we don't get more than two pieces
-                string[] parts = value.Split(',');
+                string[] parts = trimmedValue.Split(',');
                 if (parts.Length > 2)
                 {
                     return false;
@@ -165,7 +165,7 @@ namespace NuGet.Versioning
                 isMinInclusive = true;
 
                 // use the entire value as the version
-                minVersionString = value;
+                minVersionString = trimmedValue;
             }
 
             if (!String.IsNullOrWhiteSpace(minVersionString))
@@ -212,7 +212,8 @@ namespace NuGet.Versioning
                 maxVersion: maxVersion,
                 includeMaxVersion: isMaxInclusive, 
                 includePrerelease: null,
-                floatRange: floatRange);
+                floatRange: floatRange,
+                originalString: value);
 
             return true;
         }

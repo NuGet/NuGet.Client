@@ -10,6 +10,7 @@ namespace NuGet.Versioning
     public partial class VersionRange : VersionRangeBase, IFormattable
     {
         private readonly FloatRange _floatRange;
+        private readonly string _originalString;
 
         /// <summary>
         /// Creates a range that is greater than or equal to the minVersion.
@@ -49,11 +50,13 @@ namespace NuGet.Versioning
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
         /// <param name="includePrerelease">True if prerelease versions should satisfy the condition.</param>
         /// <param name="floatRange">The floating range subset used to find the best version match.</param>
+        /// <param name="originalString">The original string being parsed to this object.</param>
         public VersionRange(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false, bool? includePrerelease = null, FloatRange floatRange =null)
+            bool includeMaxVersion = false, bool? includePrerelease = null, FloatRange floatRange =null, string originalString = null)
             : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion, includePrerelease)
         {
             _floatRange = floatRange;
+            _originalString = originalString;
         }
 
         /// <summary>
@@ -75,6 +78,17 @@ namespace NuGet.Versioning
             get
             {
                 return _floatRange;
+            }
+        }
+
+        /// <summary>
+        /// Original string being parsed to this object.
+        /// </summary>
+        public string OriginalString
+        {
+            get
+            {
+                return _originalString;
             }
         }
 

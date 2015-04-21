@@ -281,6 +281,32 @@ namespace NuGet.Versioning.Test
             Assert.True(versionInfo.IsMaxInclusive);
         }
 
+        [Theory]
+        [InlineData("*")]
+        [InlineData("1.*")]
+        [InlineData("1.0.0")]
+        [InlineData(" 1.0.0")]
+        [InlineData("[1.0.0]")]
+        [InlineData("[1.0.0] ")]
+        [InlineData("[1.0.0, 2.0.0)")]
+        public void ParsedVersionRangeHasOriginalString(string range)
+        {
+            // Act
+            var versionInfo = VersionRange.Parse(range);
+
+            // Assert
+            Assert.Equal(range, versionInfo.OriginalString);
+        }
+
+        public void NonParsedVersionRangeHasNullOriginalString(string range)
+        {
+            // Act
+            var versionInfo = new VersionRange(NuGetVersion.Parse("1.0.0"));
+
+            // Assert
+            Assert.Null(versionInfo.OriginalString);
+        }
+
         [Fact]
         public void ParseVersionRangeIntegerRanges()
         {
