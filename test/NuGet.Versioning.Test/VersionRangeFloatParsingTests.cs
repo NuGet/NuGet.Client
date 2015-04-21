@@ -156,5 +156,17 @@ namespace NuGet.Versioning.Test
 
             Assert.Equal(legacyString, range.ToLegacyString());
         }
+
+        [Theory]
+        [InlineData("1.0.0-beta*")]
+        [InlineData("1.0.0-beta.*")]
+        [InlineData("1.0.0-beta-*")]
+        public void VersionRangeFloatParsing_CorrectFloatRange(string rangeString)
+        {
+            VersionRange range = null;
+            Assert.True(VersionRange.TryParse(rangeString, out range));
+
+            Assert.Equal(rangeString, range.Float.ToString());
+        }
     }
 }
