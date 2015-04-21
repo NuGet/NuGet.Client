@@ -155,7 +155,7 @@ namespace NuGet.Versioning
                 int starPos = versionString.IndexOf('*');
 
                 string actualVersion = versionString;
-                string releasePrefix = string.Empty;
+                string releasePrefix = null;
 
                 if (versionString.Length == 1 && starPos == 0)
                 {
