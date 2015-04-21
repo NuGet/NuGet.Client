@@ -1,5 +1,4 @@
 ﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
+using LegacyNuGet = Legacy.NuGet;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {

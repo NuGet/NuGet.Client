@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void Preprocess()
         {
             UpdateActiveSourceRepository(Source);
-            LogCore(MessageLevel.Warning, string.Format(Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
+            LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
         }
 
         protected override void ProcessRecordCore()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -227,7 +228,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(MessageLevel.Error, string.Format(Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
+                LogCore(MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
             }
 
             return identities;

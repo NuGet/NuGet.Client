@@ -1,14 +1,4 @@
-﻿using EnvDTE;
-using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
-using NuGet.Resolver;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,6 +11,16 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
+using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.VisualStudio;
+using NuGet.Resolver;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -572,7 +572,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (NuGetProjectAction action in actions)
                 {
-                    Log(MessageLevel.Info, string.Format("{0} {1}", action.NuGetProjectActionType, action.PackageIdentity));
+                    Log(MessageLevel.Info, string.Format(CultureInfo.InvariantCulture, "{0} {1}", action.NuGetProjectActionType, action.PackageIdentity));
                 }
             }
         }

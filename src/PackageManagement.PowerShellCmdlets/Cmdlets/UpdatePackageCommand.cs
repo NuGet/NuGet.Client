@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Log(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             }
         }
 
@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // If package Id exists in Packages folder but is not actually installed to the current project, throw.
             if (installedPackage == null)
             {
-                Log(MessageLevel.Info, string.Format(Resources.Cmdlet_PackageNotInstalled, Id, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                Log(MessageLevel.Info, Resources.Cmdlet_PackageNotInstalled, Id, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             }
             else
             {
@@ -279,7 +279,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        Log(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
                 }
                 else

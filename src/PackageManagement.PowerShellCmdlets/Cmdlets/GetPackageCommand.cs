@@ -1,15 +1,16 @@
-﻿using NuGet.Packaging;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.VisualStudio;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Threading;
+using NuGet.Packaging;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.VisualStudio;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -199,7 +200,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Output list of PowerShellPackages
             if (outputWarning && !string.IsNullOrEmpty(Filter))
             {
-                LogCore(MessageLevel.Warning, string.Format(Resources.Cmdlet_CommandObsolete, message));
+                LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandObsolete, message));
             }
 
             WritePackages(packages, versionType);
@@ -284,7 +285,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                LogCore(MessageLevel.Info, string.Format(Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
         }
 

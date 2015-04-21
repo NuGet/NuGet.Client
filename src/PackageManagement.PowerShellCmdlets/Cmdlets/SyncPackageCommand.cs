@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
@@ -48,11 +49,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SubscribeToProgressEvents();
             if (Projects.Count == 0)
             {
-                LogCore(MessageLevel.Info, string.Format(Resources.Cmdlets_NoProjectsToSyncPackage, Id));
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlets_NoProjectsToSyncPackage, Id));
             }
             else if (identity == null)
             {
-                LogCore(MessageLevel.Info, string.Format(Resources.Cmdlet_PackageNotInstalled, Id));
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageNotInstalled, Id));
             }
             else
             {
