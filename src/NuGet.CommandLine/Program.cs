@@ -25,7 +25,7 @@ namespace NuGet.CommandLine
         {
             // Set up logging
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddProvider(new CommandOutputLoggerProvider() { LogLevel = LogLevel.Verbose });
+            loggerFactory.AddProvider(new CommandOutputLoggerProvider() { LogLevel = LogLevel.Debug });
             _log = loggerFactory.CreateLogger<Program>();
 
             var app = new CommandLineApplication();
@@ -39,6 +39,8 @@ namespace NuGet.CommandLine
                 restore.Description = "Restores packages for a project and writes a lock file";
 
                 var sources = restore.Option("-s|--source <source>", "Specifies a NuGet package source to use during the restore", CommandOptionType.MultipleValue);
+                var dryRun = restore.Option("-n|--dry-run", "Don't actually download or install any packages, just list what would be done", CommandOptionType.NoValue);
+                var packagesDirectory = restore.Option("--packages <packagesDirectory>", "Directory to install packages in", CommandOptionType.SingleValue);
                 var projectFile = restore.Argument("[project file]", "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
 
                 restore.OnExecute(async () =>
@@ -67,14 +69,17 @@ namespace NuGet.CommandLine
 
                     // Resolve the packages directory
                     // TODO: Do this for real :) 
-                    var packagesDirectory = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".dnx", "packages2");
+                    var packagesDir = packagesDirectory.HasValue() ?
+                        packagesDirectory.Value() :
+                        Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".dnx", "packages2");
                     _log.LogVerbose($"Using packages directory: {packagesDirectory}");
 
                     // Run the restore
                     var request = new RestoreRequest(
                         project,
                         sources.Values.Select(s => new PackageSource(s)),
-                        packagesDirectory);
+                        packagesDir,
+                        dryRun: dryRun.HasValue());
                     var command = new RestoreCommand(loggerFactory);
                     var result = await command.ExecuteAsync(request);
 

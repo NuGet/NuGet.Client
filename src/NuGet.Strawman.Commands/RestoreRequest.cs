@@ -8,11 +8,12 @@ namespace NuGet.Strawman.Commands
 {
     public class RestoreRequest
     {
-        public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources, string packagesDirectory)
+        public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources, string packagesDirectory, bool dryRun)
         {
             Project = project;
             Sources = sources.ToList().AsReadOnly();
             PackagesDirectory = packagesDirectory;
+            DryRun = dryRun;
         }
 
         /// <summary>
@@ -30,10 +31,15 @@ namespace NuGet.Strawman.Commands
         /// </summary>
         public string PackagesDirectory { get; }
 
+        /// <summary>
+        /// If this value is true, no packages will be installed
+        /// </summary>
+        public bool DryRun { get; }
+
         // TODO: NoCache
         // TODO: Lock/Unlock
         // TODO: ScriptExecutor
         // TODO: Parallel
-
+        // TODO: List of project.json files from project references
     }
 }

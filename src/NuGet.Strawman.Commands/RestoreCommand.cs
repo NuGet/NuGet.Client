@@ -29,6 +29,11 @@ namespace NuGet.Strawman.Commands
 
         public async Task<RestoreResult> ExecuteAsync(RestoreRequest request)
         {
+            if(request.Project.TargetFrameworks.Count == 0)
+            {
+                _log.LogError("The project does not specify any target frameworks!");
+            }
+
             bool success = true;
 
             _log.LogInformation($"Restoring packages for '{request.Project.FilePath}'");
@@ -61,17 +66,25 @@ namespace NuGet.Strawman.Commands
             foreach (var framework in request.Project.TargetFrameworks)
             {
                 _log.LogInformation($"Restoring packages for {framework.FrameworkName}");
-                graphs.Add(await remoteWalker.Walk(
+                var graph = await remoteWalker.Walk(
                     new LibraryRange()
                     {
                         Name = request.Project.Name,
                         VersionRange = new VersionRange(request.Project.Version),
                         TypeConstraint = LibraryTypes.Project
                     },
-                    framework.FrameworkName));
+                    framework.FrameworkName);
+                graphs.Add(graph);
             }
 
-            _log.LogVerbose("Reducing resolved dependencies");
+            _log.LogVerbose("Resolving Conflicts...");
+            foreach(var graph in graphs)
+            {
+                if (!graph.TryResolveConflicts())
+                {
+                    _log.LogError("Unable to resolve conflicts!");
+                }
+            }
 
             var libraries = new HashSet<LibraryIdentity>();
             var installItems = new List<GraphItem<RemoteResolveResult>>();
@@ -82,7 +95,7 @@ namespace NuGet.Strawman.Commands
             {
                 g.ForEach(node =>
                 {
-                    if (node == null || node.Key == null)
+                    if (node == null || node.Key == null || node.Disposition == Disposition.Rejected)
                     {
                         return;
                     }
@@ -127,16 +140,23 @@ namespace NuGet.Strawman.Commands
                 });
             }
 
-            await InstallPackages(installItems, request.PackagesDirectory);
+            await InstallPackages(installItems, request.PackagesDirectory, request.DryRun);
 
             return new RestoreResult(success);
         }
 
-        private async Task InstallPackages(List<GraphItem<RemoteResolveResult>> installItems, string packagesDirectory)
+        private async Task InstallPackages(List<GraphItem<RemoteResolveResult>> installItems, string packagesDirectory, bool dryRun)
         {
             foreach (var installItem in installItems)
             {
-                await InstallPackage(installItem, packagesDirectory);
+                if (dryRun)
+                {
+                    _log.LogInformation($"Would install {installItem.Data.Match.Library.Name} {installItem.Data.Match.Library.Version}");
+                }
+                else
+                {
+                    await InstallPackage(installItem, packagesDirectory);
+                }
             }
         }
 
