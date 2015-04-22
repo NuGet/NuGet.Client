@@ -434,8 +434,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected IEnumerable<string> GetAllValidProjectNames()
         {
-            var safeNames = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution).Select(p => EnvDTEProjectUtility.GetProjectSafeName(p));
-            var uniqueNames = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution).Select(p => EnvDTEProjectUtility.GetCustomUniqueName(p));
+            var nugetProjects = _solutionManager.GetNuGetProjects();
+            var safeNames = nugetProjects?.Select(p => _solutionManager.GetNuGetProjectSafeName(p));
+            var uniqueNames = nugetProjects?.Select(p => NuGetProject.GetUniqueNameOrName(p));
             return uniqueNames.Concat(safeNames).Distinct();
         }
 

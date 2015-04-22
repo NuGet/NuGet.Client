@@ -382,28 +382,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public static string GetProjectSafeName(EnvDTEProject envDTEProject)
-        {
-            if (envDTEProject == null)
-            {
-                throw new ArgumentNullException("envDTEProject");
-            }
-
-            // Try searching for simple names first 
-            string name = GetName(envDTEProject);
-            EnvDTEProject target = EnvDTESolutionUtility.GetAllEnvDTEProjects(envDTEProject.DTE.Solution)
-                ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, name))
-                ?.FirstOrDefault();
-
-            if (target == envDTEProject)
-            {
-                return name;
-            }
-
-            return GetCustomUniqueName(envDTEProject);
-        }
-
-
         public static bool IsExplicitlyUnsupported(EnvDTEProject envDTEProject)
         {
             return envDTEProject.Kind == null || UnsupportedProjectTypes.Contains(envDTEProject.Kind);

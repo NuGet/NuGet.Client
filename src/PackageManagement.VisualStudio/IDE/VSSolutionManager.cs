@@ -105,6 +105,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
+        // Return short name if it's non-ambiguous.
+        // Return CustomUniqueName for projects that have ambigous names (such as same project name under different solution folder)
+        // Example: return Folder1/ProjectA if there are both ProjectA under Folder1 and Folder2
         public string GetNuGetProjectSafeName(NuGetProject nuGetProject)
         {
             if (nuGetProject == null)
@@ -115,12 +118,13 @@ namespace NuGet.PackageManagement.VisualStudio
             Init();
 
             // Try searching for simple names first
-            string name = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
-            EnvDTEProjectName envDTEProjectName;
-            _nuGetAndEnvDTEProjectCache.TryGetNuGetProjectName(name, out envDTEProjectName);
-            Debug.Assert(envDTEProjectName != null);
+            string name = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            if (GetNuGetProject(name) == nuGetProject)
+            {
+                return name;
+            }
 
-            return envDTEProjectName.CustomUniqueName;
+            return NuGetProject.GetUniqueNameOrName(nuGetProject);
         }
 
         public Project GetDTEProject(string nuGetProjectSafeName)
