@@ -25,15 +25,19 @@ namespace NuGet.CommandLine
         {
             // Set up logging
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddConsole(LogLevel.Verbose);
+            loggerFactory.AddProvider(new CommandOutputLoggerProvider() { LogLevel = LogLevel.Verbose });
             _log = loggerFactory.CreateLogger<Program>();
 
             var app = new CommandLineApplication();
+            app.Name = "nuget3";
+            app.FullName = ".NET Package Manager";
             app.HelpOption("-h|--help");
             app.VersionOption("--version", _applicationEnvironment.Version);
 
             app.Command("restore", restore =>
             {
+                restore.Description = "Restores packages for a project and writes a lock file";
+
                 var sources = restore.Option("-s|--source <source>", "Specifies a NuGet package source to use during the restore", CommandOptionType.MultipleValue);
                 var projectFile = restore.Argument("[project file]", "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
 
@@ -79,6 +83,8 @@ namespace NuGet.CommandLine
                     return 0;
                 });
             });
+
+            app.OnExecute(() => { app.ShowHelp(); return 0; });
 
             return app.Execute(args);
         }
