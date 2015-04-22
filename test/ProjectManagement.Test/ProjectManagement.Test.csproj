@@ -83,7 +83,9 @@
     <Compile Include="..\Test.Utility\TestPackages.cs">
       <Link>TestPackages.cs</Link>
     </Compile>
+    <Compile Include="BuildIntegratedNuGetProjectTests.cs" />
     <Compile Include="FolderNuGetProjectTests.cs" />
+    <Compile Include="JsonConfigUtilityTests.cs" />
     <Compile Include="MSBuildNuGetProjectTests.cs" />
     <Compile Include="PackagesConfigNuGetProjectTests.cs" />
     <Compile Include="ProjectManagement\TestMSBuildNuGetProjectSystem.cs" />

@@ -106,6 +106,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package restore completed with errors. Check the build output window for details..
+        /// </summary>
+        internal static string BuildIntegratedPackageRestoreFailed {
+            get {
+                return ResourceManager.GetString("BuildIntegratedPackageRestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to from.
         /// </summary>
         internal static string From {

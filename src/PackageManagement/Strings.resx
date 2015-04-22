@@ -237,4 +237,7 @@
   <data name="ParameterCannotBeZeroOrNegative" xml:space="preserve">
     <value>Parameter cannot be zero or negative</value>
   </data>
+  <data name="BuildIntegratedPackageRestoreFailed" xml:space="preserve">
+    <value>Package restore completed with errors. Check the build output window for details.</value>
+  </data>
 </root>

@@ -9,6 +9,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.ProjectManagement.Projects;
 
 namespace NuGet.PackageManagement
 {
@@ -139,8 +140,8 @@ namespace NuGet.PackageManagement
             var packageReferencesDict = new Dictionary<PackageReference, HashSet<string>>(new PackageReferenceComparer());
             foreach (var nuGetProject in SolutionManager.GetNuGetProjects())
             {
-                // skip project k projects
-                if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
+                // skip project k projects and build aware projects
+                if (nuGetProject is INuGetIntegratedProject)
                 {
                     continue;
                 }

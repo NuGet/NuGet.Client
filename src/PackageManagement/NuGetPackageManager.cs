@@ -1,12 +1,4 @@
-﻿using NuGet.Configuration;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.Resolver;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -14,6 +6,18 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGet.Versioning;
+using System.IO.Compression;
+using System.Xml.Linq;
 
 namespace NuGet.PackageManagement
 {
@@ -554,7 +558,7 @@ namespace NuGet.PackageManagement
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
-            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
+            if (nuGetProject is INuGetIntegratedProject)
             {
                 var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySourceRepository);
                 return new NuGetProjectAction[] { action };
@@ -613,7 +617,7 @@ namespace NuGet.PackageManagement
             // TODO: BUGBUG: HACK: Multiple primary repositories is mainly intended for nuget.exe at the moment
             // The following special case for ProjectK is not correct, if they used nuget.exe
             // and multiple repositories in the -Source switch
-            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
+            if (nuGetProject is INuGetIntegratedProject)
             {
                 var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First());
                 return new NuGetProjectAction[] { action };
@@ -935,7 +939,7 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(Strings.SolutionManagerNotAvailableForUninstall);
             }
 
-            if (nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase)
+            if (nuGetProject is INuGetIntegratedProject)
             {
                 var action = NuGetProjectAction.CreateUninstallProjectAction(packageReference.PackageIdentity);
                 return new NuGetProjectAction[] { action };
@@ -998,59 +1002,149 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            Exception executeNuGetProjectActionsException = null;
-            Stack<NuGetProjectAction> executedNuGetProjectActions = new Stack<NuGetProjectAction>();
-            HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-            try
+            // DNU: Find the closure before executing the actions
+            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+            if (buildIntegratedProject != null)
             {
-                await nuGetProject.PreProcessAsync(nuGetProjectContext, token);
-                foreach (NuGetProjectAction nuGetProjectAction in nuGetProjectActions)
+                await ExecuteBuildIntegratedProjectActionsAsync(buildIntegratedProject,
+                    nuGetProjectActions,
+                    nuGetProjectContext,
+                    token);
+            }
+            else
+            {
+                Exception executeNuGetProjectActionsException = null;
+                Stack<NuGetProjectAction> executedNuGetProjectActions = new Stack<NuGetProjectAction>();
+                HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+                try
                 {
-                    executedNuGetProjectActions.Push(nuGetProjectAction);
-                    if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                    await nuGetProject.PreProcessAsync(nuGetProjectContext, token);
+                    foreach (NuGetProjectAction nuGetProjectAction in nuGetProjectActions)
                     {
-                        await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
-                    }
-                    else
-                    {
-                        using (var targetPackageStream = new MemoryStream())
+                        executedNuGetProjectActions.Push(nuGetProjectAction);
+                        if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                         {
-                            await PackageDownloader.GetPackageStreamAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
-                            await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                            await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                         }
+                        else
+                        {
+                            using (var targetPackageStream = new MemoryStream())
+                            {
+                                await PackageDownloader.GetPackageStreamAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
+                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                            }
+                        }
+
+                        string toFromString = nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install ? Strings.To : Strings.From;
+                        nuGetProjectContext.Log(MessageLevel.Info, Strings.SuccessfullyExecutedPackageAction,
+                            nuGetProjectAction.NuGetProjectActionType.ToString().ToLowerInvariant(), nuGetProjectAction.PackageIdentity.ToString(), toFromString + " " + nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
+                    await nuGetProject.PostProcessAsync(nuGetProjectContext, token);
 
-                    string toFromString = nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install ? Strings.To : Strings.From;
-                    nuGetProjectContext.Log(MessageLevel.Info, Strings.SuccessfullyExecutedPackageAction,
-                        nuGetProjectAction.NuGetProjectActionType.ToString().ToLowerInvariant(), nuGetProjectAction.PackageIdentity.ToString(), toFromString + " " + nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    await OpenReadmeFile(nuGetProjectContext, token);
                 }
-                await nuGetProject.PostProcessAsync(nuGetProjectContext, token);
+                catch (Exception ex)
+                {
+                    executeNuGetProjectActionsException = ex;
+                }
 
-                await OpenReadmeFile(nuGetProjectContext, token);
+                if (executeNuGetProjectActionsException != null)
+                {
+                    await Rollback(nuGetProject, executedNuGetProjectActions, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                }
+
+                // Delete the package directories as the last step, so that, if an uninstall had to be rolled back, we can just use the package file on the directory
+                // Also, always perform deletion of package directories, even in a rollback, so that there are no stale package directories
+                foreach (var packageWithDirectoryToBeDeleted in packageWithDirectoriesToBeDeleted)
+                {
+                    await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
+                }
+
+                // Clear direct install
+                SetDirectInstall(null, nuGetProjectContext);
+
+                if (executeNuGetProjectActionsException != null)
+                {
+                    throw executeNuGetProjectActionsException;
+                }
             }
-            catch (Exception ex)
+        }
+
+        public async Task ExecuteBuildIntegratedProjectActionsAsync(BuildIntegratedNuGetProject buildIntegratedProject, IEnumerable<NuGetProjectAction> nuGetProjectActions,
+           INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
+
+            // Restore before performing the actions, we will need the previous packages for uninstalls
+            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject.JsonConfigPath, buildIntegratedProject.ProjectName,
+                nuGetProjectContext, enabledSources, token);
+
+            // Retrieve the list of currently installed packages
+            // TOOD: get the full closure
+            var previousPackages = new HashSet<PackageIdentity>(
+                (await buildIntegratedProject.GetInstalledPackagesAsync(token)).Select(reference => reference.PackageIdentity),
+                PackageIdentity.Comparer);
+
+            // Run package actions
+            foreach (var action in nuGetProjectActions)
             {
-                executeNuGetProjectActionsException = ex;
+                if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                {
+                    var dependency = new PackageDependency(action.PackageIdentity.Id, new VersionRange(action.PackageIdentity.Version));
+
+                    await buildIntegratedProject.AddDependency(dependency, nuGetProjectContext, token);
+                }
+                else if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                {
+                    await buildIntegratedProject.RemoveDependency(action.PackageIdentity.Id, nuGetProjectContext, token);
+                }
             }
 
-            if(executeNuGetProjectActionsException != null)
+            // Restore and update the lock file after the updates
+            var additionalSources = new HashSet<string>(
+                    nuGetProjectActions.Where(action => action.SourceRepository != null)
+                    .Select(action => action.SourceRepository.PackageSource.Source),
+                    StringComparer.OrdinalIgnoreCase);
+
+            // Add all enabled sources for the existing packages
+            additionalSources.UnionWith(enabledSources);
+
+            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject.JsonConfigPath, buildIntegratedProject.ProjectName, 
+                nuGetProjectContext, additionalSources, token);
+
+            // Find all new packages and check if they have content or scripts
+            var afterInstallPackages = new HashSet<PackageIdentity>(
+                (await buildIntegratedProject.GetInstalledPackagesAsync(token)).Select(reference => reference.PackageIdentity),
+                PackageIdentity.Comparer);
+
+            var installed = afterInstallPackages.Except(previousPackages);
+            var uninstalled = previousPackages.Except(afterInstallPackages);
+
+            // Install packages
+            foreach (var installedPackage in installed)
             {
-                await Rollback(nuGetProject, executedNuGetProjectActions, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                var nupkgPath = BuildIntegratedRestoreUtility.GetNupkgPathFromGlobalSource(installedPackage);
+
+                var stream = File.OpenRead(nupkgPath);
+
+                await buildIntegratedProject.InstallPackageContentAsync(installedPackage, stream, nuGetProjectContext, token);
             }
 
-            // Delete the package directories as the last step, so that, if an uninstall had to be rolled back, we can just use the package file on the directory
-            // Also, always perform deletion of package directories, even in a rollback, so that there are no stale package directories
-            foreach(var packageWithDirectoryToBeDeleted in packageWithDirectoriesToBeDeleted)
+            // Uninstall packages
+            foreach (var uninstalledPackage in uninstalled)
             {
-                await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
-            }
+                var nupkgPath = BuildIntegratedRestoreUtility.GetNupkgPathFromGlobalSource(uninstalledPackage);
 
-            // Clear direct install
-            SetDirectInstall(null, nuGetProjectContext);
+                if (File.Exists(nupkgPath))
+                {
+                    var stream = File.OpenRead(nupkgPath);
 
-            if(executeNuGetProjectActionsException != null)
-            {
-                throw executeNuGetProjectActionsException;
+                    await buildIntegratedProject.UninstallPackageContentAsync(uninstalledPackage, stream, nuGetProjectContext, token);
+                }
+                else
+                {
+                    Debug.Fail("Unable to find nupkg to uninstall content.");
+                }
             }
         }
 
@@ -1173,7 +1267,7 @@ namespace NuGet.PackageManagement
             await nuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
 
             // Step-2: Check if the package directory could be deleted
-            if (!(nuGetProject is ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
+            if (!(nuGetProject is INuGetIntegratedProject) &&
                 !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token))
             {
                 packageWithDirectoriesToBeDeleted.Add(packageIdentity);

@@ -10,6 +10,7 @@ using NuGet.Versioning;
 using NuGet.Frameworks;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Protocol.Core.Types;
+using NuGet.ProjectManagement.Projects;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -190,7 +191,7 @@ namespace NuGet.PackageManagement.UI
             {
                 foreach (var package in (await project.GetInstalledPackagesAsync(token)))
                 {
-                    if (!(project is NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase) &&
+                    if (!(project is INuGetIntegratedProject) &&
                         !_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
                     {
                         continue;
@@ -443,7 +444,7 @@ namespace NuGet.PackageManagement.UI
             foreach (var project in _projects)
             {
                 var installedPackagesInProject = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                if (!(project is ProjectManagement.Projects.ProjectKNuGetProjectBase))
+                if (!(project is INuGetIntegratedProject))
                 {
                     installedPackagesInProject = installedPackagesInProject.Where(
                         p =>

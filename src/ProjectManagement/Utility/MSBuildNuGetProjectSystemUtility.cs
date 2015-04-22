@@ -261,12 +261,12 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        public static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        internal static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
         {
             return GetFilesSafe(msBuildNuGetProjectSystem, path, "*.*");
         }
 
-        public static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter)
+        internal static IEnumerable<string> GetFilesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter)
         {
             try
             {
@@ -280,12 +280,12 @@ namespace NuGet.ProjectManagement
             return Enumerable.Empty<string>();
         }
 
-        public static IEnumerable<string> GetFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter, bool recursive)
+        internal static IEnumerable<string> GetFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, string filter, bool recursive)
         {
             return msBuildNuGetProjectSystem.GetFiles(path, filter, recursive);
         }
 
-        public static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        internal static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             // Only delete the file if it exists and the checksum is the same
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
@@ -303,7 +303,7 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        public static IEnumerable<string> GetDirectoriesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        internal static IEnumerable<string> GetDirectoriesSafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
         {
             try
             {
@@ -317,17 +317,17 @@ namespace NuGet.ProjectManagement
             return Enumerable.Empty<string>();
         }
 
-        public static IEnumerable<string> GetDirectories(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
+        internal static IEnumerable<string> GetDirectories(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path)
         {
             return msBuildNuGetProjectSystem.GetDirectories(path);
         }
 
-        public static void DeleteDirectorySafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
+        internal static void DeleteDirectorySafe(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
         {
             PerformSafeAction(() => DeleteDirectory(msBuildNuGetProjectSystem, path, recursive), msBuildNuGetProjectSystem.NuGetProjectContext);
         }
 
-        public static void DeleteDirectory(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
+        internal static void DeleteDirectory(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, bool recursive)
         {
             var fullPath = Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path);
             if (!Directory.Exists(fullPath))
@@ -513,7 +513,7 @@ namespace NuGet.ProjectManagement
             return items.Where(i => PackageHelper.IsPackageFile(i, PackageSaveModes.Nupkg | PackageSaveModes.Nuspec));
         }
 
-        public static void AddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Action<Stream> writeToStream)
+        internal static void AddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Action<Stream> writeToStream)
         {
             using (var memoryStream = new MemoryStream())
             {

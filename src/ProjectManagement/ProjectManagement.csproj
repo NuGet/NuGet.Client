@@ -35,6 +35,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NuGet.Configuration">
       <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
@@ -82,11 +86,13 @@
     <Compile Include="INuGetProjectContext.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectContext.cs" />
+    <Compile Include="Projects\INuGetIntegratedProject.cs" />
     <Compile Include="Projects\MSBuildNuGetProject.cs" />
     <Compile Include="Projects\FolderNuGetProject.cs" />
     <Compile Include="NuGetProject.cs" />
     <Compile Include="Projects\ProjectKNuGetProject.cs" />
     <Compile Include="Projects\PackagesConfigNuGetProject.cs" />
+    <Compile Include="Projects\BuildIntegratedNuGetProject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceControl\SourceControlManager.cs" />
     <Compile Include="SourceControl\SourceControlManagerProvider.cs" />
@@ -102,6 +108,7 @@
     <Compile Include="Utility\MSBuildNuGetProjectSystemUtility.cs" />
     <Compile Include="Utility\PathUtility.cs" />
     <Compile Include="SourceControl\SourceControlUtility.cs" />
+    <Compile Include="Utility\JsonConfigUtility.cs" />
     <Compile Include="Utility\StreamUtility.cs" />
     <Compile Include="Utility\Token.cs" />
     <Compile Include="Utility\Tokenizer.cs" />

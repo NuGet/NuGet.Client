@@ -1,7 +1,7 @@
 ﻿
 namespace NuGet.ProjectManagement.Projects
 {
-    public abstract class ProjectKNuGetProjectBase : NuGetProject
+    public abstract class ProjectKNuGetProjectBase : NuGetProject, INuGetIntegratedProject
     {
     }
 }
