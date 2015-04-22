@@ -3,8 +3,11 @@
   "description": "Complete commands common to command-line and GUI NuGet clients",
 
   "dependencies": {
+    "NuGet.Client": "3.0.0-*",
     "NuGet.ProjectModel": "3.0.0-*",
     "NuGet.Configuration": "3.0.0-*",
+    "NuGet.DependencyResolver": "3.0.0-*",
+    "NuGet.Common": { "version": "3.0.0-*", "type": "build" },
     "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-*"
   },
 

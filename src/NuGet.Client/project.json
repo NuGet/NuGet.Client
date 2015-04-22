@@ -1,0 +1,28 @@
+﻿{
+  "version": "1.0.0-*",
+  "dependencies": {
+    "NuGet.Versioning": "3.0.0-*",
+    "NuGet.Packaging": "3.0.0-*",
+    "NuGet.Repositories": "3.0.0-*",
+    "NuGet.Common": { "version": "1.0.0-*", "type": "build" }
+  },
+
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.IO.Compression": "",
+        "System.Net.Http": "",
+        "System.Xml": "",
+        "System.Xml.Linq": ""
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Net.Http": "4.0.0-beta-*",
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
+        "Microsoft.Net.Http.Client": "1.0.0-beta3-*"
+      }
+    }
+  }
+}

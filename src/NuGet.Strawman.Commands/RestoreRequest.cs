@@ -1,4 +1,5 @@
 ﻿using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace NuGet.Strawman.Commands
         /// The directory in which to install packages
         /// </summary>
         public string PackagesDirectory { get; }
-        
+
         // TODO: NoCache
         // TODO: Lock/Unlock
         // TODO: ScriptExecutor
