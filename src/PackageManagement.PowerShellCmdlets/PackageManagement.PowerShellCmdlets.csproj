@@ -158,7 +158,6 @@
     <Compile Include="IPowerShellPackage.cs" />
     <Compile Include="PackageActionBaseCommand.cs" />
     <Compile Include="PowerShellExecutionMessage.cs" />
-    <Compile Include="Utility\ExceptionUtility.cs" />
     <Compile Include="Cmdlets\FindPackageCommand.cs" />
     <Compile Include="Cmdlets\GetPackageCommand.cs" />
     <Compile Include="Cmdlets\GetProjectCommand.cs" />
@@ -180,9 +179,7 @@
     <Compile Include="Cmdlets\SyncPackageCommand.cs" />
     <Compile Include="Cmdlets\UninstallPackageCommand.cs" />
     <Compile Include="Cmdlets\UpdatePackageCommand.cs" />
-    <Compile Include="Utility\ProjectExtension.cs" />
     <Compile Include="Utility\PSPathUtility.cs" />
-    <Compile Include="Utility\SolutionExtension.cs" />
     <Compile Include="Utility\WebRequestEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>

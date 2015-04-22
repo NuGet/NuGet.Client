@@ -367,10 +367,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             // Get all DTE projects in the solution and compare by CustomUnique names, especially for projects under solution folders.
-            IEnumerable<Project> allDTEProjects = DTE.Solution.GetAllProjects();
+            IEnumerable<Project> allDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution); 
             if (allDTEProjects != null)
             {
-                defaultDTEProject = allDTEProjects.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), customUniqueName)).FirstOrDefault();
+                defaultDTEProject = allDTEProjects.Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), customUniqueName)).FirstOrDefault();
             }
 
             return defaultDTEProject;
@@ -386,7 +386,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected IEnumerable<Project> GetProjectsByName(string[] projectNames)
         {
             var allValidProjectNames = GetAllValidProjectNames().ToList();
-            var allDteProjects = _dte.Solution.GetAllProjects();
+            var allDteProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution);
 
             foreach (string projectName in projectNames)
             {
@@ -411,7 +411,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         count++;
                         string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
                         Project dteProject = allDteProjects
-                                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.GetCustomUniqueName(), name))
+                                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), name))
                                 .FirstOrDefault();
                         yield return dteProject;
                     }
@@ -434,8 +434,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected IEnumerable<string> GetAllValidProjectNames()
         {
-            var safeNames = _dte.Solution.GetAllProjects().Select(p => p.GetProjectSafeName(_dte));
-            var uniqueNames = _dte.Solution.GetAllProjects().Select(p => p.GetCustomUniqueName());
+            var safeNames = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution).Select(p => EnvDTEProjectUtility.GetProjectSafeName(p));
+            var uniqueNames = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution).Select(p => EnvDTEProjectUtility.GetCustomUniqueName(p));
             return uniqueNames.Concat(safeNames).Distinct();
         }
 

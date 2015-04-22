@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using EnvDTE;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -40,7 +41,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (All.IsPresent)
             {
-                var projects = DTE.Solution.GetAllProjects();
+                var projects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution);
                 WriteObject(projects, enumerateCollection: true);
             }
             else
