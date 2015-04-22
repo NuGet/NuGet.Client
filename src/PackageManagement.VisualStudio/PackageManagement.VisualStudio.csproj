@@ -211,6 +211,7 @@
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="IScriptPackage.cs" />
+    <Compile Include="ProjectSystems\BuildIntegratedProjectSystem.cs" />
     <Compile Include="ScriptPackage.cs" />
     <Compile Include="SourceControl\ITFSSourceControlManagerProvider.cs" />
     <Compile Include="SourceControl\IVsSourceControlTracker.cs" />

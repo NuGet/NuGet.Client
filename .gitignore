@@ -9,6 +9,8 @@ src/VsConsole/PowerShellHost/DebugConstants.cs
 *.user
 *.sln.docstates
 
+.vs/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

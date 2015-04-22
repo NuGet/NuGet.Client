@@ -1108,13 +1108,28 @@ namespace NuGet.PackageManagement.VisualStudio
             return hier.IsCapabilityMatch("SharedAssetsProject");
         }
 
-        internal static bool SupportsINuGetProjectSystem(EnvDTEProject envDTEProject)
+        public static async Task<bool> IsBuildIntegrated(EnvDTEProject envDTEProject)
+        {
+            return (await HasBuildIntegratedConfig(envDTEProject) || SupportsINuGetProjectSystem(envDTEProject));
+        }
+
+
+        public static bool SupportsINuGetProjectSystem(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var projectKProject = VSNuGetProjectFactory.GetProjectKProject(envDTEProject);
             return projectKProject != null;
         }
+
+        /// <summary>
+        /// True if the project has a nuget.json file, indicating that it is build integrated
+        /// </summary>
+        public static async Task<bool> HasBuildIntegratedConfig(EnvDTEProject project)
+        {
+            return await EnvDTEProjectUtility.ContainsFile(project, NuGetVSConstants.JsonConfigFileName);
+        }
+
         #endregion // Check Project Types
 
         #region Act on Project

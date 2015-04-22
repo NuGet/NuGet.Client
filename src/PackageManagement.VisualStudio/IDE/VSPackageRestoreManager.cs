@@ -53,5 +53,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
             });
         }
+
+
+
+
     }
 }

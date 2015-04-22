@@ -19,6 +19,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using Resx = NuGet.PackageManagement.UI.Resources;
@@ -75,6 +76,7 @@ namespace NuGetVSExtension
         private IVsSourceControlTracker _vsSourceControlTracker;
         private ICommonOperations _commonOperations;
         private ISolutionManager _solutionManager;
+        private ISourceRepositoryProvider _sourceRepositoryProvider;
         //*** private IDeleteOnRestartManager _deleteOnRestart;
         private OleMenuCommand _managePackageDialogCommand;
         private OleMenuCommand _managePackageForSolutionDialogCommand;
@@ -205,6 +207,19 @@ namespace NuGetVSExtension
             }
         }
 
+        private ISourceRepositoryProvider SourceRepositoryProvider
+        {
+            get
+            {
+                if (_sourceRepositoryProvider == null)
+                {
+                    _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+                    Debug.Assert(_sourceRepositoryProvider != null);
+                }
+                return _sourceRepositoryProvider;
+            }
+        }
+
         /* ****
         private IDeleteOnRestartManager DeleteOnRestart
         {
@@ -296,7 +311,7 @@ namespace NuGetVSExtension
             //       but, overrides RestoreMissingPackages to catch the exceptions. OnBuildPackageRestorer needs to catch the exception by itself to populate error list window
             //       Exported IPackageRestoreManager is used by UI manual restore, Powershell manual restore and by VS extensibility package restore
             // var packageRestoreManagerForOnBuildPackageRestorer = new PackageRestoreManager(SourceRepositoryProvider, Settings, SolutionManager);
-            OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this);
+            OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this, SourceRepositoryProvider);
 
             var vsSourceControlTracker = VSSourceControlTracker;
 

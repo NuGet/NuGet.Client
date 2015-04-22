@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
+
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -17,8 +19,8 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using Task = System.Threading.Tasks.Task;
+using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGetVSExtension
 {
@@ -49,6 +51,8 @@ namespace NuGetVSExtension
 
         private ISolutionManager SolutionManager { get; set; }
 
+        private ISourceRepositoryProvider SourceRepositoryProvider { get; set; }
+
         private int TotalCount { get; set; }
 
         private int CurrentCount;
@@ -65,9 +69,13 @@ namespace NuGetVSExtension
             Diagnostic = 4
         };
 
-        internal OnBuildPackageRestorer(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager, IServiceProvider serviceProvider)
+        internal OnBuildPackageRestorer(ISolutionManager solutionManager, 
+            IPackageRestoreManager packageRestoreManager, 
+            IServiceProvider serviceProvider,
+            ISourceRepositoryProvider sourceRepositoryProvider)
         {
             SolutionManager = solutionManager;
+            SourceRepositoryProvider = sourceRepositoryProvider;
 
             PackageRestoreManager = packageRestoreManager;
 
@@ -130,7 +138,40 @@ namespace NuGetVSExtension
 
                 ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await RestorePackagesOrCheckForMissingPackagesAsync(solutionDirectory);
+                    var projects = SolutionManager.GetNuGetProjects().ToList();
+
+                    // Check legacy project types for missing packages
+                    if (!projects.Any(project => project is INuGetIntegratedProject))
+                    {
+                        await RestorePackagesOrCheckForMissingPackagesAsync(solutionDirectory);
+                    }
+
+                    // Call DNU to restore for BuildIntegratedProjectSystem projects
+                    var buildEnabled = projects.Select(project => project as BuildIntegratedProjectSystem)
+                                                            .Where(project => project != null);
+                    if (buildEnabled.Any())
+                    {
+                        Action<string> logMessage = (message) =>
+                        {
+                            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                            {
+                                // Switch to main thread to update the error list window or output window
+                                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                WriteLine(VerbosityLevel.Quiet, "{0}", message);
+                            });
+                        };
+
+                        var context = new LoggingProjectContext(logMessage);
+                        var packageSourceProvider = new PackageSourceProvider(new Settings(SolutionManager.SolutionDirectory));
+
+                        var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
+
+                        // Restore packages and create the lock file for each project
+                        foreach (var project in buildEnabled)
+                        {
+                            await BuildIntegratedRestoreUtility.RestoreForBuild(project.JsonConfigPath, project.ProjectName, context, enabledSources, CancellationToken.None);
+                        }
+                    }
                 });
             }
             catch (Exception ex)
@@ -308,6 +349,7 @@ namespace NuGetVSExtension
             CancellationToken token)
         {
             await TaskScheduler.Default;
+
             await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, missingPackagesInfo, Token);
         }
 

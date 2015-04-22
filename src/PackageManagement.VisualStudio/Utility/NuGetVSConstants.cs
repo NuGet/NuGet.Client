@@ -45,5 +45,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         //
         public static readonly Guid GUID_VSStandardCommandSet97;
+
+        // Config file name for build integrated projects
+        public static readonly string JsonConfigFileName = "nuget.json";
     }
 }
