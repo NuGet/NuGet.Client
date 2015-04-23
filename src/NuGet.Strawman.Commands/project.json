@@ -4,6 +4,7 @@
 
   "dependencies": {
     "NuGet.Client": "3.0.0-*",
+    "NuGet.ContentModel": "3.0.0-*",
     "NuGet.ProjectModel": "3.0.0-*",
     "NuGet.Configuration": "3.0.0-*",
     "NuGet.DependencyResolver": "3.0.0-*",

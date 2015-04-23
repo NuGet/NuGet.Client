@@ -39,7 +39,6 @@ namespace NuGet.CommandLine
                 restore.Description = "Restores packages for a project and writes a lock file";
 
                 var sources = restore.Option("-s|--source <source>", "Specifies a NuGet package source to use during the restore", CommandOptionType.MultipleValue);
-                var dryRun = restore.Option("-n|--dry-run", "Don't actually download or install any packages, just list what would be done", CommandOptionType.NoValue);
                 var packagesDirectory = restore.Option("--packages <packagesDirectory>", "Directory to install packages in", CommandOptionType.SingleValue);
                 var projectFile = restore.Argument("[project file]", "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
 
@@ -47,7 +46,7 @@ namespace NuGet.CommandLine
                 {
                     // Figure out the project directory
                     PackageSpec project;
-                    string projectDirectory = projectFile.Value ?? Environment.CurrentDirectory;
+                    string projectDirectory = projectFile.Value ?? Path.GetFullPath(".");
                     if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectDirectory), StringComparison.OrdinalIgnoreCase))
                     {
                         _log.LogVerbose($"Reading project file {projectFile.Value}");
@@ -78,8 +77,7 @@ namespace NuGet.CommandLine
                     var request = new RestoreRequest(
                         project,
                         sources.Values.Select(s => new PackageSource(s)),
-                        packagesDir,
-                        dryRun: dryRun.HasValue());
+                        packagesDir);
                     var command = new RestoreCommand(loggerFactory);
                     var result = await command.ExecuteAsync(request);
 

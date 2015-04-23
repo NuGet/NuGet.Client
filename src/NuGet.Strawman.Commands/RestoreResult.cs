@@ -9,9 +9,9 @@ namespace NuGet.Strawman.Commands
         /// <summary>
         /// Gets the resolved dependency graphs produced by the restore operation
         /// </summary>
-        public IEnumerable<RestoreGraph> RestoreGraphs { get; }
+        public IEnumerable<RestoreTargetGraph> RestoreGraphs { get; }
 
-        public RestoreResult(bool success, IEnumerable<RestoreGraph> restoreGraphs)
+        public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs)
         {
             Success = success;
             RestoreGraphs = restoreGraphs;
