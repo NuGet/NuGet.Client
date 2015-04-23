@@ -37,7 +37,12 @@ namespace NuGet.Client
 
         public async Task<Stream> OpenNuspecStreamAsync(PackageInfo package)
         {
-            return await PackageUtilities.OpenNuspecStreamFromNupkgAsync(package, OpenNupkgStreamAsync, _logger);
+            return await PackageUtilities.OpenNupkgContentFileStream(package, OpenNupkgStreamAsync, package.Id + ".nuspec", _logger);
+        }
+
+        public async Task<Stream> OpenRuntimeStreamAsync(PackageInfo package)
+        {
+            return await PackageUtilities.OpenNupkgContentFileStream(package, OpenNupkgStreamAsync, "runtime.json", _logger);
         }
 
         public Task<Stream> OpenNupkgStreamAsync(PackageInfo package)

@@ -9,7 +9,8 @@
       "type": "build"
     },
     "Microsoft.Framework.Logging": "1.0.0-beta5-*",
-    "Microsoft.Framework.Logging.Console": "1.0.0-beta5-*"
+    "Microsoft.Framework.Logging.Console": "1.0.0-beta5-*",
+    "Microsoft.Framework.Runtime.Interfaces": "1.0.0-beta5-*"
   },
 
   "commands": {

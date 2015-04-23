@@ -6,177 +6,66 @@
       "NuGet.Strawman.Commands >= 3.0.0-*",
       "Microsoft.Framework.CommandLineUtils >= 1.0.0-*",
       "Microsoft.Framework.Logging >= 1.0.0-beta5-*",
-      "Microsoft.Framework.Logging.Console >= 1.0.0-beta5-*"
+      "Microsoft.Framework.Logging.Console >= 1.0.0-beta5-*",
+      "Microsoft.Framework.Runtime.Interfaces >= 1.0.0-beta5-*"
     ],
     "DNX,Version=v4.5.1": [],
     "DNXCore,Version=v5.0": []
   },
   "libraries": {
-    "Microsoft.CodeAnalysis.Analyzers/1.0.0-rc2-20150421-01": {
+    "Microsoft.CSharp/4.0.0-beta-22822": {
       "serviceable": false,
-      "sha": "/Mxlc7C7pmZuzTY7sTYX7uciofZJpJOVohd2T+VlWoLhCnzppewsFDwZoA7HFjVNH9xj48Wmwt3SX+n31Eanhw==",
+      "sha": "CyoouuItjI2LVQ6csD/C+pyzMGTyzM6zmVX1CYh6aIHzNtSpv/NQdOKpdnZI5sUydFow4jiSq9Loox3B+YvA0w==",
       "frameworks": {
         "DNX,Version=v4.5.1": {
-          "dependencies": {},
-          "frameworkAssemblies": [
-            "System"
-          ],
-          "runtimeAssemblies": [],
-          "compileAssemblies": []
-        },
-        "DNXCore,Version=v5.0": {
-          "dependencies": {},
+          "dependencies": {
+            "System.Dynamic.Runtime": "4.0.0-beta-22822",
+            "System.Linq.Expressions": "4.0.0-beta-22822",
+            "System.Runtime": "4.0.0-beta-22822"
+          },
           "frameworkAssemblies": [],
           "runtimeAssemblies": [],
           "compileAssemblies": []
         },
-        ".NETFramework,Version=v4.5": {
-          "dependencies": {},
-          "frameworkAssemblies": [
-            "System"
+        "DNXCore,Version=v5.0": {
+          "dependencies": {
+            "System.Dynamic.Runtime": "4.0.0-beta-22822",
+            "System.Linq.Expressions": "4.0.0-beta-22822",
+            "System.Runtime": "4.0.0-beta-22822"
+          },
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/aspnetcore50/Microsoft.CSharp.dll"
           ],
+          "compileAssemblies": [
+            "lib/contract/Microsoft.CSharp.dll"
+          ]
+        },
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {
+            "System.Dynamic.Runtime": "4.0.0-beta-22822",
+            "System.Linq.Expressions": "4.0.0-beta-22822",
+            "System.Runtime": "4.0.0-beta-22822"
+          },
+          "frameworkAssemblies": [],
           "runtimeAssemblies": [],
           "compileAssemblies": []
         }
       },
       "files": [
-        "Microsoft.CodeAnalysis.Analyzers.1.0.0-rc2-20150421-01.nupkg",
-        "Microsoft.CodeAnalysis.Analyzers.1.0.0-rc2-20150421-01.nupkg.sha512",
-        "Microsoft.CodeAnalysis.Analyzers.nuspec",
-        "ThirdPartyNotices.rtf",
-        "tools/install.ps1",
-        "tools/uninstall.ps1",
-        "tools/analyzers/C#/Microsoft.CodeAnalysis.Analyzers.dll",
-        "tools/analyzers/C#/Microsoft.CodeAnalysis.CSharp.Analyzers.dll",
-        "tools/analyzers/VB.NET/Microsoft.CodeAnalysis.Analyzers.dll",
-        "tools/analyzers/VB.NET/Microsoft.CodeAnalysis.VisualBasic.Analyzers.dll"
+        "License.rtf",
+        "Microsoft.CSharp.4.0.0-beta-22822.nupkg",
+        "Microsoft.CSharp.4.0.0-beta-22822.nupkg.sha512",
+        "Microsoft.CSharp.nuspec",
+        "lib/aspnetcore50/Microsoft.CSharp.dll",
+        "lib/contract/Microsoft.CSharp.dll",
+        "lib/net45/_._",
+        "lib/portable-wpa81+wp80+win80+net45+aspnetcore50/Microsoft.CSharp.dll"
       ]
     },
-    "Microsoft.CodeAnalysis.Common/1.0.0-rc2-20150421-01": {
+    "Microsoft.Framework.CommandLineUtils/1.0.0-beta5-11596": {
       "serviceable": false,
-      "sha": "RCYF4JBaZGJNXyUGlamrTo5nwHDAYn0Aa5PDb7HXOeBtVKPXQ9v8NDqvihrb49LwpbWU1K5hBXGd7x5SeWp4Nw==",
-      "frameworks": {
-        "DNX,Version=v4.5.1": {
-          "dependencies": {
-            "System.Collections.Immutable": "[1.1.34-rc]",
-            "System.Reflection.Metadata": "[1.0.19-rc]",
-            "Microsoft.CodeAnalysis.Analyzers": "[1.0.0-rc2-20150421-01]"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.dll"
-          ],
-          "compileAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.dll"
-          ]
-        },
-        "DNXCore,Version=v5.0": {
-          "dependencies": {
-            "System.Collections.Immutable": "[1.1.34-rc]",
-            "System.Reflection.Metadata": "[1.0.19-rc]",
-            "Microsoft.CodeAnalysis.Analyzers": "[1.0.0-rc2-20150421-01]"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8/Microsoft.CodeAnalysis.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8/Microsoft.CodeAnalysis.dll"
-          ]
-        },
-        ".NETFramework,Version=v4.5": {
-          "dependencies": {
-            "System.Collections.Immutable": "[1.1.34-rc]",
-            "System.Reflection.Metadata": "[1.0.19-rc]",
-            "Microsoft.CodeAnalysis.Analyzers": "[1.0.0-rc2-20150421-01]"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.dll"
-          ],
-          "compileAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.dll"
-          ]
-        }
-      },
-      "files": [
-        "Microsoft.CodeAnalysis.Common.1.0.0-rc2-20150421-01.nupkg",
-        "Microsoft.CodeAnalysis.Common.1.0.0-rc2-20150421-01.nupkg.sha512",
-        "Microsoft.CodeAnalysis.Common.nuspec",
-        "ThirdPartyNotices.rtf",
-        "lib/net45/Microsoft.CodeAnalysis.Desktop.dll",
-        "lib/net45/Microsoft.CodeAnalysis.Desktop.xml",
-        "lib/net45/Microsoft.CodeAnalysis.dll",
-        "lib/net45/Microsoft.CodeAnalysis.xml",
-        "lib/portable-net45+win8/Microsoft.CodeAnalysis.dll",
-        "lib/portable-net45+win8/Microsoft.CodeAnalysis.xml"
-      ]
-    },
-    "Microsoft.CodeAnalysis.CSharp/1.0.0-rc2-20150421-01": {
-      "serviceable": false,
-      "sha": "nCJEyFnOKRGAgNv5iLsxlY3p8765xKI56t+P4mdAofgINdVYjWNuEyA3hhpwxB1pwBKLpkW0QMxg3yid0cHz/g==",
-      "frameworks": {
-        "DNX,Version=v4.5.1": {
-          "dependencies": {
-            "Microsoft.CodeAnalysis.Common": "[1.0.0-rc2-20150421-01]"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.dll"
-          ],
-          "compileAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.dll"
-          ]
-        },
-        "DNXCore,Version=v5.0": {
-          "dependencies": {
-            "Microsoft.CodeAnalysis.Common": "[1.0.0-rc2-20150421-01]"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8/Microsoft.CodeAnalysis.CSharp.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8/Microsoft.CodeAnalysis.CSharp.dll"
-          ]
-        },
-        ".NETFramework,Version=v4.5": {
-          "dependencies": {
-            "Microsoft.CodeAnalysis.Common": "[1.0.0-rc2-20150421-01]"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.dll"
-          ],
-          "compileAssemblies": [
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.Desktop.dll",
-            "lib/net45/Microsoft.CodeAnalysis.CSharp.dll"
-          ]
-        }
-      },
-      "files": [
-        "Microsoft.CodeAnalysis.CSharp.1.0.0-rc2-20150421-01.nupkg",
-        "Microsoft.CodeAnalysis.CSharp.1.0.0-rc2-20150421-01.nupkg.sha512",
-        "Microsoft.CodeAnalysis.CSharp.nuspec",
-        "ThirdPartyNotices.rtf",
-        "lib/net45/Microsoft.CodeAnalysis.CSharp.Desktop.dll",
-        "lib/net45/Microsoft.CodeAnalysis.CSharp.Desktop.xml",
-        "lib/net45/Microsoft.CodeAnalysis.CSharp.dll",
-        "lib/net45/Microsoft.CodeAnalysis.CSharp.xml",
-        "lib/portable-net45+win8/Microsoft.CodeAnalysis.CSharp.dll",
-        "lib/portable-net45+win8/Microsoft.CodeAnalysis.CSharp.xml"
-      ]
-    },
-    "Microsoft.Framework.CommandLineUtils/1.0.0-beta5-11595": {
-      "serviceable": false,
-      "sha": "GeZ8jmsnIDxJK793MugwtGVyxpcxzMCbGbJO//lfh2foXsz7lg32vLSYTlC2MSzLRzzgb+pTkLuFTl/6FpuZ8w==",
+      "sha": "3RB4WLcGWyU7ZkrsZasRbg+htbvDn9NEHMwRGYy1IWWRtKbF9BCwiKb6XqImVuxZGGcc0WrkkeblMZ2YsPFiyg==",
       "frameworks": {
         "DNX,Version=v4.5.1": {
           "dependencies": {},
@@ -214,8 +103,8 @@
         }
       },
       "files": [
-        "Microsoft.Framework.CommandLineUtils.1.0.0-beta5-11595.nupkg",
-        "Microsoft.Framework.CommandLineUtils.1.0.0-beta5-11595.nupkg.sha512",
+        "Microsoft.Framework.CommandLineUtils.1.0.0-beta5-11596.nupkg",
+        "Microsoft.Framework.CommandLineUtils.1.0.0-beta5-11596.nupkg.sha512",
         "Microsoft.Framework.CommandLineUtils.nuspec",
         "lib/dnx451/Microsoft.Framework.CommandLineUtils.dll",
         "lib/dnx451/Microsoft.Framework.CommandLineUtils.xml",
@@ -228,9 +117,9 @@
         "shared/CommandOptionType.cs"
       ]
     },
-    "Microsoft.Framework.DependencyInjection.Interfaces/1.0.0-beta5-11261": {
+    "Microsoft.Framework.DependencyInjection.Interfaces/1.0.0-beta5-11262": {
       "serviceable": true,
-      "sha": "vdTQZjfQR02GY04KcftjWyuxcJc6Qb9EZoJMAKlAxqpwvAh2FYwrcX1ojRqc/4psUcPZYSSxix1z3pUUvh1YLg==",
+      "sha": "kZIf1eAgSv45TDVWZf5p9CGKfR95EXGcoKMXyAcNViDqMCf3/6sxeuSbMMjq31hhjods541VlxkP37ZlCXQmfg==",
       "frameworks": {
         "DNX,Version=v4.5.1": {
           "dependencies": {},
@@ -282,8 +171,8 @@
         }
       },
       "files": [
-        "Microsoft.Framework.DependencyInjection.Interfaces.1.0.0-beta5-11261.nupkg",
-        "Microsoft.Framework.DependencyInjection.Interfaces.1.0.0-beta5-11261.nupkg.sha512",
+        "Microsoft.Framework.DependencyInjection.Interfaces.1.0.0-beta5-11262.nupkg",
+        "Microsoft.Framework.DependencyInjection.Interfaces.1.0.0-beta5-11262.nupkg.sha512",
         "Microsoft.Framework.DependencyInjection.Interfaces.nuspec",
         "lib/dnx451/Microsoft.Framework.DependencyInjection.Interfaces.dll",
         "lib/dnx451/Microsoft.Framework.DependencyInjection.Interfaces.xml",
@@ -295,14 +184,14 @@
         "lib/portable-net45+win/Microsoft.Framework.DependencyInjection.Interfaces.xml"
       ]
     },
-    "Microsoft.Framework.Logging/1.0.0-beta5-11257": {
+    "Microsoft.Framework.Logging/1.0.0-beta5-11258": {
       "serviceable": true,
-      "sha": "JO3qBM0Y/aADxGTIrUbzeVxcPefM58oktjRSg7xlEd1xnTD+zywbMaYDF/x66TjgYgytiERVPucKOXgQygZ4dA==",
+      "sha": "/t4qW9tRux+6KCsHpZPmc3NGqwqWZDbfxJSoyRxnn0KA/Gs/mQAeet9k1E4u28mIiGJ02xyzaw/Iq5qimEdmsQ==",
       "frameworks": {
         "DNX,Version=v4.5.1": {
           "dependencies": {
-            "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-beta5-11261",
-            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11257"
+            "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-beta5-11262",
+            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11258"
           },
           "frameworkAssemblies": [
             "System.Collections.Concurrent",
@@ -320,8 +209,8 @@
         },
         "DNXCore,Version=v5.0": {
           "dependencies": {
-            "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-beta5-11261",
-            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11257",
+            "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-beta5-11262",
+            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11258",
             "System.Collections.Concurrent": "4.0.10-beta-22822",
             "System.Collections": "4.0.10-beta-22822",
             "System.Diagnostics.TraceSource": "4.0.0-beta-22822",
@@ -339,8 +228,8 @@
         },
         ".NETFramework,Version=v4.5": {
           "dependencies": {
-            "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-beta5-11261",
-            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11257"
+            "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-beta5-11262",
+            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11258"
           },
           "frameworkAssemblies": [
             "System.Collections.Concurrent",
@@ -358,8 +247,8 @@
         }
       },
       "files": [
-        "Microsoft.Framework.Logging.1.0.0-beta5-11257.nupkg",
-        "Microsoft.Framework.Logging.1.0.0-beta5-11257.nupkg.sha512",
+        "Microsoft.Framework.Logging.1.0.0-beta5-11258.nupkg",
+        "Microsoft.Framework.Logging.1.0.0-beta5-11258.nupkg.sha512",
         "Microsoft.Framework.Logging.nuspec",
         "lib/dnx451/Microsoft.Framework.Logging.dll",
         "lib/dnx451/Microsoft.Framework.Logging.xml",
@@ -371,13 +260,13 @@
         "lib/portable-net45+win/Microsoft.Framework.Logging.xml"
       ]
     },
-    "Microsoft.Framework.Logging.Console/1.0.0-beta5-11257": {
+    "Microsoft.Framework.Logging.Console/1.0.0-beta5-11258": {
       "serviceable": true,
-      "sha": "AxUYCJaiFvAHQPEQAa6W2/GcCkx9E5xUtTao0u5MjH4I2eEn8HKzZb9BLJ86xFk3WryNpGAnnTzEWXB819GWrQ==",
+      "sha": "pFyj3wM8RP2ipTKEjIurLZqMybtkRe8igAQdmt9XOtZ+MTk4fKI7yC7q8pr0Jt96RcJVMPE2xGn3qpSH508Yfw==",
       "frameworks": {
         "DNX,Version=v4.5.1": {
           "dependencies": {
-            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11257"
+            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11258"
           },
           "frameworkAssemblies": [
             "mscorlib",
@@ -394,7 +283,7 @@
         },
         "DNXCore,Version=v5.0": {
           "dependencies": {
-            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11257",
+            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11258",
             "System.Runtime": "4.0.20-beta-22822",
             "System.Console": "4.0.0-beta-22822",
             "System.IO": "4.0.10-beta-22822",
@@ -410,7 +299,7 @@
         },
         ".NETFramework,Version=v4.5": {
           "dependencies": {
-            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11257"
+            "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-11258"
           },
           "frameworkAssemblies": [
             "mscorlib",
@@ -427,8 +316,8 @@
         }
       },
       "files": [
-        "Microsoft.Framework.Logging.Console.1.0.0-beta5-11257.nupkg",
-        "Microsoft.Framework.Logging.Console.1.0.0-beta5-11257.nupkg.sha512",
+        "Microsoft.Framework.Logging.Console.1.0.0-beta5-11258.nupkg",
+        "Microsoft.Framework.Logging.Console.1.0.0-beta5-11258.nupkg.sha512",
         "Microsoft.Framework.Logging.Console.nuspec",
         "lib/dnx451/Microsoft.Framework.Logging.Console.dll",
         "lib/dnx451/Microsoft.Framework.Logging.Console.xml",
@@ -438,9 +327,9 @@
         "lib/net45/Microsoft.Framework.Logging.Console.xml"
       ]
     },
-    "Microsoft.Framework.Logging.Interfaces/1.0.0-beta5-11257": {
+    "Microsoft.Framework.Logging.Interfaces/1.0.0-beta5-11258": {
       "serviceable": true,
-      "sha": "rOWnbgsWz2HcqQcv8APUIQf7mpQiIHSdW0AG3UuF0iqu5FIqX+yfxD3q+NAPj6jB7IN4cQKqpXA6zjdr6vy96Q==",
+      "sha": "5GbDm0QYBzq+ByHQi7fIQygg1VMZ6vLCGBNNmh0/dk7HJP22PTqBIDbEaG1HgfTy3ZYqHgOdrrdArkHvV1y23Q==",
       "frameworks": {
         "DNX,Version=v4.5.1": {
           "dependencies": {},
@@ -493,8 +382,8 @@
         }
       },
       "files": [
-        "Microsoft.Framework.Logging.Interfaces.1.0.0-beta5-11257.nupkg",
-        "Microsoft.Framework.Logging.Interfaces.1.0.0-beta5-11257.nupkg.sha512",
+        "Microsoft.Framework.Logging.Interfaces.1.0.0-beta5-11258.nupkg",
+        "Microsoft.Framework.Logging.Interfaces.1.0.0-beta5-11258.nupkg.sha512",
         "Microsoft.Framework.Logging.Interfaces.nuspec",
         "lib/dnx451/Microsoft.Framework.Logging.Interfaces.dll",
         "lib/dnx451/Microsoft.Framework.Logging.Interfaces.xml",
@@ -506,9 +395,9 @@
         "lib/portable-net45+win/Microsoft.Framework.Logging.Interfaces.xml"
       ]
     },
-    "Microsoft.Framework.Runtime.Interfaces/1.0.0-beta5-11595": {
+    "Microsoft.Framework.Runtime.Interfaces/1.0.0-beta5-11596": {
       "serviceable": true,
-      "sha": "7nigWGgv946fY23ab5LBdAXzxDsb7rQ++J2ZYRPB9UokYW4wxkKmw5zmCunSRTEvHfxxqbqhcuCK5aXdcM0F2g==",
+      "sha": "AqnwtvnMmWk0pa8xAM60xY5Ri4/abWWwEIaWEWSe1p7i8v69KY7eWr8I0nfGTpPu29OAGtYKgPdK1JDJso03fA==",
       "frameworks": {
         "DNX,Version=v4.5.1": {
           "dependencies": {},
@@ -550,66 +439,13 @@
         }
       },
       "files": [
-        "Microsoft.Framework.Runtime.Interfaces.1.0.0-beta5-11595.nupkg",
-        "Microsoft.Framework.Runtime.Interfaces.1.0.0-beta5-11595.nupkg.sha512",
+        "Microsoft.Framework.Runtime.Interfaces.1.0.0-beta5-11596.nupkg",
+        "Microsoft.Framework.Runtime.Interfaces.1.0.0-beta5-11596.nupkg.sha512",
         "Microsoft.Framework.Runtime.Interfaces.nuspec",
         "lib/dnx451/Microsoft.Framework.Runtime.Interfaces.dll",
         "lib/dnx451/Microsoft.Framework.Runtime.Interfaces.xml",
         "lib/dnxcore50/Microsoft.Framework.Runtime.Interfaces.dll",
         "lib/dnxcore50/Microsoft.Framework.Runtime.Interfaces.xml"
-      ]
-    },
-    "Microsoft.Framework.Runtime.Roslyn.Interfaces/1.0.0-beta5-11595": {
-      "serviceable": true,
-      "sha": "5TWCm/LoAoVAFyChnBz7SWnAwH2S0TjVX948UBXTDHsRSJN6sG2uSrMiaPhdIWiF3Hw5wnyoTan+LMmoQ0DRYw==",
-      "frameworks": {
-        "DNX,Version=v4.5.1": {
-          "dependencies": {
-            "Microsoft.Framework.Runtime.Interfaces": "1.0.0-beta5-11595",
-            "Microsoft.CodeAnalysis.CSharp": "1.0.0-rc2-20150421-01"
-          },
-          "frameworkAssemblies": [
-            "mscorlib",
-            "System",
-            "System.Core",
-            "Microsoft.CSharp"
-          ],
-          "runtimeAssemblies": [
-            "lib/dnx451/Microsoft.Framework.Runtime.Roslyn.Interfaces.dll"
-          ],
-          "compileAssemblies": [
-            "lib/dnx451/Microsoft.Framework.Runtime.Roslyn.Interfaces.dll"
-          ]
-        },
-        "DNXCore,Version=v5.0": {
-          "dependencies": {
-            "Microsoft.Framework.Runtime.Interfaces": "1.0.0-beta5-11595",
-            "Microsoft.CodeAnalysis.CSharp": "1.0.0-rc2-20150421-01",
-            "System.Runtime": "4.0.20-beta-22822"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/dnxcore50/Microsoft.Framework.Runtime.Roslyn.Interfaces.dll"
-          ],
-          "compileAssemblies": [
-            "lib/dnxcore50/Microsoft.Framework.Runtime.Roslyn.Interfaces.dll"
-          ]
-        },
-        ".NETFramework,Version=v4.5": {
-          "dependencies": {},
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [],
-          "compileAssemblies": []
-        }
-      },
-      "files": [
-        "Microsoft.Framework.Runtime.Roslyn.Interfaces.1.0.0-beta5-11595.nupkg",
-        "Microsoft.Framework.Runtime.Roslyn.Interfaces.1.0.0-beta5-11595.nupkg.sha512",
-        "Microsoft.Framework.Runtime.Roslyn.Interfaces.nuspec",
-        "lib/dnx451/Microsoft.Framework.Runtime.Roslyn.Interfaces.dll",
-        "lib/dnx451/Microsoft.Framework.Runtime.Roslyn.Interfaces.xml",
-        "lib/dnxcore50/Microsoft.Framework.Runtime.Roslyn.Interfaces.dll",
-        "lib/dnxcore50/Microsoft.Framework.Runtime.Roslyn.Interfaces.xml"
       ]
     },
     "Microsoft.Net.Http.Client/1.0.0-beta3-10053": {
@@ -913,50 +749,6 @@
         "lib/contract/System.Collections.Concurrent.dll",
         "lib/net45/System.Collections.Concurrent.dll",
         "lib/portable-wpa81+wp80+win80+net45+aspnetcore50/System.Collections.Concurrent.dll"
-      ]
-    },
-    "System.Collections.Immutable/1.1.34-rc": {
-      "serviceable": true,
-      "sha": "WzH7eUVtkUymLcc80OuO5cgxg13xMqRgdGxfeAdlmZIxMt+z1zB8g3GRc2IoCC2gzkb+4CPzTYTwy50hKA6E1g==",
-      "frameworks": {
-        "DNX,Version=v4.5.1": {
-          "dependencies": {},
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll"
-          ]
-        },
-        "DNXCore,Version=v5.0": {
-          "dependencies": {},
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll"
-          ]
-        },
-        ".NETFramework,Version=v4.5": {
-          "dependencies": {},
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll"
-          ]
-        }
-      },
-      "files": [
-        "License-Stable.rtf",
-        "System.Collections.Immutable.1.1.34-rc.nupkg",
-        "System.Collections.Immutable.1.1.34-rc.nupkg.sha512",
-        "System.Collections.Immutable.nuspec",
-        "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll",
-        "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.xml"
       ]
     },
     "System.ComponentModel/4.0.0-beta-22822": {
@@ -2058,56 +1850,6 @@
         "lib/contract/System.Reflection.dll",
         "lib/net45/System.Reflection.dll",
         "lib/portable-wpa81+wp80+win80+net45+aspnetcore50/System.Reflection.dll"
-      ]
-    },
-    "System.Reflection.Metadata/1.0.19-rc": {
-      "serviceable": true,
-      "sha": "ZmK+3fqV3t7NUEJw3qJ7lzl2k0P7ZJGV/fakj68SDNXTxGizqwn90qvDpiOll9kr8NOLzteZQ4n8AbNKE5LZ6Q==",
-      "frameworks": {
-        "DNX,Version=v4.5.1": {
-          "dependencies": {
-            "System.Collections.Immutable": "1.1.34-rc"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8/System.Reflection.Metadata.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8/System.Reflection.Metadata.dll"
-          ]
-        },
-        "DNXCore,Version=v5.0": {
-          "dependencies": {
-            "System.Collections.Immutable": "1.1.34-rc"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8/System.Reflection.Metadata.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8/System.Reflection.Metadata.dll"
-          ]
-        },
-        ".NETFramework,Version=v4.5": {
-          "dependencies": {
-            "System.Collections.Immutable": "1.1.34-rc"
-          },
-          "frameworkAssemblies": [],
-          "runtimeAssemblies": [
-            "lib/portable-net45+win8/System.Reflection.Metadata.dll"
-          ],
-          "compileAssemblies": [
-            "lib/portable-net45+win8/System.Reflection.Metadata.dll"
-          ]
-        }
-      },
-      "files": [
-        "License-Stable.rtf",
-        "System.Reflection.Metadata.1.0.19-rc.nupkg",
-        "System.Reflection.Metadata.1.0.19-rc.nupkg.sha512",
-        "System.Reflection.Metadata.nuspec",
-        "lib/portable-net45+win8/System.Reflection.Metadata.dll",
-        "lib/portable-net45+win8/System.Reflection.Metadata.xml"
       ]
     },
     "System.Reflection.Primitives/4.0.0-beta-22822": {

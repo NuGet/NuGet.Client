@@ -9,6 +9,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using Microsoft.Framework.Logging;
+using NuGet.RuntimeModel;
 
 namespace NuGet.Strawman.Commands
 {
@@ -99,6 +100,23 @@ namespace NuGet.Strawman.Commands
             }))
             {
                 await nupkgStream.CopyToAsync(stream);
+            }
+        }
+
+        public async Task<RuntimeGraph> GetRuntimeGraph(RemoteMatch match, NuGetFramework framework)
+        {
+            using (var stream = await _source.OpenRuntimeStreamAsync(new PackageInfo
+            {
+                Id = match.Library.Name,
+                Version = match.Library.Version,
+                ContentUri = match.Path
+            }))
+            {
+                if (stream == null)
+                {
+                    return null;
+                }
+                return JsonRuntimeFormat.ReadRuntimeGraph(stream);
             }
         }
 

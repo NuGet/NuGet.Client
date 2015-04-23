@@ -1,10 +1,10 @@
 ﻿{
-  "version": "1.0.0-*",
+  "version": "3.0.0-*",
   "dependencies": {
     "NuGet.Versioning": "3.0.0-*",
     "NuGet.Packaging": "3.0.0-*",
     "NuGet.Repositories": "3.0.0-*",
-    "NuGet.Common": { "version": "1.0.0-*", "type": "build" }
+    "NuGet.Common": { "version": "3.0.0-*", "type": "build" }
   },
 
   "frameworks": {

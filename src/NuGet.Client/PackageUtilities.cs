@@ -25,8 +25,9 @@ namespace NuGet
             return null;
         }
 
-        internal static async Task<Stream> OpenNuspecStreamFromNupkgAsync(PackageInfo package,
+        internal static async Task<Stream> OpenNupkgContentFileStream(PackageInfo package,
             Func<PackageInfo, Task<Stream>> openNupkgStreamAsync,
+            string relativeFilePath,
             ILogger report)
         {
             using (var nupkgStream = await openNupkgStreamAsync(package))
@@ -34,7 +35,12 @@ namespace NuGet
                 try {
                     using (var archive = new ZipArchive(nupkgStream, ZipArchiveMode.Read, leaveOpen: true))
                     {
-                        var entry = archive.GetEntryOrdinalIgnoreCase(package.Id + ".nuspec");
+                        var entry = archive.GetEntryOrdinalIgnoreCase(relativeFilePath);
+                        if(entry == null)
+                        {
+                            return null;
+                        }
+
                         using (var entryStream = entry.Open())
                         {
                             var nuspecStream = new MemoryStream((int)entry.Length);

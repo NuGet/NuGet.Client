@@ -76,6 +76,12 @@ namespace NuGet.Client
             return Task.FromResult<Stream>(File.OpenRead(package.ManifestContentUri));
         }
 
+        public Task<Stream> OpenRuntimeStreamAsync(PackageInfo package)
+        {
+            // TODO: Keep the runtime.json somewhere?
+            return PackageUtilities.OpenNupkgContentFileStream(package, OpenNupkgStreamAsync, "runtime.json", _logger);
+        }
+
         public Task<Stream> OpenNupkgStreamAsync(PackageInfo package)
         {
             _logger.WriteQuiet(string.Format("  OPEN {0}", package.ContentUri));
