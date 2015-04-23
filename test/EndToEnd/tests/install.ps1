@@ -1910,6 +1910,7 @@ function Test-InstallingSatellitePackageToWebsiteCopiesResourcesToBin
 
     # Act
     $p | Install-Package Test.fr-FR -Source $context.RepositoryPath
+	Build-Solution
 
     # Assert
     Assert-Package $p Test.fr-FR
