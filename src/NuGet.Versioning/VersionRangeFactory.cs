@@ -258,54 +258,121 @@ namespace NuGet.Versioning
         /// </summary>
         public static VersionRange Combine(IEnumerable<VersionRange> ranges, IVersionComparer comparer)
         {
+            if (ranges == null)
+            {
+                throw new ArgumentNullException(nameof(ranges));
+            }
+
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
+            // Default to None for empty lists
             VersionRange result = VersionRange.None;
+
+            // Remove zero width ranges. Ex: (1.0.0, 1.0.0)
+            // This includes VersionRange.None and any other ranges that satisfy zero versions
+            ranges = ranges.Where(range => HasValidRange(range));
 
             if (ranges.Any())
             {
                 VersionRangeComparer rangeComparer = new VersionRangeComparer(comparer);
 
-                // remove zero ranges
-                ranges = ranges.Where(r => !rangeComparer.Equals(r, VersionRange.None));
-
+                // start with the first range in the list
                 var first = ranges.First();
 
                 NuGetVersion lowest = first.MinVersion;
-                bool includeLowest = first.IsMinInclusive;
                 NuGetVersion highest = first.MaxVersion;
-                bool includeHighest = first.IsMaxInclusive;
                 bool includePre = first.IncludePrerelease;
 
+                // To keep things consistent set min/max inclusive to false when there is no boundary
+                // It is possible to denote an inclusive range with no bounds, but it has no useful meaning for combine
+                bool includeLowest = first.IsMinInclusive && first.HasLowerBound;
+                bool includeHighest = first.IsMaxInclusive && first.HasUpperBound;
+
+                // expand the range to inclue all other ranges
                 foreach (var range in ranges.Skip(1))
                 {
+                    // allow prerelease versions in the range if any range allows them
                     includePre |= range.IncludePrerelease;
 
-                    if (!range.HasLowerBound)
+                    // once we have an unbounded lower we can stop checking
+                    if (lowest != null)
                     {
-                        lowest = null;
-                        includeLowest |= range.IsMinInclusive;
-                    }
-                    else if (comparer.Compare(range.MinVersion, lowest) < 0)
-                    {
-                        lowest = range.MinVersion;
-                        includeLowest = range.IsMinInclusive;
+                        if (range.HasLowerBound)
+                        {
+                            int lowerCompare = comparer.Compare(range.MinVersion, lowest);
+
+                            if (lowerCompare < 0)
+                            {
+                                // A new lowest was found
+                                lowest = range.MinVersion;
+                                includeLowest = range.IsMinInclusive;
+                            }
+                            else if (lowerCompare == 0)
+                            {
+                                // The lower ends are identical, update the inclusiveness
+                                includeLowest |= range.IsMinInclusive;
+                            }
+                            // lowerCompare > 0 falls into the current range, this is a no-op
+                        }
+                        else
+                        {
+                            // No lower bound
+                            lowest = null;
+                            includeLowest = false;
+                        }
                     }
 
-                    if (!range.HasUpperBound)
+                    // null is the highest we can get, stop checking once it is hit
+                    if (highest != null)
                     {
-                        highest = null;
-                        includeHighest |= range.IsMinInclusive;
-                    }
-                    else if (comparer.Compare(range.MinVersion, highest) > 0)
-                    {
-                        highest = range.MinVersion;
-                        includeHighest = range.IsMinInclusive;
+                        if (range.HasUpperBound)
+                        {
+                            int higherCompare = comparer.Compare(range.MaxVersion, highest);
+
+                            if (higherCompare > 0)
+                            {
+                                // A new highest was found
+                                highest = range.MaxVersion;
+                                includeHighest = range.IsMaxInclusive;
+                            }
+                            else if (higherCompare == 0)
+                            {
+                                // The higher ends are identical, update the inclusiveness
+                                includeHighest |= range.IsMaxInclusive;
+                            }
+                            // higherCompare < 0 falls into the current range, this is a no-op
+                        }
+                        else
+                        {
+                            // No higher bound
+                            highest = null;
+                            includeHighest = false;
+                        }
                     }
                 }
 
+                // Create the new range using the maximums found
                 result = new VersionRange(lowest, includeLowest, highest, includeHighest, includePre);
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Verify the range has an actual width. 
+        /// Ex: no version can satisfy (3.0.0, 3.0.0)
+        /// </summary>
+        private static bool HasValidRange(VersionRange range)
+        {
+            // Verify that if both bounds exist, and neither are included, that the versions are not the same
+            return !range.HasUpperBound
+                || !range.HasLowerBound
+                || range.IsMaxInclusive
+                || range.IsMinInclusive
+                || range.MinVersion != range.MaxVersion;
         }
     }
 }
