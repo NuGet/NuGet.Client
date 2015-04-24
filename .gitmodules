@@ -1,0 +1,12 @@
+[submodule "submodules/NuGet.Packaging"]
+	path = submodules/NuGet.Packaging
+	url = https://github.com/NuGet/NuGet.Packaging
+[submodule "submodules/NuGet.Versioning"]
+	path = submodules/NuGet.Versioning
+	url = https://github.com/NuGet/NuGet.Versioning
+[submodule "submodules/NuGet.Protocol"]
+	path = submodules/NuGet.Protocol
+	url = https://github.com/NuGet/NuGet.Protocol
+[submodule "submodules/NuGet.Configuration"]
+	path = submodules/NuGet.Configuration
+	url = https://github.com/NuGet/NuGet.Configuration

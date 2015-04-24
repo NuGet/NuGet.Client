@@ -2,9 +2,9 @@
   "projects": [
     "src",
     "test",
-    "../NuGet.Packaging/src",
-    "../NuGet.Versioning/src",
-    "../NuGet.Protocol/src",
-    "../NuGet.Configuration/src"
+    "submodules/NuGet.Packaging/src",
+    "submodules/NuGet.Versioning/src",
+    "submodules/NuGet.Protocol/src",
+    "submodules/NuGet.Configuration/src"
   ]
 }
