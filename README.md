@@ -5,7 +5,7 @@ Not a prototype, just not in the final location yet :)
 
 ## Usage:
 
-1. `git submodules update --init` at the root
+1. `git submodule update --init` at the root
 1. `dnu restore` at the root (Ignore errors about missing "Microsoft.NETCore.Runtime")
 1. `.\nuget3` at the root
 
