@@ -65,7 +65,6 @@ namespace NuGet.DependencyResolver
                 // Console.WriteLine("*** {0}", runtimeJsonPath);
                 if (File.Exists(runtimeJsonPath))
                 {
-                    Console.WriteLine("*** READING {0}", runtimeJsonPath);
                     return Task.FromResult(JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath));
                 }
             }
