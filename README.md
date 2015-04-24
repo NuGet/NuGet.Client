@@ -5,8 +5,9 @@ Not a prototype, just not in the final location yet :)
 
 ## Usage:
 
+1. `git submodules update --init` at the root
 1. `dnu restore` at the root (Ignore errors about missing "Microsoft.NETCore.Runtime")
-2. `.\nuget3` at the root
+1. `.\nuget3` at the root
 
 You need to specify **ALL** sources for `restore`. It does **not** read from `nuget.config` files yet. It also does not yet handle project-to-project csproj dependencies 
 but that is coming soon. You need to use a source that has the latest packaging conventions (`runtimes/` folders) in order to see the whole restore work.
