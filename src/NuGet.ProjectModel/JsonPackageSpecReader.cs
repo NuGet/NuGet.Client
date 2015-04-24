@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
+using NuGet.RuntimeModel;
 
 namespace NuGet.ProjectModel
 {
@@ -98,6 +99,9 @@ namespace NuGet.ProjectModel
                 rawPackageSpec,
                 "dependencies",
                 isGacOrFrameworkReference: false);
+
+            // Read the runtime graph
+            packageSpec.RuntimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(rawPackageSpec);
 
             return packageSpec;
         }

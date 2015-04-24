@@ -9,12 +9,16 @@ namespace NuGet.RuntimeModel
     public class RuntimePackageDependency
     {
         public string Id { get; }
-        public NuGetVersion Version { get; }
+        public VersionRange VersionRange { get; }
 
-        public RuntimePackageDependency(string id, NuGetVersion version)
+        public RuntimePackageDependency(string id, VersionRange versionRange)
         {
             Id = id;
-            Version = version;
+            VersionRange = versionRange;
         }
+
+        public RuntimePackageDependency Clone() => new RuntimePackageDependency(Id, VersionRange);
+
+        public override string ToString() => $"{Id} {VersionRange}";
     }
 }

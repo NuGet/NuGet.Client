@@ -8,6 +8,13 @@ namespace NuGet.DependencyResolver
 {
     public static class GraphOperations
     {
+        private enum WalkState
+        {
+            Walking,
+            Rejected,
+            Ambiguous
+        }
+
         public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root)
         {
             // now we walk the tree as often as it takes to determine 
@@ -46,20 +53,19 @@ namespace NuGet.DependencyResolver
                 //  d1 is rejected, d2 is accepted
                 //  x1 is no longer seen, and z1 is not ambiguous
                 //  z1 is accepted
-
-                root.ForEach("Walking", (node, state) =>
+                root.ForEach(WalkState.Walking, (node, state) =>
                 {
                     if (node.Disposition == Disposition.Rejected)
                     {
-                        return "Rejected";
+                        return WalkState.Rejected;
                     }
 
-                    if (state == "Walking" && tracker.IsDisputed(node.Item))
+                    if (state == WalkState.Walking && tracker.IsDisputed(node.Item))
                     {
-                        return "Ambiguous";
+                        return WalkState.Ambiguous;
                     }
 
-                    if (state == "Ambiguous")
+                    if (state == WalkState.Ambiguous)
                     {
                         tracker.MarkAmbiguous(node.Item);
                     }

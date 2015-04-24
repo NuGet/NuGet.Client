@@ -38,6 +38,8 @@ namespace NuGet.DependencyResolver
             return entry.List.All(known => item.Key.Version >= known.Key.Version);
         }
 
+        public IEnumerable<GraphItem<TItem>> GetDisputes(GraphItem<TItem> item) => GetEntry(item).List;
+
         private Entry GetEntry(GraphItem<TItem> item)
         {
             Entry itemList;

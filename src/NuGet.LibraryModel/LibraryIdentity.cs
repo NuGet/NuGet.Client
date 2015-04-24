@@ -7,7 +7,7 @@ using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
 {
-    public class LibraryIdentity : IEquatable<LibraryIdentity>
+    public class LibraryIdentity : IEquatable<LibraryIdentity>, IComparable<LibraryIdentity>
     {
         public string Name { get; set; }
 
@@ -65,6 +65,37 @@ namespace NuGet.LibraryModel
                 TypeConstraint = library.Type,
                 VersionRange = library.Version == null ? null : new VersionRange(library.Version, new FloatRange(NuGetVersionFloatBehavior.None, library.Version))
             };
+        }
+
+        public int CompareTo(LibraryIdentity other)
+        {
+            int compare = string.Compare(Type, other.Type);
+            if(compare != 0)
+            {
+                return compare;
+            }
+
+            compare = string.Compare(Name, other.Name);
+            if (compare == 0)
+            {
+                if (Version == null && other.Version == null)
+                {
+                    // NOOP;
+                }
+                else if (Version == null)
+                {
+                    compare = -1;
+                }
+                else if (other.Version == null)
+                {
+                    compare = 1;
+                }
+                else
+                {
+                    compare = Version.CompareTo(other.Version);
+                }
+            }
+            return compare;
         }
     }
 }

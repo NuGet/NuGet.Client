@@ -7,70 +7,79 @@ namespace NuGet.RuntimeModel
 {
     public class RuntimeDescription : IEquatable<RuntimeDescription>
     {
-        private List<string> _inheritedRuntimes;
         public string RuntimeIdentifier { get; }
-        public IReadOnlyList<string> InheritedRuntimes => _inheritedRuntimes.AsReadOnly();
-        public IDictionary<string, RuntimeDependencySet> AdditionalDependencies { get; }
+        public IReadOnlyList<string> InheritedRuntimes { get; }
+        public IReadOnlyDictionary<string, RuntimeDependencySet> RuntimeDependencySets { get; }
 
         public RuntimeDescription(string runtimeIdentifier) : this(runtimeIdentifier, Enumerable.Empty<string>(), Enumerable.Empty<RuntimeDependencySet>()) { }
         public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes) : this(runtimeIdentifier, inheritedRuntimes, Enumerable.Empty<RuntimeDependencySet>()) { }
-        public RuntimeDescription(string runtimeIdentifier, IEnumerable<RuntimeDependencySet> additionalDependencies) : this(runtimeIdentifier, Enumerable.Empty<string>(), additionalDependencies) { }
+        public RuntimeDescription(string runtimeIdentifier, IEnumerable<RuntimeDependencySet> runtimeDependencySets) : this(runtimeIdentifier, Enumerable.Empty<string>(), runtimeDependencySets) { }
 
-        public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes, IEnumerable<RuntimeDependencySet> additionalDependencies)
+        public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes, IEnumerable<RuntimeDependencySet> runtimeDependencySets)
         {
             RuntimeIdentifier = runtimeIdentifier;
-            _inheritedRuntimes = inheritedRuntimes.ToList();
-            AdditionalDependencies = additionalDependencies.ToDictionary(d => d.Id);
+            InheritedRuntimes = inheritedRuntimes.ToList().AsReadOnly();
+            RuntimeDependencySets = runtimeDependencySets.ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool Equals(RuntimeDescription other) => other != null &&
             string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
             InheritedRuntimes.OrderBy(s => s).SequenceEqual(other.InheritedRuntimes.OrderBy(s => s)) &&
-            AdditionalDependencies.OrderBy(p => p.Key).SequenceEqual(other.AdditionalDependencies.OrderBy(p => p.Key));
+            RuntimeDependencySets.OrderBy(p => p.Key).SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
+
+        public RuntimeDescription Clone() => new RuntimeDescription(RuntimeIdentifier, InheritedRuntimes, RuntimeDependencySets.Values.Select(d => d.Clone()));
 
         /// <summary>
         /// Merges the content of the other runtime description in to this runtime description
         /// </summary>
         /// <param name="other">The other description to merge in to this description</param>
-        public void MergeIn(RuntimeDescription otherRuntime)
+        public static RuntimeDescription Merge(RuntimeDescription left, RuntimeDescription right)
         {
-            if(!string.Equals(otherRuntime.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal))
+            if(!string.Equals(left.RuntimeIdentifier, right.RuntimeIdentifier, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException("TODO: Unable to merge runtimes, they do not have the same identifier");
             }
 
             // Merge #imports
-            if(otherRuntime.InheritedRuntimes.Count != 0)
+            List<string> inheritedRuntimes;
+            if(right.InheritedRuntimes.Count != 0)
             {
-                if (InheritedRuntimes.Count != 0)
+                // Ack! Imports in both!
+                if (left.InheritedRuntimes.Count != 0)
                 {
                     // Can't merge inherited runtimes!
-                    throw new InvalidOperationException("TODO: Cannot merge the '#imports' property of a runtime. Only one runtime.json should define '#imports' for a particular runtime!");
+                    throw new InvalidOperationException($"TODO: Cannot merge the '#imports' property of {left.RuntimeIdentifier}. Only one runtime.json should define '#imports' for a particular runtime!");
                 }
 
-                // Copy #imports
-                _inheritedRuntimes = new List<string>(otherRuntime.InheritedRuntimes);
+                // Copy #imports from right
+                inheritedRuntimes = new List<string>(right.InheritedRuntimes);
+            }
+            else
+            {
+                // Copy #imports from left (if any)
+                inheritedRuntimes = new List<string>(left.InheritedRuntimes);
             }
 
             // Merge dependency sets
-            foreach(var dependencySet in otherRuntime.AdditionalDependencies)
+            Dictionary<string, RuntimeDependencySet> newSets = new Dictionary<string, RuntimeDependencySet>();
+            foreach(var dependencySet in left.RuntimeDependencySets.Values)
             {
-                RuntimeDependencySet myDependencySet;
-                if(AdditionalDependencies.TryGetValue(dependencySet.Key, out myDependencySet))
-                {
-                    myDependencySet.MergeIn(dependencySet.Value);
-                }
-                else
-                {
-                    AdditionalDependencies.Add(dependencySet.Key, dependencySet.Value);
-                }
+                newSets[dependencySet.Id] = dependencySet.Clone();
             }
+
+            // Overwrite with things from the right
+            foreach(var dependencySet in right.RuntimeDependencySets.Values)
+            {
+                newSets[dependencySet.Id] = dependencySet.Clone();
+            }
+
+            return new RuntimeDescription(left.RuntimeIdentifier, inheritedRuntimes, newSets.Values);
         }
 
         public override bool Equals(object obj) => Equals(obj as RuntimeDescription);
         public override int GetHashCode() => HashCodeCombiner.Start()
             .AddObject(RuntimeIdentifier)
             .AddObject(InheritedRuntimes)
-            .AddObject(AdditionalDependencies);
+            .AddObject(RuntimeDependencySets);
     }
 }

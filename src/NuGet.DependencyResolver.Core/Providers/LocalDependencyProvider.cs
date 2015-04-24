@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.RuntimeModel;
 
 namespace NuGet.DependencyResolver
 {
@@ -49,6 +50,26 @@ namespace NuGet.DependencyResolver
         {
             // We never call this on local providers
             throw new NotImplementedException();
+        }
+
+        public Task<RuntimeGraph> GetRuntimeGraph(RemoteMatch match, NuGetFramework framework)
+        {
+            foreach(var path in _dependencyProvider.GetAttemptedPaths(framework))
+            {
+                var runtimeJsonPath = path
+                    .Replace("{name}.nuspec", "runtime.json")
+                    .Replace("project.json", "runtime.json")
+                    .Replace("{name}", match.Library.Name)
+                    .Replace("{version}", match.Library.Version.ToString());
+
+                // Console.WriteLine("*** {0}", runtimeJsonPath);
+                if (File.Exists(runtimeJsonPath))
+                {
+                    Console.WriteLine("*** READING {0}", runtimeJsonPath);
+                    return Task.FromResult(JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath));
+                }
+            }
+            return Task.FromResult<RuntimeGraph>(null);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
+using NuGet.RuntimeModel;
 
 namespace NuGet.DependencyResolver
 {
@@ -20,14 +21,14 @@ namespace NuGet.DependencyResolver
             _context = context;
         }
 
-        public Task<GraphNode<RemoteResolveResult>> Walk(LibraryRange library, NuGetFramework framework)
+        public Task<GraphNode<RemoteResolveResult>> Walk(LibraryRange library, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph)
         {
             var cache = new Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>>();
 
-            return CreateGraphNode(cache, library, framework, _ => true);
+            return CreateGraphNode(cache, library, framework, runtimeName, runtimeGraph, _ => true);
         }
 
-        private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, Func<string, bool> predicate)
+        private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, Func<string, bool> predicate)
         {
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
             {
@@ -59,7 +60,29 @@ namespace NuGet.DependencyResolver
                 {
                     if (predicate(dependency.Name))
                     {
-                        tasks.Add(CreateGraphNode(cache, dependency.LibraryRange, framework, ChainPredicate(predicate, node.Item, dependency)));
+                        tasks.Add(CreateGraphNode(cache, dependency.LibraryRange, framework, runtimeName, runtimeGraph, ChainPredicate(predicate, node.Item, dependency)));
+
+                        if(!string.IsNullOrEmpty(runtimeName) && runtimeGraph != null)
+                        {
+                            // Look up any additional dependencies for this package
+                            foreach(var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, dependency.Name))
+                            {
+                                // Add the dependency to the tasks
+                                var runtimeLibraryRange = new LibraryRange()
+                                {
+                                    Name = runtimeDependency.Id,
+                                    VersionRange = runtimeDependency.VersionRange
+                                    // REVIEW: Add a TypeConstraint of package? Could a runtime dependency come from a project? Maybe...
+                                };
+                                tasks.Add(CreateGraphNode(
+                                    cache, 
+                                    runtimeLibraryRange, 
+                                    framework, 
+                                    runtimeName, 
+                                    runtimeGraph, 
+                                    ChainPredicate(predicate, node.Item, dependency)));
+                            }
+                        }
                     }
                 }
 

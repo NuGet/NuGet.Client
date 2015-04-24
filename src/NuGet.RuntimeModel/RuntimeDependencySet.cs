@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,13 +9,13 @@ namespace NuGet.RuntimeModel
     public class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
     {
         public string Id { get; }
-        public IDictionary<string, RuntimePackageDependency> Dependencies { get; }
+        public IReadOnlyDictionary<string, RuntimePackageDependency> Dependencies { get; }
 
         public RuntimeDependencySet(string id) : this(id, Enumerable.Empty<RuntimePackageDependency>()) { }
         public RuntimeDependencySet(string id, IEnumerable<RuntimePackageDependency> dependencies)
         {
             Id = id;
-            Dependencies = dependencies.ToDictionary(d => d.Id);
+            Dependencies = new ReadOnlyDictionary<string, RuntimePackageDependency>(dependencies.ToDictionary(d => d.Id));
         }
 
         public bool Equals(RuntimeDependencySet other) => other != null &&
@@ -27,23 +28,6 @@ namespace NuGet.RuntimeModel
             .AddObject(Id)
             .AddObject(Dependencies);
 
-        public void MergeIn(RuntimeDependencySet dependencySet)
-        {
-            if(!string.Equals(dependencySet.Id, Id, StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException("TODO: Unable to merge dependency sets, they do not have the same package id");
-            }
-
-            // Merge dependencies!
-            foreach(var dependency in dependencySet.Dependencies.Values)
-            {
-                // REVIEW: Overwrite dependencies?
-                if(Dependencies.ContainsKey(dependency.Id))
-                {
-                    throw new InvalidOperationException("TODO: Duplicate runtime dependencies defined for " + dependency.Id);
-                }
-                Dependencies.Add(dependency.Id, dependency);
-            }
-        }
+        public RuntimeDependencySet Clone() => new RuntimeDependencySet(Id, Dependencies.Values.Select(d => d.Clone()));
     }
 }

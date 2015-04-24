@@ -16,13 +16,44 @@ namespace NuGet.ProjectModel
 
         public bool IsServiceable { get; set; }
 
+        public string Sha512 { get; set; }
+
+        public IList<string> Files { get; set; } = new List<string>();
+
+        // Old stuff
+
         public string Sha { get; set; }
 
         public IList<LockFileFrameworkGroup> FrameworkGroups { get; set; } = new List<LockFileFrameworkGroup>();
-
-        public IList<string> Files { get; set; } = new List<string>();
     }
 
+    public class LockFileTarget
+    {
+        public NuGetFramework TargetFramework { get; set; }
+
+        public string RuntimeIdentifier { get; set; }
+
+        public IList<LockFileTargetLibrary> Libraries { get; set; } = new List<LockFileTargetLibrary>();
+    }
+
+    public class LockFileTargetLibrary
+    {
+        public string Name { get; set; }
+
+        public NuGetVersion Version { get; set; }
+
+        public IList<PackageDependency> Dependencies { get; set; } = new List<PackageDependency>();
+
+        public IList<string> FrameworkAssemblies { get; set; } = new List<string>();
+
+        public IList<string> RuntimeAssemblies { get; set; } = new List<string>();
+
+        public IList<string> CompileTimeAssemblies { get; set; } = new List<string>();
+
+        public IList<string> NativeLibraries { get; set; } = new List<string>();
+    }
+
+    // Old stuff
     public class LockFileFrameworkGroup
     {
         public NuGetFramework TargetFramework { get; set; }
@@ -34,5 +65,7 @@ namespace NuGet.ProjectModel
         public IList<string> RuntimeAssemblies { get; set; } = new List<string>();
 
         public IList<string> CompileTimeAssemblies { get; set; } = new List<string>();
+
+        public IList<string> NativeLibraries { get; set; } = new List<string>();
     }
 }

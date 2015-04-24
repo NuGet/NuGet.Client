@@ -7,6 +7,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
+using NuGet.RuntimeModel;
 
 namespace NuGet.ProjectModel
 {
@@ -63,6 +64,8 @@ namespace NuGet.ProjectModel
         public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
 
         public List<TargetFrameworkInformation> TargetFrameworks { get; private set; }
+
+        public RuntimeGraph RuntimeGraph { get; set; }
 
         /// <summary>
         /// Gets a list of all properties found in the package spec, including

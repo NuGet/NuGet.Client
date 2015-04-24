@@ -14,10 +14,15 @@ namespace NuGet.RuntimeModel
         {
             using (var fileStream = File.OpenRead(filePath))
             {
-                using (var streamReader = new StreamReader(fileStream))
-                {
-                    return ReadRuntimeGraph(streamReader);
-                }
+                return ReadRuntimeGraph(fileStream);
+            }
+        }
+
+        public static RuntimeGraph ReadRuntimeGraph(Stream stream)
+        {
+            using (var streamReader = new StreamReader(stream))
+            {
+                return ReadRuntimeGraph(streamReader);
             }
         }
 
@@ -71,7 +76,7 @@ namespace NuGet.RuntimeModel
             var value = new JObject();
             json[data.RuntimeIdentifier] = value;
             value["#import"] = new JArray(data.InheritedRuntimes.Select(x => new JValue(x)));
-            foreach (var x in data.AdditionalDependencies.Values)
+            foreach (var x in data.RuntimeDependencySets.Values)
             {
                 WriteRuntimeDependencySet(value, x);
             }
@@ -89,7 +94,7 @@ namespace NuGet.RuntimeModel
 
         private static void WritePackageDependency(JObject json, RuntimePackageDependency data)
         {
-            json[data.Id] = new JValue(data.Version);
+            json[data.Id] = new JValue(data.VersionRange.ToNormalizedString());
         }
 
         private static RuntimeDescription ReadRuntimeDescription(KeyValuePair<string, JToken> json)
@@ -125,7 +130,7 @@ namespace NuGet.RuntimeModel
 
         private static RuntimePackageDependency ReadRuntimePackageDependency(KeyValuePair<string, JToken> json)
         {
-            return new RuntimePackageDependency(json.Key, NuGetVersion.Parse(json.Value.Value<string>()));
+            return new RuntimePackageDependency(json.Key, VersionRange.Parse(json.Value.Value<string>()));
         }
 
         private static IEnumerable<KeyValuePair<string, JToken>> EachProperty(JToken json)

@@ -19,31 +19,42 @@ namespace NuGet.RuntimeModel
             Runtimes = runtimes.ToDictionary(r => r.RuntimeIdentifier);
         }
 
+        public RuntimeGraph Clone() => new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()));
+
         /// <summary>
         /// Merges the content of the other runtime graph in to this runtime graph
         /// </summary>
         /// <param name="other">The other graph to merge in to this graph</param>
-        public void MergeIn(RuntimeGraph other)
+        public static RuntimeGraph Merge(RuntimeGraph left, RuntimeGraph right)
         {
-            foreach(var otherRuntime in other.Runtimes.Values)
+            Dictionary<string, RuntimeDescription> runtimes = new Dictionary<string, RuntimeDescription>();
+            foreach(var runtime in left.Runtimes.Values)
+            {
+                runtimes[runtime.RuntimeIdentifier] = runtime.Clone();
+            }
+
+            // Merge the right-side runtimes
+            foreach(var runtime in right.Runtimes.Values)
             {
                 // Check if we already have the runtime defined
-                RuntimeDescription myRuntime;
-                if(Runtimes.TryGetValue(otherRuntime.RuntimeIdentifier, out myRuntime))
+                RuntimeDescription leftRuntime;
+                if(runtimes.TryGetValue(runtime.RuntimeIdentifier, out leftRuntime))
                 {
-                    myRuntime.MergeIn(otherRuntime);
+                    // Merge runtimes
+                    runtimes[runtime.RuntimeIdentifier] = RuntimeDescription.Merge(leftRuntime, runtime);
                 }
                 else
                 {
-                    Runtimes.Add(otherRuntime.RuntimeIdentifier, otherRuntime);
+                    runtimes[runtime.RuntimeIdentifier] = runtime;
                 }
             }
+
+            return new RuntimeGraph(runtimes.Values);
         }
 
         public IEnumerable<string> ExpandRuntime(string runtime)
         {
             // Could this be faster? Sure! But we can refactor once it works and has tests
-
             yield return runtime;
 
             // Try to expand the runtime based on the graph
@@ -68,7 +79,24 @@ namespace NuGet.RuntimeModel
                     }
                 }
             }
+        }
 
+        public IEnumerable<RuntimePackageDependency> FindRuntimeDependencies(string runtimeName, string packageId)
+        {
+            // PERF: We could cache this for a particular (runtimeName,packageId) pair.
+            foreach(var expandedRuntime in ExpandRuntime(runtimeName))
+            {
+                RuntimeDescription runtimeDescription;
+                if(Runtimes.TryGetValue(expandedRuntime, out runtimeDescription))
+                {
+                    RuntimeDependencySet dependencySet;
+                    if(runtimeDescription.RuntimeDependencySets.TryGetValue(packageId, out dependencySet))
+                    {
+                        return dependencySet.Dependencies.Values;
+                    }
+                }
+            }
+            return Enumerable.Empty<RuntimePackageDependency>();
         }
 
         public bool Equals(RuntimeGraph other) => other != null && other.Runtimes
