@@ -38,7 +38,7 @@ namespace NuGet.ContentModel.Infrastructure
             }
         }
 
-        public ContentItem Match(string path, IDictionary<string, ContentPropertyDefinition> propertyDefinitions)
+        public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
             var item = new ContentItem
             {
@@ -60,7 +60,7 @@ namespace NuGet.ContentModel.Infrastructure
 
         private abstract class Segment
         {
-            internal abstract bool TryMatch(ContentItem item, IDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
+            internal abstract bool TryMatch(ContentItem item, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
         }
 
         private class LiteralSegment : Segment
@@ -74,7 +74,7 @@ namespace NuGet.ContentModel.Infrastructure
 
             internal override bool TryMatch(
                 ContentItem item,
-                IDictionary<string, ContentPropertyDefinition> propertyDefinitions,
+                IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions,
                 int startIndex,
                 out int endIndex)
             {
@@ -105,7 +105,7 @@ namespace NuGet.ContentModel.Infrastructure
                 _matchOnly = matchOnly;
             }
 
-            internal override bool TryMatch(ContentItem item, IDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex)
+            internal override bool TryMatch(ContentItem item, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex)
             {
                 ContentPropertyDefinition propertyDefinition;
                 if (!propertyDefinitions.TryGetValue(_token, out propertyDefinition))

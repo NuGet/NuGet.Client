@@ -81,6 +81,18 @@ namespace NuGet.RuntimeModel
             }
         }
 
+        /// <summary>
+        /// Determines if two runtime identifiers are compatible, based on the import graph
+        /// </summary>
+        /// <param name="criteria">The criteria being tested</param>
+        /// <param name="provided">The value the criteria is being tested against</param>
+        /// <returns>true if an asset for the runtime in <paramref name="provided"/> can be installed in a project targetting <paramref name="criteria"/>, false otherwise</returns>
+        public bool AreCompatible(string criteria, string provided)
+        {
+            // TODO: Cache this!
+            return ExpandRuntime(criteria).Contains(provided);
+        }
+
         public IEnumerable<RuntimePackageDependency> FindRuntimeDependencies(string runtimeName, string packageId)
         {
             // PERF: We could cache this for a particular (runtimeName,packageId) pair.

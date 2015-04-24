@@ -1,24 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace NuGet.ContentModel
 {
+    /// <summary>
+    /// Defines a property that can be used in Content Model query patterns
+    /// <seealso cref="ContentPatternDefinition"/>
+    /// </summary>
     public class ContentPropertyDefinition
     {
-        public ContentPropertyDefinition()
+        public ContentPropertyDefinition(
+            string name, 
+            IDictionary<string, object> table = null,
+            Func<string, object> parser = null,
+            Func<object, object, bool> compatibilityTest = null,
+            IEnumerable<string> fileExtensions = null, 
+            bool allowSubfolders = false)
         {
-            Table = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            FileExtensions = new List<string>();
+            Name = name;
+
+            if(table == null)
+            {
+                table = new Dictionary<string, object>();
+            }
+            else
+            {
+                table = new Dictionary<string, object>(table); // Copies the contents of the dictionary... though we can't control the mutability of the objects :(
+            }
+            Table = new ReadOnlyDictionary<string, object>(table); // Wraps the dictionary in a read-only container. Does NOT copy!
+
+            Parser = parser ?? (o => o);
+            CompatibilityTest = compatibilityTest ?? Object.Equals;
+            FileExtensions = (fileExtensions ?? Enumerable.Empty<string>()).ToList();
+            FileExtensionAllowSubFolders = allowSubfolders;
         }
 
-        public IDictionary<string, object> Table { get; set; }
+        public string Name { get; }
 
-        public List<string> FileExtensions { get; set; }
+        public IDictionary<string, object> Table { get; }
 
-        public bool FileExtensionAllowSubFolders { get; set; }
+        public List<string> FileExtensions { get; }
 
-        public Func<string, object> Parser { get; set; }
+        public bool FileExtensionAllowSubFolders { get; }
+
+        public Func<string, object> Parser { get; }
 
         public virtual bool TryLookup(string name, out object value)
         {
@@ -62,11 +89,11 @@ namespace NuGet.ContentModel
             return false;
         }
 
-        public Func<object, object, bool> OnIsCriteriaSatisfied { get; set; } = Object.Equals;
+        public Func<object, object, bool> CompatibilityTest { get; }
 
         public virtual bool IsCriteriaSatisfied(object critieriaValue, object candidateValue)
         {
-            return OnIsCriteriaSatisfied.Invoke(critieriaValue, candidateValue);
+            return CompatibilityTest.Invoke(critieriaValue, candidateValue);
         }
 
         public virtual int Compare(object criteriaValue, object candidateValue1, object candidateValue2)
