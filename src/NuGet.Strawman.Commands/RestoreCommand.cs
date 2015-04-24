@@ -248,7 +248,7 @@ namespace NuGet.Strawman.Commands
                 if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.DnxCore, StringComparison.OrdinalIgnoreCase))
                 {
-                    var frameworkAssemblies = packageReader.GetReferenceItems().GetNearest(framework);
+                    var frameworkAssemblies = packageReader.GetFrameworkItems().GetNearest(framework);
                     if (frameworkAssemblies != null)
                     {
                         foreach (var assemblyReference in frameworkAssemblies.Items)
@@ -309,8 +309,6 @@ namespace NuGet.Strawman.Commands
                 lockFileLib.CompileTimeAssemblies.Clear();
                 lockFileLib.CompileTimeAssemblies.Add(contractPath);
             }
-
-            // TODO: Servicable
 
             return lockFileLib;
         }
