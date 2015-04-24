@@ -6,8 +6,5 @@
     "../NuGet.Versioning/src",
     "../NuGet.Protocol/src",
     "../NuGet.Configuration/src"
-  ],
-  "sdk": {
-    "version": "1.0.0-beta4-11566"
-  }
+  ]
 }

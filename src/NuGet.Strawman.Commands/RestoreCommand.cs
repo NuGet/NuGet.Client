@@ -89,7 +89,14 @@ namespace NuGet.Strawman.Commands
             // Resolve runtime dependencies
             if (request.Project.RuntimeGraph.Runtimes.Count > 0)
             {
-                graphs.AddRange(await WalkRuntimeDependencies(projectRange, graphs, frameworks, request.Project.RuntimeGraph, remoteWalker));
+                var runtimeGraphs = await WalkRuntimeDependencies(projectRange, graphs, frameworks, request.Project.RuntimeGraph, remoteWalker);
+                var resolved = ResolveConflicts(runtimeGraphs);
+                graphs.AddRange(runtimeGraphs);
+                if(!resolved)
+                {
+                    _log.LogError("Failed to resolve conflicts");
+                    return new RestoreResult(success: false, restoreGraphs: graphs);
+                }
             }
             else
             {
@@ -119,7 +126,6 @@ namespace NuGet.Strawman.Commands
         {
             var lockFile = new LockFile();
 
-            System.Diagnostics.Debugger.Launch();
             using (var sha512 = SHA512.Create())
             {
                 foreach (var item in flattened.OrderBy(x => x.Data.Match.Library))
@@ -198,7 +204,7 @@ namespace NuGet.Strawman.Commands
 
             using (var nupkgStream = File.OpenRead(package.ZipPath))
             {
-                lockFileLib.Sha = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
+                lockFileLib.Sha512 = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
                 nupkgStream.Seek(0, SeekOrigin.Begin);
 
                 var packageReader = new PackageReader(nupkgStream);
@@ -259,41 +265,23 @@ namespace NuGet.Strawman.Commands
                 }
             }
 
-            var patterns = new PatternDefinitions();
+            var nativeCriteria = targetGraph.Conventions.Criteria.ForRuntime(targetGraph.RuntimeIdentifier);
+            var managedCriteria = targetGraph.Conventions.Criteria.ForFrameworkAndRuntime(framework, targetGraph.RuntimeIdentifier);
 
-            var criteriaBuilderWithTfm = new SelectionCriteriaBuilder(patterns.Properties.Definitions);
-            var criteriaBuilderWithoutTfm = new SelectionCriteriaBuilder(patterns.Properties.Definitions);
-
-            if (!string.IsNullOrEmpty(targetGraph.RuntimeIdentifier))
-            {
-                criteriaBuilderWithTfm = criteriaBuilderWithTfm
-                    .Add["tfm", framework]["rid", targetGraph.RuntimeIdentifier]
-                    .Add["tfm", new NuGetFramework("Core", new Version(5, 0))]["rid", targetGraph.RuntimeIdentifier];
-
-                criteriaBuilderWithoutTfm = criteriaBuilderWithoutTfm
-                    .Add["rid", targetGraph.RuntimeIdentifier];
-            }
-
-            criteriaBuilderWithTfm = criteriaBuilderWithTfm
-                .Add["tfm", framework]
-                .Add["tfm", new NuGetFramework("Core", new Version(5, 0))];
-
-            var criteria = criteriaBuilderWithTfm.Criteria;
-
-            var compileGroup = contentItems.FindBestItemGroup(criteria, patterns.CompileTimeAssemblies, patterns.ManagedAssemblies);
+            var compileGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.CompileAssemblies, targetGraph.Conventions.Patterns.RuntimeAssemblies);
 
             if (compileGroup != null)
             {
                 lockFileLib.CompileTimeAssemblies = compileGroup.Items.Select(t => t.Path).ToList();
             }
 
-            var runtimeGroup = contentItems.FindBestItemGroup(criteria, patterns.ManagedAssemblies);
+            var runtimeGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.RuntimeAssemblies);
             if (runtimeGroup != null)
             {
                 lockFileLib.RuntimeAssemblies = runtimeGroup.Items.Select(p => p.Path).ToList();
             }
 
-            var nativeGroup = contentItems.FindBestItemGroup(criteriaBuilderWithoutTfm.Criteria, patterns.NativeLibraries);
+            var nativeGroup = contentItems.FindBestItemGroup(nativeCriteria, targetGraph.Conventions.Patterns.NativeLibraries);
             if (nativeGroup != null)
             {
                 lockFileLib.NativeLibraries = nativeGroup.Items.Select(p => p.Path).ToList();
@@ -346,6 +334,7 @@ namespace NuGet.Strawman.Commands
                     _log.LogInformation($"Restoring packages for {graph.Framework} on {runtimeName}");
                     restoreGraphs.Add(new RestoreTargetGraph(
                         runtimeName,
+                        runtimeGraph,
                         graph.Framework,
                         await walker.Walk(
                             projectRange,
@@ -372,7 +361,7 @@ namespace NuGet.Strawman.Commands
         {
             foreach (var graph in graphs)
             {
-                string runtimeStr = string.IsNullOrEmpty(graph.RuntimeIdentifier) ? string.Empty : $"on {graph.RuntimeIdentifier}";
+                string runtimeStr = string.IsNullOrEmpty(graph.RuntimeIdentifier) ? string.Empty : $" on {graph.RuntimeIdentifier}";
                 _log.LogVerbose($"Resolving Conflicts for {graph.Framework}{runtimeStr}");
                 if (!graph.Graph.TryResolveConflicts())
                 {
@@ -393,7 +382,7 @@ namespace NuGet.Strawman.Commands
                     framework,
                     runtimeName: null,
                     runtimeGraph: null);
-                graphs.Add(new RestoreTargetGraph(string.Empty, framework, graph));
+                graphs.Add(new RestoreTargetGraph(string.Empty, null, framework, graph));
             }
 
             return graphs;
@@ -432,280 +421,6 @@ namespace NuGet.Strawman.Commands
                 logger: logger);
             _log.LogVerbose($"Using source {source.Source}");
             return new RemoteDependencyProvider(feed);
-        }
-
-        public class PropertyDefinitions
-        {
-            public PropertyDefinitions()
-            {
-                Definitions = new Dictionary<string, ContentPropertyDefinition>
-                {
-                    { "language", _language },
-                    { "tfm", _targetFramework },
-                    { "rid", _rid },
-                    { "assembly", _assembly },
-                    { "dynamicLibrary", _dynamicLibrary },
-                    { "resources", _resources },
-                    { "locale", _locale },
-                    { "any", _any },
-                };
-            }
-
-            public IDictionary<string, ContentPropertyDefinition> Definitions { get; }
-
-            ContentPropertyDefinition _language = new ContentPropertyDefinition
-            {
-                Table =
-                {
-                    { "cs", "CSharp" },
-                    { "vb", "Visual Basic" },
-                    { "fs", "FSharp" },
-                }
-            };
-
-            ContentPropertyDefinition _targetFramework = new ContentPropertyDefinition
-            {
-                Table =
-                {
-                    { "any", new NuGetFramework("Core", new Version(5, 0)) }
-                },
-                Parser = TargetFrameworkName_Parser,
-                OnIsCriteriaSatisfied = TargetFrameworkName_IsCriteriaSatisfied
-            };
-
-            ContentPropertyDefinition _rid = new ContentPropertyDefinition
-            {
-                Parser = name => name
-            };
-
-            ContentPropertyDefinition _assembly = new ContentPropertyDefinition
-            {
-                FileExtensions = { ".dll" }
-            };
-
-            ContentPropertyDefinition _dynamicLibrary = new ContentPropertyDefinition
-            {
-                FileExtensions = { ".dll", ".dylib", ".so" }
-            };
-
-            ContentPropertyDefinition _resources = new ContentPropertyDefinition
-            {
-                FileExtensions = { ".resources.dll" }
-            };
-
-            ContentPropertyDefinition _locale = new ContentPropertyDefinition
-            {
-                Parser = Locale_Parser,
-            };
-
-            ContentPropertyDefinition _any = new ContentPropertyDefinition
-            {
-                Parser = name => name
-            };
-
-
-            internal static object Locale_Parser(string name)
-            {
-                if (name.Length == 2)
-                {
-                    return name;
-                }
-                else if (name.Length >= 4 && name[2] == '-')
-                {
-                    return name;
-                }
-
-                return null;
-            }
-
-            internal static object TargetFrameworkName_Parser(string name)
-            {
-                if (name.Contains('.') || name.Contains('/'))
-                {
-                    return null;
-                }
-
-                if (name == "contract")
-                {
-                    return null;
-                }
-
-                var result = NuGetFramework.Parse(name);
-
-                if (!result.IsUnsupported)
-                {
-                    return result;
-                }
-
-                return new NuGetFramework(name, new Version(0, 0));
-            }
-
-            internal static bool TargetFrameworkName_IsCriteriaSatisfied(object criteria, object available)
-            {
-                var criteriaFrameworkName = criteria as NuGetFramework;
-                var availableFrameworkName = available as NuGetFramework;
-
-                if (criteriaFrameworkName != null && availableFrameworkName != null)
-                {
-                    return DefaultCompatibilityProvider.Instance.IsCompatible(criteriaFrameworkName, availableFrameworkName);
-                }
-
-                return false;
-            }
-
-            internal static Version NormalizeVersion(Version version)
-            {
-                return new Version(version.Major,
-                                   version.Minor,
-                                   Math.Max(version.Build, 0),
-                                   Math.Max(version.Revision, 0));
-            }
-        }
-
-        public class PatternDefinitions
-        {
-            public PropertyDefinitions Properties { get; }
-
-            public ContentPatternDefinition CompileTimeAssemblies { get; }
-            public ContentPatternDefinition ManagedAssemblies { get; }
-            public ContentPatternDefinition NativeLibraries { get; }
-
-            public PatternDefinitions()
-            {
-                Properties = new PropertyDefinitions();
-
-                ManagedAssemblies = new ContentPatternDefinition
-                {
-                    GroupPatterns =
-                    {
-                        "runtimes/{rid}/lib/{tfm}/{any?}",
-                        "lib/{tfm}/{any?}",
-                    },
-                    PathPatterns =
-                    {
-                        "runtimes/{rid}/lib/{tfm}/{assembly}",
-                        "lib/{tfm}/{assembly}",
-                    },
-                    PropertyDefinitions = Properties.Definitions,
-                };
-
-                CompileTimeAssemblies = new ContentPatternDefinition
-                {
-                    GroupPatterns =
-                    {
-                        "ref/{tfm}/{any?}",
-                    },
-                    PathPatterns =
-                    {
-                        "ref/{tfm}/{assembly}",
-                    },
-                    PropertyDefinitions = Properties.Definitions,
-                };
-
-                NativeLibraries = new ContentPatternDefinition
-                {
-                    GroupPatterns =
-                    {
-                        "runtimes/{rid}/native/{any?}",
-                        "native/{any?}",
-                    },
-                    PathPatterns =
-                    {
-                        "runtimes/{rid}/native/{any}",
-                        "native/{any}",
-                    },
-                    PropertyDefinitions = Properties.Definitions,
-                };
-            }
-        }
-
-        private class SelectionCriteriaBuilder
-        {
-            private IDictionary<string, ContentPropertyDefinition> propertyDefinitions;
-
-            public SelectionCriteriaBuilder(IDictionary<string, ContentPropertyDefinition> propertyDefinitions)
-            {
-                this.propertyDefinitions = propertyDefinitions;
-            }
-
-            public virtual SelectionCriteria Criteria { get; } = new SelectionCriteria();
-
-            internal virtual SelectionCriteriaEntryBuilder Add
-            {
-                get
-                {
-                    var entry = new SelectionCriteriaEntry();
-                    Criteria.Entries.Add(entry);
-                    return new SelectionCriteriaEntryBuilder(this, entry);
-                }
-            }
-
-            internal class SelectionCriteriaEntryBuilder : SelectionCriteriaBuilder
-            {
-                public SelectionCriteriaEntry Entry { get; }
-                public SelectionCriteriaBuilder Builder { get; }
-
-                public SelectionCriteriaEntryBuilder(SelectionCriteriaBuilder builder, SelectionCriteriaEntry entry) : base(builder.propertyDefinitions)
-                {
-                    Builder = builder;
-                    Entry = entry;
-                }
-                public SelectionCriteriaEntryBuilder this[string key, string value]
-                {
-                    get
-                    {
-                        ContentPropertyDefinition propertyDefinition;
-                        if (!propertyDefinitions.TryGetValue(key, out propertyDefinition))
-                        {
-                            throw new Exception("Undefined property used for criteria");
-                        }
-                        if (value == null)
-                        {
-                            Entry.Properties[key] = null;
-                        }
-                        else
-                        {
-                            object valueLookup;
-                            if (propertyDefinition.TryLookup(value, out valueLookup))
-                            {
-                                Entry.Properties[key] = valueLookup;
-                            }
-                            else
-                            {
-                                throw new Exception("Undefined value used for criteria");
-                            }
-                        }
-                        return this;
-                    }
-                }
-                public SelectionCriteriaEntryBuilder this[string key, object value]
-                {
-                    get
-                    {
-                        ContentPropertyDefinition propertyDefinition;
-                        if (!propertyDefinitions.TryGetValue(key, out propertyDefinition))
-                        {
-                            throw new Exception("Undefined property used for criteria");
-                        }
-                        Entry.Properties[key] = value;
-                        return this;
-                    }
-                }
-                internal override SelectionCriteriaEntryBuilder Add
-                {
-                    get
-                    {
-                        return Builder.Add;
-                    }
-                }
-                public override SelectionCriteria Criteria
-                {
-                    get
-                    {
-                        return Builder.Criteria;
-                    }
-                }
-            }
         }
     }
 }

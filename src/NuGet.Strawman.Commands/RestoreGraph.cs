@@ -5,23 +5,30 @@ using System.Collections.Generic;
 using System;
 using Microsoft.Framework.Logging;
 using System.Linq;
+using NuGet.RuntimeModel;
+using NuGet.Client;
 
 namespace NuGet.Strawman.Commands
 {
     public class RestoreTargetGraph
     {
         public string RuntimeIdentifier { get; }
+        public ManagedCodeConventions Conventions { get; }
+        public RuntimeGraph RuntimeGraph { get; }
         public NuGetFramework Framework { get; }
         public GraphNode<RemoteResolveResult> Graph { get; }
 
         public HashSet<LibraryIdentity> Libraries { get; private set; }
         public HashSet<LibraryRange> Unresolved { get; private set; }
 
-        public RestoreTargetGraph(string runtimeIdentifier, NuGetFramework framework, GraphNode<RemoteResolveResult> graph)
+        public RestoreTargetGraph(string runtimeIdentifier, RuntimeGraph runtimeGraph, NuGetFramework framework, GraphNode<RemoteResolveResult> graph)
         {
             RuntimeIdentifier = runtimeIdentifier;
+            RuntimeGraph = runtimeGraph;
             Framework = framework;
             Graph = graph;
+
+            Conventions = new ManagedCodeConventions(runtimeGraph);
         }
 
         public bool Flatten(RemoteWalkContext context, IList<RemoteMatch> toInstall, IList<GraphItem<RemoteResolveResult>> flattened, ILoggerFactory loggerFactory)

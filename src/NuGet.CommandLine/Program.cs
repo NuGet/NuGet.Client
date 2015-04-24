@@ -23,10 +23,19 @@ namespace NuGet.CommandLine
 
         public int Main(string[] args)
         {
+#if DEBUG
+            if(args.Contains("--debug"))
+            {
+                args = args.Skip(1).ToArray();
+                System.Diagnostics.Debugger.Launch();
+            }
+#endif
+
             // Set up logging
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddProvider(new CommandOutputLoggerProvider() { LogLevel = LogLevel.Debug });
             _log = loggerFactory.CreateLogger<Program>();
+
 
             var app = new CommandLineApplication();
             app.Name = "nuget3";
@@ -85,6 +94,27 @@ namespace NuGet.CommandLine
 
                     return 0;
                 });
+            });
+
+            app.Command("diag", diag =>
+            {
+                diag.Description = "Diagnostic commands for debugging package dependency graphs";
+                diag.Command("lockfile", lockfile =>
+                {
+                    lockfile.Description = "Dumps data from the project lock file";
+
+                    var project = lockfile.Option("--project <project>", "Path containing the project lockfile, or the patht to the lockfile itself", CommandOptionType.SingleValue);
+                    var target = lockfile.Option("--target <target>", "View information about a specific project target", CommandOptionType.SingleValue);
+                    var library = lockfile.Argument("<library>", "Optionally, get detailed information about a specific library");
+
+                    lockfile.OnExecute(() =>
+                    {
+                        var diagnostics = new DiagnosticCommands(loggerFactory);
+                        var projectFile = project.HasValue() ? project.Value() : Path.GetFullPath(".");
+                        return diagnostics.Lockfile(projectFile, target.Value(), library.Value);
+                    });
+                });
+                diag.OnExecute(() => { diag.ShowHelp(); return 0; });
             });
 
             app.OnExecute(() => { app.ShowHelp(); return 0; });

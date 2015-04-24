@@ -16,7 +16,7 @@ namespace NuGet.CommandLine
             _provider = commandOutputProvider;
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope(object state)
         {
             throw new NotImplementedException();
         }
