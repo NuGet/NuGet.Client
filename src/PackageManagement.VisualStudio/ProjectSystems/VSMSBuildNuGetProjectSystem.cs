@@ -690,7 +690,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public IEnumerable<string> GetDirectories(string path)
+        public virtual IEnumerable<string> GetDirectories(string path)
         {
             // Get all physical folders
             return from p in EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, "*.*", NuGetVSConstants.VsProjectItemKindPhysicalFolder)

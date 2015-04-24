@@ -18,6 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string RootNamespace = "RootNamespace";
         private const string AppCodeFolder = "App_Code";
         private const string DefaultNamespace = "ASP";
+        private const string GeneratedFilesFolder = "Generated___Files";
         private readonly HashSet<string> _excludedCodeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private static readonly string[] _sourceFileExtensions = new[] { ".cs", ".vb" };
@@ -163,6 +164,17 @@ namespace NuGet.PackageManagement.VisualStudio
                 return DefaultNamespace;
             }
             return base.GetPropertyValue(propertyName);
+        }
+
+        public override IEnumerable<string> GetDirectories(string path)
+        {
+            if (IsUnderAppCode(path))
+            {
+                // There is an invisible folder called Generated___Files under app code that we want to exclude from our search
+                return base.GetDirectories(path).Except(new[] { GeneratedFilesFolder }, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return base.GetDirectories(path);
         }
 
         public override void BeginProcessing(IEnumerable<string> files)
