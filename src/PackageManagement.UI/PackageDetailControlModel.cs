@@ -20,9 +20,11 @@ namespace NuGet.PackageManagement.UI
             Debug.Assert(nugetProjects.Count() == 1);
         }
 
-        public override void SetCurrentPackage(SearchResultPackageMetadata searchResultPackage)
+        public override void SetCurrentPackage(
+            SearchResultPackageMetadata searchResultPackage, 
+            Filter filter)
         {
-            base.SetCurrentPackage(searchResultPackage);
+            base.SetCurrentPackage(searchResultPackage, filter);
             UpdateInstalledVersion();
         }
 

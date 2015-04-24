@@ -561,7 +561,10 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 _packageDetail.Visibility = Visibility.Visible;
-                _detailModel.SetCurrentPackage(selectedPackage);
+                var selectedFilter = _filter.SelectedItem as FilterItem;
+                _detailModel.SetCurrentPackage(
+                    selectedPackage,
+                    selectedFilter == null ? Filter.All : selectedFilter.Filter);
                 _packageDetail.DataContext = _detailModel;
                 _packageDetail.ScrollToHome();
 

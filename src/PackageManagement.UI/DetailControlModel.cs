@@ -24,6 +24,7 @@ namespace NuGet.PackageManagement.UI
         protected List<NuGetVersion> _allPackages;
 
         protected SearchResultPackageMetadata _searchResultPackage;
+        protected Filter _filter;
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
@@ -37,9 +38,19 @@ namespace NuGet.PackageManagement.UI
         {
             get;
         }
-        public virtual void SetCurrentPackage(SearchResultPackageMetadata searchResultPackage)
+
+
+        /// <summary>
+        /// Sets the package to be displayed in the detail control.
+        /// </summary>
+        /// <param name="searchResultPackage">The package to be displayed.</param>
+        /// <param name="filter">The current filter. This will used to select the default action.</param>
+        public virtual void SetCurrentPackage(
+            SearchResultPackageMetadata searchResultPackage,
+            Filter filter)
         {
             _searchResultPackage = searchResultPackage;
+            _filter = filter;
             OnPropertyChanged("Id");
             OnPropertyChanged("IconUrl");
 
@@ -127,7 +138,8 @@ namespace NuGet.PackageManagement.UI
                 _actions.Add(Resources.Action_Downgrade);
             }
 
-            if (CanUpdate())
+            bool canUpdate = CanUpdate();
+            if (canUpdate)
             {
                 _actions.Add(Resources.Action_Update);
             }
@@ -139,7 +151,14 @@ namespace NuGet.PackageManagement.UI
 
             if (_actions.Count > 0)
             {
-                SelectedAction = _actions[0];
+                if (_filter == Filter.UpdatesAvailable && canUpdate)
+                {
+                    SelectedAction = Resources.Action_Update;
+                }
+                else
+                {
+                    SelectedAction = _actions[0];
+                }
             }
             else
             {
@@ -226,6 +245,9 @@ namespace NuGet.PackageManagement.UI
         // indicates whether the selected action is install or uninstall.
         bool _selectedActionIsInstall;
 
+        /// <summary>
+        /// This is used by the UI to decide whether the install options or uninstall options are displayed.
+        /// </summary>
         public bool SelectedActionIsInstall
         {
             get
