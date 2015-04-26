@@ -11,7 +11,8 @@ namespace NuGet.PackageManagement.UI
         {
             if (targetType == typeof(Visibility))
             {
-                if (value is int && (int)value >= 0)
+                int? downloadCount = value as int?;
+                if (downloadCount >= 0)
                 {
                     return Visibility.Visible;
                 }

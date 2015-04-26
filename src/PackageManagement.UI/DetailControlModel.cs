@@ -352,7 +352,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         if (!dict.ContainsKey(item.Identity.Version))
                         {
-                            int downloadCount;
+                            int? downloadCount;
                             if (!downloadCountDict.TryGetValue(item.Identity.Version, out downloadCount))
                             {
                                 downloadCount = 0;

@@ -259,8 +259,6 @@ namespace NuGet.PackageManagement.UI
                             _option.IncludePrerelease,
                             false,
                             ct);
-                        var versions = metadata.Select(m => m.Identity.Version)
-                            .OrderByDescending(v => v);
                         if (packageMetadata == null)
                         {
                             // package metadata can't be found in local resource. Try find it in remote resource.
@@ -282,12 +280,14 @@ namespace NuGet.PackageManagement.UI
                             }
                         }
 
+                        var versions = metadata.OrderByDescending(m => m.Identity.Version)
+                            .Select(m => new VersionInfo(m.Identity.Version, m.DownloadCount));
                         return new UISearchMetadata(
                             identity,
                             title: title,
                             summary: summary,
                             iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
-                            versions: versions.Select(v => new VersionInfo(v, 0)),
+                            versions: versions,
                             latestPackageMetadata: packageMetadata);
                     });
                 tasks.Add(task);
@@ -338,10 +338,9 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (VersionComparer.VersionRelease.Compare(package.Version, highest.Identity.Version) < 0)
                     {
-                        var allVersions = data.Select(e => e.Identity.Version)
-                            .OrderByDescending(e => e, VersionComparer.VersionRelease)
-                            .Select(v => new VersionInfo(v, 0));
-
+                        var allVersions = data
+                            .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
+                            .Select(e => new VersionInfo(e.Identity.Version, e.DownloadCount));
                         string summary = String.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
                         string title = string.IsNullOrEmpty(highest.Title) ? highest.Identity.Id : highest.Title;
 
@@ -379,7 +378,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (!versionList.Select(v => v.Version).Contains(searchResultPackage.Version))
                 {
-                    versionList.Add(new VersionInfo(searchResultPackage.Version, 0));
+                    versionList.Add(new VersionInfo(searchResultPackage.Version, downloadCount: null));
                 }
 
                 searchResultPackage.Versions = versionList;
