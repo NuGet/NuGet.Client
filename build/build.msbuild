@@ -2,12 +2,12 @@
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
       <RootDir>$(MSBuildStartupDirectory)</RootDir>
-	  <RootSolution>$(RootDir)\Client.v3.sln</RootSolution>
+      <RootSolution>$(RootDir)\Client.v3.sln</RootSolution>
     </PropertyGroup>
-	<ItemGroup>
+    <ItemGroup>
       <!-- tests -->
       <TestProjects Include="$(RootDir)\test\Client.V3Test\Client.V3Test.csproj" />
-	  <TestProjects Include="$(RootDir)\test\DataClientTest\DataTest.csproj" />
+      <TestProjects Include="$(RootDir)\test\DataClientTest\DataTest.csproj" />
     </ItemGroup>
     <UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
        <ParameterGroup>

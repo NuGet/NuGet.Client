@@ -49,7 +49,7 @@ namespace NuGet.RuntimeModel.Test
                             "win7-x86"
                         }, new[] {
                             new RuntimeDependencySet("Some.Package", new [] {
-                                new RuntimePackageDependency("Some.Package.For.win8-x86", new NuGetVersion("4.2"))
+                                new RuntimePackageDependency("Some.Package.For.win8-x86", new VersionRange(new NuGetVersion("4.2")))
                             })
                         }),
                     new RuntimeDescription("win8", new[] { "win7" })
