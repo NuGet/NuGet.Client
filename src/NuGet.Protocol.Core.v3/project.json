@@ -7,9 +7,8 @@
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
     "tags": [ "nuget protocol" ],
     "dependencies": {
-        "NuGet.Versioning": "3.0.0-*",
         "NuGet.Configuration": "3.0.0-*",
-        "NuGet.Packaging.Core.Types": "3.0.0-*",
+        "NuGet.Packaging": "3.0.0-*",
         "NuGet.Protocol.Core.Types": "3.0.0-*",
         "Newtonsoft.Json": "6.0.4"
     },
@@ -37,7 +36,7 @@
                 "System.Linq": "4.0.0-beta-*",
                 "System.Resources.ResourceManager": "4.0.0-beta-*",
                 "System.Net.Http": "4.0.0-beta-*",
-                "System.Reflection": "4.0.0-beta-*",
+                "System.Reflection": "4.0.10-beta-*",
                 "System.Dynamic.Runtime": "4.0.0-beta-*",
                 "System.Threading": "4.0.10-beta-*",
                 "System.Threading.Thread": "4.0.0-beta-*",
