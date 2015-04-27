@@ -16,11 +16,11 @@ namespace NuGet.RuntimeModel.Test
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any" })
                 });
-            graph.MergeIn(new RuntimeGraph());
+            var newGraph = RuntimeGraph.Merge(graph, new RuntimeGraph());
             Assert.Equal(new RuntimeGraph(new[] {
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any" })
-                }), graph);
+                }), newGraph);
         }
 
         [Fact]
@@ -34,12 +34,12 @@ namespace NuGet.RuntimeModel.Test
             {
                 new RuntimeDescription("win7")
             });
-            leftGraph.MergeIn(rightGraph);
+            var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
             Assert.Equal(new RuntimeGraph(new[] {
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any", "win7" }),
                 new RuntimeDescription("win7")
-                }), leftGraph);
+                }), graph);
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace NuGet.RuntimeModel.Test
                     new RuntimeDependencySet("Bar")
                 })
             });
-            leftGraph.MergeIn(rightGraph);
+            var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
             Assert.Equal(new RuntimeGraph(new[] {
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any", "win7" }, new [] {
@@ -74,7 +74,7 @@ namespace NuGet.RuntimeModel.Test
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any", "win7" }, new [] {
                     new RuntimeDependencySet("Foo", new [] {
-                        new RuntimePackageDependency("Foo.win8", new NuGetVersion(1, 2, 3))
+                        new RuntimePackageDependency("Foo.win8", new VersionRange(new NuGetVersion(1, 2, 3)))
                     }),
                 })
             });
@@ -82,17 +82,17 @@ namespace NuGet.RuntimeModel.Test
             {
                 new RuntimeDescription("win8", new[] {
                     new RuntimeDependencySet("Foo", new [] {
-                        new RuntimePackageDependency("Foo.more.win8", new NuGetVersion(4, 5, 6))
+                        new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
                     }),
                 })
             });
-            leftGraph.MergeIn(rightGraph);
+            var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
             Assert.Equal(new RuntimeGraph(new[] {
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any", "win7" }, new [] {
                     new RuntimeDependencySet("Foo", new [] {
-                        new RuntimePackageDependency("Foo.win8", new NuGetVersion(1, 2, 3)),
-                        new RuntimePackageDependency("Foo.more.win8", new NuGetVersion(4, 5, 6))
+                        new RuntimePackageDependency("Foo.win8", new VersionRange(new NuGetVersion(1, 2, 3))),
+                        new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
                     }),
                 }),
             }), leftGraph);
