@@ -21,6 +21,11 @@ namespace NuGet.CommandLine
             throw new NotImplementedException();
         }
 
+        public IDisposable BeginScopeImpl(object state)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsEnabled(LogLevel logLevel)
         {
             if (logLevel < _provider.LogLevel)
