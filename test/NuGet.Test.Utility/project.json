@@ -1,0 +1,19 @@
+﻿{
+    "version": "3.0.0-*",
+    "dependencies": {
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.IO.Compression": ""
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.IO.Compression.ZipFile": "4.0.0-beta-*",
+                "System.IO.FileSystem": "4.0.0-beta-*"
+            }
+        }
+    }
+}
