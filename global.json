@@ -1,0 +1,8 @@
+{
+    "sources": [ 
+		"src", 
+		"../NuGet.Versioning/src",
+		"../NuGet.Configuration/src",
+		"../NuGet.Packaging/src"
+	]
+}
