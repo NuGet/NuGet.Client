@@ -232,7 +232,6 @@ namespace NuGet.PackageManagement.UI
                     var installed = GetInstalledPackage(p.NuGetProject, Id);
                     p.Enabled = installed != null &&
                         installed.PackageIdentity.Version != SelectedVersion.Version;
-                    p.Selected = p.Enabled;
                 });
             }
             else if (SelectedAction == Resources.Action_Update)
@@ -243,7 +242,6 @@ namespace NuGet.PackageManagement.UI
                     var installed = GetInstalledPackage(p.NuGetProject, Id);
                     p.Enabled = installed != null &&
                         installed.PackageIdentity.Version != SelectedVersion.Version;
-                    p.Selected = p.Enabled;
                 });
             }
             else if (SelectedAction == Resources.Action_Install)
@@ -253,7 +251,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     var installed = GetInstalledPackage(p.NuGetProject, Id);
                     p.Enabled = installed == null;
-                    p.Selected = p.Enabled;
                 });
             }
             else if (SelectedAction == Resources.Action_Uninstall)
@@ -264,9 +261,17 @@ namespace NuGet.PackageManagement.UI
                     var installed = GetInstalledPackage(p.NuGetProject, Id);
                     p.Enabled = installed != null &&
                         installed.PackageIdentity.Version == SelectedVersion.Version;
-                    p.Selected = p.Enabled;
                 });
             }
+
+            // update Selected properties
+            _allProjects.ForEach(p =>
+            {
+                if (!p.Enabled)
+                {
+                    p.Selected = false;
+                }
+            });
 
             if (ShowAll)
             {
