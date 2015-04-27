@@ -1,0 +1,13 @@
+﻿@model WebAppTest.Models.TestModel
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div>
+    <p>
+        @{
+            WriteLiteral(String.Join(", ", Model.Result));
+        }
+    </p>
+</div>
