@@ -1,0 +1,37 @@
+﻿{
+    "version": "3.0.0-*",
+    "description": "The core data structures for NuGet.Packaging",
+    "authors": [ "NuGet" ],
+    "copyright": "Copyright Outercurve Foundation. All rights reserved.",
+    "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
+    "dependencies": {
+        "NuGet.Versioning": "3.0.0-*",
+        "NuGet.Packaging.Core.Types": "3.0.0-*"
+    },
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.Xml": "",
+                "System.Xml.Linq": "",
+                "System.IO.Compression": ""
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Collections": "4.0.10-beta-*",
+                "System.Diagnostics.Tools": "4.0.0-beta-*",
+                "System.Diagnostics.Debug": "4.0.10-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Resources.ResourceManager": "4.0.0-beta-*",
+                "System.Text.RegularExpressions": "4.0.10-beta-*",
+                "System.Threading.Tasks": "4.0.10-beta-*",
+                "System.Xml.XDocument": "4.0.10-beta-*",
+                "System.IO.Compression": "4.0.0-beta-*",
+                "System.IO": "4.0.10-beta-*"
+            }
+        }
+    }
+}

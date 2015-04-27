@@ -1,0 +1,21 @@
+﻿{
+  "version": "3.0.0-*",
+  "dependencies": {
+    "Newtonsoft.Json": "6.0.6",
+    "NuGet.RuntimeModel": "3.0.0-*",
+    "NuGet.LibraryModel": "3.0.0-*",
+    "NuGet.DependencyResolver.Core": "3.0.0-*",
+    "NuGet.Packaging.Core.Types": "3.0.0-*"
+  },
+
+  "frameworks": {
+    "net45": {
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Threading": "4.0.10-*",
+        "System.Dynamic.Runtime": "4.0.10-*"
+      }
+    }
+  }
+}

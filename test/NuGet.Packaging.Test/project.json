@@ -1,0 +1,26 @@
+﻿{
+    "version": "3.0.0-*",
+    "dependencies": {
+        "NuGet.Packaging": "3.0.0-*",
+        "NuGet.Test.Utility": "3.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.IO.Compression": "",
+                "System.Xml": "",
+                "System.Xml.Linq": ""
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.IO.Compression": "4.0.0-*",
+                "System.Xml.XDocument": "4.0.10-beta-*"
+            }
+        }
+    }
+}
