@@ -6,7 +6,6 @@
     "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
     "tags": [ "nuget protocol" ],
-    "preprocess": "../../compiler/preprocess/*.cs",
     "dependencies": {
         "NuGet.Versioning": "3.0.0-*",
         "NuGet.Configuration": "3.0.0-*",
@@ -16,19 +15,6 @@
         "net45": {
             "frameworkAssemblies": {
                 "System.Net.Http": ""
-            }
-        },
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Net.Http": "",
-                "System.Runtime": { "version": "", "type": "build" },
-                "System.Threading.Tasks": { "version": "", "type": "build" },
-                "System.Text.Encoding": { "version": "", "type": "build" },
-                "System.Linq": { "version": "", "type": "build" }
-            },
-            "dependencies": {
-                "Microsoft.Framework.Runtime.Roslyn.Interfaces": { "version": "1.0.0-*", "type": "build" },
-                "Newtonsoft.Json": { "version": "6.0.4", "type": "build" }
             }
         },
         "dnxcore50": {
