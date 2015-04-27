@@ -1,0 +1,367 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace NuGet.Versioning
+{
+    /// <summary>
+    /// A base version range that handles ranges only and not any of the preferred version logic.
+    /// </summary>
+    public abstract class VersionRangeBase : IEquatable<VersionRangeBase>
+    {
+        private readonly bool _includeMinVersion;
+        private readonly bool _includeMaxVersion;
+        private readonly NuGetVersion _minVersion;
+        private readonly NuGetVersion _maxVersion;
+        private readonly bool _includePrerelease;
+
+        /// <summary>
+        /// Creates a VersionRange with the given min and max.
+        /// </summary>
+        /// <param name="minVersion">Lower bound of the version range.</param>
+        /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
+        /// <param name="maxVersion">Upper bound of the version range.</param>
+        /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
+        /// <param name="includePrerelease">True if prerelease versions should satisfy the condition.</param>
+        /// <param name="exclude">Subsets that are excluded from the range.</param>
+        public VersionRangeBase(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
+            bool includeMaxVersion = false, bool? includePrerelease = null)
+        {
+            _minVersion = minVersion;
+            _maxVersion = maxVersion;
+            _includeMinVersion = includeMinVersion;
+            _includeMaxVersion = includeMaxVersion;
+
+            if (includePrerelease == null)
+            {
+                _includePrerelease = (_maxVersion != null && IsPrerelease(_maxVersion) == true) ||
+                    (_minVersion != null && IsPrerelease(_minVersion) == true);
+            }
+            else
+            {
+                _includePrerelease = includePrerelease == true;
+            }
+        }
+
+        /// <summary>
+        /// True if MinVersion exists;
+        /// </summary>
+        public bool HasLowerBound
+        {
+            get
+            {
+                return _minVersion != null;
+            }
+        }
+
+        /// <summary>
+        /// True if MaxVersion exists.
+        /// </summary>
+        public bool HasUpperBound
+        {
+            get
+            {
+                return _maxVersion != null;
+            }
+        }
+
+        /// <summary>
+        /// True if both MinVersion and MaxVersion exist.
+        /// </summary>
+        public bool HasLowerAndUpperBounds
+        {
+            get
+            {
+                return HasLowerBound && HasUpperBound;
+            }
+        }
+
+        /// <summary>
+        /// True if MinVersion exists and is included in the range.
+        /// </summary>
+        public bool IsMinInclusive
+        {
+            get
+            {
+                return HasLowerBound && _includeMinVersion;
+            }
+        }
+
+        /// <summary>
+        /// True if MaxVersion exists and is included in the range.
+        /// </summary>
+        public bool IsMaxInclusive
+        {
+            get
+            {
+                return HasUpperBound && _includeMaxVersion;
+            }
+        }
+
+        /// <summary>
+        /// Maximum version allowed by this range.
+        /// </summary>
+        public NuGetVersion MaxVersion
+        {
+            get
+            {
+                return _maxVersion;
+            }
+        }
+
+        /// <summary>
+        /// Minimum version allowed by this range.
+        /// </summary>
+        public NuGetVersion MinVersion
+        {
+            get
+            {
+                return _minVersion;
+            }
+        }
+
+        /// <summary>
+        /// True if pre-release versions are included in this range.
+        /// </summary>
+        public bool IncludePrerelease
+        {
+            get
+            {
+                return _includePrerelease;
+            }
+        }
+
+        /// <summary>
+        /// Determines if an NuGetVersion meets the requirements.
+        /// </summary>
+        /// <param name="version">SemVer to compare</param>
+        /// <returns>True if the given version meets the version requirements.</returns>
+        public bool Satisfies(NuGetVersion version)
+        {
+            // ignore metadata by default when finding a range.
+            return Satisfies(version, VersionComparer.VersionRelease);
+        }
+
+        /// <summary>
+        /// Determines if an NuGetVersion meets the requirements using the given mode.
+        /// </summary>
+        /// <param name="version">SemVer to compare</param>
+        /// <param name="versionComparison">VersionComparison mode used to determine the version range.</param>
+        /// <returns>True if the given version meets the version requirements.</returns>
+        public bool Satisfies(NuGetVersion version, VersionComparison versionComparison)
+        {
+            return Satisfies(version, new VersionComparer(versionComparison));
+        }
+
+        /// <summary>
+        /// Determines if an NuGetVersion meets the requirements using the version comparer.
+        /// </summary>
+        /// <param name="version">SemVer to compare.</param>
+        /// <param name="comparer">Version comparer used to determine if the version criteria is met.</param>
+        /// <returns>True if the given version meets the version requirements.</returns>
+        public bool Satisfies(NuGetVersion version, IVersionComparer comparer)
+        {
+            if (version == null)
+            {
+                throw new ArgumentNullException("version");
+            }
+
+            // Determine if version is in the given range using the comparer.
+            bool condition = true;
+            if (HasLowerBound)
+            {
+                if (IsMinInclusive)
+                {
+                    condition &= comparer.Compare(MinVersion, version) <= 0;
+                }
+                else
+                {
+                    condition &= comparer.Compare(MinVersion, version) < 0;
+                }
+            }
+
+            if (HasUpperBound)
+            {
+                if (IsMaxInclusive)
+                {
+                    condition &= comparer.Compare(MaxVersion, version) >= 0;
+                }
+                else
+                {
+                    condition &= comparer.Compare(MaxVersion, version) > 0;
+                }
+            }
+
+            if (!IncludePrerelease)
+            {
+                condition &= IsPrerelease(version) != true;
+            }
+
+            return condition;
+        }
+
+        /// <summary>
+        /// Compares the object as a VersionRange with the default comparer
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            VersionRangeBase range = obj as VersionRangeBase;
+
+            if (range != null)
+            {
+                return VersionRangeComparer.Default.Equals(this, range);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the hash code using the default comparer.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return VersionRangeComparer.Default.GetHashCode(this);
+        }
+
+        /// <summary>
+        /// Default compare
+        /// </summary>
+        public bool Equals(VersionRangeBase other)
+        {
+            return Equals(other, VersionRangeComparer.Default);
+        }
+
+        /// <summary>
+        /// Use the VersionRangeComparer for equality checks
+        /// </summary>
+        public bool Equals(VersionRangeBase other, IVersionRangeComparer comparer)
+        {
+            if (comparer == null)
+            {
+                throw new ArgumentNullException("comparer");
+            }
+
+            return comparer.Equals(this, other);
+        }
+
+        /// <summary>
+        /// Use a specific VersionComparison for comparison
+        /// </summary>
+        public bool Equals(VersionRangeBase other, VersionComparison versionComparison)
+        {
+            IVersionRangeComparer comparer = new VersionRangeComparer(versionComparison);
+            return Equals(other, comparer);
+        }
+
+        /// <summary>
+        ///  Use a specific IVersionComparer for comparison
+        /// </summary>
+        public bool Equals(VersionRangeBase other, IVersionComparer versionComparer)
+        {
+            IVersionRangeComparer comparer = new VersionRangeComparer(versionComparer);
+            return Equals(other, comparer);
+        }
+
+        /// <summary>
+        /// SubSet check
+        /// </summary>
+        public bool IsSubSetOrEqualTo(VersionRangeBase possibleSuperSet)
+        {
+            return IsSubSetOrEqualTo(possibleSuperSet, VersionComparer.Default);
+        }
+
+        /// <summary>
+        /// SubSet check
+        /// </summary>
+        public bool IsSubSetOrEqualTo(VersionRangeBase possibleSuperSet, IVersionComparer comparer)
+        {
+            VersionRangeComparer rangeComparer = new VersionRangeComparer(comparer);
+
+            VersionRangeBase possibleSubSet = this;
+            VersionRangeBase target = possibleSuperSet;
+
+            if (rangeComparer.Equals(possibleSubSet, VersionRange.None))
+            {
+                return true;
+            }
+
+            if (rangeComparer.Equals(target, VersionRange.None))
+            {
+                return false;
+            }
+
+            if (target == null)
+            {
+                target = VersionRange.All;
+            }
+
+            if (possibleSubSet == null)
+            {
+                possibleSubSet = VersionRange.All;
+            }
+
+            bool result = true;
+
+            if (possibleSubSet.IncludePrerelease && !target.IncludePrerelease)
+            {
+                result = false;
+            }
+
+            if (possibleSubSet.HasLowerBound)
+            {
+                // normal check
+                if (!target.Satisfies(possibleSubSet.MinVersion))
+                {
+                    // it's possible we didn't need that version, do a special non inclusive check
+                    if (!possibleSubSet.IsMinInclusive && !target.IsMinInclusive)
+                    {
+                        result &= comparer.Equals(target.MinVersion, possibleSubSet.MinVersion);
+                    }
+                    else
+                    {
+                        result = false;
+                    }
+                }
+            }
+            else
+            {
+                result &= !target.HasLowerBound;
+            }
+
+            if (possibleSubSet.HasUpperBound)
+            {
+                // normal check
+                if (!target.Satisfies(possibleSubSet.MaxVersion))
+                {
+                    // it's possible we didn't need that version, do a special non inclusive check
+                    if (!possibleSubSet.IsMaxInclusive && !target.IsMaxInclusive)
+                    {
+                        result &= comparer.Equals(target.MaxVersion, possibleSubSet.MaxVersion);
+                    }
+                    else
+                    {
+                        result = false;
+                    }
+                }
+            }
+            else
+            {
+                result &= !target.HasUpperBound;
+            }
+
+            return result;
+        }
+
+        private static bool? IsPrerelease(SemanticVersion version)
+        {
+            bool? b = null;
+
+            if (version != null)
+            {
+                b = version.IsPrerelease;
+            }
+
+            return b;
+        }
+    }
+}
