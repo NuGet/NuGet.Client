@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private bool _projectSpecified;
         private bool _versionSpecifiedPrerelease;
         private bool _allowPrerelease;
+        private bool _isPackageInstalled;
         private DependencyBehavior _updateVersionEnum;
         private NuGetVersion _nugetVersion;
 
@@ -155,6 +156,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     await PreviewAndExecuteUpdateActionsforSinglePackage(project);
                 }
+
+                if (!_isPackageInstalled)
+                {
+                    Log(MessageLevel.Error, Resources.PackageNotInstalledInAnyProject, Id);
+                }
             }
             catch (Exception ex)
             {
@@ -261,13 +267,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PackageReference installedPackage = (await project.GetInstalledPackagesAsync(token))
                 .Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
-            // If package Id exists in Packages folder but is not actually installed to the current project, throw.
-            if (installedPackage == null)
+            if (installedPackage != null)
             {
-                Log(MessageLevel.Info, Resources.Cmdlet_PackageNotInstalled, Id, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
-            }
-            else
-            {
+                // set _installed to true, if package to update is installed.
+                _isPackageInstalled = true;
+
                 // If -Version switch is specified
                 if (!string.IsNullOrEmpty(Version))
                 {
