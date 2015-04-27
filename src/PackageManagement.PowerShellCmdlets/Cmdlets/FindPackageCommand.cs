@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [ValidateRange(0, Int32.MaxValue)]
         public int Skip { get; set; }
 
-        private void Preprocess()
+        protected void Preprocess()
         {
             // Since this is used for intellisense, we need to limit the number of packages that we return. Otherwise,
             // typing InstallPackage TAB would download the entire feed.
@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (StartWith.IsPresent)
             {
-                FindPackageStartWithId();
+                FindPackageStartWithId(excludeVersionInfo: false);
             }
             else
             {
@@ -123,20 +123,34 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        private void FindPackageStartWithId()
+        protected void FindPackageStartWithId(bool excludeVersionInfo)
         {
-            PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>();
-            IEnumerable<string> packageIds = Enumerable.Empty<string>();
-            try
+            PSAutoCompleteResource autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>(Token);
+            IEnumerable<string> packageIds;
+
+            Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Token);
+
+            packageIds = task.Result ?? Enumerable.Empty<string>();
+
+            Token.ThrowIfCancellationRequested();
+
+            packageIds = packageIds.Skip(Skip).Take(First);
+
+            if (excludeVersionInfo)
             {
-                Task<IEnumerable<string>> task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, CancellationToken.None);
-                packageIds = task.Result;
-                if (packageIds != null && packageIds.Any())
+                List<PowerShellPackage> packages = new List<PowerShellPackage>();
+
+                foreach (var id in packageIds)
                 {
-                    packageIds = packageIds.Skip(Skip).Take(First);
+                    packages.Add(new PowerShellPackage()
+                    {
+                        Id = id,
+                    });
                 }
+
+                WriteObject(packages, enumerateCollection: true);
+                return;
             }
-            catch (Exception) { }
 
             if (!ExactMatch.IsPresent)
             {
@@ -179,7 +193,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             IEnumerable<NuGetVersion> versions = Enumerable.Empty<NuGetVersion>();
             try
             {
-                Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, CancellationToken.None);
+                Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Token);
                 versions = versionTask.Result;
             }
             catch (Exception) { }

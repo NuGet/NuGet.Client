@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace NuGetConsole
 {
     /// <summary>
@@ -6,6 +9,6 @@ namespace NuGetConsole
     /// </summary>
     public interface IPathExpansion : ITabExpansion
     {
-        SimpleExpansion GetPathExpansions(string line);
+        Task<SimpleExpansion> GetPathExpansionsAsync(string line, CancellationToken token);
     }
 }

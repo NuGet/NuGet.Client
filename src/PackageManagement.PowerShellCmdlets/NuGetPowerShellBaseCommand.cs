@@ -44,6 +44,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         internal const string PowerConsoleHostName = "Package Manager Host";
         internal const string ActivePackageSourceKey = "activePackageSource";
         internal const string SyncModeKey = "IsSyncMode";
+        private const string CancellationTokenKey = "CancellationTokenKey";
         #endregion
 
         public NuGetPowerShellBaseCommand()
@@ -131,6 +132,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// File conflict action property
         /// </summary>
         protected FileConflictAction? ConflictAction { get; set; }
+
+        protected CancellationToken Token
+        {
+            get
+            {
+                if (Host == null || Host.PrivateData == null)
+                {
+                    return CancellationToken.None;
+                }
+
+                var tokenProp = GetPropertyValueFromHost(CancellationTokenKey);
+                if (tokenProp == null)
+                {
+                    return CancellationToken.None;
+                }
+
+                return (CancellationToken)tokenProp;
+            }
+        }
 
         /// <summary>
         /// Determine if current PowerShell host is sync or async

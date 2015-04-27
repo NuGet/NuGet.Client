@@ -20,6 +20,7 @@ namespace NuGetConsole.Implementation.Console
         void PostInputLine(InputLine inputLine);
         void PostKey(VsKeyInfo key);
         void CancelWaitKey();
+        void SetExecutingCommand(bool isExecuting);
     }
 
 
@@ -97,6 +98,11 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
+        public void SetExecutingCommand(bool isExecutingCommand)
+        {
+            _dispatcher.SetExecutingCommand(isExecutingCommand);
+        }
+
         public void AcceptKeyInput()
         {
             Debug.Assert(_dispatcher != null);
@@ -109,41 +115,40 @@ namespace NuGetConsole.Implementation.Console
 
         public VsKeyInfo WaitKey()
         {
-            return ThreadHelper.JoinableTaskFactory.Run<VsKeyInfo>(async delegate
+            try
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                // raise the StartWaitingKey event on main thread
+                RaiseEventSafe(StartWaitingKey);
 
-                try
-                {
-                    // raise the StartWaitingKey event on main thread
-                    RaiseEventSafe(StartWaitingKey);
+                // set/reset the cancellation token
+                _cancelWaitKeySource = new CancellationTokenSource();
+                _isExecutingReadKey = true;
 
-                    // set/reset the cancellation token
-                    _cancelWaitKeySource = new CancellationTokenSource();
-                    _isExecutingReadKey = true;
+                // blocking call
+                VsKeyInfo key = _keyBuffer.Take(_cancelWaitKeySource.Token);
 
-                    // blocking call
-                    VsKeyInfo key = _keyBuffer.Take(_cancelWaitKeySource.Token);
-
-                    return key;
-                }
-                catch (OperationCanceledException)
-                {
-                    return null;
-                }
-                finally
-                {
-                    _isExecutingReadKey = false;
-                }
-            });
+                return key;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            finally
+            {
+                _isExecutingReadKey = false;
+            }
         }
 
         private void RaiseEventSafe(EventHandler handler)
         {
-            if (handler != null)
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                handler(this, EventArgs.Empty);
-            }
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                if (handler != null)
+                {
+                    handler(this, EventArgs.Empty);
+                }
+            });
         }
 
         public bool IsStartCompleted { get; private set; }
@@ -179,7 +184,7 @@ namespace NuGetConsole.Implementation.Console
 
                     Task.Factory.StartNew(
                         // gives the host a chance to do initialization works before the console starts accepting user inputs
-                        () => 
+                        () =>
                             {
                                 // apply the culture of the main thread to this thread so that the PowerShell engine
                                 // will have the same culture as Visual Studio.
@@ -332,6 +337,11 @@ namespace NuGetConsole.Implementation.Console
                 {
                     WpfConsole.Clear();
                 }
+            }
+
+            public void SetExecutingCommand(bool isExecuting)
+            {
+                IsExecuting = isExecuting;
             }
 
             public abstract void Start();

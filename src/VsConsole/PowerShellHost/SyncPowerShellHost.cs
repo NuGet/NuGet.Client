@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -27,6 +29,18 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
 
             return true;
+        }
+
+        protected async override Task<string[]> GetExpansionsAsyncCore(string line, string lastWord, CancellationToken token)
+        {
+            var expansions = await GetExpansionsAsyncCore(line, lastWord, isSync: true, token: token);
+            return expansions;
+        }
+
+        protected async override Task<SimpleExpansion> GetPathExpansionsAsyncCore(string line, CancellationToken token)
+        {
+            var simpleExpansion = await GetPathExpansionsAsyncCore(line, isSync: true, token: token);
+            return simpleExpansion;
         }
     }
 }

@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\AddBindingRedirectCommand.cs" />
+    <Compile Include="Cmdlets\TabExpansionCommand.cs" />
     <Compile Include="IPowerShellPackage.cs" />
     <Compile Include="PackageActionBaseCommand.cs" />
     <Compile Include="PowerShellExecutionMessage.cs" />

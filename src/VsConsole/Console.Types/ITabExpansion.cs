@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace NuGetConsole
 {
     /// <summary>
@@ -6,6 +9,6 @@ namespace NuGetConsole
     /// </summary>
     public interface ITabExpansion
     {
-        string[] GetExpansions(string line, string lastWord);
+        Task<string[]> GetExpansionsAsync(string line, string lastWord, CancellationToken token);
     }
 }

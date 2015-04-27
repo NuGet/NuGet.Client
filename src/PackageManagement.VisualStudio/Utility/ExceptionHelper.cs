@@ -6,7 +6,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class ExceptionHelper
     {
-        private const string LogEntrySource = "NuGet Package Manager";
+        public const string LogEntrySource = "NuGet Package Manager";
 
         public static void WriteToActivityLog(Exception exception)
         {

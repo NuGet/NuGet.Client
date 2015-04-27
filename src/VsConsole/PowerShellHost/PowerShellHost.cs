@@ -8,6 +8,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -39,6 +40,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
         private const string DTEKey = "DTE";
+        private const string CancellationTokenKey = "CancellationTokenKey";
         private string _activePackageSource;
         private DTE _dte;
 
@@ -53,6 +55,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         // store the current command typed so far
         private ComplexCommand _complexCommand;
+
+        // store the current CancellationToken. This will be set on the private data
+        private CancellationToken _token;
 
         List<SourceRepository> _sourceRepositories;
 
@@ -225,7 +230,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 ActiveConsole = console;
-
                 if (_initialized.HasValue)
                 {
                     if (_initialized.Value && console.ShowDisclaimerHeader)
@@ -276,7 +280,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                 SetDefaultProjectIndex(0);
                             }
                         };
-
                         // Set available private data on Host
                         SetPrivateDataOnHost(false);
                     }
@@ -440,6 +443,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             SetPropertyValueOnHost(PackageManagementContextKey, _packageManagementContext);
             SetPropertyValueOnHost(ActivePackageSourceKey, ActivePackageSource);
             SetPropertyValueOnHost(DTEKey, _dte);
+            SetPropertyValueOnHost(CancellationTokenKey, _token);
         }
 
         private void SetPropertyValueOnHost(string propertyName, object value)
@@ -646,32 +650,77 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         #region ITabExpansion
-        public string[] GetExpansions(string line, string lastWord)
+        public async Task<string[]> GetExpansionsAsync(string line, string lastWord, CancellationToken token)
         {
-            var query = from s in Runspace.Invoke(
-                            @"$__pc_args=@();$input|%{$__pc_args+=$_};if(Test-Path Function:\TabExpansion2){(TabExpansion2 $__pc_args[0] $__pc_args[0].length).CompletionMatches|%{$_.CompletionText}}else{TabExpansion $__pc_args[0] $__pc_args[1]};Remove-Variable __pc_args -Scope 0;",
-                            new string[] { line, lastWord },
-                            outputResults: false)
-                        select (s == null ? null : s.ToString());
-            return query.ToArray();
+            var expansions = await GetExpansionsAsyncCore(line, lastWord, token);
+            return expansions;
+        }
+
+        protected abstract Task<string[]> GetExpansionsAsyncCore(string line, string lastWord, CancellationToken token);
+
+        protected async Task<string[]> GetExpansionsAsyncCore(string line, string lastWord, bool isSync, CancellationToken token)
+        {
+            // Set the _token object to the CancellationToken passed in, so that the Private Data can be set with this token
+            // Powershell cmdlets will pick up the CancellationToken from the private data of the Host, and use it in their calls to NuGetPackageManager
+            _token = token;
+            string[] expansions;
+            try
+            {
+                SetPrivateDataOnHost(isSync);
+                expansions = await Task.Run<string[]>(() =>
+                {
+                    var query = from s in Runspace.Invoke(
+                                    @"$__pc_args=@();$input|%{$__pc_args+=$_};if(Test-Path Function:\TabExpansion2){(TabExpansion2 $__pc_args[0] $__pc_args[0].length).CompletionMatches|%{$_.CompletionText}}else{TabExpansion $__pc_args[0] $__pc_args[1]};Remove-Variable __pc_args -Scope 0;",
+                                    new string[] { line, lastWord },
+                                    outputResults: false)
+                                select (s == null ? null : s.ToString());
+                    return query.ToArray();
+                }, _token);
+            }
+            finally
+            {
+                // Set the _token object to the CancellationToken passed in, so that the Private Data can be set correctly
+                _token = CancellationToken.None;
+            }
+
+            return expansions;
         }
         #endregion
 
         #region IPathExpansion
-        public SimpleExpansion GetPathExpansions(string line)
+        public async Task<SimpleExpansion> GetPathExpansionsAsync(string line, CancellationToken token)
         {
-            PSObject expansion = Runspace.Invoke(
-                "$input|%{$__pc_args=$_}; _TabExpansionPath $__pc_args; Remove-Variable __pc_args -Scope 0",
-                new object[] { line },
-                outputResults: false).FirstOrDefault();
-            if (expansion != null)
-            {
-                int replaceStart = (int)expansion.Properties["ReplaceStart"].Value;
-                IList<string> paths = ((IEnumerable<object>)expansion.Properties["Paths"].Value).Select(o => o.ToString()).ToList();
-                return new SimpleExpansion(replaceStart, line.Length - replaceStart, paths);
-            }
+            var simpleExpansion = await GetPathExpansionsAsyncCore(line, token);
+            return simpleExpansion;
+        }
 
-            return null;
+        protected abstract Task<SimpleExpansion> GetPathExpansionsAsyncCore(string line, CancellationToken token);
+
+        protected async Task<SimpleExpansion> GetPathExpansionsAsyncCore(string line, bool isSync, CancellationToken token)
+        {
+            // Set the _token object to the CancellationToken passed in, so that the Private Data can be set with this token
+            // Powershell cmdlets will pick up the CancellationToken from the private data of the Host, and use it in their calls to NuGetPackageManager
+            _token = token;
+            SetPropertyValueOnHost(CancellationTokenKey, _token);
+            var simpleExpansion = await Task.Run<SimpleExpansion>(() =>
+            {
+                PSObject expansion = Runspace.Invoke(
+                    "$input|%{$__pc_args=$_}; _TabExpansionPath $__pc_args; Remove-Variable __pc_args -Scope 0",
+                    new object[] { line },
+                    outputResults: false).FirstOrDefault();
+                if (expansion != null)
+                {
+                    int replaceStart = (int)expansion.Properties["ReplaceStart"].Value;
+                    IList<string> paths = ((IEnumerable<object>)expansion.Properties["Paths"].Value).Select(o => o.ToString()).ToList();
+                    return new SimpleExpansion(replaceStart, line.Length - replaceStart, paths);
+                }
+
+                return null;
+            }, token);
+
+            _token = CancellationToken.None;
+            SetPropertyValueOnHost(CancellationTokenKey, _token);
+            return simpleExpansion;
         }
         #endregion
 

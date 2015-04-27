@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGetConsole.Host
 {
@@ -18,7 +20,7 @@ namespace NuGetConsole.Host
         }
 
         #region ICommandExpansion
-        public SimpleExpansion GetExpansions(string line, int caretIndex)
+        public async Task<SimpleExpansion> GetExpansionsAsync(string line, int caretIndex, CancellationToken token)
         {
             // Find end of lastword -- To allow expansion in middle line
             int lastWordEnd = caretIndex;
@@ -53,7 +55,7 @@ namespace NuGetConsole.Host
             string lastWord = line.Substring(lastWordBegin);
 
             // Get host TabExpansion result
-            string[] expansions = TabExpansion.GetExpansions(line, lastWord);
+            string[] expansions = await TabExpansion.GetExpansionsAsync(line, lastWord, token);
 
             if (expansions != null && expansions.Length > 0)
             {
@@ -74,7 +76,8 @@ namespace NuGetConsole.Host
             }
             else if (TabExpansion is IPathExpansion)
             {
-                return ((IPathExpansion)TabExpansion).GetPathExpansions(line);
+                var simpleExpansion = await ((IPathExpansion)TabExpansion).GetPathExpansionsAsync(line, token);
+                return simpleExpansion;
             }
 
             return null;

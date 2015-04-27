@@ -150,7 +150,8 @@ function GetPackages($context) {
         $parameters.IncludePreRelease = $true 
     }
 
-    return Find-Package @parameters -StartWith -AllVersions -ErrorAction SilentlyContinue
+    # StartWith switch is implicity set for TabExpansion command
+    return TabExpansion-Package @parameters -ExcludeVersionInfo
 }
 
 function GetProjectNames {
@@ -231,7 +232,8 @@ function GetRemotePackageVersions($context) {
             $parameters.IncludePreRelease = $true 
         }
         $parameters.AllVersions = $true
-        GetAndSortVersions(Find-Package @parameters -StartWith -ExactMatch -ErrorAction SilentlyContinue)
+        # StartWith switch is implicity set for TabExpansion command
+        GetAndSortVersions(TabExpansion-Package @parameters -ExactMatch -ErrorAction SilentlyContinue)
     }
 }
 

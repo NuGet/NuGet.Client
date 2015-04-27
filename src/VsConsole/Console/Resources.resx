@@ -132,6 +132,9 @@
   <data name="PackageManagerConsoleCommandExecuted" xml:space="preserve">
     <value>Package Manager Console Command Executed</value>
   </data>
+  <data name="RegistryKeyShouldBeDWORD" xml:space="preserve">
+    <value>Registry key '{0}' should be a DWORD.</value>
+  </data>
   <data name="ToolWindowInitializing" xml:space="preserve">
     <value>Initializing PowerShell host...</value>
   </data>

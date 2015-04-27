@@ -1,25 +1,36 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.Win32;
 using NuGet.PackageManagement.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console
 {
 
     internal class WpfConsoleKeyProcessor : OleCommandFilter
     {
+        private const string PowershellConsoleKey = @"SOFTWARE\NuGet\PowershellConsole";
+        private const string TabExpansionTimeoutKey = @"TabExpansionTimeout"; // in seconds
+        private const int DefaultTabExpansionTimeout = 3; // in seconds
         private readonly Lazy<IntPtr> _pKeybLayout = new Lazy<IntPtr>(() => NativeMethods.GetKeyboardLayout(0));
-        private WpfConsole WpfConsole { get; set; }
-        private IWpfTextView WpfTextView { get; set; }
+        private WpfConsole WpfConsole { get; }
+        private IWpfTextView WpfTextView { get; }
 
-        private ICommandExpansion CommandExpansion { get; set; }
+        private ICommandExpansion CommandExpansion { get; }
+
+        private int TabExpansionTimeout { get; }
 
         public WpfConsoleKeyProcessor(WpfConsole wpfConsole)
             : base(wpfConsole.VsTextView)
@@ -27,6 +38,32 @@ namespace NuGetConsole.Implementation.Console
             WpfConsole = wpfConsole;
             WpfTextView = wpfConsole.WpfTextView;
             CommandExpansion = wpfConsole.Factory.GetCommandExpansion(wpfConsole);
+            TabExpansionTimeout = GetTabExpansionTimeout();
+        }
+
+        private int GetTabExpansionTimeout()
+        {
+            try
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(PowershellConsoleKey))
+                {
+                    // 'TabExpansionTimeout' key should be a DWORD, so, simply cast it to int
+                    // If the cast fails, log a message and move on
+                    int result = (int)key.GetValue(TabExpansionTimeoutKey, String.Empty, RegistryValueOptions.None);
+                    return result;
+                }
+            }
+            catch (InvalidCastException)
+            {
+                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, String.Format(CultureInfo.CurrentCulture, Resources.RegistryKeyShouldBeDWORD, TabExpansionTimeoutKey));
+            }
+            catch (Exception ex)
+            {
+                // Ignore all other exceptions, such as SecurityException
+                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, ex.ToString());
+            }
+
+            return DefaultTabExpansionTimeout;
         }
 
         /// <summary>
@@ -307,7 +344,10 @@ namespace NuGetConsole.Implementation.Console
                                 }
                                 else
                                 {
-                                    TriggerCompletion();
+                                    ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                                    {
+                                        await TriggerCompletionAsync();
+                                    });
                                 }
                             }
                             hr = VSConstants.S_OK;
@@ -466,7 +506,7 @@ namespace NuGetConsole.Implementation.Console
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        void TriggerCompletion()
+        private async Task TriggerCompletionAsync()
         {
             if (CommandExpansion == null)
             {
@@ -483,15 +523,22 @@ namespace NuGetConsole.Implementation.Console
             int caretIndex = CaretPosition - WpfConsole.InputLineStart.Value;
             Debug.Assert(caretIndex >= 0);
 
+            // Cancel tab expansion if it takes more than 'TabExpansionTimeout' secs (defaults to 3 secs) to get any results
+            CancellationTokenSource ctSource = new CancellationTokenSource(TabExpansionTimeout * 1000);
             SimpleExpansion simpleExpansion = null;
             try
             {
-                simpleExpansion = CommandExpansion.GetExpansions(line, caretIndex);
+                WpfConsole.Dispatcher.SetExecutingCommand(true);
+                simpleExpansion = await CommandExpansion.GetExpansionsAsync(line, caretIndex, ctSource.Token);
             }
             catch (Exception x)
             {
                 // Ignore exception from expansion, but write it to the activity log
                 ExceptionHelper.WriteToActivityLog(x);
+            }
+            finally
+            {
+                WpfConsole.Dispatcher.SetExecutingCommand(false);
             }
 
             if (simpleExpansion != null && simpleExpansion.Expansions != null)
