@@ -1,0 +1,130 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using NuGet.Client;
+using NuGet.DependencyResolver;
+using NuGet.Frameworks;
+using NuGet.LibraryModel;
+using NuGet.Packaging;
+using Microsoft.Framework.Logging;
+using NuGet.RuntimeModel;
+
+namespace NuGet.Strawman.Commands
+{
+    public class RemoteDependencyProvider : IRemoteDependencyProvider
+    {
+        private readonly IPackageFeed _source;
+
+        public RemoteDependencyProvider(IPackageFeed source)
+        {
+            _source = source;
+            IsHttp = IsHttpSource(source);
+        }
+
+        public bool IsHttp { get; private set; }
+
+        public async Task<RemoteMatch> FindLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
+        {
+            var results = await _source.FindPackagesByIdAsync(libraryRange.Name);
+            PackageInfo bestResult = null;
+            foreach (var result in results)
+            {
+                if (libraryRange.VersionRange.IsBetter(
+                    current: bestResult?.Version,
+                    considering: result.Version))
+                {
+                    bestResult = result;
+                }
+            }
+
+            if (bestResult == null)
+            {
+                return null;
+            }
+
+            return new RemoteMatch
+            {
+                Library = new LibraryIdentity
+                {
+                    Name = bestResult.Id,
+                    Version = bestResult.Version,
+                    Type = LibraryTypes.Package
+                },
+                Path = bestResult.ContentUri,
+                Provider = this,
+            };
+        }
+
+        public async Task<IEnumerable<LibraryDependency>> GetDependencies(RemoteMatch match, NuGetFramework targetFramework)
+        {
+            using (var stream = await _source.OpenNuspecStreamAsync(new PackageInfo
+            {
+                Id = match.Library.Name,
+                Version = match.Library.Version,
+                ContentUri = match.Path
+            }))
+            {
+                var nuspecReader = new NuspecReader(stream);
+
+                var nearestGroup = NuGetFrameworkUtility.GetNearest(
+                    nuspecReader.GetDependencyGroups(),
+                    targetFramework,
+                    x => x.TargetFramework);
+
+                if (nearestGroup != null)
+                {
+                    return nearestGroup.Packages.Select(p => new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = p.Id,
+                            VersionRange = p.VersionRange
+                        }
+                    })
+                    .ToList();
+                }
+            }
+
+            return Enumerable.Empty<LibraryDependency>();
+        }
+
+        public async Task CopyToAsync(RemoteMatch match, Stream stream)
+        {
+            using (var nupkgStream = await _source.OpenNupkgStreamAsync(new PackageInfo
+            {
+                Id = match.Library.Name,
+                Version = match.Library.Version,
+                ContentUri = match.Path
+            }))
+            {
+                await nupkgStream.CopyToAsync(stream);
+            }
+        }
+
+        public async Task<RuntimeGraph> GetRuntimeGraph(RemoteMatch match, NuGetFramework framework)
+        {
+            using (var stream = await _source.OpenRuntimeStreamAsync(new PackageInfo
+            {
+                Id = match.Library.Name,
+                Version = match.Library.Version,
+                ContentUri = match.Path
+            }))
+            {
+                if (stream == null)
+                {
+                    return null;
+                }
+                return JsonRuntimeFormat.ReadRuntimeGraph(stream);
+            }
+        }
+
+        private static bool IsHttpSource(IPackageFeed source)
+        {
+            return source.Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                source.Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+}
+
