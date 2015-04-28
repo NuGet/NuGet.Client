@@ -262,9 +262,18 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             TaskScheduler.Default);
                     };
                     _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
-                    _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectory();
-                    _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectory();
-                    _solutionManager.NuGetProjectRemoved += (o, e) => UpdateWorkingDirectory();
+                    _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                    _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                    _solutionManager.NuGetProjectRemoved += (o, e) =>
+                    {
+                        UpdateWorkingDirectoryAndAvailableProjects();
+                        // When the previous default project has been removed, _solutionManager.DefaultNuGetProjectName becomes null
+                        if (_solutionManager.DefaultNuGetProjectName == null)
+                        {
+                            // Change default project to the first one in the collection
+                            SetDefaultProjectIndex(0);
+                        }
+                    };
 
                     // Set available private data on Host
                     SetPrivateDataOnHost(false);
@@ -279,6 +288,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     ExceptionHelper.WriteToActivityLog(ex);
                 }
             }
+        }
+
+        private void UpdateWorkingDirectoryAndAvailableProjects()
+        {
+            UpdateWorkingDirectory();
+            GetAvailableProjects();
         }
 
         private void UpdateWorkingDirectory()

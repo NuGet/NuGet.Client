@@ -233,6 +233,21 @@ function Test-AmbiguousStartupProject {
     Assert-DefaultProject $p1
 }
 
+function Test-GetProjectAfterDefaultProjectRemoved
+{
+	param($context)
+
+    # Arrange
+    $p1 = New-ClassLibrary
+	$p2 = New-ClassLibrary
+
+	#Act
+	Remove-Project $p1.Name
+
+    # Assert
+	Assert-DefaultProject $p2
+}
+
 function Assert-DefaultProject($p) {
     Assert-AreEqual $p (Get-Project) "Default project is actually $($p.UniqueName)"
 }
