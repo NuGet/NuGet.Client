@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using Microsoft.VisualStudio.Shell;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -10,6 +12,8 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public EnvDTEProjectName(EnvDTEProject envDTEProject)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             FullName = envDTEProject.FullName;
             UniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
             ShortName = EnvDTEProjectUtility.GetName(envDTEProject);

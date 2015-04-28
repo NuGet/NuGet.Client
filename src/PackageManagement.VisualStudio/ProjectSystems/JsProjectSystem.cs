@@ -1,27 +1,40 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class JsProjectSystem: CpsProjectSystem
+    public class JsProjectSystem : CpsProjectSystem
     {
         public JsProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
             : base(envDTEProject, nuGetProjectContext)
         {
         }
 
+        private string _projectName;
         public override string ProjectName
         {
             get
             {
-                return EnvDTEProjectUtility.GetName(EnvDTEProject);
+                if (String.IsNullOrEmpty(_projectName))
+                {
+                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        _projectName = EnvDTEProjectUtility.GetName(EnvDTEProject);
+                    });
+                }
+                return _projectName;
             }
         }
-       
+
         public override void AddFile(string path, Stream stream)
         {
             // ensure the parent folder is created before adding file to the project
@@ -30,8 +43,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            EnvDTEProjectUtility.GetProjectItems(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
-            base.AddFile(path, stream);
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
+                base.AddFile(path, stream);
+            });
         }
 
         public override void AddFile(string path, System.Action<Stream> writeToStream)
@@ -42,22 +60,29 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            EnvDTEProjectUtility.GetProjectItems(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
-            base.AddFile(path, writeToStream);
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
+                base.AddFile(path, writeToStream);
+            });
         }
 
-        protected override void AddFileToProject(string path)
+        protected override async Task AddFileToProjectAsync(string path)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             if (ExcludeFile(path))
             {
                 return;
             }
 
             string folderPath = Path.GetDirectoryName(path);
-            string fullPath = FileSystemUtility.GetFullPath(EnvDTEProjectUtility.GetFullPath(EnvDTEProject),path);
+            string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
             // Add the file to project or folder
-            EnvDTEProjectItems container = EnvDTEProjectUtility.GetProjectItems(EnvDTEProject,folderPath, createIfNotExists: true);
+            EnvDTEProjectItems container = await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, folderPath, createIfNotExists: true);
             if (container == null)
             {
                 throw new ArgumentException(

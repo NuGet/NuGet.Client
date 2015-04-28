@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (All.IsPresent)
             {
-                var projects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution);
+                var projects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
                 WriteObject(projects, enumerateCollection: true);
             }
             else

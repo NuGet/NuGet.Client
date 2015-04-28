@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -14,6 +14,8 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public static IVsHierarchy ToVsHierarchy(Project project)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             IVsHierarchy hierarchy;
 
             // Get the vs solution
@@ -30,6 +32,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static string[] GetProjectTypeGuids(Project project)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
             var hierarchy = ToVsHierarchy(project);
             var aggregatableProject = hierarchy as IVsAggregatableProject;

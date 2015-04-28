@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Windows;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -14,6 +13,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
+using TaskDependentEnvDTEProjects = System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string, System.Collections.Generic.List<EnvDTE.Project>>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -148,8 +148,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return _nuGetAndEnvDTEProjectCache.GetNuGetProjects();
         }
 
-        internal IEnumerable<EnvDTEProject> GetEnvDTEProjects()
+        private IEnumerable<EnvDTEProject> GetEnvDTEProjects()
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             Init();
 
             return _nuGetAndEnvDTEProjectCache.GetEnvDTEProjects();
@@ -159,10 +161,14 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                return _dte != null &&
-                       _dte.Solution != null &&
-                       _dte.Solution.IsOpen &&
-                       !IsSolutionSavedAsRequired();
+                return ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return _dte != null &&
+                           _dte.Solution != null &&
+                           _dte.Solution.IsOpen &&
+                           !IsSolutionSavedAsRequired();
+                });
             }
         }
 
@@ -216,6 +222,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         private bool IsSolutionSavedAsRequired()
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             // Check if user is doing File - New File without saving the solution.
             object value;
             _vsSolution.GetProperty((int)(__VSPROPID.VSPROPID_IsSolutionSaveAsRequired), out value);
@@ -229,23 +237,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return (bool)value;
         }
 
-        /// <summary>
-        /// Invokes the action on the UI thread if one exists.
-        /// </summary>
-        private void InvokeOnUIThread(Action action)
-        {
-            if (Application.Current != null)
-            {
-                Application.Current.Dispatcher.Invoke(action);
-            }
-            else
-            {
-                action();
-            }
-        }
-
         private void OnSolutionOpened()
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             if (SolutionOpening != null)
             {
                 SolutionOpening(this, EventArgs.Empty);
@@ -287,6 +282,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRenamed(EnvDTEProject envDTEProject, string oldName)
         {
+            // This is a solution event. Should be on the UI thread
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (!String.IsNullOrEmpty(oldName) && IsSolutionOpen)
             {
                 EnsureNuGetAndEnvDTEProjectCache();
@@ -318,6 +316,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRemoved(EnvDTEProject envDTEProject)
         {
+            // This is a solution event. Should be on the UI thread
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             RemoveEnvDTEProjectFromCache(envDTEProject.FullName);
             NuGetProject nuGetProject;
             _nuGetAndEnvDTEProjectCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
@@ -330,6 +331,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectAdded(EnvDTEProject envDTEProject)
         {
+            // This is a solution event. Should be on the UI thread
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (IsSolutionOpen && EnvDTEProjectUtility.IsSupported(envDTEProject) && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject))
             {
                 EnsureNuGetAndEnvDTEProjectCache();
@@ -367,13 +371,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void EnsureNuGetAndEnvDTEProjectCache()
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             if (!_nuGetAndEnvDTEProjectCache.IsInitialized && IsSolutionOpen)
             {
                 var factory = GetProjectFactory();
 
                 try
                 {
-                    var supportedProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte.Solution)
+                    var supportedProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte)
                             .Where(project => EnvDTEProjectUtility.IsSupported(project));
 
                     _nuGetAndEnvDTEProjectCache.Initialize(supportedProjects, factory);
@@ -391,6 +397,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void AddEnvDTEProjectToCache(EnvDTEProject envDTEProject)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             if (!EnvDTEProjectUtility.IsSupported(envDTEProject))
             {
                 return;
@@ -443,14 +451,19 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             try
             {
+                // If already initialized, need not be on the UI thread
                 if (!_initialized)
                 {
                     _initialized = true;
 
-                    if (_dte.Solution.IsOpen)
+                    ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        OnSolutionOpened();
-                    }
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        if (_dte.Solution.IsOpen)
+                        {
+                            OnSolutionOpened();
+                        }
+                    });
                 }
             }
             catch (Exception ex)
@@ -474,6 +487,8 @@ namespace NuGet.PackageManagement.VisualStudio
         // REVIEW: This might be inefficient, see what we can do with caching projects until references change
         internal static IEnumerable<EnvDTEProject> GetDependentEnvDTEProjects(IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectsDictionary, EnvDTEProject envDTEProject)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             if (envDTEProject == null)
             {
                 throw new ArgumentNullException("project");
@@ -488,29 +503,29 @@ namespace NuGet.PackageManagement.VisualStudio
             return Enumerable.Empty<EnvDTEProject>();
         }
 
-        internal IDictionary<string, List<EnvDTEProject>> GetDependentEnvDTEProjectsDictionary()
+        internal async TaskDependentEnvDTEProjects GetDependentEnvDTEProjectsDictionaryAsync()
         {
-            Init();
-
-            var dependentEnvDTEProjectsDictionary = new Dictionary<string, List<Project>>();
-
             // Get all of the projects in the solution and build the reverse graph. i.e.
             // if A has a project reference to B (A -> B) the this will return B -> A
             // We need to run this on the ui thread so that it doesn't freeze for websites. Since there might be a 
             // large number of references.
-            ThreadHelper.Generic.Invoke(() =>
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Init();
+
+            var dependentEnvDTEProjectsDictionary = new Dictionary<string, List<Project>>();
+            var envDTEProjects = GetEnvDTEProjects();
+
+            foreach (EnvDTEProject envDTEProj in envDTEProjects)
             {
-                foreach (EnvDTEProject envDTEProj in GetEnvDTEProjects())
+                if (EnvDTEProjectUtility.SupportsReferences(envDTEProj))
                 {
-                    if (EnvDTEProjectUtility.SupportsReferences(envDTEProj))
+                    foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(envDTEProj))
                     {
-                        foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(envDTEProj))
-                        {
-                            AddDependentProject(dependentEnvDTEProjectsDictionary, referencedProject, envDTEProj);
-                        }
+                        AddDependentProject(dependentEnvDTEProjectsDictionary, referencedProject, envDTEProj);
                     }
                 }
-            });
+            }
 
             return dependentEnvDTEProjectsDictionary;
         }
@@ -518,6 +533,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private static void AddDependentProject(IDictionary<string, List<EnvDTEProject>> dependentEnvDTEProjectsDictionary,
             EnvDTEProject envDTEProject, EnvDTEProject dependentEnvDTEProject)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             string uniqueName = EnvDTEProjectUtility.GetUniqueName(envDTEProject);
 
             List<EnvDTEProject> dependentEnvDTEProjects;
@@ -535,6 +552,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (dwCmdUICookie == _solutionLoadedUICookie && fActive == 1)
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
                 OnSolutionOpened();
                 // We must call DeleteMarkedPackageDirectories outside of OnSolutionOpened, because OnSolutionOpened might be called in the constructor
                 // and DeleteOnRestartManager requires VsFileSystemProvider and RepositorySetings which both have dependencies on SolutionManager.

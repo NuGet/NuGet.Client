@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -20,8 +19,10 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Finds the NuGetProject from a DTE project
         /// </summary>
-        public static NuGetProject GetProject(ISolutionManager solutionManager, Project project, VSAPIProjectContext projectContext=null)
+        public static NuGetProject GetProject(ISolutionManager solutionManager, Project project, VSAPIProjectContext projectContext = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (solutionManager == null)
             {
                 throw new ArgumentNullException("solution");
@@ -40,30 +41,6 @@ namespace NuGet.VisualStudio
             }
 
             return nuGetProject;
-        }
-
-        public static string GetInstallPath(ISolutionManager solution, ISettings settings, Project project, PackageIdentity identity)
-        {
-            string installPath = string.Empty;
-
-            NuGetProject nuGetProject = GetProject(solution, project);
-            FolderNuGetProject folderProject = nuGetProject as FolderNuGetProject;
-
-            if (folderProject != null)
-            {
-                installPath = folderProject.GetInstalledPath(identity);
-            }
-            else if (solution != null && settings != null)
-            {
-                string packagesFolder = PackagesFolderPathUtility.GetPackagesFolderPath(solution, settings);
-
-                FolderNuGetProject solutionLevel = new FolderNuGetProject(packagesFolder);
-                installPath = solutionLevel.GetInstalledPath(identity);
-            }
-
-            Debug.Fail("unable to get install path");
-
-            return installPath;
         }
 
         public static IVsPackageMetadata CreateMetadata(string nupkgPath, PackageIdentity package)
@@ -103,22 +80,6 @@ namespace NuGet.VisualStudio
             }
 
             return new VsPackageMetadata(package, title, authors, description, installPath);
-        }
-
-
-        /// <summary>
-        /// Run a package management task sync and unwrap the aggregate exceptions
-        /// </summary>
-        public static void RunSync(Func<Task> createTask)
-        {
-            TaskFactory taskFactory = new TaskFactory(CancellationToken.None,
-                  TaskCreationOptions.None,
-                  TaskContinuationOptions.None,
-                  TaskScheduler.Default);
-
-            var task = taskFactory.StartNew<Task>(createTask);
-
-            task.Unwrap().GetAwaiter().GetResult();
         }
 
         private static string GetNuspecValue(IEnumerable<KeyValuePair<string, string>> metadata, string field)

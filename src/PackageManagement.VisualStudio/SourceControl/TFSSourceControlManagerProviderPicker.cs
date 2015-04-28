@@ -26,18 +26,6 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_cachedTFSSourceControlManagerProvider == null)
             {
                 string assemblyName;
-#if VS10 || VS11
-                if (VsVersionHelper.IsVisualStudio2010)
-                {
-                    assemblyName = "NuGet.TeamFoundationServer10";
-                }
-                else 
-                {
-                    // VS 2012
-                    assemblyName = "NuGet.TeamFoundationServer11";
-                }
-#endif
-
 #if VS12
                 assemblyName = "NuGet.TeamFoundationServer12";
 #endif

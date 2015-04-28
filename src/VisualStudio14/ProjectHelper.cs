@@ -1,27 +1,25 @@
 ﻿using System;
-using System.Threading.Tasks;
 #if VS14
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Designers;
+using Microsoft.VisualStudio.Shell;
 #endif
 using Microsoft.VisualStudio.Shell.Interop;
 using MsBuildProject = Microsoft.Build.Evaluation.Project;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio14
 {
     public static class ProjectHelper
     {
 #if VS14
-        public static async void DoWorkInWriterLock(EnvDTE.Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
+        public static async Task DoWorkInWriterLockAsync(EnvDTE.Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
-            await DoWorkInWriterLock((IVsProject)hierarchy, action);
-            project.Save();
-        }
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        private static async Task DoWorkInWriterLock(IVsProject project, Action<MsBuildProject> action)
-        {
-            UnconfiguredProject unconfiguredProject = GetUnconfiguredProject(project);
+            var vsProject = (IVsProject)hierarchy;
+            UnconfiguredProject unconfiguredProject = GetUnconfiguredProject(vsProject);
             if (unconfiguredProject != null)
             {
                 var service = unconfiguredProject.ProjectService.Services.ProjectLockService;
@@ -42,6 +40,7 @@ namespace NuGet.VisualStudio14
                     }
 
                     await unconfiguredProject.ProjectService.Services.ThreadingPolicy.SwitchToUIThread();
+                    project.Save();
                 }
             }
         }
@@ -69,8 +68,9 @@ namespace NuGet.VisualStudio14
             return context != null ? context.UnconfiguredProject : null;
         }
 #else
-        public static void DoWorkInWriterLock(EnvDTE.Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
+        public static Task DoWorkInWriterLockAsync(EnvDTE.Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
+            return Task.FromResult(0);
         }
 #endif
     }

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TemplateWizard;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -13,6 +15,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Resources;
 using NuGetConsole;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
 {
@@ -208,29 +211,33 @@ namespace NuGet.VisualStudio
             return XmlUtility.LoadSafe(path);
         }
 
-        private void ProjectFinishedGenerating(Project project)
+        private async Task ProjectFinishedGeneratingAsync(Project project)
         {
-            TemplateFinishedGenerating(project);
+            await TemplateFinishedGeneratingAsync(project);
         }
 
-        private void ProjectItemFinishedGenerating(ProjectItem projectItem)
+        private async Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
         {
-            TemplateFinishedGenerating(projectItem.ContainingProject);
+            await TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
         }
 
-        private void TemplateFinishedGenerating(Project project)
+        private async Task TemplateFinishedGeneratingAsync(Project project)
         {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             foreach (var configuration in _configurations)
             {
                 if (configuration.Packages.Any())
                 {
-                    _preinstalledPackageInstaller.PerformPackageInstall(_installer, project, configuration, ShowWarningMessage, ShowErrorMessage);
+                    await _preinstalledPackageInstaller.PerformPackageInstallAsync(_installer, project, configuration, ShowWarningMessage, ShowErrorMessage);
                 }
             }
         }
 
         private void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             if (runKind != WizardRunKind.AsNewProject && runKind != WizardRunKind.AsNewItem)
             {
                 ShowErrorMessage(VsResources.TemplateWizard_InvalidWizardRunKind);
@@ -332,12 +339,22 @@ namespace NuGet.VisualStudio
 
         void IWizard.ProjectFinishedGenerating(Project project)
         {
-            ProjectFinishedGenerating(project);
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                await ProjectFinishedGeneratingAsync(project);
+            });
         }
 
         void IWizard.ProjectItemFinishedGenerating(ProjectItem projectItem)
         {
-            ProjectItemFinishedGenerating(projectItem);
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                await ProjectItemFinishedGeneratingAsync(projectItem);
+            });
         }
 
         void IWizard.RunFinished()
@@ -346,8 +363,13 @@ namespace NuGet.VisualStudio
 
         void IWizard.RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
-            // alternatively could get body of WizardData element from replacementsDictionary["$wizarddata$"] instead of parsing vstemplate file.
-            RunStarted(automationObject, replacementsDictionary, runKind, customParams);
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // alternatively could get body of WizardData element from replacementsDictionary["$wizarddata$"] instead of parsing vstemplate file.
+                RunStarted(automationObject, replacementsDictionary, runKind, customParams);
+            });
         }
 
         bool IWizard.ShouldAddProjectItem(string filePath)

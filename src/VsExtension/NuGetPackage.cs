@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
 
 using EnvDTE;
 using Microsoft.VisualStudio;
@@ -41,7 +40,7 @@ namespace NuGetVSExtension
     //    Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the debug tool window, which is present in both VS and VWD
     //    Orientation = ToolWindowOrientation.Right)]
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
-    [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)] 
+    [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
@@ -53,7 +52,7 @@ namespace NuGetVSExtension
     [FontAndColorsRegistration(
         "Package Manager Console",
         NuGetConsole.Implementation.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
-        "{" + GuidList.guidNuGetPkgString + "}")]    
+        "{" + GuidList.guidNuGetPkgString + "}")]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : Package, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -161,7 +160,7 @@ namespace NuGetVSExtension
         {
             get
             {
-                if(_sourceControlManagerProvider == null)
+                if (_sourceControlManagerProvider == null)
                 {
                     _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
                 }
@@ -173,7 +172,7 @@ namespace NuGetVSExtension
         {
             get
             {
-                if(_vsSourceControlTracker == null)
+                if (_vsSourceControlTracker == null)
                 {
                     _vsSourceControlTracker = ServiceLocator.GetInstanceSafe<IVsSourceControlTracker>();
                 }
@@ -282,8 +281,8 @@ namespace NuGetVSExtension
 
             _outputConsoleLogger = new OutputConsoleLogger(this);
             _uiProjectContext = new NuGetUIProjectContext(
-                _outputConsoleLogger, 
-                SourceControlManagerProvider, 
+                _outputConsoleLogger,
+                SourceControlManagerProvider,
                 CommonOperations);
 
             /* ****
@@ -466,7 +465,7 @@ namespace NuGetVSExtension
                     {
                         continue;
                     }
-                   
+
                     var existingProject = projects.First();
                     var projectName = existingProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
                     if (String.Equals(projectName, project.Name, StringComparison.OrdinalIgnoreCase))
@@ -480,7 +479,9 @@ namespace NuGetVSExtension
         }
 
         private void ShowDocWindow(Project project, string searchText)
-        {   
+        {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             var windowFrame = FindExistingWindowFrame(project);
             if (windowFrame == null)
             {
@@ -506,6 +507,8 @@ namespace NuGetVSExtension
 
         private IVsWindowFrame CreateNewWindowFrame(Project project)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             var vsProject = VsHierarchyUtility.ToVsHierarchy(project);
             var documentName = project.UniqueName;
 
@@ -562,7 +565,7 @@ namespace NuGetVSExtension
             var nugetProject = solutionManager.GetNuGetProject(project.Name);
 
             var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
-            var uiContext = uiContextFactory.Create(this, new [] { nugetProject });
+            var uiContext = uiContextFactory.Create(this, new[] { nugetProject });
 
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
             var uiController = uiFactory.Create(uiContext, _uiProjectContext);
@@ -579,7 +582,7 @@ namespace NuGetVSExtension
                 CultureInfo.CurrentCulture,
                 Resx.Label_NuGetWindowCaption,
                 project.Name // **** myDoc.Target.Name);
-                );                
+                );
 
             IVsWindowFrame windowFrame;
             IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
@@ -604,6 +607,8 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             string parameterString = null;
             OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
             if (null != args)
@@ -613,10 +618,10 @@ namespace NuGetVSExtension
             var searchText = GetSearchText(parameterString);
 
             // *** temp code            
-            Project project =  NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
+            Project project = NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
 
             if (project != null &&
-                !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) && 
+                !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) &&
                 EnvDTEProjectUtility.IsSupported(project))
             {
                 ShowDocWindow(project, searchText);
@@ -897,7 +902,7 @@ namespace NuGetVSExtension
             get
             {
                 Project project = NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) 
+                return project != null && !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project)
                     && EnvDTEProjectUtility.IsSupported(project);
             }
         }
@@ -920,7 +925,7 @@ namespace NuGetVSExtension
             {
                 return new NuGetSearchProvider(_mcs, _managePackageDialogCommand, _managePackageForSolutionDialogCommand);
             }
-            return null; 
+            return null;
         }
 
         private void OnBeginShutDown()

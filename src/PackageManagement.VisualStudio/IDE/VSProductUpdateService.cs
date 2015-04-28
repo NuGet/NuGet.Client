@@ -8,19 +8,19 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public void CheckForAvailableUpdateAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void DeclineUpdate(bool doNotRemindAgain)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void Update()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
-        public event EventHandler<ProductUpdateAvailableEventArgs> UpdateAvailable;
+        public event EventHandler<ProductUpdateAvailableEventArgs> UpdateAvailable = delegate { };
     }
 }

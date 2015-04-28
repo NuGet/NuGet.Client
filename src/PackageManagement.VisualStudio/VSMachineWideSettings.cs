@@ -1,15 +1,17 @@
-﻿using EnvDTE;
-using NuGet.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IMachineWideSettings))]
     public class VsMachineWideSettings : IMachineWideSettings
     {
-        Lazy<IEnumerable<Settings>> _settings;
+        AsyncLazy<IEnumerable<Settings>> _settings;
 
         [ImportingConstructor]
         public VsMachineWideSettings()
@@ -20,23 +22,25 @@ namespace NuGet.PackageManagement.VisualStudio
         internal VsMachineWideSettings(DTE dte)
         {
             var baseDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-            _settings = new Lazy<IEnumerable<Settings>>(
-                () =>
+            _settings = new AsyncLazy<IEnumerable<Settings>>(async () =>
                 {
-
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return NuGet.Configuration.Settings.LoadMachineWideSettings(
-                        baseDirectory,
-                        "VisualStudio",
-                        dte.Version,
-                        VSVersionHelper.GetSKU());
-                });
+                      baseDirectory,
+                      "VisualStudio",
+                      dte.Version,
+                      VSVersionHelper.GetSKU());
+                }, ThreadHelper.JoinableTaskFactory);
         }
 
         public IEnumerable<Settings> Settings
         {
             get
             {
-                return _settings.Value;
+                return ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    return await _settings.GetValueAsync();
+                });
             }
         }
     }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using EnvDTESolution = EnvDTE.Solution;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItem = EnvDTE.ProjectItem;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
@@ -16,11 +16,23 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Get the list of all supported projects in the current solution. This method
         /// recursively iterates through all projects.
         /// </summary>
-        public static IEnumerable<EnvDTEProject> GetAllEnvDTEProjects(EnvDTESolution envDTESolution)
+        public static IEnumerable<EnvDTEProject> GetAllEnvDTEProjects(DTE dte)
         {
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var result = await GetAllEnvDTEProjectsAsync(dte);
+                return result;
+            });
+        }
+
+        public static async Task<IEnumerable<EnvDTEProject>> GetAllEnvDTEProjectsAsync(DTE dte)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var envDTESolution = dte.Solution;
             if (envDTESolution == null || !envDTESolution.IsOpen)
             {
-                yield break;
+                return Enumerable.Empty<EnvDTEProject>();
             }
 
             var envDTEProjects = new Stack<EnvDTEProject>();
@@ -32,13 +44,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
+            var resultantEnvDTEProjects = new List<EnvDTEProject>();
             while (envDTEProjects.Any())
             {
                 EnvDTEProject envDTEProject = envDTEProjects.Pop();
 
                 if (EnvDTEProjectUtility.IsSupported(envDTEProject))
                 {
-                    yield return envDTEProject;
+                    resultantEnvDTEProjects.Add(envDTEProject);
                 }
                 else if (EnvDTEProjectUtility.IsExplicitlyUnsupported(envDTEProject))
                 {
@@ -78,6 +91,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
             }
+
+            return resultantEnvDTEProjects;
         }
     }
 }

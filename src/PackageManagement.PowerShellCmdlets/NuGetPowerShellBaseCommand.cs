@@ -369,7 +369,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             // Get all DTE projects in the solution and compare by CustomUnique names, especially for projects under solution folders.
-            IEnumerable<Project> allDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution); 
+            IEnumerable<Project> allDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE); 
             if (allDTEProjects != null)
             {
                 defaultDTEProject = allDTEProjects.Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), customUniqueName)).FirstOrDefault();
@@ -388,7 +388,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected IEnumerable<Project> GetProjectsByName(string[] projectNames)
         {
             var allValidProjectNames = GetAllValidProjectNames().ToList();
-            var allDteProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE.Solution);
+            var allDteProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
 
             foreach (string projectName in projectNames)
             {

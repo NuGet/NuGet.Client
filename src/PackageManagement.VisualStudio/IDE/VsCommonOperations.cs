@@ -3,6 +3,8 @@ using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -28,13 +30,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException("filePath");
             }
 
-            if (_dte.ItemOperations != null && File.Exists(filePath))
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                Window window = _dte.ItemOperations.OpenFile(filePath);
-                return Task.FromResult(0);
-            }
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return Task.FromResult(0);
+                if (_dte.ItemOperations != null && File.Exists(filePath))
+                {
+                    Window window = _dte.ItemOperations.OpenFile(filePath);
+                    return Task.FromResult(0);
+                }
+
+                return Task.FromResult(0);
+            });
         }
     }
 }

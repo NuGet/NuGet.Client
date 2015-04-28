@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using VSLangProj;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItem = EnvDTE.ProjectItem;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class FSharpProjectSystem: VSMSBuildNuGetProjectSystem
+    public class FSharpProjectSystem : VSMSBuildNuGetProjectSystem
     {
         public FSharpProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
             : base(envDTEProject, nuGetProjectContext)
@@ -16,11 +19,11 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to swallow this exception. Read the comment below")]
-        protected override void AddFileToProject(string path)
+        protected override async Task AddFileToProjectAsync(string path)
         {
             try
             {
-                base.AddFileToProject(path);
+                await base.AddFileToProjectAsync(path);
             }
             catch
             {
@@ -36,14 +39,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override void AddGacReference(string name)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
             // The F# project system expects assemblies that start with * to be framework assemblies.
             base.AddGacReference("*" + name);
         }
 
         public override bool FileExistsInProject(string path)
         {
-            EnvDTEProjectItem projectItem = EnvDTEProjectUtility.GetProjectItem(EnvDTEProject,path);
-            return (projectItem != null);
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                EnvDTEProjectItem projectItem = await EnvDTEProjectUtility.GetProjectItemAsync(EnvDTEProject, path);
+                return (projectItem != null);
+            });
         }
 
         /// <summary>
@@ -55,11 +64,18 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="name"></param>
         public override void RemoveReference(string name)
         {
-            RemoveReferenceCore(name, EnvDTEProjectUtility.GetReferences(EnvDTEProject));
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                RemoveReferenceCore(name, EnvDTEProjectUtility.GetReferences(EnvDTEProject));
+            });
         }
 
-        internal void RemoveReferenceCore(string name, References references)
+        private void RemoveReferenceCore(string name, References references)
         {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
             try
             {
                 var referenceName = System.IO.Path.GetFileNameWithoutExtension(name);

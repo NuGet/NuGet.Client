@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -18,6 +19,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Resources;
 using LegacyNuGet = Legacy.NuGet;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
 {
@@ -137,13 +139,15 @@ namespace NuGet.VisualStudio
         /// <param name="repositorySettings">The repository settings for the packages being installed.</param>
         /// <param name="warningHandler">An action that accepts a warning message and presents it to the user, allowing execution to continue.</param>
         /// <param name="errorHandler">An action that accepts an error message and presents it to the user, allowing execution to continue.</param>
-        internal void PerformPackageInstall(
+        internal async Task PerformPackageInstallAsync(
             IVsPackageInstaller packageInstaller,
             Project project,
             PreinstalledPackageConfiguration configuration,
             Action<string> warningHandler,
             Action<string> errorHandler)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             string repositoryPath = configuration.RepositoryPath;
             var failedPackageErrors = new List<string>();
 
@@ -155,7 +159,7 @@ namespace NuGet.VisualStudio
             repos.AddFromRepository(repository);
 
             // store expanded node state
-            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = VsHierarchyHelper.GetAllExpandedNodes(_solutionManager);
+            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = await VsHierarchyHelper.GetAllExpandedNodesAsync(_solutionManager);
 
             foreach (var package in configuration.Packages)
             {
@@ -191,7 +195,7 @@ namespace NuGet.VisualStudio
                         projectContext.PackageExtractionContext.UseLegacyPackageInstallPath = true;
 
                         // This runs from the UI thread
-                        PackageManagementHelpers.RunSync(async () => await _installer.InstallInternal(project, toInstall, repos, projectContext, package.IgnoreDependencies, CancellationToken.None));
+                        await _installer.InstallInternalAsync(project, toInstall, repos, projectContext, package.IgnoreDependencies, CancellationToken.None);
                     }
                     catch (InvalidOperationException exception)
                     {
@@ -235,7 +239,7 @@ namespace NuGet.VisualStudio
             }
 
             // collapse nodes
-            VsHierarchyHelper.CollapseAllNodes(_solutionManager, expandedNodes);
+            await VsHierarchyHelper.CollapseAllNodesAsync(_solutionManager, expandedNodes);
         }
 
         /// <summary>
@@ -254,7 +258,7 @@ namespace NuGet.VisualStudio
         /// Adds refresh files to the specified project for all assemblies references belonging to the packages specified by packageNames.
         /// </summary>
         /// <param name="project">The project.</param>
-        /// <param name="packagesFileSystem">The file system pointing to 'packages' folder under the solution.</param>
+        /// <param name="repositoryPath">The file system pointing to 'packages' folder under the solution.</param>
         /// <param name="packageNames">The package names.</param>
         private void AddRefreshFilesForReferences(Project project, string repositoryPath, IEnumerable<PackageIdentity> packageNames)
         {
@@ -275,8 +279,6 @@ namespace NuGet.VisualStudio
 
             VSAPIProjectContext context = new VSAPIProjectContext();
             WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(project, context);
-
-            var root = EnvDTEProjectUtility.GetFullPath(project);
 
             foreach (var packageName in packageNames)
             {

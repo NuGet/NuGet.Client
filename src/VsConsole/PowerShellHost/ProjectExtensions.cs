@@ -3,6 +3,7 @@ using EnvDTE;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
 using System;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -14,7 +15,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps")]
         public static string GetCustomUniqueName(PSObject psObject)
         {
-            return EnvDTEProjectUtility.GetCustomUniqueName((EnvDTE.Project)psObject.BaseObject);
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                return EnvDTEProjectUtility.GetCustomUniqueName((EnvDTE.Project)psObject.BaseObject);
+            });
         }
 
         /// <summary>

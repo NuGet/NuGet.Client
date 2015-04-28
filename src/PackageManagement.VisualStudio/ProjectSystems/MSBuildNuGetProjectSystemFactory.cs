@@ -1,10 +1,9 @@
-﻿using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using IMSBuildNuGetProjectSystemThunk = System.Func<EnvDTE.Project, NuGet.ProjectManagement.INuGetProjectContext, NuGet.ProjectManagement.IMSBuildNuGetProjectSystem>;
 
@@ -25,6 +24,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static IMSBuildNuGetProjectSystem CreateMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (envDTEProject == null)
             {
                 throw new ArgumentNullException("project");

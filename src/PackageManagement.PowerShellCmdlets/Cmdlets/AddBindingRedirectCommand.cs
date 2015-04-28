@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
 
@@ -27,47 +28,50 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
-            CheckForSolutionOpen();
-
-            var projects = new List<Project>();
-
-            // if no project specified, use default
-            if (ProjectName == null)
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                Project defaultProject = GetDefaultProject();
+                CheckForSolutionOpen();
 
-                // if no default project (empty solution), throw terminating
-                if (defaultProject == null)
+                var projects = new List<Project>();
+
+                // if no project specified, use default
+                if (ProjectName == null)
                 {
-                    ErrorHandler.ThrowNoCompatibleProjectsTerminatingError();
+                    Project defaultProject = GetDefaultProject();
+
+                    // if no default project (empty solution), throw terminating
+                    if (defaultProject == null)
+                    {
+                        ErrorHandler.ThrowNoCompatibleProjectsTerminatingError();
+                    }
+
+                    projects.Add(defaultProject);
+                }
+                else
+                {
+                    // get matching projects, expanding wildcards
+                    projects.AddRange(GetProjectsByName(ProjectName));
                 }
 
-                projects.Add(defaultProject);
-            }
-            else
-            {
-                // get matching projects, expanding wildcards
-                projects.AddRange(GetProjectsByName(ProjectName));
-            }
+                // Create a new app domain so we don't load the assemblies into the host app domain
+                AppDomain domain = AppDomain.CreateDomain("domain");
 
-            // Create a new app domain so we don't load the assemblies into the host app domain
-            AppDomain domain = AppDomain.CreateDomain("domain");
-
-            try
-            {
-                foreach (Project project in projects)
+                try
                 {
-                    var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-                    var redirects = RuntimeHelpers.AddBindingRedirects(VsSolutionManager, project, domain, projectAssembliesCache, _frameworkMultiTargeting, this);
+                    foreach (Project project in projects)
+                    {
+                        var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+                        var redirects = await RuntimeHelpers.AddBindingRedirectsAsync(VsSolutionManager, project, domain, projectAssembliesCache, _frameworkMultiTargeting, this);
 
-                    // Print out what we did
-                    WriteObject(redirects, enumerateCollection: true);
+                        // Print out what we did
+                        WriteObject(redirects, enumerateCollection: true);
+                    }
                 }
-            }
-            finally
-            {
-                AppDomain.Unload(domain);
-            }
+                finally
+                {
+                    AppDomain.Unload(domain);
+                }
+            });
         }
     }
 }

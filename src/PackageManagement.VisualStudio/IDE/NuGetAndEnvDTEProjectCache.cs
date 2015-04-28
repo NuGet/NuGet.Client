@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
@@ -118,6 +119,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>The project name of the added project.</returns>
         public EnvDTEProjectName AddProject(EnvDTEProject project, VSNuGetProjectFactory factory)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // First create a project name from the project
             var EnvDTEProjectName = new EnvDTEProjectName(project);
 
@@ -209,6 +212,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void Initialize(IEnumerable<Project> projects, VSNuGetProjectFactory factory)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             foreach (EnvDTEProject project in projects)
             {
                 AddProject(project, factory);

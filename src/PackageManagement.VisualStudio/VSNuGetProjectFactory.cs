@@ -29,6 +29,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public NuGetProject CreateNuGetProject(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (nuGetProjectContext == null)
             {
                 nuGetProjectContext = EmptyNuGetProjectContext;
@@ -42,11 +44,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
             var folderNuGetProjectFullPath = _packagesPath();
-            var packagesConfigFiles = EnvDTEProjectUtility.GetPackageReferenceFileFullPaths(envDTEProject);
 
-            // Item1 is path to "packages.<projectName>.config". Item2 is path to "packages.config"
-            string packagesConfigWithProjectNameFullPath = packagesConfigFiles.Item1;
-            string packagesConfigFullPath = packagesConfigFiles.Item2;
+            var packagesConfigFullPath = EnvDTEProjectUtility.GetPackagesConfigFullPath(envDTEProject);
+            var packagesConfigWithProjectNameFullPath = EnvDTEProjectUtility.GetPackagesConfigWithProjectNameFullPath(envDTEProject);
 
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath,
                 File.Exists(packagesConfigWithProjectNameFullPath) ? packagesConfigWithProjectNameFullPath : packagesConfigFullPath);
@@ -56,6 +56,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static INuGetPackageManager GetProjectKProject(EnvDTEProject project)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var vsProject = VsHierarchyUtility.ToVsHierarchy(project) as IVsProject;
             if (vsProject == null)
             {
