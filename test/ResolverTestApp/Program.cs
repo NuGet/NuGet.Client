@@ -57,7 +57,7 @@ namespace ResolverTestApp
             foreach (var repo in repos)
             {
                 // get the resolver data resource
-                var depInfo = repo.GetResource<DepedencyInfoResource>();
+                var depInfo = repo.GetResource<DependencyInfoResource>();
 
                 // resources can always be null
                 if (depInfo != null)

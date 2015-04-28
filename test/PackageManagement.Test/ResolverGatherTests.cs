@@ -225,7 +225,7 @@ namespace NuGet.Test
         public List<PackageDependencyInfo> Packages { get; set; }
 
         public TestDependencyInfoProvider(List<PackageDependencyInfo> packages) 
-            : base(typeof(DepedencyInfoResource))
+            : base(typeof(DependencyInfoResource))
         {
             Packages = packages;
         }
@@ -240,7 +240,7 @@ namespace NuGet.Test
     /// <summary>
     /// Resolves against a local set of packages
     /// </summary>
-    internal class TestDependencyInfo : DepedencyInfoResource
+    internal class TestDependencyInfo : DependencyInfoResource
     {
         public List<PackageDependencyInfo> Packages { get; set; }
 

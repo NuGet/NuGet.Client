@@ -1,18 +1,15 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-    // TODO: make this internal
-
     /// <summary>
     /// Aggregate repository helper for the Resolver Gather step.
     /// </summary>
@@ -81,17 +78,17 @@ namespace NuGet.PackageManagement
 
             // get the dependency info resources for each repo
             // primary and all may share the same resources
-            var depResources = new Dictionary<SourceRepository, Task<DepedencyInfoResource>>();
+            var depResources = new Dictionary<SourceRepository, Task<DependencyInfoResource>>();
             foreach (var source in allSources.Concat(primarySources))
             {
                 if (!depResources.ContainsKey(source))
                 {
-                    depResources.Add(source, source.GetResourceAsync<DepedencyInfoResource>(token));
+                    depResources.Add(source, source.GetResourceAsync<DependencyInfoResource>(token));
                 }
             }
 
             // a resource may be null, if it is exclude this source from the gather
-            var primaryDependencyResources = new List<Tuple<SourceRepository, DepedencyInfoResource>>();
+            var primaryDependencyResources = new List<Tuple<SourceRepository, DependencyInfoResource>>();
 
             foreach (var source in primarySources)
             {
@@ -99,11 +96,11 @@ namespace NuGet.PackageManagement
 
                 if (source != null)
                 {
-                    primaryDependencyResources.Add(new Tuple<SourceRepository, DepedencyInfoResource>(source, resource));
+                    primaryDependencyResources.Add(new Tuple<SourceRepository, DependencyInfoResource>(source, resource));
                 }
             }
 
-            var allDependencyResources = new List<Tuple<SourceRepository, DepedencyInfoResource>>();
+            var allDependencyResources = new List<Tuple<SourceRepository, DependencyInfoResource>>();
 
             foreach (var source in allSources)
             {
@@ -111,7 +108,7 @@ namespace NuGet.PackageManagement
 
                 if (source != null)
                 {
-                    allDependencyResources.Add(new Tuple<SourceRepository, DepedencyInfoResource>(source, resource));
+                    allDependencyResources.Add(new Tuple<SourceRepository, DependencyInfoResource>(source, resource));
                 }
             }
 
@@ -171,7 +168,7 @@ namespace NuGet.PackageManagement
         private static async Task ProcessMissingPackageIdentities(HashSet<SourceDependencyInfo> combinedResults,
             IEnumerable<PackageIdentity> targets,
             Dictionary<SourceRepository, HashSet<string>> sourceToPackageIdsChecked,
-            List<Tuple<SourceRepository, DepedencyInfoResource>> dependencyResources,
+            List<Tuple<SourceRepository, DependencyInfoResource>> dependencyResources,
             NuGetFramework targetFramework,
             ResolutionContext context,
             bool ignoreExceptions,
@@ -181,7 +178,7 @@ namespace NuGet.PackageManagement
             var results = new Queue<Tuple<SourceRepository, Task<IEnumerable<PackageDependencyInfo>>>>();
 
             // search against the target package
-            foreach (Tuple<SourceRepository, DepedencyInfoResource> resourceTuple in dependencyResources)
+            foreach (Tuple<SourceRepository, DependencyInfoResource> resourceTuple in dependencyResources)
             {
                 token.ThrowIfCancellationRequested();
 
@@ -242,7 +239,7 @@ namespace NuGet.PackageManagement
         private static async Task<bool> ProcessMissingPackageIds(HashSet<SourceDependencyInfo> combinedResults,
             HashSet<string> allDiscoveredIds,
             Dictionary<SourceRepository, HashSet<string>> sourceToPackageIdsChecked,
-            List<Tuple<SourceRepository, DepedencyInfoResource>> dependencyResources,
+            List<Tuple<SourceRepository, DependencyInfoResource>> dependencyResources,
             NuGetFramework targetFramework,
             ResolutionContext context,
             bool ignoreExceptions,
@@ -262,7 +259,7 @@ namespace NuGet.PackageManagement
                 if(resolverResTuple == null)
                     continue;
 
-                DepedencyInfoResource resolverRes = resolverResTuple.Item2;
+                DependencyInfoResource resolverRes = resolverResTuple.Item2;
 
                 // check each source for packages discovered on other sources if we have no checked here already
                 foreach (string missingId in allDiscoveredIds.Except(sourceToPackageIdsChecked[source], StringComparer.OrdinalIgnoreCase).ToArray())
@@ -352,7 +349,7 @@ namespace NuGet.PackageManagement
         }
 
         private static void UpdateSourceToPackageIdsChecked(Dictionary<SourceRepository, HashSet<string>> sourceToPackageIdsChecked,
-            List<Tuple<SourceRepository, DepedencyInfoResource>> dependencyResources)
+            List<Tuple<SourceRepository, DependencyInfoResource>> dependencyResources)
         {
             foreach (var source in dependencyResources)
             {

@@ -971,7 +971,7 @@ namespace NuGet.PackageManagement
         {
             try
             {
-                var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DepedencyInfoResource>();
+                var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>();
                 return await dependencyInfoResource.ResolvePackages(packageIdentities, nuGetFramework, includePrerelease);
             }
             catch (Exception ex)
