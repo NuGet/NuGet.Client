@@ -21,7 +21,7 @@ using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using ILogger = Microsoft.Framework.Logging.ILogger;
 
-namespace NuGet.Strawman.Commands
+namespace NuGet.Commands
 {
     public class RestoreCommand
     {

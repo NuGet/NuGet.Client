@@ -3,7 +3,7 @@
   "description": "Strawman command line application for NuGet 3 restore",
 
   "dependencies": {
-    "NuGet.Strawman.Commands": "3.0.0-*",
+    "NuGet.Commands": "3.0.0-*",
     "Microsoft.Framework.CommandLineUtils": {
       "version": "1.0.0-*",
       "type": "build"

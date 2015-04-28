@@ -10,7 +10,7 @@ using DefaultPackagePathResolver = NuGet.Packaging.DefaultPackagePathResolver;
 using Microsoft.Framework.Logging;
 using NuGet.Common;
 
-namespace NuGet.Strawman.Commands
+namespace NuGet.Commands
 {
     internal static class NuGetPackageUtils
     {

@@ -3,11 +3,10 @@ using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
-using NuGet.Strawman.Commands;
+using NuGet.Commands;
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Framework.Logging.Console;
 
 namespace NuGet.CommandLine
 {

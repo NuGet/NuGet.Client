@@ -8,7 +8,7 @@ using System.Linq;
 using NuGet.RuntimeModel;
 using NuGet.Client;
 
-namespace NuGet.Strawman.Commands
+namespace NuGet.Commands
 {
     public class RestoreTargetGraph
     {

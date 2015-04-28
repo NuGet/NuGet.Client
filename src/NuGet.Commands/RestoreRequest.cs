@@ -4,7 +4,7 @@ using NuGet.ProjectModel;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NuGet.Strawman.Commands
+namespace NuGet.Commands
 {
     public class RestoreRequest
     {

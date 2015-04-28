@@ -1,6 +1,6 @@
 ﻿using Microsoft.Framework.Logging;
 
-namespace NuGet.Strawman.Commands
+namespace NuGet.Commands
 {
     public class NuGetLoggerAdapter : NuGet.Client.ILogger
     {
