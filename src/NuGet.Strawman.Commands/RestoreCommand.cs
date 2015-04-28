@@ -238,6 +238,7 @@ namespace NuGet.Strawman.Commands
 
             IList<string> files;
             var contentItems = new ContentItemCollection();
+            HashSet<string> referenceFilter = null;
             using (var nupkgStream = File.OpenRead(package.ZipPath))
             {
                 var packageReader = new PackageReader(nupkgStream);
@@ -254,6 +255,12 @@ namespace NuGet.Strawman.Commands
                     {
                         lockFileLib.Dependencies = set.ToList();
                     }
+                }
+
+                var referenceSet = packageReader.GetReferenceItems().GetNearest(framework);
+                if(referenceSet != null)
+                {
+                    referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
                 }
 
                 // TODO: Remove this when we do #596
@@ -303,6 +310,15 @@ namespace NuGet.Strawman.Commands
             {
                 lockFileLib.CompileTimeAssemblies.Clear();
                 lockFileLib.CompileTimeAssemblies.Add(contractPath);
+            }
+
+            // Apply filters from the <references> node in the nuspec
+            if(referenceFilter != null)
+            {
+                // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
+                // runtimes/* is unaffected (it doesn't start with lib/)
+                lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.StartsWith("lib/") || referenceFilter.Contains(p)).ToList();
+                lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.StartsWith("lib/") || referenceFilter.Contains(p)).ToList();
             }
 
             return lockFileLib;

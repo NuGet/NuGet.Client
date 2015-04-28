@@ -7,7 +7,7 @@ namespace NuGet.ContentModel
 {
     /// <summary>
     /// Defines a property that can be used in Content Model query patterns
-    /// <seealso cref="ContentPatternDefinition"/>
+    /// <seealso cref="PatternSet"/>
     /// </summary>
     public class ContentPropertyDefinition
     {

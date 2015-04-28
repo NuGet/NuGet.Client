@@ -6,26 +6,56 @@ using System.Linq;
 namespace NuGet.ContentModel
 {
     /// <summary>
-    /// A pattern that can be used to query a set of file paths for items matching a provided criteria.
+    /// A set of patterns that can be used to query a set of file paths for items matching a provided criteria.
     /// </summary>
-    /// <remarks>
-    /// The pattern is defined as a sequence of literal path strings that must match exactly and property references,
-    /// wrapped in {} characters, which are tested for compatibility with the consumer-provided criteria.
-    /// <seealso cref="ContentPropertyDefinition"/>
-    /// </remarks>
-    public class ContentPatternDefinition
+    public class PatternSet
     {
-        public ContentPatternDefinition(IReadOnlyDictionary<string, ContentPropertyDefinition> properties, IEnumerable<string> groupPatterns, IEnumerable<string> pathPatterns)
+        public PatternSet(IReadOnlyDictionary<string, ContentPropertyDefinition> properties, IEnumerable<PatternDefinition> groupPatterns, IEnumerable<PatternDefinition> pathPatterns)
         {
             GroupPatterns = groupPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<string>(); 
             PathPatterns = pathPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<string>();
             PropertyDefinitions = properties;
         }
 
-        public IEnumerable<string> GroupPatterns { get; }
+        /// <summary>
+        /// Patterns used to select a group of items that matches the criteria
+        /// </summary>
+        public IEnumerable<PatternDefinition> GroupPatterns { get; }
 
-        public IEnumerable<string> PathPatterns { get; }
+        /// <summary>
+        /// Patterns used to select individual items that match the criteria
+        /// </summary>
+        public IEnumerable<PatternDefinition> PathPatterns { get; }
 
+        /// <summary>
+        /// Property definitions used for matching patterns
+        /// </summary>
         public IReadOnlyDictionary<string, ContentPropertyDefinition> PropertyDefinitions { get; set; }
+    }
+
+    /// <summary>
+    /// A pattern that can be used to match file paths given a provided criteria. 
+    /// </summary>
+    /// <remarks>
+    /// The pattern is defined as a sequence of literal path strings that must match exactly and property references,
+    /// wrapped in {} characters, which are tested for compatibility with the consumer-provided criteria.
+    /// <seealso cref="ContentPropertyDefinition"/>
+    /// </remarks>
+    public class PatternDefinition
+    {
+        public string Pattern { get; }
+        public IReadOnlyDictionary<string, object> Defaults { get; }
+
+        public PatternDefinition(string pattern) : this(pattern, Enumerable.Empty<KeyValuePair<string, object>>()) { }
+        public PatternDefinition(string pattern, IEnumerable<KeyValuePair<string, object>> defaults)
+        {
+            Pattern = pattern;
+            Defaults = new ReadOnlyDictionary<string, object>(defaults.ToDictionary(p => p.Key, p => p.Value));
+        }
+
+        public static implicit operator PatternDefinition(string pattern)
+        {
+            return new PatternDefinition(pattern);
+        }
     }
 }

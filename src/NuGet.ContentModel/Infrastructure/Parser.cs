@@ -5,11 +5,13 @@ namespace NuGet.ContentModel.Infrastructure
 {
     public class PatternExpression
     {
-        private List<Segment> _segments = new List<Segment>();
+        private readonly List<Segment> _segments = new List<Segment>();
+        private readonly IReadOnlyDictionary<string, object> _defaults;
 
-        public PatternExpression(string pattern)
+        public PatternExpression(PatternDefinition pattern)
         {
-            Initialize(pattern);
+            _defaults = pattern.Defaults;
+            Initialize(pattern.Pattern);
         }
 
         private void Initialize(string pattern)
@@ -55,7 +57,18 @@ namespace NuGet.ContentModel.Infrastructure
                 }
                 return null;
             }
-            return startIndex == path.Length ? item : null;
+
+            if(startIndex == path.Length)
+            {
+                // Successful match!
+                // Apply defaults from the pattern
+                foreach(var pair in _defaults)
+                {
+                    item.Properties[pair.Key] = pair.Value;
+                }
+                return item;
+            }
+            return null;
         }
 
         private abstract class Segment

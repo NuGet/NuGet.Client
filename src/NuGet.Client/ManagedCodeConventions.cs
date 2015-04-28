@@ -25,9 +25,9 @@ namespace NuGet.Client
 
         private RuntimeGraph _runtimeGraph;
 
-        public CriteriaSet Criteria { get; }
+        public ManagedCodeCriteria Criteria { get; }
         public IReadOnlyDictionary<string, ContentPropertyDefinition> Properties { get; }
-        public PatternSet Patterns { get; }
+        public ManagedCodePatterns Patterns { get; }
 
         public ManagedCodeConventions(RuntimeGraph runtimeGraph)
         {
@@ -44,8 +44,8 @@ namespace NuGet.Client
 
             Properties = new ReadOnlyDictionary<string, ContentPropertyDefinition>(props);
 
-            Criteria = new CriteriaSet(this);
-            Patterns = new PatternSet(this);
+            Criteria = new ManagedCodeCriteria(this);
+            Patterns = new ManagedCodePatterns(this);
         }
 
         private bool RuntimeIdentifier_CompatibilityTest(object criteria, object available)
@@ -120,11 +120,11 @@ namespace NuGet.Client
                                Math.Max(version.Revision, 0));
         }
 
-        public class CriteriaSet
+        public class ManagedCodeCriteria
         {
             private ManagedCodeConventions _conventions;
 
-            internal CriteriaSet(ManagedCodeConventions conventions)
+            internal ManagedCodeCriteria(ManagedCodeConventions conventions)
             {
                 _conventions = conventions;
             }
@@ -164,45 +164,53 @@ namespace NuGet.Client
             }
         }
 
-        public class PatternSet
+        public class ManagedCodePatterns
         {
-            public ContentPatternDefinition RuntimeAssemblies { get; }
-            public ContentPatternDefinition CompileAssemblies { get; }
-            public ContentPatternDefinition NativeLibraries { get; }
+            public PatternSet RuntimeAssemblies { get; }
+            public PatternSet CompileAssemblies { get; }
+            public PatternSet NativeLibraries { get; }
 
-            internal PatternSet(ManagedCodeConventions conventions)
+            internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
-                RuntimeAssemblies = new ContentPatternDefinition(
+                RuntimeAssemblies = new PatternSet(
                     conventions.Properties,
-                    groupPatterns: new[]
+                    groupPatterns: new PatternDefinition[]
                     {
                         "runtimes/{rid}/lib/{tfm}/{any?}",
                         "lib/{tfm}/{any?}",
+                        new PatternDefinition("lib/{assembly?}", defaults: new Dictionary<string, object> 
+                        {
+                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                        })
                     },
-                    pathPatterns: new[]
+                    pathPatterns: new PatternDefinition[]
                     {
                         "runtimes/{rid}/lib/{tfm}/{assembly}",
                         "lib/{tfm}/{assembly}",
+                        new PatternDefinition("lib/{assembly}", defaults: new Dictionary<string, object> 
+                        {
+                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                        })
                     });
 
-                CompileAssemblies = new ContentPatternDefinition(
+                CompileAssemblies = new PatternSet(
                     conventions.Properties,
-                    groupPatterns: new[]
+                    groupPatterns: new PatternDefinition[]
                     {
                         "ref/{tfm}/{any?}",
                     },
-                    pathPatterns: new[] {
+                    pathPatterns: new PatternDefinition[] {
                         "ref/{tfm}/{assembly}",
                     });
 
-                NativeLibraries = new ContentPatternDefinition(
+                NativeLibraries = new PatternSet(
                     conventions.Properties,
-                    groupPatterns: new[]
+                    groupPatterns: new PatternDefinition[]
                     {
                         "runtimes/{rid}/native/{any?}",
                         "native/{any?}",
                     },
-                    pathPatterns: new[]
+                    pathPatterns: new PatternDefinition[]
                     {
                         "runtimes/{rid}/native/{any}",
                         "native/{any}",

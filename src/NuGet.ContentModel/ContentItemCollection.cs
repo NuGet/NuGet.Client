@@ -31,12 +31,12 @@ namespace NuGet.ContentModel
             }
         }
 
-        public IEnumerable<ContentItem> FindItems(ContentPatternDefinition definition)
+        public IEnumerable<ContentItem> FindItems(PatternSet definition)
         {
             return FindItemsImplementation(definition, _assets);
         }
 
-        public IEnumerable<ContentItemGroup> FindItemGroups(ContentPatternDefinition definition)
+        public IEnumerable<ContentItemGroup> FindItemGroups(PatternSet definition)
         {
             var groupPatterns = definition.GroupPatterns
                 .Select(pattern => new Infrastructure.PatternExpression(pattern))
@@ -45,9 +45,9 @@ namespace NuGet.ContentModel
             var groupAssets = new List<Tuple<ContentItem, Asset>>();
             foreach (var asset in _assets)
             {
-                foreach (var groupParser in groupPatterns)
+                foreach (var groupPattern in groupPatterns)
                 {
-                    ContentItem item = groupParser.Match(asset.Path, definition.PropertyDefinitions);
+                    ContentItem item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
                     if (item != null)
                     {
                         groupAssets.Add(Tuple.Create(item, asset));
@@ -73,7 +73,7 @@ namespace NuGet.ContentModel
             }
         }
 
-        public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params ContentPatternDefinition[] definitions)
+        public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
             foreach (var definition in definitions)
             {
@@ -170,7 +170,7 @@ namespace NuGet.ContentModel
             return null;
         }
 
-        private IEnumerable<ContentItem> FindItemsImplementation(ContentPatternDefinition definition, IEnumerable<Asset> assets)
+        private IEnumerable<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
         {
             var pathPatterns = definition.PathPatterns
                 .Select(pattern => new Infrastructure.PatternExpression(pattern))
