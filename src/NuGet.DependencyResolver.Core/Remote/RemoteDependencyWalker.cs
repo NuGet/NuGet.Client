@@ -21,11 +21,11 @@ namespace NuGet.DependencyResolver
             _context = context;
         }
 
-        public Task<GraphNode<RemoteResolveResult>> Walk(LibraryRange library, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph)
+        public Task<GraphNode<RemoteResolveResult>> Walk(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph)
         {
             var cache = new Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>>();
 
-            return CreateGraphNode(cache, library, framework, runtimeName, runtimeGraph, _ => true);
+            return CreateGraphNode(cache, library, framework, runtimeIdentifier, runtimeGraph, _ => true);
         }
 
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, Func<string, bool> predicate)

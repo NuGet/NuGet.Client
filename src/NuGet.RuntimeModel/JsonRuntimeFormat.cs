@@ -53,12 +53,8 @@ namespace NuGet.RuntimeModel
 
         public static RuntimeGraph ReadRuntimeGraph(JToken json)
         {
-            var graph = new RuntimeGraph();
-            foreach (var runtimeSpec in EachProperty(json["runtimes"]).Select(ReadRuntimeDescription))
-            {
-                graph.Runtimes.Add(runtimeSpec.RuntimeIdentifier, runtimeSpec);
-            }
-            return graph;
+            return new RuntimeGraph(
+                EachProperty(json["runtimes"]).Select(ReadRuntimeDescription));
         }
 
         private static void WriteRuntimeGraph(JObject json, RuntimeGraph runtimeGraph)

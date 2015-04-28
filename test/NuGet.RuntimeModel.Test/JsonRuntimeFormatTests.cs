@@ -12,7 +12,7 @@ namespace NuGet.RuntimeModel.Test
         [InlineData("{\"runtimes\":{}}")]
         public void CanParseEmptyRuntimeJsons(string content)
         {
-            Assert.Equal(new RuntimeGraph(), ParseRuntimeJsonString(content));
+            Assert.Equal(RuntimeGraph.Empty, ParseRuntimeJsonString(content));
         }
 
         [Fact]

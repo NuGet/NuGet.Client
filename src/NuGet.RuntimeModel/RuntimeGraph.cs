@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,16 +8,20 @@ namespace NuGet.RuntimeModel
 {
     public class RuntimeGraph : IEquatable<RuntimeGraph>
     {
-        public IDictionary<string, RuntimeDescription> Runtimes { get; }
+        public static readonly string RuntimeGraphFileName = "runtime.json";
 
-        public RuntimeGraph()
+        public static readonly RuntimeGraph Empty = new RuntimeGraph();
+
+        public IReadOnlyDictionary<string, RuntimeDescription> Runtimes { get; }
+
+        private RuntimeGraph()
         {
-            Runtimes = new Dictionary<string, RuntimeDescription>();
+            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(new Dictionary<string, RuntimeDescription>());
         }
 
         public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes)
         {
-            Runtimes = runtimes.ToDictionary(r => r.RuntimeIdentifier);
+            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(runtimes.ToDictionary(r => r.RuntimeIdentifier));
         }
 
         public RuntimeGraph Clone() => new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()));

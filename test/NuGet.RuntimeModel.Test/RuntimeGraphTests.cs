@@ -16,7 +16,7 @@ namespace NuGet.RuntimeModel.Test
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any" })
                 });
-            var newGraph = RuntimeGraph.Merge(graph, new RuntimeGraph());
+            var newGraph = RuntimeGraph.Merge(graph, RuntimeGraph.Empty);
             Assert.Equal(new RuntimeGraph(new[] {
                 new RuntimeDescription("any"),
                 new RuntimeDescription("win8", new[] { "any" })
