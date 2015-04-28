@@ -5,6 +5,7 @@ namespace NuGet.Configuration
     public class PackageSource : IEquatable<PackageSource>
     {
         private readonly int _hashCode;
+        private bool? _isHttp;
 
         public string Name { get; private set; }
 
@@ -32,6 +33,20 @@ namespace NuGet.Configuration
         {
             get;
             private set;
+        }
+
+        public bool IsHttp
+        {
+            get
+            {
+                if (!_isHttp.HasValue)
+                {
+                    _isHttp = Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                    Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+                }
+
+                return _isHttp.Value;
+            }
         }
 
         public PackageSource(string source) :

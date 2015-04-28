@@ -59,7 +59,7 @@ namespace NuGet.Strawman.Commands
                 new PackageSpecRemoteReferenceDependencyProvider(projectResolver));
 
             context.LocalLibraryProviders.Add(
-                new SourceRepositoryDependencyProvider(nugetRepository));
+                new SourceRepositoryDependencyProvider(nugetRepository, _log));
 
             foreach (var provider in request.Sources.Select(CreateProviderFromSource))
             {
@@ -410,20 +410,20 @@ namespace NuGet.Strawman.Commands
 
         private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source)
         {
-            var logger = new NuGetLoggerAdapter(
-                _loggerFactory.CreateLogger(
-                    typeof(IPackageFeed).FullName + ":" + source.Source));
+            var logger = _loggerFactory.CreateLogger(
+                    typeof(IPackageFeed).FullName + ":" + source.Source);
+            var loggerAdapter = new NuGetLoggerAdapter(logger);
             var feed = PackageFeedFactory.CreateFeed(
                 source.Source,
                 source.UserName,
                 source.Password,
                 noCache: false,
                 ignoreFailedSources: false,
-                logger: logger);
+                logger: loggerAdapter);
             _log.LogVerbose($"Using source {source.Source}");
 
             var nugetRepository = FactoryExtensionsV2.GetCoreV3(Repository.Factory, source.Source);
-            return new SourceRepositoryDependencyProvider(nugetRepository);
+            return new SourceRepositoryDependencyProvider(nugetRepository, logger, noCache: false);
         }
     }
 }

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Framework.Logging;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -18,24 +18,37 @@ namespace NuGet.DependencyResolver
     public class SourceRepositoryDependencyProvider : IRemoteDependencyProvider
     {
         private readonly SourceRepository _sourceRepository;
+        private readonly ILogger _logger;
+        private readonly bool _noCache;
         private FindPackageByIdResource _findPackagesByIdResource;
 
-        public SourceRepositoryDependencyProvider(SourceRepository sourceRepository)
+        public SourceRepositoryDependencyProvider(
+            SourceRepository sourceRepository,
+            ILogger logger)
+            : this(sourceRepository, logger, noCache: false)
         {
-            _sourceRepository = sourceRepository;
-            IsHttp = sourceRepository.PackageSource.Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                sourceRepository.PackageSource.Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+
         }
 
-        public bool IsHttp { get; }
+        public SourceRepositoryDependencyProvider(
+            SourceRepository sourceRepository,
+            ILogger logger,
+            bool noCache)
+        {
+            _sourceRepository = sourceRepository;
+            _logger = logger;
+            _noCache = noCache;
+        }
+
+        public bool IsHttp => _sourceRepository.PackageSource.IsHttp;
 
         public async Task<LibraryIdentity> FindLibraryAsync(LibraryRange libraryRange, NuGetFramework targetFramework, CancellationToken cancellationToken)
         {
             await EnsureResource();
 
-            var packages = await _findPackagesByIdResource.GetAllVersionsAsync(libraryRange.Name, cancellationToken);
+            var packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(libraryRange.Name, cancellationToken);
 
-            var packageVersion = packages.FindBestMatch(libraryRange.VersionRange, version => version);
+            var packageVersion = packageVersions.FindBestMatch(libraryRange.VersionRange, version => version);
 
             if (packageVersion != null)
             {
@@ -146,6 +159,8 @@ namespace NuGet.DependencyResolver
             if (_findPackagesByIdResource == null)
             {
                 _findPackagesByIdResource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
+                _findPackagesByIdResource.Logger = _logger;
+                _findPackagesByIdResource.NoCache = _noCache;
             }
         }
     }

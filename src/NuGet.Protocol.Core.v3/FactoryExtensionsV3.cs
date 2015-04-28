@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.LocalRepositories;
+using NuGet.Protocol.Core.v3.RemoteRepositories;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -31,6 +32,7 @@ namespace NuGet.Protocol.Core.v3
             yield return new Lazy<INuGetResourceProvider>(() => new SimpleSearchResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV2FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV3FindPackageByIdResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new RemoteV2FindPackageByIdResourceProvider());
 
             yield break;
         }

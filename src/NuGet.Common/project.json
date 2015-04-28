@@ -1,14 +1,18 @@
 ﻿{
     "version": "3.0.0-*",
     "shared": "*.cs",
-    "dependencies": {
-    },
-
     "frameworks": {
-        "net45": { },
+        "net45": {
+            "frameworkAssemblies": {
+                "System.IO.Compression": ""
+            }
+        },
         "dnxcore50": {
             "dependencies": {
-                "System.Runtime": "4.0.20-*"
+                "System.IO.Compression": "4.0.0-beta-*",
+                "System.IO.FileSystem": "4.0.0-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*",
+                "System.Threading": "4.0.10-beta-*"
             }
         }
     }
