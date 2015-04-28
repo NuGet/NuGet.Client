@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Versioning;
 using NuGet.RuntimeModel;
 
 namespace NuGet.DependencyResolver
@@ -62,10 +62,10 @@ namespace NuGet.DependencyResolver
                     {
                         tasks.Add(CreateGraphNode(cache, dependency.LibraryRange, framework, runtimeName, runtimeGraph, ChainPredicate(predicate, node.Item, dependency)));
 
-                        if(!string.IsNullOrEmpty(runtimeName) && runtimeGraph != null)
+                        if (!string.IsNullOrEmpty(runtimeName) && runtimeGraph != null)
                         {
                             // Look up any additional dependencies for this package
-                            foreach(var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, dependency.Name))
+                            foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, dependency.Name))
                             {
                                 // Add the dependency to the tasks
                                 var runtimeLibraryRange = new LibraryRange()
@@ -74,11 +74,11 @@ namespace NuGet.DependencyResolver
                                     VersionRange = runtimeDependency.VersionRange
                                 };
                                 tasks.Add(CreateGraphNode(
-                                    cache, 
-                                    runtimeLibraryRange, 
-                                    framework, 
-                                    runtimeName, 
-                                    runtimeGraph, 
+                                    cache,
+                                    runtimeLibraryRange,
+                                    framework,
+                                    runtimeName,
+                                    runtimeGraph,
                                     ChainPredicate(predicate, node.Item, dependency)));
                             }
                         }
@@ -117,14 +117,18 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework)
+        public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
+            Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache,
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             lock (cache)
             {
                 Task<GraphItem<RemoteResolveResult>> task;
                 if (!cache.TryGetValue(libraryRange, out task))
                 {
-                    task = FindLibraryEntry(libraryRange, framework);
+                    task = FindLibraryEntry(libraryRange, framework, cancellationToken);
                     cache[libraryRange] = task;
                 }
 
@@ -132,16 +136,16 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        private async Task<GraphItem<RemoteResolveResult>> FindLibraryEntry(LibraryRange libraryRange, NuGetFramework framework)
+        private async Task<GraphItem<RemoteResolveResult>> FindLibraryEntry(LibraryRange libraryRange, NuGetFramework framework, CancellationToken cancellationToken)
         {
-            var match = await FindLibraryMatch(libraryRange, framework);
+            var match = await FindLibraryMatch(libraryRange, framework, cancellationToken);
 
             if (match == null)
             {
                 return null;
             }
 
-            var dependencies = await match.Provider.GetDependencies(match, framework);
+            var dependencies = await match.Provider.GetDependenciesAsync(match.Library, framework, cancellationToken);
 
             return new GraphItem<RemoteResolveResult>(match.Library)
             {
@@ -153,9 +157,9 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        private async Task<RemoteMatch> FindLibraryMatch(LibraryRange libraryRange, NuGetFramework framework)
+        private async Task<RemoteMatch> FindLibraryMatch(LibraryRange libraryRange, NuGetFramework framework, CancellationToken cancellationToken)
         {
-            var projectMatch = await FindProjectMatch(libraryRange.Name, framework);
+            var projectMatch = await FindProjectMatch(libraryRange.Name, framework, cancellationToken);
 
             if (projectMatch != null)
             {
@@ -175,18 +179,18 @@ namespace NuGet.DependencyResolver
             if (libraryRange.VersionRange.IsFloating)
             {
                 // For snapshot dependencies, get the version remotely first.
-                var remoteMatch = await FindLibraryByVersion(libraryRange, framework, _context.RemoteLibraryProviders);
+                var remoteMatch = await FindLibraryByVersion(libraryRange, framework, _context.RemoteLibraryProviders, cancellationToken);
                 if (remoteMatch == null)
                 {
                     // If there was nothing remotely, use the local match (if any)
-                    var localMatch = await FindLibraryByVersion(libraryRange, framework, _context.LocalLibraryProviders);
+                    var localMatch = await FindLibraryByVersion(libraryRange, framework, _context.LocalLibraryProviders, cancellationToken);
                     return localMatch;
                 }
                 else
                 {
                     // Try to see if the specific version found on the remote exists locally. This avoids any unnecessary
                     // remote access incase we already have it in the cache/local packages folder.
-                    var localMatch = await FindLibraryByVersion(remoteMatch.Library, framework, _context.LocalLibraryProviders);
+                    var localMatch = await FindLibraryByVersion(remoteMatch.Library, framework, _context.LocalLibraryProviders, cancellationToken);
 
                     if (localMatch != null && localMatch.Library.Version.Equals(remoteMatch.Library.Version))
                     {
@@ -202,7 +206,7 @@ namespace NuGet.DependencyResolver
             else
             {
                 // Check for the specific version locally.
-                var localMatch = await FindLibraryByVersion(libraryRange, framework, _context.LocalLibraryProviders);
+                var localMatch = await FindLibraryByVersion(libraryRange, framework, _context.LocalLibraryProviders, cancellationToken);
 
                 if (localMatch != null && localMatch.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
                 {
@@ -212,13 +216,13 @@ namespace NuGet.DependencyResolver
 
                 // Either we found a local match but it wasn't the exact version, or 
                 // we didn't find a local match.
-                var remoteMatch = await FindLibraryByVersion(libraryRange, framework, _context.RemoteLibraryProviders);
+                var remoteMatch = await FindLibraryByVersion(libraryRange, framework, _context.RemoteLibraryProviders, cancellationToken);
 
                 if (remoteMatch != null && localMatch == null)
                 {
                     // There wasn't any local match for the specified version but there was a remote match.
                     // See if that version exists locally.
-                    localMatch = await FindLibraryByVersion(remoteMatch.Library, framework, _context.LocalLibraryProviders);
+                    localMatch = await FindLibraryByVersion(remoteMatch.Library, framework, _context.LocalLibraryProviders, cancellationToken);
                 }
 
                 if (localMatch != null && remoteMatch != null)
@@ -242,7 +246,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        private async Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework)
+        private async Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework, CancellationToken cancellationToken)
         {
             var libraryRange = new LibraryRange
             {
@@ -251,26 +255,26 @@ namespace NuGet.DependencyResolver
 
             foreach (var provider in _context.ProjectLibraryProviders)
             {
-                var match = await provider.FindLibrary(libraryRange, framework);
+                var match = await provider.FindLibraryAsync(libraryRange, framework, cancellationToken);
                 if (match != null)
                 {
-                    return match;
+                    return new RemoteMatch { Library = match, Provider = provider };
                 }
             }
 
             return null;
         }
 
-        private async Task<RemoteMatch> FindLibraryByVersion(LibraryRange libraryRange, NuGetFramework framework, IEnumerable<IRemoteDependencyProvider> providers)
+        private async Task<RemoteMatch> FindLibraryByVersion(LibraryRange libraryRange, NuGetFramework framework, IEnumerable<IRemoteDependencyProvider> providers, CancellationToken token)
         {
             if (libraryRange.VersionRange.IsFloating)
             {
                 // Don't optimize the non http path for floating versions or we'll miss things
-                return await FindLibrary(libraryRange, providers, provider => provider.FindLibrary(libraryRange, framework));
+                return await FindLibrary(libraryRange, providers, provider => provider.FindLibraryAsync(libraryRange, framework, token));
             }
 
             // Try the non http sources first
-            var nonHttpMatch = await FindLibrary(libraryRange, providers.Where(p => !p.IsHttp), provider => provider.FindLibrary(libraryRange, framework));
+            var nonHttpMatch = await FindLibrary(libraryRange, providers.Where(p => !p.IsHttp), provider => provider.FindLibraryAsync(libraryRange, framework, token));
 
             // If we found an exact match then use it
             if (nonHttpMatch != null && nonHttpMatch.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
@@ -279,7 +283,7 @@ namespace NuGet.DependencyResolver
             }
 
             // Otherwise try the http sources
-            var httpMatch = await FindLibrary(libraryRange, providers.Where(p => p.IsHttp), provider => provider.FindLibrary(libraryRange, framework));
+            var httpMatch = await FindLibrary(libraryRange, providers.Where(p => p.IsHttp), provider => provider.FindLibraryAsync(libraryRange, framework, token));
 
             // Pick the best match of the 2
             if (libraryRange.VersionRange.IsBetter(
@@ -295,12 +299,18 @@ namespace NuGet.DependencyResolver
         private static async Task<RemoteMatch> FindLibrary(
             LibraryRange libraryRange,
             IEnumerable<IRemoteDependencyProvider> providers,
-            Func<IRemoteDependencyProvider, Task<RemoteMatch>> action)
+            Func<IRemoteDependencyProvider, Task<LibraryIdentity>> action)
         {
             var tasks = new List<Task<RemoteMatch>>();
             foreach (var provider in providers)
             {
-                tasks.Add(action(provider));
+                Func<Task<RemoteMatch>> taskWrapper = async () => new RemoteMatch
+                {
+                    Provider = provider,
+                    Library = await action(provider)
+                };
+
+                tasks.Add(taskWrapper());
             }
 
             RemoteMatch bestMatch = null;

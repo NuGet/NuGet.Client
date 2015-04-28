@@ -98,8 +98,13 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         {
             // Check for package files one level deep.
             var rootDirectoryInfo = new DirectoryInfo(sourceDir);
+            if (!rootDirectoryInfo.Exists)
+            {
+                yield break;
+            }
+
             var filter = id + "*.nupkg";
-            foreach (var dir in rootDirectoryInfo.EnumerateDirectories(sourceDir))
+            foreach (var dir in rootDirectoryInfo.EnumerateDirectories(filter))
             {
                 foreach (var path in dir.EnumerateFiles(filter))
                 {

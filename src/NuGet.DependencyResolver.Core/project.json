@@ -3,10 +3,10 @@
   "dependencies": {
     "NuGet.LibraryModel": "3.0.0-*",
     "NuGet.Frameworks": "3.0.0-*",
+    "NuGet.Protocol.Core.v3": "3.0.0-*",
     "NuGet.Repositories": "3.0.0-*",
     "NuGet.RuntimeModel": "3.0.0-*"
   },
-
   "frameworks": {
     "net45": { },
     "dnxcore50": { }

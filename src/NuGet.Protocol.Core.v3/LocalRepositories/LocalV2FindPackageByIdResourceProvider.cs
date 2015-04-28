@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             new ConcurrentDictionary<string, List<CachedPackageInfo>>(StringComparer.Ordinal);
 
         public LocalV2FindPackageByIdResourceProvider()
-            : base(typeof(FindPackageByIdResource), nameof(LocalV2FindPackageByIdResourceProvider), NuGetResourceProviderPositions.First)
+            : base(typeof(FindPackageByIdResource), nameof(LocalV2FindPackageByIdResourceProvider), before: nameof(LocalV3FindPackageByIdResourceProvider))
         {
         }
 

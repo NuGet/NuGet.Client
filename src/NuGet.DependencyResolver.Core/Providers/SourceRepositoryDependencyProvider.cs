@@ -1,69 +1,78 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
-using NuGet.Repositories;
+using NuGet.Protocol.Core.Types;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
 {
-    public class NuGetDependencyResolver : IDependencyProvider
+    public class SourceRepositoryDependencyProvider : IRemoteDependencyProvider
     {
-        private readonly NuGetv3LocalRepository _repository;
+        private readonly SourceRepository _sourceRepository;
+        private FindPackageByIdResource _findPackagesByIdResource;
 
-        public NuGetDependencyResolver(NuGetv3LocalRepository repository)
+        public SourceRepositoryDependencyProvider(SourceRepository sourceRepository)
         {
-            _repository = repository;
+            _sourceRepository = sourceRepository;
+            IsHttp = sourceRepository.PackageSource.Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                sourceRepository.PackageSource.Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         }
 
-        public NuGetDependencyResolver(string packagesPath)
-        {
-            _repository = new NuGetv3LocalRepository(packagesPath, checkPackageIdCase: false);
-        }
+        public bool IsHttp { get; }
 
-        public bool SupportsType(string libraryType)
+        public async Task<LibraryIdentity> FindLibraryAsync(LibraryRange libraryRange, NuGetFramework targetFramework, CancellationToken cancellationToken)
         {
-            return string.IsNullOrEmpty(libraryType) || 
-                   string.Equals(libraryType, LibraryTypes.Package);
-        }
+            await EnsureResource();
 
-        public Library GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
-        {
-            var package = FindCandidate(libraryRange.Name, libraryRange.VersionRange);
+            var packages = await _findPackagesByIdResource.GetAllVersionsAsync(libraryRange.Name, cancellationToken);
 
-            if (package != null)
+            var packageVersion = packages.FindBestMatch(libraryRange.VersionRange, version => version);
+
+            if (packageVersion != null)
             {
-                NuspecReader nuspecReader = null;
-                using (var stream = File.OpenRead(package.ManifestPath))
+                return new LibraryIdentity
                 {
-                    nuspecReader = new NuspecReader(stream);
-                }
-
-                var description = new Library
-                {
-                    LibraryRange = libraryRange,
-                    Identity = new LibraryIdentity
-                    {
-                        Name = package.Id,
-                        Version = package.Version,
-                        Type = LibraryTypes.Package
-                    },
-                    Path = package.ManifestPath,
-                    Dependencies = GetDependencies(nuspecReader, targetFramework)
+                    Name = libraryRange.Name,
+                    Version = packageVersion,
+                    Type = LibraryTypes.Package
                 };
-
-
-                description.Items["package"] = package;
-                description.Items["metadata"] = nuspecReader;
-
-                return description;
             }
 
             return null;
+        }
+
+        public async Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(LibraryIdentity match, NuGetFramework targetFramework, CancellationToken cancellationToken)
+        {
+            await EnsureResource();
+
+            var nuspecReader = await _findPackagesByIdResource.GetNuspecReaderAsync(match.Name, match.Version, cancellationToken);
+
+            return GetDependencies(nuspecReader, targetFramework);
+        }
+
+        public async Task CopyToAsync(LibraryIdentity identity, Stream stream, CancellationToken cancellationToken)
+        {
+            await EnsureResource();
+
+            using (var nupkgStream = await _findPackagesByIdResource.GetNupkgStreamAsync(identity.Name, identity.Version, cancellationToken))
+            {
+                await nupkgStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: cancellationToken);
+            }
+        }
+
+        public Task<RuntimeGraph> GetRuntimeGraph(RemoteMatch match, NuGetFramework framework)
+        {
+            // TODO: This needs to be done as part of the package install.
+            return Task.FromResult(new RuntimeGraph());
         }
 
         private IEnumerable<LibraryDependency> GetDependencies(NuspecReader nuspecReader, NuGetFramework targetFramework)
@@ -132,19 +141,12 @@ namespace NuGet.DependencyResolver
             return libraryDependencies;
         }
 
-        private LocalPackageInfo FindCandidate(string name, VersionRange versionRange)
+        private async Task EnsureResource()
         {
-            var packages = _repository.FindPackagesById(name);
-
-            return packages.FindBestMatch(versionRange, info => info?.Version);
-        }
-
-        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
-        {
-            return new[]
+            if (_findPackagesByIdResource == null)
             {
-                Path.Combine(_repository.RepositoryRoot, "{name}", "{version}", "{name}.nuspec")
-            };
+                _findPackagesByIdResource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
+            }
         }
     }
 }

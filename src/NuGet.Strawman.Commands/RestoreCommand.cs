@@ -1,23 +1,25 @@
-﻿using Microsoft.Framework.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Framework.Logging;
 using NuGet.Client;
 using NuGet.Configuration;
-using NuGet.DependencyResolver;
-using NuGet.ProjectModel;
-using NuGet.Repositories;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using ILogger = Microsoft.Framework.Logging.ILogger;
-using System;
-using NuGet.LibraryModel;
-using NuGet.Versioning;
-using System.IO;
-using NuGet.Frameworks;
-using NuGet.RuntimeModel;
-using System.Security.Cryptography;
-using NuGet.Packaging;
 using NuGet.ContentModel;
+using NuGet.DependencyResolver;
+using NuGet.Frameworks;
+using NuGet.LibraryModel;
+using NuGet.Packaging;
+using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
+using NuGet.Repositories;
+using NuGet.RuntimeModel;
+using NuGet.Versioning;
+using ILogger = Microsoft.Framework.Logging.ILogger;
 
 namespace NuGet.Strawman.Commands
 {
@@ -49,16 +51,15 @@ namespace NuGet.Strawman.Commands
 
             // Load repositories
             var projectResolver = new PackageSpecResolver(request.Project.BaseDirectory);
-            var nugetRepository = new NuGetv3LocalRepository(request.PackagesDirectory, checkPackageIdCase: true);
+            var nugetRepository = FactoryExtensionsV2.GetCoreV3(Repository.Factory, request.PackagesDirectory);
 
             var context = new RemoteWalkContext();
 
-            context.ProjectLibraryProviders.Add(new LocalDependencyProvider(
-                new PackageSpecReferenceDependencyProvider(projectResolver)));
+            context.ProjectLibraryProviders.Add(
+                new PackageSpecRemoteReferenceDependencyProvider(projectResolver));
 
             context.LocalLibraryProviders.Add(
-                new LocalDependencyProvider(
-                    new NuGetDependencyResolver(nugetRepository)));
+                new SourceRepositoryDependencyProvider(nugetRepository));
 
             foreach (var provider in request.Sources.Select(CreateProviderFromSource))
             {
@@ -92,7 +93,7 @@ namespace NuGet.Strawman.Commands
                 var runtimeGraphs = await WalkRuntimeDependencies(projectRange, graphs, frameworks, request.Project.RuntimeGraph, remoteWalker);
                 var resolved = ResolveConflicts(runtimeGraphs);
                 graphs.AddRange(runtimeGraphs);
-                if(!resolved)
+                if (!resolved)
                 {
                     _log.LogError("Failed to resolve conflicts");
                     return new RestoreResult(success: false, restoreGraphs: graphs);
@@ -400,7 +401,7 @@ namespace NuGet.Strawman.Commands
         {
             using (var memoryStream = new MemoryStream())
             {
-                await installItem.Provider.CopyToAsync(installItem, memoryStream);
+                await installItem.Provider.CopyToAsync(installItem.Library, memoryStream, default(CancellationToken));
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 await NuGetPackageUtils.InstallFromStream(memoryStream, installItem.Library, packagesDirectory, _log);
@@ -420,7 +421,9 @@ namespace NuGet.Strawman.Commands
                 ignoreFailedSources: false,
                 logger: logger);
             _log.LogVerbose($"Using source {source.Source}");
-            return new RemoteDependencyProvider(feed);
+
+            var nugetRepository = FactoryExtensionsV2.GetCoreV3(Repository.Factory, source.Source);
+            return new SourceRepositoryDependencyProvider(nugetRepository);
         }
     }
 }

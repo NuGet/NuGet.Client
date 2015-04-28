@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
     public class LocalV3FindPackageByIdResourceProvider : ResourceProvider
     {
         public LocalV3FindPackageByIdResourceProvider()
-            : base(typeof(FindPackageByIdResource), nameof(LocalV3FindPackageByIdResourceProvider), NuGetResourceProviderPositions.Last)
+            : base(typeof(FindPackageByIdResource), nameof(LocalV3FindPackageByIdResourceProvider))
         {
         }
 
