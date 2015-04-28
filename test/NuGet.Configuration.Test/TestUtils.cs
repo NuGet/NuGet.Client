@@ -7,16 +7,14 @@ namespace NuGet.Configuration.Test
 {
     public static class TestFilesystemUtility
     {
-        private static readonly string NuGetTestFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "NuGetTestFolder");
+        private static readonly string NuGetTestFolder = Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
 
-        public static string CreateRandomTestFolder()
+        public static TestDirectory CreateRandomTestFolder()
         {
             var randomFolderName = Guid.NewGuid().ToString();
             var path = Path.Combine(NuGetTestFolder, randomFolderName);
             Directory.CreateDirectory(path);
-            return path;
+            return new TestDirectory(path);
         }
 
         public static void DeleteRandomTestFolders(params string[] randomTestPaths)
@@ -55,6 +53,7 @@ namespace NuGet.Configuration.Test
                 }
             }
         }
+
         // this method is for removing LineEndings for CI build
         public static string RemovedLineEndings(string result)
         {

@@ -37,27 +37,32 @@ namespace NuGet.Configuration
 
         public void SetValue(string section, string key, string value)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "SetValue"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValue)));
         }
 
-        public void SetValues(string section, IList<KeyValuePair<string, string>> values)
+        public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "SetValues"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValues)));
+        }
+
+        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        {
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(UpdateSections)));
         }
 
         public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "SetNestedValues"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedValues)));
         }
 
         public bool DeleteValue(string section, string key)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "DeleteValue"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteValue)));
         }
 
         public bool DeleteSection(string section)
         {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, "DeleteSection"));
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteSection)));
         }
     }
 

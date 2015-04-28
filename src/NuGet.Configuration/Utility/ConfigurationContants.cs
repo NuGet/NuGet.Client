@@ -31,5 +31,11 @@
         internal static string UserKey = "http_proxy.user";
 
         internal static string PasswordKey = "http_proxy.password";
+
+        internal static string KeyAttribute = "key";
+
+        internal static string ValueAttribute = "value";
+
+        internal static string ProtocolVersionAttribute = "protocolVersion";
     }
 }

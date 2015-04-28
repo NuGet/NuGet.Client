@@ -22,13 +22,28 @@ namespace NuGet.Configuration
         /// Gets all the values under section
         /// </summary>
         IList<SettingValue> GetSettingValues(string section, bool isPath = false);
+
         /// <summary>
         /// Gets all the values under section
         /// </summary>
         IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection);
         void SetValue(string section, string key, string value);
 
-        void SetValues(string section, IList<KeyValuePair<string, string>> values);
+        /// <summary>
+        /// Sets the values under the specified <paramref name="section"/>.
+        /// </summary>
+        /// <param name="section">The name of the section.</param>
+        /// <param name="values">The values to set.</param>
+        void SetValues(string section, IReadOnlyList<SettingValue> values);
+
+        /// <summary>
+        /// Updates the <paramref name="values" /> across multiple <see cref="ISettings"/> instances in the hierarchy.
+        /// Values are updated in the <see cref="ISettings"/> with the nearest priority.
+        /// </summary>
+        /// <param name="section">The name of the section.</param>
+        /// <param name="values">The values to set.</param>
+        void UpdateSections(string section, IReadOnlyList<SettingValue> values);
+
         void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values);
         bool DeleteValue(string section, string key);
         bool DeleteSection(string section);

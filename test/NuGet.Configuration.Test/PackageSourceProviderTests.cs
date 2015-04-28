@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Xunit;
 using Moq;
-using System.Security.Cryptography;
+using Xunit;
 
 namespace NuGet.Configuration.Test
 {
@@ -51,7 +51,7 @@ namespace NuGet.Configuration.Test
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
             VerifyPackageSource(before, 1, new string[] { NuGetConstants.V3FeedName },
-                new string[] { NuGetConstants.V3FeedUrl},
+                new string[] { NuGetConstants.V3FeedUrl },
                 new bool[] { true }, new bool[] { false });
 
             List<PackageSource> primary = new List<PackageSource>();
@@ -61,9 +61,9 @@ namespace NuGet.Configuration.Test
             List<PackageSource> secondary = new List<PackageSource>();
             PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, false);
             secondary.Add(item2);
-                                  
+
             PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
-            
+
             // Assert
             //Primary already exists in nuget.config as Enabled. So IsEnabled = true. IsOfficial is also set to true when loading package sources
             //Primary IsEnabled = true, IsOfficial = true
@@ -77,7 +77,7 @@ namespace NuGet.Configuration.Test
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
-       
+
         public void PrimaryURLIsForcedWhenPrimaryNameHasAnotherFeed()
         {
             // Act
@@ -87,7 +87,7 @@ namespace NuGet.Configuration.Test
             File.Create(nugetConfigFilePath).Close();
 
             string randomURL = "https://www.somerandomURL.com/";
-            string enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='"+ randomURL + "' />";
+            string enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + randomURL + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
@@ -109,13 +109,13 @@ namespace NuGet.Configuration.Test
             //IsEnabled = true, IsOfficial = true
             VerifyPackageSource(after, 1, new string[] { NuGetConstants.V3FeedName },
                                 new string[] { NuGetConstants.V3FeedUrl },
-                                new bool[] { false}, new bool[] { true});
+                                new bool[] { false }, new bool[] { true });
 
             //Clean up
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
-        
+
         public void SecondaryURLIsForcedWhenSecondaryNameHasAnotherFeed()
         {
             // Act
@@ -123,7 +123,6 @@ namespace NuGet.Configuration.Test
             string nugetConfigFileFolder = NuGet.Configuration.Test.TestFilesystemUtility.CreateRandomTestFolder();
             string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
             File.Create(nugetConfigFilePath).Close();
-            
 
             string randomURL = "https://www.somerandomURL.com/";
             string enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
@@ -157,7 +156,7 @@ namespace NuGet.Configuration.Test
             //Clean up
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
-        
+
         [Fact]
         public void PrimaryNameNotChangedWhenTheFeedHasAnotherName()
         {
@@ -171,7 +170,7 @@ namespace NuGet.Configuration.Test
             enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             string disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
-            
+
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
             VerifyPackageSource(before, 2, new string[] { "anotherName", NuGetConstants.V2FeedName },
@@ -236,7 +235,7 @@ namespace NuGet.Configuration.Test
             //In this case, we don't set IsOfficial = true
             //Primary matches both name and URL so primary's IsOfficial is set to true
             //Since this is not the first time primary is getting added, we aren't aggressive in demoting secondary from enabled to disabled
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.V3FeedName, "anotherName"},
+            VerifyPackageSource(after, 2, new string[] { NuGetConstants.V3FeedName, "anotherName" },
                                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
                                 new bool[] { true, true }, new bool[] { true, false });
 
@@ -244,7 +243,7 @@ namespace NuGet.Configuration.Test
             NuGet.Configuration.Test.TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
-       
+
         public void PrimaryIsEnabledAndSecondaryIsDisabledWhenPrimaryIsAddedForTheFirstTimeAndSecondaryAlreadyExists()
         {
             // Act
@@ -499,7 +498,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings.Setup(s => s.GetSettingValues("packageSources", true))
                     .Returns(new[] { new SettingValue("AOld", "urlA", false), new SettingValue("userDefinedSource", "userDefinedSourceUrl", false) });
-            settings.Setup(s => s.GetSettingValues("disabledPackageSources",false)).Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(new SettingValue[0]);
             settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
 
             var defaultPackageSourceA = new PackageSource("urlA", "ANew");
@@ -548,9 +547,9 @@ namespace NuGet.Configuration.Test
             settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
                 new[] { new SettingValue("three", "true", false) });
 
-            IList<KeyValuePair<string, string>> savedSettingValues = null;
-            settings.Setup(s => s.SetValues("packageSources", It.IsAny<IList<KeyValuePair<string, string>>>()))
-                    .Callback<string, IList<KeyValuePair<string, string>>>((_, savedVals) => { savedSettingValues = savedVals; })
+            IReadOnlyList<SettingValue> savedSettingValues = null;
+            settings.Setup(s => s.UpdateSections("packageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback<string, IReadOnlyList<SettingValue>>((_, savedVals) => { savedSettingValues = savedVals; })
                     .Verifiable();
 
             var provider = CreatePackageSourceProvider(settings.Object,
@@ -582,7 +581,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("awesomesource", savedSettingValues[2].Value);
         }
 
-        
+
         public void SavePackageSourcesTest()
         {
             // Arrange
@@ -618,7 +617,7 @@ namespace NuGet.Configuration.Test
 #else
             string appDataPath = Environment.GetEnvironmentVariable("AppData");
 #endif
-            var configFileContent = TestFilesystemUtility.ReadConfigurationFile(Path.Combine(appDataPath,@"NuGet\NuGet.config"));
+            var configFileContent = TestFilesystemUtility.ReadConfigurationFile(Path.Combine(appDataPath, @"NuGet\NuGet.config"));
             string result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
@@ -631,7 +630,7 @@ namespace NuGet.Configuration.Test
   </disabledPackageSources>
 </configuration>";
 
-            Assert.Equal(TestFilesystemUtility.RemovedLineEndings(result),configFileContent);
+            Assert.Equal(TestFilesystemUtility.RemovedLineEndings(result), configFileContent);
         }
 
         [Fact]
@@ -641,12 +640,12 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings.Setup(s => s.GetSettingValues("packageSources", true))
                     .Returns(new[] { new SettingValue("one", "one", true),
-                                     new SettingValue("two", "two", false),
-                                     new SettingValue("three", "three", false)
+                                     new SettingValue("two", "two", false, 2),
+                                     new SettingValue("three", "three", false, 2)
                                 });
 
-            settings.Setup(s => s.SetValues("packageSources", It.IsAny<IList<KeyValuePair<string, string>>>()))
-                    .Callback((string section, IList<KeyValuePair<string, string>> values) =>
+            settings.Setup(s => s.SetValues("packageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback((string section, IReadOnlyList<SettingValue> values) =>
                     {
                         // verifies that only sources "two" and "three" are passed.
                         // the machine wide source "one" is not.
@@ -658,8 +657,8 @@ namespace NuGet.Configuration.Test
                     })
                     .Verifiable();
 
-            settings.Setup(s => s.SetValues("disabledPackageSources", It.IsAny<IList<KeyValuePair<string, string>>>()))
-                .Callback((string section, IList<KeyValuePair<string, string>> values) =>
+            settings.Setup(s => s.SetValues("disabledPackageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                .Callback((string section, IReadOnlyList<SettingValue> values) =>
                 {
                     // verifies that the machine wide source "one" is passed here
                     // since it is disabled.                    
@@ -690,10 +689,11 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSettingValues("packageSources", true))
                     .Returns(new[] { new SettingValue("one", "onesource", true),
-                                     new SettingValue("two", "twosource", false),
-                                     new SettingValue("three", "threesource", false)
+                                     new SettingValue("two", "twosource", false, 1),
+                                     new SettingValue("three", "threesource", false, 1)
                                 })
                     .Verifiable();
+
             settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
                 new SettingValue[0]);
             settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
@@ -746,7 +746,7 @@ namespace NuGet.Configuration.Test
                     .Returns(new List<SettingValue>() { new SettingValue("NuGet official package source", "https://nuget.org/api/v2", false),
                     new SettingValue("nuget.org", "https://www.nuget.org/api/v2", false) });
             settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
-            settings.Setup(s => s.GetSettingValues("disabledPackageSources",false)).Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(new SettingValue[0]);
 
             var provider = CreatePackageSourceProvider(settings.Object, providerDefaultPrimarySources: null,
                 providerDefaultSecondarySources: null,
@@ -766,6 +766,176 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void LoadPackageSources_ReadsSourcesWithProtocolVersionFromPackageSourceSections()
+        {
+            // Arrange
+            var settings = new Mock<ISettings>();
+            var settingWithV3Protocol1 = new SettingValue("Source2", "https://source-with-newer-protocol", false);
+            settingWithV3Protocol1.AdditionalData["protocolVersion"] = "3";
+
+            var settingWithV3Protocol2 = new SettingValue("Source3", "Source3", false);
+            settingWithV3Protocol2.AdditionalData["protocolVersion"] = "3";
+
+            var sourcesSettings = new[]
+            {
+                new SettingValue("Source1", "https://some-source.org", false),
+                settingWithV3Protocol1,
+                settingWithV3Protocol2,
+                new SettingValue("Source3", "Source3", false),
+                new SettingValue("Source4", "//Source4", false)
+            };
+
+            settings.Setup(s => s.GetSettingValues("packageSources", true))
+                .Returns(sourcesSettings);
+
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", "Source3"))
+                .Returns(new[]
+                {
+                    new KeyValuePair<string, string>("Username", "source3-user"),
+                    new KeyValuePair<string, string>("ClearTextPassword", "source3-password"),
+                });
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+                .Returns(new[]
+                {
+                    new SettingValue("Source4", "true", isMachineWide: false)
+                });
+
+            var provider = CreatePackageSourceProvider(settings.Object,
+                providerDefaultPrimarySources: null,
+                providerDefaultSecondarySources: null,
+                migratePackageSources: null);
+
+            // Act
+            var values = provider.LoadPackageSources().ToList();
+
+            // Assert
+            Assert.Collection(values,
+                source =>
+                {
+                    Assert.Equal("Source1", source.Name);
+                    Assert.Equal("https://some-source.org", source.Source);
+                    Assert.Null(source.UserName);
+                    Assert.Null(source.Password);
+                    Assert.Equal(2, source.ProtocolVersion);
+                    Assert.True(source.IsEnabled);
+                },
+                source =>
+                {
+                    Assert.Equal("Source2", source.Name);
+                    Assert.Equal("https://source-with-newer-protocol", source.Source);
+                    Assert.Null(source.UserName);
+                    Assert.Null(source.Password);
+                    Assert.Equal(3, source.ProtocolVersion);
+                    Assert.True(source.IsEnabled);
+                },
+                source =>
+                {
+                    Assert.Equal("Source3", source.Name);
+                    Assert.Equal("Source3", source.Source);
+                    Assert.Equal("source3-user", source.UserName);
+                    Assert.Equal("source3-password", source.Password);
+                    Assert.Equal(3, source.ProtocolVersion);
+                    Assert.True(source.IsEnabled);
+                },
+                source =>
+                {
+                    Assert.Equal("Source4", source.Name);
+                    Assert.Equal("//Source4", source.Source);
+                    Assert.Null(source.UserName);
+                    Assert.Null(source.Password);
+                    Assert.Equal(2, source.ProtocolVersion);
+                    Assert.False(source.IsEnabled);
+                });
+        }
+
+        [Fact]
+        public void LoadPackageSources_MigratesSourcesToNewerProtocol_ButKeepsExistingSourcesInPackageSourcesElement()
+        {
+            // Arrange
+            var settings = new Mock<ISettings>();
+            settings.Setup(s => s.GetSettingValues("packageSources", true))
+                .Returns(new[]
+                {
+                    new SettingValue("Source1", "https://some-source.org", false),
+                    new SettingValue("Source2", "https://source-with-older-protocol", false)
+                });
+
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", "Source2"))
+                .Returns(new[]
+                {
+                    new KeyValuePair<string, string>("Username", "Source2-user"),
+                    new KeyValuePair<string, string>("ClearTextPassword", "Source2-password"),
+                });
+
+            settings.Setup(s => s.UpdateSections("packageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+               .Callback((string source, IReadOnlyList<SettingValue> setValues) =>
+               {
+                   Assert.Collection(setValues,
+                       value =>
+                       {
+                           Assert.Equal("Source1", value.Key);
+                           Assert.Equal("https://some-source.org", value.Value);
+                       },
+                       value =>
+                       {
+                           Assert.Equal("Source2", value.Key);
+                           Assert.Equal("https://source-with-older-protocol", value.Value);
+                       },
+                       value =>
+                       {
+                           Assert.Equal("Source2", value.Key);
+                           Assert.Equal("https://api.source-with-newer-protocol/v3/", value.Value);
+                           Assert.Collection(value.AdditionalData,
+                               item =>
+                               {
+                                   Assert.Equal("protocolVersion", item.Key);
+                                   Assert.Equal("3", item.Value);
+                               });
+                       });
+               })
+               .Verifiable();
+
+            var migratePackageSources = new Dictionary<PackageSource, PackageSource>
+            {
+                {
+                    new PackageSource("https://source-with-older-protocol", "Source2"),
+                    new PackageSource("https://api.source-with-newer-protocol/v3/", "Source2") { ProtocolVersion = 3 }
+                }
+            };
+
+            var provider = CreatePackageSourceProvider(settings.Object,
+                providerDefaultPrimarySources: null,
+                providerDefaultSecondarySources: null,
+                migratePackageSources: migratePackageSources);
+
+            // Act
+            var values = provider.LoadPackageSources();
+
+            // Assert
+            Assert.Collection(values,
+                source =>
+                {
+                    Assert.Equal("Source1", source.Name);
+                    Assert.Equal("https://some-source.org", source.Source);
+                    Assert.Null(source.UserName);
+                    Assert.Null(source.Password);
+                    Assert.Equal(2, source.ProtocolVersion);
+                    Assert.True(source.IsEnabled);
+                },
+                source =>
+                {
+                    Assert.Equal("Source2", source.Name);
+                    Assert.Equal("https://api.source-with-newer-protocol/v3/", source.Source);
+                    Assert.Null(source.UserName);
+                    Assert.Null(source.Password);
+                    Assert.Equal(3, source.ProtocolVersion);
+                    Assert.True(source.IsEnabled);
+                });
+            // Verify the sources got migrated.
+            settings.Verify();
+        }
+
+        [Fact]
         public void LoadPackageSourcesDoesNotDuplicateFeedsOnMigrationAndSavesIt()
         {
             // Arrange
@@ -775,18 +945,22 @@ namespace NuGet.Configuration.Test
                     new SettingValue("nuget.org", "https://www.nuget.org/api/v2", false) });
             settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(new SettingValue[0]);
-            settings.Setup(s => s.DeleteSection("packageSources")).Returns(true).Verifiable();
-            settings.Setup(s => s.DeleteSection("disabledPackageSources")).Returns(true).Verifiable();
-            settings.Setup(s => s.DeleteSection("packageSourceCredentials")).Returns(true).Verifiable();
 
-            settings.Setup(s => s.SetValues("packageSources", It.IsAny<IList<KeyValuePair<string, string>>>()))
-                    .Callback((string section, IList<KeyValuePair<string, string>> valuePairs) =>
+            settings.Setup(s => s.UpdateSections("packageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback((string section, IReadOnlyList<SettingValue> valuePairs) =>
                     {
-                        Assert.Equal(1, valuePairs.Count);
-                        Assert.Equal("nuget.org", valuePairs[0].Key);
-                        Assert.Equal("https://www.nuget.org/api/v2", valuePairs[0].Value);
+                        var value = Assert.Single(valuePairs);
+                        Assert.Equal("nuget.org", value.Key);
+                        Assert.Equal("https://www.nuget.org/api/v2", value.Value);
                     })
                     .Verifiable();
+
+            settings.Setup(s => s.UpdateSections("disabledPackageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                .Callback((string section, IReadOnlyList<SettingValue> settingValues) =>
+                {
+                    Assert.Empty(settingValues);
+                })
+                .Verifiable();
 
             var provider = CreatePackageSourceProvider(settings.Object, providerDefaultPrimarySources: null,
                 providerDefaultSecondarySources: null,
@@ -797,7 +971,6 @@ namespace NuGet.Configuration.Test
 
             // Act
             var values = provider.LoadPackageSources().ToList();
-
 
             // Assert
             Assert.Equal(1, values.Count);
@@ -826,7 +999,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetValue("disabledPackageSources", "A",false)).Returns("sdfds");
+            settings.Setup(s => s.GetValue("disabledPackageSources", "A", false)).Returns("sdfds");
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
@@ -843,7 +1016,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetValue("disabledPackageSources", "A",false)).Returns(returnValue);
+            settings.Setup(s => s.GetValue("disabledPackageSources", "A", false)).Returns(returnValue);
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
@@ -975,8 +1148,8 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings.Setup(s => s.GetSettingValues("packageSources", true))
                     .Returns(new[] { new SettingValue("one", "onesource", false),
-                                     new SettingValue("two", "twosource", false),
-                                     new SettingValue("one", "threesource", false)
+                                     new SettingValue("two", "twosource", false, priority: 1),
+                                     new SettingValue("one", "threesource", false, priority: 1)
                                 });
 
             var provider = CreatePackageSourceProvider(settings.Object);
@@ -996,25 +1169,32 @@ namespace NuGet.Configuration.Test
             // Arrange
             var sources = new[] { new PackageSource("one"), new PackageSource("two"), new PackageSource("three") };
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.DeleteSection("packageSources")).Returns(true).Verifiable();
-            settings.Setup(s => s.DeleteSection("disabledPackageSources")).Returns(true).Verifiable();
             settings.Setup(s => s.DeleteSection("packageSourceCredentials")).Returns(true).Verifiable();
 
-            settings.Setup(s => s.SetValues("packageSources", It.IsAny<IList<KeyValuePair<string, string>>>()))
-                    .Callback((string section, IList<KeyValuePair<string, string>> values) =>
+            settings.Setup(s => s.GetSettingValues("packageSources", true))
+                .Returns(new SettingValue[0]);
+
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+                .Returns(new SettingValue[0]);
+
+            settings.Setup(s => s.UpdateSections("packageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback((string section, IReadOnlyList<SettingValue> values) =>
                     {
                         Assert.Equal(3, values.Count);
                         Assert.Equal("one", values[0].Key);
                         Assert.Equal("one", values[0].Value);
+                        Assert.Empty(values[0].AdditionalData);
                         Assert.Equal("two", values[1].Key);
                         Assert.Equal("two", values[1].Value);
+                        Assert.Empty(values[1].AdditionalData);
                         Assert.Equal("three", values[2].Key);
                         Assert.Equal("three", values[2].Value);
+                        Assert.Empty(values[2].AdditionalData);
                     })
                     .Verifiable();
 
-            settings.Setup(s => s.SetValues("disabledPackageSources", It.IsAny<IList<KeyValuePair<string, string>>>()))
-                    .Callback((string section, IList<KeyValuePair<string, string>> values) =>
+            settings.Setup(s => s.UpdateSections("disabledPackageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback((string section, IReadOnlyList<SettingValue> values) =>
                     {
                         Assert.Empty(values);
                     })
@@ -1031,18 +1211,82 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void SavePackage_KeepsBothNewAndOldSources()
+        {
+            // Arrange
+            var sources = new[]
+            {
+                new PackageSource("Source1", "Source1-Name"),
+                new PackageSource("Source2", "Source2-Name") { ProtocolVersion = 3 }
+            };
+
+            var settings = new Mock<ISettings>(MockBehavior.Strict);
+            settings.Setup(s => s.DeleteSection("packageSourceCredentials")).Returns(true).Verifiable();
+
+            settings.Setup(s => s.GetSettingValues("packageSources", true))
+                .Returns(new[] { new SettingValue("Source2-Name", "Legacy-Source", isMachineWide: false) });
+
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+                .Returns(new SettingValue[0]);
+
+            settings.Setup(s => s.UpdateSections("packageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback((string section, IReadOnlyList<SettingValue> values) =>
+                    {
+                        Assert.Collection(values,
+                            value =>
+                            {
+                                Assert.Equal("Source1-Name", value.Key);
+                                Assert.Equal("Source1", value.Value);
+                                Assert.Empty(value.AdditionalData);
+                            },
+                            value =>
+                            {
+                                Assert.Equal("Source2-Name", value.Key);
+                                Assert.Equal("Legacy-Source", value.Value);
+                                Assert.Empty(value.AdditionalData);
+                            },
+                            value =>
+                            {
+                                Assert.Equal("Source2-Name", value.Key);
+                                Assert.Equal("Source2", value.Value);
+                                Assert.Collection(value.AdditionalData,
+                                    item =>
+                                    {
+                                        Assert.Equal("protocolVersion", item.Key);
+                                        Assert.Equal("3", item.Value);
+                                    });
+                            });
+                    })
+                    .Verifiable();
+
+            settings.Setup(s => s.UpdateSections("disabledPackageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback((string section, IReadOnlyList<SettingValue> values) =>
+                    {
+                        Assert.Empty(values);
+                    })
+                    .Verifiable();
+
+            var provider = CreatePackageSourceProvider(settings.Object);
+
+            // Act
+            provider.SavePackageSources(sources);
+
+            // Assert
+            settings.Verify();
+        }
+
+        [Fact]
         public void SavePackageSourcesSaveCorrectDataToSettingsWhenSomePackageSourceIsDisabled()
         {
             // Arrange
             var sources = new[] { new PackageSource("one"), new PackageSource("two", "two", isEnabled: false), new PackageSource("three") };
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.DeleteSection("disabledPackageSources")).Returns(true).Verifiable();
-            settings.Setup(s => s.SetValues("disabledPackageSources", It.IsAny<IList<KeyValuePair<string, string>>>()))
-                    .Callback((string section, IList<KeyValuePair<string, string>> values) =>
+            settings.Setup(s => s.UpdateSections("disabledPackageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
+                    .Callback((string section, IReadOnlyList<SettingValue> values) =>
                     {
-                        Assert.Equal(1, values.Count);
-                        Assert.Equal("two", values[0].Key);
-                        Assert.Equal("true", values[0].Value, StringComparer.OrdinalIgnoreCase);
+                        var value = Assert.Single(values);
+                        Assert.Equal("two", value.Key);
+                        Assert.Equal("true", value.Value, StringComparer.OrdinalIgnoreCase);
                     })
                     .Verifiable();
 
@@ -1065,7 +1309,6 @@ namespace NuGet.Configuration.Test
                                   new PackageSource("three")
             };
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.DeleteSection("packageSources")).Returns(true).Verifiable();
             settings.Setup(s => s.DeleteSection("packageSourceCredentials")).Returns(true).Verifiable();
 
             settings.Setup(s => s.SetNestedValues("packageSourceCredentials", It.IsAny<string>(), It.IsAny<IList<KeyValuePair<string, string>>>()))
@@ -1100,7 +1343,6 @@ namespace NuGet.Configuration.Test
                                   new PackageSource("three")
             };
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.DeleteSection("packageSources")).Returns(true).Verifiable();
             settings.Setup(s => s.DeleteSection("packageSourceCredentials")).Returns(true).Verifiable();
 
             settings.Setup(s => s.SetNestedValues("packageSourceCredentials", It.IsAny<string>(), It.IsAny<IList<KeyValuePair<string, string>>>()))
@@ -1132,7 +1374,6 @@ namespace NuGet.Configuration.Test
                                      new SettingValue("TWO", "twosource", false),
                                      new SettingValue("three", "threesource", false)
                                 });
-
             settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
                 new[] { new SettingValue("TWO", "true", false) });
             settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
@@ -1151,7 +1392,7 @@ namespace NuGet.Configuration.Test
 
         // Test that a source added in a high priority config file is not 
         // disabled by <disabledPackageSources> in a low priority file.
-        [Fact(Skip = "this seems to depend on machine level state!")]
+        [Fact]
         public void HighPrioritySourceNotDisabled()
         {
             // Arrange
@@ -1166,13 +1407,14 @@ namespace NuGet.Configuration.Test
         <add key='a' value='http://a' />
     </packageSources>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config",Path.Combine(mockBaseDirectory,@"a\b"), configContent1);
+            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent1);
             TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent2);
 
             var settings = Settings.LoadDefaultSettings(
                 Path.Combine(mockBaseDirectory, @"a\b\c"),
                 configFileName: null,
-                machineWideSettings: null);
+                machineWideSettings: null,
+                loadAppDataSettings: false);
 
             var provider = CreatePackageSourceProvider(settings);
             // Act
@@ -1187,7 +1429,7 @@ namespace NuGet.Configuration.Test
 
         // Test that a source added in a low priority config file is disabled
         // if it's listed in <disabledPackageSources> in a high priority file.
-        [Fact(Skip = "this seems to depend on machine level state!")]
+        [Fact]
         public void LowPrioritySourceDisabled()
         {
             // Arrange
@@ -1209,7 +1451,8 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadDefaultSettings(
                 Path.Combine(mockBaseDirectory, @"a\b\c"),
                 configFileName: null,
-                machineWideSettings: null);
+                machineWideSettings: null,
+                loadAppDataSettings: false);
 
             var provider = CreatePackageSourceProvider(settings);
 
@@ -1233,12 +1476,13 @@ namespace NuGet.Configuration.Test
         <add key='nuget.org' value='https://www.nuget.org/api/v2/' />
     </packageSources>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config",mockBaseDirectory, configContent);
+            TestFilesystemUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, configContent);
 
             var settings = Settings.LoadDefaultSettings(
               mockBaseDirectory,
                configFileName: null,
-               machineWideSettings: null);
+               machineWideSettings: null,
+                loadAppDataSettings: false);
 
             var provider = CreatePackageSourceProvider(settings);
 
@@ -1247,8 +1491,348 @@ namespace NuGet.Configuration.Test
 
             // Assert
             Assert.True(values[0].IsEnabled);
-
         }
+
+        [Fact]
+        public void SavePackageSources_AddDisabledSourceToTheConfigContainingSource()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var config1Contents =
+@"<?xml version=""1.0""?>
+<configuration>
+<packageSources>
+    <add key='NuGet.org' value='https://NuGet.org' />
+</packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
+
+                var config2Contents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>\r\n<configuration></configuration";
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                Directory.CreateDirectory(rootPath);
+                File.WriteAllText(Path.Combine(rootPath, "NuGet.config"), config2Contents);
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act - 1
+                var sources = packageSourceProvider.LoadPackageSources();
+
+                // Assert - 2
+                var source = Assert.Single(sources);
+                Assert.Equal("NuGet.org", source.Name);
+                Assert.Equal("https://NuGet.org", source.Source);
+                Assert.True(source.IsEnabled);
+
+                // Act - 2
+                source.IsEnabled = false;
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert - 3
+                Assert.Equal(config2Contents, File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+                Assert.Equal(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+  <disabledPackageSources>
+    <add key=""NuGet.org"" value=""true"" />
+  </disabledPackageSources>
+</configuration>
+", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_WritesToTheSettingsFileWithTheNearestPriority()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var config1Contents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+</configuration>
+";
+                var config2Contents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+<packageSources>
+    <add key='test.org' value='https://test.org' />
+    <add key='NuGet.org' value='https://NuGet.org' />
+</packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                Directory.CreateDirectory(rootPath);
+                File.WriteAllText(Path.Combine(rootPath, "NuGet.config"), config2Contents);
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act - 1
+                var sources = packageSourceProvider.LoadPackageSources();
+
+                // Assert - 1
+                Assert.Collection(sources,
+                    source =>
+                    {
+                        Assert.Equal("test.org", source.Name);
+                        Assert.Equal("https://test.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    },
+                    source =>
+                    {
+                        Assert.Equal("NuGet.org", source.Name);
+                        Assert.Equal("https://NuGet.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    });
+
+                // Act - 2
+                sources.Last().IsEnabled = false;
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert - 2
+                Assert.Equal(config1Contents, File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+                Assert.Equal(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""test.org"" value=""https://test.org"" />    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+  <disabledPackageSources>
+    <add key=""NuGet.org"" value=""true"" />
+  </disabledPackageSources>
+</configuration>
+", File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_UpdatesSourceInAllConfigs()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var config1Contents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+</configuration>
+";
+                var config2Contents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+<packageSources>
+    <add key='test.org' value='https://test.org' />
+    <add key='NuGet.org' value='https://NuGet.org' />
+</packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                Directory.CreateDirectory(rootPath);
+                File.WriteAllText(Path.Combine(rootPath, "NuGet.config"), config2Contents);
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act - 1
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert - 1
+                Assert.Collection(sources,
+                    source =>
+                    {
+                        Assert.Equal("test.org", source.Name);
+                        Assert.Equal("https://test.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    },
+                    source =>
+                    {
+                        Assert.Equal("NuGet.org", source.Name);
+                        Assert.Equal("https://NuGet.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    });
+
+                // Act - 2
+                sources[1].Source = "https://new.NuGet.org";
+                var sourcesToSave = new[] { sources[1], sources[0] };
+
+                packageSourceProvider.SavePackageSources(sourcesToSave);
+
+                // Assert - 2
+                Assert.Equal(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://new.NuGet.org"" />  </packageSources>
+</configuration>
+", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+
+                Assert.Equal(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://new.NuGet.org"" />    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
+</configuration>
+", File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_AddsNewSourcesToTheSettingWithLowestPriority()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var config1Contents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
+</configuration>
+";
+                var config2Contents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+<packageSources>
+    <add key='NuGet.org' value='https://NuGet.org' />
+</packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                Directory.CreateDirectory(rootPath);
+                File.WriteAllText(Path.Combine(rootPath, "NuGet.config"), config2Contents);
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act - 1
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert - 1
+                Assert.Collection(sources,
+                    source =>
+                    {
+                        Assert.Equal("NuGet.org", source.Name);
+                        Assert.Equal("https://NuGet.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    },
+                    source =>
+                    {
+                        Assert.Equal("test.org", source.Name);
+                        Assert.Equal("https://test.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    });
+
+                // Act - 2
+                sources[1].IsEnabled = false;
+                sources.Insert(1, new PackageSource("http://newsource", "NewSourceName"));
+
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert - 2
+                Assert.Equal(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NewSourceName"" value=""http://newsource"" />    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
+  <disabledPackageSources>
+    <add key=""test.org"" value=""true"" />
+  </disabledPackageSources>
+</configuration>
+", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+
+                Assert.Equal(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+</configuration>
+", File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_AddsOrderingForCollapsedFeeds()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""https://test.org"" />
+        <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
+        <add key=""test2"" value=""https://test2.net"" />
+    </packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act - 1
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert - 2
+                Assert.Collection(sources,
+                    source =>
+                    {
+                        Assert.Equal("nuget.org", source.Name);
+                        Assert.Equal("https://nuget.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    },
+                    source =>
+                    {
+                        Assert.Equal("test.org", source.Name);
+                        Assert.Equal("https://new.test.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                        Assert.Equal(3, source.ProtocolVersion);
+                    },
+                    source =>
+                    {
+                        Assert.Equal("test2", source.Name);
+                        Assert.Equal("https://test2.net", source.Source);
+                        Assert.True(source.IsEnabled);
+                    });
+
+                // Act - 2
+                sources[1].Source = "https://new2.test.org";
+                var sourcesToSave = new[]
+                {
+                    sources[1], sources[2], sources[0]
+                };
+                packageSourceProvider.SavePackageSources(sourcesToSave);
+
+                // Assert - 2
+                Assert.Equal(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test.org"" value=""https://test.org"" />
+    <add key=""test.org"" value=""https://new2.test.org"" protocolVersion=""3"" />
+    <add key=""test2"" value=""https://test2.net"" />
+    <add key=""nuget.org"" value=""https://nuget.org"" />
+  </packageSources>
+</configuration>
+", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+            }
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             StringBuilder nugetConfigBaseString = new StringBuilder();
@@ -1280,7 +1864,7 @@ namespace NuGet.Configuration.Test
         {
             List<PackageSource> toVerifyList = new List<PackageSource>();
             toVerifyList = psp.LoadPackageSources().ToList();
-            
+
             Assert.Equal(toVerifyList.Count, count);
             int index = 0;
             foreach (PackageSource ps in toVerifyList)

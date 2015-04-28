@@ -9,6 +9,7 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
+        "System.Globalization": "",
         "System.Security": "",
         "System.Xml": "",
         "System.Xml.Linq": ""
@@ -16,12 +17,12 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Runtime": "4.0.20-beta-*",
         "System.Runtime.Extensions": "4.0.10-beta-*",
         "System.Collections": "4.0.10-beta-*",
         "System.Collections.Concurrent": "4.0.10-beta-*",
-        "System.Diagnostics.Tools": "4.0.0-beta-*",
         "System.Diagnostics.Debug": "4.0.10-beta-*",
+        "System.Diagnostics.Tools": "4.0.0-beta-*",
+        "System.Globalization": "4.0.10-beta-*",
         "System.IO": "4.0.10-beta-*",
         "System.IO.FileSystem": "4.0.0-beta-*",
         "System.Linq": "4.0.0-beta-*",

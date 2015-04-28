@@ -4,12 +4,17 @@ namespace NuGet.Configuration
 {
     public class PackageSource : IEquatable<PackageSource>
     {
+        /// <summary>
+        /// The feed version for NuGet prior to v3.
+        /// </summary>
+        public const int DefaultProtocolVersion = 2;
+
         private readonly int _hashCode;
         private bool? _isHttp;
 
         public string Name { get; private set; }
 
-        public string Source { get; private set; }
+        public string Source { get; set; }
 
         /// <summary>
         /// This does not represent just the NuGet Official Feed alone
@@ -34,6 +39,11 @@ namespace NuGet.Configuration
             get;
             private set;
         }
+
+        /// <summary>
+        /// Gets or sets the protocol version of the source. Defaults to 2.
+        /// </summary>
+        public int ProtocolVersion { get; set; } = DefaultProtocolVersion;
 
         public bool IsHttp
         {
@@ -128,9 +138,9 @@ namespace NuGet.Configuration
                     UserName = UserName, 
                     Password = Password, 
                     IsPasswordClearText = IsPasswordClearText, 
-                    IsMachineWide = IsMachineWide 
+                IsMachineWide = IsMachineWide,
+                ProtocolVersion = ProtocolVersion
                 };
         }
     }
-
 }

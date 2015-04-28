@@ -44,17 +44,17 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(root))
             {
-                throw new ArgumentException("root cannot be null or empty");
+                throw new ArgumentException("root cannot be null or empty", nameof(root));
             }
 
             if (String.IsNullOrEmpty(fileName))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "fileName");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(fileName));
             }
 
-            if(!FileSystemUtility.IsPathAFile(fileName))
+            if (!FileSystemUtility.IsPathAFile(fileName))
             {
-                throw new ArgumentException(Resources.Settings_FileName_Cannot_Be_A_Path);
+                throw new ArgumentException(Resources.Settings_FileName_Cannot_Be_A_Path, nameof(fileName));
             }
 
             Root = root;
@@ -118,48 +118,67 @@ namespace NuGet.Configuration
             string configFileName,
             IMachineWideSettings machineWideSettings)
         {
-            // Walk up the tree to find a config file; also look in .nuget subdirectories
-            var validSettingFiles = new List<Settings>();
-            if (root != null)
+            return LoadDefaultSettings(
+                root,
+                configFileName,
+                machineWideSettings,
+                loadAppDataSettings: true);
+        }
+
+        // Internal for unit testing.
+        internal static ISettings LoadDefaultSettings(
+            string root,
+            string configFileName,
+            IMachineWideSettings machineWideSettings,
+            bool loadAppDataSettings)
+        {
             {
-                validSettingFiles.AddRange(
-                    GetSettingsFileNames(root)
-                        .Select(f => ReadSettings(root, f))
-                        .Where(f => f != null));
+                // Walk up the tree to find a config file; also look in .nuget subdirectories
+                var validSettingFiles = new List<Settings>();
+                if (root != null)
+                {
+                    validSettingFiles.AddRange(
+                        GetSettingsFileNames(root)
+                            .Select(f => ReadSettings(root, f))
+                            .Where(f => f != null));
+                }
+
+                if (loadAppDataSettings)
+                {
+                    LoadUserSpecificSettings(validSettingFiles, root, configFileName);
+                }
+
+                if (machineWideSettings != null)
+                {
+                    validSettingFiles.AddRange(
+                        machineWideSettings.Settings.Select(
+                            s => new Settings(s.Root, s.ConfigFileName, s.IsMachineWideSettings)));
+                }
+
+                if (validSettingFiles == null || !validSettingFiles.Any())
+                {
+                    // This means we've failed to load all config files and also failed to load or create the one in %AppData%
+                    // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
+                    // Returning a null instance prevents us from silently failing and also from picking up the wrong config
+                    return NullSettings.Instance;
+                }
+
+                validSettingFiles[0]._priority = validSettingFiles.Count;
+
+                // if multiple setting files were loaded, chain them in a linked list
+                for (int i = 1; i < validSettingFiles.Count; ++i)
+                {
+                    validSettingFiles[i]._next = validSettingFiles[i - 1];
+                    validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
+                }
+
+                // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
+                // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
+                // wide config files. The head file is the one we want to read first, while the user specific config
+                // is the one that we want to write to.
+                // TODO: add UI to allow specifying which one to write to
+                return validSettingFiles.Last();
             }
-
-            LoadUserSpecificSettings(validSettingFiles, root, configFileName);
-
-            if (machineWideSettings != null)
-            {
-                validSettingFiles.AddRange(
-                    machineWideSettings.Settings.Select(
-                        s => new Settings(s.Root, s.ConfigFileName, s.IsMachineWideSettings)));
-            }
-
-            if (validSettingFiles == null || !validSettingFiles.Any())
-            {
-                // This means we've failed to load all config files and also failed to load or create the one in %AppData%
-                // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
-                // Returning a null instance prevents us from silently failing and also from picking up the wrong config
-                return NullSettings.Instance;
-            }
-
-            validSettingFiles[0]._priority = validSettingFiles.Count;
-
-            // if multiple setting files were loaded, chain them in a linked list
-            for (int i = 1; i < validSettingFiles.Count; ++i)
-            {
-                validSettingFiles[i]._next = validSettingFiles[i - 1];
-                validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
-            }
-
-            // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
-            // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
-            // wide config files. The head file is the one we want to read first, while the user specific config
-            // is the one that we want to write to.
-            // TODO: add UI to allow specifying which one to write to
-            return validSettingFiles.Last();
         }
 
         private static void LoadUserSpecificSettings(
@@ -277,12 +296,12 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
             XElement element = null;
@@ -309,7 +328,7 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             var settingValues = new List<SettingValue>();
@@ -327,12 +346,12 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (String.IsNullOrEmpty(subSection))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "subSection");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
             }
 
             var values = new List<SettingValue>();
@@ -362,14 +381,14 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
             var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            SetValueInternal(sectionElement, key, value);
+            SetValueInternal(sectionElement, key, value, attributes: null);
             Save();
         }
 
-        public void SetValues(string section, IList<KeyValuePair<string, string>> values)
+        public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
             // machine wide settings cannot be changed.
             if (IsMachineWideSettings)
@@ -385,19 +404,96 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
             if (values == null)
             {
-                throw new ArgumentNullException("values");
+                throw new ArgumentNullException(nameof(values));
             }
 
             var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            foreach (var kvp in values)
+            foreach (var value in values)
             {
-                SetValueInternal(sectionElement, kvp.Key, kvp.Value);
+                SetValueInternal(sectionElement, value.Key, value.Value, value.AdditionalData);
             }
             Save();
+        }
+
+        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        {
+            // machine wide settings cannot be changed.
+            if (IsMachineWideSettings)
+            {
+                if (_next == null)
+                {
+                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
+                }
+
+                _next.UpdateSections(section, values);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+            if (sectionElement != null)
+            {
+                XElementUtility.RemoveIndented(sectionElement);
+            }
+
+            var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
+
+            if (valuesToWrite.Any())
+            {
+                sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
+            }
+
+            foreach (var value in valuesToWrite)
+            {
+                var element = new XElement("add");
+                SetElementValues(element, value.Key, value.Value, value.AdditionalData);
+                XElementUtility.AddIndented(sectionElement, element);
+            }
+
+            Save();
+
+            if (_next != null)
+            {
+                _next.UpdateSections(section, values.Where(v => v.Priority >= _next._priority).ToList());
+            }
+        }
+
+        private static void SetElementValues(XElement element, string key, string value, IDictionary<string, string> attributes)
+        {
+            foreach (var existingAttribute in element.Attributes())
+            {
+                if (!string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.ValueAttribute, StringComparison.OrdinalIgnoreCase) &&
+                    !attributes.ContainsKey(existingAttribute.Name.LocalName))
+                {
+                    // Remove previously existing attributes that are no longer present.
+                    existingAttribute.Remove();
+                }
+            }
+
+            element.SetAttributeValue(ConfigurationContants.KeyAttribute, key);
+            element.SetAttributeValue(ConfigurationContants.ValueAttribute, value);
+
+            if (attributes != null)
+            {
+                foreach (var attribute in attributes)
+                {
+                    element.SetAttributeValue(attribute.Key, attribute.Value);
+                }
+            }
         }
 
         public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
@@ -416,7 +512,7 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
             if (values == null)
             {
@@ -428,7 +524,7 @@ namespace NuGet.Configuration
 
             foreach (var kvp in values)
             {
-                SetValueInternal(element, kvp.Key, kvp.Value);
+                SetValueInternal(element, kvp.Key, kvp.Value, attributes: null);
             }
             Save();
         }
@@ -448,11 +544,11 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
             var sectionElement = GetSection(ConfigXDocument.Root, section);
@@ -486,7 +582,7 @@ namespace NuGet.Configuration
 
             if (String.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             var sectionElement = GetSection(ConfigXDocument.Root, section);
@@ -542,7 +638,7 @@ namespace NuGet.Configuration
                     result = null;
                 }
                 else if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase) &&
-                         XElementUtility.GetOptionalAttributeValue(element, "key").Equals(key, StringComparison.OrdinalIgnoreCase))
+                         XElementUtility.GetOptionalAttributeValue(element, ConfigurationContants.KeyAttribute).Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
                     result = element;
                 }
@@ -558,7 +654,7 @@ namespace NuGet.Configuration
             }
 
             // Return the optional value which if not there will be null;
-            string value = XElementUtility.GetOptionalAttributeValue(element, "value");
+            string value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationContants.ValueAttribute);
             if (!isPath || String.IsNullOrEmpty(value))
             {
                 return value;
@@ -617,8 +713,7 @@ namespace NuGet.Configuration
                 string elementName = element.Name.LocalName;
                 if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase))
                 {
-                    var v = ReadValue(element, isPath);
-                    values.Add(new SettingValue(v.Key, v.Value, IsMachineWideSettings, _priority));
+                    values.Add(ReadSettingsValue(element, isPath));
                 }
                 else if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
                 {
@@ -627,10 +722,10 @@ namespace NuGet.Configuration
             }
         }
 
-        private KeyValuePair<string, string> ReadValue(XElement element, bool isPath)
+        private SettingValue ReadSettingsValue(XElement element, bool isPath)
         {
-            var keyAttribute = element.Attribute("key");
-            var valueAttribute = element.Attribute("value");
+            var keyAttribute = element.Attribute(ConfigurationContants.KeyAttribute);
+            var valueAttribute = element.Attribute(ConfigurationContants.ValueAttribute);
 
             if (keyAttribute == null || String.IsNullOrEmpty(keyAttribute.Value) || valueAttribute == null)
             {
@@ -645,31 +740,43 @@ namespace NuGet.Configuration
                 value = Path.Combine(Root, Path.Combine(configDirectory, value));
             }
 
-            return new KeyValuePair<string, string>(keyAttribute.Value, value);
+            var settingValue = new SettingValue(keyAttribute.Value, value, IsMachineWideSettings, _priority);
+            foreach (var attribute in element.Attributes())
+            {
+                // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
+                if (!string.Equals(attribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.Ordinal) &&
+                    !string.Equals(attribute.Name.LocalName, ConfigurationContants.ValueAttribute, StringComparison.Ordinal))
+                {
+                    settingValue.AdditionalData[attribute.Name.LocalName] = attribute.Value;
+                }
+            }
+
+            return settingValue;
         }
 
-        private void SetValueInternal(XElement sectionElement, string key, string value)
+        private void SetValueInternal(XElement sectionElement, string key, string value, IDictionary<string, string> attributes)
         {
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, ConfigurationContants.KeyAttribute);
             }
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(ConfigurationContants.ValueAttribute);
             }
 
             var element = FindElementByKey(sectionElement, key, null);
+
             if (element != null)
             {
-                element.SetAttributeValue("value", value);
+                SetElementValues(element, key, value, attributes);
                 Save();
             }
             else
             {
-                XElementUtility.AddIndented(sectionElement, new XElement("add",
-                                                            new XAttribute("key", key),
-                                                            new XAttribute("value", value)));
+                element = new XElement("add");
+                SetElementValues(element, key, value, attributes);
+                XElementUtility.AddIndented(sectionElement, element);
             }
         }
 

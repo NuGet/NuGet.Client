@@ -1,17 +1,13 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using NuGet.Configuration;
 using Xunit;
-using Xunit.Extensions;
-using Xunit.Sdk;
 
 namespace NuGet.Configuration
 {
-    public class ConfigurationDefaultsTests 
+    public class ConfigurationDefaultsTests
     {
         [Fact]
         public void CreateConfigurationDefaultsReturnsNonNullConfigurationDefaults()
@@ -35,7 +31,7 @@ namespace NuGet.Configuration
             string nugetConfigFile = "NuGetDefaults.config";
             string nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
             File.Create(nugetConfigFilePath).Close();
-            
+
             string enabledReplacement = @"<add key='" + name1 + "' value='" + feed1 + "' />";
 
             enabledReplacement = enabledReplacement + @"<add key='" + name2 + "' value='" + feed2 + "' />";
@@ -48,7 +44,7 @@ namespace NuGet.Configuration
             IEnumerable<PackageSource> defaultSourcesFromConfigFile = configDefaults.DefaultPackageSources;
             string packageRestore = configDefaults.DefaultPackageRestoreConsent;
             string packagePushSource = configDefaults.DefaultPushSource;
-            
+
             //Assert
             VerifyPackageSource(defaultSourcesFromConfigFile, 2, new string[] { name1, name2 }, new string[] { feed1, feed2 });
             Assert.Equal(feed2, packagePushSource);
@@ -101,7 +97,7 @@ namespace NuGet.Configuration
 
             string configurationDefaultsContent = @"<configuration></configuration>";
             File.WriteAllText(nugetConfigFilePath, configurationDefaultsContent);
-                       
+
             ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
             Assert.Null(configDefaults.DefaultPushSource);
         }
@@ -170,7 +166,7 @@ namespace NuGet.Configuration
             ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
             Assert.True(configDefaults.DefaultPackageSources.ToList().Count == 0);
         }
-                     
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string defaultPushSource = "")
         {
             StringBuilder nugetConfigBaseString = new StringBuilder();
@@ -205,7 +201,7 @@ namespace NuGet.Configuration
         {
             List<PackageSource> toVerifyList = new List<PackageSource>();
             toVerifyList = toVerify.ToList();
-            
+
             Assert.Equal(toVerifyList.Count, count);
             int index = 0;
             foreach (PackageSource ps in toVerifyList)
