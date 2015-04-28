@@ -69,13 +69,13 @@ namespace NuGet.LibraryModel
 
         public int CompareTo(LibraryIdentity other)
         {
-            int compare = string.Compare(Type, other.Type);
+            int compare = string.Compare(Type, other.Type, StringComparison.OrdinalIgnoreCase);
             if(compare != 0)
             {
                 return compare;
             }
 
-            compare = string.Compare(Name, other.Name);
+            compare = string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
             if (compare == 0)
             {
                 if (Version == null && other.Version == null)

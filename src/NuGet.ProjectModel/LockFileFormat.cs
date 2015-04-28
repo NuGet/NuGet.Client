@@ -204,7 +204,7 @@ namespace NuGet.ProjectModel
                 json["native"] = WritePathArray(library.NativeLibraries, WriteString);
             }
 
-            return new JProperty(library.Name + "/" + library.Version, json);
+            return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);
         }
 
 
