@@ -16,14 +16,14 @@ namespace NuGet.Protocol.Core.v3
     public class DependencyInfoResourceV3Provider : ResourceProvider
     {
         public DependencyInfoResourceV3Provider()
-            : base(typeof(DepedencyInfoResource), "DependencyInfoResourceV3Provider", "DependencyInfoResourceV2Provider")
+            : base(typeof(DependencyInfoResource), "DependencyInfoResourceV3Provider", "DependencyInfoResourceV2Provider")
         {
 
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            DepedencyInfoResource curResource = null;
+            DependencyInfoResource curResource = null;
 
             if (await source.GetResourceAsync<ServiceIndexResourceV3>(token) != null)
             {

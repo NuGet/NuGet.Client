@@ -14,7 +14,7 @@ namespace NuGet.Protocol.Core.v2
     /// <summary>
     /// A V2 dependency info gatherer.
     /// </summary>
-    public class DependencyInfoResourceV2 : DepedencyInfoResource
+    public class DependencyInfoResourceV2 : DependencyInfoResource
     {
         private readonly IPackageRepository V2Client;
         private readonly ConcurrentDictionary<string, VersionRange> _rangeSearched;

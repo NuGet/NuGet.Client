@@ -25,7 +25,7 @@ namespace Protocol.Core.v3.Tests
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            var resource = await repo.GetResourceAsync<DepedencyInfoResource>();
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
             var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), true, CancellationToken.None);
@@ -48,7 +48,7 @@ namespace Protocol.Core.v3.Tests
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            var resource = await repo.GetResourceAsync<DepedencyInfoResource>();
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
             var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), false, CancellationToken.None);
@@ -70,7 +70,7 @@ namespace Protocol.Core.v3.Tests
             responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", JsonData.OwinRegistration);
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            var resource = await repo.GetResourceAsync<DepedencyInfoResource>();
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
             var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), true, CancellationToken.None);
@@ -96,7 +96,7 @@ namespace Protocol.Core.v3.Tests
             // Owin is not added
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            var resource = await repo.GetResourceAsync<DepedencyInfoResource>();
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
             var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), true, CancellationToken.None);
@@ -115,7 +115,7 @@ namespace Protocol.Core.v3.Tests
             responses.Add("https://api.nuget.org/v3/registration0/jquery.validation/index.json", JsonData.JQueryValidationRegistration);
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            var resource = await repo.GetResourceAsync<DepedencyInfoResource>();
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
             var results = await resource.ResolvePackages("jquery.validation", NuGetFramework.Parse("net45"), true, CancellationToken.None);

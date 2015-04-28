@@ -19,7 +19,7 @@ namespace NuGet.Protocol.Core.v3
     /// <summary>
     /// Retrieves all packages and dependencies from a V3 source.
     /// </summary>
-    public sealed class DependencyInfoResourceV3 : DepedencyInfoResource
+    public sealed class DependencyInfoResourceV3 : DependencyInfoResource
     {
         private readonly HttpClient _client;
         private readonly ConcurrentDictionary<Uri, JObject> _cache;
