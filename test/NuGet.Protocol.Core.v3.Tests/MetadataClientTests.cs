@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 using NuGet.Versioning;
@@ -28,7 +28,7 @@ namespace Protocol.Core.v3.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), true, CancellationToken.None);
+            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), CancellationToken.None);
 
             var target = results.Where(p => p.Version == NuGetVersion.Parse("1.4.0")).Single();
 
@@ -39,7 +39,28 @@ namespace Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task MetadataClient_GatherStablePackagesOnly()
+        public async Task MetadataClient_GatherExactPackage()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", JsonData.DeepEqualRegistationIndex);
+
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
+
+            var package = new PackageIdentity("deepequal", NuGetVersion.Parse("0.9.0"));
+
+            // Act
+            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(result.Version, package.Version);
+        }
+
+        [Fact]
+        public async Task MetadataClient_GatherAllPackages()
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -51,38 +72,11 @@ namespace Protocol.Core.v3.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), false, CancellationToken.None);
+            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), CancellationToken.None);
 
             // Assert
-            Assert.Equal(18, results.Count());
-            Assert.True(results.All(p => !p.Version.IsPrerelease));
-        }
-
-        [Fact]
-        public async Task MetadataClient_ResolverPackagesAndDependencyPackages()
-        {
-            // Verify that when collecting dependency info for Microsoft.Owin that Owin is also returned
-
-            // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
-            responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
-            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", JsonData.OwinRegistration);
-            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
-
-            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
-
-            // Act
-            var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), true, CancellationToken.None);
-            var target = results.Where(p => p.Version == NuGetVersion.Parse("3.0.0")).Single();
-
-            // Assert
-            Assert.Equal(14, results.Where(p => p.Id.Equals("microsoft.owin", StringComparison.OrdinalIgnoreCase)).Count());            
-
-            Assert.Equal("Owin", target.Dependencies.Single().Id);
-            Assert.Equal("[1.0.0, )", target.Dependencies.Single().VersionRange.ToNormalizedString());
-
-            Assert.Equal(1, results.Where(p => p.Id.Equals("owin", StringComparison.OrdinalIgnoreCase)).Count());
+            Assert.Equal(19, results.Count());
+            Assert.Equal(1, results.Count(package => package.Version.IsPrerelease));
         }
 
         [Fact]
@@ -99,40 +93,53 @@ namespace Protocol.Core.v3.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), true, CancellationToken.None);
+            var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), CancellationToken.None);
 
             // Assert
-            Assert.Equal(0, results.Where(p => p.Id.Equals("microsoft.owin", StringComparison.OrdinalIgnoreCase)).Count());
+            Assert.Equal(14, results.Count());
+            Assert.True(results.All(p => p.Id.Equals("microsoft.owin", StringComparison.OrdinalIgnoreCase)));
         }
 
         [Fact]
-        public async Task MetadataClient_VerifyLowestDependencyVersionIsReturnedWhenMultipleRangesExist()
+        public async Task MetadataClient_ResolvePackageNotFoundOnServer()
         {
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
-            responses.Add("https://api.nuget.org/v3/registration0/jquery/index.json", JsonData.JQueryRegistration);
-            responses.Add("https://api.nuget.org/v3/registration0/jquery.validation/index.json", JsonData.JQueryValidationRegistration);
+            responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
+            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", null);
+            // Owin is not added
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("jquery.validation", NuGetFramework.Parse("net45"), true, CancellationToken.None);
-
-            var target = results.Where(p => p.Id.Equals("jquery.validation", StringComparison.OrdinalIgnoreCase)
-                    && p.Version == NuGetVersion.Parse("1.6.0")).Single();
-
-            var lowestJQuery = results.Where(p => p.Id.Equals("jQuery", StringComparison.OrdinalIgnoreCase)
-                && p.Version == NuGetVersion.Parse("1.4.1")).FirstOrDefault();
+            var results = await resource.ResolvePackages("owin", NuGetFramework.Parse("net45"), CancellationToken.None);
 
             // Assert
-            Assert.Equal(13, results.Where(p => p.Id.Equals("jquery.validation", StringComparison.OrdinalIgnoreCase)).Count());            
+            Assert.Equal(0, results.Count());
+        }
 
-            Assert.Equal("jQuery", target.Dependencies.Single().Id);
-            Assert.Equal("[1.4.1, )", target.Dependencies.Single().VersionRange.ToNormalizedString());            
+        [Fact]
+        public async Task MetadataClient_ResolvePackageNotFoundOnServer_Exact()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
+            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", null);
+            // Owin is not added
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            Assert.NotNull(lowestJQuery);
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
+
+            var package = new PackageIdentity("owin", NuGetVersion.Parse("1.0.0"));
+
+            // Act
+            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
         }
     }
 }

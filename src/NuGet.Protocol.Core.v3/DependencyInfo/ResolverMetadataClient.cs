@@ -1,86 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Frameworks;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.DependencyInfo
 {
     internal static class ResolverMetadataClient
     {
-        public static async Task<RegistrationInfo> GetTree(HttpClient httpClient, RegistrationInfo registrationInfo, NuGetFramework projectFramework, ConcurrentDictionary<Uri, JObject> sessionCache, Func<IDictionary<NuGetVersion, HashSet<string>>, IDictionary<NuGetVersion, HashSet<string>>> filter = null)
-        {
-            //ApplyFilter(registrationInfo, filter);
-
-            await InlineDependencies(httpClient, registrationInfo, projectFramework, sessionCache, filter);
-
-            return registrationInfo;
-        }
-
-        private static async Task InlineDependencies(HttpClient httpClient, RegistrationInfo registrationInfo, NuGetFramework projectFramework, ConcurrentDictionary<Uri, JObject> sessionCache, Func<IDictionary<NuGetVersion, HashSet<string>>, IDictionary<NuGetVersion, HashSet<string>>> filter)
-        {
-            foreach (PackageInfo packageInfo in registrationInfo.Packages)
-            {
-                foreach (DependencyInfo dependencyInfo in packageInfo.Dependencies)
-                {
-                    dependencyInfo.RegistrationInfo = await GetRegistrationInfo(httpClient, dependencyInfo.RegistrationUri, dependencyInfo.Range, projectFramework, sessionCache);
-
-                    //ApplyFilter(dependencyInfo.RegistrationInfo, filter);
-
-                    await InlineDependencies(httpClient, dependencyInfo.RegistrationInfo, projectFramework, sessionCache, filter);
-                }
-            }
-        }
-
-        //private static void ApplyFilter(RegistrationInfo registrationInfo, Func<IDictionary<NuGetVersion, HashSet<string>>, IDictionary<NuGetVersion, HashSet<string>>> filter)
-        //{
-        //    if (registrationInfo.Id == null)
-        //    {
-        //        return;
-        //    }
-
-        //    IDictionary<NuGetVersion, HashSet<string>> before = new Dictionary<NuGetVersion, HashSet<string>>();
-
-        //    foreach (PackageInfo packageInfo in registrationInfo.Packages)
-        //    {
-        //        HashSet<string> targetFrameworks = new HashSet<string>();
-        //        foreach (DependencyGroupInfo dependencyGroupInfo in packageInfo.Dependencies)
-        //        {
-        //            targetFrameworks.Add(dependencyGroupInfo.TargetFramework);
-        //        }
-        //        before.Add(packageInfo.Version, targetFrameworks);
-        //    }
-
-        //    IDictionary<NuGetVersion, HashSet<string>> after = filter(before);
-
-        //    foreach (PackageInfo packageInfo in registrationInfo.Packages)
-        //    {
-        //        HashSet<string> dependencyGroupsToRetain = after[packageInfo.Version];
-
-        //        IList<DependencyGroupInfo> dependencyGroupsToRemove = new List<DependencyGroupInfo>();
-
-        //        foreach (DependencyGroupInfo dependencyGroupInfo in packageInfo.Dependencies)
-        //        {
-        //            if (!dependencyGroupsToRetain.Contains(dependencyGroupInfo.TargetFramework))
-        //            {
-        //                dependencyGroupsToRemove.Add(dependencyGroupInfo);
-        //            }
-        //        }
-
-        //        foreach (DependencyGroupInfo dependencyGroupInfo in dependencyGroupsToRemove)
-        //        {
-        //            packageInfo.Dependencies.Remove(dependencyGroupInfo);
-        //        }
-        //    }
-        //}
-
         private static async Task<JObject> LoadResource(HttpClient httpClient, Uri uri, ConcurrentDictionary<Uri, JObject> sessionCache)
         {
             JObject obj;
@@ -109,6 +41,10 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             return obj;
         }
 
+        /// <summary>
+        /// Retrieve a registration blob
+        /// </summary>
+        /// <returns>Returns Null if the package does not exist</returns>
         public static async Task<RegistrationInfo> GetRegistrationInfo(HttpClient httpClient, Uri registrationUri, VersionRange range, NuGetFramework projectTargetFramework, ConcurrentDictionary<Uri, JObject> sessionCache = null)
         {
             NuGetFrameworkFullComparer frameworkComparer = new NuGetFrameworkFullComparer();
@@ -117,7 +53,8 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
             if (index == null)
             {
-                throw new ArgumentException(registrationUri.AbsoluteUri);
+                // The server returned a 404, the package does not exist
+                return null;
             }
 
             VersionRange preFilterRange = Utils.SetIncludePrerelease(range, true);

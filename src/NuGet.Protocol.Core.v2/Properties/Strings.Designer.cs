@@ -203,6 +203,22 @@ namespace NuGet.Protocol.Core.v2
         }
 
         /// <summary>
+        /// An error occurred while retrieving package metadata for '{0}' from source '{1}'.
+        /// </summary>
+        internal static string Protocol_PackageMetadataError
+        {
+            get { return GetString("Protocol_PackageMetadataError"); }
+        }
+
+        /// <summary>
+        /// An error occurred while retrieving package metadata for '{0}' from source '{1}'.
+        /// </summary>
+        internal static string FormatProtocol_PackageMetadataError(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_PackageMetadataError"), p0, p1);
+        }
+
+        /// <summary>
         /// The '{0}' installation feature was required by a package but is not supported on the current host.
         /// </summary>
         internal static string RequiredFeatureUnsupportedException_DefaultMessageWithFeature

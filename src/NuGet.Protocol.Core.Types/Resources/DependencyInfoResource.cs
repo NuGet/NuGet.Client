@@ -1,8 +1,11 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -12,34 +15,26 @@ namespace NuGet.Protocol.Core.Types
     public abstract class DependencyInfoResource : INuGetResource
     {
         /// <summary>
-        /// Check if the given package identity is present in the current repository. This would used to check if correct package Id/Version is passed before resolving dependencies.
+        /// Retrieve dependency info for a single package.
         /// </summary>
-        /// <param name="identity"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, NuGetFramework projectFramework, bool includePrerelease)
-        {
-            return await ResolvePackages(packages, projectFramework, includePrerelease, CancellationToken.None);
-        }
+        /// <param name="package">package id and version</param>
+        /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
+        /// <param name="token">cancellation token</param>
+        /// <returns>Returns dependency info for the given package if it exists. If the package is not found null is returned.</returns>
+        public abstract Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package,
+            NuGetFramework projectFramework,
+            CancellationToken token);
 
         /// <summary>
-        /// Check if the given package identity is present in the current repository. This would used to check if correct package Id/Version is passed before resolving dependencies.
+        /// Retrieve the available packages and their dependencies.
         /// </summary>
-        /// <param name="identity"></param>
-        /// <returns></returns>
-        public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token);
-
-
-        /// <summary>
-        /// Find all packages with the given name and their dependencies
-        /// </summary>
-        public async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
-        {
-            return await ResolvePackages(new string[] { packageId }, projectFramework, includePrerelease, token);
-        }
-
-        /// <summary>
-        /// Find all packages with the given name and their dependencies
-        /// </summary>
-        public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<string> packageIds, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token);
+        /// <remarks>Includes prerelease packages</remarks>
+        /// <param name="packageId">package Id to search</param>
+        /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
+        /// <param name="token">cancellation token</param>
+        /// <returns>available packages and their dependencies</returns>
+        public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId,
+            NuGetFramework projectFramework,
+            CancellationToken token);
     }
 }

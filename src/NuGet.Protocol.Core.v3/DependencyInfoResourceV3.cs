@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.DependencyInfo;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -22,117 +22,126 @@ namespace NuGet.Protocol.Core.v3
     public sealed class DependencyInfoResourceV3 : DependencyInfoResource
     {
         private readonly HttpClient _client;
-        private readonly ConcurrentDictionary<Uri, JObject> _cache;
         private readonly RegistrationResourceV3 _regResource;
-        private static readonly VersionRange AllVersions = new VersionRange(null, true, null, true, true);
+        private readonly PackageSource _source;
+        private readonly ConcurrentDictionary<Uri, JObject> _cache = new ConcurrentDictionary<Uri, JObject>();
 
         /// <summary>
         /// Dependency info resource
         /// </summary>
         /// <param name="client">Http client</param>
         /// <param name="regResource">Registration blob resource</param>
-        public DependencyInfoResourceV3(HttpClient client, RegistrationResourceV3 regResource)
+        public DependencyInfoResourceV3(HttpClient client, RegistrationResourceV3 regResource, PackageSource source)
         {
             if (client == null)
             {
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             }
 
             if (regResource == null)
             {
-                throw new ArgumentNullException("regResource");
+                throw new ArgumentNullException(nameof(regResource));
             }
+
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
 
             _client = client;
-            _cache = new ConcurrentDictionary<Uri, JObject>();
             _regResource = regResource;
+            _source = source;
         }
 
         /// <summary>
-        /// Retrieves all the package and all dependant packages
+        /// Retrieve dependency info for a single package.
         /// </summary>
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<PackageIdentity> packages, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
+        /// <param name="package">package id and version</param>
+        /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
+        /// <param name="token">cancellation token</param>
+        /// <returns>Returns dependency info for the given package if it exists. If the package is not found null is returned.</returns>
+        public override async Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
         {
-            // compare results based on the id/version
-            HashSet<PackageDependencyInfo> results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
-
-            foreach (var package in packages)
-            {
-                var range = new VersionRange(package.Version, true, package.Version, true);
-
-                foreach (var result in await GetPackagesFromRegistration(package.Id, range, projectFramework, token))
-                {
-                    results.Add(result);
-                }
-            }
-
-            return results.Where(e => includePrerelease || !e.Version.IsPrerelease);
-        }
-
-        /// <summary>
-        /// Gives all packages for an Id, and all dependencies recursively.
-        /// </summary>
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(IEnumerable<string> packageIds, NuGetFramework projectFramework, bool includePrerelease, CancellationToken token)
-        {
-            HashSet<PackageDependencyInfo> result = new HashSet<PackageDependencyInfo>(PackageIdentityComparer.Default);
-
-            foreach (string packageId in packageIds)
-            {
-                result.UnionWith(await GetPackagesFromRegistration(packageId, AllVersions, projectFramework, token));
-            }
-
-            return result.Where(e => includePrerelease || !e.Version.IsPrerelease);
-        }
-
-        /// <summary>
-        /// Helper for finding all versions of a package and all dependencies.
-        /// </summary>
-        private async Task<IEnumerable<PackageDependencyInfo>> GetPackagesFromRegistration(string packageId, VersionRange range, NuGetFramework projectFramework, CancellationToken cancellationToken)
-        {
-            HashSet<PackageDependencyInfo> results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
-
-            Uri uri = _regResource.GetUri(packageId);
-
             try
             {
-                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, range, projectFramework, _cache);
+                PackageDependencyInfo result = null;
 
-                var result = await ResolverMetadataClient.GetTree(_client, regInfo, projectFramework, _cache);
+                // Construct the registration index url
+                Uri uri = _regResource.GetUri(package.Id);
 
-                foreach (var currentPackage in GetPackagesFromRegistration(result, cancellationToken))
+                // Retrieve the registration blob
+                var singleVersion = new VersionRange(minVersion: package.Version, includeMinVersion: true, maxVersion: package.Version, includeMaxVersion: true);
+                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, singleVersion, projectFramework, _cache);
+
+                // regInfo is null if the server returns a 404 for the package to indicate that it does not exist
+                if (regInfo != null)
                 {
-                    results.Add(currentPackage);
+                    // Parse package and dependeny info from the blob
+                    result = GetPackagesFromRegistration(regInfo, token).FirstOrDefault();
                 }
-            }
-            catch (ArgumentException)
-            {
-                // ignore missing packages
-                // TODO: add an exception type for missing packages to be thrown in the metadata client
-            }
 
-            return results;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Wrap exceptions coming from the server with a user friendly message
+                string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, _source.Source);
+
+                throw new NuGetProtocolException(error, ex);
+            }
         }
 
         /// <summary>
-        /// Walk the RegistrationInfo tree to find all package instances and their dependencies.
+        /// Retrieve the available packages and their dependencies.
+        /// </summary>
+        /// <remarks>Includes prerelease packages</remarks>
+        /// <param name="packageId">package Id to search</param>
+        /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
+        /// <param name="token">cancellation token</param>
+        /// <returns>available packages and their dependencies</returns>
+        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
+        {
+            try
+            {
+                List<PackageDependencyInfo> results = new List<PackageDependencyInfo>();
+
+                // Construct the registration index url
+                Uri uri = _regResource.GetUri(packageId);
+
+                // Retrieve the registration blob
+                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, VersionRange.All, projectFramework, _cache);
+
+                // regInfo is null if the server returns a 404 for the package to indicate that it does not exist
+                if (regInfo != null)
+                {
+                    // Parse package and dependeny info from the blob
+                    var packages = GetPackagesFromRegistration(regInfo, token);
+
+                    // Filter on prerelease
+                    results.AddRange(packages);
+                }
+
+                return results;
+            }
+            catch (Exception ex)
+            {
+                // Wrap exceptions coming from the server with a user friendly message
+                string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source.Source);
+
+                throw new NuGetProtocolException(error, ex);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve dependency info from a registration blob
         /// </summary>
         private static IEnumerable<PackageDependencyInfo> GetPackagesFromRegistration(RegistrationInfo registration, CancellationToken token)
         {
             foreach (var pkgInfo in registration.Packages)
             {
-                var dependencies = pkgInfo.Dependencies.Select(e => new PackageDependency(e.Id, e.Range));
+                var dependencies = pkgInfo.Dependencies.Select(dep => new PackageDependency(dep.Id, dep.Range));
                 yield return new PackageDependencyInfo(registration.Id, pkgInfo.Version, dependencies);
-
-                foreach (var dep in pkgInfo.Dependencies)
-                {
-                    foreach (var depPkg in GetPackagesFromRegistration(dep.RegistrationInfo, token))
-                    {
-                        // check if we have been cancelled
-                        token.ThrowIfCancellationRequested();
-
-                        yield return depPkg;
-                    }
-                }
             }
 
             yield break;
