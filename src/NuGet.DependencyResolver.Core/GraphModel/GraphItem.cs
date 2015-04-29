@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using NuGet.LibraryModel;
-using System;
 
 namespace NuGet.DependencyResolver
 {

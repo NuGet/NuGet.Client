@@ -11,13 +11,24 @@ namespace NuGet.ContentModel
     /// </summary>
     public class ContentPropertyDefinition
     {
+        public ContentPropertyDefinition(string name) : this(name, null, null, null, null, false) { }
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table) : this(name, table, null, null, null, false) { }
+        public ContentPropertyDefinition(string name, Func<string, object> parser) : this(name, null, parser, null, null, false) { }
+        public ContentPropertyDefinition(string name, Func<object, object, bool> compatibilityTest) : this(name, null, null, compatibilityTest, null, false) { }
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser) : this(name, table, parser, null, null, false) { }
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<object, object, bool> compatibilityTest) : this(name, table, null, compatibilityTest, null, false) { }
+        public ContentPropertyDefinition(string name, Func<string, object> parser, Func<object, object, bool> compatibilityTest) : this(name, null, parser, compatibilityTest, null, false) { }
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser, Func<object, object, bool> compatibilityTest) : this(name, table, parser, compatibilityTest, null, false) { }
+        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions) : this(name, null, null, null, fileExtensions, false) { }
+        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions, bool allowSubfolders) : this(name, null, null, null, fileExtensions, allowSubfolders) { }
+
         public ContentPropertyDefinition(
             string name, 
-            IDictionary<string, object> table = null,
-            Func<string, object> parser = null,
-            Func<object, object, bool> compatibilityTest = null,
-            IEnumerable<string> fileExtensions = null, 
-            bool allowSubfolders = false)
+            IDictionary<string, object> table,
+            Func<string, object> parser,
+            Func<object, object, bool> compatibilityTest,
+            IEnumerable<string> fileExtensions, 
+            bool allowSubfolders)
         {
             Name = name;
 

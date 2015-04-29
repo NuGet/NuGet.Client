@@ -22,12 +22,18 @@ namespace NuGet.RuntimeModel
             RuntimeDependencySets = runtimeDependencySets.ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool Equals(RuntimeDescription other) => other != null &&
-            string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
-            InheritedRuntimes.OrderBy(s => s).SequenceEqual(other.InheritedRuntimes.OrderBy(s => s)) &&
-            RuntimeDependencySets.OrderBy(p => p.Key).SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
+        public bool Equals(RuntimeDescription other)
+        {
+            return other != null &&
+                string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
+                InheritedRuntimes.OrderBy(s => s).SequenceEqual(other.InheritedRuntimes.OrderBy(s => s)) &&
+                RuntimeDependencySets.OrderBy(p => p.Key).SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
+        }
 
-        public RuntimeDescription Clone() => new RuntimeDescription(RuntimeIdentifier, InheritedRuntimes, RuntimeDependencySets.Values.Select(d => d.Clone()));
+        public RuntimeDescription Clone()
+        {
+            return new RuntimeDescription(RuntimeIdentifier, InheritedRuntimes, RuntimeDependencySets.Values.Select(d => d.Clone()));
+        }
 
         /// <summary>
         /// Merges the content of the other runtime description in to this runtime description
@@ -76,10 +82,17 @@ namespace NuGet.RuntimeModel
             return new RuntimeDescription(left.RuntimeIdentifier, inheritedRuntimes, newSets.Values);
         }
 
-        public override bool Equals(object obj) => Equals(obj as RuntimeDescription);
-        public override int GetHashCode() => HashCodeCombiner.Start()
-            .AddObject(RuntimeIdentifier)
-            .AddObject(InheritedRuntimes)
-            .AddObject(RuntimeDependencySets);
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as RuntimeDescription);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCodeCombiner.Start()
+                .AddObject(RuntimeIdentifier)
+                .AddObject(InheritedRuntimes)
+                .AddObject(RuntimeDependencySets);
+        }
     }
 }

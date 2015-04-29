@@ -72,7 +72,6 @@ namespace NuGet.DependencyResolver
                                 {
                                     Name = runtimeDependency.Id,
                                     VersionRange = runtimeDependency.VersionRange
-                                    // REVIEW: Add a TypeConstraint of package? Could a runtime dependency come from a project? Maybe...
                                 };
                                 tasks.Add(CreateGraphNode(
                                     cache, 

@@ -111,11 +111,22 @@ namespace NuGet.RuntimeModel
             return Enumerable.Empty<RuntimePackageDependency>();
         }
 
-        public bool Equals(RuntimeGraph other) => other != null && other.Runtimes
-            .OrderBy(pair => pair.Key)
-            .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key));
+        public bool Equals(RuntimeGraph other)
+        {
+            return other != null &&
+                other.Runtimes
+                    .OrderBy(pair => pair.Key)
+                    .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key));
+        }
 
-        public override bool Equals(object obj) => Equals(obj as RuntimeGraph);
-        public override int GetHashCode() => Runtimes.GetHashCode();
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as RuntimeGraph);
+        }
+
+        public override int GetHashCode()
+        {
+            return Runtimes.GetHashCode();
+        }
     }
 }

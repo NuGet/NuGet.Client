@@ -17,8 +17,8 @@ namespace NuGet.ContentModel
     {
         public ContentPatternDefinition(IReadOnlyDictionary<string, ContentPropertyDefinition> properties, IEnumerable<string> groupPatterns, IEnumerable<string> pathPatterns)
         {
-            GroupPatterns = groupPatterns.ToList().AsReadOnly(); 
-            PathPatterns = pathPatterns.ToList().AsReadOnly();
+            GroupPatterns = groupPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<string>(); 
+            PathPatterns = pathPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<string>();
             PropertyDefinitions = properties;
         }
 

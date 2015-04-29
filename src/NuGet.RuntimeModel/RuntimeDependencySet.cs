@@ -18,16 +18,28 @@ namespace NuGet.RuntimeModel
             Dependencies = new ReadOnlyDictionary<string, RuntimePackageDependency>(dependencies.ToDictionary(d => d.Id));
         }
 
-        public bool Equals(RuntimeDependencySet other) => other != null &&
-            string.Equals(other.Id, Id, StringComparison.Ordinal) &&
-            Dependencies.OrderBy(p => p.Key).SequenceEqual(other.Dependencies.OrderBy(p => p.Key));
+        public bool Equals(RuntimeDependencySet other)
+        {
+            return other != null &&
+                string.Equals(other.Id, Id, StringComparison.Ordinal) &&
+                Dependencies.OrderBy(p => p.Key).SequenceEqual(other.Dependencies.OrderBy(p => p.Key));
+        }
 
-        public override bool Equals(object obj) => Equals(obj as RuntimeDependencySet);
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as RuntimeDependencySet);
+        }
 
-        public override int GetHashCode() => HashCodeCombiner.Start()
-            .AddObject(Id)
-            .AddObject(Dependencies);
+        public override int GetHashCode()
+        {
+            return HashCodeCombiner.Start()
+                .AddObject(Id)
+                .AddObject(Dependencies);
+        }
 
-        public RuntimeDependencySet Clone() => new RuntimeDependencySet(Id, Dependencies.Values.Select(d => d.Clone()));
+        public RuntimeDependencySet Clone()
+        {
+            return new RuntimeDependencySet(Id, Dependencies.Values.Select(d => d.Clone()));
+        }
     }
 }

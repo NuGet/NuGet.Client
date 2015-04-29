@@ -17,8 +17,14 @@ namespace NuGet.RuntimeModel
             VersionRange = versionRange;
         }
 
-        public RuntimePackageDependency Clone() => new RuntimePackageDependency(Id, VersionRange);
+        public RuntimePackageDependency Clone()
+        {
+            return new RuntimePackageDependency(Id, VersionRange);
+        }
 
-        public override string ToString() => $"{Id} {VersionRange}";
+        public override string ToString()
+        {
+            return $"{Id} {VersionRange}";
+        }
     }
 }

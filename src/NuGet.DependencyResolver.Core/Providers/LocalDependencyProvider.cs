@@ -48,8 +48,7 @@ namespace NuGet.DependencyResolver
 
         public Task CopyToAsync(RemoteMatch match, Stream stream)
         {
-            // We never call this on local providers
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<RuntimeGraph> GetRuntimeGraph(RemoteMatch match, NuGetFramework framework)
