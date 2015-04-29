@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.Shell;
 
 namespace NuGetConsole
 {
-    class Marshaler<T>
+    internal class Marshaler<T>
     {
         protected readonly T _impl;
 
@@ -12,17 +12,16 @@ namespace NuGetConsole
             _impl = impl;
         }
 
-        static ThreadHelper ThreadHelper
-        {
-            get { return ThreadHelper.Generic; }
-        }
-
         /// <summary>
         /// Invoke an action on the main UI thread.
         /// </summary>
         static protected void Invoke(Action action)
         {
-            ThreadHelper.Invoke(action);
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                action();
+            });
         }
 
         /// <summary>
@@ -30,7 +29,11 @@ namespace NuGetConsole
         /// </summary>
         static protected TResult Invoke<TResult>(Func<TResult> func)
         {
-            return ThreadHelper.Invoke(func);
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return func();
+            });
         }
     }
 }
