@@ -33,8 +33,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Framework.Logging.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Framework.Logging.Interfaces.1.0.0-beta5-11287\lib\net45\Microsoft.Framework.Logging.Interfaces.dll</HintPath>
+    <Reference Include="Microsoft.Framework.DependencyInjection.Abstractions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Framework.DependencyInjection.Abstractions.1.0.0-beta5-11303\lib\net45\Microsoft.Framework.DependencyInjection.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Framework.Logging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Framework.Logging.1.0.0-beta5-11298\lib\net45\Microsoft.Framework.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Framework.Logging.Abstractions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Framework.Logging.Abstractions.1.0.0-beta5-11298\lib\net45\Microsoft.Framework.Logging.Abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Web.XmlTransform">
@@ -137,7 +145,7 @@
   <ItemGroup>
     <Compile Include="BuildIntegration\BuildIntegratedRestoreUtility.cs" />
     <Compile Include="BuildIntegration\ProjectContextLogger.cs" />
-    <Compile Include="BuildIntegration\ProjectContextLoggerFactory.cs" />
+    <Compile Include="BuildIntegration\ProjectContextLoggerProvider.cs" />
     <Compile Include="Context\IDEExecutionContext.cs" />
     <Compile Include="Context\UninstallationContext.cs" />
     <Compile Include="IDE\ICommonOperations.cs" />

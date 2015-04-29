@@ -64,13 +64,10 @@ namespace ResolverTestApp
                 {
                     timer.Restart();
 
-                    var task = depInfo.ResolvePackages(new PackageIdentity[] { target }, framework, true);
+                    var task = depInfo.ResolvePackage(target, framework, CancellationToken.None);
                     task.Wait();
 
-                    foreach (var pkg in task.Result)
-                    {
-                        packages.Add(pkg);
-                    }
+                    packages.Add(task.Result);
 
                     timer.Stop();
                     Console.WriteLine("Online fetch time: " + timer.Elapsed);

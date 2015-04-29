@@ -280,10 +280,12 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
                     packageIdsToInstall,
-                    packageTargetIdsForResolver,
+                    Enumerable.Empty<PackageIdentity>(),
+                    oldListOfInstalledPackages,
                     targetFramework,
                     primarySources,
                     effectiveSources,
+                    PackagesFolderSourceRepository,
                     token);
 
                 if (!availablePackageDependencyInfoWithSourceSet.Any())
@@ -406,10 +408,11 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
                     packagesToInstall,
-                    packageTargetsForResolver,
+                    oldListOfInstalledPackages,
                     targetFramework,
                     primarySources,
                     effectiveSources,
+                    PackagesFolderSourceRepository,
                     token);
 
                 if (!availablePackageDependencyInfoWithSourceSet.Any())
@@ -669,11 +672,12 @@ namespace NuGet.PackageManagement
                     ResolutionContext contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
 
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
-                        primaryPackages.Select(p => p.Id),
-                        packageTargetsForResolver.Select(p => p.Id),
+                        primaryPackages,
+                        oldListOfInstalledPackages,
                         targetFramework,
                         primarySources,
                         effectiveSources,
+                        PackagesFolderSourceRepository,
                         token);
 
                     if (!availablePackageDependencyInfoWithSourceSet.Any())
@@ -971,10 +975,18 @@ namespace NuGet.PackageManagement
         {
             try
             {
+                var results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
+
                 var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>();
-                return await dependencyInfoResource.ResolvePackages(packageIdentities, nuGetFramework, includePrerelease);
+
+                foreach (var package in packageIdentities)
+                {
+                    results.Add(await dependencyInfoResource.ResolvePackage(package, nuGetFramework, CancellationToken.None));
+                }
+
+                return results;
             }
-            catch (Exception ex)
+            catch (NuGetProtocolException)
             {
                 return null;
             }

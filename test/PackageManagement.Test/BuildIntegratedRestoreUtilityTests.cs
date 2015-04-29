@@ -30,7 +30,7 @@ namespace NuGet.Test
 
             List<string> sources = new List<string>()
             {
-                "https://www.nuget.org/v2/"
+                "https://www.nuget.org/api/v2/"
             };
 
             // Act
