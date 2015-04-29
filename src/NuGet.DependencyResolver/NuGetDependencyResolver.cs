@@ -31,7 +31,7 @@ namespace NuGet.DependencyResolver
                    string.Equals(libraryType, LibraryTypes.Package);
         }
 
-        public Library GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework)
+        public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
             var package = FindCandidate(libraryRange.Name, libraryRange.VersionRange);
 

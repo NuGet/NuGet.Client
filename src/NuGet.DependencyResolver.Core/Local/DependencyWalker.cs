@@ -122,7 +122,7 @@ namespace NuGet.DependencyResolver
                     continue;
                 }
 
-                hit = dependencyProvider.GetDescription(library, framework);
+                hit = dependencyProvider.GetLibrary(library, framework);
                 if (hit != null)
                 {
                     break;

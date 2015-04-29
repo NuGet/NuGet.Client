@@ -52,12 +52,13 @@ namespace NuGet.Commands
 
             // Load repositories
             var projectResolver = new PackageSpecResolver(request.Project.BaseDirectory);
-            var nugetRepository = FactoryExtensionsV2.GetCoreV3(Repository.Factory, request.PackagesDirectory);
+            var nugetRepository = Repository.Factory.GetCoreV3(request.PackagesDirectory);
 
             var context = new RemoteWalkContext();
 
             context.ProjectLibraryProviders.Add(
-                new PackageSpecRemoteReferenceDependencyProvider(projectResolver));
+                new LocalDependencyProvider(
+                    new PackageSpecReferenceDependencyProvider(projectResolver)));
 
             context.LocalLibraryProviders.Add(
                 new SourceRepositoryDependencyProvider(nugetRepository, _log));
@@ -413,19 +414,11 @@ namespace NuGet.Commands
 
         private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source)
         {
-            var logger = _loggerFactory.CreateLogger(
-                    typeof(IPackageFeed).FullName + ":" + source.Source);
-            var loggerAdapter = new NuGetLoggerAdapter(logger);
-            var feed = PackageFeedFactory.CreateFeed(
-                source.Source,
-                source.UserName,
-                source.Password,
-                noCache: false,
-                ignoreFailedSources: false,
-                logger: loggerAdapter);
             _log.LogVerbose($"Using source {source.Source}");
 
-            var nugetRepository = FactoryExtensionsV2.GetCoreV3(Repository.Factory, source.Source);
+            var logger = _loggerFactory.CreateLogger(
+                    typeof(IPackageFeed).FullName + ":" + source.Source);
+            var nugetRepository = Repository.Factory.GetCoreV3(source.Source);
             return new SourceRepositoryDependencyProvider(nugetRepository, logger, noCache: false);
         }
     }

@@ -11,7 +11,7 @@ namespace NuGet.DependencyResolver
     {
         bool SupportsType(string libraryType);
 
-        Library GetDescription(LibraryRange libraryRange, NuGetFramework targetFramework);
+        Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework);
 
         IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework);
     }
