@@ -82,12 +82,6 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        public Task<RuntimeGraph> GetRuntimeGraph(RemoteMatch match, NuGetFramework framework)
-        {
-            // TODO: This needs to be done as part of the package install.
-            return Task.FromResult(new RuntimeGraph());
-        }
-
         private IEnumerable<LibraryDependency> GetDependencies(NuspecReader nuspecReader, NuGetFramework targetFramework)
         {
             var dependencies = NuGetFrameworkUtility.GetNearest(nuspecReader.GetDependencyGroups(),

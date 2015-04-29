@@ -1,4 +1,5 @@
-﻿using NuGet.LibraryModel;
+﻿using System;
+using NuGet.LibraryModel;
 
 namespace NuGet.DependencyResolver
 {

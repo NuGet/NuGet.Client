@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.RuntimeModel;
 
 namespace NuGet.DependencyResolver
 {
@@ -17,7 +16,5 @@ namespace NuGet.DependencyResolver
         Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(LibraryIdentity match, NuGetFramework targetFramework, CancellationToken cancellationToken);
 
         Task CopyToAsync(LibraryIdentity match, Stream stream, CancellationToken cancellationToken);
-
-        Task<RuntimeGraph> GetRuntimeGraph(RemoteMatch match, NuGetFramework framework);
     }
 }
