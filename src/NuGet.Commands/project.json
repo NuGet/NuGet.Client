@@ -7,7 +7,7 @@
     "NuGet.ContentModel": "3.0.0-*",
     "NuGet.ProjectModel": "3.0.0-*",
     "NuGet.Configuration": "3.0.0-*",
-    "NuGet.DependencyResolver.Core": "3.0.0-*",
+    "NuGet.DependencyResolver": "3.0.0-*",
     "NuGet.RuntimeModel": "3.0.0-*",
     "NuGet.Common": { "version": "3.0.0-*", "type": "build" },
     "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-*"
