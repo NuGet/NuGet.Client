@@ -10,7 +10,7 @@
     "NuGet.DependencyResolver": "3.0.0-*",
     "NuGet.RuntimeModel": "3.0.0-*",
     "NuGet.Common": { "version": "3.0.0-*", "type": "build" },
-    "Microsoft.Framework.Logging.Interfaces": "1.0.0-beta5-*"
+    "Microsoft.Framework.Logging.Abstractions": "1.0.0-*"
   },
 
   "frameworks" : {

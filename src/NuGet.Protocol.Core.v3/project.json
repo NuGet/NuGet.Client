@@ -10,7 +10,7 @@
         "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
         "NuGet.Packaging": "3.0.0-*",
         "NuGet.Protocol.Core.Types": "3.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
         "Newtonsoft.Json": "6.0.6"
     },
     "frameworks": {
