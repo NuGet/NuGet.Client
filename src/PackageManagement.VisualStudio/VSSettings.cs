@@ -101,11 +101,15 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionSettings.SetValue(section, key, value);
         }
 
-        public void SetValues(string section, IList<System.Collections.Generic.KeyValuePair<string, string>> values)
+        public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
             SolutionSettings.SetValues(section, values);
         }
 
+        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        {
+            SolutionSettings.UpdateSections(section, values);
+        }
 
         public string GetDecryptedValue(string section, string key, bool isPath = false)
         {
