@@ -1535,15 +1535,18 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 3
-                Assert.Equal(config2Contents, File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+                Assert.Equal(TestFilesystemUtility.RemovedLineEndings(config2Contents),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
                 Assert.Equal(
+                    TestFilesystemUtility.RemovedLineEndings(
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
   <disabledPackageSources>
     <add key=""NuGet.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+"),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
             }
         }
 
@@ -1602,15 +1605,18 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 2
-                Assert.Equal(config1Contents, File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+                Assert.Equal(TestFilesystemUtility.RemovedLineEndings(config1Contents),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
                 Assert.Equal(
+                    TestFilesystemUtility.RemovedLineEndings(
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""test.org"" value=""https://test.org"" />    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
   <disabledPackageSources>
     <add key=""NuGet.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-", File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+"),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
             }
         }
 
@@ -1672,16 +1678,20 @@ namespace NuGet.Configuration.Test
 
                 // Assert - 2
                 Assert.Equal(
+                    TestFilesystemUtility.RemovedLineEndings(
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://new.NuGet.org"" />  </packageSources>
 </configuration>
-", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+"),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
 
                 Assert.Equal(
+                    TestFilesystemUtility.RemovedLineEndings(
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://new.NuGet.org"" />    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
 </configuration>
-", File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+"),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
             }
         }
 
@@ -1742,19 +1752,23 @@ namespace NuGet.Configuration.Test
 
                 // Assert - 2
                 Assert.Equal(
+                    TestFilesystemUtility.RemovedLineEndings(
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NewSourceName"" value=""http://newsource"" />    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
   <disabledPackageSources>
     <add key=""test.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+"),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
 
                 Assert.Equal(
+                    TestFilesystemUtility.RemovedLineEndings(
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
 </configuration>
-", File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+"),
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
             }
         }
 
@@ -1820,6 +1834,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert - 2
                 Assert.Equal(
+                    TestFilesystemUtility.RemovedLineEndings(
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
@@ -1829,7 +1844,8 @@ namespace NuGet.Configuration.Test
     <add key=""nuget.org"" value=""https://nuget.org"" />
   </packageSources>
 </configuration>
-", File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+"), 
+                    TestFilesystemUtility.RemovedLineEndings(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
             }
         }
 
