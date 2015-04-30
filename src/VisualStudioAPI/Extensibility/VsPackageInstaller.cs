@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
@@ -372,7 +373,10 @@ namespace NuGet.VisualStudio
         /// </summary>
         internal async Task InstallInternalAsync(Project project, List<PackageIdentity> packages, ISourceRepositoryProvider repoProvider, VSAPIProjectContext projectContext, bool ignoreDependencies, CancellationToken token)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            // Go off the UI thread. This may be called from the UI thread. Only switch to the UI thread where necessary
+            // This method installs multiple packages and can likely take more than a few secs
+            // So, go off the UI thread explicitly to improve responsiveness
+            await TaskScheduler.Default;
 
             // store expanded node state
             IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = await VsHierarchyHelper.GetAllExpandedNodesAsync(_solutionManager);
@@ -388,7 +392,7 @@ namespace NuGet.VisualStudio
                 NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, _settings, _solutionManager);
 
                 // find the project
-                NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, projectContext);
+                NuGetProject nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
 
                 // install the package
                 foreach (PackageIdentity package in packages)

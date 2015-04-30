@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -20,10 +21,6 @@ using EnvDTEProjectItem = EnvDTE.ProjectItem;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using EnvDTEProperty = EnvDTE.Property;
 using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
-using TaskBool = System.Threading.Tasks.Task<bool>;
-using TaskEnvDTEProjectItem = System.Threading.Tasks.Task<EnvDTE.ProjectItem>;
-using TaskEnvDTEProjectItems = System.Threading.Tasks.Task<EnvDTE.ProjectItems>;
-using TaskIEnumerableEnvDTEProjectItem = System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<EnvDTE.ProjectItem>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -360,30 +357,35 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (IsWebSite(envDTEProject))
-                {
-                    // website projects always have unique name
-                    return envDTEProject.Name;
-                }
-                else
-                {
-                    Stack<string> nameParts = new Stack<string>();
-
-                    EnvDTEProject cursor = envDTEProject;
-                    nameParts.Push(GetName(cursor));
-
-                    // walk up till the solution root
-                    while (cursor.ParentProjectItem != null && cursor.ParentProjectItem.ContainingProject != null)
-                    {
-                        cursor = cursor.ParentProjectItem.ContainingProject;
-                        nameParts.Push(GetName(cursor));
-                    }
-
-                    return String.Join("\\", nameParts);
-                }
+                return await GetCustomUniqueNameAsync(envDTEProject);
             });
+        }
+
+        public static async Task<string> GetCustomUniqueNameAsync(EnvDTEProject envDTEProject)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (IsWebSite(envDTEProject))
+            {
+                // website projects always have unique name
+                return envDTEProject.Name;
+            }
+            else
+            {
+                Stack<string> nameParts = new Stack<string>();
+
+                EnvDTEProject cursor = envDTEProject;
+                nameParts.Push(GetName(cursor));
+
+                // walk up till the solution root
+                while (cursor.ParentProjectItem != null && cursor.ParentProjectItem.ContainingProject != null)
+                {
+                    cursor = cursor.ParentProjectItem.ContainingProject;
+                    nameParts.Push(GetName(cursor));
+                }
+
+                return String.Join("\\", nameParts);
+            }
         }
 
         internal static bool IsExplicitlyUnsupported(EnvDTEProject envDTEProject)
@@ -524,7 +526,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return targetFramework;
         }
 
-        internal static async TaskBool ContainsFile(EnvDTEProject envDTEProject, string path)
+        internal static async Task<bool> ContainsFile(EnvDTEProject envDTEProject, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -557,7 +559,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         // Get the ProjectItems for a folder path
-        public static async TaskEnvDTEProjectItems GetProjectItemsAsync(EnvDTEProject envDTEProject, string folderPath, bool createIfNotExists)
+        public static async Task<EnvDTEProjectItems> GetProjectItemsAsync(EnvDTEProject envDTEProject, string folderPath, bool createIfNotExists)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -592,7 +594,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         // 'parentItem' can be either a Project or ProjectItem
-        private static async TaskEnvDTEProjectItem GetOrCreateFolderAsync(
+        private static async Task<EnvDTEProjectItem> GetOrCreateFolderAsync(
             EnvDTEProject envDTEProject,
             object parentItem,
             string fullPath,
@@ -662,7 +664,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProjectItem != null;
         }
 
-        private static async TaskBool IncludeExistingFolderToProjectAsync(EnvDTEProject envDTEProject, string folderRelativePath)
+        private static async Task<bool> IncludeExistingFolderToProjectAsync(EnvDTEProject envDTEProject, string folderRelativePath)
         {
             // Execute command to include the existing folder into project. Must do this on UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -772,7 +774,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
-        internal static async TaskEnvDTEProjectItem GetProjectItemAsync(EnvDTEProject envDTEProject, string path)
+        internal static async Task<EnvDTEProjectItem> GetProjectItemAsync(EnvDTEProject envDTEProject, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -981,7 +983,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProjects;
         }
 
-        internal static async TaskIEnumerableEnvDTEProjectItem GetChildItems(EnvDTEProject envDTEProject, string path, string filter, string desiredKind)
+        internal static async Task<IEnumerable<EnvDTEProjectItem>> GetChildItems(EnvDTEProject envDTEProject, string path, string filter, string desiredKind)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -1128,7 +1130,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        internal static async TaskBool DeleteProjectItemAsync(EnvDTEProject envDTEProject, string path)
+        internal static async Task<bool> DeleteProjectItemAsync(EnvDTEProject envDTEProject, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

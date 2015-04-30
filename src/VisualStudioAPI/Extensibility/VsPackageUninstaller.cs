@@ -41,8 +41,6 @@ namespace NuGet.VisualStudio
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
 
 
@@ -50,7 +48,7 @@ namespace NuGet.VisualStudio
                 VSAPIProjectContext projectContext = new VSAPIProjectContext();
 
                 // find the project
-                NuGetProject nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, projectContext);
+                NuGetProject nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
 
                 // uninstall the package
                 await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);

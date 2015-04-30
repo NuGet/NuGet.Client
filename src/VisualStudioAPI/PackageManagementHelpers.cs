@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
@@ -19,16 +20,16 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Finds the NuGetProject from a DTE project
         /// </summary>
-        public static NuGetProject GetProject(ISolutionManager solutionManager, Project project, VSAPIProjectContext projectContext = null)
+        public static async Task<NuGetProject> GetProjectAsync(ISolutionManager solutionManager, Project project, VSAPIProjectContext projectContext = null)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (solutionManager == null)
             {
                 throw new ArgumentNullException("solution");
             }
 
-            var projectSafeName = EnvDTEProjectUtility.GetCustomUniqueName(project);
+            var projectSafeName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
             NuGetProject nuGetProject = solutionManager.GetNuGetProject(projectSafeName);
 
             var settings = ServiceLocator.GetInstance<ISettings>();

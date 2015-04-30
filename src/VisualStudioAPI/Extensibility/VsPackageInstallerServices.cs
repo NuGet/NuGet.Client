@@ -5,6 +5,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
@@ -14,7 +15,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Resources;
 using LegacyNuGet = Legacy.NuGet;
-using TaskIEnumerablePackageReference = System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.VisualStudio
 {
@@ -41,10 +41,6 @@ namespace NuGet.VisualStudio
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // Debug.Assert(_solutionManager.SolutionDirectory != null, "SolutionDir is null");
-
                 // Calls may occur in the template wizard before the solution is actually created, in that case return no projects
                 if (_solutionManager != null && !String.IsNullOrEmpty(_solutionManager.SolutionDirectory))
                 {
@@ -69,7 +65,7 @@ namespace NuGet.VisualStudio
             });
         }
 
-        private async TaskIEnumerablePackageReference GetInstalledPackageReferencesAsync(Project project)
+        private async Task<IEnumerable<PackageReference>> GetInstalledPackageReferencesAsync(Project project)
         {
             if (project == null)
             {
@@ -82,7 +78,7 @@ namespace NuGet.VisualStudio
             {
                 InitializePackageManagerAndPackageFolderPath();
 
-                var nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, new VSAPIProjectContext());
+                var nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, new VSAPIProjectContext());
                 var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
                 packages.AddRange(installedPackages);
             }
@@ -99,8 +95,6 @@ namespace NuGet.VisualStudio
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 List<IVsPackageMetadata> packages = new List<IVsPackageMetadata>();
 
                 // Debug.Assert(_solutionManager.SolutionDirectory != null, "SolutionDir is null");
@@ -109,7 +103,7 @@ namespace NuGet.VisualStudio
                 {
                     InitializePackageManagerAndPackageFolderPath();
 
-                    var nuGetProject = PackageManagementHelpers.GetProject(_solutionManager, project, new VSAPIProjectContext());
+                    var nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, new VSAPIProjectContext());
                     var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
                     foreach (var package in installedPackages)
@@ -177,8 +171,6 @@ namespace NuGet.VisualStudio
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 var installedPackageReferences = await GetInstalledPackageReferencesAsync(project);
                 var packages = installedPackageReferences.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId));
 

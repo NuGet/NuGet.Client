@@ -6,12 +6,12 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
-using TaskIEnumerableAssemblyBinding = System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.VisualStudio.AssemblyBinding>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -100,7 +100,7 @@ namespace NuGet.PackageManagement.VisualStudio
             visitedProjects.Add(envDTEProjectUniqueName);
         }
 
-        public static async TaskIEnumerableAssemblyBinding AddBindingRedirectsAsync(
+        public static async Task<IEnumerable<AssemblyBinding>> AddBindingRedirectsAsync(
             ISolutionManager solutionManager,
             EnvDTEProject envDTEProject,
             AppDomain domain,

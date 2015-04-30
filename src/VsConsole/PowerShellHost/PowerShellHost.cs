@@ -8,9 +8,9 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
-using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -25,7 +25,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 {
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
-        private static readonly object _initScriptsLock = new object();
+        private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
         private readonly string _name;
         private PackageManagementContext _packageManagementContext;
         private readonly IRunspaceManager _runspaceManager;
@@ -222,72 +222,75 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Initialize(IConsole console)
         {
-            ActiveConsole = console;
-
-            if (_initialized.HasValue)
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                if (_initialized.Value && console.ShowDisclaimerHeader)
-                {
-                    DisplayDisclaimerAndHelpText();
-                }
-            }
-            else
-            {
-                try
-                {
-                    Tuple<RunspaceDispatcher, NuGetPSHost> result = _runspaceManager.GetRunspace(console, _name);
-                    _runspace = result.Item1;
-                    _nugetHost = result.Item2;
+                ActiveConsole = console;
 
-                    _initialized = true;
-
-                    if (console.ShowDisclaimerHeader)
+                if (_initialized.HasValue)
+                {
+                    if (_initialized.Value && console.ShowDisclaimerHeader)
                     {
                         DisplayDisclaimerAndHelpText();
                     }
-
-                    UpdateWorkingDirectory();
-                    ExecuteInitScripts();
-
-                    // Hook up solution events
-                    _solutionManager.SolutionOpened += (o, e) =>
+                }
+                else
+                {
+                    try
                     {
-                        Task.Factory.StartNew(() =>
+                        Tuple<RunspaceDispatcher, NuGetPSHost> result = _runspaceManager.GetRunspace(console, _name);
+                        _runspace = result.Item1;
+                        _nugetHost = result.Item2;
+
+                        _initialized = true;
+
+                        if (console.ShowDisclaimerHeader)
+                        {
+                            DisplayDisclaimerAndHelpText();
+                        }
+
+                        UpdateWorkingDirectory();
+                        await ExecuteInitScriptsAsync();
+
+                        // Hook up solution events
+                        _solutionManager.SolutionOpened += (o, e) =>
+                        {
+                            // Solution opened event is raised on the UI thread
+                            // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
+                            // Also, it uses semaphores, do not call it from the UI thread
+                            Task.Run(async delegate
                             {
                                 UpdateWorkingDirectory();
-                                ExecuteInitScripts();
-                            },
-                            CancellationToken.None,
-                            TaskCreationOptions.None,
-                            TaskScheduler.Default);
-                    };
-                    _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
-                    _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-                    _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
-                    _solutionManager.NuGetProjectRemoved += (o, e) =>
-                    {
-                        UpdateWorkingDirectoryAndAvailableProjects();
-                        // When the previous default project has been removed, _solutionManager.DefaultNuGetProjectName becomes null
-                        if (_solutionManager.DefaultNuGetProjectName == null)
+                                await ExecuteInitScriptsAsync();
+                            });
+                        };
+                        _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                        _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                        _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
+                        _solutionManager.NuGetProjectRemoved += (o, e) =>
                         {
-                            // Change default project to the first one in the collection
-                            SetDefaultProjectIndex(0);
-                        }
-                    };
+                            UpdateWorkingDirectoryAndAvailableProjects();
+                            // When the previous default project has been removed, _solutionManager.DefaultNuGetProjectName becomes null
+                            if (_solutionManager.DefaultNuGetProjectName == null)
+                            {
+                                // Change default project to the first one in the collection
+                                SetDefaultProjectIndex(0);
+                            }
+                        };
 
-                    // Set available private data on Host
-                    SetPrivateDataOnHost(false);
-                }
-                catch (Exception ex)
-                {
-                    // catch all exception as we don't want it to crash VS
-                    _initialized = false;
-                    IsCommandEnabled = false;
-                    ReportError(ex);
+                        // Set available private data on Host
+                        SetPrivateDataOnHost(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        // catch all exception as we don't want it to crash VS
+                        _initialized = false;
+                        IsCommandEnabled = false;
+                        ReportError(ex);
 
-                    ExceptionHelper.WriteToActivityLog(ex);
+                        ExceptionHelper.WriteToActivityLog(ex);
+                    }
                 }
-            }
+            });
         }
 
         private void UpdateWorkingDirectoryAndAvailableProjects()
@@ -310,10 +313,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want execution of init scripts to crash our console.")]
-        private void ExecuteInitScripts()
+        private async Task ExecuteInitScriptsAsync()
         {
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
-            lock (_initScriptsLock)
+            using (await _initScriptsLock.EnterAsync())
             {
                 if (!_solutionManager.IsSolutionOpen)
                 {
@@ -341,10 +344,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             continue;
                         }
 
-                        IEnumerable<PackageReference> installedRefs = project.GetInstalledPackagesAsync(CancellationToken.None).Result;
+                        IEnumerable<PackageReference> installedRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
                         if (installedRefs != null && installedRefs.Any())
                         {
-                            IEnumerable<PackageIdentity> installedPackages = packageManager.GetInstalledPackagesInDependencyOrder(project, new EmptyNuGetProjectContext(), CancellationToken.None).Result;
+                            IEnumerable<PackageIdentity> installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, new EmptyNuGetProjectContext(), CancellationToken.None);
                             sortedPackages.AddRange(installedPackages);
                         }
                     }

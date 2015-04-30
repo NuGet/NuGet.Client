@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -13,7 +14,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
-using TaskDependentEnvDTEProjects = System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string, System.Collections.Generic.List<EnvDTE.Project>>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -181,18 +181,23 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 }
 
-                string solutionFilePath = GetSolutionFilePath();
-
-                if (String.IsNullOrEmpty(solutionFilePath))
+                return ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    return null;
-                }
-                return Path.GetDirectoryName(solutionFilePath);
+                    string solutionFilePath = await GetSolutionFilePathAsync();
+
+                    if (String.IsNullOrEmpty(solutionFilePath))
+                    {
+                        return null;
+                    }
+                    return Path.GetDirectoryName(solutionFilePath);
+                });
             }
         }
 
-        private string GetSolutionFilePath()
+        private async Task<string> GetSolutionFilePathAsync()
         {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
             // available if the solution is just being created
             string solutionFilePath = null;
@@ -503,7 +508,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return Enumerable.Empty<EnvDTEProject>();
         }
 
-        internal async TaskDependentEnvDTEProjects GetDependentEnvDTEProjectsDictionaryAsync()
+        internal async Task<IDictionary<string, List<EnvDTEProject>>> GetDependentEnvDTEProjectsDictionaryAsync()
         {
             // Get all of the projects in the solution and build the reverse graph. i.e.
             // if A has a project reference to B (A -> B) the this will return B -> A
