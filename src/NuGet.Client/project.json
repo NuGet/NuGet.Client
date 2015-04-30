@@ -12,7 +12,6 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Runtime": "",
         "System.IO.Compression": "",
         "System.Net.Http": "",
         "System.Xml": "",
