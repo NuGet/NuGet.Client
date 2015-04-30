@@ -8,11 +8,14 @@ namespace NuGet.Commands
 {
     public class RestoreRequest
     {
+        public static readonly int DefaultDegreeOfConcurrency = 8;
+
         public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources, string packagesDirectory)
         {
             Project = project;
             Sources = sources.ToList().AsReadOnly();
             PackagesDirectory = packagesDirectory;
+            ExternalProjects = new List<ExternalProjectReference>();
         }
 
         /// <summary>
@@ -30,10 +33,25 @@ namespace NuGet.Commands
         /// </summary>
         public string PackagesDirectory { get; }
 
-        // TODO: NoCache
-        // TODO: Lock/Unlock
-        // TODO: ScriptExecutor
-        // TODO: Parallel
-        // TODO: List of project.json files from project references
+        /// <summary>
+        /// A list of projects provided by external build systems (i.e. MSBuild)
+        /// </summary>
+        public IList<ExternalProjectReference> ExternalProjects { get; }
+
+        /// <summary>
+        /// The path to the lock file to read/write. If not specified, uses the file 'project.lock.json' in the same directory as the provided PackageSpec
+        /// </summary>
+        public string LockFilePath { get; set; }
+
+        /// <summary>
+        /// The number of concurrent tasks to run during installs. Defaults to <see cref="DefaultDegreeOfConcurrency"/>. Set this to '1' to
+        /// run without concurrency.
+        /// </summary>
+        public int MaxDegreeOfConcurrency { get; set; } = DefaultDegreeOfConcurrency;
+
+        /// <summary>
+        /// If set, ignore the cache when downloading packages
+        /// </summary>
+        public bool NoCache { get; set; }
     }
 }

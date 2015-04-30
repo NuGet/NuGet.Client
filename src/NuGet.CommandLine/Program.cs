@@ -7,6 +7,7 @@ using NuGet.Commands;
 using System;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 
 namespace NuGet.CommandLine
 {
@@ -48,6 +49,7 @@ namespace NuGet.CommandLine
 
                 var sources = restore.Option("-s|--source <source>", "Specifies a NuGet package source to use during the restore", CommandOptionType.MultipleValue);
                 var packagesDirectory = restore.Option("--packages <packagesDirectory>", "Directory to install packages in", CommandOptionType.SingleValue);
+                var parallel = restore.Option("-p|--parallel <noneOrNumberOfParallelTasks>", $"The number of concurrent tasks to use when restoring. Defaults to {RestoreRequest.DefaultDegreeOfConcurrency}; pass 'none' to run without concurrency.", CommandOptionType.SingleValue);
                 var projectFile = restore.Argument("[project file]", "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
 
                 restore.OnExecute(async () =>
@@ -78,7 +80,7 @@ namespace NuGet.CommandLine
                     // TODO: Do this for real :) 
                     var packagesDir = packagesDirectory.HasValue() ?
                         packagesDirectory.Value() :
-                        Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".dnx", "packages2");
+                        Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".dnx", "packages");
                     _log.LogVerbose($"Using packages directory: {packagesDirectory}");
 
                     // Run the restore
@@ -86,10 +88,31 @@ namespace NuGet.CommandLine
                         project,
                         sources.Values.Select(s => new PackageSource(s)),
                         packagesDir);
+                    if (parallel.HasValue())
+                    {
+                        int parallelDegree;
+                        if(string.Equals(parallel.Value(), "none", StringComparison.OrdinalIgnoreCase))
+                        {
+                            request.MaxDegreeOfConcurrency = 1;
+                        }
+                        else if(int.TryParse(parallel.Value(), out parallelDegree))
+                        {
+                            request.MaxDegreeOfConcurrency = parallelDegree;   
+                        }
+                    }
+                    if (request.MaxDegreeOfConcurrency <= 1)
+                    {
+                        _log.LogInformation("Running non-parallel restore");
+                    } else
+                    {
+                        _log.LogInformation($"Running restore with {request.MaxDegreeOfConcurrency} concurrent jobs");
+                    }
                     var command = new RestoreCommand(loggerFactory);
+                    var sw = Stopwatch.StartNew();
                     var result = await command.ExecuteAsync(request);
+                    sw.Stop();
 
-                    _log.LogInformation("Restore completed!");
+                    _log.LogInformation($"Restore completed in {sw.ElapsedMilliseconds:0.00}ms!");
 
                     return 0;
                 });

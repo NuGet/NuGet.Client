@@ -10,13 +10,14 @@
     "NuGet.DependencyResolver": "3.0.0-*",
     "NuGet.RuntimeModel": "3.0.0-*",
     "NuGet.Common": { "version": "3.0.0-*", "type": "build" },
-    "Microsoft.Framework.Logging.Abstractions": "1.0.0-*"
+    "Microsoft.Framework.Logging.Abstractions": "1.0.0-beta5-*"
   },
   "frameworks": {
     "net45": { },
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
+        "System.Linq.Parallel": "4.0.0-beta-*"
       }
     }
   }

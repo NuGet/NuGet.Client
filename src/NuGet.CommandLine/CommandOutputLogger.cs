@@ -10,6 +10,7 @@ namespace NuGet.CommandLine
     public class CommandOutputLogger : ILogger
     {
         private readonly CommandOutputLoggerProvider _provider;
+        private static readonly object _consoleLock = new object();
 
         public CommandOutputLogger(CommandOutputLoggerProvider commandOutputProvider)
         {
@@ -40,7 +41,10 @@ namespace NuGet.CommandLine
         {
             if (IsEnabled(logLevel))
             {
-                AnsiConsole.Output.WriteLine(string.Format("{0}: {1}", Caption(logLevel), formatter(state, exception)));
+                lock(_consoleLock)
+                {
+                    AnsiConsole.Output.WriteLine(string.Format("{0}: {1}", Caption(logLevel), formatter(state, exception)));
+                }
             }
         }
 

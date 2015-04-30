@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -42,13 +43,13 @@ namespace NuGet.Commands
                 return new RestoreResult(success: false, restoreGraphs: Enumerable.Empty<RestoreTargetGraph>());
             }
 
-            var projectLockFilePath = Path.Combine(request.Project.BaseDirectory, LockFileFormat.LockFileName);
+            var projectLockFilePath = string.IsNullOrEmpty(request.LockFilePath) ?
+                Path.Combine(request.Project.BaseDirectory, LockFileFormat.LockFileName) :
+                request.LockFilePath;
 
             _log.LogInformation($"Restoring packages for '{request.Project.FilePath}'");
 
             _log.LogWarning("TODO: Read and use lock file");
-
-            _log.LogWarning("TODO: Run prerestore script");
 
             // Load repositories
             var projectResolver = new PackageSpecResolver(request.Project.BaseDirectory);
@@ -60,13 +61,21 @@ namespace NuGet.Commands
                 new LocalDependencyProvider(
                     new PackageSpecReferenceDependencyProvider(projectResolver)));
 
+            if (request.ExternalProjects != null)
+            {
+                context.ProjectLibraryProviders.Add(
+                    new LocalDependencyProvider(
+                        new ExternalProjectReferenceDependencyProvider(request.ExternalProjects)));
+            }
+
             context.LocalLibraryProviders.Add(
                 new SourceRepositoryDependencyProvider(nugetRepository, _log));
 
-            foreach (var provider in request.Sources.Select(CreateProviderFromSource))
+            foreach (var provider in request.Sources.Select(s => CreateProviderFromSource(s, request.NoCache)))
             {
                 context.RemoteLibraryProviders.Add(provider);
             }
+
             var remoteWalker = new RemoteDependencyWalker(context);
 
             var projectRange = new LibraryRange()
@@ -93,7 +102,7 @@ namespace NuGet.Commands
             // Install the runtime-agnostic packages
             var allInstalledPackages = new HashSet<LibraryIdentity>();
             var localRepository = new NuGetv3LocalRepository(request.PackagesDirectory, checkPackageIdCase: false);
-            await InstallPackages(graphs, request.PackagesDirectory, allInstalledPackages);
+            await InstallPackages(graphs, request.PackagesDirectory, allInstalledPackages, request.MaxDegreeOfConcurrency);
 
             // Resolve runtime dependencies
             var runtimeGraphs = new List<RestoreTargetGraph>();
@@ -104,6 +113,7 @@ namespace NuGet.Commands
                     var runtimeSpecificGraphs = await WalkRuntimeDependencies(projectRange, graph, request.Project.RuntimeGraph, remoteWalker, context, localRepository);
                     runtimeGraphs.AddRange(runtimeSpecificGraphs);
                 }
+
                 graphs.AddRange(runtimeGraphs);
 
                 if (runtimeGraphs.Any(g => g.InConflict))
@@ -113,7 +123,7 @@ namespace NuGet.Commands
                 }
 
                 // Install runtime-specific packages
-                await InstallPackages(runtimeGraphs, request.PackagesDirectory, allInstalledPackages);
+                await InstallPackages(runtimeGraphs, request.PackagesDirectory, allInstalledPackages, request.MaxDegreeOfConcurrency);
             }
             else
             {
@@ -259,7 +269,7 @@ namespace NuGet.Commands
                 }
 
                 var referenceSet = packageReader.GetReferenceItems().GetNearest(framework);
-                if(referenceSet != null)
+                if (referenceSet != null)
                 {
                     referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
                 }
@@ -314,7 +324,7 @@ namespace NuGet.Commands
             }
 
             // Apply filters from the <references> node in the nuspec
-            if(referenceFilter != null)
+            if (referenceFilter != null)
             {
                 // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
                 // runtimes/* is unaffected (it doesn't start with lib/)
@@ -359,7 +369,7 @@ namespace NuGet.Commands
 
                 // Locate the package in the local repository
                 var package = localRepository.FindPackagesById(match.Library.Name).FirstOrDefault(p => p.Version == match.Library.Version);
-                if(package != null)
+                if (package != null)
                 {
                     var nextGraph = LoadRuntimeGraph(package);
                     if (nextGraph != null)
@@ -392,12 +402,29 @@ namespace NuGet.Commands
             return null;
         }
 
-        private async Task InstallPackages(IEnumerable<RestoreTargetGraph> graphs, string packagesDirectory, HashSet<LibraryIdentity> allInstalledPackages)
+        private async Task InstallPackages(IEnumerable<RestoreTargetGraph> graphs, string packagesDirectory, HashSet<LibraryIdentity> allInstalledPackages, int maxDegreeOfConcurrency)
         {
-            foreach (var packageToInstall in graphs.SelectMany(g => g.Install.Where(match => allInstalledPackages.Add(match.Library))))
+            var packagesToInstall = graphs.SelectMany(g => g.Install.Where(match => allInstalledPackages.Add(match.Library)));
+            if (maxDegreeOfConcurrency <= 1)
             {
-                // TODO: Parallel!
-                await InstallPackage(packageToInstall, packagesDirectory);
+                foreach (var match in packagesToInstall)
+                {
+                    await InstallPackage(match, packagesDirectory);
+                }
+            }
+            else
+            {
+                var bag = new ConcurrentBag<RemoteMatch>(packagesToInstall);
+                var tasks = Enumerable.Range(0, maxDegreeOfConcurrency)
+                    .Select(async _ =>
+                    {
+                        RemoteMatch match;
+                        while (bag.TryTake(out match))
+                        {
+                            await InstallPackage(match, packagesDirectory);
+                        }
+                    });
+                await Task.WhenAll(tasks);
             }
         }
 
@@ -412,14 +439,14 @@ namespace NuGet.Commands
             }
         }
 
-        private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source)
+        private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source, bool noCache)
         {
             _log.LogVerbose($"Using source {source.Source}");
 
             var logger = _loggerFactory.CreateLogger(
                     typeof(IPackageFeed).FullName + ":" + source.Source);
             var nugetRepository = Repository.Factory.GetCoreV3(source.Source);
-            return new SourceRepositoryDependencyProvider(nugetRepository, logger, noCache: false);
+            return new SourceRepositoryDependencyProvider(nugetRepository, logger, noCache);
         }
     }
 }

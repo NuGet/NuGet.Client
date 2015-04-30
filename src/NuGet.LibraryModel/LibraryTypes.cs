@@ -10,9 +10,9 @@ namespace NuGet.LibraryModel
         public const string Project = "Project";
 
         /// <summary>
-        /// Indicates that the library comes from compiling an MSBuild-based Project
+        /// Indicates that the library comes from compiling an external project (such as an MSBuild-based project)
         /// </summary>
-        public const string MSBuild = "MSBuild";
+        public const string ExternalProject = "ExternalProject";
 
         /// <summary>
         /// Indicates that the library comes from a NuGet Package
