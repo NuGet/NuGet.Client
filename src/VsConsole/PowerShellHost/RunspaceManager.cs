@@ -89,19 +89,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private static void SetupExecutionPolicy(RunspaceDispatcher runspace)
         {
-            ExecutionPolicy policy = runspace.GetEffectiveExecutionPolicy();
-            if (policy != ExecutionPolicy.Unrestricted &&
-                policy != ExecutionPolicy.RemoteSigned &&
-                policy != ExecutionPolicy.Bypass)
-            {
-                ExecutionPolicy machinePolicy = runspace.GetExecutionPolicy(ExecutionPolicyScope.MachinePolicy);
-                ExecutionPolicy userPolicy = runspace.GetExecutionPolicy(ExecutionPolicyScope.UserPolicy);
-
-                if (machinePolicy == ExecutionPolicy.Undefined && userPolicy == ExecutionPolicy.Undefined)
-                {
-                    runspace.SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-                }
-            }
+            runspace.SetExecutionPolicy(ExecutionPolicy.Bypass, ExecutionPolicyScope.Process);
         }
 
         private static void LoadModules(RunspaceDispatcher runspace)
