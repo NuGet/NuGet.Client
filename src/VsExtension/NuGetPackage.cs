@@ -266,10 +266,8 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
-            // set default credential provider for the HttpClient
-            var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
-            Debug.Assert(webProxy != null);
-
+            SetDefaultCredentialProvider();            
+                
             if (SolutionManager != null)
             {
                 SolutionManager.SolutionOpened += (obj, ev) =>
@@ -303,6 +301,21 @@ namespace NuGetVSExtension
             var vsSourceControlTracker = VSSourceControlTracker;
 
             LoadNuGetSettings();
+        }
+
+        /// <summary>
+        /// Set default credential provider for the HttpClient, which is used by V2 sources.
+        /// </summary>
+        private void SetDefaultCredentialProvider()
+        {
+            var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
+            Debug.Assert(webProxy != null);
+
+            Legacy.NuGet.PackageSourceProvider packageSourceProvider = new Legacy.NuGet.PackageSourceProvider(
+                new SettingsToLegacySettings(Settings));
+            Legacy.NuGet.HttpClient.DefaultCredentialProvider = new Legacy.NuGet.SettingsCredentialProvider(
+                new VSRequestCredentialProvider(webProxy), 
+                packageSourceProvider);
         }
 
         private void AddMenuCommandHandlers()

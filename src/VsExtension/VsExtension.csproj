@@ -73,11 +73,14 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="SettingsToLegacySettings.cs" />
     <Compile Include="Utilities\MessageHelper.cs" />
     <Compile Include="Utilities\VsUtility.cs" />
+    <Compile Include="VisualStudioCredentialProvider.cs" />
     <Compile Include="VisualStudioUIContext.cs" />
     <Compile Include="VisualStudioUIContextFactory.cs" />
     <Compile Include="VsEvents\OnBuildPackageRestorer.cs" />
+    <Compile Include="VsRequestCredentialProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\VsConsole\PowerShellHost\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
