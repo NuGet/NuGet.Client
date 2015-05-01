@@ -777,3 +777,15 @@ function Enable-PackageRestore {
     $packageRestoreManager = $componentService.GetService([NuGet.VisualStudio.IPackageRestoreManager])
     $packageRestoreManager.EnableCurrentSolutionForRestore($false)
 }
+
+function Check-NuGetConfig {
+	# Create an empty NuGet.Config file if not exist. It will happen on machines with visual studio newly installed.
+	$nuGetConfigPath = Join-Path $env:AppData 'NuGet\NuGet.Config'
+	if (!(Test-Path $nuGetConfigPath))
+	{
+		$newFile = New-Item $nuGetConfigPath -ItemType File
+		'<?xml version="1.0" encoding="utf-8"?>
+		<configuration>
+		</configuration>' > $newFile
+	}
+}

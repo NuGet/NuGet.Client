@@ -2697,6 +2697,9 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
 {
     param($context)
 
+	# Arrange
+	Check-NuGetConfig
+
 	$componentModel = Get-VSComponentModel
 	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 

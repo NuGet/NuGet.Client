@@ -34,6 +34,7 @@ function Test-UpdatingPackageInProjectDoesntRemoveFromSolutionIfInUse {
 
 function Test-UpdatingPackageWithPackageSaveModeNuspec {
     # Arrange
+	Check-NuGetConfig
 
     $componentModel = Get-VSComponentModel
 	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
