@@ -1,7 +1,7 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -10,8 +10,22 @@ namespace NuGet.Protocol.VisualStudio
     /// </summary>
     public sealed class UIPackageMetadata
     {
-        public UIPackageMetadata(PackageIdentity identity, string title, string summary, string description, string authors, string owners, Uri iconUrl, Uri licenseUrl, Uri projectUrl, Uri reportAbuseUrl,
-            string tags, DateTimeOffset? published, IEnumerable<PackageDependencyGroup> dependencySet, bool requireLicenseAccept)
+        public UIPackageMetadata(
+            PackageIdentity identity, 
+            string title, 
+            string summary, 
+            string description, 
+            string authors, 
+            string owners, 
+            Uri iconUrl, 
+            Uri licenseUrl, 
+            Uri projectUrl, 
+            Uri reportAbuseUrl,
+            string tags, 
+            DateTimeOffset? published, 
+            IEnumerable<PackageDependencyGroup> dependencySet, 
+            bool requireLicenseAccept,
+            int? downloadCount)
         {
             Identity = identity;
             Summary = summary;
@@ -28,6 +42,7 @@ namespace NuGet.Protocol.VisualStudio
             DependencySets = dependencySet;
             RequireLicenseAcceptance = requireLicenseAccept;
             Title = title;
+            DownloadCount = downloadCount;
         }
 
         /// <summary>
@@ -58,7 +73,7 @@ namespace NuGet.Protocol.VisualStudio
 
         public string Tags { get; private set; }
 
-        public int DownloadCount { get; private set; }
+        public int? DownloadCount { get; private set; }
 
         public DateTimeOffset? Published { get; private set; }
 

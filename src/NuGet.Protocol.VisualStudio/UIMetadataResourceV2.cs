@@ -77,7 +77,22 @@ namespace NuGet.Protocol.VisualStudio
             string authors = String.Join(" ", parsed.Authors);
             string owners = String.Join(" ", parsed.Owners);
 
-            return new UIPackageMetadata(new PackageIdentity(parsed.Id, parsed.Version), parsed.Title, parsed.Summary, parsed.Description, authors, owners, parsed.IconUrl, parsed.LicenseUrl, parsed.ProjectUrl, reportAbuse, tags, parsed.Published, parsed.DependencySets, parsed.RequireLicenseAcceptance);
+            return new UIPackageMetadata(
+                new PackageIdentity(parsed.Id, parsed.Version), 
+                parsed.Title, 
+                parsed.Summary, 
+                parsed.Description, 
+                authors, 
+                owners, 
+                parsed.IconUrl, 
+                parsed.LicenseUrl, 
+                parsed.ProjectUrl, 
+                reportAbuse, 
+                tags, 
+                parsed.Published, 
+                parsed.DependencySets, 
+                parsed.RequireLicenseAcceptance,
+                parsed.DownloadCount);
         }
     }
 }

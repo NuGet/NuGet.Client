@@ -7,14 +7,14 @@ namespace NuGet.Protocol.VisualStudio
 {
     public class VersionInfo
     {
-        public VersionInfo(NuGetVersion version, int downloadCount)
+        public VersionInfo(NuGetVersion version, int? downloadCount)
         {
             Version = version;
             DownloadCount = downloadCount;
         }
         public NuGetVersion Version { get; private set; }
 
-        public int DownloadCount { get; private set; }
+        public int? DownloadCount { get; private set; }
     }
 
     /// <summary>

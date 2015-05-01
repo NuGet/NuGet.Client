@@ -76,7 +76,7 @@ namespace NuGet.Protocol.VisualStudio
 
             // TODO: in v2, we only have download count for all versions, not per version.
             // To be consistent, in v3, we also use total download count for now.
-            int totalDownloadCount = versionList.Select(v => v.DownloadCount).Sum();
+            int? totalDownloadCount = versionList.Select(v => v.DownloadCount).Sum();
             versionList = versionList.Select(v => new VersionInfo(v.Version, totalDownloadCount))
                 .ToList();
 

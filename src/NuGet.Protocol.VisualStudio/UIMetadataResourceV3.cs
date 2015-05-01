@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using NuGet.Protocol.Core.v3.Data;
-using NuGet.Protocol.Core.v3;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.v3;
+using NuGet.Protocol.Core.v3.Data;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -62,6 +63,23 @@ namespace NuGet.Protocol.VisualStudio
             {
                 published = publishedToken.ToObject<DateTimeOffset>();
             }
+
+            var downloadCountString = metadata.Value<string>(Properties.DownloadCount);
+
+            int? downloadCountValue;
+            int downloadCount;
+            if (int.TryParse(
+                downloadCountString,
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out downloadCount))
+            {
+                downloadCountValue = downloadCount;
+            }
+            else
+            {
+                downloadCountValue = null;
+            }            
             
             string id = metadata.Value<string>(Properties.PackageId);
             string title = metadata.Value<string>(Properties.Title);
@@ -89,9 +107,20 @@ namespace NuGet.Protocol.VisualStudio
 
             return new UIPackageMetadata(
                 new PackageIdentity(id, version),
-                title, summary, description, authors, owners,
-                iconUrl, licenseUrl, projectUrl, reportAbuseUrl,
-                tags, published, dependencySets, requireLicenseAcceptance);
+                title, 
+                summary, 
+                description, 
+                authors, 
+                owners,
+                iconUrl, 
+                licenseUrl, 
+                projectUrl, 
+                reportAbuseUrl,
+                tags, 
+                published, 
+                dependencySets, 
+                requireLicenseAcceptance, 
+                downloadCountValue);
         }
 
         /// <summary>
