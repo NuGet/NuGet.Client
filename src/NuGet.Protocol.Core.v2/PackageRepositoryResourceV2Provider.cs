@@ -50,7 +50,6 @@ namespace NuGet.Protocol.Core.v2
                         {
                             // Get a IPackageRepo object and add it to the cache.
                             repo = V2Utilities.GetV2SourceRepository(source.PackageSource);
-                            HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(source.PackageSource);
                         }
                     }
                     catch (Exception)
