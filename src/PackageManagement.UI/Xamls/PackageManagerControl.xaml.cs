@@ -92,6 +92,9 @@ namespace NuGet.PackageManagement.UI
 
             _initialized = true;
 
+            // UI is initialized. Start the first search
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+
             // register with the UI controller
             NuGetUI controller = model.UIController as NuGetUI;
             if (controller != null)
@@ -594,9 +597,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void _sourceRepoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SourceRepoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_dontStartNewSearch)
+            if (_dontStartNewSearch || !_initialized)
             {
                 return;
             }
@@ -613,7 +616,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void _filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_initialized)
             {
@@ -701,7 +704,7 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        private void _searchControl_SearchStart(object sender, EventArgs e)
+        private void SearchControl_SearchStart(object sender, EventArgs e)
         {
             if (!_initialized)
             {
@@ -711,7 +714,7 @@ namespace NuGet.PackageManagement.UI
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
         }
 
-        private void _checkboxPrerelease_CheckChanged(object sender, RoutedEventArgs e)
+        private void CheckboxPrerelease_CheckChanged(object sender, RoutedEventArgs e)
         {
             if (!_initialized)
             {

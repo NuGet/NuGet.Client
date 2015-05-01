@@ -60,9 +60,14 @@ namespace StandaloneUI
             Instance.SetValue(section, key, value);
         }
 
-        public void SetValues(string section, IList<KeyValuePair<string, string>> values)
+        public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
             Instance.SetValues(section, values);
+        }
+
+        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        {
+            Instance.UpdateSections(section, values);
         }
     }
 }

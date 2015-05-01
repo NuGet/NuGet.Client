@@ -162,8 +162,8 @@
              ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
              BorderThickness="0,0,0,1"
              HorizontalContentAlignment="Stretch"
-             SelectionChanged="_list_SelectionChanged"
-             Loaded="_list_Loaded">
+             SelectionChanged="List_SelectionChanged"
+             Loaded="List_Loaded">
         <!-- set the template to disable the background change when the IsEnabled is false. -->
         <ListBox.Template>
             <ControlTemplate TargetType="{x:Type ListBox}">

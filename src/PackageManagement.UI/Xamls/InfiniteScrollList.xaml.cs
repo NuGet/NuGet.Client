@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void _list_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void List_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0 && e.AddedItems[0] is LoadingStatusIndicator)
             {
@@ -222,8 +222,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void _list_Loaded(object sender, RoutedEventArgs e)
+        private void List_Loaded(object sender, RoutedEventArgs e)
         {
+            _list.Loaded -= List_Loaded;
+
             var c = VisualTreeHelper.GetChild(_list, 0) as Border;
             if (c == null)
             {
@@ -238,10 +240,10 @@ namespace NuGet.PackageManagement.UI
             }
 
             _scrollViewer.Padding = new Thickness(0);
-            _scrollViewer.ScrollChanged += _scrollViewer_ScrollChanged;
+            _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
         }
 
-        private void _scrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
