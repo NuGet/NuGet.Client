@@ -69,6 +69,10 @@ function Build()
 	$env:NUGET_PUSH_TARGET="$PushTarget"
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
     & msbuild "build\build.msbuild" "/p:Configuration=$Configuration"
+	if ($lastexitcode -ne 0) 
+	{		
+	  	throw "Build failed"
+	}	
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
 }
 
