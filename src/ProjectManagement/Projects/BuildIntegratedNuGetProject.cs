@@ -19,7 +19,7 @@ namespace NuGet.ProjectManagement.Projects
 {
     /// <summary>
     /// A NuGet integrated MSBuild project.
-    /// These projects contain a project.json
+    /// These projects contain a nuget.json
     /// </summary>
     public class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject
     {

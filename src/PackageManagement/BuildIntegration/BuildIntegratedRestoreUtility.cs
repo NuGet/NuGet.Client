@@ -60,78 +60,17 @@ namespace NuGet.PackageManagement
 
             RestoreRequest request = new RestoreRequest(spec, sources.Select(source => new PackageSource(source)), file.Directory.FullName);
 
-            var loggerFactory = new ProjectContextLoggerFactory(projectContext)
-            {
-                MinimumLevel = LogLevel.Debug
-            };
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddProvider(new ProjectContextLoggerProvider(projectContext));
 
             RestoreCommand command = new RestoreCommand(loggerFactory);
 
             return await command.ExecuteAsync(request);
         }
 
-        private static async Task RestoreExternal(string jsonConfigPath, INuGetProjectContext projectContext, IEnumerable<string> sources, CancellationToken token)
-        {
-            FileInfo file = new FileInfo(jsonConfigPath);
-
-            // Call DNU to restore
-            string dnuPath = Environment.GetEnvironmentVariable("DNU_CMD_PATH");
-
-            if (String.IsNullOrEmpty(dnuPath) || !dnuPath.EndsWith("dnu.cmd"))
-            {
-                throw new InvalidOperationException("Set the environment variable DNU_CMD_PATH to dnu.cmd");
-            }
-            else
-            {
-                ProcessStartInfo startInfo = new ProcessStartInfo();
-                startInfo.FileName = dnuPath;
-                startInfo.Arguments = "restore --ignore-failed-sources";
-                startInfo.CreateNoWindow = true;
-                startInfo.WorkingDirectory = file.Directory.FullName;
-                startInfo.UseShellExecute = false;
-                startInfo.RedirectStandardError = true;
-                startInfo.RedirectStandardOutput = true;
-
-                if (sources != null && sources.Any())
-                {
-                    foreach (var source in sources)
-                    {
-                        startInfo.Arguments += String.Format(CultureInfo.InvariantCulture, " -f {0}", source);
-                    }
-                }
-
-                var process = new Process();
-                process.StartInfo = startInfo;
-                process.EnableRaisingEvents = true;
-
-                process.ErrorDataReceived += (o, e) =>
-                {
-                    if (!String.IsNullOrEmpty(e.Data))
-                    {
-                        projectContext.Log(MessageLevel.Info, "{0}", e.Data);
-                    }
-                };
-
-                process.OutputDataReceived += (o, e) =>
-                {
-                    projectContext.Log(MessageLevel.Info, "{0}", e.Data);
-                };
-
-                await Task.Run(() =>
-                {
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-                    process.WaitForExit();
-
-                    if (process.ExitCode != 0)
-                    {
-                        projectContext.ReportError(Strings.BuildIntegratedPackageRestoreFailed);
-                    }
-                });
-            }
-        }
-
+        /// <summary>
+        /// nupkg path from the global cache folder
+        /// </summary>
         public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
         {
             string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -141,13 +80,23 @@ namespace NuGet.PackageManagement
             return Path.Combine(GlobalPackagesFolder, identity.Id, identity.Version.ToNormalizedString(), nupkgName);
         }
 
+        /// <summary>
+        /// Global package folder path
+        /// </summary>
         public static string GlobalPackagesFolder
         {
             get
             {
-                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string path = Environment.GetEnvironmentVariable("NUGET_GLOBAL_PACKAGE_CACHE");
 
-                return Path.Combine(userProfile, ".dnx\\packages\\");
+                if (String.IsNullOrEmpty(path))
+                {
+                    string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+                    path = Path.Combine(userProfile, ".nuget\\packages\\");
+                }
+
+                return path;
             }
         }
     }

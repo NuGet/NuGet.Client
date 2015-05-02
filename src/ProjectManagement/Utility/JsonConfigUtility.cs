@@ -10,12 +10,12 @@ using NuGet.Frameworks;
 namespace NuGet.ProjectManagement
 {
     /// <summary>
-    /// project.json utils
+    /// nuget.json utils
     /// </summary>
     public static class JsonConfigUtility
     {
         /// <summary>
-        /// Read dependencies from a project.json file
+        /// Read dependencies from a nuget.json file
         /// </summary>
         public static IEnumerable<PackageDependency> GetDependencies(JObject json)
         {
@@ -55,7 +55,7 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        /// Add a dependency to a project.json file
+        /// Add a dependency to a nuget.json file
         /// </summary>
         public static void AddDependency(JObject json, PackageDependency dependency)
         {
@@ -81,7 +81,7 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        /// Remove a dependency from a project.json file
+        /// Remove a dependency from a nuget.json file
         /// </summary>
         public static void RemoveDependency(JObject json, string packageId)
         {

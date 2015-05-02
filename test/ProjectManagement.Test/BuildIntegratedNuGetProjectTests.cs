@@ -22,7 +22,7 @@ namespace ProjectManagement.Test
             var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomConfig = Path.Combine(randomProjectFolderPath, "nuget.json");
             var token = CancellationToken.None;
 
             CreateConfigJson(randomConfig);
@@ -81,7 +81,7 @@ namespace ProjectManagement.Test
             var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomConfig = Path.Combine(randomProjectFolderPath, "nuget.json");
             var token = CancellationToken.None;
 
             CreateConfigJson(randomConfig);
@@ -126,53 +126,6 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
-
-        //[Fact]
-        //public async Task TestBuildIntegratedNuGetProjectAddImport()
-        //{
-        //    // Arrange
-        //    var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
-        //    var randomTestPackageSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
-        //    var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-        //    var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-        //    var randomConfig = Path.Combine(randomPackagesFolderPath, "project.json");
-        //    var token = CancellationToken.None;
-
-        //    var projectTargetFramework = NuGetFramework.Parse("netcore50");
-        //    var testNuGetProjectContext = new TestNuGetProjectContext();
-        //    var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
-        //    var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
-
-        //    // Pre-Assert
-        //    // Check that there are no packages returned by PackagesConfigProject
-        //    var packagesInPackagesConfig = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
-        //    Assert.Equal(0, packagesInPackagesConfig.Count);
-        //    Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-
-        //    var packageFileInfo = TestPackages.GetPackageWithBuildFiles(randomTestPackageSourcePath,
-        //        packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-        //    using (var packageStream = packageFileInfo.OpenRead())
-        //    {
-        //        // Act
-        //        await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-        //    }
-
-        //    // Assert
-        //    // Check that the packages.config file exists after the installation
-        //    Assert.True(File.Exists(randomPackagesConfigPath));
-        //    // Check the number of packages and packages returned by PackagesConfigProject after the installation
-        //    packagesInPackagesConfig = (await buildIntegratedProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-        //    Assert.Equal(1, packagesInPackagesConfig.Count);
-        //    Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
-        //    Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-        //    // Check that the imports are added
-        //    Assert.Equal(1, msBuildNuGetProjectSystem.Imports.Count);
-        //    Assert.Equal(Path.Combine(buildIntegratedProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
-        //        "build\\net45\\packageA.targets"), msBuildNuGetProjectSystem.Imports.First());
-
-        //    // Clean-up
-        //    TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
-        //}
 
         private static void CreateConfigJson(string path)
         {
