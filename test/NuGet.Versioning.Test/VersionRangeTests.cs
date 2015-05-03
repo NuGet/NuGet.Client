@@ -1,12 +1,6 @@
-﻿using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Versioning.Test
 {
@@ -47,14 +41,23 @@ namespace NuGet.Versioning.Test
         public void ParseVersionRangeNoPrerelease()
         {
             // Act 
-            var versionInfo =  new VersionRange(minVersion: new NuGetVersion("1.2-Alpha"), includePrerelease: false);
+            var versionInfo = new VersionRange(minVersion: new NuGetVersion("1.2-Alpha"), includePrerelease: false);
 
             // Assert
             Assert.False(versionInfo.IncludePrerelease);
         }
 
         [Theory]
-        [MemberData("VersionRangeNotInRange")]
+        [InlineData("1.0.0", "0.0.0")]
+        [InlineData("[1.0.0, 2.0.0]", "2.0.1")]
+        [InlineData("[1.0.0, 2.0.0]", "0.0.0")]
+        [InlineData("[1.0.0, 2.0.0]", "3.0.0")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0-alpha")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0-alpha+meta")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "2.0.0-rc")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "2.0.0+meta")]
+        [InlineData("(1.0.0-beta+meta, 2.0.0-beta+meta)", "2.0.0-beta+meta")]
+        [InlineData("(, 2.0.0-beta+meta)", "2.0.0-beta+meta")]
         public void ParseVersionRangeDoesNotSatisfy(string spec, string version)
         {
             // Act
@@ -72,7 +75,17 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeInRange")]
+        [InlineData("1.0.0", "2.0.0")]
+        [InlineData("[1.0.0, 2.0.0]", "2.0.0")]
+        [InlineData("[1.0.0, 2.0.0]", "1.0.0")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0-beta+meta")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "2.0.0-beta")]
+        [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0+meta")]
+        [InlineData("(1.0.0-beta+meta, 2.0.0-beta+meta)", "1.0.0")]
+        [InlineData("(1.0.0-beta+meta, 2.0.0-beta+meta)", "2.0.0-alpha+meta")]
+        [InlineData("(1.0.0-beta+meta, 2.0.0-beta+meta)", "2.0.0-alpha")]
+        [InlineData("(, 2.0.0-beta+meta)", "2.0.0-alpha")]
         public void ParseVersionRangeSatisfies(string spec, string version)
         {
             // Act
@@ -86,9 +99,18 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeParts")]
-        public void ParseVersionRangeParts(NuGetVersion min, NuGetVersion max, bool minInc, bool maxInc)
+        [InlineData("1.0.0", "2.0.0", true, true)]
+        [InlineData("1.0.0", "1.0.1", false, false)]
+        [InlineData("1.0.0-beta+0", "2.0.0", false, true)]
+        [InlineData("1.0.0-beta+0", "2.0.0+99", false, false)]
+        [InlineData("1.0.0-beta+0", "2.0.0+99", true, true)]
+        [InlineData("1.0.0", "2.0.0+99", true, true)]
+        public void ParseVersionRangeParts(string minString, string maxString, bool minInc, bool maxInc)
         {
+            // Arrange
+            NuGetVersion min = NuGetVersion.Parse(minString);
+            NuGetVersion max = NuGetVersion.Parse(maxString);
+
             // Act
             var versionInfo = new VersionRange(min, minInc, max, maxInc);
 
@@ -100,9 +122,18 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeParts")]
-        public void ParseVersionRangeToStringReParse(NuGetVersion min, NuGetVersion max, bool minInc, bool maxInc)
+        [InlineData("1.0.0", "2.0.0", true, true)]
+        [InlineData("1.0.0", "1.0.1", false, false)]
+        [InlineData("1.0.0-beta+0", "2.0.0", false, true)]
+        [InlineData("1.0.0-beta+0", "2.0.0+99", false, false)]
+        [InlineData("1.0.0-beta+0", "2.0.0+99", true, true)]
+        [InlineData("1.0.0", "2.0.0+99", true, true)]
+        public void ParseVersionRangeToStringReParse(string minString, string maxString, bool minInc, bool maxInc)
         {
+            // Arrange
+            NuGetVersion min = NuGetVersion.Parse(minString);
+            NuGetVersion max = NuGetVersion.Parse(maxString);
+
             // Act
             var original = new VersionRange(min, minInc, max, maxInc);
             var versionInfo = VersionRange.Parse(original.ToString());
@@ -115,7 +146,24 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeStrings")]
+        [InlineData("1.2.0")]
+        [InlineData("1.2.3")]
+        [InlineData("1.2.3-beta")]
+        [InlineData("1.2.3-beta+900")]
+        [InlineData("1.2.3-beta.2.4.55.X+900")]
+        [InlineData("1.2.3-0+900")]
+        [InlineData("[1.2.0]")]
+        [InlineData("[1.2.3]")]
+        [InlineData("[1.2.3-beta]")]
+        [InlineData("[1.2.3-beta+900]")]
+        [InlineData("[1.2.3-beta.2.4.55.X+900]")]
+        [InlineData("[1.2.3-0+90]")]
+        [InlineData("(, 1.2.0]")]
+        [InlineData("(, 1.2.3]")]
+        [InlineData("(, 1.2.3-beta]")]
+        [InlineData("(, 1.2.3-beta+900]")]
+        [InlineData("(, 1.2.3-beta.2.4.55.X+900]")]
+        [InlineData("(, 1.2.3-0+900]")]
         public void ParseVersionRangeToStringShortHand(string version)
         {
             // Act
@@ -126,7 +174,9 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeStringsNormalized")]
+        [InlineData("1.2.0", "[1.2.0, )")]
+        [InlineData("1.2.3-beta.2.4.55.X+900", "[1.2.3-beta.2.4.55.X+900, )")]
+        [InlineData("[1.2.0)", "[1.2.0, 1.2.0)")]
         public void ParseVersionRangeToString(string version, string expected)
         {
             // Act
@@ -403,7 +453,24 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeStrings")]
+        [InlineData("1.2.0")]
+        [InlineData("1.2.3")]
+        [InlineData("1.2.3-beta")]
+        [InlineData("1.2.3-beta+900")]
+        [InlineData("1.2.3-beta.2.4.55.X+900")]
+        [InlineData("1.2.3-0+900")]
+        [InlineData("[1.2.0)")]
+        [InlineData("[1.2.3)")]
+        [InlineData("[1.2.3-beta)")]
+        [InlineData("[1.2.3-beta+900)")]
+        [InlineData("[1.2.3-beta.2.4.55.X+900)")]
+        [InlineData("[1.2.3-0+900)")]
+        [InlineData("(, 1.2.0)")]
+        [InlineData("(, 1.2.3)")]
+        [InlineData("(, 1.2.3-beta)")]
+        [InlineData("(, 1.2.3-beta+900)")]
+        [InlineData("(, 1.2.3-beta.2.4.55.X+900)")]
+        [InlineData("(, 1.2.3-0+900)")]
         public void StringFormatNullProvider(string range)
         {
             // Arrange
@@ -416,7 +483,24 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeStrings")]
+        [InlineData("1.2.0")]
+        [InlineData("1.2.3")]
+        [InlineData("1.2.3-beta")]
+        [InlineData("1.2.3-beta+900")]
+        [InlineData("1.2.3-beta.2.4.55.X+900")]
+        [InlineData("1.2.3-0+900")]
+        [InlineData("[1.2.0]")]
+        [InlineData("[1.2.3]")]
+        [InlineData("[1.2.3-beta]")]
+        [InlineData("[1.2.3-beta+900]")]
+        [InlineData("[1.2.3-beta.2.4.55.X+900]")]
+        [InlineData("[1.2.3-0+90]")]
+        [InlineData("(, 1.2.0]")]
+        [InlineData("(, 1.2.3]")]
+        [InlineData("(, 1.2.3-beta]")]
+        [InlineData("(, 1.2.3-beta+900]")]
+        [InlineData("(, 1.2.3-beta.2.4.55.X+900]")]
+        [InlineData("(, 1.2.3-0+900]")]
         public void StringFormatNullProvider2(string range)
         {
             // Arrange
@@ -429,9 +513,20 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("VersionRangeData")]
-        public void ParseVersionParsesTokensVersionsCorrectly(string versionString, VersionRange versionRange)
+        [InlineData("(1.2.3.4, 3.2)", "1.2.3.4", false, "3.2", false)]
+        [InlineData("(1.2.3.4, 3.2]", "1.2.3.4", false, "3.2", true)]
+        [InlineData("[1.2, 3.2.5)", "1.2", true, "3.2.5", false)]
+        [InlineData("[2.3.7, 3.2.4.5]", "2.3.7", true, "3.2.4.5", true)]
+        [InlineData("(, 3.2.4.5]", null, false, "3.2.4.5", true)]
+        [InlineData("(1.6, ]", "1.6", false, null, true)]
+        [InlineData("(1.6)", "1.6", false, "1.6", false)]
+        [InlineData("[2.7]", "2.7", true, "2.7", true)]
+        public void ParseVersionParsesTokensVersionsCorrectly(string versionString, string min, bool incMin, string max, bool incMax)
         {
+            // Arrange
+            var versionRange = new VersionRange(min == null ? null : NuGetVersion.Parse(min), incMin,
+                max == null ? null : NuGetVersion.Parse(max), incMax);
+
             // Act
             var actual = VersionRange.Parse(versionString);
 
@@ -440,105 +535,6 @@ namespace NuGet.Versioning.Test
             Assert.Equal(versionRange.IsMaxInclusive, actual.IsMaxInclusive);
             Assert.Equal(versionRange.MinVersion, actual.MinVersion);
             Assert.Equal(versionRange.MaxVersion, actual.MaxVersion);
-        }
-
-        public static IEnumerable<object[]> VersionRangeData
-        {
-            get
-            {
-                yield return new object[] { "(1.2.3.4, 3.2)", new VersionRange(NuGetVersion.Parse("1.2.3.4"), false, NuGetVersion.Parse("3.2"), false) };
-                yield return new object[] { "(1.2.3.4, 3.2]", new VersionRange(NuGetVersion.Parse("1.2.3.4"), false, NuGetVersion.Parse("3.2"), true) };
-                yield return new object[] { "[1.2, 3.2.5)", new VersionRange(NuGetVersion.Parse("1.2"), true, NuGetVersion.Parse("3.2.5"), false) };
-                yield return new object[] { "[2.3.7, 3.2.4.5]", new VersionRange(NuGetVersion.Parse("2.3.7"), true, NuGetVersion.Parse("3.2.4.5"), true) };
-                yield return new object[] { "(, 3.2.4.5]", new VersionRange(null, false, NuGetVersion.Parse("3.2.4.5"), true) };
-                yield return new object[] { "(1.6, ]", new VersionRange(NuGetVersion.Parse("1.6"), false, null, true) };
-                yield return new object[] { "(1.6)", new VersionRange(NuGetVersion.Parse("1.6"), false, NuGetVersion.Parse("1.6"), false) };
-                yield return new object[] { "[2.7]", new VersionRange(NuGetVersion.Parse("2.7"), true, NuGetVersion.Parse("2.7"), true) };
-            }
-        }
-
-        public static IEnumerable<object[]> VersionRangeStrings
-        {
-            get
-            {
-                yield return new object[] { "1.2.0" };
-                yield return new object[] { "1.2.3" };
-                yield return new object[] { "1.2.3-beta" };
-                yield return new object[] { "1.2.3-beta+900" };
-                yield return new object[] { "1.2.3-beta.2.4.55.X+900" };
-                yield return new object[] { "1.2.3-0+900" };
-                yield return new object[] { "[1.2.0]" };
-                yield return new object[] { "[1.2.3]" };
-                yield return new object[] { "[1.2.3-beta]" };
-                yield return new object[] { "[1.2.3-beta+900]" };
-                yield return new object[] { "[1.2.3-beta.2.4.55.X+900]" };
-                yield return new object[] { "[1.2.3-0+900]" };
-                yield return new object[] { "(, 1.2.0]" };
-                yield return new object[] { "(, 1.2.3]" };
-                yield return new object[] { "(, 1.2.3-beta]" };
-                yield return new object[] { "(, 1.2.3-beta+900]" };
-                yield return new object[] { "(, 1.2.3-beta.2.4.55.X+900]" };
-                yield return new object[] { "(, 1.2.3-0+900]" };
-            }
-        }
-
-        public static IEnumerable<object[]> VersionRangeStringsNormalized
-        {
-            get
-            {
-                yield return new object[] { "1.2.0", "[1.2.0, )" };
-                yield return new object[] { "1.2.3-beta.2.4.55.X+900", "[1.2.3-beta.2.4.55.X+900, )" };
-                yield return new object[] { "[1.2.0]", "[1.2.0, 1.2.0]" };
-            }
-        }
-
-        public static IEnumerable<object[]> VersionRangeParts
-        {
-            get
-            {
-                yield return new object[] { NuGetVersion.Parse("1.0.0"), NuGetVersion.Parse("2.0.0"), true, true };
-                yield return new object[] { NuGetVersion.Parse("1.0.0"), NuGetVersion.Parse("1.0.1"), false, false };
-                yield return new object[] { NuGetVersion.Parse("1.0.0-beta+0"), NuGetVersion.Parse("2.0.0"), false, true };
-                yield return new object[] { NuGetVersion.Parse("1.0.0-beta+0"), NuGetVersion.Parse("2.0.0+99"), false, false };
-                yield return new object[] { NuGetVersion.Parse("1.0.0-beta+0"), NuGetVersion.Parse("2.0.0+99"), true, true };
-                yield return new object[] { NuGetVersion.Parse("1.0.0"), NuGetVersion.Parse("2.0.0+99"), true, true };
-            }
-        }
-
-        public static IEnumerable<object[]> VersionRangeInRange
-        {
-            get
-            {
-                yield return new object[] { "1.0.0", "2.0.0" };
-                yield return new object[] { "[1.0.0, 2.0.0]", "2.0.0" };
-                yield return new object[] { "[1.0.0, 2.0.0]", "1.0.0" };
-                yield return new object[] { "[1.0.0, 2.0.0]", "2.0.0" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0-beta+meta" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "2.0.0-beta" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0+meta" };
-                yield return new object[] { "(1.0.0-beta+meta, 2.0.0-beta+meta)", "1.0.0" };
-                yield return new object[] { "(1.0.0-beta+meta, 2.0.0-beta+meta)", "2.0.0-alpha+meta" };
-                yield return new object[] { "(1.0.0-beta+meta, 2.0.0-beta+meta)", "2.0.0-alpha" };
-                yield return new object[] { "(, 2.0.0-beta+meta)", "2.0.0-alpha" };
-            }
-        }
-
-        public static IEnumerable<object[]> VersionRangeNotInRange
-        {
-            get
-            {
-                yield return new object[] { "1.0.0", "0.0.0" };
-                yield return new object[] { "[1.0.0, 2.0.0]", "2.0.1" };
-                yield return new object[] { "[1.0.0, 2.0.0]", "0.0.0" };
-                yield return new object[] { "[1.0.0, 2.0.0]", "3.0.0" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0-alpha" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0-alpha+meta" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "2.0.0-rc" };
-                yield return new object[] { "[1.0.0-beta+meta, 2.0.0-beta+meta]", "2.0.0+meta" };
-                yield return new object[] { "(1.0.0-beta+meta, 2.0.0-beta+meta)", "2.0.0-beta+meta" };
-                yield return new object[] { "(, 2.0.0-beta+meta)", "2.0.0-beta+meta" };
-            }
         }
     }
 }

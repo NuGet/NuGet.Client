@@ -1,9 +1,7 @@
-﻿using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Versioning.Test
 {
@@ -57,9 +55,16 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("ConstructorData")]
-        public void StringConstructorParsesValuesCorrectly(string version, Version versionValue, string specialValue)
+        [InlineData("1.0.0", "1.0.0.0", "")]
+        [InlineData("2.3-alpha", "2.3.0.0", "alpha")]
+        [InlineData("3.4.0.3-RC-3", "3.4.0.3", "RC-3")]
+        [InlineData("1.0.0-beta.x.y.5.79.0+aa", "1.0.0.0", "beta.x.y.5.79.0")]
+        [InlineData("1.0.0-beta.x.y.5.79.0+AA", "1.0.0.0", "beta.x.y.5.79.0")]
+        public void StringConstructorParsesValuesCorrectly(string version, string versionValueString, string specialValue)
         {
+            // Arrange
+            Version versionValue = new Version(versionValueString);
+
             // Act
             NuGetVersion semanticVersion = NuGetVersion.Parse(version);
 
@@ -67,18 +72,6 @@ namespace NuGet.Versioning.Test
             Assert.Equal(versionValue, semanticVersion.Version);
             Assert.Equal(specialValue, semanticVersion.Release);
             Assert.Equal(version, semanticVersion.ToString());
-        }
-
-        public static IEnumerable<object[]> ConstructorData
-        {
-            get
-            {
-                yield return new object[] { "1.0.0", new Version("1.0.0.0"), "" };
-                yield return new object[] { "2.3-alpha", new Version("2.3.0.0"), "alpha" };
-                yield return new object[] { "3.4.0.3-RC-3", new Version("3.4.0.3"), "RC-3" };
-                yield return new object[] { "1.0.0-beta.x.y.5.79.0+aa", new Version("1.0.0.0"), "beta.x.y.5.79.0" };
-                yield return new object[] { "1.0.0-beta.x.y.5.79.0+AA", new Version("1.0.0.0"), "beta.x.y.5.79.0" };
-            }
         }
 
         [Fact]
@@ -106,20 +99,15 @@ namespace NuGet.Versioning.Test
                 String.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid version string.", versionString));
         }
 
-        public static IEnumerable<object[]> LegacyVersionData
-        {
-            get
-            {
-                yield return new object[] { "1.022", new NuGetVersion(new Version("1.22.0.0"), "") };
-                yield return new object[] { "23.2.3", new NuGetVersion(new Version("23.2.3.0"), "") };
-                yield return new object[] { "1.3.42.10133", new NuGetVersion(new Version("1.3.42.10133"), "") };
-            }
-        }
-
         [Theory]
-        [MemberData("LegacyVersionData")]
-        public void ParseReadsLegacyStyleVersionNumbers(string versionString, NuGetVersion expected)
+        [InlineData("1.022", "1.22.0.0")]
+        [InlineData("23.2.3", "23.2.3.0")]
+        [InlineData("1.3.42.10133", "1.3.42.10133")]
+        public void ParseReadsLegacyStyleVersionNumbers(string versionString, string expectedString)
         {
+            // Arrange
+            NuGetVersion expected = new NuGetVersion(new Version(expectedString), "");
+
             // Act
             var actual = NuGetVersion.Parse(versionString);
 
@@ -128,21 +116,16 @@ namespace NuGet.Versioning.Test
             Assert.Equal(expected.Release, actual.Release);
         }
 
-        public static IEnumerable<object[]> SemVerData
-        {
-            get
-            {
-                yield return new object[] { "1.022-Beta", new NuGetVersion(new Version("1.22.0.0"), "Beta") };
-                yield return new object[] { "23.2.3-Alpha", new NuGetVersion(new Version("23.2.3.0"), "Alpha") };
-                yield return new object[] { "1.3.42.10133-PreRelease", new NuGetVersion(new Version("1.3.42.10133"), "PreRelease") };
-                yield return new object[] { "1.3.42.200930-RC-2", new NuGetVersion(new Version("1.3.42.200930"), "RC-2") };
-            }
-        }
-
         [Theory]
-        [MemberData("SemVerData")]
-        public void ParseReadsSemverAndHybridSemverVersionNumbers(string versionString, NuGetVersion expected)
+        [InlineData("1.022-Beta", "1.22.0.0", "Beta")]
+        [InlineData("23.2.3-Alpha", "23.2.3.0", "Alpha")]
+        [InlineData("1.3.42.10133-PreRelease", "1.3.42.10133", "PreRelease")]
+        [InlineData("1.3.42.200930-RC-2", "1.3.42.200930", "RC-2")]
+        public void ParseReadsSemverAndHybridSemverVersionNumbers(string versionString, string expectedString, string releaseString)
         {
+            // Arrange
+            var expected = new NuGetVersion(new Version(expectedString), releaseString);
+
             // Act
             var actual = NuGetVersion.Parse(versionString);
 
@@ -151,20 +134,15 @@ namespace NuGet.Versioning.Test
             Assert.Equal(expected.Release, actual.Release);
         }
 
-        public static IEnumerable<object[]> SemVerWithWhiteSpace
-        {
-            get
-            {
-                yield return new object[] { "  1.022-Beta", new NuGetVersion(new Version("1.22.0.0"), "Beta") };
-                yield return new object[] { "23.2.3-Alpha  ", new NuGetVersion(new Version("23.2.3.0"), "Alpha") };
-                yield return new object[] { "    1.3.42.10133-PreRelease  ", new NuGetVersion(new Version("1.3.42.10133"), "PreRelease") };
-            }
-        }
-
         [Theory]
-        [MemberData("SemVerWithWhiteSpace")]
-        public void ParseIgnoresLeadingAndTrailingWhitespace(string versionString, NuGetVersion expected)
+        [InlineData("  1.022-Beta", "1.22.0.0", "Beta")]
+        [InlineData("23.2.3-Alpha  ", "23.2.3.0", "Alpha")]
+        [InlineData("    1.3.42.10133-PreRelease  ", "1.3.42.10133", "PreRelease")]
+        public void ParseIgnoresLeadingAndTrailingWhitespace(string versionString, string expectedString, string releaseString)
         {
+            // Arrange
+            var expected = new NuGetVersion(new Version(expectedString), releaseString);
+
             // Act
             var actual = NuGetVersion.Parse(versionString);
 
@@ -269,21 +247,16 @@ namespace NuGet.Versioning.Test
             Assert.Equal(version, semVer.ToString());
         }
 
-        public static IEnumerable<object[]> ToStringFromVersionData
-        {
-            get
-            {
-                yield return new object[] { new Version("1.0"), null, "1.0" };
-                yield return new object[] { new Version("1.0.3.120"), String.Empty, "1.0.3.120" };
-                yield return new object[] { new Version("1.0.3.120"), "alpha", "1.0.3.120-alpha" };
-                yield return new object[] { new Version("1.0.3.120"), "rc-2", "1.0.3.120-rc-2" };
-            }
-        }
-
         [Theory]
-        [MemberData("ToStringFromVersionData")]
-        public void ToStringConstructedFromVersionAndSpecialVersionConstructor(Version version, string specialVersion, string expected)
+        [InlineData("1.0", null, "1.0")]
+        [InlineData("1.0.3.120", "", "1.0.3.120")]
+        [InlineData("1.0.3.120", "alpha", "1.0.3.120-alpha")]
+        [InlineData("1.0.3.120", "rc-2", "1.0.3.120-rc-2")]
+        public void ToStringConstructedFromVersionAndSpecialVersionConstructor(string versionString, string specialVersion, string expected)
         {
+            // Arrange 
+            var version = new Version(versionString);
+
             // Act
             NuGetVersion semVer = new NuGetVersion(version, specialVersion);
 
@@ -292,9 +265,15 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [MemberData("ToStringFromVersionData")]
-        public void ToStringFromStringFormat(Version version, string specialVersion, string expected)
+        [InlineData("1.0", null, "1.0")]
+        [InlineData("1.0.3.120", "", "1.0.3.120")]
+        [InlineData("1.0.3.120", "alpha", "1.0.3.120-alpha")]
+        [InlineData("1.0.3.120", "rc-2", "1.0.3.120-rc-2")]
+        public void ToStringFromStringFormat(string versionString, string specialVersion, string expected)
         {
+            // Arrange 
+            var version = new Version(versionString);
+
             // Act
             NuGetVersion semVer = new NuGetVersion(version, specialVersion);
 
