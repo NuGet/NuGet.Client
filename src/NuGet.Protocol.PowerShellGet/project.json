@@ -2,7 +2,7 @@
     "version": "3.0.0-*",
     "authors": [ "NuGet" ],
     "description": "NuGet Protocol for PowerShellGet",
-    "copyright": "Copyright Outercurve Foundation. All rights reserved.",
+    "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
     "tags": [ "nuget protocol" ],

@@ -2,7 +2,7 @@
     "version": "3.0.0-*",
     "authors": [ "NuGet" ],
     "description": "NuGet's protocol-level base types used for connecting to API v2 and API v3 repositories.",
-    "copyright": "Copyright Outercurve Foundation. All rights reserved.",
+    "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
     "tags": [ "nuget protocol" ],

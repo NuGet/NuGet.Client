@@ -2,7 +2,7 @@
     "version": "3.0.0-*",
     "description": "NuGet's implementation for reading nupkg package and nuspec package specification files.",
     "authors": [ "NuGet" ],
-    "copyright": "Copyright Outercurve Foundation. All rights reserved.",
+    "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
     "tags": [ "semver", "semantic versioning" ],

@@ -2,7 +2,7 @@
     "version": "3.0.0-*",
     "authors": [ "NuGet" ],
     "description": "NuGet's implementation of Semantic Versioning.",
-    "copyright": "Copyright Outercurve Foundation. All rights reserved.",
+    "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Versioning/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Versioning/master/LICENSE",
     "tags": [ "semver", "semantic versioning" ],

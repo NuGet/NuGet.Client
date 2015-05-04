@@ -2,7 +2,7 @@
   "version": "3.0.0-*",
   "authors": [ "NuGet" ],
   "description": "NuGet's client configuration settings implementation.",
-  "copyright": "Copyright Outercurve Foundation. All rights reserved.",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Configuration/",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Configuration/master/LICENSE",
   "tags": [ "nuget", "configuration", "nuget.config" ],
