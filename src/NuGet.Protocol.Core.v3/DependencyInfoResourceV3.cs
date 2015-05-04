@@ -134,6 +134,33 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
+        /// Retrieve the available packages and their dependencies.
+        /// </summary>
+        /// <remarks>Includes prerelease packages</remarks>
+        /// <param name="packageId">package Id to search</param>
+        /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
+        /// <param name="token">cancellation token</param>
+        /// <returns>available packages and their dependencies</returns>
+        public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, CancellationToken token)
+        {
+            try
+            {
+                // Construct the registration index url
+                Uri uri = _regResource.GetUri(packageId);
+
+                // Retrieve the registration blob
+                return ResolverMetadataClient.GetDependencies(_client, uri, VersionRange.All, _cache);
+            }
+            catch (Exception ex)
+            {
+                // Wrap exceptions coming from the server with a user friendly message
+                string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source.Source);
+
+                throw new NuGetProtocolException(error, ex);
+            }
+        }
+
+        /// <summary>
         /// Retrieve dependency info from a registration blob
         /// </summary>
         private static IEnumerable<PackageDependencyInfo> GetPackagesFromRegistration(RegistrationInfo registration, CancellationToken token)

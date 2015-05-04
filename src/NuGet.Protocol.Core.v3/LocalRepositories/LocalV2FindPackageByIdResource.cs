@@ -41,15 +41,16 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             return Task.FromResult<Stream>(null);
         }
 
-        public override Task<NuspecReader> GetNuspecReaderAsync(string id, NuGetVersion version, CancellationToken token)
+        public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)
         {
+            FindPackageByIdDependencyInfo dependencyInfo = null;
             var info = GetPackageInfo(id, version);
             if (info != null)
             {
-                return Task.FromResult(info.Reader);
+                dependencyInfo = GetDependencyInfo(info.Reader);
             }
 
-            return Task.FromResult<NuspecReader>(null);
+            return Task.FromResult(dependencyInfo);
         }
 
         private CachedPackageInfo GetPackageInfo(string id, NuGetVersion version)

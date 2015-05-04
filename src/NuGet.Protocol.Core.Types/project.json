@@ -10,6 +10,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
+        "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
         "NuGet.Configuration": "3.0.0-*",
         "NuGet.Packaging.Core.Types": "3.0.0-*"
     },

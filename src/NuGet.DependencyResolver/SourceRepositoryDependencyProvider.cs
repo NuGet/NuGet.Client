@@ -66,9 +66,9 @@ namespace NuGet.DependencyResolver
         {
             await EnsureResource();
 
-            var nuspecReader = await _findPackagesByIdResource.GetNuspecReaderAsync(match.Name, match.Version, cancellationToken);
+            var packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(match.Name, match.Version, cancellationToken);
 
-            return GetDependencies(nuspecReader, targetFramework);
+            return GetDependencies(packageInfo, targetFramework);
         }
 
         public async Task CopyToAsync(LibraryIdentity identity, Stream stream, CancellationToken cancellationToken)
@@ -81,13 +81,13 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        private IEnumerable<LibraryDependency> GetDependencies(NuspecReader nuspecReader, NuGetFramework targetFramework)
+        private IEnumerable<LibraryDependency> GetDependencies(FindPackageByIdDependencyInfo packageInfo, NuGetFramework targetFramework)
         {
-            var dependencies = NuGetFrameworkUtility.GetNearest(nuspecReader.GetDependencyGroups(),
+            var dependencies = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
                                                       targetFramework,
                                                       item => item.TargetFramework);
 
-            var frameworkAssemblies = NuGetFrameworkUtility.GetNearest(nuspecReader.GetFrameworkReferenceGroups(),
+            var frameworkAssemblies = NuGetFrameworkUtility.GetNearest(packageInfo.FrameworkReferenceGroups,
                                                              targetFramework,
                                                              item => item.TargetFramework);
 

@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Protocol.Core.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -47,7 +45,7 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// A list of endpoints for a service type
         /// </summary>
-        public virtual IList<Uri> this[string type]
+        public virtual IReadOnlyList<Uri> this[string type]
         {
             get
             {

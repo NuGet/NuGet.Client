@@ -60,6 +60,7 @@
             }
 
             return combiner.CombinedHash;
+
         }
     }
 }

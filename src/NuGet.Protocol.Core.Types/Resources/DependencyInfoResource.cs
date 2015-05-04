@@ -36,5 +36,18 @@ namespace NuGet.Protocol.Core.Types
         public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId,
             NuGetFramework projectFramework,
             CancellationToken token);
+
+        /// <summary>
+        /// Retrieve the available packages and their dependencies.
+        /// </summary>
+        /// <remarks>Includes prerelease packages</remarks>
+        /// <param name="packageId">package Id to search</param>
+        /// <param name="token">cancellation token</param>
+        /// <returns>available packages and their dependencies</returns>
+        public virtual Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, 
+            CancellationToken token)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

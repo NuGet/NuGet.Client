@@ -132,11 +132,26 @@
   <data name="DownloadActionHandler_NoDownloadUrl" xml:space="preserve">
     <value>No download URL could be found for {0}.</value>
   </data>
+  <data name="Log_FailedToDownloadPackage" xml:space="preserve">
+    <value>Failed to download package from '{0}'.</value>
+  </data>
+  <data name="Log_FailedToRetrievePackage" xml:space="preserve">
+    <value>Failed to retrieve information from remote source '{0}'.</value>
+  </data>
+  <data name="Log_FileIsCorrupt" xml:space="preserve">
+    <value>The file '{0}' is corrupt.</value>
+  </data>
+  <data name="Log_RetryingFindPackagesById" xml:space="preserve">
+    <value>Retrying '{0}' for source {1}.</value>
+  </data>
   <data name="NuGetRepository_CannotCreateAggregateRepo" xml:space="preserve">
     <value>Cannot create a NuGet Repository from the Aggregate Source</value>
   </data>
   <data name="NuGetServiceProvider_ServiceNotSupported" xml:space="preserve">
     <value>The {0} service is not supported by this object.</value>
+  </data>
+  <data name="OneOrMoreUrisMustBeSpecified" xml:space="preserve">
+    <value>One or more URIs must be specified.</value>
   </data>
   <data name="PackageActionDescriptionWrapper_UnrecognizedAction" xml:space="preserve">
     <value>Unrecognized Package Action '{0}'.</value>

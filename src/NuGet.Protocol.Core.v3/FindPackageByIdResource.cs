@@ -16,8 +16,23 @@ namespace NuGet.Protocol.Core.Types
 
         public abstract Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token);
 
-        public abstract Task<NuspecReader> GetNuspecReaderAsync(string id, NuGetVersion version, CancellationToken token);
+        /// <summary>
+        /// Gets the <see cref="FindPackageByIdDependencyInfo"/> for a specific package.
+        /// </summary>
+        /// <param name="id">The packag id.</param>
+        /// <param name="version">The package version.</param>
+        /// <param name="token">The <see cref="CancellationToken"/>.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns a <see cref="FindPackageByIdDependencyInfo"/> of the package, if found, 
+        /// <c>null</c> otherwise.</returns>
+        public abstract Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token);
 
         public abstract Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token);
+
+        protected static FindPackageByIdDependencyInfo GetDependencyInfo(NuspecReader reader)
+        {
+            return new FindPackageByIdDependencyInfo(
+                reader.GetDependencyGroups(),
+                reader.GetFrameworkReferenceGroups());
+        }
     }
 }

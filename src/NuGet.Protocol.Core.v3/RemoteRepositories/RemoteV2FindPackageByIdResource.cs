@@ -34,8 +34,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         private readonly string _baseUri;
         private readonly HttpSource _httpSource;
-        private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>();
-        private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
+        private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
         private bool _ignored;
 
         private TimeSpan _cacheAgeLimitList;
@@ -44,7 +44,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         public RemoteV2FindPackageByIdResourcce(PackageSource packageSource)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = new HttpSource(_baseUri, packageSource.UserName, packageSource.Password);
+            _httpSource = new HttpSource(new Uri(_baseUri), packageSource.UserName, packageSource.Password);
 
             PackageSource = packageSource;
         }
@@ -94,7 +94,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return result.Select(item => item.Version);
         }
 
-        public override async Task<NuspecReader> GetNuspecReaderAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
             var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
@@ -109,7 +109,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 OpenNupkgStreamAsync(packageInfo, cancellationToken),
                 Logger))
             {
-                return new NuspecReader(stream);
+                return GetDependencyInfo(new NuspecReader(stream));
             }
         }
 

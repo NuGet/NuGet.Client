@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Logging;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -21,7 +23,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     {
         private const int BufferSize = 8192;
         private readonly HttpClient _client;
-        private readonly string _baseUri;
+        private readonly Uri _baseUri;
         private readonly string _userName;
         private readonly string _password;
 
@@ -30,8 +32,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private string _proxyPassword;
 #endif
 
+        public HttpSource(PackageSource source)
+            : this(new Uri(source.Source), source.UserName, source.Password)
+        {
+        }
+
         public HttpSource(
-            string baseUri,
+            Uri baseUri,
             string userName,
             string password)
         {
@@ -44,6 +51,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             {
 #if !DNXCORE50
                 _client = new HttpClient();
+
 #else
                 _client = new HttpClient(new Microsoft.Net.Http.Client.ManagedHandler());
 #endif
@@ -86,11 +94,18 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 });
 #endif
             }
+
+            _client.BaseAddress = baseUri;
         }
 
         public ILogger Logger { get; set; }
 
-        internal async Task<HttpSourceResult> GetAsync(string uri, string cacheKey, TimeSpan cacheAgeLimit, CancellationToken cancellationToken)
+        internal Task<HttpSourceResult> GetAsync(string uri, string cacheKey, TimeSpan cacheAgeLimit, CancellationToken cancellationToken)
+        {
+            return GetAsync(uri, cacheKey, cacheAgeLimit, ignoreNotFounds: false, cancellationToken: cancellationToken);
+        }
+
+        internal async Task<HttpSourceResult> GetAsync(string uri, string cacheKey, TimeSpan cacheAgeLimit, bool ignoreNotFounds, CancellationToken cancellationToken)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -98,11 +113,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var result = await TryCache(uri, cacheKey, cacheAgeLimit);
             if (result.Stream != null)
             {
-                Logger.LogVerbose(string.Format("  {0} {1}", "CACHE".Green(), uri));
+                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE".Green(), uri));
                 return result;
             }
 
-            Logger.LogVerbose(string.Format("  {0} {1}.", "GET".Yellow(), uri));
+            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET".Yellow(), uri));
 
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             if (_userName != null)
@@ -120,6 +135,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 #endif
 
             var response = await _client.SendAsync(request, cancellationToken);
+            if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+            {
+                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
+                    "  {1} {0} {2}ms", uri, response.StatusCode.ToString().Green(), sw.ElapsedMilliseconds.ToString().Bold()));
+                return new HttpSourceResult();
+            }
+
             response.EnsureSuccessStatusCode();
 
             var newFile = result.CacheFileName + "-new";
@@ -183,14 +205,15 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 return 0;
             });
 
-            Logger.LogVerbose(string.Format("  {1} {0} {2}ms", uri, response.StatusCode.ToString().Green(), sw.ElapsedMilliseconds.ToString().Bold()));
+            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, 
+                "  {1} {0} {2}ms", uri, response.StatusCode.ToString().Green(), sw.ElapsedMilliseconds.ToString().Bold()));
 
             return result;
         }
 
         private async Task<HttpSourceResult> TryCache(string uri, string cacheKey, TimeSpan cacheAgeLimit)
         {
-            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri));
+            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
 
 #if DNX451

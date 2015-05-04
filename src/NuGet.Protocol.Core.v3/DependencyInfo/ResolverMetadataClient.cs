@@ -7,6 +7,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.DependencyInfo
@@ -42,19 +45,21 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         }
 
         /// <summary>
-        /// Retrieve a registration blob
+        /// Retrieve the <see cref="RemoteSourceDependencyInfo"/> for a registration.
         /// </summary>
-        /// <returns>Returns Null if the package does not exist</returns>
-        public static async Task<RegistrationInfo> GetRegistrationInfo(HttpClient httpClient, Uri registrationUri, VersionRange range, NuGetFramework projectTargetFramework, ConcurrentDictionary<Uri, JObject> sessionCache = null)
+        /// <returns>Returns an empty sequence if the package does not exist.</returns>
+        public static async Task<IEnumerable<RemoteSourceDependencyInfo>> GetDependencies(
+            HttpClient httpClient,
+            Uri registrationUri,
+            VersionRange range,
+            ConcurrentDictionary<Uri, JObject> sessionCache)
         {
-            NuGetFrameworkFullComparer frameworkComparer = new NuGetFrameworkFullComparer();
-            FrameworkReducer frameworkReducer = new FrameworkReducer();
             JObject index = await LoadResource(httpClient, registrationUri, sessionCache);
 
             if (index == null)
             {
                 // The server returned a 404, the package does not exist
-                return null;
+                return Enumerable.Empty<RemoteSourceDependencyInfo>();
             }
 
             VersionRange preFilterRange = Utils.SetIncludePrerelease(range, true);
@@ -66,7 +71,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 NuGetVersion lower = NuGetVersion.Parse(item["lower"].ToString());
                 NuGetVersion upper = NuGetVersion.Parse(item["upper"].ToString());
 
-                if (ResolverMetadataClientUtility.IsItemRangeRequired(preFilterRange, lower, upper))
+                if (IsItemRangeRequired(preFilterRange, lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))
@@ -84,12 +89,9 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
             await Task.WhenAll(rangeTasks.ToArray());
 
-            RegistrationInfo registrationInfo = new RegistrationInfo();
-
-            registrationInfo.IncludePrerelease = range.IncludePrerelease;
-
             string id = string.Empty;
 
+            var results = new HashSet<RemoteSourceDependencyInfo>();
             foreach (JObject rangeObj in rangeTasks.Select((t) => t.Result))
             {
                 if (rangeObj == null)
@@ -115,59 +117,103 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
                     //publishedDate = 0 means the property doesn't exist in index.json
                     //publishedDate = 19000101 means the property exists but the package is unlisted
-                    if (range.Satisfies(packageVersion) && (publishedDate!= 19000101))
+                    if (range.Satisfies(packageVersion) && (publishedDate != 19000101))
                     {
-                        PackageInfo packageInfo = new PackageInfo();
-                        packageInfo.Version = packageVersion;
-                        packageInfo.PackageContent = new Uri(packageObj["packageContent"].ToString());
+                        var identity = new PackageIdentity(id, packageVersion);
+                        var dependencyGroups = new List<PackageDependencyGroup>();
 
                         JArray dependencyGroupsArray = (JArray)catalogEntry["dependencyGroups"];
 
                         if (dependencyGroupsArray != null)
                         {
-                            // only one target framework group will be used at install time, which means 
-                            // we can filter down to that group now by using the project target framework
-                            var depFrameworks = dependencyGroupsArray.Select(e => GetFramework(e as JObject));
-
-                            var targetFramework = frameworkReducer.GetNearest(projectTargetFramework, depFrameworks);
-
-                            // If no frameworks are compatible we just ignore them - Should this be an exception?
-                            if (targetFramework != null)
+                            foreach (JObject dependencyGroupObj in dependencyGroupsArray)
                             {
-                                foreach (JObject dependencyGroupObj in dependencyGroupsArray)
+                                NuGetFramework currentFramework = GetFramework(dependencyGroupObj);
+
+                                var groupDependencies = new List<PackageDependency>();
+
+                                JToken dependenciesObj;
+
+                                // Packages with no dependencies have 'dependencyGroups' but no 'dependencies'
+                                if (dependencyGroupObj.TryGetValue("dependencies", out dependenciesObj))
                                 {
-                                    NuGetFramework currentFramework = GetFramework(dependencyGroupObj);
-
-                                    if (frameworkComparer.Equals(currentFramework, targetFramework))
+                                    foreach (JObject dependencyObj in dependenciesObj)
                                     {
-                                        JToken dependenciesObj = null;
+                                        var dependencyId = dependencyObj["id"].ToString();
+                                        var dependencyRange = Utils.CreateVersionRange((string)dependencyObj["range"], range.IncludePrerelease);
 
-                                        // Packages with no dependencies have 'dependencyGroups' but no 'dependencies'
-                                        if (dependencyGroupObj.TryGetValue("dependencies", out dependenciesObj))
-                                        {
-                                            foreach (JObject dependencyObj in dependenciesObj)
-                                            {
-                                                DependencyInfo dependencyInfo = new DependencyInfo();
-                                                dependencyInfo.Id = dependencyObj["id"].ToString();
-                                                dependencyInfo.Range = Utils.CreateVersionRange((string)dependencyObj["range"], range.IncludePrerelease);
-                                                dependencyInfo.RegistrationUri = dependencyObj["registration"].ToObject<Uri>();
-
-                                                packageInfo.Dependencies.Add(dependencyInfo);
-                                            }
-                                        }
-
-                                        // Take the first group that matches
-                                        break;
+                                        groupDependencies.Add(new PackageDependency(dependencyId, dependencyRange));
                                     }
                                 }
+
+                                dependencyGroups.Add(new PackageDependencyGroup(currentFramework, groupDependencies));
                             }
                         }
 
-                        registrationInfo.Add(packageInfo);
+                        var contentUri = packageObj.Value<string>("packageContent");
+                        var dependencyInfo = new RemoteSourceDependencyInfo(identity, dependencyGroups, contentUri);
+
+                        results.Add(dependencyInfo);
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Retrieve a registration blob
+        /// </summary>
+        /// <returns>Returns Null if the package does not exist</returns>
+        public static async Task<RegistrationInfo> GetRegistrationInfo(
+            HttpClient httpClient,
+            Uri registrationUri,
+            VersionRange range,
+            NuGetFramework projectTargetFramework,
+            ConcurrentDictionary<Uri, JObject> sessionCache = null)
+        {
+            NuGetFrameworkFullComparer frameworkComparer = new NuGetFrameworkFullComparer();
+            FrameworkReducer frameworkReducer = new FrameworkReducer();
+            var dependencies = await GetDependencies(httpClient, registrationUri, range, sessionCache);
+
+            var result = new HashSet<RegistrationInfo>();
+            RegistrationInfo registrationInfo = new RegistrationInfo();
+
+            registrationInfo.IncludePrerelease = range.IncludePrerelease;
+            foreach (var item in dependencies)
+            {
+                PackageInfo packageInfo = new PackageInfo
+                {
+                    Version = item.Identity.Version,
+                    PackageContent = new Uri(item.ContentUri)
+                };
+
+                // only one target framework group will be used at install time, which means 
+                // we can filter down to that group now by using the project target framework
+                var depFrameworks = item.DependencyGroups.Select(e => e.TargetFramework);
+                var targetFramework = frameworkReducer.GetNearest(projectTargetFramework, depFrameworks);
+
+                // If no frameworks are compatible we just ignore them - Should this be an exception?
+                if (targetFramework != null)
+                {
+                    var dependencyGroup = item.DependencyGroups.FirstOrDefault(d => frameworkComparer.Equals(targetFramework, d.TargetFramework));
+                    if (dependencyGroup != null)
+                    {
+                        foreach (var dependency in dependencyGroup.Packages)
+                        {
+                            var dependencyInfo = new DependencyInfo
+                            {
+                                Id = dependency.Id,
+                                Range = dependency.VersionRange
+                            };
+
+                            packageInfo.Dependencies.Add(dependencyInfo);
+                        }
                     }
                 }
 
-                registrationInfo.Id = id;
+                registrationInfo.Add(packageInfo);
+                registrationInfo.Id = item.Identity.Id;
             }
 
             return registrationInfo;
@@ -187,16 +233,13 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
             return framework;
         }
-    }
 
-    public static class ResolverMetadataClientUtility
-    {
-        public static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
+        private static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
             VersionRange catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
                 maxVersion: catalogItemUpper, includeMaxVersion: true, includePrerelease: true);
 
-            if(dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
+            if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
             {
                 return catalogItemVersionRange.Satisfies(dependencyRange.MinVersion) || catalogItemVersionRange.Satisfies(dependencyRange.MaxVersion);
             }

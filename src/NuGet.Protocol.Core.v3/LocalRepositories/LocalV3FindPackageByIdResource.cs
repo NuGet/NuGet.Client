@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
@@ -34,26 +36,38 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             Stream result = null;
             if (info != null)
             {
-                result = File.OpenRead(Path.Combine(info.Path, $"{id}.{version}.nupkg"));
+                var packagePath = Path.Combine(info.Path, $"{id}.{version.ToNormalizedString()}.nupkg");
+                result = File.OpenRead(packagePath);
             }
 
             return Task.FromResult(result);
         }
 
-        public override Task<NuspecReader> GetNuspecReaderAsync(string id, NuGetVersion version, CancellationToken token)
+        public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)
         {
             var info = GetPackageInfo(id, version);
-            NuspecReader nuspecReader = null;
+            FindPackageByIdDependencyInfo dependencyInfo = null;
             if (info != null)
             {
                 var nuspecPath = Path.Combine(info.Path, $"{id}.nuspec");
                 using (var stream = File.OpenRead(nuspecPath))
                 {
-                    nuspecReader = new NuspecReader(stream);
+                    NuspecReader nuspecReader;
+                    try
+                    {
+                        nuspecReader = new NuspecReader(stream);
+                    }
+                    catch (XmlException ex)
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+                        throw new NuGetProtocolException(message, ex);
+                    }
+
+                    dependencyInfo = GetDependencyInfo(nuspecReader);
                 }
             }
 
-            return Task.FromResult(nuspecReader);
+            return Task.FromResult(dependencyInfo);
         }
 
         private PackageInfo GetPackageInfo(string id, NuGetVersion version)

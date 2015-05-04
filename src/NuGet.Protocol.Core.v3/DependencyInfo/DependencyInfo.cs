@@ -9,7 +9,6 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
     {
         public string Id { get; set; }
         public VersionRange Range { get; set; }
-        public Uri RegistrationUri { get; set; }
         public RegistrationInfo RegistrationInfo { get; set; }
 
         public override string ToString()

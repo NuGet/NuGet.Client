@@ -91,6 +91,70 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
+        /// Failed to download package from '{0}'.
+        /// </summary>
+        internal static string Log_FailedToDownloadPackage
+        {
+            get { return GetString("Log_FailedToDownloadPackage"); }
+        }
+
+        /// <summary>
+        /// Failed to download package from '{0}'.
+        /// </summary>
+        internal static string FormatLog_FailedToDownloadPackage(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_FailedToDownloadPackage"), p0);
+        }
+
+        /// <summary>
+        /// Failed to retrieve information from remote source '{0}'.
+        /// </summary>
+        internal static string Log_FailedToRetrievePackage
+        {
+            get { return GetString("Log_FailedToRetrievePackage"); }
+        }
+
+        /// <summary>
+        /// Failed to retrieve information from remote source '{0}'.
+        /// </summary>
+        internal static string FormatLog_FailedToRetrievePackage(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_FailedToRetrievePackage"), p0);
+        }
+
+        /// <summary>
+        /// The file '{0}' is corrupt.
+        /// </summary>
+        internal static string Log_FileIsCorrupt
+        {
+            get { return GetString("Log_FileIsCorrupt"); }
+        }
+
+        /// <summary>
+        /// The file '{0}' is corrupt.
+        /// </summary>
+        internal static string FormatLog_FileIsCorrupt(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_FileIsCorrupt"), p0);
+        }
+
+        /// <summary>
+        /// Retrying '{0}' for source {1}.
+        /// </summary>
+        internal static string Log_RetryingFindPackagesById
+        {
+            get { return GetString("Log_RetryingFindPackagesById"); }
+        }
+
+        /// <summary>
+        /// Retrying '{0}' for source {1}.
+        /// </summary>
+        internal static string FormatLog_RetryingFindPackagesById(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_RetryingFindPackagesById"), p0, p1);
+        }
+
+        /// <summary>
         /// Cannot create a NuGet Repository from the Aggregate Source
         /// </summary>
         internal static string NuGetRepository_CannotCreateAggregateRepo
@@ -120,6 +184,22 @@ namespace NuGet.Protocol.Core.v3
         internal static string FormatNuGetServiceProvider_ServiceNotSupported(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("NuGetServiceProvider_ServiceNotSupported"), p0);
+        }
+
+        /// <summary>
+        /// One or more URIs must be specified.
+        /// </summary>
+        internal static string OneOrMoreUrisMustBeSpecified
+        {
+            get { return GetString("OneOrMoreUrisMustBeSpecified"); }
+        }
+
+        /// <summary>
+        /// One or more URIs must be specified.
+        /// </summary>
+        internal static string FormatOneOrMoreUrisMustBeSpecified()
+        {
+            return GetString("OneOrMoreUrisMustBeSpecified");
         }
 
         /// <summary>
