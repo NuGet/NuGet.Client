@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="NuPackToolsVsix.Microsoft.67e54e40-0ae3-42c5-a949-fddf5739e7a5" Version="3.0.60317.100" Language="en-US" Publisher="Outercurve Foundation" />
+    <Identity Id="NuPackToolsVsix.Microsoft.67e54e40-0ae3-42c5-a949-fddf5739e7a5" Version="3.0.60317.100" Language="en-US" Publisher=".NET Foundation" />
     <DisplayName>NuGet Package Manager</DisplayName>
     <Description>A collection of tools to automate the process of downloading, installing, upgrading, configuring, and removing packages from a VS Project.</Description>
     <Icon>Resources/nuget_96.png</Icon>

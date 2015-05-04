@@ -226,7 +226,7 @@ namespace GenerateTestPackages
                 Description = "Some test package"
             };
 
-            packageBuilder.Authors.Add("Outercurve Foundation");
+            packageBuilder.Authors.Add(".NET Foundation");
 
             string assemblySourcePath = GetAssemblyFullPath(package.FullName);
             packageBuilder.Files.Add(new PhysicalPackageFile()

@@ -13,10 +13,10 @@ GUID = '76e6f9c4-7045-44c0-a557-17fab0835c12'
 Author = 'NuGet Team'
 
 # Company or vendor of this module
-CompanyName = 'Outercurve Foundation'
+CompanyName = '.NET Foundation'
 
 # Copyright statement for this module
-Copyright = '(c) 2010 Outercurve Foundation. All rights reserved.'
+Copyright = '(c) 2010 .NET Foundation. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'NuGet PowerShell module used for the Package Manager Console'
