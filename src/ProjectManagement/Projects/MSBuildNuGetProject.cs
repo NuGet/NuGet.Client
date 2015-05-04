@@ -1,7 +1,4 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -10,6 +7,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.ProjectManagement
 {
@@ -80,28 +80,28 @@ namespace NuGet.ProjectManagement
         public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; private set; }
 
         private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
-            new Dictionary<FileTransformExtensions, IPackageFileTransformer>() 
+            new Dictionary<FileTransformExtensions, IPackageFileTransformer>()
         {
             { new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
             { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() },
             { new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
         };
 
-        public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFullPath)
+        public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFolderPath)
         {
             if (msbuildNuGetProjectSystem == null)
             {
-                throw new ArgumentNullException("nugetDotNetProjectSystem");
+                throw new ArgumentNullException(nameof(msbuildNuGetProjectSystem));
             }
 
             if (folderNuGetProjectPath == null)
             {
-                throw new ArgumentNullException("folderNuGetProjectPath");
+                throw new ArgumentNullException(nameof(folderNuGetProjectPath));
             }
 
-            if (packagesConfigFullPath == null)
+            if (packagesConfigFolderPath == null)
             {
-                throw new ArgumentNullException("packagesConfigFullPath");
+                throw new ArgumentNullException(nameof(packagesConfigFolderPath));
             }
 
             MSBuildNuGetProjectSystem = msbuildNuGetProjectSystem;
@@ -110,7 +110,7 @@ namespace NuGet.ProjectManagement
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, MSBuildNuGetProjectSystem.TargetFramework);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, msbuildNuGetProjectSystem.ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, msbuildNuGetProjectSystem.ProjectUniqueName);
-            PackagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFullPath, InternalMetadata);
+            PackagesConfigNuGetProject = new PackagesConfigNuGetProject(packagesConfigFolderPath, InternalMetadata);
         }
 
         public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
@@ -152,22 +152,22 @@ namespace NuGet.ProjectManagement
         public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            if(packageIdentity == null)
+            if (packageIdentity == null)
             {
                 throw new ArgumentNullException("packageIdentity");
             }
 
-            if(packageStream == null)
+            if (packageStream == null)
             {
                 throw new ArgumentNullException("packageStream");
             }
 
-            if(nuGetProjectContext == null)
+            if (nuGetProjectContext == null)
             {
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            if(!packageStream.CanSeek)
+            if (!packageStream.CanSeek)
             {
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
@@ -193,7 +193,7 @@ namespace NuGet.ProjectManagement
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
             IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
             IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
-            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();            
+            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
 
             // Step-3: Get the most compatible items groups for all items groups
             bool hasCompatibleProjectLevelContent = false;
@@ -222,7 +222,7 @@ namespace NuGet.ProjectManagement
             bool onlyHasCompatibleTools = false;
             bool onlyHasDependencies = false;
 
-            if(!hasProjectLevelContent)
+            if (!hasProjectLevelContent)
             {
                 // Since it does not have project-level content, check if it has dependencies or compatible tools
                 // Note that we are not checking if it has compatible project level content, but, just that it has project level content
@@ -230,7 +230,7 @@ namespace NuGet.ProjectManagement
                 // If a package does not have any project-level content, it can be a
                 // Legacy solution level packages which only has compatible tools group
                 onlyHasCompatibleTools = MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup) && compatibleToolItemsGroup.Items.Any();
-                if(!onlyHasCompatibleTools)
+                if (!onlyHasCompatibleTools)
                 {
                     // If it does not have compatible tool items either, check if it at least has dependencies
                     onlyHasDependencies = packageReader.GetPackageDependencies().Any();
@@ -332,7 +332,7 @@ namespace NuGet.ProjectManagement
             // Step-8.4: Add Build imports
             if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup))
             {
-                foreach(var buildImportFile in compatibleBuildFilesGroup.Items)
+                foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
                 {
                     string fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
                     MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
@@ -356,7 +356,7 @@ namespace NuGet.ProjectManagement
             // Step-12: Execute powershell script - install.ps1
             string packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
             FrameworkSpecificGroup anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
-            if(anyFrameworkToolsGroup != null)
+            if (anyFrameworkToolsGroup != null)
             {
                 string initPS1RelativePath = anyFrameworkToolsGroup.Items.Where(p =>
                     p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
@@ -367,12 +367,12 @@ namespace NuGet.ProjectManagement
                 }
             }
 
-            if(MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
             {
                 string installPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
                     p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if(!String.IsNullOrEmpty(installPS1RelativePath))
-                {                    
+                if (!String.IsNullOrEmpty(installPS1RelativePath))
+                {
                     await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this);
                 }
             }
@@ -442,7 +442,7 @@ namespace NuGet.ProjectManagement
                 // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
                 //         OR Add it again (to ensure that Source Control works), when there are some packages
                 if(!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
-                {
+                {                    
                     MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
                 }
                 else

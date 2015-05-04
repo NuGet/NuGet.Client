@@ -36,12 +36,11 @@ namespace Test.Utility
             projectName = String.IsNullOrEmpty(projectName) ? Guid.NewGuid().ToString() : projectName;
             var projectFullPath = Path.Combine(SolutionDirectory, projectName);
             Directory.CreateDirectory(projectFullPath);
-            var packagesConfigPath = Path.Combine(projectFullPath, String.IsNullOrEmpty(packagesConfigName) ? "packages.config" : packagesConfigName);
 
             projectTargetFramework = projectTargetFramework ?? NuGetFramework.Parse("net45");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext(),
                 projectFullPath, projectName);
-            NuGetProject nuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, packagesConfigPath);
+            NuGetProject nuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, projectFullPath);
             NuGetProjects.Add(nuGetProject);
             return nuGetProject;
         }
