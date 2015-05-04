@@ -49,12 +49,13 @@ function Get-PackagesConfigNuGetProject {
 
     $configName = Get-PackageConfigName $Project
     Write-Host 'Packages config file name is ' $configName
-    $packagesConfigFile = (Join-Path (Get-ProjectDir $Project) $configName)
+    $packagesConfigFolderPath = Get-ProjectDir $Project
     $metadataDictionary = New-Object 'System.Collections.Generic.Dictionary[string,object]'
+    $metadataDictionary.Add('Name', $Project.Name)
     $targetFrameworkMoniker = $project.Properties.Item("TargetFrameworkMoniker").Value
     $nuGetFramework = [NuGet.Frameworks.NuGetFramework]::Parse($targetFrameworkMoniker)
     $metadataDictionary.Add('TargetFramework', $nuGetFramework)
-    $packagesConfigNuGetProject = New-Object NuGet.ProjectManagement.PackagesConfigNuGetProject($packagesConfigFile, $metadataDictionary)
+    $packagesConfigNuGetProject = New-Object NuGet.ProjectManagement.PackagesConfigNuGetProject($packagesConfigFolderPath, $metadataDictionary)
     return $packagesConfigNuGetProject
 }
 

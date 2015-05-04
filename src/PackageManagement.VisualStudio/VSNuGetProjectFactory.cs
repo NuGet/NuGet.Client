@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -27,14 +26,24 @@ namespace NuGet.PackageManagement.VisualStudio
             EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         }
 
-        public NuGetProject CreateNuGetProject(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext = null)
+        public NuGetProject CreateNuGetProject(EnvDTEProject envDTEProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            return CreateNuGetProject(envDTEProject, EmptyNuGetProjectContext);
+        }
+
+        public NuGetProject CreateNuGetProject(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+        {
+            if (envDTEProject == null)
+            {
+                throw new ArgumentNullException(nameof(envDTEProject));
+            }
 
             if (nuGetProjectContext == null)
             {
-                nuGetProjectContext = EmptyNuGetProjectContext;
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
+
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             var projectK = GetProjectKProject(envDTEProject);
             if (projectK != null)
@@ -45,12 +54,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
             var folderNuGetProjectFullPath = _packagesPath();
 
-            var packagesConfigFullPath = EnvDTEProjectUtility.GetPackagesConfigFullPath(envDTEProject);
-            var packagesConfigWithProjectNameFullPath = EnvDTEProjectUtility.GetPackagesConfigWithProjectNameFullPath(envDTEProject);
+            // Project folder path is the packages config folder path
+            var packagesConfigFolderPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
 
-            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath,
-                File.Exists(packagesConfigWithProjectNameFullPath) ? packagesConfigWithProjectNameFullPath : packagesConfigFullPath);
-
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath, packagesConfigFolderPath);
             return msBuildNuGetProject;
         }
 

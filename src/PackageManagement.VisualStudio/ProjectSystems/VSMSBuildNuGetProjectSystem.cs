@@ -184,6 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (File.Exists(Path.Combine(ProjectFullPath, path))
                 && !fileExistsInProject
                 && !path.Equals(ProjectManagement.Constants.PackageReferenceFile)
+                && !path.Equals("packages." + ProjectName + ".config")
                 && !path.Equals(EnvDTEProjectUtility.WebConfig)
                 && !path.Equals(EnvDTEProjectUtility.AppConfig))
             {
