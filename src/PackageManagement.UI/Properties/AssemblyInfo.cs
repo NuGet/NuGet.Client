@@ -8,9 +8,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyDescription("NuGet's Package Management UI for Visual Studio")]
 
 // Common attributes
-[assembly: AssemblyCompany("Outercurve Foundation")]
+[assembly: AssemblyCompany(".NET Foundation")]
 [assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("Copyright Outercurve Foundation. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright .NET Foundation. All rights reserved.")]
 
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: CLSCompliant(false)]
