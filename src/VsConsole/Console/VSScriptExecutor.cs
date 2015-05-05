@@ -51,10 +51,10 @@ namespace NuGetConsole
         }
 
         public async Task<bool> ExecuteAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, EnvDTEProject envDTEProject,
-            NuGetProject nuGetProject, INuGetProjectContext nuGetProjectContext)
+            NuGetProject nuGetProject, INuGetProjectContext nuGetProjectContext, bool throwOnFailure)
         {
             string scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            return await ExecuteCoreAsync(scriptFullPath, packageInstallPath, packageZipArchive, envDTEProject, nuGetProject, nuGetProjectContext);
+            return await ExecuteCoreAsync(scriptFullPath, packageInstallPath, packageZipArchive, envDTEProject, nuGetProject, nuGetProjectContext, throwOnFailure);
         }
 
         private async Task<bool> ExecuteCoreAsync(
@@ -63,7 +63,8 @@ namespace NuGetConsole
             ZipArchive packageZipArchive,
             EnvDTEProject envDTEProject,
             NuGetProject nuGetProject,
-            INuGetProjectContext nuGetProjectContext)
+            INuGetProjectContext nuGetProjectContext,
+            bool throwOnFailure)
         {
             if (File.Exists(fullScriptPath))
             {
@@ -110,7 +111,7 @@ namespace NuGetConsole
                         psVariable.Set("__package", package);
                         psVariable.Set("__project", envDTEProject);
 
-                        psNuGetProjectContext.ExecutePSScript(fullScriptPath);
+                        psNuGetProjectContext.ExecutePSScript(fullScriptPath, throwOnFailure);
                     }
                     else
                     {
@@ -124,7 +125,22 @@ namespace NuGetConsole
                         // logging to both the Output window and progress window.
                         nuGetProjectContext.Log(MessageLevel.Info, logMessage);
                         IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
-                        Host.Execute(console, command, inputs);
+                        try
+                        {
+                            Host.Execute(console, command, inputs);
+                        }
+                        catch (Exception ex)
+                        {
+                            // throwFailure is set by Package Manager. 
+                            if (throwOnFailure)
+                            {
+                                throw;
+                            }
+                            else
+                            {
+                                nuGetProjectContext.Log(MessageLevel.Warning, ex.Message);
+                            }
+                        }
                     }
 
                     return true;

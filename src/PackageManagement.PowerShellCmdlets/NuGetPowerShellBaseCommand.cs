@@ -955,7 +955,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             set;
         }
 
-        public void ExecutePSScript(string scriptPath)
+        public void ExecutePSScript(string scriptPath, bool throwOnFailure)
         {
             blockingCollection.Add(new ScriptMessage(scriptPath));
 
@@ -963,7 +963,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (_scriptException != null)
             {
-                throw _scriptException;
+                // Re-throw the exception so that Package Manager rolls back the action
+                if (throwOnFailure)
+                {
+                    throw _scriptException;
+                }
+                else
+                {
+                    Log(MessageLevel.Warning, _scriptException.Message);
+                }
             }
         }
 
@@ -998,6 +1006,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         PSCmdlet CurrentPSCmdlet { get; }
 
-        void ExecutePSScript(string scriptPath);
+        void ExecutePSScript(string scriptPath, bool throwOnFailure);
     }
 }
