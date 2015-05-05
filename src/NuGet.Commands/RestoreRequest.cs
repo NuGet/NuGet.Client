@@ -36,7 +36,7 @@ namespace NuGet.Commands
         /// <summary>
         /// A list of projects provided by external build systems (i.e. MSBuild)
         /// </summary>
-        public IList<ExternalProjectReference> ExternalProjects { get; }
+        public IList<ExternalProjectReference> ExternalProjects { get; set; }
 
         /// <summary>
         /// The path to the lock file to read/write. If not specified, uses the file 'project.lock.json' in the same directory as the provided PackageSpec
