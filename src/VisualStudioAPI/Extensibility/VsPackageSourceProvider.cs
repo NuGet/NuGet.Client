@@ -16,9 +16,9 @@ namespace NuGet.VisualStudio
         private readonly IPackageSourceProvider _packageSourceProvider;
 
         [ImportingConstructor]
-        public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepoProvider)
+        public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepositoryProvider)
         {
-            _packageSourceProvider = sourceRepoProvider.PackageSourceProvider;
+            _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
             _packageSourceProvider.PackageSourcesChanged += PackageSourcesChanged;
         }
 
