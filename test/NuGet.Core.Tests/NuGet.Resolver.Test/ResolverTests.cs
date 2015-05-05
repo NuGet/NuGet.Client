@@ -540,6 +540,107 @@ namespace NuGet.Resolver.Test
         }
 
         [Fact]
+        public void ResolveDependenciesForUpdatePackageRequiringUpdatedDependencyThatRequiresUpdatedDependentBySeparatePath()
+        {
+            // Arrange
+            // A -> [B, C]
+            // B -> [D]
+            // C -> [D]
+            //    A
+            //   / \
+            //  B   C
+            //   \ /
+            //    D 
+
+            // Local:
+            // A 1.0 -> B [1.0, 2.0), C [1.0, 2.0)
+            // B 1.0 -> D [1.0, 2.0)
+            // C 1.0 -> D [1.0, 2.0)
+
+            // Remote:
+            // A 1.1 -> B [1.1, 2.0), C [2.0, 3.0)
+            // B 1.1 -> D [2.0, 3.0)
+            // C 2.0 -> D [2.0, 3.0)
+
+            // Update initiated on B, not A
+
+            var project = new List<PackageReference> {
+                new PackageReference(new PackageIdentity("A", NuGetVersion.Parse("1.0")), null),
+                new PackageReference(new PackageIdentity("B", NuGetVersion.Parse("1.0")), null),
+                new PackageReference(new PackageIdentity("C", NuGetVersion.Parse("1.0")), null),
+                new PackageReference(new PackageIdentity("D", NuGetVersion.Parse("1.0")), null)
+            };
+
+            var installed = new List<ResolverPackage>();
+            var sourceRepository = new List<ResolverPackage>();
+
+            var packageA1 =
+                CreatePackage("A", "1.0", new Dictionary<string, string>
+                    {
+                        { "B", "[1.0, 2.0)" },
+                        { "C", "[1.0, 2.0)" }
+                    });
+            installed.Add(packageA1);
+
+            var packageB1 =
+                CreatePackage("B", "1.0", new Dictionary<string, string>
+                    {
+                        { "D", "[1.0, 2.0)" }
+                    });
+            installed.Add(packageB1);
+
+            var packageC1 =
+                CreatePackage("C", "1.0", new Dictionary<string, string>
+                    {
+                        { "D", "[1.0, 2.0)" }
+                    });
+            installed.Add(packageC1);
+
+            var packageD1 = CreatePackage("D", "1.0");
+            installed.Add(packageD1);
+
+            var packageA11 =
+                CreatePackage("A", "1.1", new Dictionary<string, string>
+                    {
+                        { "B", "[1.1, 2.0)" },
+                        { "C", "[2.0, 3.0)" }
+                    });
+            sourceRepository.Add(packageA11);
+
+            var packageB11 =
+                CreatePackage("B", "1.1", new Dictionary<string, string>
+                    {
+                        { "D", "[2.0, 3.0)"}
+                    });
+            sourceRepository.Add(packageB11);
+
+            var packageC2 =
+                CreatePackage("C", "2.0",  new Dictionary<string, string>
+                    {
+                        { "D", "[2.0, 3.0)" }
+                    });
+            sourceRepository.Add(packageC2);
+
+            var packageD2 = CreatePackage("D", "2.0");
+            sourceRepository.Add(packageD2);
+
+            // Arange to trigger update of B to 1.1
+            var targets = installed.Concat(new ResolverPackage[] {packageB11});
+
+            // Act
+            var resolver = new PackageResolver(DependencyBehavior.Lowest);
+            var solution = resolver.Resolve(targets, sourceRepository, project, CancellationToken.None).ToArray();
+            var packages = solution.ToDictionary(p => p.Id);
+
+            // Assert
+            Assert.Equal(4, solution.Length);
+            Assert.Equal("1.1.0", packages["A"].Version.ToNormalizedString());
+            Assert.Equal("1.1.0", packages["B"].Version.ToNormalizedString());
+            Assert.Equal("2.0.0", packages["C"].Version.ToNormalizedString());
+            Assert.Equal("2.0.0", packages["D"].Version.ToNormalizedString());
+        }
+
+        [Fact]
         public void ResolvesLowestMajorHighestMinorHighestPatchVersionOfListedPackagesForDependencies()
         {
             // Arrange
