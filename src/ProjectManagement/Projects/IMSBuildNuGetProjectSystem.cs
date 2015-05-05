@@ -1,8 +1,8 @@
-﻿using NuGet.Frameworks;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
 
 namespace NuGet.ProjectManagement
 {
@@ -36,7 +36,7 @@ namespace NuGet.ProjectManagement
         string ResolvePath(string path);
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
-        Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject);
+        Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject, bool throwOnFailure);
         void BeginProcessing(IEnumerable<string> files);
         void EndProcessing();
 

@@ -175,7 +175,7 @@ namespace NuGet.ProjectManagement.Projects
                 if (!String.IsNullOrEmpty(initPS1RelativePath))
                 {
                     initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, initPS1RelativePath, zipArchive, this);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, initPS1RelativePath, zipArchive, this, throwOnFailure: true);
                 }
             }
 
@@ -185,7 +185,7 @@ namespace NuGet.ProjectManagement.Projects
                     p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 if (!String.IsNullOrEmpty(installPS1RelativePath))
                 {
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this, throwOnFailure: true);
                 }
             }
 

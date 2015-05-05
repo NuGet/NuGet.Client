@@ -1,12 +1,11 @@
-﻿using NuGet.Frameworks;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.ProjectManagement;
 
 namespace Test.Utility
 {
@@ -169,10 +168,10 @@ namespace Test.Utility
         }
 
 
-        public Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject)
+        public Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject, bool throwOnFailure)
         {
             var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            if(!File.Exists(scriptFullPath))
+            if(!File.Exists(scriptFullPath) && throwOnFailure)
             {
                 throw new InvalidOperationException(scriptRelativePath + " was not found. Could not execute PS script");
             }

@@ -363,7 +363,7 @@ namespace NuGet.ProjectManagement
                 if (!String.IsNullOrEmpty(initPS1RelativePath))
                 {
                     initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, initPS1RelativePath, zipArchive, this);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, initPS1RelativePath, zipArchive, this, throwOnFailure: true);
                 }
             }
 
@@ -373,7 +373,7 @@ namespace NuGet.ProjectManagement
                     p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 if (!String.IsNullOrEmpty(installPS1RelativePath))
                 {
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this, throwOnFailure: true);
                 }
             }
             return true;
@@ -505,7 +505,7 @@ namespace NuGet.ProjectManagement
                     if (!String.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
                         string packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
-                        await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, uninstallPS1RelativePath, zipArchive, this);
+                        await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, uninstallPS1RelativePath, zipArchive, this, throwOnFailure: false);
                     }
                 }
             }
