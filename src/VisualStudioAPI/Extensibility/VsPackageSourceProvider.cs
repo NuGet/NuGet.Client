@@ -1,4 +1,6 @@
 ﻿using NuGet.Configuration;
+using NuGet.Protocol.Core;
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -14,9 +16,9 @@ namespace NuGet.VisualStudio
         private readonly IPackageSourceProvider _packageSourceProvider;
 
         [ImportingConstructor]
-        public VsPackageSourceProvider(ISettings settings)
+        public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepoProvider)
         {
-            _packageSourceProvider = new PackageSourceProvider(settings);
+            _packageSourceProvider = sourceRepoProvider.PackageSourceProvider;
             _packageSourceProvider.PackageSourcesChanged += PackageSourcesChanged;
         }
 
