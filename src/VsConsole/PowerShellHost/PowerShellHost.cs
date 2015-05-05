@@ -339,7 +339,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     foreach (NuGetProject project in projects)
                     {
                         // Skip project K projects.
-                        if (project is NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase)
+                        // TODO: enable init.ps1 for build integrated projects
+                        if (project is NuGet.ProjectManagement.Projects.ProjectKNuGetProjectBase
+                            || project is NuGet.ProjectManagement.Projects.INuGetIntegratedProject)
                         {
                             continue;
                         }
