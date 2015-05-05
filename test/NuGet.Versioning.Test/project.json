@@ -1,6 +1,6 @@
 ﻿{
     "dependencies": {
-        "NuGet.Versioning": "1.0.0-*",
+        "NuGet.Versioning": "3.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Moq": "4.2.1408.0717"
     },

@@ -1,24 +1,27 @@
 ﻿{
-  "version": "3.0.0-*",
-  "description": "Strawman command line application for NuGet 3 restore",
-
-  "dependencies": {
-    "NuGet.Commands": "3.0.0-*",
-    "Microsoft.Framework.CommandLineUtils": {
-      "version": "1.0.0-*",
-      "type": "build"
+    "version": "3.0.0-*",
+    "description": "Strawman command line application for NuGet 3 restore",
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
-  },
+    "dependencies": {
+        "NuGet.Commands": "3.0.0-*",
+        "Microsoft.Framework.CommandLineUtils": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+    },
 
-  "commands": {
-    "NuGet.CommandLine": "NuGet.CommandLine"
-  },
+    "commands": {
+        "NuGet.CommandLine": "NuGet.CommandLine"
+    },
 
-  "frameworks": {
-    "dnx451": { },
-    "dnxcore50": {
-      "dependencies": {
-      }
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0-beta-*"
+            }
+        }
     }
-  }
 }

@@ -6,11 +6,16 @@
     "projectUrl": "https://github.com/NuGet/NuGet.Versioning/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Versioning/master/LICENSE",
     "tags": [ "semver", "semantic versioning" ],
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "NuGet.Common": { "type": "build",  "version": "3.0.0-*" }
+    },
     "frameworks": {
         "net45": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
                 "System.Collections": "4.0.10-beta-*",
                 "System.Diagnostics.Tools": "4.0.0-beta-*",

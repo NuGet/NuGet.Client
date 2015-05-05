@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Versioning
 {

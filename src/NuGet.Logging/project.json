@@ -5,13 +5,15 @@
     "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Home/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Home/master/LICENSE",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "frameworks": {
         "net45": {
         },
         "dnxcore50": {
             "dependencies": {
-                "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*"
+                "System.Runtime": "4.0.20-beta-*"
             }
         }
     }

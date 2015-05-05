@@ -1,11 +1,14 @@
 ﻿{
     "version": "3.0.0-*",
-
-    "dependencies": {
-        "NuGet.Versioning": "3.0.0-*",
-        "Newtonsoft.Json": "6.0.6"
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
 
+    "dependencies": {
+        "Newtonsoft.Json": "6.0.6",
+        "NuGet.Common": { "type": "build",  "version": "3.0.0-*" },
+        "NuGet.Versioning": "3.0.0-*"
+    },
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
@@ -15,7 +18,6 @@
         "dnxcore50": {
             "dependencies": {
                 "System.IO.FileSystem": "4.0.0-beta-*",
-                "System.Console": "4.0.0-beta-*",
                 "System.Collections": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
                 "System.Threading": "4.0.10-beta-*",

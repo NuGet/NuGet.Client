@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Core.v2
         {
             V2Client = resource.V2Client;
         }
-        public override async Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, System.Threading.CancellationToken cancellationToken)
+        public override Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, System.Threading.CancellationToken cancellationToken)
         {
             var query = V2Client.Search(
                 searchTerm,
@@ -48,7 +48,7 @@ namespace NuGet.Protocol.Core.v2
             }
 
             // Now apply skip and take and the rest of the party
-            return (IEnumerable<SimpleSearchMetadata>)query
+            var result = (IEnumerable<SimpleSearchMetadata>)query
                 .Skip(skip)
                 .Take(take)
                 .ToList()
@@ -56,6 +56,8 @@ namespace NuGet.Protocol.Core.v2
                 .AsOrdered()
                 .Select(p => CreatePackageSearchResult(p))
                 .ToList();
+
+            return Task.FromResult(result);
         }
 
         private SimpleSearchMetadata CreatePackageSearchResult(IPackage package)

@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Core.v3
 
         }
 
-        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             HttpHandlerResourceV3 curResource = null;
 
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Core.v3
             curResource = new HttpHandlerResourceV3(HttpHandler);
 #endif
 
-            return new Tuple<bool, INuGetResource>(curResource != null, curResource);
+            return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
         }
 
 #if !DNXCORE50

@@ -1,20 +1,12 @@
-﻿using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
-using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3
 {
     public class ReportAbuseResourceV3 : INuGetResource
     {
-        private readonly IEnumerable<Uri> _reportAbuseTemplates;
-
         public ReportAbuseResourceV3()
         {
 

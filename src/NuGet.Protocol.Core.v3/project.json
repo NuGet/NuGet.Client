@@ -6,6 +6,9 @@
     "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
     "tags": [ "nuget protocol" ],
+     "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
         "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
         "NuGet.Logging": "3.0.0-*",
@@ -18,28 +21,14 @@
             "frameworkAssemblies": {
                 "System.Collections.Concurrent": "",
                 "System.Net.Http": "",
-                "System.Net.Http.WebRequest": "",
-                "System.Reflection": "",
-                "System.Threading": "",
-                "System.Threading.Tasks": "",
-                "System.Threading.Tasks.Parallel": "",
-                "System.Dynamic.Runtime": "",
-                "System.Diagnostics.Tracing": "",
-                "System.Resources.ResourceManager": ""
+                "System.Net.Http.WebRequest": ""
             }
         },
         "dnxcore50": {
             "dependencies": {
                 "Microsoft.Net.Http.Client": "1.0.0-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "System.Collections": "4.0.10-beta-*",
-                "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Resources.ResourceManager": "4.0.0-beta-*",
                 "System.Net.Http": "4.0.0-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
                 "System.Dynamic.Runtime": "4.0.0-beta-*",
                 "System.Threading": "4.0.10-beta-*",
                 "System.Threading.Thread": "4.0.0-beta-*"

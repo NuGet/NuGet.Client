@@ -26,18 +26,19 @@ namespace NuGet.Protocol.Core.v2
             V2Client = resource.V2Client;
         }
 
-        public override async Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
+        public override Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
         {
             //*TODOs: Temp implementation. Need to do erorr handling and stuff.
             if (V2Client is DataServicePackageRepository)
             {
+                Uri result = null;
                 if (V2Client.Exists(identity.Id, new SemanticVersion(identity.Version.ToString())))
                 {
                     //TODOs:Not sure if there is some other standard way to get the Url from a dataservice repo. DataServicePackage has downloadurl property but not sure how to get it.
-                    return new Uri(Path.Combine(V2Client.Source, identity.Id + "." + identity.Version + ".nupkg"));
+                    result = new Uri(Path.Combine(V2Client.Source, identity.Id + "." + identity.Version + ".nupkg"));
                 }
-                else
-                    return null;
+
+                return Task.FromResult(result);
             }
             else if (V2Client is LocalPackageRepository)
             {
@@ -50,11 +51,11 @@ namespace NuGet.Protocol.Core.v2
                 {
                     if (File.Exists(Path.Combine(V2Client.Source, path)))
                     {
-                        return new Uri(Path.Combine(V2Client.Source, path));
+                        return Task.FromResult(new Uri(Path.Combine(V2Client.Source, path)));
                     }
                 }
-                return null;
 
+                return Task.FromResult<Uri>(null);
             }
             else
             {
@@ -65,7 +66,7 @@ namespace NuGet.Protocol.Core.v2
             }
         }
 
-        public override async Task<Stream> GetStream(PackageIdentity identity, CancellationToken token)
+        public override Task<Stream> GetStream(PackageIdentity identity, CancellationToken token)
         {
             Stream result = null;
             IPackage package = null;
@@ -92,7 +93,7 @@ namespace NuGet.Protocol.Core.v2
                 result = package.GetStream();
             }
 
-            return result;
+            return Task.FromResult(result);
         }
     }
 }

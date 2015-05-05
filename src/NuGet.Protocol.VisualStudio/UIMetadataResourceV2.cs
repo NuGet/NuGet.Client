@@ -1,17 +1,11 @@
-﻿using NuGet;
-using NuGet.Protocol;
-using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.v2;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -24,7 +18,7 @@ namespace NuGet.Protocol.VisualStudio
             V2Client = resource.V2Client;
         }
 
-        public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackageIdentity> packages, CancellationToken token)
+        public override Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackageIdentity> packages, CancellationToken token)
         {
             List<UIPackageMetadata> results = new List<UIPackageMetadata>();
 
@@ -53,7 +47,7 @@ namespace NuGet.Protocol.VisualStudio
                 }
             }
 
-            return results;
+            return Task.FromResult<IEnumerable<UIPackageMetadata>>(results);
         }
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
@@ -78,19 +72,19 @@ namespace NuGet.Protocol.VisualStudio
             string owners = String.Join(" ", parsed.Owners);
 
             return new UIPackageMetadata(
-                new PackageIdentity(parsed.Id, parsed.Version), 
-                parsed.Title, 
-                parsed.Summary, 
-                parsed.Description, 
-                authors, 
-                owners, 
-                parsed.IconUrl, 
-                parsed.LicenseUrl, 
-                parsed.ProjectUrl, 
-                reportAbuse, 
-                tags, 
-                parsed.Published, 
-                parsed.DependencySets, 
+                new PackageIdentity(parsed.Id, parsed.Version),
+                parsed.Title,
+                parsed.Summary,
+                parsed.Description,
+                authors,
+                owners,
+                parsed.IconUrl,
+                parsed.LicenseUrl,
+                parsed.ProjectUrl,
+                reportAbuse,
+                tags,
+                parsed.Published,
+                parsed.DependencySets,
                 parsed.RequireLicenseAcceptance,
                 parsed.DownloadCount);
         }

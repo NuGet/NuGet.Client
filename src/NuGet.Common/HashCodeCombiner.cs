@@ -1,7 +1,7 @@
-﻿namespace NuGet.RuntimeModel
+﻿namespace NuGet.Common
 {
     /// <summary>
-    /// Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations, and then slightly improved for usage in C# 6 Expression-bodied members
+    /// Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations
     /// </summary>
     internal sealed class HashCodeCombiner
     {
@@ -10,24 +10,14 @@
 
         private long _combinedHash;
 
-        private HashCodeCombiner()
+        internal HashCodeCombiner()
         {
             _combinedHash = Seed;
-        }
-
-        internal static HashCodeCombiner Start()
-        {
-            return new HashCodeCombiner();
         }
 
         internal int CombinedHash
         {
             get { return _combinedHash.GetHashCode(); }
-        }
-
-        public static implicit operator int (HashCodeCombiner combiner)
-        {
-            return combiner.CombinedHash;
         }
 
         internal HashCodeCombiner AddInt32(int i)
@@ -70,7 +60,6 @@
             }
 
             return combiner.CombinedHash;
-
         }
     }
 }

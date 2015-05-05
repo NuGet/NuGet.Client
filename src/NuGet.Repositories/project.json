@@ -3,7 +3,9 @@
     "dependencies": {
         "NuGet.Versioning": "3.0.0-*"
     },
-
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "frameworks": {
         "net45": { },
         "dnxcore50": {

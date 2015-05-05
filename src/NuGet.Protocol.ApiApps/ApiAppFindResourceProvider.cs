@@ -1,8 +1,7 @@
-﻿using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.ApiApps
 {
@@ -15,7 +14,7 @@ namespace NuGet.Protocol.ApiApps
 
         }
 
-        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             throw new NotImplementedException();
         }

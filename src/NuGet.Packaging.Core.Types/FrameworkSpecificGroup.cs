@@ -1,12 +1,8 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-// When we're internalized into other projects, there are multiple HashCodeCombiners defined
-// So make sure we select the right one
-using HashCodeCombiner = NuGet.Packaging.Core.HashCodeCombiner;
+using NuGet.Common;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging
 {

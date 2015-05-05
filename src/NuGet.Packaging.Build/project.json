@@ -6,7 +6,9 @@
         "NuGet.Packaging": "3.0.0-*",
         "Newtonsoft.Json": "6.0.6"
     },
-
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {

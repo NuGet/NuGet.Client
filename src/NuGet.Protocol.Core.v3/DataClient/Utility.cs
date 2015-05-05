@@ -213,7 +213,7 @@ namespace NuGet.Protocol.Core.v3.Data
             return GetEntityUri(token as JObject);
         }
 
-        public static async Task<JToken> FindEntityInJson(Uri entity, JObject json)
+        public static Task<JToken> FindEntityInJson(Uri entity, JObject json)
         {
             string search = entity.AbsoluteUri;
 
@@ -233,7 +233,7 @@ namespace NuGet.Protocol.Core.v3.Data
 
             if (idNode != null)
             {
-                return idNode.Parent.DeepClone();
+                return Task.FromResult(idNode.Parent.DeepClone());
             }
 
             return null;

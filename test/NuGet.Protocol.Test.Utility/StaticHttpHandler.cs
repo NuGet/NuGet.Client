@@ -43,9 +43,10 @@ namespace Test.Utility
             _messageHandler = messageHandler;
         }
 
-        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            return new Tuple<bool, INuGetResource>(true, new TestHttpHandler(_messageHandler));
+            var result = new Tuple<bool, INuGetResource>(true, new TestHttpHandler(_messageHandler));
+            return Task.FromResult(result);
         }
     }
 
@@ -76,7 +77,7 @@ namespace Test.Utility
             _responses = responses;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             HttpResponseMessage msg = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
 
@@ -99,7 +100,7 @@ namespace Test.Utility
                 throw new Exception("Unhandled test request: " + request.RequestUri.AbsoluteUri);
             }
 
-            return msg;
+            return Task.FromResult(msg);
         }
     }
 
@@ -113,9 +114,9 @@ namespace Test.Utility
             _stream.Seek(0, SeekOrigin.Begin);
         }
 
-        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            _stream.CopyTo(stream);
+            return _stream.CopyToAsync(stream);
         }
 
         protected override bool TryComputeLength(out long length)

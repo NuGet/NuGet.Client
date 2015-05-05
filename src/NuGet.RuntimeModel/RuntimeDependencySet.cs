@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.RuntimeModel
 {
@@ -32,9 +32,10 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
+            return new HashCodeCombiner()
                 .AddObject(Id)
-                .AddObject(Dependencies);
+                .AddObject(Dependencies)
+                .CombinedHash;
         }
 
         public RuntimeDependencySet Clone()

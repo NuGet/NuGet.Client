@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
@@ -18,14 +16,15 @@ namespace NuGet.Protocol.Core.v3.Data
             _jObj = jObj;
         }
 
-        public override async Task<JObject> GetJObject()
+        public override Task<JObject> GetJObject()
         {
-            return _jObj;
+            return Task.FromResult(_jObj);
         }
 
-        public override async Task<Stream> GetStream()
+        public override Task<Stream> GetStream()
         {
-            return new MemoryStream(Encoding.UTF8.GetBytes(_jObj.ToString()));
+            Stream result = new MemoryStream(Encoding.UTF8.GetBytes(_jObj.ToString()));
+            return Task.FromResult(result);
         }
     }
 }

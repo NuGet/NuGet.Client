@@ -1,12 +1,9 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v2
 {
@@ -21,7 +18,7 @@ namespace NuGet.Protocol.Core.v2
 
         public override async Task<IEnumerable<ServerPackageMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
                 {
                     var query = _repository.Search(
                         searchTerm,

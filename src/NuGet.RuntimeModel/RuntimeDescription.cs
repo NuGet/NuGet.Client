@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.RuntimeModel
 {
@@ -41,14 +41,14 @@ namespace NuGet.RuntimeModel
         /// <param name="other">The other description to merge in to this description</param>
         public static RuntimeDescription Merge(RuntimeDescription left, RuntimeDescription right)
         {
-            if(!string.Equals(left.RuntimeIdentifier, right.RuntimeIdentifier, StringComparison.Ordinal))
+            if (!string.Equals(left.RuntimeIdentifier, right.RuntimeIdentifier, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException("TODO: Unable to merge runtimes, they do not have the same identifier");
             }
 
             // Merge #imports
             List<string> inheritedRuntimes;
-            if(right.InheritedRuntimes.Count != 0)
+            if (right.InheritedRuntimes.Count != 0)
             {
                 // Ack! Imports in both!
                 if (left.InheritedRuntimes.Count != 0)
@@ -68,13 +68,13 @@ namespace NuGet.RuntimeModel
 
             // Merge dependency sets
             Dictionary<string, RuntimeDependencySet> newSets = new Dictionary<string, RuntimeDependencySet>();
-            foreach(var dependencySet in left.RuntimeDependencySets.Values)
+            foreach (var dependencySet in left.RuntimeDependencySets.Values)
             {
                 newSets[dependencySet.Id] = dependencySet.Clone();
             }
 
             // Overwrite with things from the right
-            foreach(var dependencySet in right.RuntimeDependencySets.Values)
+            foreach (var dependencySet in right.RuntimeDependencySets.Values)
             {
                 newSets[dependencySet.Id] = dependencySet.Clone();
             }
@@ -89,10 +89,11 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
+            return new HashCodeCombiner()
                 .AddObject(RuntimeIdentifier)
                 .AddObject(InheritedRuntimes)
-                .AddObject(RuntimeDependencySets);
+                .AddObject(RuntimeDependencySets)
+                .CombinedHash;
         }
     }
 }

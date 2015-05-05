@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using NuGet.Configuration;
-using Newtonsoft.Json.Linq;
-using System.Globalization;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v2
@@ -54,7 +48,7 @@ namespace NuGet.Protocol.Core.v2
         public static async Task<string> GetContent(Uri address)
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient(
-                new HttpClientHandler(){ UseDefaultCredentials = true });
+                new HttpClientHandler() { UseDefaultCredentials = true });
             var response = await client.GetAsync(address);
             return await response.Content.ReadAsStringAsync();
         }

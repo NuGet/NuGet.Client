@@ -1,7 +1,6 @@
 {
-    "preprocess": "../../compiler/preprocess/*.cs",
     "dependencies": {
-        "NuGet.Configuration": "1.0.0-*",
+        "NuGet.Configuration": "3.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Moq": "4.2.1409.1722"
     },

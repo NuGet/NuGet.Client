@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Core.v2
             V2Client = resource.V2Client;
         }
 
-        public override async Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, CancellationToken token)
+        public override Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, CancellationToken token)
         {
             throw new NotImplementedException();
         }
@@ -74,7 +74,7 @@ namespace NuGet.Protocol.Core.v2
                 .Where(v => includePrerelease || !v.IsPrerelease).ToArray());
         }
 
-        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
+        public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -112,12 +112,12 @@ namespace NuGet.Protocol.Core.v2
                 exists = V2Client.Exists(identity.Id, version);
             }
 
-            return exists;
+            return Task.FromResult(exists);
         }
 
-        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public override Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            return V2Client.Exists(packageId);
+            return Task.FromResult(V2Client.Exists(packageId));
         }
     }
 }

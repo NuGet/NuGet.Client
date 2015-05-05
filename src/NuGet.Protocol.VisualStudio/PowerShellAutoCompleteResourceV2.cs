@@ -24,32 +24,38 @@ namespace NuGet.Protocol.VisualStudio
         {
             V2Client = repo;
         }
-        public override async Task<IEnumerable<string>> IdStartsWith(string packageIdPrefix, bool includePrerelease, System.Threading.CancellationToken token)
+        public override Task<IEnumerable<string>> IdStartsWith(string packageIdPrefix, bool includePrerelease, System.Threading.CancellationToken token)
         {
             //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
             LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
+            IEnumerable<string> result;
             if (lrepo != null)
             {
-                return GetPackageIdsFromLocalPackageRepository(lrepo, packageIdPrefix, true);
+                result = GetPackageIdsFromLocalPackageRepository(lrepo, packageIdPrefix, true);
             }
             else
             {
-                return GetPackageIdsFromHttpSourceRepository(V2Client, packageIdPrefix, true);
+                result = GetPackageIdsFromHttpSourceRepository(V2Client, packageIdPrefix, true);
             }
+
+            return Task.FromResult(result);
         }
 
-        public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, System.Threading.CancellationToken token)
+        public override Task<IEnumerable<NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, System.Threading.CancellationToken token)
         {
             //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
+            IEnumerable<NuGetVersion> result;
             LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
             if (lrepo != null)
             {
-                return GetPackageVersionsFromLocalPackageRepository(lrepo, packageId, versionPrefix, includePrerelease);
+                result = GetPackageVersionsFromLocalPackageRepository(lrepo, packageId, versionPrefix, includePrerelease);
             }
             else
             {
-                return GetPackageversionsFromHttpSourceRepository(V2Client, packageId, versionPrefix, includePrerelease);
+                result = GetPackageversionsFromHttpSourceRepository(V2Client, packageId, versionPrefix, includePrerelease);
             }
+
+            return Task.FromResult(result);
         }
 
         private static IEnumerable<string> GetPackageIdsFromHttpSourceRepository(IPackageRepository packageRepository, string searchFilter, bool includePrerelease)

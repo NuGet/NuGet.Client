@@ -1,13 +1,14 @@
 ﻿{
     "version": "3.0.0-*",
     "dependencies": {
+        "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
         "NuGet.Frameworks": "3.0.0-*"
+    },
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
     "frameworks": {
         "net45": { },
-        "dnxcore50": {
-            "dependencies": {
-            }
-        }
+        "dnxcore50": { }
     }
 }
