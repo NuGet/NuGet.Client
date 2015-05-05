@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
-using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver

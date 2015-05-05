@@ -1,12 +1,11 @@
-﻿using NuGet.DependencyResolver;
+﻿using System;
+using System.Collections.Generic;
+using NuGet.Client;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using System.Collections.Generic;
-using System;
-using Microsoft.Framework.Logging;
-using System.Linq;
+using NuGet.Logging;
 using NuGet.RuntimeModel;
-using NuGet.Client;
 
 namespace NuGet.Commands
 {
@@ -57,15 +56,20 @@ namespace NuGet.Commands
             Unresolved = unresolved;
         }
 
-        public static RestoreTargetGraph Create(bool inConflict, NuGetFramework framework, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILoggerFactory loggerFactory)
+        public static RestoreTargetGraph Create(bool inConflict, NuGetFramework framework, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILogger logger)
         {
-            return Create(inConflict, framework, null, RuntimeGraph.Empty, graph, context, loggerFactory);
+            return Create(inConflict, framework, null, RuntimeGraph.Empty, graph, context, logger);
         }
 
-        public static RestoreTargetGraph Create(bool inConflict, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILoggerFactory loggerFactory)
+        public static RestoreTargetGraph Create(
+            bool inConflict,
+            NuGetFramework framework,
+            string runtimeIdentifier,
+            RuntimeGraph runtimeGraph,
+            GraphNode<RemoteResolveResult> graph,
+            RemoteWalkContext context,
+            ILogger log)
         {
-            var log = loggerFactory.CreateLogger<RestoreTargetGraph>();
-
             var install = new HashSet<RemoteMatch>();
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>();
             var unresolved = new HashSet<LibraryRange>();

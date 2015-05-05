@@ -4,11 +4,11 @@ using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.LibraryModel;
+using NuGet.Logging;
 using NuGet.Packaging;
 using DefaultPackagePathResolver = NuGet.Packaging.DefaultPackagePathResolver;
-using Microsoft.Framework.Logging;
-using NuGet.Common;
 
 namespace NuGet.Commands
 {
@@ -164,8 +164,8 @@ namespace NuGet.Commands
         private static void ExtractNupkg(ZipArchive archive, string targetPath)
         {
             ExtractFiles(
-                archive, 
-                targetPath, 
+                archive,
+                targetPath,
                 shouldInclude: NupkgFilter);
         }
 

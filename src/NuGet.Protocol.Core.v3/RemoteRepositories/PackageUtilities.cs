@@ -5,8 +5,8 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
 using NuGet.Common;
+using NuGet.Logging;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
@@ -57,8 +57,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     var fileStream = nupkgStream as FileStream;
                     if (fileStream != null)
                     {
-                        report.LogWarning("The ZIP archive {0} is corrupt",
-                            fileStream.Name.Yellow().Bold());
+                        report.LogWarning($"The ZIP archive {fileStream.Name.Yellow().Bold()} is corrupt");
                     }
                     throw;
                 }

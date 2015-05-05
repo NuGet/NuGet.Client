@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Framework.Logging;
 using NuGet.Frameworks;
+using NuGet.Logging;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine
@@ -18,9 +18,9 @@ namespace NuGet.CommandLine
         const string Framework = "\x1b[34mframework\x1b[39m";
         const string Nothing = "\x1b[33mnothing\x1b[39m";
 
-        public DiagnosticCommands(ILoggerFactory loggerFactory)
+        public DiagnosticCommands(ILogger log)
         {
-            _log = loggerFactory.CreateLogger<DiagnosticCommands>();
+            _log = log;
         }
 
         public int Lockfile(string projectOrLockfile, string target, string library)

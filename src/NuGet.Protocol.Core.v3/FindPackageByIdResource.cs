@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Versioning;
 

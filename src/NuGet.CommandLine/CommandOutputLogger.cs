@@ -1,6 +1,5 @@
-﻿using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime.Common.CommandLine;
-using System;
+﻿using Microsoft.Framework.Runtime.Common.CommandLine;
+using NuGet.Logging;
 
 namespace NuGet.CommandLine
 {
@@ -9,58 +8,65 @@ namespace NuGet.CommandLine
     /// </summary>
     public class CommandOutputLogger : ILogger
     {
-        private readonly CommandOutputLoggerProvider _provider;
-        private static readonly object _consoleLock = new object();
+        private const string Debug = nameof(Debug);
+        private const string Error = nameof(Error);
+        private const string Information = nameof(Information);
+        private const string Verbose = nameof(Verbose);
+        private const string Warning = nameof(Warning);
 
-        public CommandOutputLogger(CommandOutputLoggerProvider commandOutputProvider)
+        private static readonly bool _useConsoleColor = true;
+
+        public void LogDebug(string data)
         {
-            _provider = commandOutputProvider;
+            LogInternal(Debug, data);
         }
 
-        public IDisposable BeginScope(object state)
+        public void LogError(string data)
         {
-            throw new NotImplementedException();
+
+            LogInternal(Error, data);
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public void LogInformation(string data)
         {
-            throw new NotImplementedException();
+            LogInternal(Information, data);
         }
 
-        public bool IsEnabled(LogLevel logLevel)
+        public void LogVerbose(string data)
         {
-            if (logLevel < _provider.LogLevel)
+            LogInternal(Verbose, data);
+        }
+
+        public void LogWarning(string data)
+        {
+            LogInternal(Warning, data);
+        }
+
+        private void LogInternal(string logLevel, string message)
+        {
+            var caption = string.Empty;
+            if (_useConsoleColor)
             {
-                return false;
-            }
-
-            return true;
-        }
-
-        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
-        {
-            if (IsEnabled(logLevel))
-            {
-                lock(_consoleLock)
+                switch (logLevel)
                 {
-                    AnsiConsole.Output.WriteLine(string.Format("{0}: {1}", Caption(logLevel), formatter(state, exception)));
+                    case Debug:
+                        caption = "\x1b[35mdebug\x1b[39m"; break;
+                    case Information:
+                        caption = "\x1b[32minfo \x1b[39m"; break;
+                    case Warning:
+                        caption = "\x1b[33mwarn \x1b[39m"; break;
+                    case Error:
+                        caption = "\x1b[31merror\x1b[39m"; break;
+                    case Verbose:
+                        caption = "\x1b[35mtrace\x1b[39m"; break;
                 }
             }
-        }
-
-        private string Caption(LogLevel logLevel)
-        {
-            switch (logLevel)
+            else
             {
-                case LogLevel.Debug: return "\x1b[35mdebug\x1b[39m";
-                case LogLevel.Verbose: return "\x1b[35mtrace\x1b[39m";
-                case LogLevel.Information: return "\x1b[32minfo \x1b[39m";
-                case LogLevel.Warning: return "\x1b[33mwarn \x1b[39m";
-                case LogLevel.Error: return "\x1b[31merror\x1b[39m";
-                case LogLevel.Critical: return "\x1b[31mfatal\x1b[39m";
+                caption = logLevel;
             }
 
-            throw new Exception("Unknown LogLevel");
+            AnsiConsole.GetOutput(_useConsoleColor).WriteLine($"{caption}: {message}");
         }
     }
 }

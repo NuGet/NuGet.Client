@@ -1,25 +1,19 @@
-﻿using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Common.CommandLine;
-using NuGet.Configuration;
-using NuGet.ProjectModel;
-using NuGet.Commands;
-using System;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
+using System.Reflection;
+using Microsoft.Framework.Runtime.Common.CommandLine;
+using NuGet.Commands;
+using NuGet.Configuration;
+using NuGet.Logging;
+using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine
 {
     public class Program
     {
-        private readonly IApplicationEnvironment _applicationEnvironment;
         private ILogger _log;
-
-        public Program(IApplicationEnvironment applicationEnvironment)
-        {
-            _applicationEnvironment = applicationEnvironment;
-        }
 
         public int Main(string[] args)
         {
@@ -32,16 +26,13 @@ namespace NuGet.CommandLine
 #endif
 
             // Set up logging
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddProvider(new CommandOutputLoggerProvider() { LogLevel = LogLevel.Debug });
-            _log = loggerFactory.CreateLogger<Program>();
-
+            _log = new CommandOutputLogger();
 
             var app = new CommandLineApplication();
             app.Name = "nuget3";
             app.FullName = ".NET Package Manager";
             app.HelpOption("-h|--help");
-            app.VersionOption("--version", _applicationEnvironment.Version);
+            app.VersionOption("--version", GetType().GetTypeInfo().Assembly.GetName().Version.ToString());
 
             app.Command("restore", restore =>
             {
@@ -107,7 +98,7 @@ namespace NuGet.CommandLine
                     {
                         _log.LogInformation($"Running restore with {request.MaxDegreeOfConcurrency} concurrent jobs");
                     }
-                    var command = new RestoreCommand(loggerFactory);
+                    var command = new RestoreCommand(_log);
                     var sw = Stopwatch.StartNew();
                     var result = await command.ExecuteAsync(request);
                     sw.Stop();
@@ -131,7 +122,7 @@ namespace NuGet.CommandLine
 
                     lockfile.OnExecute(() =>
                     {
-                        var diagnostics = new DiagnosticCommands(loggerFactory);
+                        var diagnostics = new DiagnosticCommands(_log);
                         var projectFile = project.HasValue() ? project.Value() : Path.GetFullPath(".");
                         return diagnostics.Lockfile(projectFile, target.Value(), library.Value);
                     });

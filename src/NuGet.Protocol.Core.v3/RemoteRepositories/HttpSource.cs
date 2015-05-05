@@ -12,8 +12,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
 using NuGet.Common;
+using NuGet.Logging;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {

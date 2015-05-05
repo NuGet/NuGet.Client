@@ -9,9 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.Framework.Logging;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -37,8 +37,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>();
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
         private bool _ignored;
-        private bool _noCache;
-        private ILogger _logger;
 
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
@@ -197,7 +195,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             }
                             catch (XmlException)
                             {
-                                Logger.LogInformation("The XML file {0} is corrupt", data.CacheFileName.Yellow().Bold());
+                                Logger.LogInformation($"The XML file {data.CacheFileName.Yellow().Bold()} is corrupt.");
                                 throw;
                             }
                         }

@@ -6,13 +6,12 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
-using NuGet.Client;
 using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -20,19 +19,16 @@ using NuGet.Protocol.Core.v3;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using ILogger = Microsoft.Framework.Logging.ILogger;
 
 namespace NuGet.Commands
 {
     public class RestoreCommand
     {
-        private readonly ILoggerFactory _loggerFactory;
-        private ILogger _log;
+        private readonly ILogger _log;
 
-        public RestoreCommand(ILoggerFactory loggerFactory)
+        public RestoreCommand(ILogger logger)
         {
-            _loggerFactory = loggerFactory;
-            _log = loggerFactory.CreateLogger<RestoreCommand>();
+            _log = logger;
         }
 
         public async Task<RestoreResult> ExecuteAsync(RestoreRequest request)
@@ -354,7 +350,7 @@ namespace NuGet.Commands
             bool inConflict = !graph.TryResolveConflicts();
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            return RestoreTargetGraph.Create(inConflict, framework, runtimeIdentifier, runtimeGraph, graph, context, _loggerFactory);
+            return RestoreTargetGraph.Create(inConflict, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
         }
 
         private async Task<List<RestoreTargetGraph>> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository)
@@ -443,10 +439,8 @@ namespace NuGet.Commands
         {
             _log.LogVerbose($"Using source {source.Source}");
 
-            var logger = _loggerFactory.CreateLogger(
-                    typeof(IPackageFeed).FullName + ":" + source.Source);
             var nugetRepository = Repository.Factory.GetCoreV3(source.Source);
-            return new SourceRepositoryDependencyProvider(nugetRepository, logger, noCache);
+            return new SourceRepositoryDependencyProvider(nugetRepository, _log, noCache);
         }
     }
 }
