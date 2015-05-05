@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TemplateWizard;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
@@ -34,6 +35,8 @@ namespace NuGet.VisualStudio
         private readonly ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
 
+        private JoinableTaskFactory PumpingJTF { get; }
+
         [ImportingConstructor]
         public VsTemplateWizard(
             IVsPackageInstaller installer,
@@ -52,6 +55,8 @@ namespace NuGet.VisualStudio
             _sourceProvider = sourceProvider;
 
             _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer);
+
+            PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
         }
 
         private IEnumerable<PreinstalledPackageConfiguration> GetConfigurationsFromVsTemplateFile(string vsTemplatePath)
@@ -339,7 +344,7 @@ namespace NuGet.VisualStudio
 
         void IWizard.ProjectFinishedGenerating(Project project)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            PumpingJTF.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -349,7 +354,7 @@ namespace NuGet.VisualStudio
 
         void IWizard.ProjectItemFinishedGenerating(ProjectItem projectItem)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            PumpingJTF.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

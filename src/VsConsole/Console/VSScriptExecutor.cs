@@ -5,6 +5,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.PowerShellCmdlets;
@@ -13,27 +15,20 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
 {
     [Export(typeof(IScriptExecutor))]
     public class VSScriptExecutor : IScriptExecutor
     {
-        private readonly Lazy<IHost> _host;
+        private AsyncLazy<IHost> Host { get; }
         private readonly ISolutionManager _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
         private bool _skipPSScriptExecution;
 
         public VSScriptExecutor()
         {
-            _host = new Lazy<IHost>(GetHost);
-        }
-
-        private IHost Host
-        {
-            get
-            {
-                return _host.Value;
-            }
+            Host = new AsyncLazy<IHost>(GetHostAsync, ThreadHelper.JoinableTaskFactory);
         }
 
         [Import]
@@ -127,7 +122,11 @@ namespace NuGetConsole
                         IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
                         try
                         {
-                            Host.Execute(console, command, inputs);
+                            var host = await Host.GetValueAsync();
+                            // Host.Execute calls powershell's pipeline.Invoke and blocks the calling thread
+                            // to switch to powershell pipeline execution thread. In order not to block the UI thread, go off the UI thread.
+                            // This is important, since, switches to UI thread, using SwitchToMainThreadAsync will deadlock otherwise
+                            await Task.Run(() => host.Execute(console, command, inputs));
                         }
                         catch (Exception ex)
                         {
@@ -149,8 +148,11 @@ namespace NuGetConsole
             return false;
         }
 
-        private IHost GetHost()
+        private async Task<IHost> GetHostAsync()
         {
+            // Since we are creating the output console and the output window pane, switch to the main thread
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // create the console and instantiate the PS host on demand
             IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
             IHost host = console.Host;
@@ -159,7 +161,10 @@ namespace NuGetConsole
             console.Dispatcher.Start();
 
             // gives the host a chance to do initialization works before dispatching commands to it
-            host.Initialize(console);
+            // Host.Initialize calls powershell's pipeline.Invoke and blocks the calling thread
+            // to switch to powershell pipeline execution thread. In order not to block the UI thread, go off the UI thread.
+            // This is important, since, switches to UI thread, using SwitchToMainThreadAsync will deadlock otherwise
+            await Task.Run(() => host.Initialize(console));
 
             // after the host initializes, it may set IsCommandEnabled = false
             if (host.IsCommandEnabled)

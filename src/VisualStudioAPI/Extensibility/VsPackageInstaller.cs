@@ -31,6 +31,8 @@ namespace NuGet.VisualStudio
         private INuGetProjectContext _projectContext;
         private IVsPackageInstallerServices _packageServices;
 
+        private JoinableTaskFactory PumpingJTF { get; }
+
         [ImportingConstructor]
         public VsPackageInstaller(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager, IVsPackageInstallerServices packageServices)
         {
@@ -39,6 +41,7 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager;
             _projectContext = new VSAPIProjectContext();
             _packageServices = packageServices;
+            PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
         }
 
         public async Task InstallPackageAsync(Project project, IEnumerable<string> sources, string packageId, string versionSpec, bool ignoreDependencies, CancellationToken token)
@@ -86,7 +89,7 @@ namespace NuGet.VisualStudio
                 semVer = new NuGetVersion(version);
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            PumpingJTF.Run(async delegate
             {
                 await InstallPackageAsync(source, project, packageId, semVer, ignoreDependencies);
             });
@@ -101,7 +104,7 @@ namespace NuGet.VisualStudio
                 NuGetVersion.TryParse(version, out semVer);
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            PumpingJTF.Run(async delegate
             {
                 await InstallPackageAsync(source, project, packageId, semVer, ignoreDependencies);
             });
@@ -159,7 +162,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageVersions");
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            PumpingJTF.Run(async delegate
             {
                 // create a repository provider with only the registry repository
                 PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
@@ -198,7 +201,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageVersions");
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            PumpingJTF.Run(async delegate
             {
                 PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
                 repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
