@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.ProjectSystem.Interop;
+﻿using System;
+using System.IO;
+using System.Linq;
+using Microsoft.VisualStudio.ProjectSystem.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
-using System;
-using System.IO;
-using System.Linq;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -57,9 +57,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
 
-                // Treat projects with nuget.json as build integrated projects
+                // Treat projects with project.json as build integrated projects
                 string projectPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
-                string jsonConfig = Path.Combine(projectPath, NuGetVSConstants.JsonConfigFileName);
+                string jsonConfig = Path.Combine(projectPath, BuildIntegratedProjectUtility.ProjectConfigFileName);
 
                 if (File.Exists(jsonConfig))
                 {

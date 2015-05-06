@@ -1123,11 +1123,11 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// True if the project has a nuget.json file, indicating that it is build integrated
+        /// True if the project has a project.json file, indicating that it is build integrated
         /// </summary>
         public static async Task<bool> HasBuildIntegratedConfig(EnvDTEProject project)
         {
-            return await EnvDTEProjectUtility.ContainsFile(project, NuGetVSConstants.JsonConfigFileName);
+            return await EnvDTEProjectUtility.ContainsFile(project, BuildIntegratedProjectUtility.ProjectConfigFileName);
         }
 
         #endregion // Check Project Types

@@ -1,4 +1,5 @@
 using System;
+
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class NuGetVSConstants
@@ -19,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string WindowsStoreProjectTypeGuid = "{BC8A1FFA-BEE3-4634-8014-F334798102B3}";
         public const string SynergexProjectTypeGuid = "{BBD0F5D1-1CC4-42fd-BA4C-A96779C64378}";
         public const string NomadForVisualStudioProjectTypeGuid = "{4B160523-D178-4405-B438-79FB67C8D499}";
-        public const string TDSProjectTypeGuid = "{CAA73BB0-EF22-4d79-A57E-DF67B3BA9C80}";        
+        public const string TDSProjectTypeGuid = "{CAA73BB0-EF22-4d79-A57E-DF67B3BA9C80}";
         public const string TDSItemTypeGuid = "{6877B9B0-CDF7-4ff2-BC09-9608387B37F2}";
         public const string DxJsProjectTypeGuid = "{1B19158F-E398-40A6-8E3B-350508E125F1}";
         public const string DeploymentProjectTypeGuid = "{151d2e53-a2c4-4d7d-83fe-d05416ebd58e}";
@@ -34,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // All unloaded projects have this Kind value
         public const string UnloadedProjectTypeGuid = "{67294A52-A4F0-11D2-AA88-00C04F688DDE}";
-        
+
         public const string NuGetSolutionSettingsFolder = ".nuget";
 
         // HResults
@@ -45,8 +46,5 @@ namespace NuGet.PackageManagement.VisualStudio
 
         //
         public static readonly Guid GUID_VSStandardCommandSet97;
-
-        // Config file name for build integrated projects
-        public static readonly string JsonConfigFileName = "nuget.json";
     }
 }
