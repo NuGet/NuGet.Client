@@ -756,14 +756,14 @@ function Test-UpdateAllPackagesInASingleProjectWithMultipleProjects {
     Update-Package -Source $context.RepositoryPath -ProjectName $p1.Name
 
     # Assert
-    Assert-Package $p1 jQuery 2.1.3
+    Assert-Package $p1 jQuery 1.6.1
     Assert-Package $p2 jQuery 1.5.1
-    Assert-Package $p1 jQuery.UI.Combined 1.11.4
+    Assert-Package $p1 jQuery.UI.Combined 1.8.13
     Assert-Package $p2 jQuery.UI.Combined 1.8.11
     Assert-SolutionPackage jQuery 1.5.1
-    Assert-SolutionPackage jQuery 2.1.3
+    Assert-SolutionPackage jQuery 1.6.1
     Assert-SolutionPackage jQuery.UI.Combined 1.8.11
-    Assert-SolutionPackage jQuery.UI.Combined 1.11.4
+    Assert-SolutionPackage jQuery.UI.Combined 1.8.13
 }
 
 function Test-UpdateAllPackagesInASingleProjectWithSafeFlagAndMultipleProjects {
@@ -1450,7 +1450,7 @@ function Test-UpdatePackageThrowsIfMinClientVersionIsNotSatisfied
     $currentVersion = Get-HostSemanticVersion
 
     # Act & Assert
-    Assert-Throws { $p | Update-Package Kitty -Source $context.RepositoryPath } "The 'kitty 2.0.0' package requires NuGet client version '5.0.0.1' or above, but the current NuGet version is '$currentVersion'."
+    Assert-Throws { $p | Update-Package Kitty -Source $context.RepositoryPath } "The 'kitty 2.0.0' package requires NuGet client version '5.0.0.1' or above, but the current NuGet version is '$currentVersion'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget"
 
     Assert-NoPackage $p "Kitty" -Version 2.0.0
     Assert-Package $p "Kitty" -Version 1.0.0

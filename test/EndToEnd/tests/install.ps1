@@ -495,7 +495,7 @@ function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {
     $p | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
     
     # Assert
-    Assert-Reference $p Microsoft.Devices.Sensors
+    Assert-Reference $p System.ComponentModel.DataAnnotations
 }
 
 <#
@@ -2127,7 +2127,7 @@ function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
     $currentSemanticVersion = Get-HostSemanticVersion
 
     # Act & Assert
-    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'."
+    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget"
     Assert-NoPackage $p "Kitty"
 }
 
