@@ -37,7 +37,7 @@ namespace NuGet.VisualStudio
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages()
         {
-            List<IVsPackageMetadata> packages = new List<IVsPackageMetadata>();
+            var packages = new HashSet<IVsPackageMetadata>(new VsPackageMetadataComparer());
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {

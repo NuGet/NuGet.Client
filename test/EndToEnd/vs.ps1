@@ -374,6 +374,15 @@ function New-MvcApplication {
     $SolutionFolder | New-Project EmptyMvcWebApplicationProjectTemplatev4.0.csaspx $ProjectName
 }
 
+function New-MvcWebSite { 
+    param(        
+        [string]$ProjectName,
+        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+    )
+
+    $SolutionFolder | New-Project WebApplication45WebSite $ProjectName
+}
+
 function New-WebSite {
     param(        
         [string]$ProjectName,

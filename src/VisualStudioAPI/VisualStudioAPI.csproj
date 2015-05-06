@@ -157,6 +157,7 @@
     <Compile Include="CommonResources.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller2.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
+    <Compile Include="Extensibility\VsPackageMetadataComparer.cs" />
     <Compile Include="Utility\PumpingJTF.cs" />
     <Compile Include="Utility\VsHierarchyHelper.cs" />
     <Compile Include="Utility\VsHierarchyItem.cs" />
