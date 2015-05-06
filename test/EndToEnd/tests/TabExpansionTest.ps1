@@ -166,12 +166,12 @@ function Test-TabExpansionForUpdatePackageWithVersionOnlyShowsVersionsHigherThan
     $p1 = New-ConsoleApplication
     $p2 = New-ConsoleApplication
     $p1 | Install-Package NHibernate -Version 3.0.0.4000
-    $p2 | Install-Package NHibernate -Version 3.0.0.2001
-    $installedVersion = New-Object Version("3.0.0.2001")
+    $p2 | Install-Package NHibernate -Version 3.1.0.4000
+    $installedVersion = New-Object NuGet.Versioning.NuGetVersion("3.1.0.4000")
 
     # Act
     $suggestions = TabExpansion 'Update-Package NHibernate -Version ' ''    
-    $versions = $suggestions | %{ [NuGet.Versioning]$_ }
+    $versions = $suggestions | %{ [NuGet.Versioning.NuGetVersion]::Parse($_) }
 
     # Assert
     $versions[0] | %{ Assert-True ($_ -gt $installedVersion) }
