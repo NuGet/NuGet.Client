@@ -14,6 +14,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using System.Globalization;
 
 namespace NuGet.ProjectManagement.Projects
 {
@@ -71,8 +72,12 @@ namespace NuGet.ProjectManagement.Projects
                 var identity = new PackageIdentity(dependency.Id, dependency.VersionRange.MinVersion);
 
                 // Pass the actual version range as the allowed range
-                // TODO: PackageReference needs to support this fully
-                packages.Add(new PackageReference(identity, null, true, false, false, dependency.VersionRange));
+                packages.Add(new PackageReference(identity,
+                    targetFramework: null,
+                    userInstalled: true,
+                    developmentDependency: false,
+                    requireReinstallation: false,
+                    allowedVersions: dependency.VersionRange));
             }
 
             return packages;
@@ -83,6 +88,16 @@ namespace NuGet.ProjectManagement.Projects
             var dependency = new PackageDependency(packageIdentity.Id, new VersionRange(packageIdentity.Version));
 
             return await AddDependency(dependency, nuGetProjectContext, token);
+        }
+
+        /// <summary>
+        /// Retrieve the full closure of project to project references.
+        /// </summary>
+        public virtual Task<IReadOnlyList<NuGetProjectReference>> GetProjectReferenceClosure()
+        {
+            // This cannot be resolved with DTE currently, it is overridden at a higher level
+            return Task.FromResult<IReadOnlyList<NuGetProjectReference>>(
+                Enumerable.Empty<NuGetProjectReference>().ToList());
         }
 
         /// <summary>
@@ -301,11 +316,14 @@ namespace NuGet.ProjectManagement.Projects
             return Path.Combine(GlobalPackagesFolder, identity.Id, identity.Version.ToNormalizedString());
         }
 
-        private static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
+        /// <summary>
+        /// nupkg path from the global cache folder
+        /// </summary>
+        public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
         {
             string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            string nupkgName = identity.Id + "." + identity.Version.ToNormalizedString() + ".nupkg";
+            string nupkgName = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", identity.Id, identity.Version.ToNormalizedString());
 
             return Path.Combine(GlobalPackagesFolder, identity.Id, identity.Version.ToNormalizedString(), nupkgName);
         }
@@ -316,7 +334,7 @@ namespace NuGet.ProjectManagement.Projects
             {
                 string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-                return Path.Combine(userProfile, ".dnx\\packages\\");
+                return Path.Combine(userProfile, ".nuget\\packages\\");
             }
         }
     }

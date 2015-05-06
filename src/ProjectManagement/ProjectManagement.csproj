@@ -84,6 +84,7 @@
     <Compile Include="FileModifiers\XdtTransformer.cs" />
     <Compile Include="FileModifiers\XmlTransformer.cs" />
     <Compile Include="INuGetProjectContext.cs" />
+    <Compile Include="NuGetProjectReference.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectContext.cs" />
     <Compile Include="Projects\INuGetIntegratedProject.cs" />
@@ -101,6 +102,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utility\BuildIntegratedProjectUtility.cs" />
     <Compile Include="Utility\CollectionsUtility.cs" />
     <Compile Include="Utility\Constants.cs" />
     <Compile Include="Utility\FileSystemUtility.cs" />

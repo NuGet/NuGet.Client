@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using Test.Utility;
 using Xunit;
 
@@ -24,7 +22,7 @@ namespace NuGet.Test
             var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
             var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
             projectFolder.Create();
-            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "nuget.json"));
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
 
             CreateConfigJson(projectConfig.FullName);
 
@@ -33,8 +31,12 @@ namespace NuGet.Test
                 "https://www.nuget.org/api/v2/"
             };
 
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+
             // Act
-            var result = await BuildIntegratedRestoreUtility.Restore(projectConfig.FullName, projectName, new TestNuGetProjectContext(), sources, CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.Restore(project, new TestNuGetProjectContext(), sources, CancellationToken.None);
 
             // Assert
             Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));

@@ -1,17 +1,13 @@
-﻿using System;
+﻿using NuGet.Commands;
+using NuGet.Configuration;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
-using NuGet.Commands;
-using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement
 {
@@ -22,19 +18,19 @@ namespace NuGet.PackageManagement
     {
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-        public static async Task RestoreForBuild(string jsonConfigPath,
-            string projectName,
+        public static async Task RestoreForBuild(
+            BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
             IEnumerable<string> additionalSources,
             CancellationToken token)
         {
-            await Restore(jsonConfigPath, projectName, projectContext, additionalSources, token);
+            await Restore(project, projectContext, additionalSources, token);
         }
 
-        public static async Task<RestoreResult> Restore(string jsonConfigPath,
-            string projectName,
+        public static async Task<RestoreResult> Restore(
+            BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
-            IEnumerable<string> additionalSources, 
+            IEnumerable<string> additionalSources,
             CancellationToken token)
         {
             // Limit to only 1 restore at a time
@@ -44,7 +40,7 @@ namespace NuGet.PackageManagement
             {
                 token.ThrowIfCancellationRequested();
 
-                return await RestoreCore(jsonConfigPath, projectName, projectContext, additionalSources, token);
+                return await RestoreCore(project, projectContext, additionalSources, token);
             }
             finally
             {
@@ -52,52 +48,54 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private static async Task<RestoreResult> RestoreCore(string jsonConfigPath, string projectName, INuGetProjectContext projectContext, IEnumerable<string> sources, CancellationToken token)
+        private static async Task<RestoreResult> RestoreCore(BuildIntegratedNuGetProject project,
+            INuGetProjectContext projectContext,
+            IEnumerable<string> sources,
+            CancellationToken token)
         {
-            FileInfo file = new FileInfo(jsonConfigPath);
+            FileInfo file = new FileInfo(project.JsonConfigPath);
 
-            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(file.OpenRead(), projectName, jsonConfigPath);
+            PackageSpec spec;
 
-            RestoreRequest request = new RestoreRequest(spec, sources.Select(source => new PackageSource(source)), file.Directory.FullName);
+            using (var configStream = file.OpenRead())
+            {
+                spec = JsonPackageSpecReader.GetPackageSpec(configStream, project.ProjectName, project.JsonConfigPath);
+            }
 
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddProvider(new ProjectContextLoggerProvider(projectContext));
+            var packageSources = sources.Select(source => new PackageSource(source));
+            RestoreRequest request = new RestoreRequest(spec, packageSources, BuildIntegratedProjectUtility.GetGlobalPackagesFolder());
 
-            RestoreCommand command = new RestoreCommand(loggerFactory);
+            request.LockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(file.FullName);
+            request.MaxDegreeOfConcurrency = 4;
+
+            var projectReferences = await GetExternalProjectReferences(project);
+            request.ExternalProjects = projectReferences.ToList();
+
+            RestoreCommand command = new RestoreCommand(new ProjectContextLogger(projectContext));
 
             return await command.ExecuteAsync(request);
         }
 
-        /// <summary>
-        /// nupkg path from the global cache folder
-        /// </summary>
-        public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
+        public static async Task<IEnumerable<ExternalProjectReference>> GetExternalProjectReferences(BuildIntegratedNuGetProject project)
         {
-            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var references = new List<ExternalProjectReference>();
 
-            string nupkgName = identity.Id + "." + identity.Version.ToNormalizedString() + ".nupkg";
+            var projectReferences = await project.GetProjectReferenceClosure();
 
-            return Path.Combine(GlobalPackagesFolder, identity.Id, identity.Version.ToNormalizedString(), nupkgName);
+            return projectReferences.Select(ConvertProjectReference);
         }
 
-        /// <summary>
-        /// Global package folder path
-        /// </summary>
-        public static string GlobalPackagesFolder
+        public static ExternalProjectReference ConvertProjectReference(NuGetProjectReference reference)
         {
-            get
-            {
-                string path = Environment.GetEnvironmentVariable("NUGET_GLOBAL_PACKAGE_CACHE");
+            // this may be null for non-build integrated dependencies
+            var project = reference.Project as BuildIntegratedNuGetProject;
 
-                if (String.IsNullOrEmpty(path))
-                {
-                    string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var references = reference.ProjectReferences.Select(projectReference =>
+                projectReference.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
 
-                    path = Path.Combine(userProfile, ".nuget\\packages\\");
-                }
-
-                return path;
-            }
+            return new ExternalProjectReference(reference.Project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName),
+                project?.JsonConfigPath,
+                references);
         }
     }
 }

@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -16,8 +15,6 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
-using System.IO.Compression;
-using System.Xml.Linq;
 
 namespace NuGet.PackageManagement
 {
@@ -36,14 +33,14 @@ namespace NuGet.PackageManagement
         public FolderNuGetProject PackagesFolderNuGetProject { get; set; }
 
         public SourceRepository PackagesFolderSourceRepository { get; set; }
-      
+
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
         public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, string packagesFolderPath)
         {
             InitializeMandatory(sourceRepositoryProvider);
-            if(packagesFolderPath == null)
+            if (packagesFolderPath == null)
             {
                 throw new ArgumentNullException("packagesFolderPath");
             }
@@ -62,7 +59,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("settings");
             }
 
-            if(solutionManager == null)
+            if (solutionManager == null)
             {
                 throw new ArgumentNullException("solutionManager");
             }
@@ -201,7 +198,7 @@ namespace NuGet.PackageManagement
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var installedPackageReference = projectInstalledPackageReferences.Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageId)).FirstOrDefault();
-            if(installedPackageReference != null && installedPackageReference.PackageIdentity.Version > latestVersion)
+            if (installedPackageReference != null && installedPackageReference.PackageIdentity.Version > latestVersion)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, packageId));
             }
@@ -298,7 +295,7 @@ namespace NuGet.PackageManagement
 
                 if (!resolutionContext.IncludePrerelease)
                 {
-                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, 
+                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages,
                         projectInstalledPackageReferences.Select(p => p.PackageIdentity));
                 }
 
@@ -345,7 +342,7 @@ namespace NuGet.PackageManagement
             SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
-            if(packagesToInstall == null)
+            if (packagesToInstall == null)
             {
                 throw new ArgumentNullException("packagesToInstall");
             }
@@ -365,7 +362,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            if(packagesToInstall.Any(p => p.Version == null))
+            if (packagesToInstall.Any(p => p.Version == null))
             {
                 throw new ArgumentException("packagesToInstall");
             }
@@ -386,7 +383,7 @@ namespace NuGet.PackageManagement
 
             // Note: resolver needs all the installed packages as targets too. And, metadata should be gathered for the installed packages as well
             var packageTargetsForResolver = new HashSet<PackageIdentity>(oldListOfInstalledPackages, PackageIdentity.Comparer);
-            foreach(var packageToInstall in packagesToInstall)
+            foreach (var packageToInstall in packagesToInstall)
             {
                 packageTargetsForResolver.Add(packageToInstall);
             }
@@ -456,7 +453,7 @@ namespace NuGet.PackageManagement
                 var packagesInDependencyOrder = (await GetInstalledPackagesInDependencyOrder(nuGetProject,
                     nuGetProjectContext, token)).Reverse();
 
-                foreach(var package in packagesInDependencyOrder)
+                foreach (var package in packagesInDependencyOrder)
                 {
                     nuGetProjectActions.Add(NuGetProjectAction.CreateUninstallProjectAction(package));
                 }
@@ -476,7 +473,7 @@ namespace NuGet.PackageManagement
                     nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
                 }
             }
-            catch(InvalidOperationException)
+            catch (InvalidOperationException)
             {
                 throw;
             }
@@ -486,14 +483,14 @@ namespace NuGet.PackageManagement
             }
             catch (Exception ex)
             {
-                if(String.IsNullOrEmpty(ex.Message))
+                if (String.IsNullOrEmpty(ex.Message))
                 {
                     throw new InvalidOperationException(Strings.PackagesCouldNotBeInstalled, ex);
                 }
                 else
                 {
                     throw new InvalidOperationException(ex.Message, ex);
-                }                
+                }
             }
             return nuGetProjectActions;
         }
@@ -577,7 +574,7 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
-            if(nuGetProject == null)
+            if (nuGetProject == null)
             {
                 throw new ArgumentNullException("nuGetProject");
             }
@@ -587,12 +584,12 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("packageIdentity");
             }
 
-            if(resolutionContext == null)
+            if (resolutionContext == null)
             {
                 throw new ArgumentNullException("resolutionContext");
             }
 
-            if(nuGetProjectContext == null)
+            if (nuGetProjectContext == null)
             {
                 throw new ArgumentNullException("nuGetProjectContext");
             }
@@ -607,12 +604,12 @@ namespace NuGet.PackageManagement
                 secondarySources = SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
             }
 
-            if(!primarySources.Any())
+            if (!primarySources.Any())
             {
                 throw new ArgumentException("primarySources");
             }
 
-            if(packageIdentity.Version == null)
+            if (packageIdentity.Version == null)
             {
                 throw new ArgumentNullException("packageIdentity.Version");
             }
@@ -628,7 +625,7 @@ namespace NuGet.PackageManagement
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
-            if(oldListOfInstalledPackages.Any(p => p.Equals(packageIdentity)))
+            if (oldListOfInstalledPackages.Any(p => p.Equals(packageIdentity)))
             {
                 string projectName;
                 nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out projectName);
@@ -641,7 +638,7 @@ namespace NuGet.PackageManagement
             // TODO: search in only the active source but allow dependencies to come from other sources?
 
             var effectiveSources = GetEffectiveSources(primarySources, secondarySources);
-            
+
             if (resolutionContext.DependencyBehavior != DependencyBehavior.Ignore)
             {
                 try
@@ -650,10 +647,10 @@ namespace NuGet.PackageManagement
                     var packageTargetsForResolver = new HashSet<PackageIdentity>(oldListOfInstalledPackages, PackageIdentity.Comparer);
                     // Note: resolver needs all the installed packages as targets too. And, metadata should be gathered for the installed packages as well
                     var installedPackageWithSameId = packageTargetsForResolver.Where(p => p.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                    if(installedPackageWithSameId != null)
+                    if (installedPackageWithSameId != null)
                     {
                         packageTargetsForResolver.Remove(installedPackageWithSameId);
-                        if(installedPackageWithSameId.Version > packageIdentity.Version)
+                        if (installedPackageWithSameId.Version > packageIdentity.Version)
                         {
                             // Looks like the installed package is of higher version than one being installed. So, we take it that downgrade is allowed
                             downgradeAllowed = true;
@@ -726,15 +723,15 @@ namespace NuGet.PackageManagement
 
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallPackage, packageIdentity);
                     var newPackagesToUninstall = new List<PackageIdentity>();
-                    foreach(var oldInstalledPackage in oldListOfInstalledPackages)
+                    foreach (var oldInstalledPackage in oldListOfInstalledPackages)
                     {
                         var newPackageWithSameId = newListOfInstalledPackages
                             .Where(np => oldInstalledPackage.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) &&
                             !oldInstalledPackage.Version.Equals(np.Version)).FirstOrDefault();
 
-                        if(newPackageWithSameId != null)
+                        if (newPackageWithSameId != null)
                         {
-                            if(!downgradeAllowed && oldInstalledPackage.Version > newPackageWithSameId.Version)
+                            if (!downgradeAllowed && oldInstalledPackage.Version > newPackageWithSameId.Version)
                             {
                                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, newPackageWithSameId.Id));
                             }
@@ -862,22 +859,22 @@ namespace NuGet.PackageManagement
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId,
             UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            if(nuGetProject == null)
+            if (nuGetProject == null)
             {
                 throw new ArgumentNullException("nuGetProject");
             }
 
-            if(packageId == null)
+            if (packageId == null)
             {
                 throw new ArgumentNullException("packageId");
             }
 
-            if(uninstallationContext == null)
+            if (uninstallationContext == null)
             {
                 throw new ArgumentNullException("uninstallationContext");
             }
 
-            if(nuGetProjectContext == null)
+            if (nuGetProjectContext == null)
             {
                 throw new ArgumentNullException("nuGetProjectContext");
             }
@@ -938,7 +935,7 @@ namespace NuGet.PackageManagement
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsyncPrivate(NuGetProject nuGetProject, PackageReference packageReference,
             UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            if(SolutionManager == null)
+            if (SolutionManager == null)
             {
                 throw new InvalidOperationException(Strings.SolutionManagerNotAvailableForUninstall);
             }
@@ -1088,8 +1085,7 @@ namespace NuGet.PackageManagement
             var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
 
             // Restore before performing the actions, we will need the previous packages for uninstalls
-            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject.JsonConfigPath, buildIntegratedProject.ProjectName,
-                nuGetProjectContext, enabledSources, token);
+            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject, nuGetProjectContext, enabledSources, token);
 
             // Retrieve the list of currently installed packages
             // TOOD: get the full closure
@@ -1121,8 +1117,7 @@ namespace NuGet.PackageManagement
             // Add all enabled sources for the existing packages
             additionalSources.UnionWith(enabledSources);
 
-            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject.JsonConfigPath, buildIntegratedProject.ProjectName, 
-                nuGetProjectContext, additionalSources, token);
+            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject, nuGetProjectContext, additionalSources, token);
 
             // Find all new packages and check if they have content or scripts
             var afterInstallPackages = new HashSet<PackageIdentity>(
@@ -1135,7 +1130,7 @@ namespace NuGet.PackageManagement
             // Install packages
             foreach (var installedPackage in installed)
             {
-                var nupkgPath = BuildIntegratedRestoreUtility.GetNupkgPathFromGlobalSource(installedPackage);
+                var nupkgPath = BuildIntegratedProjectUtility.GetNupkgPathFromGlobalSource(installedPackage);
 
                 var stream = File.OpenRead(nupkgPath);
 
@@ -1145,7 +1140,7 @@ namespace NuGet.PackageManagement
             // Uninstall packages
             foreach (var uninstalledPackage in uninstalled)
             {
-                var nupkgPath = BuildIntegratedRestoreUtility.GetNupkgPathFromGlobalSource(uninstalledPackage);
+                var nupkgPath = BuildIntegratedProjectUtility.GetNupkgPathFromGlobalSource(uninstalledPackage);
 
                 if (File.Exists(nupkgPath))
                 {
@@ -1169,7 +1164,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_RollingBack);
             }
 
-            while(executedNuGetProjectActions.Count > 0)
+            while (executedNuGetProjectActions.Count > 0)
             {
                 NuGetProjectAction nuGetProjectAction = executedNuGetProjectActions.Pop();
                 try
@@ -1208,7 +1203,7 @@ namespace NuGet.PackageManagement
                 if (File.Exists(packagePath))
                 {
                     var readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);
-                    if(File.Exists(readmeFilePath))
+                    if (File.Exists(readmeFilePath))
                     {
                         await executionContext.OpenFile(readmeFilePath);
                     }
@@ -1224,7 +1219,7 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> sourceRepositories, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            if(PackageExistsInPackagesFolder(packageIdentity))
+            if (PackageExistsInPackagesFolder(packageIdentity))
             {
                 return false;
             }
@@ -1263,7 +1258,7 @@ namespace NuGet.PackageManagement
             MinClientVersionHandler.CheckMinClientVersion(packageStream, packageIdentity);
 
             packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
-            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);            
+            await nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
 
             // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
             //if (packageOperationEventArgs.Cancel)
@@ -1299,7 +1294,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token)
         {
-            if(nuGetProject == null)
+            if (nuGetProject == null)
             {
                 throw new ArgumentNullException("nuGetProject");
             }
@@ -1309,7 +1304,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("packageIdentity");
             }
 
-            if(solutionManager == null)
+            if (solutionManager == null)
             {
                 throw new ArgumentNullException("solutionManager");
             }
@@ -1333,12 +1328,12 @@ namespace NuGet.PackageManagement
 
         private async Task<bool> DeletePackage(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            if(packageIdentity == null)
+            if (packageIdentity == null)
             {
                 throw new ArgumentNullException("packageIdentity");
             }
 
-            if(nuGetProjectContext == null)
+            if (nuGetProjectContext == null)
             {
                 throw new ArgumentNullException("nuGetProjectContext");
             }
@@ -1406,10 +1401,10 @@ namespace NuGet.PackageManagement
         public static void SetDirectInstall(PackageIdentity directInstall,
             INuGetProjectContext nuGetProjectContext)
         {
-            if(directInstall != null && nuGetProjectContext != null && nuGetProjectContext.ExecutionContext != null)
+            if (directInstall != null && nuGetProjectContext != null && nuGetProjectContext.ExecutionContext != null)
             {
                 var ideExecutionContext = nuGetProjectContext.ExecutionContext as IDEExecutionContext;
-                if(ideExecutionContext != null)
+                if (ideExecutionContext != null)
                 {
                     ideExecutionContext.IDEDirectInstall = directInstall;
                 }

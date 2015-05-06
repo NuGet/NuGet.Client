@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Framework.Logging;
+﻿using NuGet.Logging;
 using NuGet.ProjectManagement;
+using System;
 
 namespace NuGet.PackageManagement
 {
@@ -17,32 +13,29 @@ namespace NuGet.PackageManagement
             _projectContext = projectContext;
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public void LogDebug(string data)
         {
-            return new Scope();
+            _projectContext.Log(MessageLevel.Debug, data);
         }
 
-        public bool IsEnabled(LogLevel logLevel)
+        public void LogError(string data)
         {
-            return true;
+            _projectContext.Log(MessageLevel.Error, data);
         }
 
-        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void LogInformation(string data)
         {
-            string message = state as string;
-
-            if (!String.IsNullOrEmpty(message))
-            {
-                _projectContext.Log(MessageLevel.Info, message);
-            }
+            _projectContext.Log(MessageLevel.Info, data);
         }
 
-        private class Scope : IDisposable
+        public void LogVerbose(string data)
         {
-            public void Dispose()
-            {
+            _projectContext.Log(MessageLevel.Info, data);
+        }
 
-            }
+        public void LogWarning(string data)
+        {
+            _projectContext.Log(MessageLevel.Warning, data);
         }
     }
 }
