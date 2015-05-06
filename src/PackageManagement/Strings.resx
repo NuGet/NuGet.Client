@@ -217,7 +217,7 @@
     <value>Unable to resolve dependencies for multiple packages</value>
   </data>
   <data name="PackageMinVersionNotSatisfied" xml:space="preserve">
-    <value>The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'.</value>
+    <value>The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget</value>
   </data>
   <data name="Warning_RollingBack" xml:space="preserve">
     <value>Install failed. Rolling back...</value>

@@ -232,7 +232,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;{0}&apos; package requires NuGet client version &apos;{1}&apos; or above, but the current NuGet version is &apos;{2}&apos;..
+        ///   Looks up a localized string similar to The &apos;{0}&apos; package requires NuGet client version &apos;{1}&apos; or above, but the current NuGet version is &apos;{2}&apos;. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget.
         /// </summary>
         internal static string PackageMinVersionNotSatisfied {
             get {
