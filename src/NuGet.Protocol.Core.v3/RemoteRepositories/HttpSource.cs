@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 _client = new HttpClient();
 
 #else
-                _client = new HttpClient(new Microsoft.Net.Http.Client.ManagedHandler());
+                _client = new HttpClient(new WinHttpHandler());
 #endif
             }
             else
@@ -88,9 +88,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     _proxyPassword = proxyUriBuilder.Password;
                 }
 
-                _client = new HttpClient(new Microsoft.Net.Http.Client.ManagedHandler()
+                _client = new HttpClient(new WinHttpHandler()
                 {
-                    ProxyAddress = new Uri(proxy)
+                    WindowsProxyUsePolicy = WindowsProxyUsePolicy.UseWinHttpProxy
                 });
 #endif
             }
@@ -122,14 +122,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             if (_userName != null)
             {
-                var token = Convert.ToBase64String(Encoding.ASCII.GetBytes(_userName + ":" + _password));
+                var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(_userName + ":" + _password));
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", token);
             };
 
 #if DNXCORE50
             if (_proxyUserName != null)
             {
-                var proxyToken = Convert.ToBase64String(Encoding.ASCII.GetBytes(_proxyUserName + ":" + _proxyPassword));
+                var proxyToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(_proxyUserName + ":" + _proxyPassword));
                 request.Headers.ProxyAuthorization = new AuthenticationHeaderValue("Basic", proxyToken);
             }
 #endif
