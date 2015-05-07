@@ -403,7 +403,7 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            var packageTargetFramework = packageReference.TargetFramework ?? NuGetFramework.UnsupportedFramework;
+            var packageTargetFramework = packageReference.TargetFramework ?? MSBuildNuGetProjectSystem.TargetFramework;
             var packageEventArgs = new PackageEventArgs(FolderNuGetProject, packageIdentity, FolderNuGetProject.GetInstalledPath(packageIdentity));
             using (var packageStream = File.OpenRead(FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity)))
             {
@@ -496,7 +496,7 @@ namespace NuGet.ProjectManagement
 
                 // Step-9: Execute powershell script - uninstall.ps1
                 IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
-                FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework,
+                FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework,
                     toolItemGroups);
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
                 {
