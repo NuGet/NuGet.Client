@@ -1,6 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Language.StandardClassification;
@@ -21,29 +25,29 @@ namespace NuGetConsole.Implementation.Console
     }
 
     [Export(typeof(ITextFormatClassifierProvider))]
-    class TextFormatClassifierProvider : ITextFormatClassifierProvider
+    internal class TextFormatClassifierProvider : ITextFormatClassifierProvider
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IStandardClassificationService StandardClassificationService { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IClassificationTypeRegistryService ClassificationTypeRegistryService { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IClassificationFormatMapService ClassificationFormatMapService { get; set; }
 
         public ITextFormatClassifier GetTextFormatClassifier(ITextView textView)
         {
             UtilityMethods.ThrowIfArgumentNull(textView);
-            return textView.Properties.GetOrCreateSingletonProperty<TextFormatClassifier>(
+            return textView.Properties.GetOrCreateSingletonProperty(
                 () => new TextFormatClassifier(this, textView));
         }
     }
 
-    class TextFormatClassifier : ObjectWithFactory<TextFormatClassifierProvider>, ITextFormatClassifier
+    internal class TextFormatClassifier : ObjectWithFactory<TextFormatClassifierProvider>, ITextFormatClassifier
     {
         private readonly ITextView _textView;
 
@@ -57,7 +61,7 @@ namespace NuGetConsole.Implementation.Console
             _textView = textView;
         }
 
-        static string GetClassificationName(Color? foreground, Color? background)
+        private static string GetClassificationName(Color? foreground, Color? background)
         {
             StringBuilder sb = new StringBuilder(32);
 
@@ -73,7 +77,7 @@ namespace NuGetConsole.Implementation.Console
             return sb.ToString();
         }
 
-        static TextFormattingRunProperties GetFormat(Color? foreground, Color? background)
+        private static TextFormattingRunProperties GetFormat(Color? foreground, Color? background)
         {
             TextFormattingRunProperties fmt = TextFormattingRunProperties.CreateTextFormattingRunProperties();
 

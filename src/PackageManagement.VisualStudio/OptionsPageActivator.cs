@@ -1,11 +1,10 @@
-﻿using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Interop;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -14,16 +13,17 @@ namespace NuGet.PackageManagement.VisualStudio
     public class OptionsPageActivator : IOptionsPageActivator
     {
         // GUID of the Package Sources page, defined in PackageSourcesOptionsPage.cs
-        const string _packageSourcesGUID = "2819C3B6-FC75-4CD5-8C77-877903DE864C";
+        private const string _packageSourcesGUID = "2819C3B6-FC75-4CD5-8C77-877903DE864C";
 
         // GUID of the General page, defined in GeneralOptionsPage.cs
-        const string _generalGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
+        private const string _generalGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
 
         private Action _closeCallback;
         private readonly IVsUIShell _vsUIShell;
 
-        public OptionsPageActivator() :
-            this(ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>())
+        public OptionsPageActivator()
+            :
+                this(ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>())
         {
         }
 
@@ -36,7 +36,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (_closeCallback != null)
             {
-
                 // We want to clear the value of _closeCallback before invoking it.
                 // Hence copying the value into a local variable.
                 Action callback = _closeCallback;

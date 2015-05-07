@@ -1,8 +1,10 @@
-﻿using EnvDTE;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
@@ -31,17 +33,18 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (_dte.ItemOperations != null && File.Exists(filePath))
                 {
-                    Window window = _dte.ItemOperations.OpenFile(filePath);
-                    return Task.FromResult(0);
-                }
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                return Task.FromResult(0);
-            });
+                    if (_dte.ItemOperations != null
+                        && File.Exists(filePath))
+                    {
+                        Window window = _dte.ItemOperations.OpenFile(filePath);
+                        return Task.FromResult(0);
+                    }
+
+                    return Task.FromResult(0);
+                });
         }
     }
 }

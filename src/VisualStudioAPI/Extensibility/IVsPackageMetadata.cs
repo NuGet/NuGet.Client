@@ -1,8 +1,12 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using LegacyNuGet = Legacy.NuGet;
+using LegacyNuGet = NuGet;
+using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.VisualStudio
 {
@@ -22,10 +26,11 @@ namespace NuGet.VisualStudio
         /// Version of the package.
         /// </summary>
         /// <remarks>
-        /// Do not use this property because it will require referencing NuGet.Core.dll assembly. Use the VersionString property instead.
+        /// Do not use this property because it will require referencing NuGet.Core.dll assembly. Use the VersionString
+        /// property instead.
         /// </remarks>
         [Obsolete("Do not use this property because it will require referencing NuGet.Core.dll assembly. Use the VersionString property instead.")]
-        LegacyNuGet.SemanticVersion Version { get; }
+        SemanticVersion Version { get; }
 
         /// <summary>
         /// Title of the package.
@@ -54,7 +59,7 @@ namespace NuGet.VisualStudio
         /// The version of the package.
         /// </summary>
         /// <remarks>
-        /// Use this property instead of the Version property becase with the type string, 
+        /// Use this property instead of the Version property becase with the type string,
         /// it doesn't require referencing NuGet.Core.dll assembly.
         /// </remarks>
         string VersionString { get; }

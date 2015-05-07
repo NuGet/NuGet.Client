@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -45,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private static async Task AddBindingRedirectsAsync(
+        private static Task AddBindingRedirectsAsync(
             VSSolutionManager vsSolutionManager,
             EnvDTEProject envDTEProject,
             AppDomain domain,
@@ -57,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var visitedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            await AddBindingRedirectsAsync(vsSolutionManager, envDTEProject, domain, visitedProjects, projectAssembliesCache,
+            return AddBindingRedirectsAsync(vsSolutionManager, envDTEProject, domain, visitedProjects, projectAssembliesCache,
                 frameworkMultiTargeting, dependentEnvDTEProjectsDictionary, nuGetProjectContext);
         }
 
@@ -157,8 +160,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Load the specified assembly using the information from the executing assembly. 
-        /// If the executing assembly is strongly signed, use Assembly.Load(); Otherwise, 
+        /// Load the specified assembly using the information from the executing assembly.
+        /// If the executing assembly is strongly signed, use Assembly.Load(); Otherwise,
         /// use Assembly.LoadFrom()
         /// </summary>
         /// <param name="assemblyName">The name of the assembly to be loaded.</param>
@@ -176,16 +179,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     CultureInfo.InvariantCulture,
                     "{0}, Version={1}, Culture=neutral, PublicKeyToken={2}",
                     assemblyName,
-                    executingAssemblyName.Version.ToString(),
+                    executingAssemblyName.Version,
                     ConvertToHexString(executingAssemblyName.GetPublicKeyToken()));
 
                 return Assembly.Load(assemblyFullName);
             }
-            else
-            {
-                var assemblyDirectory = Path.GetDirectoryName(executingAssembly.Location);
-                return Assembly.LoadFrom(Path.Combine(assemblyDirectory, assemblyName + ".dll"));
-            }
+            var assemblyDirectory = Path.GetDirectoryName(executingAssembly.Location);
+            return Assembly.LoadFrom(Path.Combine(assemblyDirectory, assemblyName + ".dll"));
         }
 
         private static bool HasStrongName(AssemblyName assembly)

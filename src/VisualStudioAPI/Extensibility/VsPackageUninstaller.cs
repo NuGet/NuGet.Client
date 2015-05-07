@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
@@ -40,19 +42,18 @@ namespace NuGet.VisualStudio
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+                {
+                    NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
 
+                    UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
+                    VSAPIProjectContext projectContext = new VSAPIProjectContext();
 
-                UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
-                VSAPIProjectContext projectContext = new VSAPIProjectContext();
+                    // find the project
+                    NuGetProject nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
 
-                // find the project
-                NuGetProject nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
-
-                // uninstall the package
-                await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);
-            });
+                    // uninstall the package
+                    await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);
+                });
         }
     }
 }

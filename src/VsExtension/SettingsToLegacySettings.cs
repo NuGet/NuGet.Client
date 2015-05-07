@@ -1,18 +1,21 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Configuration;
+using Legacy::NuGet;
 
 namespace NuGetVSExtension
 {
     /// <summary>
     /// Adapter class to convert NuGet.Configuration.ISettings into legacy ISettings.
     /// </summary>
-    internal class SettingsToLegacySettings : Legacy.NuGet.ISettings
+    internal class SettingsToLegacySettings : ISettings
     {
-        private ISettings _settings;
+        private NuGet.Configuration.ISettings _settings;
 
-        public SettingsToLegacySettings(ISettings settings)
+        public SettingsToLegacySettings(NuGet.Configuration.ISettings settings)
         {
             _settings = settings;
         }
@@ -27,10 +30,10 @@ namespace NuGetVSExtension
             return _settings.DeleteValue(section, key);
         }
 
-        public IList<Legacy.NuGet.SettingValue> GetNestedValues(string section, string subsection)
+        public IList<SettingValue> GetNestedValues(string section, string subsection)
         {
             return _settings.GetNestedValues(section, subsection)
-                .Select(v => new Legacy.NuGet.SettingValue(v.Key, v.Value, isMachineWide: false))
+                .Select(v => new SettingValue(v.Key, v.Value, isMachineWide: false))
                 .ToList();
         }
 
@@ -39,10 +42,10 @@ namespace NuGetVSExtension
             return _settings.GetValue(section, key, isPath);
         }
 
-        public IList<Legacy.NuGet.SettingValue> GetValues(string section, bool isPath)
+        public IList<SettingValue> GetValues(string section, bool isPath)
         {
             return _settings.GetSettingValues(section, isPath)
-                .Select(v => new Legacy.NuGet.SettingValue(v.Key, v.Value, v.IsMachineWide, v.Priority))
+                .Select(v => new SettingValue(v.Key, v.Value, v.IsMachineWide, v.Priority))
                 .ToList();
         }
 
@@ -59,8 +62,8 @@ namespace NuGetVSExtension
         public void SetValues(string section, IList<KeyValuePair<string, string>> values)
         {
             _settings.SetValues(section,
-                values.Select(v => new SettingValue(v.Key, v.Value, isMachineWide: false))
-                .ToList());
+                values.Select(v => new NuGet.Configuration.SettingValue(v.Key, v.Value, isMachineWide: false))
+                    .ToList());
         }
     }
 }

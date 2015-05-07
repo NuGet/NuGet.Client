@@ -1,4 +1,7 @@
-﻿using System.Management.Automation;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Management.Automation;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -11,14 +14,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter ExcludeVersionInfo { get; set; }
 
-        public TabExpansionCommand() : base() { }
-
         protected override void ProcessRecordCore()
         {
-            base.Preprocess();
+            Preprocess();
 
             // For tab expansion, only StartWith scenario is applicable
-            base.FindPackageStartWithId(ExcludeVersionInfo);
+            FindPackageStartWithId(ExcludeVersionInfo);
         }
     }
 }

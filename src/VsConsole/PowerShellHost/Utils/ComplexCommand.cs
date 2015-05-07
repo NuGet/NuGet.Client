@@ -1,4 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace NuGetConsole.Host
@@ -15,8 +19,10 @@ namespace NuGetConsole.Host
         /// <summary>
         /// Creates a new complex command.
         /// </summary>
-        /// <param name="checkComplete">A delegate to check complex command completeness.
-        /// Expected signature: bool (allLines, lastLine) </param>
+        /// <param name="checkComplete">
+        /// A delegate to check complex command completeness.
+        /// Expected signature: bool (allLines, lastLine)
+        /// </param>
         public ComplexCommand(Func<string, string, bool> checkComplete)
         {
             UtilityMethods.ThrowIfArgumentNull(checkComplete);
@@ -28,18 +34,17 @@ namespace NuGetConsole.Host
         /// </summary>
         public bool IsComplete
         {
-            get
-            {
-                return _lines.Length == 0;
-            }
+            get { return _lines.Length == 0; }
         }
 
         /// <summary>
         /// Add a new line to this complex command.
         /// </summary>
         /// <param name="line">The new line content.</param>
-        /// <param name="fullCommand">The completed full command if this complex command
-        /// becomes complete after appending line.</param>
+        /// <param name="fullCommand">
+        /// The completed full command if this complex command
+        /// becomes complete after appending line.
+        /// </param>
         /// <returns>true if the complex command is completed with appending line.</returns>
         public bool AddLine(string line, out string fullCommand)
         {
@@ -61,11 +66,8 @@ namespace NuGetConsole.Host
                 fullCommand = allLines;
                 return true;
             }
-            else
-            {
-                fullCommand = null;
-                return false;
-            }
+            fullCommand = null;
+            return false;
         }
 
         /// <summary>
@@ -79,15 +81,14 @@ namespace NuGetConsole.Host
         /// <summary>
         /// Check if given command lines represent a completed command. This calls
         /// the delegate given in constructor.
-        /// 
         /// Note: Empty string is considered a completed command. This method returns
         /// true if Empty string without calling user delegate.
         /// </summary>
         /// <param name="allLines">All lines of the command.</param>
         /// <param name="lastLine">The last line of the command.</param>
         /// <returns>true if the command is completed.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        bool CheckComplete(string allLines, string lastLine)
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        private bool CheckComplete(string allLines, string lastLine)
         {
             if (!string.IsNullOrEmpty(allLines))
             {

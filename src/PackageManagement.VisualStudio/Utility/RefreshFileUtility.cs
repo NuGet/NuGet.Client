@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string RefreshFileExtension = ".refresh";
 
         /// <summary>
-        /// Creates a .refresh file in bin directory of the IFileSystem that points to the assembly being installed. 
+        /// Creates a .refresh file in bin directory of the IFileSystem that points to the assembly being installed.
         /// This works around issues in DTE's AddReference method when dealing with GACed binaries.
         /// </summary>
         /// <remarks>Adds the file to the DTE project system</remarks>
@@ -70,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Creates a .refresh file in bin directory of the IFileSystem that points to the assembly being installed. 
+        /// Creates a .refresh file in bin directory of the IFileSystem that points to the assembly being installed.
         /// This works around issues in DTE's AddReference method when dealing with GACed binaries.
         /// </summary>
         /// <remarks>Adds the file to disk ONLY!</remarks>
@@ -101,11 +104,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Resolve all .refresh files from the website's bin directory. Once resolved, verify the path exists on disk and that they look like an assembly reference. 
             return from file in FileSystemUtility.GetFiles(root, "bin", "*" + RefreshFileExtension, recursive: false)
-                   let resolvedPath = SafeResolveRefreshPath(root, file)
-                   where resolvedPath != null &&
-                         FileSystemUtility.FileExists(root, resolvedPath) &&
-                         Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(resolvedPath))
-                   select resolvedPath;
+                let resolvedPath = SafeResolveRefreshPath(root, file)
+                where resolvedPath != null &&
+                      FileSystemUtility.FileExists(root, resolvedPath) &&
+                      Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(resolvedPath))
+                select resolvedPath;
         }
 
         private static string SafeResolveRefreshPath(string root, string file)

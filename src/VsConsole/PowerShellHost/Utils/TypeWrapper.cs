@@ -1,17 +1,22 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGetConsole.Host
 {
     /// <summary>
     /// This class wraps an object so that it can only be accessed through an interface.
     /// This simulates COM QueryInterface (Get-Interface).
-    /// 
     /// TypeWrapper holds the wrapped object and a map of {InterfaceType -> InterfaceWrapper}.
     /// </summary>
-    /// <typeparam name="T">An InterfaceWrapper type. An interface wrapper wraps one interface
+    /// <typeparam name="T">
+    /// An InterfaceWrapper type. An interface wrapper wraps one interface
     /// and keeps a reference to this type wrapper object to find the wrapped object and other
-    /// interface wrappers.</typeparam>
+    /// interface wrappers.
+    /// </typeparam>
     public abstract class TypeWrapper<T>
         where T : class
     {
@@ -39,6 +44,7 @@ namespace NuGetConsole.Host
         }
 
         #region object overrides
+
         public override bool Equals(object obj)
         {
             return obj != null && obj.Equals(WrappedObject);
@@ -53,14 +59,17 @@ namespace NuGetConsole.Host
         {
             return WrappedObject.ToString();
         }
+
         #endregion
 
         /// <summary>
         /// Get an interface to access the wrapped object.
         /// </summary>
         /// <param name="interfaceType">An interface type implemented by the wrapped object.</param>
-        /// <returns>An interface wrapper for calling the interface members on the wrapped object.
-        /// null if fails to get the interface.</returns>
+        /// <returns>
+        /// An interface wrapper for calling the interface members on the wrapped object.
+        /// null if fails to get the interface.
+        /// </returns>
         protected T GetInterface(Type interfaceType)
         {
             if (!interfaceType.IsInstanceOfType(WrappedObject))
@@ -94,11 +103,11 @@ namespace NuGetConsole.Host
         /// <summary>
         /// A type equivalence comparer.
         /// </summary>
-        class TypeEquivalenceComparer : IEqualityComparer<Type>
+        private class TypeEquivalenceComparer : IEqualityComparer<Type>
         {
             public static readonly TypeEquivalenceComparer Instance = new TypeEquivalenceComparer();
 
-            TypeEquivalenceComparer()
+            private TypeEquivalenceComparer()
             {
             }
 
@@ -118,10 +127,12 @@ namespace NuGetConsole.Host
         /// </summary>
         /// <param name="scriptValue">The script object that the interface targets.</param>
         /// <param name="interfaceType">The interface type to obtain.</param>
-        /// <param name="getTypeWrapper">A function to get the TypeWrapper from scriptObject,
-        /// or create a new one to wrap the object if scriptObject was not wrapped in a TypeWrapper.</param>
+        /// <param name="getTypeWrapper">
+        /// A function to get the TypeWrapper from scriptObject,
+        /// or create a new one to wrap the object if scriptObject was not wrapped in a TypeWrapper.
+        /// </param>
         /// <returns>An object through which to invoke the interfaceType members on the scriptObject.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         protected static T GetInterface(object scriptValue, Type interfaceType, Func<object, TypeWrapper<T>> getTypeWrapper)
         {
             if (scriptValue == null)

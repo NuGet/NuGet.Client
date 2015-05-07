@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -18,13 +21,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public VSSettings(ISolutionManager solutionManager)
             : this(solutionManager, machineWideSettings: null)
         {
-
         }
 
         [ImportingConstructor]
         public VSSettings(ISolutionManager solutionManager, IMachineWideSettings machineWideSettings)
         {
-            if(solutionManager == null)
+            if (solutionManager == null)
             {
                 throw new ArgumentNullException("solutionManager");
             }
@@ -34,12 +36,13 @@ namespace NuGet.PackageManagement.VisualStudio
             ResetSolutionSettings();
             SolutionManager.SolutionOpening += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
-        }        
+        }
 
         private void ResetSolutionSettings()
         {
             string root;
-            if(SolutionManager == null || !SolutionManager.IsSolutionOpen)
+            if (SolutionManager == null
+                || !SolutionManager.IsSolutionOpen)
             {
                 root = null;
             }

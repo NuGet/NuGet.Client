@@ -1,13 +1,15 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Linq;
 using System.Xml.Linq;
-using EnvDTE;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class VcxProject
     {
-
         private readonly XDocument vcxFile;
+
         public VcxProject(string fullname)
         {
             vcxFile = Loader.Instance.LoadXml(fullname);
@@ -23,8 +25,10 @@ namespace NuGet.PackageManagement.VisualStudio
             if (overrideitems.Any())
             {
                 var useNativeNuget = overrideitems.First().Value;
-                if (useNativeNuget.ToLower()=="true")
+                if (useNativeNuget.ToLower() == "true")
+                {
                     return false;
+                }
             }
             if (clritems.Any())
             {
@@ -41,6 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Instance = new Loader();
         }
+
         public static Loader Instance { get; set; }
 
         public XDocument LoadXml(string filename)

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using NuGet.Configuration;
 
@@ -71,10 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 return IsSet(settingsValue, true);
             }
-            set
-            {
-                _settings.SetValue(PackageRestoreSection, PackageRestoreConsentKey, value.ToString(CultureInfo.InvariantCulture));
-            }
+            set { _settings.SetValue(PackageRestoreSection, PackageRestoreConsentKey, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
         public bool IsAutomatic
@@ -85,10 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 return IsSet(settingsValue, IsGrantedInSettings);
             }
-            set
-            {
-                _settings.SetValue(PackageRestoreSection, PackageRestoreAutomaticKey, value.ToString(CultureInfo.InvariantCulture));
-            }
+            set { _settings.SetValue(PackageRestoreSection, PackageRestoreAutomaticKey, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
         private static bool IsSet(string value, bool defaultValue)
@@ -104,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
             int intResult;
 
             var result = ((Boolean.TryParse(value, out boolResult) && boolResult) ||
-                   (Int32.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
+                          (Int32.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
 
             return result;
         }

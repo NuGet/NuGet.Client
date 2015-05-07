@@ -1,11 +1,10 @@
-﻿using Microsoft.VisualStudio.Shell;
-using NuGet.ProjectManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
@@ -33,7 +32,8 @@ namespace NuGet.PackageManagement.VisualStudio
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Get the project items for the folder path
             string folderPath = Path.GetDirectoryName(path);
-            string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path); ;
+            string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
+            ;
 
             VCProjectHelper.AddFileToProject(EnvDTEProject.Object, fullPath, folderPath);
 
@@ -80,6 +80,4 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
     }
-
-
 }

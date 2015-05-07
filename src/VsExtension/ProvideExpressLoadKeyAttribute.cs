@@ -1,16 +1,18 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
-using Microsoft.Internal.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGetVSExtension
 {
     /// <summary>
-    /// This attribute registers a package load key for your package.  
-    /// Package load keys are used by Visual Studio to validate that 
+    /// This attribute registers a package load key for your package.
+    /// Package load keys are used by Visual Studio to validate that
     /// a package can be loaded.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public sealed class ProvideExpressLoadKeyAttribute : RegistrationAttribute
     {
         private string _minimumEdition;
@@ -26,19 +28,13 @@ namespace NuGetVSExtension
         }
 
         /// <summary>
-        /// "Standard" for all express skus. 
+        /// "Standard" for all express skus.
         /// </summary>
         public string MinimumEdition
         {
-            get
-            {
-                return (string.IsNullOrWhiteSpace(_minimumEdition) ? "Standard" : _minimumEdition);
-            }
+            get { return (string.IsNullOrWhiteSpace(_minimumEdition) ? "Standard" : _minimumEdition); }
 
-            set
-            {
-                _minimumEdition = value;
-            }
+            set { _minimumEdition = value; }
         }
 
         /// <summary>
@@ -46,10 +42,7 @@ namespace NuGetVSExtension
         /// </summary>
         public string ProductVersion
         {
-            get
-            {
-                return _productVersion;
-            }
+            get { return _productVersion; }
         }
 
         /// <summary>
@@ -57,10 +50,7 @@ namespace NuGetVSExtension
         /// </summary>
         public string ProductName
         {
-            get
-            {
-                return _productName;
-            }
+            get { return _productName; }
         }
 
         /// <summary>
@@ -68,10 +58,7 @@ namespace NuGetVSExtension
         /// </summary>
         public string CompanyName
         {
-            get
-            {
-                return _companyName;
-            }
+            get { return _companyName; }
         }
 
         public short VPDExpressId { get; set; }

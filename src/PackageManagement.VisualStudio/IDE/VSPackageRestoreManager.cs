@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
@@ -11,6 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class VSPackageRestoreManager : PackageRestoreManager
     {
         private ISolutionManager SolutionManager { get; }
+
         public VSPackageRestoreManager()
             : this(
                 ServiceLocator.GetInstance<ISourceRepositoryProvider>(),
@@ -34,12 +38,12 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
-                // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-                var solutionDirectory = SolutionManager.SolutionDirectory;
-                await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-            });
+                {
+                    // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
+                    // is showing and the user closes the solution; in that case, we want to hide the Update bar.
+                    var solutionDirectory = SolutionManager.SolutionDirectory;
+                    await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                });
         }
 
         private void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
@@ -48,14 +52,10 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var solutionDirectory = SolutionManager.SolutionDirectory;
-                await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-            });
+                {
+                    var solutionDirectory = SolutionManager.SolutionDirectory;
+                    await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                });
         }
-
-
-
-
     }
 }

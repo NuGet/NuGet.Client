@@ -1,5 +1,9 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -7,7 +11,7 @@ using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.Options
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    [SuppressMessage(
         "Microsoft.Interoperability",
         "CA1408:DoNotUseAutoDualClassInterfaceType")]
     [Guid("2819C3B6-FC75-4CD5-8C77-877903DE864C")]
@@ -54,13 +58,11 @@ namespace NuGet.Options
             }
         }
 
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         protected override IWin32Window Window
         {
-            get
-            {
-                return PackageSourcesControl;
-            }
+            get { return PackageSourcesControl; }
         }
     }
 }

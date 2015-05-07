@@ -1,32 +1,32 @@
-﻿extern alias Legacy;
-using LegacyNuGet = Legacy.NuGet;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging.Core;
-using NuGet.Versioning;
+using LegacyNuGet = NuGet;
+using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.VisualStudio
 {
     internal class VsPackageMetadata : IVsPackageMetadata
     {
         private readonly PackageIdentity _package;
-        private readonly string _installPath;
-        private readonly string _title;
-        private readonly IEnumerable<string> _authors;
-        private readonly string _description;
 
-        public VsPackageMetadata(PackageIdentity package, string installPath) :
-            this(package, string.Empty, Enumerable.Empty<string>(), string.Empty, installPath)
+        public VsPackageMetadata(PackageIdentity package, string installPath)
+            :
+                this(package, string.Empty, Enumerable.Empty<string>(), string.Empty, installPath)
         {
         }
 
         public VsPackageMetadata(PackageIdentity package, string title, IEnumerable<string> authors, string description, string installPath)
         {
             _package = package;
-            _installPath = installPath ?? string.Empty;
-            _title = title ?? package.Id;
-            _authors = authors ?? Enumerable.Empty<string>();
-            _description = description ?? string.Empty;
+            InstallPath = installPath ?? string.Empty;
+            Title = title ?? package.Id;
+            Authors = authors ?? Enumerable.Empty<string>();
+            Description = description ?? string.Empty;
         }
 
         public string Id
@@ -34,9 +34,9 @@ namespace NuGet.VisualStudio
             get { return _package.Id; }
         }
 
-        public LegacyNuGet.SemanticVersion Version
+        public SemanticVersion Version
         {
-            get { return new LegacyNuGet.SemanticVersion(_package.Version.ToNormalizedString()); }
+            get { return new SemanticVersion(_package.Version.ToNormalizedString()); }
         }
 
         public string VersionString
@@ -44,24 +44,12 @@ namespace NuGet.VisualStudio
             get { return _package.Version.ToString(); }
         }
 
-        public string Title
-        {
-            get { return _title; }
-        }
+        public string Title { get; }
 
-        public IEnumerable<string> Authors
-        {
-            get { return _authors; }
-        }
+        public IEnumerable<string> Authors { get; }
 
-        public string Description
-        {
-            get { return _description; }
-        }
+        public string Description { get; }
 
-        public string InstallPath
-        {
-            get { return _installPath; }
-        }
+        public string InstallPath { get; }
     }
 }

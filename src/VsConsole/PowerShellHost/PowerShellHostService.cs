@@ -1,12 +1,15 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
     public static class PowerShellHostService
     {
-
         private static readonly IRunspaceManager _runspaceManager = new RunspaceManager();
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "Can't dispose an object if we want to return it.")]

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -15,36 +18,17 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly Dictionary<Tuple<string, string>, Assembly> _assemblyCache = new Dictionary<Tuple<string, string>, Assembly>();
         private readonly List<IAssembly> _referencedAssemblies = new List<IAssembly>();
 
-        public string Name
-        {
-            get;
-            private set;
-        }
+        public string Name { get; private set; }
 
-        public Version Version
-        {
-            get;
-            private set;
-        }
+        public Version Version { get; private set; }
 
-        public string PublicKeyToken
-        {
-            get;
-            private set;
-        }
+        public string PublicKeyToken { get; private set; }
 
-        public string Culture
-        {
-            get;
-            private set;
-        }
+        public string Culture { get; private set; }
 
         public IEnumerable<IAssembly> ReferencedAssemblies
         {
-            get
-            {
-                return _referencedAssemblies;
-            }
+            get { return _referencedAssemblies; }
         }
 
         public void Load(string path)
@@ -103,13 +87,13 @@ namespace NuGet.PackageManagement.VisualStudio
         private static string GetPublicKeyTokenString(AssemblyName assemblyName)
         {
             return String.Join(String.Empty, assemblyName.GetPublicKeyToken()
-                                                         .Select(b => b.ToString("x2", CultureInfo.InvariantCulture)));
+                .Select(b => b.ToString("x2", CultureInfo.InvariantCulture)));
         }
 
         private static T CreateInstance<T>(AppDomain domain)
         {
             return (T)domain.CreateInstanceAndUnwrap(typeof(T).Assembly.FullName,
-                                                     typeof(T).FullName);
+                typeof(T).FullName);
         }
     }
 }

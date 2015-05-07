@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
@@ -16,7 +20,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override bool ExecuteHost(string fullCommand, string command, params object[] inputs)
         {
             SetPrivateDataOnHost(false);
@@ -24,22 +28,22 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             try
             {
                 Pipeline pipeline = Runspace.InvokeAsync(fullCommand, inputs, true, (sender, e) =>
-                {
-                    switch (e.PipelineStateInfo.State)
                     {
-                        case PipelineState.Completed:
-                        case PipelineState.Failed:
-                        case PipelineState.Stopped:
-                            if (e.PipelineStateInfo.Reason != null)
-                            {
-                                ReportError(e.PipelineStateInfo.Reason);
-                            }
+                        switch (e.PipelineStateInfo.State)
+                        {
+                            case PipelineState.Completed:
+                            case PipelineState.Failed:
+                            case PipelineState.Stopped:
+                                if (e.PipelineStateInfo.Reason != null)
+                                {
+                                    ReportError(e.PipelineStateInfo.Reason);
+                                }
 
-                            OnExecuteCommandEnd();
-                            ExecuteEnd.Raise(this, EventArgs.Empty);
-                            break;
-                    }
-                });
+                                OnExecuteCommandEnd();
+                                ExecuteEnd.Raise(this, EventArgs.Empty);
+                                break;
+                        }
+                    });
 
                 ExecutingPipeline = pipeline;
                 return true;
@@ -58,16 +62,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return false; // Error occurred, command not executing
         }
 
-        protected async override Task<string[]> GetExpansionsAsyncCore(string line, string lastWord, CancellationToken token)
+        protected override Task<string[]> GetExpansionsAsyncCore(string line, string lastWord, CancellationToken token)
         {
-            var expansions = await GetExpansionsAsyncCore(line, lastWord, isSync: false, token: token);
-            return expansions;
+            return GetExpansionsAsyncCore(line, lastWord, isSync: false, token: token);
         }
 
-        protected async override Task<SimpleExpansion> GetPathExpansionsAsyncCore(string line, CancellationToken token)
+        protected override Task<SimpleExpansion> GetPathExpansionsAsyncCore(string line, CancellationToken token)
         {
-            var simpleExpansion = await GetPathExpansionsAsyncCore(line, isSync: false, token: token);
-            return simpleExpansion;
+            return GetPathExpansionsAsyncCore(line, isSync: false, token: token);
         }
     }
 }

@@ -1,29 +1,27 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
-using LegacyNuGet = Legacy.NuGet;
+using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
-    /// FindPackage is identical to GetPackage except that FindPackage filters packages only by Id and does not consider description or tags.
+    /// FindPackage is identical to GetPackage except that FindPackage filters packages only by Id and does not
+    /// consider description or tags.
     /// </summary>
     [Cmdlet(VerbsCommon.Find, "Package")]
     [OutputType(typeof(IPowerShellPackage))]
     public class FindPackageCommand : NuGetPowerShellBaseCommand
     {
         private const int MaxReturnedPackages = 30;
-
-        public FindPackageCommand()
-            : base()
-        {
-        }
 
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0)]
         public string Id { get; set; }
@@ -44,7 +42,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public SwitchParameter AllVersions { get; set; }
 
         /// <summary>
-        /// Determines if an exact Id match would be performed with the Filter parameter. By default, FindPackage returns all packages that starts with the
+        /// Determines if an exact Id match would be performed with the Filter parameter. By default, FindPackage
+        /// returns all packages that starts with the
         /// Filter value.
         /// </summary>
         [Parameter]
@@ -142,10 +141,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 foreach (var id in packageIds)
                 {
-                    packages.Add(new PowerShellPackage()
-                    {
-                        Id = id,
-                    });
+                    packages.Add(new PowerShellPackage
+                        {
+                            Id = id
+                        });
                 }
 
                 WriteObject(packages, enumerateCollection: true);
@@ -158,7 +157,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 foreach (string id in packageIds)
                 {
                     IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, id);
-                    if (package.Versions != null && package.Versions.Any())
+                    if (package.Versions != null
+                        && package.Versions.Any())
                     {
                         packages.Add(package);
                     }
@@ -173,7 +173,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (!string.IsNullOrEmpty(packageId))
                     {
                         IPowerShellPackage package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, packageId);
-                        if (package.Versions != null && package.Versions.Any())
+                        if (package.Versions != null
+                            && package.Versions.Any())
                         {
                             WriteObject(package);
                         }
@@ -196,33 +197,37 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Token);
                 versions = versionTask.Result;
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
 
             IPowerShellPackage package = new PowerShellPackage();
             package.Id = id;
             if (AllVersions.IsPresent)
             {
-                if (versions != null && versions.Any())
+                if (versions != null
+                    && versions.Any())
                 {
                     package.Versions = versions.OrderByDescending(v => v);
-                    LegacyNuGet.SemanticVersion sVersion;
-                    LegacyNuGet.SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
+                    SemanticVersion sVersion;
+                    SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
                     package.Version = sVersion;
                 }
             }
             else
             {
                 NuGetVersion nVersion = null;
-                if (versions != null && versions.Any())
+                if (versions != null
+                    && versions.Any())
                 {
                     nVersion = versions.OrderByDescending(v => v).FirstOrDefault();
                 }
 
                 if (nVersion != null)
                 {
-                    package.Versions = new List<NuGetVersion>() { nVersion };
-                    LegacyNuGet.SemanticVersion sVersion;
-                    LegacyNuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                    package.Versions = new List<NuGetVersion> { nVersion };
+                    SemanticVersion sVersion;
+                    SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
                     package.Version = sVersion;
                 }
             }

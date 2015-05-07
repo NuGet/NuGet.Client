@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -35,9 +38,10 @@ namespace NuGet.TeamFoundationServer
 
     internal class DefaultTFSSourceControlManager : SourceControlManager
     {
-        public DefaultTFSSourceControlManager(ISettings settings, SourceControlBindings sourceControlBindings) : base(settings)
+        public DefaultTFSSourceControlManager(ISettings settings, SourceControlBindings sourceControlBindings)
+            : base(settings)
         {
-            if(sourceControlBindings == null)
+            if (sourceControlBindings == null)
             {
                 throw new ArgumentNullException("sourceControlBindings");
             }
@@ -46,6 +50,7 @@ namespace NuGet.TeamFoundationServer
             var versionControl = projectCollection.GetService<VersionControlServer>();
             PrivateWorkspace = versionControl.TryGetWorkspace(sourceControlBindings.LocalBinding);
         }
+
         private SourceControlBindings SourceControlBindings { get; set; }
         private Workspace PrivateWorkspace { get; set; }
 
@@ -104,7 +109,8 @@ namespace NuGet.TeamFoundationServer
 
         private void ProcessAddFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
         {
-            if (!fullPaths.Any() || String.IsNullOrEmpty(root))
+            if (!fullPaths.Any()
+                || String.IsNullOrEmpty(root))
             {
                 // Short-circuit if nothing specified
                 return;
@@ -112,16 +118,16 @@ namespace NuGet.TeamFoundationServer
 
             var batchSet = new HashSet<string>(fullPaths, StringComparer.OrdinalIgnoreCase);
             var batchFolders = batchSet.Select(Path.GetDirectoryName)
-                                  .Distinct()
-                                  .ToArray();
+                .Distinct()
+                .ToArray();
 
             // Prior to installing, we'll look at the directories and make sure none of them have any pending deletes.
             var pendingDeletes = PrivateWorkspace.GetPendingChanges(root, RecursionType.Full)
-                                          .Where(c => c.IsDelete);
+                .Where(c => c.IsDelete);
 
             // Find pending deletes that are in the same path as any of the folders we are going to be adding.
             var pendingFolderDeletesToUndo = pendingDeletes.Where(delete => batchFolders.Any(f => PathUtility.IsSubdirectory(delete.LocalItem, f)))
-                                                     .ToArray();
+                .ToArray();
 
             // Undo directory deletes.
             if (pendingFolderDeletesToUndo.Any())
@@ -131,9 +137,9 @@ namespace NuGet.TeamFoundationServer
 
             // Expand the directory deletes into individual file deletes. Include all the files we want to add but exclude any directories that may be in the path of the file.
             var childrenToPendDelete = (from folder in pendingFolderDeletesToUndo
-                                        from childItem in GetItemsRecursive(folder.LocalItem)
-                                        where batchSet.Contains(childItem) || !batchFolders.Any(f => PathUtility.IsSubdirectory(childItem, f))
-                                        select childItem).ToArray();
+                from childItem in GetItemsRecursive(folder.LocalItem)
+                where batchSet.Contains(childItem) || !batchFolders.Any(f => PathUtility.IsSubdirectory(childItem, f))
+                select childItem).ToArray();
 
             if (childrenToPendDelete.Any())
             {
@@ -144,18 +150,18 @@ namespace NuGet.TeamFoundationServer
             var pendingFileDeletesToUndo = pendingDeletes.Where(delete =>
                 fullPaths.Any(f =>
                     String.Equals(delete.LocalItem, PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
-                    .ToArray();
+                .ToArray();
 
-            if(pendingFileDeletesToUndo.Any())
+            if (pendingFileDeletesToUndo.Any())
             {
                 PrivateWorkspace.Undo(pendingFileDeletesToUndo);
             }
         }
-        
+
         private IEnumerable<string> GetItemsRecursive(string fullPath)
         {
             return PrivateWorkspace.VersionControlServer.GetItems(fullPath, VersionSpec.Latest, RecursionType.Full, DeletedState.NonDeleted, ItemType.File)
-                                                  .Items.Select(i => PrivateWorkspace.TryGetLocalItemForServerItem(i.ServerItem));
+                .Items.Select(i => PrivateWorkspace.TryGetLocalItemForServerItem(i.ServerItem));
         }
 
         private bool IsSourceControlBound(string fullPath)
@@ -189,7 +195,7 @@ namespace NuGet.TeamFoundationServer
                 var pendingChanges = PrivateWorkspace.GetPendingChanges(
                     root, RecursionType.Full).ToArray();
 
-                if(pendingChanges.Any())
+                if (pendingChanges.Any())
                 {
                     PrivateWorkspace.Undo(pendingChanges);
                 }

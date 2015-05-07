@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio.Shell;
 using EnvDTEProject = EnvDTE.Project;
@@ -24,7 +27,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public string UniqueName { get; private set; }
         public string ShortName { get; private set; }
         public string CustomUniqueName { get; private set; }
-
 
         /// <summary>
         /// Two projects are equal if they share the same FullNames.

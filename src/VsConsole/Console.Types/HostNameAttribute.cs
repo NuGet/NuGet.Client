@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel.Composition;
 
@@ -8,11 +11,10 @@ namespace NuGetConsole
     /// required for a host provider to be recognized by PowerConsole. PowerConsole
     /// also uses the HostName to find the associated ICommandTokenizerProvider and
     /// ICommandExpansionProvider for a host.
-    /// 
     /// To avoid host name collision, a host can use its full class name (or
     /// a guid).
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class)]
     [MetadataAttribute]
     public sealed class HostNameAttribute : Attribute
     {

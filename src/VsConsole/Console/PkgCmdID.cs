@@ -1,8 +1,9 @@
-// PkgCmdID.cs
-// MUST match PkgCmdID.h
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 namespace NuGetConsole.Implementation
 {
-    static class PkgCmdIDList
+    internal static class PkgCmdIDList
     {
         public const int idToolbar = 0x1010;
         public const int cmdidPowerConsole = 0x0100;

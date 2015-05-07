@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -103,26 +106,25 @@ namespace NuGet.VisualStudio
         private IEnumerable<PreinstalledPackageInfo> GetPackages(XElement packagesElement)
         {
             var declarations = (from packageElement in packagesElement.ElementsNoNamespace("package")
-                                let id = packageElement.GetOptionalAttributeValue("id")
-                                let version = packageElement.GetOptionalAttributeValue("version")
-                                let skipAssemblyReferences = packageElement.GetOptionalAttributeValue("skipAssemblyReferences")
-                                let includeDependencies = packageElement.GetOptionalAttributeValue("includeDependencies")
-                                select new { id, version, skipAssemblyReferences, includeDependencies }).ToList();
+                let id = packageElement.GetOptionalAttributeValue("id")
+                let version = packageElement.GetOptionalAttributeValue("version")
+                let skipAssemblyReferences = packageElement.GetOptionalAttributeValue("skipAssemblyReferences")
+                let includeDependencies = packageElement.GetOptionalAttributeValue("includeDependencies")
+                select new { id, version, skipAssemblyReferences, includeDependencies }).ToList();
 
             NuGetVersion semVer = null;
             bool skipAssemblyReferencesValue;
             bool includeDependenciesValue;
             var missingOrInvalidAttributes = from declaration in declarations
-                                             where
-                                                 String.IsNullOrWhiteSpace(declaration.id) ||
-                                                 String.IsNullOrWhiteSpace(declaration.version) ||
-                                                 !NuGetVersion.TryParse(declaration.version, out semVer) ||
-                                                 (declaration.skipAssemblyReferences != null &&
-                                                  !Boolean.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
-                                                 (declaration.includeDependencies != null &&
-                                                  !Boolean.TryParse(declaration.includeDependencies, out includeDependenciesValue))
-
-                                             select declaration;
+                where
+                    String.IsNullOrWhiteSpace(declaration.id) ||
+                    String.IsNullOrWhiteSpace(declaration.version) ||
+                    !NuGetVersion.TryParse(declaration.version, out semVer) ||
+                    (declaration.skipAssemblyReferences != null &&
+                     !Boolean.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
+                    (declaration.includeDependencies != null &&
+                     !Boolean.TryParse(declaration.includeDependencies, out includeDependenciesValue))
+                select declaration;
 
             if (missingOrInvalidAttributes.Any())
             {
@@ -132,14 +134,14 @@ namespace NuGet.VisualStudio
             }
 
             return from declaration in declarations
-                   select new PreinstalledPackageInfo(
-                       declaration.id,
-                       declaration.version,
-                       skipAssemblyReferences: declaration.skipAssemblyReferences != null && Boolean.Parse(declaration.skipAssemblyReferences),
+                select new PreinstalledPackageInfo(
+                    declaration.id,
+                    declaration.version,
+                    skipAssemblyReferences: declaration.skipAssemblyReferences != null && Boolean.Parse(declaration.skipAssemblyReferences),
 
-                       // Note that the declaration uses "includeDependencies" but we need to invert it to become ignoreDependencies
-                       // The declaration uses includeDependencies so that the default value can be 'false'
-                       ignoreDependencies: !(declaration.includeDependencies != null && Boolean.Parse(declaration.includeDependencies))
+                    // Note that the declaration uses "includeDependencies" but we need to invert it to become ignoreDependencies
+                    // The declaration uses includeDependencies so that the default value can be 'false'
+                    ignoreDependencies: !(declaration.includeDependencies != null && Boolean.Parse(declaration.includeDependencies))
                     );
         }
 
@@ -216,14 +218,14 @@ namespace NuGet.VisualStudio
             return XmlUtility.LoadSafe(path);
         }
 
-        private async Task ProjectFinishedGeneratingAsync(Project project)
+        private Task ProjectFinishedGeneratingAsync(Project project)
         {
-            await TemplateFinishedGeneratingAsync(project);
+            return TemplateFinishedGeneratingAsync(project);
         }
 
-        private async Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
+        private Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
         {
-            await TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
+            return TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
         }
 
         private async Task TemplateFinishedGeneratingAsync(Project project)
@@ -243,7 +245,8 @@ namespace NuGet.VisualStudio
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            if (runKind != WizardRunKind.AsNewProject && runKind != WizardRunKind.AsNewItem)
+            if (runKind != WizardRunKind.AsNewProject
+                && runKind != WizardRunKind.AsNewItem)
             {
                 ShowErrorMessage(VsResources.TemplateWizard_InvalidWizardRunKind);
                 throw new WizardBackoutException();
@@ -273,7 +276,8 @@ namespace NuGet.VisualStudio
             if (replacementsDictionary.TryGetValue("$destinationdirectory$", out targetInstallDir))
             {
                 string solutionRepositoryPath = null;
-                if (_dte.Solution != null && _dte.Solution.IsOpen)
+                if (_dte.Solution != null
+                    && _dte.Solution.IsOpen)
                 {
                     //solutionRepositoryPath = RepositorySettings.Value.RepositoryPath;
                     solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _settings);
@@ -345,21 +349,21 @@ namespace NuGet.VisualStudio
         void IWizard.ProjectFinishedGenerating(Project project)
         {
             PumpingJTF.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await ProjectFinishedGeneratingAsync(project);
-            });
+                    await ProjectFinishedGeneratingAsync(project);
+                });
         }
 
         void IWizard.ProjectItemFinishedGenerating(ProjectItem projectItem)
         {
             PumpingJTF.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await ProjectItemFinishedGeneratingAsync(projectItem);
-            });
+                    await ProjectItemFinishedGeneratingAsync(projectItem);
+                });
         }
 
         void IWizard.RunFinished()
@@ -369,12 +373,12 @@ namespace NuGet.VisualStudio
         void IWizard.RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // alternatively could get body of WizardData element from replacementsDictionary["$wizarddata$"] instead of parsing vstemplate file.
-                RunStarted(automationObject, replacementsDictionary, runKind, customParams);
-            });
+                    // alternatively could get body of WizardData element from replacementsDictionary["$wizarddata$"] instead of parsing vstemplate file.
+                    RunStarted(automationObject, replacementsDictionary, runKind, customParams);
+                });
         }
 
         bool IWizard.ShouldAddProjectItem(string filePath)
@@ -399,9 +403,9 @@ namespace NuGet.VisualStudio
             // 1. If $specifiedsolutionname$ == null, ALWAYS use $destinationdirectory$
             // 2. Otherwise, use $solutiondirectory$ if available
             // 3. If $solutiondirectory$ is not available, use $destinationdirectory$.
-            if ((ignoreSolutionDir && replacementsDictionary.TryGetValue("$destinationdirectory$", out solutionDir)) ||
-                replacementsDictionary.TryGetValue("$solutiondirectory$", out solutionDir) ||
-                replacementsDictionary.TryGetValue("$destinationdirectory$", out solutionDir))
+            if ((ignoreSolutionDir && replacementsDictionary.TryGetValue("$destinationdirectory$", out solutionDir))
+                || replacementsDictionary.TryGetValue("$solutiondirectory$", out solutionDir)
+                || replacementsDictionary.TryGetValue("$destinationdirectory$", out solutionDir))
             {
                 return solutionDir;
             }
@@ -423,7 +427,7 @@ namespace NuGet.VisualStudio
             /// <summary>
             /// Cache location stored in the registry
             /// </summary>
-            Registry,
+            Registry
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -162,13 +165,13 @@ namespace NuGet.PackageManagement.VisualStudio
             get
             {
                 return ThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return _dte != null &&
-                           _dte.Solution != null &&
-                           _dte.Solution.IsOpen &&
-                           !IsSolutionSavedAsRequired();
-                });
+                    {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        return _dte != null &&
+                               _dte.Solution != null &&
+                               _dte.Solution.IsOpen &&
+                               !IsSolutionSavedAsRequired();
+                    });
             }
         }
 
@@ -182,15 +185,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 return ThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    string solutionFilePath = await GetSolutionFilePathAsync();
-
-                    if (String.IsNullOrEmpty(solutionFilePath))
                     {
-                        return null;
-                    }
-                    return Path.GetDirectoryName(solutionFilePath);
-                });
+                        string solutionFilePath = await GetSolutionFilePathAsync();
+
+                        if (String.IsNullOrEmpty(solutionFilePath))
+                        {
+                            return null;
+                        }
+                        return Path.GetDirectoryName(solutionFilePath);
+                    });
             }
         }
 
@@ -339,7 +342,9 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (IsSolutionOpen && EnvDTEProjectUtility.IsSupported(envDTEProject) && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject))
+            if (IsSolutionOpen
+                && EnvDTEProjectUtility.IsSupported(envDTEProject)
+                && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject))
             {
                 EnsureNuGetAndEnvDTEProjectCache();
                 AddEnvDTEProjectToCache(envDTEProject);
@@ -367,8 +372,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (_nuGetAndEnvDTEProjectCache.TryGetNuGetProjectName(startupProjectName, out envDTEProjectName))
                     {
                         DefaultNuGetProjectName = _nuGetAndEnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName) ?
-                                             envDTEProjectName.CustomUniqueName :
-                                             envDTEProjectName.ShortName;
+                            envDTEProjectName.CustomUniqueName :
+                            envDTEProjectName.ShortName;
                     }
                 }
             }
@@ -385,7 +390,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 try
                 {
                     var supportedProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte)
-                            .Where(project => EnvDTEProjectUtility.IsSupported(project));
+                        .Where(project => EnvDTEProjectUtility.IsSupported(project));
 
                     _nuGetAndEnvDTEProjectCache.Initialize(supportedProjects, factory);
                     SetDefaultProjectName();
@@ -414,12 +419,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             EnvDTEProjectName newEnvDTEProjectName = _nuGetAndEnvDTEProjectCache.AddProject(envDTEProject, GetProjectFactory());
 
-            if (String.IsNullOrEmpty(DefaultNuGetProjectName) ||
+            if (String.IsNullOrEmpty(DefaultNuGetProjectName)
+                ||
                 newEnvDTEProjectName.ShortName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase))
             {
                 DefaultNuGetProjectName = oldEnvDTEProjectName != null ?
-                                     oldEnvDTEProjectName.CustomUniqueName :
-                                     newEnvDTEProjectName.ShortName;
+                    oldEnvDTEProjectName.CustomUniqueName :
+                    newEnvDTEProjectName.ShortName;
             }
         }
 
@@ -444,8 +450,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // for LightSwitch project, the main project is not added to _projectCache, but it is called on removal. 
             // in that case, projectName is null.
-            if (envDTEProjectName != null &&
-                envDTEProjectName.CustomUniqueName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase) &&
+            if (envDTEProjectName != null
+                &&
+                envDTEProjectName.CustomUniqueName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase)
+                &&
                 !_nuGetAndEnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName))
             {
                 DefaultNuGetProjectName = envDTEProjectName.ShortName;
@@ -462,13 +470,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     _initialized = true;
 
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        if (_dte.Solution.IsOpen)
                         {
-                            OnSolutionOpened();
-                        }
-                    });
+                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            if (_dte.Solution.IsOpen)
+                            {
+                                OnSolutionOpened();
+                            }
+                        });
                 }
             }
             catch (Exception ex)
@@ -555,7 +563,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {
-            if (dwCmdUICookie == _solutionLoadedUICookie && fActive == 1)
+            if (dwCmdUICookie == _solutionLoadedUICookie
+                && fActive == 1)
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
                 OnSolutionOpened();

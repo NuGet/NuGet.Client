@@ -1,11 +1,14 @@
-﻿extern alias Legacy;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System.Collections.Generic;
-using LegacyNuGet = Legacy.NuGet;
+using NuGet.Versioning;
+using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
-    interface IPowerShellPackage
+    internal interface IPowerShellPackage
     {
         /// <summary>
         /// Id of the package
@@ -19,8 +22,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         /// <summary>
         /// Semantic Version of the package
-        /// Do not remove this property, it is needed for PS1 script backward-compatbility. 
+        /// Do not remove this property, it is needed for PS1 script backward-compatbility.
         /// </summary>
-        LegacyNuGet.SemanticVersion Version { get; set; }
+        SemanticVersion Version { get; set; }
     }
 }

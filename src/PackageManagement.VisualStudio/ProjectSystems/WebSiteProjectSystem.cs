@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -20,7 +23,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string GeneratedFilesFolder = "Generated___Files";
         private readonly HashSet<string> _excludedCodeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly string[] _sourceFileExtensions = new[] { ".cs", ".vb" };
+        private static readonly string[] _sourceFileExtensions = { ".cs", ".vb" };
+
         public WebSiteProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
             : base(envDTEProject, nuGetProjectContext)
         {
@@ -30,25 +34,25 @@ namespace NuGet.PackageManagement.VisualStudio
         public override void AddReference(string referencePath)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                string name = Path.GetFileNameWithoutExtension(referencePath);
-                try
                 {
-                    EnvDTEProjectUtility.GetAssemblyReferences(EnvDTEProject).AddFromFile(PathUtility.GetAbsolutePath(ProjectFullPath, referencePath));
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    // Always create a refresh file. Vs does this for us in most cases, however for GACed binaries, it resorts to adding a web.config entry instead.
-                    // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
-                    RefreshFileUtility.CreateRefreshFile(ProjectFullPath, PathUtility.GetAbsolutePath(ProjectFullPath, referencePath), this);
+                    string name = Path.GetFileNameWithoutExtension(referencePath);
+                    try
+                    {
+                        EnvDTEProjectUtility.GetAssemblyReferences(EnvDTEProject).AddFromFile(PathUtility.GetAbsolutePath(ProjectFullPath, referencePath));
 
-                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
-                }
-                catch (Exception e)
-                {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
-                }
-            });
+                        // Always create a refresh file. Vs does this for us in most cases, however for GACed binaries, it resorts to adding a web.config entry instead.
+                        // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
+                        RefreshFileUtility.CreateRefreshFile(ProjectFullPath, PathUtility.GetAbsolutePath(ProjectFullPath, referencePath), this);
+
+                        NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
+                    }
+                });
         }
 
         protected override void AddGacReference(string name)
@@ -61,32 +65,32 @@ namespace NuGet.PackageManagement.VisualStudio
         public override void RemoveReference(string name)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // Remove the reference via DTE.
-                RemoveDTEReference(name);
-
-                // For GACed binaries, VS would not clear the refresh files for us since it assumes the reference exists in web.config. 
-                // We'll clean up any remaining .refresh files.
-                var refreshFilePath = Path.Combine("bin", Path.GetFileName(name) + ".refresh");
-                var refreshFileFullPath = FileSystemUtility.GetFullPath(ProjectFullPath, refreshFilePath);
-                if (File.Exists(refreshFileFullPath))
                 {
-                    try
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // Remove the reference via DTE.
+                    RemoveDTEReference(name);
+
+                    // For GACed binaries, VS would not clear the refresh files for us since it assumes the reference exists in web.config. 
+                    // We'll clean up any remaining .refresh files.
+                    var refreshFilePath = Path.Combine("bin", Path.GetFileName(name) + ".refresh");
+                    var refreshFileFullPath = FileSystemUtility.GetFullPath(ProjectFullPath, refreshFilePath);
+                    if (File.Exists(refreshFileFullPath))
                     {
-                        FileSystemUtility.DeleteFile(refreshFileFullPath, NuGetProjectContext);
+                        try
+                        {
+                            FileSystemUtility.DeleteFile(refreshFileFullPath, NuGetProjectContext);
+                        }
+                        catch (Exception e)
+                        {
+                            NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
-                    }
-                }
-            });
+                });
         }
 
         /// <summary>
-        /// Removes a reference via the DTE. 
+        /// Removes a reference via the DTE.
         /// </summary>
         /// <remarks>This is identical to VsProjectSystem.RemoveReference except in the way we process exceptions.</remarks>
         private void RemoveDTEReference(string name)
@@ -110,7 +114,8 @@ namespace NuGet.PackageManagement.VisualStudio
             catch (Exception ex)
             {
                 MessageLevel messageLevel = MessageLevel.Warning;
-                if (reference != null && reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceConfig)
+                if (reference != null
+                    && reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceConfig)
                 {
                     // Bug 2319: Strong named assembly references are specified via config and may be specified in the root web.config. Attempting to remove these 
                     // references always throws and there isn't an easy way to identify this. Instead, we'll attempt to lower the level of the message so it doesn't
@@ -193,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Need NOT be on the UI thread
 
             var orderedFiles = files.OrderBy(path => path)
-                             .ToList();
+                .ToList();
 
             foreach (var path1 in orderedFiles)
             {
@@ -204,7 +209,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         continue;
                     }
 
-                    if (path1.StartsWith(path2, StringComparison.OrdinalIgnoreCase) &&
+                    if (path1.StartsWith(path2, StringComparison.OrdinalIgnoreCase)
+                        &&
                         IsSourceFile(path1))
                     {
                         _excludedCodeFiles.Add(path1);

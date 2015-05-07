@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel.Composition;
 using System.Security;
 using System.Threading.Tasks;
@@ -40,18 +43,15 @@ namespace NuGetConsole
             }
 
             var initializer = componentModel.GetService<IHostInitializer>();
-            return Task.Factory.StartNew((state) =>
+            return Task.Factory.StartNew(state =>
                 {
                     var hostInitializer = (IHostInitializer)state;
                     if (hostInitializer != null)
                     {
                         hostInitializer.Start();
-                        return new Action(hostInitializer.SetDefaultRunspace);
+                        return (Action)hostInitializer.SetDefaultRunspace;
                     }
-                    else
-                    {
-                        return delegate { };
-                    }
+                    return delegate { };
                 },
                 initializer);
         }

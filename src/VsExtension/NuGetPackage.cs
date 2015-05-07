@@ -1,5 +1,7 @@
-extern alias Legacy;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -8,12 +10,12 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
-
 using EnvDTE;
+using Legacy::NuGet;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Configuration;
 using NuGet.Options;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
@@ -22,7 +24,12 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
+using NuGetVSExtension.Utilities;
+using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
+using ISettings = NuGet.Configuration.ISettings;
+using PackageSourceProvider = Legacy::NuGet.PackageSourceProvider;
 using Resx = NuGet.PackageManagement.UI.Resources;
+using Strings = NuGet.PackageManagement.VisualStudio.Strings;
 
 namespace NuGetVSExtension
 {
@@ -30,11 +37,11 @@ namespace NuGetVSExtension
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", NuGetPackage.ProductVersion, IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", ProductVersion, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(PowerConsoleToolWindow),
         Style = VsDockStyle.Tabbed,
-        Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the Output tool window, which is present in both VS and VWD
+        Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}", // this is the guid of the Output tool window, which is present in both VS and VWD
         Orientation = ToolWindowOrientation.Right)]
     //[ProvideToolWindow(typeof(DebugConsoleToolWindow),
     //    Style = VsDockStyle.Tabbed,
@@ -61,7 +68,7 @@ namespace NuGetVSExtension
         // It is displayed in the Help - About box of Visual Studio
         public const string ProductVersion = "3.0.0";
 
-        private static readonly string[] _visualizerSupportedSKUs = new[] { "Premium", "Ultimate" };
+        private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
 
         private uint _solutionNotBuildingAndNotDebuggingContextCookie;
         private DTE _dte;
@@ -82,7 +89,7 @@ namespace NuGetVSExtension
         private OleMenuCommand _managePackageForSolutionDialogCommand;
         private OleMenuCommandService _mcs;
         private bool _powerConsoleCommandExecuting;
-        private NuGet.Configuration.IMachineWideSettings _machineWideSettings;
+        private IMachineWideSettings _machineWideSettings;
 
         private Dictionary<Project, int> _projectToToolWindowId;
 
@@ -116,7 +123,6 @@ namespace NuGetVSExtension
                 return _vsMonitorSelection;
             }
         }
-
 
         private IConsoleStatus ConsoleStatus
         {
@@ -236,13 +242,13 @@ namespace NuGetVSExtension
         }
         */
 
-        private NuGet.Configuration.IMachineWideSettings MachineWideSettings
+        private IMachineWideSettings MachineWideSettings
         {
             get
             {
                 if (_machineWideSettings == null)
                 {
-                    _machineWideSettings = ServiceLocator.GetInstance<NuGet.Configuration.IMachineWideSettings>();
+                    _machineWideSettings = ServiceLocator.GetInstance<IMachineWideSettings>();
                     Debug.Assert(_machineWideSettings != null);
                 }
 
@@ -250,11 +256,7 @@ namespace NuGetVSExtension
             }
         }
 
-        private OnBuildPackageRestorer OnBuildPackageRestorer
-        {
-            get;
-            set;
-        }
+        private OnBuildPackageRestorer OnBuildPackageRestorer { get; set; }
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -281,15 +283,15 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
-            SetDefaultCredentialProvider();            
-                
+            SetDefaultCredentialProvider();
+
             if (SolutionManager != null)
             {
                 SolutionManager.SolutionOpened += (obj, ev) =>
-                {
-                    _nugetSettings = new NuGetSettings();
-                    LoadNuGetSettings();
-                };
+                    {
+                        _nugetSettings = new NuGetSettings();
+                        LoadNuGetSettings();
+                    };
             }
 
             _outputConsoleLogger = new OutputConsoleLogger(this);
@@ -326,10 +328,10 @@ namespace NuGetVSExtension
             var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
             Debug.Assert(webProxy != null);
 
-            Legacy.NuGet.PackageSourceProvider packageSourceProvider = new Legacy.NuGet.PackageSourceProvider(
+            PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
                 new SettingsToLegacySettings(Settings));
-            Legacy.NuGet.HttpClient.DefaultCredentialProvider = new Legacy.NuGet.SettingsCredentialProvider(
-                new VSRequestCredentialProvider(webProxy), 
+            HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(
+                new VSRequestCredentialProvider(webProxy),
                 packageSourceProvider);
         }
 
@@ -394,8 +396,9 @@ namespace NuGetVSExtension
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.FindToolWindow(typeof(PowerConsoleToolWindow), 0, true);
-            if ((null == window) || (null == window.Frame))
+            ToolWindowPane window = FindToolWindow(typeof(PowerConsoleToolWindow), 0, true);
+            if ((null == window)
+                || (null == window.Frame))
             {
                 throw new NotSupportedException(Resources.CanNotCreateWindow);
             }
@@ -406,7 +409,8 @@ namespace NuGetVSExtension
             // passed which is of type OleMenuCmdEventArgs
             string command = null;
             OleMenuCmdEventArgs eventArgs = e as OleMenuCmdEventArgs;
-            if (eventArgs != null && eventArgs.InValue != null)
+            if (eventArgs != null
+                && eventArgs.InValue != null)
             {
                 command = eventArgs.InValue as string;
             }
@@ -429,8 +433,9 @@ namespace NuGetVSExtension
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.FindToolWindow(typeof(DebugConsoleToolWindow), 0, true);
-            if ((null == window) || (null == window.Frame))
+            ToolWindowPane window = FindToolWindow(typeof(DebugConsoleToolWindow), 0, true);
+            if ((null == window)
+                || (null == window.Frame))
             {
                 throw new NotSupportedException(Resources.CanNotCreateWindow);
             }
@@ -468,8 +473,9 @@ namespace NuGetVSExtension
 
             IVsWindowFrame[] windowFrames = new IVsWindowFrame[1];
             uint frameCount;
-            while (ppenum.Next(1, windowFrames, out frameCount) == VSConstants.S_OK &&
-                frameCount == 1)
+            while (ppenum.Next(1, windowFrames, out frameCount) == VSConstants.S_OK
+                   &&
+                   frameCount == 1)
             {
                 yield return windowFrames[0];
             }
@@ -485,7 +491,8 @@ namespace NuGetVSExtension
                 int hr = windowFrame.GetProperty(
                     (int)__VSFPROPID.VSFPROPID_DocView,
                     out docView);
-                if (hr == VSConstants.S_OK && docView is PackageManagerWindowPane)
+                if (hr == VSConstants.S_OK
+                    && docView is PackageManagerWindowPane)
                 {
                     var packageManagerWindowPane = (PackageManagerWindowPane)docView;
                     var projects = packageManagerWindowPane.Model.Context.Projects;
@@ -562,7 +569,7 @@ namespace NuGetVSExtension
                 {
                     // the docuemnt window is not registered yet. So use the project as the
                     // hierarchy.
-                    hier = (IVsHierarchy)vsProject;
+                    hier = vsProject;
                     itemId = (uint)VSConstants.VSITEMID.Root;
                 }
             }
@@ -646,10 +653,12 @@ namespace NuGetVSExtension
             var searchText = GetSearchText(parameterString);
 
             // *** temp code            
-            Project project = NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
+            Project project = VsUtility.GetActiveProject(VsMonitorSelection);
 
-            if (project != null &&
-                !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project) &&
+            if (project != null
+                &&
+                !VsUtility.IsUnloaded(project)
+                &&
                 EnvDTEProjectUtility.IsSupported(project))
             {
                 ShowDocWindow(project, searchText);
@@ -661,7 +670,7 @@ namespace NuGetVSExtension
 
                 string errorMessage = String.IsNullOrEmpty(projectName)
                     ? Resources.NoProjectSelected
-                    : String.Format(CultureInfo.CurrentCulture, NuGet.PackageManagement.VisualStudio.Strings.DTE_ProjectUnsupported, projectName);
+                    : String.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, projectName);
 
                 MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
             }
@@ -677,8 +686,10 @@ namespace NuGetVSExtension
                     (int)__VSFPROPID.VSFPROPID_DocData,
                     out property);
                 var packageManagerControl = GetPackageManagerControl(windowFrame);
-                if (hr == VSConstants.S_OK &&
-                    property is IVsSolution &&
+                if (hr == VSConstants.S_OK
+                    &&
+                    property is IVsSolution
+                    &&
                     packageManagerControl != null)
                 {
                     return windowFrame;
@@ -706,21 +717,18 @@ namespace NuGetVSExtension
             {
                 return parameterString;
             }
-            else
-            {
-                return parameterString.Substring(0, lastIndexOfSearchInSwitch);
-            }
+            return parameterString.Substring(0, lastIndexOfSearchInSwitch);
         }
 
         private void LoadNuGetSettings()
         {
-            IVsSolutionPersistence solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
+            IVsSolutionPersistence solutionPersistence = GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
             solutionPersistence.LoadPackageUserOpts(this, "nuget");
         }
 
         public void SaveNuGetSettings()
         {
-            IVsSolutionPersistence solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
+            IVsSolutionPersistence solutionPersistence = GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
             solutionPersistence.SavePackageUserOpts(this, "nuget");
         }
 
@@ -731,10 +739,7 @@ namespace NuGetVSExtension
             {
                 return settings;
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         public void AddWindowSettings(string key, UserSettings obj)
@@ -929,9 +934,9 @@ namespace NuGetVSExtension
         {
             get
             {
-                Project project = NuGetVSExtension.Utilities.VsUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !NuGetVSExtension.Utilities.VsUtility.IsUnloaded(project)
-                    && EnvDTEProjectUtility.IsSupported(project);
+                Project project = VsUtility.GetActiveProject(VsMonitorSelection);
+                return project != null && !VsUtility.IsUnloaded(project)
+                       && EnvDTEProjectUtility.IsSupported(project);
             }
         }
 
@@ -962,7 +967,7 @@ namespace NuGetVSExtension
             _dteEvents = null;
 
             // Clean up optimized zips used by NuGet.Core as part of the V2 Protocol
-            Legacy.NuGet.OptimizedZipPackage.PurgeCache();
+            OptimizedZipPackage.PurgeCache();
         }
 
         int IVsPersistSolutionOpts.LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
@@ -970,7 +975,7 @@ namespace NuGetVSExtension
             return VSConstants.S_OK;
         }
 
-        int IVsPersistSolutionOpts.ReadUserOptions(Microsoft.VisualStudio.OLE.Interop.IStream pOptionsStream, string pszKey)
+        int IVsPersistSolutionOpts.ReadUserOptions(IStream pOptionsStream, string pszKey)
         {
             try
             {
@@ -997,7 +1002,7 @@ namespace NuGetVSExtension
             return VSConstants.S_OK;
         }
 
-        int IVsPersistSolutionOpts.WriteUserOptions(Microsoft.VisualStudio.OLE.Interop.IStream pOptionsStream, string pszKey)
+        int IVsPersistSolutionOpts.WriteUserOptions(IStream pOptionsStream, string pszKey)
         {
             try
             {

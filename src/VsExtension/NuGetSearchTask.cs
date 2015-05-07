@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -48,29 +51,13 @@ namespace NuGetVSExtension
             SetStatus(VsSearchTaskStatus.Created);
         }
 
-        public int ErrorCode
-        {
-            get;
-            private set;
-        }
+        public int ErrorCode { get; private set; }
 
-        public uint Id
-        {
-            get;
-            private set;
-        }
+        public uint Id { get; private set; }
 
-        public IVsSearchQuery SearchQuery
-        {
-            get;
-            private set;
-        }
+        public IVsSearchQuery SearchQuery { get; private set; }
 
-        public uint Status
-        {
-            get;
-            private set;
-        }
+        public uint Status { get; private set; }
 
         public void Start()
         {
@@ -79,7 +66,8 @@ namespace NuGetVSExtension
             SetStatus(VsSearchTaskStatus.Completed);
             OleMenuCommand supportedManagePackageCommand = GetSupportedManagePackageCommand();
 
-            if (!String.IsNullOrEmpty(SearchQuery.SearchString) && null != supportedManagePackageCommand)
+            if (!String.IsNullOrEmpty(SearchQuery.SearchString)
+                && null != supportedManagePackageCommand)
             {
                 var result = new NuGetStaticSearchResult(SearchQuery.SearchString, _provider, supportedManagePackageCommand);
                 _searchCallback.ReportResult(this, result);
@@ -118,12 +106,16 @@ namespace NuGetVSExtension
             int result = ((IOleCommandTarget)_provider.MenuCommandService).QueryStatus(pguidCmdGroup: ref guid, cCmds: 2u, prgCmds: cmd, pCmdText: (IntPtr)null);
 
             // At this point, if result == S_OK, the visibility of the commands are up to date and can be used confidently
-            if (result == VSConstants.S_OK && _managePackageDialogCommand.Visible && _managePackageDialogCommand.Enabled)
+            if (result == VSConstants.S_OK
+                && _managePackageDialogCommand.Visible
+                && _managePackageDialogCommand.Enabled)
             {
                 return _managePackageDialogCommand;
             }
 
-            if (result == VSConstants.S_OK && _managePackageForSolutionDialogCommand.Visible && _managePackageForSolutionDialogCommand.Enabled)
+            if (result == VSConstants.S_OK
+                && _managePackageForSolutionDialogCommand.Visible
+                && _managePackageForSolutionDialogCommand.Enabled)
             {
                 return _managePackageForSolutionDialogCommand;
             }

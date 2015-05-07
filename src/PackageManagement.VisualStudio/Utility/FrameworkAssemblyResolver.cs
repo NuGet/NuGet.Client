@@ -1,5 +1,6 @@
-﻿using Microsoft.Build.Utilities;
-using NuGet.ProjectManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,19 +8,21 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
+using Microsoft.Build.Utilities;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class FrameworkAssemblyResolver
     {
         // (dotNetFrameworkVersion + dotNetFrameworkProfile) is the key
-        private readonly static ConcurrentDictionary<string, List<AssemblyName>> FrameworkAssembliesDictionary = new ConcurrentDictionary<string, List<AssemblyName>>();
+        private static readonly ConcurrentDictionary<string, List<AssemblyName>> FrameworkAssembliesDictionary = new ConcurrentDictionary<string, List<AssemblyName>>();
         private const string NETFrameworkIdentifier = ".NETFramework";
         internal const string FrameworkListFileName = "RedistList\\FrameworkList.xml";
 
         /// <summary>
         /// This function checks if there is a framework assembly of assemblyName and of version > availableVersion
-        /// in targetFramework. NOTE that this function is only applicable for .NETFramework and returns false for 
+        /// in targetFramework. NOTE that this function is only applicable for .NETFramework and returns false for
         /// all the other targetFrameworks
         /// </summary>
         public static bool IsHigherAssemblyVersionInFramework(string simpleAssemblyName, Version availableVersion, FrameworkName targetFrameworkName)
@@ -30,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         /// <summary>
         /// This function checks if there is a framework assembly of assemblyName and of version > availableVersion
-        /// in targetFramework. NOTE that this function is only applicable for .NETFramework and returns false for 
+        /// in targetFramework. NOTE that this function is only applicable for .NETFramework and returns false for
         /// all the other targetFrameworks
         /// </summary>
         internal static bool IsHigherAssemblyVersionInFramework(string simpleAssemblyName,
@@ -96,20 +99,18 @@ namespace NuGet.PackageManagement.VisualStudio
                             {
                                 string simpleAssemblyName = element.GetOptionalAttributeValue("AssemblyName");
                                 string version = element.GetOptionalAttributeValue("Version");
-                                if (simpleAssemblyName == null || version == null)
+                                if (simpleAssemblyName == null
+                                    || version == null)
                                 {
                                     // Skip this file. Return an empty list
                                     // Clear frameworkAssemblies since we don't want partial results
                                     frameworkAssemblies.Clear();
                                     break;
                                 }
-                                else
-                                {
-                                    AssemblyName assemblyName = new AssemblyName();
-                                    assemblyName.Name = simpleAssemblyName;
-                                    assemblyName.Version = new Version(version);
-                                    frameworkAssemblies.Add(assemblyName);
-                                }
+                                AssemblyName assemblyName = new AssemblyName();
+                                assemblyName.Name = simpleAssemblyName;
+                                assemblyName.Version = new Version(version);
+                                frameworkAssemblies.Add(assemblyName);
                             }
                         }
                     }
@@ -122,5 +123,4 @@ namespace NuGet.PackageManagement.VisualStudio
             return frameworkAssemblies;
         }
     }
-
 }

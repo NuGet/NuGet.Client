@@ -1,9 +1,13 @@
-﻿using System.Management.Automation;
-using EnvDTE;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackageManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Management.Automation;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -12,19 +16,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         /// <summary>
         /// This method is used for the ProjectName CodeProperty in Types.ps1xml
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps")]
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps")]
         public static string GetCustomUniqueName(PSObject psObject)
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                return EnvDTEProjectUtility.GetCustomUniqueName((EnvDTE.Project)psObject.BaseObject);
-            });
+                    return EnvDTEProjectUtility.GetCustomUniqueName((Project)psObject.BaseObject);
+                });
         }
 
         /// <summary>
-        /// DO NOT delete this. This method is only called from PowerShell functional test. 
+        /// DO NOT delete this. This method is only called from PowerShell functional test.
         /// </summary>
         public static void RemoveProject(string projectName)
         {

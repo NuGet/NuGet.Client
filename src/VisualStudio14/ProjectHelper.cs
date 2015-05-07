@@ -1,11 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 #if VS14
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Designers;
 using Microsoft.VisualStudio.Shell;
 #endif
-using Microsoft.VisualStudio.Shell.Interop;
 using MsBuildProject = Microsoft.Build.Evaluation.Project;
 using Task = System.Threading.Tasks.Task;
 
@@ -14,7 +18,7 @@ namespace NuGet.VisualStudio14
     public static class ProjectHelper
     {
 #if VS14
-        public static async Task DoWorkInWriterLockAsync(EnvDTE.Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
+        public static async Task DoWorkInWriterLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -56,7 +60,7 @@ namespace NuGet.VisualStudio14
                     object extObject;
                     if (ErrorHandler.Succeeded(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_ExtObject, out extObject)))
                     {
-                        EnvDTE.Project dteProject = extObject as EnvDTE.Project;
+                        Project dteProject = extObject as Project;
                         if (dteProject != null)
                         {
                             context = dteProject.Object as IVsBrowseObjectContext;

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace NuGetConsole.Host.PowerShell
@@ -30,19 +33,22 @@ namespace NuGetConsole.Host.PowerShell
 
         bool IEqualityComparer<object>.Equals(object x, object y)
         {
-            if (x == null && y == null)
+            if (x == null
+                && y == null)
             {
                 return true;
             }
 
-            if (x == null || y == null)
+            if (x == null
+                || y == null)
             {
                 return false;
             }
 
             string xString = x as string;
             string yString = y as string;
-            if (xString != null && yString != null)
+            if (xString != null
+                && yString != null)
             {
                 return xString.Equals(yString, StringComparison.OrdinalIgnoreCase);
             }

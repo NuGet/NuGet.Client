@@ -1,11 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Runtime.CompilerServices;
-using Microsoft.VisualStudio.Shell;
+using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
-using Task = System.Threading.Tasks.Task;
+using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 #if VS14
 using NuGetVS = NuGet.VisualStudio14;
+
 #else
 using NuGetVS = NuGet.VisualStudio12;
 #endif
@@ -33,13 +37,13 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
-                string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetPath);
-                await AddImportStatementForVS2013Async(location, relativeTargetPath);
-            });
+                    var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
+                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetPath);
+                    await AddImportStatementForVS2013Async(location, relativeTargetPath);
+                });
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -64,14 +68,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
-                // For VS 2012 or above, the operation has to be done inside the Writer lock
-                string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetPath);
-                await RemoveImportStatementForVS2013Async(relativeTargetPath);
-            });
+                    var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
+                    // For VS 2012 or above, the operation has to be done inside the Writer lock
+                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetPath);
+                    await RemoveImportStatementForVS2013Async(relativeTargetPath);
+                });
         }
 
         // IMPORTANT: The NoInlining is required to prevent CLR from loading VisualStudio12.dll assembly while running 

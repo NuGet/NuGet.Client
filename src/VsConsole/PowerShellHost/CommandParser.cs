@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
@@ -13,7 +16,7 @@ namespace NuGetConsole.Host.PowerShell
     {
         private int _index;
         private readonly string _command;
-        private readonly char[] _escapeChars = new[] { 'n', 'r', 't', 'a', 'b', '"', '\'', '`', '0' };
+        private readonly char[] _escapeChars = { 'n', 'r', 't', 'a', 'b', '"', '\'', '`', '0' };
 
         private CommandParser(string command)
         {
@@ -22,26 +25,17 @@ namespace NuGetConsole.Host.PowerShell
 
         private char CurrentChar
         {
-            get
-            {
-                return GetChar(_index);
-            }
+            get { return GetChar(_index); }
         }
 
         private char NextChar
         {
-            get
-            {
-                return GetChar(_index + 1);
-            }
+            get { return GetChar(_index + 1); }
         }
 
         private bool Done
         {
-            get
-            {
-                return _index >= _command.Length;
-            }
+            get { return _index >= _command.Length; }
         }
 
         public static Command Parse(string command)
@@ -79,7 +73,8 @@ namespace NuGetConsole.Host.PowerShell
 
                 string argument = ParseToken();
 
-                if (argument.Length > 0 && argument[0] == '-')
+                if (argument.Length > 0
+                    && argument[0] == '-')
                 {
                     // Trim the -
                     argument = argument.Substring(1);
@@ -87,7 +82,8 @@ namespace NuGetConsole.Host.PowerShell
                     if (!String.IsNullOrEmpty(argument))
                     {
                         // Parse the argument value if any
-                        if (SkipWhitespace() && CurrentChar != '-')
+                        if (SkipWhitespace()
+                            && CurrentChar != '-')
                         {
                             parsedCommand.Arguments[argument] = ParseToken();
                         }
@@ -126,7 +122,8 @@ namespace NuGetConsole.Host.PowerShell
             {
                 sb.Append(ParseUntil(c => c == '\''));
 
-                if (ParseChar() == '\'' && CurrentChar == '\'')
+                if (ParseChar() == '\''
+                    && CurrentChar == '\'')
                 {
                     sb.Append(ParseChar());
                 }
@@ -181,7 +178,7 @@ namespace NuGetConsole.Host.PowerShell
                 ParseChar();
                 return ParseSingleQuotes();
             }
-            else if (CurrentChar == '"')
+            if (CurrentChar == '"')
             {
                 ParseChar();
                 return ParseDoubleQuotes();
@@ -192,7 +189,8 @@ namespace NuGetConsole.Host.PowerShell
         private string ParseUntil(Func<char, bool> predicate)
         {
             var sb = new StringBuilder();
-            while (!Done && !predicate(CurrentChar))
+            while (!Done
+                   && !predicate(CurrentChar))
             {
                 sb.Append(CurrentChar);
                 _index++;

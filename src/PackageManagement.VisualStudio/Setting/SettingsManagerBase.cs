@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -24,14 +23,12 @@ namespace NuGet.PackageManagement.VisualStudio
         protected bool ReadBool(string settingsRoot, string property, bool defaultValue = false)
         {
             var userSettingsStore = _settingsManager.GetReadOnlySettingsStore();
-            if (userSettingsStore != null && userSettingsStore.CollectionExists(settingsRoot))
+            if (userSettingsStore != null
+                && userSettingsStore.CollectionExists(settingsRoot))
             {
                 return userSettingsStore.GetBoolean(settingsRoot, property, defaultValue);
             }
-            else
-            {
-                return defaultValue;
-            }
+            return defaultValue;
         }
 
         protected void WriteBool(string settingsRoot, string property, bool value)
@@ -46,14 +43,12 @@ namespace NuGet.PackageManagement.VisualStudio
         protected int ReadInt32(string settingsRoot, string property, int defaultValue = 0)
         {
             var userSettingsStore = _settingsManager.GetReadOnlySettingsStore();
-            if (userSettingsStore != null && userSettingsStore.CollectionExists(settingsRoot))
+            if (userSettingsStore != null
+                && userSettingsStore.CollectionExists(settingsRoot))
             {
                 return userSettingsStore.GetInt32(settingsRoot, property, defaultValue);
             }
-            else
-            {
-                return defaultValue;
-            }
+            return defaultValue;
         }
 
         protected void WriteInt32(string settingsRoot, string property, int value)
@@ -68,20 +63,19 @@ namespace NuGet.PackageManagement.VisualStudio
         protected string ReadString(string settingsRoot, string property, string defaultValue = "")
         {
             var userSettingsStore = _settingsManager.GetReadOnlySettingsStore();
-            if (userSettingsStore != null && userSettingsStore.CollectionExists(settingsRoot))
+            if (userSettingsStore != null
+                && userSettingsStore.CollectionExists(settingsRoot))
             {
                 return userSettingsStore.GetString(settingsRoot, property, defaultValue);
             }
-            else
-            {
-                return defaultValue;
-            }
+            return defaultValue;
         }
 
         protected string[] ReadStrings(string settingsRoot, string[] properties, string defaultValue = "")
         {
             var userSettingsStore = _settingsManager.GetReadOnlySettingsStore();
-            if (userSettingsStore != null && userSettingsStore.CollectionExists(settingsRoot))
+            if (userSettingsStore != null
+                && userSettingsStore.CollectionExists(settingsRoot))
             {
                 string[] values = new string[properties.Length];
                 for (int i = 0; i < values.Length; i++)
@@ -90,10 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 return values;
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         protected bool DeleteProperty(string settingsRoot, string property)
@@ -103,10 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return userSettingsStore.DeleteProperty(settingsRoot, property);
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         protected void WriteStrings(string settingsRoot, string[] properties, string[] values)
@@ -135,7 +123,8 @@ namespace NuGet.PackageManagement.VisualStudio
         protected void ClearAllSettings(string settingsRoot)
         {
             IWritableSettingsStore userSettingsStore = _settingsManager.GetWritableSettingsStore();
-            if (userSettingsStore != null && userSettingsStore.CollectionExists(settingsRoot))
+            if (userSettingsStore != null
+                && userSettingsStore.CollectionExists(settingsRoot))
             {
                 userSettingsStore.DeleteCollection(settingsRoot);
             }
@@ -144,7 +133,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private IWritableSettingsStore GetWritableSettingsStore(string settingsRoot)
         {
             IWritableSettingsStore userSettingsStore = _settingsManager.GetWritableSettingsStore();
-            if (userSettingsStore != null && !userSettingsStore.CollectionExists(settingsRoot))
+            if (userSettingsStore != null
+                && !userSettingsStore.CollectionExists(settingsRoot))
             {
                 userSettingsStore.CreateCollection(settingsRoot);
             }

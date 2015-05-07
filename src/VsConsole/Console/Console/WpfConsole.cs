@@ -1,15 +1,19 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
+using NuGet.PackageManagement.VisualStudio;
 using EditorDefGuidList = Microsoft.VisualStudio.Editor.DefGuidList;
 using IOleServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
-using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetConsole.Implementation.Console
 {
@@ -21,7 +25,7 @@ namespace NuGetConsole.Implementation.Console
         SnapshotSpan? EndInputLine(bool isEcho);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    [SuppressMessage(
         "Microsoft.Maintainability",
         "CA1506:AvoidExcessiveClassCoupling",
         Justification = "We don't have resources to refactor this class.")]
@@ -111,7 +115,7 @@ namespace NuGetConsole.Implementation.Console
                     if (_contentType == null)
                     {
                         _contentType = Factory.ContentTypeRegistryService.AddContentType(
-                            this.ContentTypeName, new string[] { "text" });
+                            this.ContentTypeName, new[] { "text" });
                     }
                 }
 
@@ -167,7 +171,7 @@ namespace NuGetConsole.Implementation.Console
         }
 
         /// <summary>
-        ///     Get current input line start point (updated to current WpfTextView's text snapshot).
+        /// Get current input line start point (updated to current WpfTextView's text snapshot).
         /// </summary>
         public SnapshotPoint? InputLineStart
         {
@@ -191,10 +195,10 @@ namespace NuGetConsole.Implementation.Console
         }
 
         /// <summary>
-        ///     Get the snapshot extent from InputLineStart to END. Normally this console expects
-        ///     one line only on InputLine. However in some cases multiple lines could appear, e.g.
-        ///     when a DTE event handler writes to the console. This scenario is not fully supported,
-        ///     but it is better to clean up nicely with ESC/ArrowUp/Return.
+        /// Get the snapshot extent from InputLineStart to END. Normally this console expects
+        /// one line only on InputLine. However in some cases multiple lines could appear, e.g.
+        /// when a DTE event handler writes to the console. This scenario is not fully supported,
+        /// but it is better to clean up nicely with ESC/ArrowUp/Return.
         /// </summary>
         public SnapshotSpan AllInputExtent
         {
@@ -250,11 +254,13 @@ namespace NuGetConsole.Implementation.Console
                     ITextViewMargin rightMargin = WpfTextViewHost.GetTextViewMargin(PredefinedMarginNames.Right);
 
                     double marginSize = 0.0;
-                    if (leftMargin != null && leftMargin.Enabled)
+                    if (leftMargin != null
+                        && leftMargin.Enabled)
                     {
                         marginSize += leftMargin.MarginSize;
                     }
-                    if (rightMargin != null && rightMargin.Enabled)
+                    if (rightMargin != null
+                        && rightMargin.Enabled)
                     {
                         marginSize += rightMargin.MarginSize;
                     }
@@ -284,13 +290,13 @@ namespace NuGetConsole.Implementation.Console
             {
                 if (_view == null)
                 {
-					var textViewRoleSet = Factory.TextEditorFactoryService.CreateTextViewRoleSet(
-						PredefinedTextViewRoles.Interactive,
-						PredefinedTextViewRoles.Editable,
-						PredefinedTextViewRoles.Analyzable,
-						PredefinedTextViewRoles.Zoomable);
+                    var textViewRoleSet = Factory.TextEditorFactoryService.CreateTextViewRoleSet(
+                        PredefinedTextViewRoles.Interactive,
+                        PredefinedTextViewRoles.Editable,
+                        PredefinedTextViewRoles.Analyzable,
+                        PredefinedTextViewRoles.Zoomable);
 
-					_view = Factory.VsEditorAdaptersFactoryService.CreateVsTextViewAdapter(OleServiceProvider, textViewRoleSet);
+                    _view = Factory.VsEditorAdaptersFactoryService.CreateVsTextViewAdapter(OleServiceProvider, textViewRoleSet);
                     _view.Initialize(
                         VsTextBuffer as IVsTextLines,
                         IntPtr.Zero,
@@ -308,9 +314,9 @@ namespace NuGetConsole.Implementation.Console
                         if (hr == 0)
                         {
                             propContainer.SetProperty(VSEDITPROPID.VSEDITPROPID_ViewGeneral_FontCategory,
-                                                      GuidList.guidPackageManagerConsoleFontAndColorCategory);
+                                GuidList.guidPackageManagerConsoleFontAndColorCategory);
                             propContainer.SetProperty(VSEDITPROPID.VSEDITPROPID_ViewGeneral_ColorCategory,
-                                                      GuidList.guidPackageManagerConsoleFontAndColorCategory);
+                                GuidList.guidPackageManagerConsoleFontAndColorCategory);
                         }
                     }
 
@@ -382,16 +388,16 @@ namespace NuGetConsole.Implementation.Console
                         if (snapshot.Length > 0)
                         {
                             _readOnlyRegionBegin = edit.CreateReadOnlyRegion(new Span(0, 0),
-                                                                             SpanTrackingMode.EdgeExclusive,
-                                                                             EdgeInsertionMode.Deny);
+                                SpanTrackingMode.EdgeExclusive,
+                                EdgeInsertionMode.Deny);
                             _readOnlyRegionBody = edit.CreateReadOnlyRegion(new Span(0, snapshot.Length));
                         }
                         break;
 
                     case ReadOnlyRegionType.All:
                         _readOnlyRegionBody = edit.CreateReadOnlyRegion(new Span(0, snapshot.Length),
-                                                                        SpanTrackingMode.EdgeExclusive,
-                                                                        EdgeInsertionMode.Deny);
+                            SpanTrackingMode.EdgeExclusive,
+                            EdgeInsertionMode.Deny);
                         break;
                 }
 
@@ -403,8 +409,8 @@ namespace NuGetConsole.Implementation.Console
         {
             SnapshotPoint beginPoint = InputLineStart.Value + start;
             return length >= 0
-                       ? new SnapshotSpan(beginPoint, length)
-                       : new SnapshotSpan(beginPoint, beginPoint.GetContainingLine().End);
+                ? new SnapshotSpan(beginPoint, length)
+                : new SnapshotSpan(beginPoint, beginPoint.GetContainingLine().End);
         }
 
         public void BeginInputLine()
@@ -520,7 +526,8 @@ namespace NuGetConsole.Implementation.Console
             Write(text);
             int end = WpfTextView.TextSnapshot.Length;
 
-            if (foreground != null || background != null)
+            if (foreground != null
+                || background != null)
             {
                 var span = new SnapshotSpan(WpfTextView.TextSnapshot, begin, end - begin);
                 NewColorSpan.Raise(this, Tuple.Create(span, foreground, background));
@@ -564,12 +571,13 @@ namespace NuGetConsole.Implementation.Console
             }
 
             int index = _currentHistoryInputIndex + offset;
-            if (index >= -1 && index <= _historyInputs.Count)
+            if (index >= -1
+                && index <= _historyInputs.Count)
             {
                 _currentHistoryInputIndex = index;
                 string input = (index >= 0 && index < _historyInputs.Count)
-                                   ? _historyInputs[_currentHistoryInputIndex]
-                                   : string.Empty;
+                    ? _historyInputs[_currentHistoryInputIndex]
+                    : string.Empty;
 
                 // Replace all text after InputLineStart with new text
                 WpfTextView.TextBuffer.Replace(AllInputExtent, input);
@@ -659,12 +667,12 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Usage",
             "CA2213:DisposableFieldsShouldBeDisposed",
             MessageId = "_marshaler",
-            Justification = "The Dispose() method on _marshaler is called when the tool window is closed."),
-        System.Diagnostics.CodeAnalysis.SuppressMessage(
+            Justification = "The Dispose() method on _marshaler is called when the tool window is closed.")]
+        [SuppressMessage(
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We don't want to crash VS when it exits.")]
@@ -824,17 +832,17 @@ namespace NuGetConsole.Implementation.Console
         private enum ReadOnlyRegionType
         {
             /// <summary>
-            ///     No ReadOnly region. The whole text buffer allows edit.
+            /// No ReadOnly region. The whole text buffer allows edit.
             /// </summary>
             None,
 
             /// <summary>
-            ///     Begin and body are ReadOnly. Only allows edit at the end.
+            /// Begin and body are ReadOnly. Only allows edit at the end.
             /// </summary>
             BeginAndBody,
 
             /// <summary>
-            ///     The whole text buffer is ReadOnly. Does not allow any edit.
+            /// The whole text buffer is ReadOnly. Does not allow any edit.
             /// </summary>
             All
         };

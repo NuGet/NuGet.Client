@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
@@ -48,10 +51,13 @@ namespace NuGetConsole.Host.PowerShell
         {
             public int cbSize;
             public IntPtr hwndParent;
+
             [MarshalAs(UnmanagedType.LPWStr)]
             public string pszMessageText;
+
             [MarshalAs(UnmanagedType.LPWStr)]
             public string pszCaptionText;
+
             public IntPtr hbmBanner;
         }
 
@@ -67,14 +73,13 @@ namespace NuGetConsole.Host.PowerShell
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
             IntPtr parentHwnd = default(IntPtr))
         {
-
             PSCredential credential = null;
 
             var info = new CreduiInfo
-            {
-                pszCaptionText = caption,
-                pszMessageText = message
-            };
+                {
+                    pszCaptionText = caption,
+                    pszMessageText = message
+                };
 
             var pszUserName = new StringBuilder(userName, 0x201);
             var pszPassword = new StringBuilder(0x100);
@@ -94,7 +99,8 @@ namespace NuGetConsole.Host.PowerShell
 
             var codes = CredUiReturnCodes.ERROR_INVALID_PARAMETER;
 
-            if ((pszUserName.Length <= 0x201) && (pszPassword.Length <= 0x100))
+            if ((pszUserName.Length <= 0x201)
+                && (pszPassword.Length <= 0x100))
             {
                 codes = CredUIPromptForCredentials(
                     ref info, targetName, IntPtr.Zero, 0, pszUserName,
@@ -103,7 +109,6 @@ namespace NuGetConsole.Host.PowerShell
 
             if (codes == CredUiReturnCodes.NO_ERROR)
             {
-
                 string providedUserName = pszUserName.ToString();
                 var providedPassword = new SecureString();
 

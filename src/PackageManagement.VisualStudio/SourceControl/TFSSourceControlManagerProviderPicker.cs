@@ -1,12 +1,11 @@
-﻿using EnvDTE80;
-using NuGet.ProjectManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using EnvDTE80;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -15,6 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private const string typeName = "NuGet.TeamFoundationServer.TFSSourceControlManagerProvider";
         private ITFSSourceControlManagerProvider _cachedTFSSourceControlManagerProvider;
+
         public SourceControlManager GetTFSSourceControlManager(SourceControlBindings sourceControlBindings)
         {
             var underlyingTfsProvider = GetUnderlyingTfsProvider();

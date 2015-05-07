@@ -1,6 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -17,21 +21,21 @@ namespace NuGetConsole.Implementation.PowerConsole
         private Dictionary<string, HostInfo> _hostInfos;
         private HostInfo _activeHostInfo;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import(typeof(SVsServiceProvider))]
         internal IServiceProvider ServiceProvider { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IWpfConsoleService WpfConsoleService { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany]
         internal IEnumerable<Lazy<IHostProvider, IHostMetadata>> HostProviders { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "_hostInfo collection is disposed.")]
-        Dictionary<string, HostInfo> HostInfos
+        private Dictionary<string, HostInfo> HostInfos
         {
             get
             {
@@ -74,7 +78,9 @@ namespace NuGetConsole.Implementation.PowerConsole
             set
             {
                 HostInfo hi = ActiveHostInfo;
-                if (hi != null && hi.WpfConsole != null && hi.WpfConsole.Host != null)
+                if (hi != null
+                    && hi.WpfConsole != null
+                    && hi.WpfConsole.Host != null)
                 {
                     hi.WpfConsole.Host.ActivePackageSource = value;
                 }
@@ -83,18 +89,12 @@ namespace NuGetConsole.Implementation.PowerConsole
 
         public string[] PackageSources
         {
-            get
-            {
-                return ActiveHostInfo.WpfConsole.Host.GetPackageSources();
-            }
+            get { return ActiveHostInfo.WpfConsole.Host.GetPackageSources(); }
         }
 
         public string[] AvailableProjects
         {
-            get
-            {
-                return ActiveHostInfo.WpfConsole.Host.GetAvailableProjects();
-            }
+            get { return ActiveHostInfo.WpfConsole.Host.GetAvailableProjects(); }
         }
 
         public string DefaultProject
@@ -111,7 +111,9 @@ namespace NuGetConsole.Implementation.PowerConsole
         public void SetDefaultProjectIndex(int selectedIndex)
         {
             HostInfo hi = ActiveHostInfo;
-            if (hi != null && hi.WpfConsole != null && hi.WpfConsole.Host != null)
+            if (hi != null
+                && hi.WpfConsole != null
+                && hi.WpfConsole.Host != null)
             {
                 hi.WpfConsole.Host.SetDefaultProjectIndex(selectedIndex);
             }

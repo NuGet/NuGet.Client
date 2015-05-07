@@ -1,13 +1,12 @@
-﻿using Microsoft.VisualStudio.VCProjectEngine;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.VCProjectEngine;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -133,7 +132,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 var remainingFilters = currentFilter.Filters as IEnumerable;
 
                 // if the current filter is empty, delete it
-                if (!remainingFiles.GetEnumerator().MoveNext() && !remainingFilters.GetEnumerator().MoveNext())
+                if (!remainingFiles.GetEnumerator().MoveNext()
+                    && !remainingFilters.GetEnumerator().MoveNext())
                 {
                     var parent = currentFilter.Parent;
                     currentFilter.Remove();

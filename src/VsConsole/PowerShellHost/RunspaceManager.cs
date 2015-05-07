@@ -1,5 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -26,7 +30,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return _runspaceCache.GetOrAdd(hostName, name => CreateAndSetupRunspace(console, name));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "We can't dispose it if we want to return it.")]
@@ -40,7 +44,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return Tuple.Create(runspace.Item1, runspace.Item2);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "We can't dispose it if we want to return it.")]
@@ -55,7 +59,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     (DTE2)dte,
                     "Visual Studio DTE automation object",
                     ScopedItemOptions.AllScope | ScopedItemOptions.Constant)
-            );
+                );
 
             // this is used by the functional tests
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
@@ -64,12 +68,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             var sourceRepoTuple = Tuple.Create<string, object>("SourceRepositoryProvider", sourceRepositoryProvider);
             var solutionManagerTuple = Tuple.Create<string, object>("VsSolutionManager", solutionManager);
 
-            Tuple<string, object>[] privateData = new Tuple<string, object>[] { sourceRepoTuple, solutionManagerTuple  };
+            Tuple<string, object>[] privateData = { sourceRepoTuple, solutionManagerTuple };
 
             var host = new NuGetPSHost(hostName, privateData)
-            {
-                ActiveConsole = console
-            };
+                {
+                    ActiveConsole = console
+                };
 
             var runspace = RunspaceFactory.CreateRunspace(host, initialSessionState);
             runspace.ThreadOptions = PSThreadOptions.Default;
@@ -99,10 +103,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             string modulePath = Path.Combine(extensionRoot, "Modules", "NuGet", "NuGet.psd1");
             runspace.ImportModule(modulePath);
 
-
             // provide backdoor to enable function test
             string functionalTestPath = Environment.GetEnvironmentVariable("NuGetFunctionalTestPath");
-            if (functionalTestPath != null && File.Exists(functionalTestPath))
+            if (functionalTestPath != null
+                && File.Exists(functionalTestPath))
             {
                 runspace.ImportModule(functionalTestPath);
             }

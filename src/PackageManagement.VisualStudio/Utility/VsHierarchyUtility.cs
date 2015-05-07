@@ -1,12 +1,11 @@
-﻿using EnvDTE;
-using Microsoft.VisualStudio.Shell.Interop;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -49,14 +48,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 return projectTypeGuids.Split(';');
             }
-            else if (!String.IsNullOrEmpty(project.Kind))
+            if (!String.IsNullOrEmpty(project.Kind))
             {
                 return new[] { project.Kind };
             }
-            else
-            {
-                return new string[0];
-            }
+            return new string[0];
         }
     }
 }

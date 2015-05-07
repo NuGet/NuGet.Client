@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.Xml.Linq;
 using NuGet.ProjectManagement;
@@ -24,41 +27,19 @@ namespace NuGet.PackageManagement.VisualStudio
             Culture = assembly.Culture;
         }
 
-        public string Name
-        {
-            get;
-            private set;
-        }
+        public string Name { get; private set; }
 
         public string Culture
         {
-            get
-            {
-                return _culture ?? "neutral";
-            }
-            set
-            {
-                _culture = value;
-            }
+            get { return _culture ?? "neutral"; }
+            set { _culture = value; }
         }
 
-        public string PublicKeyToken
-        {
-            get;
-            private set;
-        }
+        public string PublicKeyToken { get; private set; }
 
-        public string ProcessorArchitecture
-        {
-            get;
-            private set;
-        }
+        public string ProcessorArchitecture { get; private set; }
 
-        public string NewVersion
-        {
-            get;
-            private set;
-        }
+        public string NewVersion { get; private set; }
 
         public string OldVersion
         {
@@ -68,37 +49,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 // point to the new version
                 return _oldVersion ?? "0.0.0.0-" + NewVersion;
             }
-            set
-            {
-                _oldVersion = value;
-            }
+            set { _oldVersion = value; }
         }
 
-        public Version AssemblyNewVersion
-        {
-            get;
-            private set;
-        }
+        public Version AssemblyNewVersion { get; private set; }
 
         // These properties aren't meant for use, just used for round tripping existing 
         // <dependentAssembly /> elements
-        public string CodeBaseHref
-        {
-            get;
-            private set;
-        }
+        public string CodeBaseHref { get; private set; }
 
-        public string CodeBaseVersion
-        {
-            get;
-            private set;
-        }
+        public string CodeBaseVersion { get; private set; }
 
-        public string PublisherPolicy
-        {
-            get;
-            private set;
-        }
+        public string PublisherPolicy { get; private set; }
 
         public XElement ToXElement()
         {
@@ -117,33 +79,31 @@ namespace NuGet.PackageManagement.VisualStudio
             //   <codeBase href="{CodeBaseHref}" version="{CodeBaseVersion}" />
             //</dependentAssembly>
             XElement dependenyAssembly = new XElement(GetQualifiedName("dependentAssembly"),
-                             new XElement(GetQualifiedName("assemblyIdentity"),
-                                 new XAttribute("name", Name),
-                                 new XAttribute("publicKeyToken", PublicKeyToken),
-                                 new XAttribute("culture", Culture),
-                                 new XAttribute("processorArchitecture", ProcessorArchitecture ?? String.Empty)),
-                             new XElement(GetQualifiedName("bindingRedirect"),
-                                 new XAttribute("oldVersion", OldVersion),
-                                 new XAttribute("newVersion", NewVersion)));
+                new XElement(GetQualifiedName("assemblyIdentity"),
+                    new XAttribute("name", Name),
+                    new XAttribute("publicKeyToken", PublicKeyToken),
+                    new XAttribute("culture", Culture),
+                    new XAttribute("processorArchitecture", ProcessorArchitecture ?? String.Empty)),
+                new XElement(GetQualifiedName("bindingRedirect"),
+                    new XAttribute("oldVersion", OldVersion),
+                    new XAttribute("newVersion", NewVersion)));
 
             if (!String.IsNullOrEmpty(PublisherPolicy))
             {
                 dependenyAssembly.Add(new XElement(GetQualifiedName("publisherPolicy"),
-                                        new XAttribute("apply", PublisherPolicy)));
+                    new XAttribute("apply", PublisherPolicy)));
             }
 
             if (!String.IsNullOrEmpty(CodeBaseHref))
             {
                 Debug.Assert(!String.IsNullOrEmpty(CodeBaseVersion));
                 dependenyAssembly.Add(new XElement(GetQualifiedName("codeBase"),
-                                          new XAttribute("href", CodeBaseHref),
-                                          new XAttribute("version", CodeBaseVersion)));
+                    new XAttribute("href", CodeBaseHref),
+                    new XAttribute("version", CodeBaseVersion)));
             }
-
 
             // Remove empty attributes
             dependenyAssembly.RemoveAttributes(a => String.IsNullOrEmpty(a.Value));
-
 
             return dependenyAssembly;
         }
@@ -216,12 +176,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static bool SafeEquals(object a, object b)
         {
-            if (a != null && b != null)
+            if (a != null
+                && b != null)
             {
                 return a.Equals(b);
             }
 
-            if (a == null && b == null)
+            if (a == null
+                && b == null)
             {
                 return true;
             }

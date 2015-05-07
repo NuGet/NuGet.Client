@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -18,10 +21,10 @@ namespace NuGet.VisualStudio12
     {
 #if VS12
 
-        /// <summary>
-        /// Performs an action inside a VS internal writer lock. If called from the UI thread this method will
-        /// run async to avoid deadlocks.
-        /// </summary>
+    /// <summary>
+    /// Performs an action inside a VS internal writer lock. If called from the UI thread this method will
+    /// run async to avoid deadlocks.
+    /// </summary>
         public static async Task DoWorkInWriterLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
             UnconfiguredProject unconfiguredProject = GetUnconfiguredProject((IVsProject)hierarchy);

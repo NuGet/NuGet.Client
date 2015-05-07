@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 
 namespace NuGetConsole
@@ -7,7 +10,6 @@ namespace NuGetConsole
     /// </summary>
     public interface IConsoleDispatcher
     {
-
         /// <summary>
         /// Start dispatching console command line inputs. This method can execute asynchronously.
         /// </summary>
@@ -47,7 +49,6 @@ namespace NuGetConsole
         /// content externally (not inside a host command execution). The console dispatcher manages
         /// console state, displays prompt, etc. Call this method to avoid interfere with user
         /// input dispatching.
-        /// 
         /// On the other hand, if you need to clear the console content inside host command execution,
         /// use IConsole.Clear() instead.
         /// </summary>

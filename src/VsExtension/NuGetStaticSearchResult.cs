@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
@@ -41,18 +44,11 @@ namespace NuGetVSExtension
             get { return null; }
         }
 
-        public string DisplayText
-        {
-            get;
-            private set;
-        }
+        public string DisplayText { get; private set; }
 
         public IVsUIObject Icon
         {
-            get
-            {
-                return _searchProvider.SearchResultsIcon;
-            }
+            get { return _searchProvider.SearchResultsIcon; }
         }
 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands", Justification = "Just to make TeamCity build happy. We don't see any FxCop issue when built locally.")]
@@ -63,18 +59,12 @@ namespace NuGetVSExtension
 
         public string PersistenceData
         {
-            get
-            {
-                return null;
-            }
+            get { return null; }
         }
 
         public IVsSearchProvider SearchProvider
         {
-            get
-            {
-                return _searchProvider;
-            }
+            get { return _searchProvider; }
         }
 
         public string Tooltip

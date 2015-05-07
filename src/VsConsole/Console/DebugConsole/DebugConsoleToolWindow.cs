@@ -1,24 +1,22 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell;
-using System.Runtime.InteropServices;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGetConsole.Implementation.Console;
-using System.Windows;
-using System.Windows.Controls;
-using NuGetConsole.DebugConsole;
-using System.Windows.Media;
-using Microsoft.VisualStudio.TextManager.Interop;
-using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Editor;
-using NuGet;
 using System.Diagnostics;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Media;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
+using NuGet;
 using NuGet.PackageManagement.VisualStudio;
+using NuGetConsole.DebugConsole;
 
 namespace NuGetConsole.Implementation
 {
@@ -35,7 +33,7 @@ namespace NuGetConsole.Implementation
 
         public const string ContentType = "PackageManagerDebugConsole";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.VisualStudio.Shell.ToolWindowPane.set_Caption(System.String)")]
+        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.VisualStudio.Shell.ToolWindowPane.set_Caption(System.String)")]
         public DebugConsoleToolWindow()
             : base(null)
         {
@@ -48,7 +46,7 @@ namespace NuGetConsole.Implementation
             _viewModel = new DebugConsoleViewModel();
 
             _handler = new EventHandler<DebugConsoleMessageEventArgs>(HandleMessage);
-            _debugWindow = new DebugWindow() { DataContext = _viewModel };
+            _debugWindow = new DebugWindow { DataContext = _viewModel };
             this.Content = _debugWindow;
         }
 
@@ -89,7 +87,7 @@ namespace NuGetConsole.Implementation
         {
             _consoleService = consoleService;
 
-            _console = _consoleService.CreateConsole(ServiceLocator.PackageServiceProvider, DebugConsoleToolWindow.ContentType, "nugetdebug");
+            _console = _consoleService.CreateConsole(ServiceLocator.PackageServiceProvider, ContentType, "nugetdebug");
 
             _console.StartWritingOutput();
 
@@ -117,7 +115,7 @@ namespace NuGetConsole.Implementation
             AttachEvents();
         }
 
-        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "NuGetConsole.IConsole.Write(System.String,System.Nullable<System.Windows.Media.Color>,System.Nullable<System.Windows.Media.Color>)", Justification="String does not require localization.")]
+        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "NuGetConsole.IConsole.Write(System.String,System.Nullable<System.Windows.Media.Color>,System.Nullable<System.Windows.Media.Color>)", Justification = "String does not require localization.")]
         public void Log(DateTime timestamp, string message, TraceEventType level, string source)
         {
             if (IsActive)
@@ -129,7 +127,7 @@ namespace NuGetConsole.Implementation
                 if (mapped >= _viewModel.ActiveLevel)
                 {
                     _console.Write(
-                        String.Format(CultureInfo.CurrentCulture, "[{0:O}][{1}]{2}", timestamp, Shorten(source), message) + Environment.NewLine, 
+                        String.Format(CultureInfo.CurrentCulture, "[{0:O}][{1}]{2}", timestamp, Shorten(source), message) + Environment.NewLine,
                         ConvertColor(mapped), null);
                 }
 
@@ -151,16 +149,16 @@ namespace NuGetConsole.Implementation
         {
             switch (level)
             {
-            case TraceEventType.Critical:
-                return DebugConsoleLevel.Critical;
-            case TraceEventType.Error:
-                return DebugConsoleLevel.Error;
-            case TraceEventType.Information:
-                return DebugConsoleLevel.Info;
-            case TraceEventType.Warning:
-                return DebugConsoleLevel.Warning;
-            default:
-                return DebugConsoleLevel.Trace;
+                case TraceEventType.Critical:
+                    return DebugConsoleLevel.Critical;
+                case TraceEventType.Error:
+                    return DebugConsoleLevel.Error;
+                case TraceEventType.Information:
+                    return DebugConsoleLevel.Info;
+                case TraceEventType.Warning:
+                    return DebugConsoleLevel.Warning;
+                default:
+                    return DebugConsoleLevel.Trace;
             }
         }
 
@@ -168,27 +166,24 @@ namespace NuGetConsole.Implementation
         {
             switch (level)
             {
-            case DebugConsoleLevel.Critical:
-                return Colors.Red;
-            case DebugConsoleLevel.Error:
-                return Colors.Red;
-            case DebugConsoleLevel.Warning:
-                return Colors.Yellow;
-            case DebugConsoleLevel.Info:
-                return Colors.Green;
-            case DebugConsoleLevel.Trace:
-                return Colors.Silver;
-            default:
-                return Colors.White;
+                case DebugConsoleLevel.Critical:
+                    return Colors.Red;
+                case DebugConsoleLevel.Error:
+                    return Colors.Red;
+                case DebugConsoleLevel.Warning:
+                    return Colors.Yellow;
+                case DebugConsoleLevel.Info:
+                    return Colors.Green;
+                case DebugConsoleLevel.Trace:
+                    return Colors.Silver;
+                default:
+                    return Colors.White;
             }
         }
 
         public bool IsActive
         {
-            get
-            {
-                return _active;
-            }
+            get { return _active; }
         }
 
         private void AttachEvents()

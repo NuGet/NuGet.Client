@@ -1,11 +1,10 @@
-﻿using NuGet.ProjectManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Packaging;
 using System.Globalization;
+using NuGet.Packaging;
+using NuGet.ProjectManagement;
 
 namespace NuGetVSExtension
 {
@@ -28,31 +27,19 @@ namespace NuGetVSExtension
 
         public ExecutionContext ExecutionContext
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
         }
 
         public PackageExtractionContext PackageExtractionContext
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
 
-            set
-            {
-                throw new NotImplementedException();
-            }
+            set { throw new NotImplementedException(); }
         }
 
         public ISourceControlManagerProvider SourceControlManagerProvider
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
         }
 
         public void ReportError(string message)

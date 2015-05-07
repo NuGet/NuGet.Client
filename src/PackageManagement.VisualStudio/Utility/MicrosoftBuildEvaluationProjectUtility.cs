@@ -1,12 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.Build.Evaluation;
-using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
-using System.Linq;
-using Microsoft.Build.Construction;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
 using NuGet.ProjectManagement;
+using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -40,7 +43,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal static void AddImportStatement(MicrosoftBuildEvaluationProject msBuildProject, string targetsPath, ImportLocation location)
         {
-            if (msBuildProject.Xml.Imports == null ||
+            if (msBuildProject.Xml.Imports == null
+                ||
                 msBuildProject.Xml.Imports.All(import => !targetsPath.Equals(import.Project, StringComparison.OrdinalIgnoreCase)))
             {
                 ProjectImportElement pie = msBuildProject.Xml.AddImport(targetsPath);

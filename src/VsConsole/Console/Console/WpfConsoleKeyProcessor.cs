@@ -1,24 +1,28 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
 using NuGet.PackageManagement.VisualStudio;
-using Task = System.Threading.Tasks.Task;
+using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
+using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Implementation.Console
 {
-
     internal class WpfConsoleKeyProcessor : OleCommandFilter
     {
         private const string PowershellConsoleKey = @"SOFTWARE\NuGet\PowershellConsole";
@@ -104,10 +108,7 @@ namespace NuGetConsole.Implementation.Console
         /// </summary>
         private bool IsCaretAtInputLineStart
         {
-            get
-            {
-                return WpfConsole.InputLineStart == WpfTextView.Caret.Position.BufferPosition;
-            }
+            get { return WpfConsole.InputLineStart == WpfTextView.Caret.Position.BufferPosition; }
         }
 
         private SnapshotPoint CaretPosition
@@ -136,12 +137,14 @@ namespace NuGetConsole.Implementation.Console
             OldChain.Execute(idCommand, args);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         protected override int InternalExec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             int hr = OLECMDERR_E_NOTSUPPORTED;
 
-            if (WpfConsole == null || WpfConsole.Host == null || WpfConsole.Dispatcher == null)
+            if (WpfConsole == null
+                || WpfConsole.Host == null
+                || WpfConsole.Dispatcher == null)
             {
                 return hr;
             }
@@ -275,14 +278,14 @@ namespace NuGetConsole.Implementation.Console
                                     WpfTextView.Selection.Clear();
                                 }
                                 else if ((VSConstants.VSStd2KCmdID)nCmdID != VSConstants.VSStd2KCmdID.BOL)
-                                // extend selection
+                                    // extend selection
                                 {
                                     VirtualSnapshotPoint anchorPoint = WpfTextView.Selection.IsEmpty
-                                                                           ? oldCaretPoint.TranslateTo(
-                                                                               WpfTextView.TextSnapshot)
-                                                                           : WpfTextView.Selection.AnchorPoint;
+                                        ? oldCaretPoint.TranslateTo(
+                                            WpfTextView.TextSnapshot)
+                                        : WpfTextView.Selection.AnchorPoint;
                                     WpfTextView.Selection.Select(anchorPoint,
-                                                                 WpfTextView.Caret.Position.VirtualBufferPosition);
+                                        WpfTextView.Caret.Position.VirtualBufferPosition);
                                 }
 
                                 hr = VSConstants.S_OK;
@@ -344,10 +347,7 @@ namespace NuGetConsole.Implementation.Console
                                 }
                                 else
                                 {
-                                    ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                                    {
-                                        await TriggerCompletionAsync();
-                                    });
+                                    ThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); });
                                 }
                             }
                             hr = VSConstants.S_OK;
@@ -385,12 +385,14 @@ namespace NuGetConsole.Implementation.Console
             bool numLockToggled = Keyboard.IsKeyToggled(Key.NumLock);
 
             char keyChar;
-            if ((commandID == VSConstants.VSStd2KCmdID.RETURN) && pvaIn == IntPtr.Zero)
+            if ((commandID == VSConstants.VSStd2KCmdID.RETURN)
+                && pvaIn == IntPtr.Zero)
             {
                 // <enter> pressed
                 keyChar = Environment.NewLine[0]; // [CR]LF
             }
-            else if ((commandID == VSConstants.VSStd2KCmdID.BACKSPACE) && pvaIn == IntPtr.Zero)
+            else if ((commandID == VSConstants.VSStd2KCmdID.BACKSPACE)
+                     && pvaIn == IntPtr.Zero)
             {
                 keyChar = '\b'; // backspace control character
             }
@@ -428,14 +430,15 @@ namespace NuGetConsole.Implementation.Console
             return keyInfo;
         }
 
-        private static readonly char[] NEWLINE_CHARS = new char[] { '\n', '\r' };
+        private static readonly char[] NEWLINE_CHARS = { '\n', '\r' };
 
         private void PasteText(ref int hr)
         {
-            string text = System.Windows.Clipboard.GetText();
+            string text = Clipboard.GetText();
             int iLineStart = 0;
             int iNewLine = -1;
-            if (!string.IsNullOrEmpty(text) && (iNewLine = text.IndexOfAny(NEWLINE_CHARS)) >= 0)
+            if (!string.IsNullOrEmpty(text)
+                && (iNewLine = text.IndexOfAny(NEWLINE_CHARS)) >= 0)
             {
                 char c;
                 ITextBuffer textBuffer = WpfTextView.TextBuffer;
@@ -484,28 +487,25 @@ namespace NuGetConsole.Implementation.Console
 
         #region completion
 
-        static bool IsCommitChar(char c)
+        private static bool IsCommitChar(char c)
         {
             // TODO: CommandExpansion determines this
             return (char.IsPunctuation(c) && c != '-' && c != '_') || char.IsWhiteSpace(c);
         }
 
-        ICompletionBroker CompletionBroker
+        private ICompletionBroker CompletionBroker
         {
             get { return WpfConsole.Factory.CompletionBroker; }
         }
 
-        ICompletionSession _completionSession;
+        private ICompletionSession _completionSession;
 
-        bool IsCompletionSessionActive
+        private bool IsCompletionSessionActive
         {
-            get
-            {
-                return _completionSession != null && !_completionSession.IsDismissed;
-            }
+            get { return _completionSession != null && !_completionSession.IsDismissed; }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         private async Task TriggerCompletionAsync()
         {
             if (CommandExpansion == null)
@@ -541,7 +541,8 @@ namespace NuGetConsole.Implementation.Console
                 WpfConsole.Dispatcher.SetExecutingCommand(false);
             }
 
-            if (simpleExpansion != null && simpleExpansion.Expansions != null)
+            if (simpleExpansion != null
+                && simpleExpansion.Expansions != null)
             {
                 IList<string> expansions = simpleExpansion.Expansions;
                 if (expansions.Count == 1) // Shortcut for 1 TabExpansion candidate
@@ -561,7 +562,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        void ReplaceTabExpansion(int lastWordIndex, int length, string expansion)
+        private void ReplaceTabExpansion(int lastWordIndex, int length, string expansion)
         {
             if (!string.IsNullOrEmpty(expansion))
             {
@@ -570,11 +571,11 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        void CompletionSession_Dismissed(object sender, EventArgs e)
+        private void CompletionSession_Dismissed(object sender, EventArgs e)
         {
-            Debug.Assert(this._completionSession == sender);
-            this._completionSession.Dismissed -= CompletionSession_Dismissed;
-            this._completionSession = null;
+            Debug.Assert(_completionSession == sender);
+            _completionSession.Dismissed -= CompletionSession_Dismissed;
+            _completionSession = null;
         }
 
         #endregion

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
             folder = Path.DirectorySeparatorChar + folder + Path.DirectorySeparatorChar;
 
             string root = Path.GetPathRoot(path);
-            int remainingWidth = maxWidth - root.Length - 3;       // 3 = length(ellipsis)
+            int remainingWidth = maxWidth - root.Length - 3; // 3 = length(ellipsis)
 
             // is the directory name too big? 
             if (folder.Length >= remainingWidth)
@@ -47,15 +47,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     root,
                     folder.Substring(folder.Length - remainingWidth));
             }
-            else
-            {
-                // no, show like VS solution explorer (drive+ellipsis+end)
-                return String.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}...{1}",
-                    root,
-                    folder);
-            }
+            // no, show like VS solution explorer (drive+ellipsis+end)
+            return String.Format(
+                CultureInfo.InvariantCulture,
+                "{0}...{1}",
+                root,
+                folder);
         }
 
         public static string EscapePSPath(string path)
@@ -75,11 +72,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 // will be interpreted as variables. Thus we escape the $ characters.
                 return "\"" + path.Replace("$", "`$") + "\"";
             }
-            else
-            {
-                // if the path doesn't have apostrophe, then it's safe to enclose it with apostrophes
-                return "'" + path + "'";
-            }
+            // if the path doesn't have apostrophe, then it's safe to enclose it with apostrophes
+            return "'" + path + "'";
         }
     }
 }

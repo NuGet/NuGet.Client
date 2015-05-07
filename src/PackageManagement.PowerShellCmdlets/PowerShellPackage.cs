@@ -1,11 +1,14 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
+using System.Collections.Generic;
+using System.Linq;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
-using System.Collections.Generic;
-using System.Linq;
-using LegacyNuGet = Legacy.NuGet;
+using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -18,7 +21,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public IEnumerable<NuGetVersion> Versions { get; set; }
 
-        public LegacyNuGet.SemanticVersion Version { get; set; }
+        public SemanticVersion Version { get; set; }
     }
 
     /// <summary>
@@ -30,12 +33,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public IEnumerable<NuGetVersion> Versions { get; set; }
 
-        public LegacyNuGet.SemanticVersion Version { get; set; }
+        public SemanticVersion Version { get; set; }
 
         public string ProjectName { get; set; }
 
         /// <summary>
-        /// Get the view of installed packages. Use for Get-Package command. 
+        /// Get the view of installed packages. Use for Get-Package command.
         /// </summary>
         /// <param name="metadata"></param>
         /// <param name="versionType"></param>
@@ -50,9 +53,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     PowerShellInstalledPackage view = new PowerShellInstalledPackage();
                     view.Id = package.PackageIdentity.Id;
-                    view.Versions = new List<NuGetVersion>() { package.PackageIdentity.Version };
-                    LegacyNuGet.SemanticVersion sVersion;
-                    LegacyNuGet.SemanticVersion.TryParse(package.PackageIdentity.Version.ToNormalizedString(), out sVersion);
+                    view.Versions = new List<NuGetVersion> { package.PackageIdentity.Version };
+                    SemanticVersion sVersion;
+                    SemanticVersion.TryParse(package.PackageIdentity.Version.ToNormalizedString(), out sVersion);
                     view.Version = sVersion;
                     view.ProjectName = entry.Key.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
                     views.Add(view);
@@ -71,12 +74,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public IEnumerable<NuGetVersion> Versions { get; set; }
 
-        public LegacyNuGet.SemanticVersion Version { get; set; }
+        public SemanticVersion Version { get; set; }
 
         public string Description { get; set; }
 
         /// <summary>
-        /// Get the view of PowerShellPackage. Used for Get-Package -ListAvailable command. 
+        /// Get the view of PowerShellPackage. Used for Get-Package -ListAvailable command.
         /// </summary>
         /// <param name="metadata">list of PSSearchMetadata</param>
         /// <param name="versionType"></param>
@@ -93,27 +96,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 switch (versionType)
                 {
                     case VersionType.all:
+                    {
+                        package.Versions = data.Versions.OrderByDescending(v => v);
+                        if (package.Versions != null
+                            && package.Versions.Any())
                         {
-                            package.Versions = data.Versions.OrderByDescending(v => v);
-                            if (package.Versions != null && package.Versions.Any())
-                            {
-                                LegacyNuGet.SemanticVersion sVersion;
-                                LegacyNuGet.SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
-                                package.Version = sVersion;
-                            }
+                            SemanticVersion sVersion;
+                            SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
+                            package.Version = sVersion;
                         }
+                    }
                         break;
                     case VersionType.latest:
+                    {
+                        NuGetVersion nVersion = data.Version == null ? data.Versions.OrderByDescending(v => v).FirstOrDefault() : data.Version;
+                        package.Versions = new List<NuGetVersion> { nVersion };
+                        if (nVersion != null)
                         {
-                            NuGetVersion nVersion = data.Version == null ? data.Versions.OrderByDescending(v => v).FirstOrDefault() : data.Version;
-                            package.Versions = new List<NuGetVersion>() { nVersion };
-                            if (nVersion != null)
-                            {
-                                LegacyNuGet.SemanticVersion sVersion;
-                                LegacyNuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
-                                package.Version = sVersion;
-                            }
+                            SemanticVersion sVersion;
+                            SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                            package.Version = sVersion;
                         }
+                    }
                         break;
                 }
 
@@ -132,14 +136,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public IEnumerable<NuGetVersion> Versions { get; set; }
 
-        public LegacyNuGet.SemanticVersion Version { get; set; }
+        public SemanticVersion Version { get; set; }
 
         public string Description { get; set; }
 
         public string ProjectName { get; set; }
 
         /// <summary>
-        /// Get the view of PowerShellPackage. Used for Get-Package -Updates command. 
+        /// Get the view of PowerShellPackage. Used for Get-Package -Updates command.
         /// </summary>
         /// <param name="data"></param>
         /// <param name="version"></param>
@@ -154,27 +158,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             switch (versionType)
             {
                 case VersionType.updates:
+                {
+                    package.Versions = data.Versions.Where(p => p > version).OrderByDescending(v => v);
+                    if (package.Versions != null
+                        && package.Versions.Any())
                     {
-                        package.Versions = data.Versions.Where(p => p > version).OrderByDescending(v => v);
-                        if (package.Versions != null && package.Versions.Any())
-                        {
-                            LegacyNuGet.SemanticVersion sVersion;
-                            LegacyNuGet.SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
-                            package.Version = sVersion;
-                        }
+                        SemanticVersion sVersion;
+                        SemanticVersion.TryParse(package.Versions.FirstOrDefault().ToNormalizedString(), out sVersion);
+                        package.Version = sVersion;
                     }
+                }
                     break;
                 case VersionType.latest:
+                {
+                    NuGetVersion nVersion = data.Versions.Where(p => p > version).OrderByDescending(v => v).FirstOrDefault();
+                    if (nVersion != null)
                     {
-                        NuGetVersion nVersion = data.Versions.Where(p => p > version).OrderByDescending(v => v).FirstOrDefault();
-                        if (nVersion != null)
-                        {
-                            package.Versions = new List<NuGetVersion>() { nVersion };
-                            LegacyNuGet.SemanticVersion sVersion;
-                            LegacyNuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
-                            package.Version = sVersion;
-                        }
+                        package.Versions = new List<NuGetVersion> { nVersion };
+                        SemanticVersion sVersion;
+                        SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                        package.Version = sVersion;
                     }
+                }
                     break;
             }
 

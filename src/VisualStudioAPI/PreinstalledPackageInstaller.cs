@@ -1,4 +1,7 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +12,7 @@ using System.Text;
 using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.Win32;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -18,8 +22,11 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Resources;
-using LegacyNuGet = Legacy.NuGet;
+using IPackageRepository = Legacy::NuGet.IPackageRepository;
+using LegacyNuGet = NuGet;
+using LocalPackageRepository = Legacy::NuGet.LocalPackageRepository;
 using Task = System.Threading.Tasks.Task;
+using UnzippedPackageRepository = Legacy::NuGet.UnzippedPackageRepository;
 
 namespace NuGet.VisualStudio
 {
@@ -58,7 +65,10 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="extensionId">The installed extension.</param>
         /// <param name="vsExtensionManager">The VS Extension manager instance.</param>
-        /// <param name="throwingErrorHandler">An error handler that accepts the error message string and then throws the appropriate exception.</param>
+        /// <param name="throwingErrorHandler">
+        /// An error handler that accepts the error message string and then throws
+        /// the appropriate exception.
+        /// </param>
         /// <returns>The absolute path to the extension's packages folder.</returns>
         internal string GetExtensionRepositoryPath(string extensionId, object vsExtensionManager, Action<string> throwingErrorHandler)
         {
@@ -80,7 +90,10 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="keyName">The registry key name that specifies the packages location.</param>
         /// <param name="registryKeys">The optional list of parent registry keys to look in (used for unit tests).</param>
-        /// <param name="throwingErrorHandler">An error handler that accepts the error message string and then throws the appropriate exception.</param>
+        /// <param name="throwingErrorHandler">
+        /// An error handler that accepts the error message string and then throws
+        /// the appropriate exception.
+        /// </param>
         /// <returns>The absolute path to the packages folder specified in the registry.</returns>
         internal string GetRegistryRepositoryPath(string keyName, IEnumerable<IRegistryKey> registryKeys, Action<string> throwingErrorHandler)
         {
@@ -89,10 +102,11 @@ namespace NuGet.VisualStudio
 
             // When pulling the repository from the registry, use CurrentUser first, falling back onto LocalMachine
             registryKeys = registryKeys ??
-                new[] {
-                            new RegistryKeyWrapper(Microsoft.Win32.Registry.CurrentUser),
-                            new RegistryKeyWrapper(Microsoft.Win32.Registry.LocalMachine)
-                      };
+                           new[]
+                               {
+                                   new RegistryKeyWrapper(Registry.CurrentUser),
+                                   new RegistryKeyWrapper(Registry.LocalMachine)
+                               };
 
             // Find the first registry key that supplies the necessary subkey/value
             foreach (var registryKey in registryKeys)
@@ -135,10 +149,19 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="packageInstaller">The package installer service that performs the actual package installation.</param>
         /// <param name="project">The target project for installation.</param>
-        /// <param name="configuration">The packages to install, where to install them from, and additional options for their installation.</param>
+        /// <param name="configuration">
+        /// The packages to install, where to install them from, and additional options for
+        /// their installation.
+        /// </param>
         /// <param name="repositorySettings">The repository settings for the packages being installed.</param>
-        /// <param name="warningHandler">An action that accepts a warning message and presents it to the user, allowing execution to continue.</param>
-        /// <param name="errorHandler">An action that accepts an error message and presents it to the user, allowing execution to continue.</param>
+        /// <param name="warningHandler">
+        /// An action that accepts a warning message and presents it to the user, allowing
+        /// execution to continue.
+        /// </param>
+        /// <param name="errorHandler">
+        /// An action that accepts an error message and presents it to the user, allowing
+        /// execution to continue.
+        /// </param>
         internal async Task PerformPackageInstallAsync(
             IVsPackageInstaller packageInstaller,
             Project project,
@@ -151,9 +174,9 @@ namespace NuGet.VisualStudio
             string repositoryPath = configuration.RepositoryPath;
             var failedPackageErrors = new List<string>();
 
-            LegacyNuGet.IPackageRepository repository = configuration.IsPreunzipped
-                                                ? (LegacyNuGet.IPackageRepository)new LegacyNuGet.UnzippedPackageRepository(repositoryPath)
-                                                : (LegacyNuGet.IPackageRepository)new LegacyNuGet.LocalPackageRepository(repositoryPath);
+            IPackageRepository repository = configuration.IsPreunzipped
+                ? new UnzippedPackageRepository(repositoryPath)
+                : (IPackageRepository)new LocalPackageRepository(repositoryPath);
 
             PreinstalledRepositoryProvider repos = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
             repos.AddFromRepository(repository);
@@ -231,9 +254,9 @@ namespace NuGet.VisualStudio
             if (EnvDTEProjectUtility.IsWebSite(project))
             {
                 CreateRefreshFilesInBin(
-                   project,
-                   repositoryPath,
-                   configuration.Packages.Where(p => p.SkipAssemblyReferences));
+                    project,
+                    repositoryPath,
+                    configuration.Packages.Where(p => p.SkipAssemblyReferences));
 
                 CopyNativeBinariesToBin(project, repositoryPath, configuration.Packages);
             }
@@ -255,7 +278,8 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// Adds refresh files to the specified project for all assemblies references belonging to the packages specified by packageNames.
+        /// Adds refresh files to the specified project for all assemblies references belonging to the packages
+        /// specified by packageNames.
         /// </summary>
         /// <param name="project">The project.</param>
         /// <param name="repositoryPath">The file system pointing to 'packages' folder under the solution.</param>
@@ -313,7 +337,8 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// By convention, we copy all files under the NativeBinaries folder under package root to the bin folder of the Website.
+        /// By convention, we copy all files under the NativeBinaries folder under package root to the bin folder of
+        /// the Website.
         /// </summary>
         /// <param name="project">The target Website project.</param>
         /// <param name="repositoryPath">The local repository path.</param>
@@ -343,7 +368,7 @@ namespace NuGet.VisualStudio
                 FileInfo[] nativeFiles = nativeBinariesPath.GetFiles("*.*", SearchOption.AllDirectories);
                 foreach (FileInfo file in nativeFiles)
                 {
-                    string targetPath = Path.Combine(binFolder, file.FullName.Substring(nativeBinariesPath.FullName.Length + 1));  // skip over NativeBinaries/ word
+                    string targetPath = Path.Combine(binFolder, file.FullName.Substring(nativeBinariesPath.FullName.Length + 1)); // skip over NativeBinaries/ word
                     using (Stream stream = file.OpenRead())
                     {
                         projectSystem.AddFile(targetPath, stream);

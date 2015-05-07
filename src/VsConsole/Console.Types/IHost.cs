@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using NuGet.PackageManagement;
 
@@ -8,7 +11,6 @@ namespace NuGetConsole
     /// </summary>
     public interface IHost
     {
-
         /// <summary>
         /// Gets a value indicating whether this host accepts command line input.
         /// </summary>
@@ -36,9 +38,11 @@ namespace NuGetConsole
         /// <param name="command">The command.</param>
         /// <param name="console">The console requesting the execution.</param>
         /// <param name="inputs">Inputs for the command</param>
-        /// <returns>true if the command is executed. In the case of async host, this indicates
+        /// <returns>
+        /// true if the command is executed. In the case of async host, this indicates
         /// that the command is being executed and ExecuteEnd event would signal the end of
-        /// execution.</returns>
+        /// execution.
+        /// </returns>
         bool Execute(IConsole console, string command, object[] inputs);
 
         /// <summary>

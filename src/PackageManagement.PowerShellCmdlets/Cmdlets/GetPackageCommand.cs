@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -15,7 +18,8 @@ using NuGet.Versioning;
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
-    /// This command lists the available packages which are either from a package source or installed in the current solution.
+    /// This command lists the available packages which are either from a package source or installed in the
+    /// current solution.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Package", DefaultParameterSetName = ParameterAttribute.AllParameterSets)]
     [OutputType(typeof(IPowerShellPackage))]
@@ -23,11 +27,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private const int DefaultFirstValue = 50;
         private bool _enablePaging;
-
-        public GetPackageCommand()
-            : base()
-        {
-        }
 
         [Parameter(Position = 0)]
         [ValidateNotNullOrEmpty]
@@ -97,7 +96,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Projects = new List<NuGetProject>() { Project };
+                Projects = new List<NuGetProject> { Project };
             }
         }
 
@@ -273,7 +272,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> pair in remoteUpdates)
             {
                 PowerShellUpdatePackage package = PowerShellUpdatePackage.GetPowerShellPackageUpdateView(pair.Key, pair.Value, versionType, project);
-                if (package.Versions != null && package.Versions.Any())
+                if (package.Versions != null
+                    && package.Versions.Any())
                 {
                     view.Add(package);
                 }
@@ -294,10 +294,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Add a line before message prompt
             WriteLine();
             var choices = new Collection<ChoiceDescription>
-            {
-                new ChoiceDescription(Resources.Cmdlet_Yes, Resources.Cmdlet_DisplayMorePackagesYesHelp),
-                new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_DisplayMorePackagesNoHelp),
-            };
+                {
+                    new ChoiceDescription(Resources.Cmdlet_Yes, Resources.Cmdlet_DisplayMorePackagesYesHelp),
+                    new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_DisplayMorePackagesNoHelp)
+                };
 
             int choice = Host.UI.PromptForChoice(string.Empty, Resources.Cmdlet_PrompToDisplayMorePackages, choices, defaultChoice: 1);
 

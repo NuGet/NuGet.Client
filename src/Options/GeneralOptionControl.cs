@@ -1,10 +1,11 @@
-﻿using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Windows.Forms;
-
+using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.Options
 {
@@ -25,7 +26,6 @@ namespace NuGet.Options
             Debug.Assert(_settings != null);
             // Starting from VS11, we don't need to check for updates anymore because VS will do it.
             Controls.Remove(updatePanel);
-            
         }
 
         internal void OnActivated()
@@ -59,12 +59,12 @@ namespace NuGet.Options
 
         private void OnClearPackageCacheClick(object sender, EventArgs e)
         {
-           //not implement now
+            //not implement now
         }
 
         private void OnBrowsePackageCacheClick(object sender, EventArgs e)
         {
-          //not impement now
+            //not impement now
         }
 
         private void packageRestoreConsentCheckBox_CheckedChanged(object sender, EventArgs e)

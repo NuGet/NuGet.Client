@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGetVSExtension
@@ -7,7 +10,7 @@ namespace NuGetVSExtension
     {
         private const string ExtensionProvidersKey = "SearchProviders";
         private readonly string _providerTypeGuid;
-        private readonly string _providerName; 
+        private readonly string _providerName;
 
         public ProvideSearchProviderAttribute(Type providerType, string providerName)
         {
@@ -27,9 +30,9 @@ namespace NuGetVSExtension
 
         public override void Register(RegistrationContext context)
         {
-            using (RegistrationAttribute.Key key = context.CreateKey(ExtensionProvidersKey))
+            using (Key key = context.CreateKey(ExtensionProvidersKey))
             {
-                using (RegistrationAttribute.Key subKey = key.CreateSubkey(_providerTypeGuid))
+                using (Key subKey = key.CreateSubkey(_providerTypeGuid))
                 {
                     subKey.SetValue(String.Empty, _providerName);
                     subKey.SetValue("Package", context.ComponentType.GUID.ToString("B"));

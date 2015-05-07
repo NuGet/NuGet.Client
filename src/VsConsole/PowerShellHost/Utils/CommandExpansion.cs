@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Linq;
 using System.Threading;
@@ -5,21 +8,21 @@ using System.Threading.Tasks;
 
 namespace NuGetConsole.Host
 {
-
     /// <summary>
     /// Common ITabExpansion based command expansion implementation.
     /// </summary>
     public class CommandExpansion : ICommandExpansion
     {
-        protected ITabExpansion TabExpansion { get; private set; }
+        protected ITabExpansion TabExpansion { get; }
 
         public CommandExpansion(ITabExpansion tabExpansion)
         {
             UtilityMethods.ThrowIfArgumentNull(tabExpansion);
-            this.TabExpansion = tabExpansion;
+            TabExpansion = tabExpansion;
         }
 
         #region ICommandExpansion
+
         public async Task<SimpleExpansion> GetExpansionsAsync(string line, int caretIndex, CancellationToken token)
         {
             // Find end of lastword -- To allow expansion in middle line
@@ -32,7 +35,8 @@ namespace NuGetConsole.Host
                 // fail to return any results.
                 //
                 char c = line[lastWordEnd];
-                if (char.IsSeparator(c) || char.IsPunctuation(c))
+                if (char.IsSeparator(c)
+                    || char.IsPunctuation(c))
                 {
                     break;
                 }
@@ -42,7 +46,8 @@ namespace NuGetConsole.Host
 
             // Find begin of lastword
             int lastWordBegin = caretIndex;
-            while (lastWordBegin > 0 && !char.IsSeparator(line, lastWordBegin - 1))
+            while (lastWordBegin > 0
+                   && !char.IsSeparator(line, lastWordBegin - 1))
             {
                 lastWordBegin--;
             }
@@ -57,7 +62,8 @@ namespace NuGetConsole.Host
             // Get host TabExpansion result
             string[] expansions = await TabExpansion.GetExpansionsAsync(line, lastWord, token);
 
-            if (expansions != null && expansions.Length > 0)
+            if (expansions != null
+                && expansions.Length > 0)
             {
                 // If the first element is null, it means one of the NuGet cmdlets returns empty list of suggestions.
                 // In which case, don't show the intellisense, but don't show file-system paths either.
@@ -83,7 +89,7 @@ namespace NuGetConsole.Host
             return null;
         }
 
-        static readonly char[] EXPANSION_SEPARATORS = new char[] { '.', ' ' };
+        private static readonly char[] EXPANSION_SEPARATORS = { '.', ' ' };
 
         /// <summary>
         /// Adjust host TabExpansion results to hide some common parts, e.g. "$dte.Commands.", so
@@ -96,7 +102,8 @@ namespace NuGetConsole.Host
         {
             string commonWord = null;
 
-            if (!string.IsNullOrEmpty(leftWord) && expansions != null)
+            if (!string.IsNullOrEmpty(leftWord)
+                && expansions != null)
             {
                 int lastSepIndex = leftWord.Length - 1;
                 while (lastSepIndex >= 0)
@@ -128,6 +135,7 @@ namespace NuGetConsole.Host
 
             return commonWord;
         }
+
         #endregion
     }
 }

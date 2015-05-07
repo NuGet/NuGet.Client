@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -18,6 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private string _projectName;
+
         public override string ProjectName
         {
             get
@@ -25,11 +29,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (String.IsNullOrEmpty(_projectName))
                 {
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        {
+                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                        _projectName = EnvDTEProjectUtility.GetName(EnvDTEProject);
-                    });
+                            _projectName = EnvDTEProjectUtility.GetName(EnvDTEProject);
+                        });
                 }
                 return _projectName;
             }
@@ -44,15 +48,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
-                base.AddFile(path, stream);
-            });
+                    await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
+                    base.AddFile(path, stream);
+                });
         }
 
-        public override void AddFile(string path, System.Action<Stream> writeToStream)
+        public override void AddFile(string path, Action<Stream> writeToStream)
         {
             // ensure the parent folder is created before adding file to the project    
             if (string.IsNullOrEmpty(path))
@@ -61,12 +65,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
-                base.AddFile(path, writeToStream);
-            });
+                    await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
+                    base.AddFile(path, writeToStream);
+                });
         }
 
         protected override async Task AddFileToProjectAsync(string path)
@@ -96,8 +100,5 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
-
     }
-
-
 }

@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -21,8 +23,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private uint? _trackingCookie;
 
         [ImportingConstructor]
-        public VsSourceControlTracker(ISolutionManager solutionManager, ISourceControlManagerProvider sourceControlManagerProvider, ISettings vsSettings) :
-            this(solutionManager, sourceControlManagerProvider, ServiceLocator.GetGlobalService<SVsTrackProjectDocuments, IVsTrackProjectDocuments2>(), vsSettings)
+        public VsSourceControlTracker(ISolutionManager solutionManager, ISourceControlManagerProvider sourceControlManagerProvider, ISettings vsSettings)
+            :
+                this(solutionManager, sourceControlManagerProvider, ServiceLocator.GetGlobalService<SVsTrackProjectDocuments, IVsTrackProjectDocuments2>(), vsSettings)
         {
         }
 
@@ -37,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException("projectTracker");
             }
 
-            if(solutionManager == null)
+            if (solutionManager == null)
             {
                 throw new ArgumentNullException("solutionManager");
             }
@@ -71,10 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool IsTracking
         {
-            get
-            {
-                return _trackingCookie != null;
-            }
+            get { return _trackingCookie != null; }
         }
 
         private void StartTracking()
@@ -86,7 +86,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // don't do anything if user explicitly disables source control integration
-            if (_vsSettings != null && SourceControlUtility.IsSourceControlDisabled(_vsSettings))
+            if (_vsSettings != null
+                && SourceControlUtility.IsSourceControlDisabled(_vsSettings))
             {
                 return;
             }
@@ -110,21 +111,23 @@ namespace NuGet.PackageManagement.VisualStudio
         private void OnSourceControlBound()
         {
             if (_vsSettings == null)
+            {
                 return;
+            }
 
             try
             {
                 string solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _vsSettings);
-                if (Directory.Exists(solutionRepositoryPath) && _sourceControlManagerProvider != null)
+                if (Directory.Exists(solutionRepositoryPath)
+                    && _sourceControlManagerProvider != null)
                 {
-
                     var sourceControlManager = _sourceControlManagerProvider.GetSourceControlManager();
 
                     // only proceed if the source-control is in use
                     if (sourceControlManager != null)
                     {
                         IEnumerable<string> allFiles = Directory.EnumerateFiles(solutionRepositoryPath, "*.*",
-                                                                                SearchOption.AllDirectories);
+                            SearchOption.AllDirectories);
                         string file = allFiles.FirstOrDefault();
                         if (file != null)
                         {
@@ -164,11 +167,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 // SCC_STATUS_OUTEXCLUSIVE = 8,
                 // SCC_STATUS_OUTMULTIPLE = 16,
 
-                if (cProjects > 0 &&
-                    cFiles > 0 &&
-                    rgdwSccStatus != null &&
-                    rgdwSccStatus.Any(f => (f & 0x1F) != 0) &&
-                    rgpszMkDocuments != null &&
+                if (cProjects > 0
+                    &&
+                    cFiles > 0
+                    &&
+                    rgdwSccStatus != null
+                    &&
+                    rgdwSccStatus.Any(f => (f & 0x1F) != 0)
+                    &&
+                    rgpszMkDocuments != null
+                    &&
                     rgpszMkDocuments.Any(s => s.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
                 {
                     _parent.OnSourceControlBound();

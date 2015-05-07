@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using VSLangProj;
@@ -47,12 +51,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public override bool FileExistsInProject(string path)
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                EnvDTEProjectItem projectItem = await EnvDTEProjectUtility.GetProjectItemAsync(EnvDTEProject, path);
-                return (projectItem != null);
-            });
+                    EnvDTEProjectItem projectItem = await EnvDTEProjectUtility.GetProjectItemAsync(EnvDTEProject, path);
+                    return (projectItem != null);
+                });
         }
 
         /// <summary>
@@ -65,11 +69,11 @@ namespace NuGet.PackageManagement.VisualStudio
         public override void RemoveReference(string name)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                RemoveReferenceCore(name, EnvDTEProjectUtility.GetReferences(EnvDTEProject));
-            });
+                    RemoveReferenceCore(name, EnvDTEProjectUtility.GetReferences(EnvDTEProject));
+                });
         }
 
         private void RemoveReferenceCore(string name, References references)
@@ -78,7 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                var referenceName = System.IO.Path.GetFileNameWithoutExtension(name);
+                var referenceName = Path.GetFileNameWithoutExtension(name);
 
                 Reference reference = references.Item(referenceName);
 
@@ -120,6 +124,5 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
             }
         }
-
     }
 }

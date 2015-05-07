@@ -1,12 +1,18 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Win32;
 using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio.Resources;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v2;
+using NuGet.VisualStudio.Resources;
+using IPackageRepository = Legacy::NuGet.IPackageRepository;
 
 namespace NuGet.VisualStudio
 {
@@ -42,9 +48,9 @@ namespace NuGet.VisualStudio
             _repositories.Add(provider.CreateRepository(source));
         }
 
-        public void AddFromRepository(Legacy.NuGet.IPackageRepository repo)
+        public void AddFromRepository(IPackageRepository repo)
         {
-            var source = new NuGet.Protocol.Core.v2.V2PackageSource(repo.Source, () => repo);
+            var source = new V2PackageSource(repo.Source, () => repo);
             _repositories.Add(_provider.CreateRepository(source));
         }
 
@@ -65,10 +71,7 @@ namespace NuGet.VisualStudio
 
         public IPackageSourceProvider PackageSourceProvider
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -76,7 +79,10 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="extensionId">The installed extension.</param>
         /// <param name="vsExtensionManager">The VS Extension manager instance.</param>
-        /// <param name="throwingErrorHandler">An error handler that accepts the error message string and then throws the appropriate exception.</param>
+        /// <param name="throwingErrorHandler">
+        /// An error handler that accepts the error message string and then throws
+        /// the appropriate exception.
+        /// </param>
         /// <returns>The absolute path to the extension's packages folder.</returns>
         internal string GetExtensionRepositoryPath(string extensionId, object vsExtensionManager, Action<string> throwingErrorHandler)
         {
@@ -98,7 +104,10 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="keyName">The registry key name that specifies the packages location.</param>
         /// <param name="registryKeys">The optional list of parent registry keys to look in (used for unit tests).</param>
-        /// <param name="throwingErrorHandler">An error handler that accepts the error message string and then throws the appropriate exception.</param>
+        /// <param name="throwingErrorHandler">
+        /// An error handler that accepts the error message string and then throws
+        /// the appropriate exception.
+        /// </param>
         /// <returns>The absolute path to the packages folder specified in the registry.</returns>
         internal string GetRegistryRepositoryPath(string keyName, IEnumerable<IRegistryKey> registryKeys, Action<string> throwingErrorHandler)
         {
@@ -107,10 +116,11 @@ namespace NuGet.VisualStudio
 
             // When pulling the repository from the registry, use CurrentUser first, falling back onto LocalMachine
             registryKeys = registryKeys ??
-                new[] {
-                            new RegistryKeyWrapper(Microsoft.Win32.Registry.CurrentUser),
-                            new RegistryKeyWrapper(Microsoft.Win32.Registry.LocalMachine)
-                      };
+                           new[]
+                               {
+                                   new RegistryKeyWrapper(Registry.CurrentUser),
+                                   new RegistryKeyWrapper(Registry.LocalMachine)
+                               };
 
             // Find the first registry key that supplies the necessary subkey/value
             foreach (var registryKey in registryKeys)

@@ -1,4 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGetConsole
 {
@@ -12,7 +16,7 @@ namespace NuGetConsole
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Performance",
             "CA1811:AvoidUncalledPrivateCode",
             Justification = "This class is shared with another project, and the other project does call this method.")]

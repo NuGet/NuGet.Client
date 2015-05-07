@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
@@ -14,11 +18,11 @@ namespace NuGet.Options
         {
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Mobility",
             "CA1601:DoNotUseTimersThatPreventPowerStateChanges",
             Justification = "This is a ridiculous rule.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "The timer is disposed in the Tick event handler.")]
@@ -28,9 +32,9 @@ namespace NuGet.Options
 
             // delay 5 milliseconds to give the Options dialog a chance to close itself
             var timer = new Timer
-            {
-                Interval = 5
-            };
+                {
+                    Interval = 5
+                };
             timer.Tick += OnTimerTick;
             timer.Start();
         }
@@ -52,9 +56,13 @@ namespace NuGet.Options
         // since we already provide settings persistance using the SettingsManager. These two APIs
         // will read/write the tools/options properties to an alternate location, which can cause
         // incorrect behavior if the two copies of the data are out of sync.
-        public override void LoadSettingsFromStorage() { }
+        public override void LoadSettingsFromStorage()
+        {
+        }
 
-        public override void SaveSettingsToStorage() { }
+        public override void SaveSettingsToStorage()
+        {
+        }
 
         object IServiceProvider.GetService(Type serviceType)
         {

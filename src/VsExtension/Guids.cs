@@ -1,8 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 
 namespace NuGetVSExtension
 {
-    static class GuidList
+    internal static class GuidList
     {
         public const string guidNuGetPkgString = "F7D0E7A3-C60B-422A-BFAE-CEED36ADE7D2";
         public const string guidNuGetVSEventsPackagePkgString = "38ebd926-b8b6-44e9-952d-1cfd38c84209";
@@ -11,7 +14,7 @@ namespace NuGetVSExtension
         public const string guidNuGetDialogCmdSetString = "25fd982b-8cae-4cbd-a440-e03ffccde106";
         public const string guidNuGetToolsGroupString = "C0D88179-5D25-4982-BFE6-EC5FD59AC103";
         public const string guidNuGetDebugConsoleCmdSetString = "DDC61543-6CA7-4A6F-A5B7-984BE723C52F";
-      
+
         // any project system that wants to load NuGet when its project opens needs to activate a UI context with this GUID
         public const string guidAutoLoadNuGetString = "65B1D035-27A5-4BBA-BAB9-5F61C1E2BC4A";
 

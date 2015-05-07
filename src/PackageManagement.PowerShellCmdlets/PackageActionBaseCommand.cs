@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
@@ -7,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -15,11 +19,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageActionBaseCommand : NuGetPowerShellBaseCommand
     {
-        public PackageActionBaseCommand()
-            : base()
-        {
-        }
-
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public virtual string Id { get; set; }
 
@@ -38,7 +37,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter WhatIf { get; set; }
 
-        [Parameter, Alias("Prerelease")]
+        [Parameter]
+        [Alias("Prerelease")]
         public SwitchParameter IncludePrerelease { get; set; }
 
         [Parameter]
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="project"></param>
         protected void NormalizePackageId(NuGetProject project)
         {
-            if (!(project is ProjectManagement.Projects.ProjectKNuGetProjectBase))
+            if (!(project is ProjectKNuGetProjectBase))
             {
                 return;
             }
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (FileConflictAction != null)
             {
-                this.ConflictAction = FileConflictAction;
+                ConflictAction = FileConflictAction;
             }
         }
 
@@ -229,14 +229,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 return DependencyBehavior.Ignore;
             }
-            else if (DependencyVersion.HasValue)
+            if (DependencyVersion.HasValue)
             {
                 return DependencyVersion.Value;
             }
-            else
-            {
-                return GetDependencyBehaviorFromConfig();
-            }
+            return GetDependencyBehaviorFromConfig();
         }
 
         /// <summary>
@@ -247,16 +244,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             string dependencySetting = ConfigSettings.GetValue("config", "dependencyversion");
             DependencyBehavior behavior;
-            bool success = Enum.TryParse<DependencyBehavior>(dependencySetting, true, out behavior);
+            bool success = Enum.TryParse(dependencySetting, true, out behavior);
             if (success)
             {
                 return behavior;
             }
-            else
-            {
-                // Default to Lowest
-                return DependencyBehavior.Lowest;
-            }
+            // Default to Lowest
+            return DependencyBehavior.Lowest;
         }
     }
 }

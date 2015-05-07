@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Management.Automation;
 using System.Reflection;
@@ -6,7 +9,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 {
     /// <summary>
     /// This class helps provide Get-Interface for PowerShell host.
-    /// 
     /// PowerShell has an object adapter layer. Its Com object adapter works well with IDispatch
     /// members, but disables accessing other interfaces. This class and "Add-WrapperMembers.ps1"
     /// help work around this issue by simulating QueryInterface (Get-Interface).
@@ -17,7 +19,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     /// </remarks>
     public class PSTypeWrapper : TypeWrapper<PSObject>
     {
-        PSTypeWrapper(object wrappedObject)
+        private PSTypeWrapper(object wrappedObject)
             : base(wrappedObject)
         {
         }
@@ -34,13 +36,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return psObject;
         }
 
-        static ScriptBlock _addWrapperMembersScript;
-        static ScriptBlock AddWrapperMembersScript
+        private static ScriptBlock _addWrapperMembersScript;
+
+        private static ScriptBlock AddWrapperMembersScript
         {
             get
             {
                 return _addWrapperMembersScript ??
-                    (_addWrapperMembersScript = ScriptBlock.Create(Resources.Add_WrapperMembers));
+                       (_addWrapperMembersScript = ScriptBlock.Create(Resources.Add_WrapperMembers));
             }
         }
 
@@ -64,7 +67,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         /// </summary>
         /// <param name="target">The target object to invoke a methed.</param>
         /// <param name="method">The method info.</param>
-        /// <param name="parameters">Raw arguments. If it contains [ref] args, this method will set their result Values.</param>
+        /// <param name="parameters">
+        /// Raw arguments. If it contains [ref] args, this method will set their result
+        /// Values.
+        /// </param>
         /// <returns>Invoke method result.</returns>
         public static object InvokeMethod(object target, MethodInfo method, PSObject[] parameters)
         {
@@ -74,7 +80,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         /// <summary>
         /// A PS MethodBinder to support PSTypeWrapper.
         /// </summary>
-        class PSMethodBinder : MethodBinder
+        private class PSMethodBinder : MethodBinder
         {
             /// <summary>
             /// The singleton instance of PSMethodBinder.
@@ -84,7 +90,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             /// <summary>
             /// Private constructor.
             /// </summary>
-            PSMethodBinder()
+            private PSMethodBinder()
             {
             }
 
@@ -93,7 +99,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             /// </summary>
             /// <param name="arg">The PSObject.</param>
             /// <returns>The BaseObject of arg, or null if arg is null.</returns>
-            static object GetBaseObject(PSObject arg)
+            private static object GetBaseObject(PSObject arg)
             {
                 return arg != null ? arg.BaseObject : null;
             }

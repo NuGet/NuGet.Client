@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -9,6 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public static class PathValidator
     {
         private static readonly char[] _invalidPathChars = Path.GetInvalidPathChars();
+
         /// <summary>
         /// Validates that a source is a valid path or url.
         /// </summary>
@@ -16,11 +20,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>True if valid, False if invalid.</returns>
         public static bool IsValidSource(string source)
         {
-            return PathValidator.IsValidLocalPath(source) || PathValidator.IsValidUncPath(source) || PathValidator.IsValidUrl(source);
+            return IsValidLocalPath(source) || IsValidUncPath(source) || IsValidUrl(source);
         }
 
         /// <summary>
-        /// Validates that path is properly formatted as a local path. 
+        /// Validates that path is properly formatted as a local path.
         /// </summary>
         /// <remarks>
         /// On Windows, a valid local path must starts with the drive letter.
@@ -35,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 if (!(Environment.OSVersion.Platform == PlatformID.MacOSX ||
-                    Environment.OSVersion.Platform == PlatformID.Unix))
+                      Environment.OSVersion.Platform == PlatformID.Unix))
                 {
                     // Checking driver letter on Windows
                     if (!Regex.IsMatch(path.Trim(), @"^[A-Za-z]:\\"))
@@ -50,11 +54,10 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return false;
             }
-
         }
 
         /// <summary>
-        /// Validates that path is properly formatted as an UNC path. 
+        /// Validates that path is properly formatted as an UNC path.
         /// </summary>
         /// <remarks>
         /// Example: \\server\share, \\server\share\path, \\server\share\path\to\
@@ -92,11 +95,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static string GetCanonicalPath(string path)
         {
-            if (PathValidator.IsValidLocalPath(path) || (PathValidator.IsValidUncPath(path)))
+            if (IsValidLocalPath(path)
+                || (IsValidUncPath(path)))
             {
                 return Path.GetFullPath(PathUtility.EnsureTrailingSlash(path));
             }
-            if (PathValidator.IsValidUrl(path))
+            if (IsValidUrl(path))
             {
                 var url = new Uri(path);
                 // return canonical representation of Uri

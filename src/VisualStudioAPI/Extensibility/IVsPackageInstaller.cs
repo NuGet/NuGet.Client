@@ -1,9 +1,13 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using EnvDTE;
-using LegacyNuGet = Legacy.NuGet;
+using IPackageRepository = Legacy::NuGet.IPackageRepository;
+using LegacyNuGet = NuGet;
 
 namespace NuGet.VisualStudio
 {
@@ -21,7 +25,10 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target project for package installation.</param>
         /// <param name="packageId">The package id of the package to install.</param>
         /// <param name="version">The version of the package to install</param>
-        /// <param name="ignoreDependencies">A boolean indicating whether or not to ignore the package's dependencies during installation.</param>
+        /// <param name="ignoreDependencies">
+        /// A boolean indicating whether or not to ignore the package's dependencies
+        /// during installation.
+        /// </param>
         void InstallPackage(string source, Project project, string packageId, Version version, bool ignoreDependencies);
 
         /// <summary>
@@ -31,7 +38,10 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target project for package installation.</param>
         /// <param name="packageId">The package id of the package to install.</param>
         /// <param name="version">The version of the package to install</param>
-        /// <param name="ignoreDependencies">A boolean indicating whether or not to ignore the package's dependencies during installation.</param>
+        /// <param name="ignoreDependencies">
+        /// A boolean indicating whether or not to ignore the package's dependencies
+        /// during installation.
+        /// </param>
         void InstallPackage(string source, Project project, string packageId, string version, bool ignoreDependencies);
 
         /// <summary>
@@ -41,18 +51,36 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target project for package installation.</param>
         /// <param name="packageId">The package id of the package to install.</param>
         /// <param name="version">The version of the package to install</param>
-        /// <param name="ignoreDependencies">A boolean indicating whether or not to ignore the package's dependencies during installation.</param>
-        /// <param name="skipAssemblyReferences">A boolean indicating if assembly references from the package should be skipped.</param>
-        void InstallPackage(LegacyNuGet.IPackageRepository repository, Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences);
+        /// <param name="ignoreDependencies">
+        /// A boolean indicating whether or not to ignore the package's dependencies
+        /// during installation.
+        /// </param>
+        /// <param name="skipAssemblyReferences">
+        /// A boolean indicating if assembly references from the package should be
+        /// skipped.
+        /// </param>
+        void InstallPackage(IPackageRepository repository, Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences);
 
         /// <summary>
         /// Installs one or more packages that exist on disk in a folder defined in the registry.
         /// </summary>
-        /// <param name="keyName">The registry key name (under NuGet's repository key) that defines the folder on disk containing the packages.</param>
-        /// <param name="isPreUnzipped">A boolean indicating whether the folder contains packages that are pre-unzipped.</param>
-        /// <param name="skipAssemblyReferences">A boolean indicating whether the assembly references from the packages should be skipped.</param>
+        /// <param name="keyName">
+        /// The registry key name (under NuGet's repository key) that defines the folder on disk
+        /// containing the packages.
+        /// </param>
+        /// <param name="isPreUnzipped">
+        /// A boolean indicating whether the folder contains packages that are
+        /// pre-unzipped.
+        /// </param>
+        /// <param name="skipAssemblyReferences">
+        /// A boolean indicating whether the assembly references from the packages
+        /// should be skipped.
+        /// </param>
         /// <param name="project">The target project for package installation.</param>
-        /// <param name="packageVersions">A dictionary of packages/versions to install where the key is the package id and the value is the version.</param>
+        /// <param name="packageVersions">
+        /// A dictionary of packages/versions to install where the key is the package id
+        /// and the value is the version.
+        /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
         /// <para>
@@ -64,12 +92,24 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs one or more packages that exist on disk in a folder defined in the registry.
         /// </summary>
-        /// <param name="keyName">The registry key name (under NuGet's repository key) that defines the folder on disk containing the packages.</param>
-        /// <param name="isPreUnzipped">A boolean indicating whether the folder contains packages that are pre-unzipped.</param>
-        /// <param name="skipAssemblyReferences">A boolean indicating whether the assembly references from the packages should be skipped.</param>
+        /// <param name="keyName">
+        /// The registry key name (under NuGet's repository key) that defines the folder on disk
+        /// containing the packages.
+        /// </param>
+        /// <param name="isPreUnzipped">
+        /// A boolean indicating whether the folder contains packages that are
+        /// pre-unzipped.
+        /// </param>
+        /// <param name="skipAssemblyReferences">
+        /// A boolean indicating whether the assembly references from the packages
+        /// should be skipped.
+        /// </param>
         /// <param name="ignoreDependencies">A boolean indicating whether the package's dependencies should be ignored</param>
         /// <param name="project">The target project for package installation.</param>
-        /// <param name="packageVersions">A dictionary of packages/versions to install where the key is the package id and the value is the version.</param>
+        /// <param name="packageVersions">
+        /// A dictionary of packages/versions to install where the key is the package id
+        /// and the value is the version.
+        /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
         /// </remarks>
@@ -79,10 +119,19 @@ namespace NuGet.VisualStudio
         /// Installs one or more packages that are embedded in a Visual Studio Extension Package.
         /// </summary>
         /// <param name="extensionId">The Id of the Visual Studio Extension Package.</param>
-        /// <param name="isPreUnzipped">A boolean indicating whether the folder contains packages that are pre-unzipped.</param>
-        /// <param name="skipAssemblyReferences">A boolean indicating whether the assembly references from the packages should be skipped.</param>
+        /// <param name="isPreUnzipped">
+        /// A boolean indicating whether the folder contains packages that are
+        /// pre-unzipped.
+        /// </param>
+        /// <param name="skipAssemblyReferences">
+        /// A boolean indicating whether the assembly references from the packages
+        /// should be skipped.
+        /// </param>
         /// <param name="project">The target project for package installation</param>
-        /// <param name="packageVersions">A dictionary of packages/versions to install where the key is the package id and the value is the version.</param>
+        /// <param name="packageVersions">
+        /// A dictionary of packages/versions to install where the key is the package id
+        /// and the value is the version.
+        /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
         /// <para>
@@ -95,11 +144,20 @@ namespace NuGet.VisualStudio
         /// Installs one or more packages that are embedded in a Visual Studio Extension Package.
         /// </summary>
         /// <param name="extensionId">The Id of the Visual Studio Extension Package.</param>
-        /// <param name="isPreUnzipped">A boolean indicating whether the folder contains packages that are pre-unzipped.</param>
-        /// <param name="skipAssemblyReferences">A boolean indicating whether the assembly references from the packages should be skipped.</param>
+        /// <param name="isPreUnzipped">
+        /// A boolean indicating whether the folder contains packages that are
+        /// pre-unzipped.
+        /// </param>
+        /// <param name="skipAssemblyReferences">
+        /// A boolean indicating whether the assembly references from the packages
+        /// should be skipped.
+        /// </param>
         /// <param name="ignoreDependencies">A boolean indicating whether the package's dependencies should be ignored</param>
         /// <param name="project">The target project for package installation</param>
-        /// <param name="packageVersions">A dictionary of packages/versions to install where the key is the package id and the value is the version.</param>
+        /// <param name="packageVersions">
+        /// A dictionary of packages/versions to install where the key is the package id
+        /// and the value is the version.
+        /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
         /// </remarks>

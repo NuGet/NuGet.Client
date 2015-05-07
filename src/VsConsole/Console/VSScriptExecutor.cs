@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
@@ -15,6 +18,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
+using Strings = NuGet.ProjectManagement.Strings;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
@@ -32,18 +36,10 @@ namespace NuGetConsole
         }
 
         [Import]
-        public IPowerConsoleWindow PowerConsoleWindow
-        {
-            get;
-            set;
-        }
+        public IPowerConsoleWindow PowerConsoleWindow { get; set; }
 
         [Import]
-        public IOutputConsoleProvider OutputConsoleProvider
-        {
-            get;
-            set;
-        }
+        public IOutputConsoleProvider OutputConsoleProvider { get; set; }
 
         public async Task<bool> ExecuteAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, EnvDTEProject envDTEProject,
             NuGetProject nuGetProject, INuGetProjectContext nuGetProjectContext, bool throwOnFailure)
@@ -68,14 +64,14 @@ namespace NuGetConsole
                 if (envDTEProject != null)
                 {
                     NuGetFramework targetFramework;
-                    nuGetProject.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out targetFramework);
+                    nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out targetFramework);
 
                     // targetFramework can be null for unknown project types
                     string shortFramework = targetFramework == null ? string.Empty : targetFramework.GetShortFolderName();
                     var packageReader = new PackageReader(packageZipArchive);
                     packageIdentity = packageReader.GetIdentity();
 
-                    nuGetProjectContext.Log(MessageLevel.Debug, NuGet.ProjectManagement.Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
+                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
                         envDTEProject.Name, shortFramework);
                 }
                 if (packageIdentity != null)
@@ -96,7 +92,9 @@ namespace NuGetConsole
                 {
                     string toolsPath = Path.GetDirectoryName(fullScriptPath);
                     IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
-                    if (psNuGetProjectContext != null && psNuGetProjectContext.IsExecuting && psNuGetProjectContext.CurrentPSCmdlet != null)
+                    if (psNuGetProjectContext != null
+                        && psNuGetProjectContext.IsExecuting
+                        && psNuGetProjectContext.CurrentPSCmdlet != null)
                     {
                         var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
 
@@ -111,10 +109,10 @@ namespace NuGetConsole
                     else
                     {
                         string command = "$__pc_args=@(); $input|%{$__pc_args+=$_}; & "
-                            + PathUtility.EscapePSPath(fullScriptPath)
-                            + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0";
+                                         + PathUtility.EscapePSPath(fullScriptPath)
+                                         + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; Remove-Variable __pc_args -Scope 0";
 
-                        object[] inputs = new object[] { packageInstallPath, toolsPath, package, envDTEProject };
+                        object[] inputs = { packageInstallPath, toolsPath, package, envDTEProject };
                         string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
 
                         // logging to both the Output window and progress window.
@@ -135,10 +133,7 @@ namespace NuGetConsole
                             {
                                 throw;
                             }
-                            else
-                            {
-                                nuGetProjectContext.Log(MessageLevel.Warning, ex.Message);
-                            }
+                            nuGetProjectContext.Log(MessageLevel.Warning, ex.Message);
                         }
                     }
 
@@ -171,11 +166,8 @@ namespace NuGetConsole
             {
                 return host;
             }
-            else
-            {
-                // the PowerShell host fails to initialize if group policy restricts to AllSigned
-                throw new InvalidOperationException(Resources.Console_InitializeHostFails);
-            }
+            // the PowerShell host fails to initialize if group policy restricts to AllSigned
+            throw new InvalidOperationException(Resources.Console_InitializeHostFails);
         }
     }
 }

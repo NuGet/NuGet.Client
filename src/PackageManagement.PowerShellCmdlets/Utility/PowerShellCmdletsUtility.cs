@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -28,17 +31,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new ArgumentNullException();
             }
-            else
+            bool success = NuGetVersion.TryParse(version, out nVersion);
+            if (!success)
             {
-                bool success = NuGetVersion.TryParse(version, out nVersion);
-                if (!success)
-                {
-                    throw new InvalidOperationException(
-                        String.Format(CultureInfo.CurrentCulture,
+                throw new InvalidOperationException(
+                    String.Format(CultureInfo.CurrentCulture,
                         Resources.Cmdlet_FailToParseVersion, version));
-                }
-                return nVersion;
             }
+            return nVersion;
         }
 
         /// <summary>
@@ -87,13 +87,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception)
             {
-                if (result == null || !allVersions.Any())
+                if (result == null
+                    || !allVersions.Any())
                 {
                     throw new InvalidOperationException(
                         String.Format(CultureInfo.CurrentCulture,
-                        Resources.UnknownPackage, packageId));
+                            Resources.UnknownPackage, packageId));
                 }
-
             }
             return result.Versions;
         }
@@ -131,7 +131,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 VersionRange spec = GetSafeRange(nugetVersion, includePrerelease);
                 allVersions = versionList.Where(p => p < spec.MaxVersion && p >= spec.MinVersion);
-                if (allVersions != null && allVersions.Any())
+                if (allVersions != null
+                    && allVersions.Any())
                 {
                     NuGetVersion version = allVersions.OrderByDescending(v => v).FirstOrDefault();
                     safeUpdate = new PackageIdentity(identity.Id, version);
@@ -141,7 +142,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new InvalidOperationException(
                     String.Format(CultureInfo.CurrentCulture,
-                    Resources.Cmdlets_ErrorFindingUpdateVersion, identity.Id, ex.Message));
+                        Resources.Cmdlets_ErrorFindingUpdateVersion, identity.Id, ex.Message));
             }
 
             return safeUpdate;
@@ -158,7 +159,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get the update version for Dependent package, based on the specification of Highest, HighestMinor, HighestPatch and Lowest.
+        /// Get the update version for Dependent package, based on the specification of Highest, HighestMinor,
+        /// HighestPatch and Lowest.
         /// </summary>
         /// <param name="sourceRepository"></param>
         /// <param name="identity"></param>
@@ -176,7 +178,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 // Find all versions that are higher than the package's current version
                 allVersions = allVersions.Where(p => p > identity.Version).OrderByDescending(v => v);
-                if (allVersions != null && allVersions.Any())
+                if (allVersions != null
+                    && allVersions.Any())
                 {
                     if (updateVersion == DependencyBehavior.Lowest)
                     {
@@ -189,22 +192,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     else if (updateVersion == DependencyBehavior.HighestPatch)
                     {
                         var groups = from p in allVersions
-                                     group p by new { p.Version.Major, p.Version.Minor } into g
-                                     orderby g.Key.Major, g.Key.Minor
-                                     select g;
+                            group p by new { p.Version.Major, p.Version.Minor }
+                            into g
+                            orderby g.Key.Major, g.Key.Minor
+                            select g;
                         nVersion = (from p in groups.First()
-                                    orderby p.Version descending
-                                    select p).FirstOrDefault();
+                            orderby p.Version descending
+                            select p).FirstOrDefault();
                     }
                     else if (updateVersion == DependencyBehavior.HighestMinor)
                     {
                         var groups = from p in allVersions
-                                     group p by new { p.Version.Major } into g
-                                     orderby g.Key.Major
-                                     select g;
+                            group p by new { p.Version.Major }
+                            into g
+                            orderby g.Key.Major
+                            select g;
                         nVersion = (from p in groups.First()
-                                    orderby p.Version descending
-                                    select p).FirstOrDefault();
+                            orderby p.Version descending
+                            select p).FirstOrDefault();
                     }
                 }
 
@@ -217,7 +222,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new InvalidOperationException(
                     String.Format(CultureInfo.CurrentCulture,
-                    Resources.Cmdlets_ErrorFindingUpdateVersion, identity.Id, ex.Message));
+                        Resources.Cmdlets_ErrorFindingUpdateVersion, identity.Id, ex.Message));
             }
 
             return packageUpdate;

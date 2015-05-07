@@ -1,22 +1,26 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.TextManager.Interop;
-using NuGetConsole.Implementation.Console;
-using NuGetConsole.Implementation.PowerConsole;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGetConsole.Implementation.Console;
+using NuGetConsole.Implementation.PowerConsole;
 
 namespace NuGetConsole.Implementation
 {
@@ -31,50 +35,32 @@ namespace NuGetConsole.Implementation
         /// </summary>
         private IComponentModel ComponentModel
         {
-            get
-            {
-                return this.GetService<IComponentModel>(typeof(SComponentModel));
-            }
+            get { return this.GetService<IComponentModel>(typeof(SComponentModel)); }
         }
 
         private IProductUpdateService ProductUpdateService
         {
-            get
-            {
-                return ComponentModel.GetService<IProductUpdateService>();
-            }
+            get { return ComponentModel.GetService<IProductUpdateService>(); }
         }
 
         private IPackageRestoreManager PackageRestoreManager
         {
-            get
-            {
-                return ComponentModel.GetService<IPackageRestoreManager>();
-            }
+            get { return ComponentModel.GetService<IPackageRestoreManager>(); }
         }
 
         private ISolutionManager SolutionManager
         {
-            get
-            {
-                return ComponentModel.GetService<ISolutionManager>();
-            }
+            get { return ComponentModel.GetService<ISolutionManager>(); }
         }
 
         private PowerConsoleWindow PowerConsoleWindow
         {
-            get
-            {
-                return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow;
-            }
+            get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
         }
 
         private IVsUIShell VsUIShell
         {
-            get
-            {
-                return this.GetService<IVsUIShell>(typeof(SVsUIShell));
-            }
+            get { return this.GetService<IVsUIShell>(typeof(SVsUIShell)); }
         }
 
         private bool IsToolbarEnabled
@@ -91,13 +77,14 @@ namespace NuGetConsole.Implementation
         /// <summary>
         /// Standard constructor for the tool window.
         /// </summary>
-        public PowerConsoleToolWindow() :
-            base(null)
+        public PowerConsoleToolWindow()
+            :
+                base(null)
         {
-            this.Caption = Resources.ToolWindowTitle;
-            this.BitmapResourceID = 301;
-            this.BitmapIndex = 0;
-            this.ToolBar = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.idToolbar);
+            Caption = Resources.ToolWindowTitle;
+            BitmapResourceID = 301;
+            BitmapIndex = 0;
+            ToolBar = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.idToolbar);
         }
 
         protected override void Initialize()
@@ -133,7 +120,7 @@ namespace NuGetConsole.Implementation
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We really don't want exceptions from the console to bring down VS")]
@@ -148,18 +135,18 @@ namespace NuGetConsole.Implementation
             var timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(10);
             timer.Tick += (o, e) =>
-            {
-                // all exceptions from the timer thread should be caught to avoid crashing VS
-                try
                 {
-                    LoadConsoleEditor();
-                    timer.Stop();
-                }
-                catch (Exception x)
-                {
-                    ExceptionHelper.WriteToActivityLog(x);
-                }
-            };
+                    // all exceptions from the timer thread should be caught to avoid crashing VS
+                    try
+                    {
+                        LoadConsoleEditor();
+                        timer.Stop();
+                    }
+                    catch (Exception x)
+                    {
+                        ExceptionHelper.WriteToActivityLog(x);
+                    }
+                };
             timer.Start();
 
             base.OnToolWindowCreated();
@@ -180,9 +167,9 @@ namespace NuGetConsole.Implementation
         /// </summary>
         /// <param name="m"></param>
         /// <returns></returns>
-        protected override bool PreProcessMessage(ref System.Windows.Forms.Message m)
+        protected override bool PreProcessMessage(ref Message m)
         {
-            IVsWindowPane vsWindowPane = this.VsTextView as IVsWindowPane;
+            IVsWindowPane vsWindowPane = VsTextView as IVsWindowPane;
             if (vsWindowPane != null)
             {
                 MSG[] pMsg = new MSG[1];
@@ -209,7 +196,7 @@ namespace NuGetConsole.Implementation
 
                 if (isEnabled)
                 {
-                    bool isStopButton = (prgCmds[0].cmdID == 0x0600);   // 0x0600 is the Command ID of the Stop button, defined in .vsct
+                    bool isStopButton = (prgCmds[0].cmdID == 0x0600); // 0x0600 is the Command ID of the Stop button, defined in .vsct
 
                     // when command is executing: enable stop button and disable the rest
                     // when command is not executing: disable the stop button and enable the rest
@@ -230,16 +217,17 @@ namespace NuGetConsole.Implementation
 
             int hr = OleCommandFilter.OLECMDERR_E_NOTSUPPORTED;
 
-            if (this.VsTextView != null)
+            if (VsTextView != null)
             {
                 IOleCommandTarget cmdTarget = (IOleCommandTarget)VsTextView;
                 hr = cmdTarget.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
             }
 
-            if (hr == OleCommandFilter.OLECMDERR_E_NOTSUPPORTED ||
+            if (hr == OleCommandFilter.OLECMDERR_E_NOTSUPPORTED
+                ||
                 hr == OleCommandFilter.OLECMDERR_E_UNKNOWNGROUP)
             {
-                IOleCommandTarget target = this.GetService(typeof(IOleCommandTarget)) as IOleCommandTarget;
+                IOleCommandTarget target = GetService(typeof(IOleCommandTarget)) as IOleCommandTarget;
                 if (target != null)
                 {
                     hr = target.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
@@ -256,16 +244,17 @@ namespace NuGetConsole.Implementation
         {
             int hr = OleCommandFilter.OLECMDERR_E_NOTSUPPORTED;
 
-            if (this.VsTextView != null)
+            if (VsTextView != null)
             {
                 IOleCommandTarget cmdTarget = (IOleCommandTarget)VsTextView;
                 hr = cmdTarget.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
 
-            if (hr == OleCommandFilter.OLECMDERR_E_NOTSUPPORTED ||
+            if (hr == OleCommandFilter.OLECMDERR_E_NOTSUPPORTED
+                ||
                 hr == OleCommandFilter.OLECMDERR_E_UNKNOWNGROUP)
             {
-                IOleCommandTarget target = this.GetService(typeof(IOleCommandTarget)) as IOleCommandTarget;
+                IOleCommandTarget target = GetService(typeof(IOleCommandTarget)) as IOleCommandTarget;
                 if (target != null)
                 {
                     hr = target.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
@@ -280,7 +269,8 @@ namespace NuGetConsole.Implementation
             OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
             if (args != null)
             {
-                if (args.InValue != null || args.OutValue == IntPtr.Zero)
+                if (args.InValue != null
+                    || args.OutValue == IntPtr.Zero)
                 {
                     throw new ArgumentException("Invalid argument", "e");
                 }
@@ -296,10 +286,12 @@ namespace NuGetConsole.Implementation
             OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
             if (args != null)
             {
-                if (args.InValue != null && args.InValue is int) // Selected a feed
+                if (args.InValue != null
+                    && args.InValue is int) // Selected a feed
                 {
                     int index = (int)args.InValue;
-                    if (index >= 0 && index < PowerConsoleWindow.PackageSources.Length)
+                    if (index >= 0
+                        && index < PowerConsoleWindow.PackageSources.Length)
                     {
                         PowerConsoleWindow.ActivePackageSource = PowerConsoleWindow.PackageSources[index];
                     }
@@ -317,7 +309,8 @@ namespace NuGetConsole.Implementation
             OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
             if (args != null)
             {
-                if (args.InValue != null || args.OutValue == IntPtr.Zero)
+                if (args.InValue != null
+                    || args.OutValue == IntPtr.Zero)
                 {
                     throw new ArgumentException("Invalid argument", "e");
                 }
@@ -335,11 +328,13 @@ namespace NuGetConsole.Implementation
             OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
             if (args != null)
             {
-                if (args.InValue != null && args.InValue is int)
+                if (args.InValue != null
+                    && args.InValue is int)
                 {
                     // Selected a default projects
                     int index = (int)args.InValue;
-                    if (index >= 0 && index < PowerConsoleWindow.AvailableProjects.Length)
+                    if (index >= 0
+                        && index < PowerConsoleWindow.AvailableProjects.Length)
                     {
                         PowerConsoleWindow.SetDefaultProjectIndex(index);
                     }
@@ -373,10 +368,7 @@ namespace NuGetConsole.Implementation
 
         private HostInfo ActiveHostInfo
         {
-            get
-            {
-                return PowerConsoleWindow.ActiveHostInfo;
-            }
+            get { return PowerConsoleWindow.ActiveHostInfo; }
         }
 
         private void LoadConsoleEditor()
@@ -407,7 +399,8 @@ namespace NuGetConsole.Implementation
         /// <param name="consolePane"></param>
         private void PendingMoveFocus(FrameworkElement consolePane)
         {
-            if (consolePane.IsLoaded && PresentationSource.FromDependencyObject(consolePane) != null)
+            if (consolePane.IsLoaded
+                && PresentationSource.FromDependencyObject(consolePane) != null)
             {
                 PendingFocusPane = null;
                 MoveFocus(consolePane);
@@ -419,12 +412,10 @@ namespace NuGetConsole.Implementation
         }
 
         private FrameworkElement _pendingFocusPane;
+
         private FrameworkElement PendingFocusPane
         {
-            get
-            {
-                return _pendingFocusPane;
-            }
+            get { return _pendingFocusPane; }
             set
             {
                 if (_pendingFocusPane != null)
@@ -455,13 +446,15 @@ namespace NuGetConsole.Implementation
             StartConsoleSession(consolePane);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We really don't want exceptions from the console to bring down VS")]
         private void StartConsoleSession(FrameworkElement consolePane)
         {
-            if (WpfConsole != null && WpfConsole.Content == consolePane && WpfConsole.Host != null)
+            if (WpfConsole != null
+                && WpfConsole.Content == consolePane
+                && WpfConsole.Host != null)
             {
                 try
                 {
@@ -519,7 +512,7 @@ namespace NuGetConsole.Implementation
         /// <summary>
         /// Get the WpfConsole of the active host.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         private IWpfConsole WpfConsole
         {
             get
@@ -542,7 +535,8 @@ namespace NuGetConsole.Implementation
         {
             get
             {
-                if (_vsTextView == null && _wpfConsole != null)
+                if (_vsTextView == null
+                    && _wpfConsole != null)
                 {
                     _vsTextView = (IVsTextView)(WpfConsole.VsTextView);
                 }
@@ -569,14 +563,8 @@ namespace NuGetConsole.Implementation
 
         public override object Content
         {
-            get
-            {
-                return this.ConsoleParentPane;
-            }
-            set
-            {
-                base.Content = value;
-            }
+            get { return ConsoleParentPane; }
+            set { base.Content = value; }
         }
 
         #region IPowerConsoleService Region
@@ -613,7 +601,8 @@ namespace NuGetConsole.Implementation
                 // Snapshot has reference to the buffer and the current length of the buffer
                 // And, upon execution of the command, (check the commandexecuted handler)
                 // the changes to the buffer is identified and copied over to the VS output window
-                if (powerShellConsole.InputLineStart != null && powerShellConsole.InputLineStart.Value.Snapshot != null)
+                if (powerShellConsole.InputLineStart != null
+                    && powerShellConsole.InputLineStart.Value.Snapshot != null)
                 {
                     _snapshot = powerShellConsole.InputLineStart.Value.Snapshot;
                 }
@@ -631,7 +620,8 @@ namespace NuGetConsole.Implementation
         {
             // Flush the change in console text buffer onto the output window for testability
             // If the VSOutputConsole could not be obtained, just ignore
-            if (VSOutputConsole != null && _snapshot != null)
+            if (VSOutputConsole != null
+                && _snapshot != null)
             {
                 if (_previousPosition < _snapshot.Length)
                 {
@@ -648,8 +638,8 @@ namespace NuGetConsole.Implementation
             ExecuteEnd.Raise(this, EventArgs.Empty);
         }
 
+        private IConsole _vsOutputConsole;
 
-        private IConsole _vsOutputConsole = null;
         private IConsole VSOutputConsole
         {
             get
@@ -667,6 +657,7 @@ namespace NuGetConsole.Implementation
         }
 
         private IConsoleStatus _consoleStatus;
+
         private IConsoleStatus ConsoleStatus
         {
             get
@@ -680,6 +671,7 @@ namespace NuGetConsole.Implementation
                 return _consoleStatus;
             }
         }
+
         #endregion
     }
 }

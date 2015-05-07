@@ -1,4 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Windows.Media;
 using NuGet.PackageManagement;
 
 namespace NuGetConsole.Host.PowerShellProvider
@@ -10,24 +14,18 @@ namespace NuGetConsole.Host.PowerShellProvider
     {
         public bool IsCommandEnabled
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
         public void Initialize(IConsole console)
         {
             // display the error message at the beginning
-            console.Write(Resources.Host_PSNotInstalled, System.Windows.Media.Colors.Red, null);
+            console.Write(Resources.Host_PSNotInstalled, Colors.Red, null);
         }
 
         public string Prompt
         {
-            get
-            {
-                return String.Empty;
-            }
+            get { return String.Empty; }
         }
 
         public bool Execute(IConsole console, string command, object[] inputs)
@@ -41,13 +39,8 @@ namespace NuGetConsole.Host.PowerShellProvider
 
         public string ActivePackageSource
         {
-            get
-            {
-                return String.Empty;
-            }
-            set
-            {
-            }
+            get { return String.Empty; }
+            set { }
         }
 
         public string[] GetPackageSources()
@@ -57,10 +50,7 @@ namespace NuGetConsole.Host.PowerShellProvider
 
         public string DefaultProject
         {
-            get
-            {
-                return String.Empty;
-            }
+            get { return String.Empty; }
         }
 
         public void SetDefaultProjectIndex(int index)
@@ -76,16 +66,10 @@ namespace NuGetConsole.Host.PowerShellProvider
         {
         }
 
-
         public PackageManagementContext PackageManagementContext
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-            }
+            get { return null; }
+            set { }
         }
     }
 }

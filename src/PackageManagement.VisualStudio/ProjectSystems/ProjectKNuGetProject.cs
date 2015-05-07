@@ -1,9 +1,6 @@
-﻿using Microsoft.VisualStudio.ProjectSystem.Interop;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,22 +8,21 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.ProjectSystem.Interop;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class NuGetPackageMoniker : INuGetPackageMoniker
     {
-        public string Id
-        {
-            get;
-            set;
-        }
+        public string Id { get; set; }
 
-        public string Version
-        {
-            get;
-            set;
-        }
+        public string Version { get; set; }
     }
 
     public class ProjectKNuGetProject : ProjectKNuGetProjectBase
@@ -53,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (packageSupportedFrameworks.Any())
             {
                 return packageSupportedFrameworks.Any(packageSupportedFramework =>
-                    NuGet.Frameworks.DefaultCompatibilityProvider.Instance.IsCompatible(
+                    DefaultCompatibilityProvider.Instance.IsCompatible(
                         projectFrameworkName,
                         packageSupportedFramework));
             }
@@ -62,12 +58,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public async override Task<bool> InstallPackageAsync(Packaging.Core.PackageIdentity packageIdentity, System.IO.Stream packageStream,
+        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (!packageStream.CanSeek)
             {
-                throw new ArgumentException(NuGet.ProjectManagement.Strings.PackageStreamShouldBeSeekable);
+                throw new ArgumentException(ProjectManagement.Strings.PackageStreamShouldBeSeekable);
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
@@ -86,10 +82,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     IsCompatible(projectFramework, packageSupportedFrameworks)).ToArray();
             await _project.InstallPackageAsync(
                 new NuGetPackageMoniker
-                {
-                    Id = packageIdentity.Id,
-                    Version = packageIdentity.Version.ToNormalizedString()
-                },
+                    {
+                        Id = packageIdentity.Id,
+                        Version = packageIdentity.Version.ToNormalizedString()
+                    },
                 args,
                 logger: null,
                 progress: null,
@@ -97,17 +93,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public async override Task<bool> UninstallPackageAsync(Packaging.Core.PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             nuGetProjectContext.Log(MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
 
             var args = new Dictionary<string, object>();
             await _project.UninstallPackageAsync(
                 new NuGetPackageMoniker
-                {
-                    Id = packageIdentity.Id,
-                    Version = packageIdentity.Version.ToNormalizedString()
-                },
+                    {
+                        Id = packageIdentity.Id,
+                        Version = packageIdentity.Version.ToNormalizedString()
+                    },
                 args,
                 logger: null,
                 progress: null,
@@ -115,17 +111,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public async override Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            var result = new List<Packaging.PackageReference>();
+            var result = new List<PackageReference>();
             foreach (object item in await _project.GetInstalledPackagesAsync(token))
             {
-                Packaging.Core.PackageIdentity identity = null;
+                PackageIdentity identity = null;
 
                 var moniker = item as INuGetPackageMoniker;
                 if (moniker != null)
                 {
-                    identity = new Packaging.Core.PackageIdentity(
+                    identity = new PackageIdentity(
                         moniker.Id,
                         NuGetVersion.Parse(moniker.Version));
                 }
@@ -141,9 +137,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                result.Add(new Packaging.PackageReference(
-                        identity,
-                        targetFramework: null));
+                result.Add(new PackageReference(
+                    identity,
+                    targetFramework: null));
             }
 
             return result;

@@ -1,13 +1,16 @@
-﻿extern alias Legacy;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+extern alias Legacy;
 using System;
 using System.Net;
+using Legacy::NuGet;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGetVSExtension
 {
-    public abstract class VisualStudioCredentialProvider : Legacy.NuGet.ICredentialProvider
+    public abstract class VisualStudioCredentialProvider : ICredentialProvider
     {
         private readonly IVsWebProxy _webProxyService;
 
@@ -24,7 +27,7 @@ namespace NuGetVSExtension
         /// Returns an ICredentials instance that the consumer would need in order
         /// to properly authenticate to the given Uri.
         /// </summary>
-        public ICredentials GetCredentials(Uri uri, IWebProxy proxy, Legacy.NuGet.CredentialType credentialType, bool retrying)
+        public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CredentialType credentialType, bool retrying)
         {
             if (uri == null)
             {
@@ -47,7 +50,7 @@ namespace NuGetVSExtension
                 {
                     originalProxy = new WebProxy(proxy.GetProxy(uri));
                     originalProxy.Credentials = proxy.Credentials == null
-                                                    ? null : proxy.Credentials.GetCredential(uri, null);
+                        ? null : proxy.Credentials.GetCredential(uri, null);
                 }
             }
 
@@ -85,16 +88,17 @@ namespace NuGetVSExtension
             var newState = (uint)__VsWebProxyState.VsWebProxyState_NoCredentials;
             int result = 0;
             ThreadHelper.Generic.Invoke(() =>
-            {
-                result = _webProxyService.PrepareWebProxy(uri.OriginalString,
-                                                      (uint)oldState,
-                                                      out newState,
-                                                      fOkToPrompt: 1);
-            });
+                {
+                    result = _webProxyService.PrepareWebProxy(uri.OriginalString,
+                        (uint)oldState,
+                        out newState,
+                        fOkToPrompt: 1);
+                });
             // If result is anything but 0 that most likely means that there was an error
             // so we will null out the DefaultWebProxy.Credentials so that we don't get
             // invalid credentials stored for subsequent requests.
-            if (result != 0 || newState == (uint)__VsWebProxyState.VsWebProxyState_Abort)
+            if (result != 0
+                || newState == (uint)__VsWebProxyState.VsWebProxyState_Abort)
             {
                 // Clear out the current credentials because the user might have clicked cancel
                 // and we don't want to use the currently set credentials if they are wrong.

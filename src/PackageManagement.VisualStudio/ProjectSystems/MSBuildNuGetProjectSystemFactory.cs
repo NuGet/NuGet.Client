@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -12,15 +15,15 @@ namespace NuGet.PackageManagement.VisualStudio
     public static class MSBuildNuGetProjectSystemFactory
     {
         private static Dictionary<string, IMSBuildNuGetProjectSystemThunk> _factories = new Dictionary<string, IMSBuildNuGetProjectSystemThunk>(StringComparer.OrdinalIgnoreCase)
-        {
-            { NuGetVSConstants.WebApplicationProjectTypeGuid, (project, nuGetProjectContext) => new WebProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.WebSiteProjectTypeGuid, (project, nuGetProjectContext) => new WebSiteProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.FsharpProjectTypeGuid, (project, nuGetProjectContext) => new FSharpProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.WixProjectTypeGuid, (project, nuGetProjectContext) => new WixProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.JsProjectTypeGuid, (project, nuGetProjectContext) => new JsProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.WindowsStoreProjectTypeGuid, (project, nuGetProjectContext) => new WindowsStoreProjectSystem(project, nuGetProjectContext) },
-            { NuGetVSConstants.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) }
-        };
+            {
+                { NuGetVSConstants.WebApplicationProjectTypeGuid, (project, nuGetProjectContext) => new WebProjectSystem(project, nuGetProjectContext) },
+                { NuGetVSConstants.WebSiteProjectTypeGuid, (project, nuGetProjectContext) => new WebSiteProjectSystem(project, nuGetProjectContext) },
+                { NuGetVSConstants.FsharpProjectTypeGuid, (project, nuGetProjectContext) => new FSharpProjectSystem(project, nuGetProjectContext) },
+                { NuGetVSConstants.WixProjectTypeGuid, (project, nuGetProjectContext) => new WixProjectSystem(project, nuGetProjectContext) },
+                { NuGetVSConstants.JsProjectTypeGuid, (project, nuGetProjectContext) => new JsProjectSystem(project, nuGetProjectContext) },
+                { NuGetVSConstants.WindowsStoreProjectTypeGuid, (project, nuGetProjectContext) => new WindowsStoreProjectSystem(project, nuGetProjectContext) },
+                { NuGetVSConstants.DeploymentProjectTypeGuid, (project, nuGetProjectContext) => new VSMSBuildNuGetProjectSystem(project, nuGetProjectContext) }
+            };
 
         public static IMSBuildNuGetProjectSystem CreateMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
@@ -35,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new InvalidOperationException(
                     String.Format(CultureInfo.CurrentCulture,
-                    Strings.DTE_ProjectUnsupported, EnvDTEProjectUtility.GetName(envDTEProject)));
+                        Strings.DTE_ProjectUnsupported, EnvDTEProjectUtility.GetName(envDTEProject)));
             }
 
 #if VS14
@@ -49,10 +52,10 @@ namespace NuGet.PackageManagement.VisualStudio
             if (guids.Contains(NuGetVSConstants.CppProjectTypeGuid)) // Got a cpp project
             {
                 if (!EnvDTEProjectUtility.IsClr(envDTEProject))
+                {
                     return new NativeProjectSystem(envDTEProject, nuGetProjectContext);
+                }
             }
-
-
 
             // Try to get a factory for the project type guid            
             foreach (var guid in guids)

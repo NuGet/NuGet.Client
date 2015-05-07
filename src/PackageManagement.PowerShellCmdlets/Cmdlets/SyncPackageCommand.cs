@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -20,12 +23,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private ResolutionContext _context;
         private bool _allowPrerelease;
 
-        public SyncPackageCommand()
-            : base()
-        {
-        }
-
-        private List<NuGetProject> Projects = new List<NuGetProject>();
+        private List<NuGetProject> _projects = new List<NuGetProject>();
 
         protected override void Preprocess()
         {
@@ -35,7 +33,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 ProjectName = VsSolutionManager.DefaultNuGetProjectName;
             }
             // Get the projects in the solution that's not the current default or specified project to sync the package identity to.
-            Projects = VsSolutionManager.GetNuGetProjects()
+            _projects = VsSolutionManager.GetNuGetProjects()
                 .Where(p => !StringComparer.OrdinalIgnoreCase.Equals(p.GetMetadata<string>(NuGetProjectMetadataKeys.Name), ProjectName))
                 .ToList();
         }
@@ -47,7 +45,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PackageIdentity identity = GetPackageIdentity().Result;
 
             SubscribeToProgressEvents();
-            if (Projects.Count == 0)
+            if (_projects.Count == 0)
             {
                 LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlets_NoProjectsToSyncPackage, Id));
             }
@@ -58,7 +56,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 _allowPrerelease = IncludePrerelease.IsPresent || identity.Version.IsPrerelease;
-                Task.Run(() => SyncPackages(Projects, identity));
+                Task.Run(() => SyncPackages(_projects, identity));
                 WaitAndLogPackageActions();
             }
             UnsubscribeFromProgressEvents();

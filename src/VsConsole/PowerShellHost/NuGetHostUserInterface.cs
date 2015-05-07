@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -60,7 +63,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 LanguagePrimitives.TryConvertTo(field.ParameterAssemblyFullName, out type);
             }
-            if ((type == null) && !String.IsNullOrEmpty(field.ParameterTypeFullName))
+            if ((type == null)
+                && !String.IsNullOrEmpty(field.ParameterTypeFullName))
             {
                 LanguagePrimitives.TryConvertTo(field.ParameterTypeFullName, out type);
             }
@@ -98,7 +102,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             foreach (FieldDescription description in descriptions)
             {
                 // if type is not resolvable, throw (as per powershell.exe)
-                if ((description == null) ||
+                if ((description == null)
+                    ||
                     String.IsNullOrEmpty(description.ParameterAssemblyFullName))
                 {
                     throw new ArgumentException("descriptions[" + index + "]");
@@ -179,7 +184,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     cancelled = (line == null);
                     // can powershell turn this string into the field type?
                     coercable = LanguagePrimitives.TryConvertTo(line, fieldType, out answer);
-                } while (!cancelled && !coercable);
+                }
+                while (!cancelled
+                       && !coercable);
             }
             return cancelled;
         }
@@ -281,7 +288,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     accelerators[index] = String.Empty; // default to empty
 
                     // accelerator marker found?
-                    if (ampIndex != -1 && ampIndex < label.Length - 1)
+                    if (ampIndex != -1
+                        && ampIndex < label.Length - 1)
                     {
                         // grab the letter after '&'
                         accelerators[index] = label
@@ -290,9 +298,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     }
 
                     Write(String.Format(CultureInfo.CurrentCulture, "[{0}] {1}  ",
-                                        accelerators[index],
-                                        // remove the redundant marker from output
-                                        label.Replace("&", String.Empty)));
+                        accelerators[index],
+                        // remove the redundant marker from output
+                        label.Replace("&", String.Empty)));
                 }
 
                 Write(String.Format(CultureInfo.CurrentCulture, Resources.PromptForChoiceSuffix, accelerators[defaultChoice]));
@@ -339,7 +347,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                 StringComparison.OrdinalIgnoreCase));
                         break;
                 }
-            } while (chosen == -1);
+            }
+            while (chosen == -1);
 
             return chosen;
         }
@@ -456,35 +465,37 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         /// <summary>
-        ///     Convert a System.ConsoleColor enum to a Color value, or null if c is not a valid enum.
+        /// Convert a System.ConsoleColor enum to a Color value, or null if c is not a valid enum.
         /// </summary>
         private static Color? ToColor(ConsoleColor c)
         {
             if (_consoleColors == null)
             {
                 // colors copied from hkcu:\Console color table
-                _consoleColors = new Color[16] {
-                                                   Color.FromRgb(0x00, 0x00, 0x00),
-                                                   Color.FromRgb(0x00, 0x00, 0x80),
-                                                   Color.FromRgb(0x00, 0x80, 0x00),
-                                                   Color.FromRgb(0x00, 0x80, 0x80),
-                                                   Color.FromRgb(0x80, 0x00, 0x00),
-                                                   Color.FromRgb(0x80, 0x00, 0x80),
-                                                   Color.FromRgb(0x80, 0x80, 0x00),
-                                                   Color.FromRgb(0xC0, 0xC0, 0xC0),
-                                                   Color.FromRgb(0x80, 0x80, 0x80),
-                                                   Color.FromRgb(0x00, 0x00, 0xFF),
-                                                   Color.FromRgb(0x00, 0xFF, 0x00),
-                                                   Color.FromRgb(0x00, 0xFF, 0xFF),
-                                                   Color.FromRgb(0xFF, 0x00, 0x00),
-                                                   Color.FromRgb(0xFF, 0x00, 0xFF),
-                                                   Color.FromRgb(0xFF, 0xFF, 0x00),
-                                                   Color.FromRgb(0xFF, 0xFF, 0xFF),
-                                               };
+                _consoleColors = new Color[16]
+                    {
+                        Color.FromRgb(0x00, 0x00, 0x00),
+                        Color.FromRgb(0x00, 0x00, 0x80),
+                        Color.FromRgb(0x00, 0x80, 0x00),
+                        Color.FromRgb(0x00, 0x80, 0x80),
+                        Color.FromRgb(0x80, 0x00, 0x00),
+                        Color.FromRgb(0x80, 0x00, 0x80),
+                        Color.FromRgb(0x80, 0x80, 0x00),
+                        Color.FromRgb(0xC0, 0xC0, 0xC0),
+                        Color.FromRgb(0x80, 0x80, 0x80),
+                        Color.FromRgb(0x00, 0x00, 0xFF),
+                        Color.FromRgb(0x00, 0xFF, 0x00),
+                        Color.FromRgb(0x00, 0xFF, 0xFF),
+                        Color.FromRgb(0xFF, 0x00, 0x00),
+                        Color.FromRgb(0xFF, 0x00, 0xFF),
+                        Color.FromRgb(0xFF, 0xFF, 0x00),
+                        Color.FromRgb(0xFF, 0xFF, 0xFF)
+                    };
             }
 
             var i = (int)c;
-            if (i >= 0 && i < _consoleColors.Length)
+            if (i >= 0
+                && i < _consoleColors.Length)
             {
                 return _consoleColors[i];
             }

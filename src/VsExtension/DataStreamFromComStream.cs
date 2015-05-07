@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using Microsoft.VisualStudio.OLE.Interop;
 
 namespace NuGetVSExtension
 {
-    class DataStreamFromComStream : Stream, IDisposable
+    internal class DataStreamFromComStream : Stream, IDisposable
     {
         private IStream _comStream;
 
@@ -53,7 +52,7 @@ namespace NuGetVSExtension
 
         public override long Length
         {
-            get 
+            get
             {
                 long currentPos = this.Position;
                 long endPos = Seek(0, SeekOrigin.End);
@@ -64,14 +63,8 @@ namespace NuGetVSExtension
 
         public override long Position
         {
-            get
-            {
-                return Seek(0, SeekOrigin.Current);
-            }
-            set
-            {
-                Seek(value, SeekOrigin.Begin);
-            }
+            get { return Seek(0, SeekOrigin.Current); }
+            set { Seek(value, SeekOrigin.Begin); }
         }
 
         public override int Read(byte[] buffer, int offset, int count)

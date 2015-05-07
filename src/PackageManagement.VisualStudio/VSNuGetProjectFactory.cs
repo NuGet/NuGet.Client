@@ -1,11 +1,16 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Linq;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
+using IServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -13,7 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly Func<string> _packagesPath;
 
-        private EmptyNuGetProjectContext EmptyNuGetProjectContext { get; set; }
+        private EmptyNuGetProjectContext EmptyNuGetProjectContext { get; }
 
         // TODO: Add IDeleteOnRestartManager, VsPackageInstallerEvents and IVsFrameworkMultiTargeting to constructor
         public VSNuGetProjectFactory(Func<string> packagesPath)
@@ -89,9 +94,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider = null;
+            IServiceProvider serviceProvider = null;
             vsProject.GetItemContext(
-                (uint)Microsoft.VisualStudio.VSConstants.VSITEMID.Root,
+                (uint)VSConstants.VSITEMID.Root,
                 out serviceProvider);
             if (serviceProvider == null)
             {

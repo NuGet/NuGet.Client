@@ -1,11 +1,11 @@
-﻿using Microsoft.VisualStudio.Shell;
-using NuGet.VisualStudio.Resources;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio.Resources;
 
 namespace NuGet.VisualStudio
 {
@@ -46,7 +46,9 @@ namespace NuGet.VisualStudio
                 _tryGetInstalledExtensionMethod = _iVsExtensionManagerType.GetMethod("TryGetInstalledExtension",
                     new[] { typeof(string), _iInstalledExtensionType.MakeByRefType() });
                 _installPathProperty = _iInstalledExtensionType.GetProperty("InstallPath", typeof(string));
-                if (_installPathProperty == null || _tryGetInstalledExtensionMethod == null ||
+                if (_installPathProperty == null
+                    || _tryGetInstalledExtensionMethod == null
+                    ||
                     _sVsExtensionManagerType == null)
                 {
                     throw new Exception();
@@ -65,7 +67,7 @@ namespace NuGet.VisualStudio
         public bool TryGetExtensionInstallPath(string extensionId, out string installPath)
         {
             installPath = null;
-            object[] parameters = new object[] { extensionId, null };
+            object[] parameters = { extensionId, null };
             bool result = (bool)_tryGetInstalledExtensionMethod.Invoke(_extensionManager, parameters);
             if (!result)
             {

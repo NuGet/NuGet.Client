@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -49,7 +52,8 @@ namespace NuGet.VisualStudio
             foreach (Project project in projects)
             {
                 ISet<VsHierarchyItem> expandedNodes;
-                if (ignoreNodes.TryGetValue(GetUniqueName(project), out expandedNodes) &&
+                if (ignoreNodes.TryGetValue(GetUniqueName(project), out expandedNodes)
+                    &&
                     expandedNodes != null)
                 {
                     CollapseProjectHierarchyItems(project, expandedNodes);
@@ -57,7 +61,7 @@ namespace NuGet.VisualStudio
             }
         }
 
-        private static ICollection<VsHierarchyItem> GetExpandedProjectHierarchyItems(EnvDTE.Project project)
+        private static ICollection<VsHierarchyItem> GetExpandedProjectHierarchyItems(Project project)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -79,15 +83,15 @@ namespace NuGet.VisualStudio
             projectHierarchyItem.WalkDepthFirst(
                 fVisible: true,
                 processCallback:
-                            (VsHierarchyItem vsItem, object callerObject, out object newCallerObject) =>
+                    (VsHierarchyItem vsItem, object callerObject, out object newCallerObject) =>
+                        {
+                            newCallerObject = null;
+                            if (IsVsHierarchyItemExpanded(vsItem, solutionExplorerWindow))
                             {
-                                newCallerObject = null;
-                                if (IsVsHierarchyItemExpanded(vsItem, solutionExplorerWindow))
-                                {
-                                    expandedItems.Add(vsItem);
-                                }
-                                return 0;
-                            },
+                                expandedItems.Add(vsItem);
+                            }
+                            return 0;
+                        },
                 callerObject: null);
 
             return expandedItems;
@@ -113,19 +117,19 @@ namespace NuGet.VisualStudio
             projectHierarchyItem.WalkDepthFirst(
                 fVisible: true,
                 processCallback:
-                            (VsHierarchyItem currentHierarchyItem, object callerObject, out object newCallerObject) =>
+                    (VsHierarchyItem currentHierarchyItem, object callerObject, out object newCallerObject) =>
+                        {
+                            newCallerObject = null;
+                            if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
                             {
-                                newCallerObject = null;
-                                if (!ignoredHierarcyItems.Contains(currentHierarchyItem))
-                                {
-                                    CollapseVsHierarchyItem(currentHierarchyItem, solutionExplorerWindow);
-                                }
-                                return 0;
-                            },
+                                CollapseVsHierarchyItem(currentHierarchyItem, solutionExplorerWindow);
+                            }
+                            return 0;
+                        },
                 callerObject: null);
         }
 
-        private static VsHierarchyItem GetHierarchyItemForProject(EnvDTE.Project project)
+        private static VsHierarchyItem GetHierarchyItemForProject(Project project)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -146,7 +150,8 @@ namespace NuGet.VisualStudio
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            if (vsHierarchyItem == null || vsHierarchyWindow == null)
+            if (vsHierarchyItem == null
+                || vsHierarchyWindow == null)
             {
                 return;
             }

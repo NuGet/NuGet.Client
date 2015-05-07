@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
@@ -9,8 +11,10 @@ using EnvDTEProject = EnvDTE.Project;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Cache that stores project based on multiple names. i.e. EnvDTEProject can be retrieved by name (if non conflicting), unique name and custom unique name.
-    /// Projects are added from the main thread, on solution opened event, so concurrent dictionaries are not needed
+    /// Cache that stores project based on multiple names. i.e. EnvDTEProject can be retrieved by name (if non
+    /// conflicting), unique name and custom unique name.
+    /// Projects are added from the main thread, on solution opened event, so concurrent dictionaries are not
+    /// needed
     /// </summary>
     internal class NuGetAndEnvDTEProjectCache
     {
@@ -33,16 +37,16 @@ namespace NuGet.PackageManagement.VisualStudio
             // First try to find the project name in one of the dictionaries. Then locate the project for that name.
             EnvDTEProjectName envDTEProjectName;
             return TryGetNuGetProjectName(name, out envDTEProjectName) &&
-                _nuGetProjectCache.TryGetValue(envDTEProjectName, out nuGetProject);
+                   _nuGetProjectCache.TryGetValue(envDTEProjectName, out nuGetProject);
         }
 
-        public bool TryGetDTEProject(string name, out Project project)
+        public bool TryGetDTEProject(string name, out EnvDTEProject project)
         {
             project = null;
             // First try to find the project name in one of the dictionaries. Then locate the project for that name.
             EnvDTEProjectName envDTEProjectName;
             return TryGetNuGetProjectName(name, out envDTEProjectName) &&
-                _envDTEProjectCache.TryGetValue(envDTEProjectName, out project);
+                   _envDTEProjectCache.TryGetValue(envDTEProjectName, out project);
         }
 
         /// <summary>
@@ -78,7 +82,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return false;
             }
-
 
             return _projectNamesCache.ContainsKey(name) ||
                    _shortNameCache.ContainsKey(name);
@@ -210,7 +213,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _nuGetProjectCache.Remove(envDTEProjectName);
         }
 
-        public void Initialize(IEnumerable<Project> projects, VSNuGetProjectFactory factory)
+        public void Initialize(IEnumerable<EnvDTEProject> projects, VSNuGetProjectFactory factory)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

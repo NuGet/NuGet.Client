@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
@@ -38,13 +42,10 @@ namespace NuGetVSExtension
 
         internal OleMenuCommandService MenuCommandService
         {
-            get
-            {
-                return _menuCommandService;
-            }
+            get { return _menuCommandService; }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public IVsUIObject SearchResultsIcon
         {
             get
@@ -97,10 +98,7 @@ namespace NuGetVSExtension
 
         public string Description
         {
-            get
-            {
-                return Resources.NuGetSearchProvider_Description;
-            }
+            get { return Resources.NuGetSearchProvider_Description; }
         }
 
         public void ProvideSearchSettings(IVsUIDataSource pSearchOptions)
@@ -109,10 +107,7 @@ namespace NuGetVSExtension
 
         public string Shortcut
         {
-            get
-            {
-                return Resources.NuGetSearchProvider_CategoryShortcut;
-            }
+            get { return Resources.NuGetSearchProvider_CategoryShortcut; }
         }
 
         public string Tooltip

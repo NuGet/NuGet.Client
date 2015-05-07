@@ -1,12 +1,17 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.Options
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    [SuppressMessage(
         "Microsoft.Interoperability",
         "CA1408:DoNotUseAutoDualClassInterfaceType")]
     [Guid("0F052CF7-BF62-4743-B190-87FA4D49421E")]
@@ -16,13 +21,11 @@ namespace NuGet.Options
     {
         private GeneralOptionControl _optionsWindow;
 
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        protected override System.Windows.Forms.IWin32Window Window
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        protected override IWin32Window Window
         {
-            get
-            {
-                return GeneralControl;
-            }
+            get { return GeneralControl; }
         }
 
         protected override void OnClosed(EventArgs e)

@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGetConsole;
 
 namespace NuGetVSExtension
@@ -26,34 +26,20 @@ namespace NuGetVSExtension
 
         private const string LogEntrySource = "NuGet Package Manager";
 
-        public IConsole OutputConsole
-        {
-            get;
-            private set;
-        }
+        public IConsole OutputConsole { get; private set; }
 
-        public ErrorListProvider ErrorListProvider
-        {
-            get;
-            private set;
-        }
+        public ErrorListProvider ErrorListProvider { get; private set; }
 
         public OutputConsoleLogger(IServiceProvider serviceProvider)
         {
-            ErrorListProvider = new Microsoft.VisualStudio.Shell.ErrorListProvider(serviceProvider);
+            ErrorListProvider = new ErrorListProvider(serviceProvider);
             var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
 
             var dte = ServiceLocator.GetInstance<DTE>();
             _buildEvents = dte.Events.BuildEvents;
-            _buildEvents.OnBuildBegin += (obj, ev) =>
-            {
-                ErrorListProvider.Tasks.Clear();
-            };
+            _buildEvents.OnBuildBegin += (obj, ev) => { ErrorListProvider.Tasks.Clear(); };
             _solutionEvents = dte.Events.SolutionEvents;
-            _solutionEvents.AfterClosing += () =>
-            {
-                ErrorListProvider.Tasks.Clear();
-            };
+            _solutionEvents.AfterClosing += () => { ErrorListProvider.Tasks.Clear(); };
 
             OutputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
         }
@@ -69,12 +55,12 @@ namespace NuGetVSExtension
             }
         }
 
-        public void Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args)
+        public void Log(MessageLevel level, string message, params object[] args)
         {
             var s = string.Format(CultureInfo.CurrentCulture, message, args);
             OutputConsole.WriteLine(s);
 
-            if (level == NuGet.ProjectManagement.MessageLevel.Error)
+            if (level == MessageLevel.Error)
             {
                 ActivityLog.LogError(LogEntrySource, s);
             }

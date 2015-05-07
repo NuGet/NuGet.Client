@@ -1,14 +1,16 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGetVSExtension
 {
-
     /// <summary>
     /// This class is used to create a registry key for the FontAndColors category
     /// </summary>
     public class FontAndColorsRegistrationAttribute : RegistrationAttribute
     {
-
         // this GUID is used by all VSPackages that use the default font and color configurations.
         // http://msdn.microsoft.com/en-us/library/bb165737.aspx
         private const string PackageGuid = "{F5E7E71D-1401-11D1-883B-0000F87579D2}";
@@ -27,7 +29,7 @@ namespace NuGetVSExtension
             CategoryKey = "FontAndColors\\" + categoryKeyName;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public override void Register(RegistrationContext context)
         {
             using (var key = context.CreateKey(CategoryKey))

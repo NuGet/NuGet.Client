@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 
 namespace NuGetConsole.Implementation.PowerConsole
@@ -5,9 +8,9 @@ namespace NuGetConsole.Implementation.PowerConsole
     /// <summary>
     /// Represents a host with extra info.
     /// </summary>
-    class HostInfo : ObjectWithFactory<PowerConsoleWindow>, IDisposable
+    internal class HostInfo : ObjectWithFactory<PowerConsoleWindow>, IDisposable
     {
-        Lazy<IHostProvider, IHostMetadata> HostProvider { get; set; }
+        private Lazy<IHostProvider, IHostMetadata> HostProvider { get; set; }
 
         public HostInfo(PowerConsoleWindow factory, Lazy<IHostProvider, IHostMetadata> hostProvider)
             : base(factory)
@@ -24,12 +27,11 @@ namespace NuGetConsole.Implementation.PowerConsole
             get { return HostProvider.Metadata.HostName; }
         }
 
-        IWpfConsole _wpfConsole;
+        private IWpfConsole _wpfConsole;
 
         /// <summary>
         /// Get/create the console for this host. If not already created, this
         /// actually creates the (console, host) pair.
-        /// 
         /// Note: Creating the console is handled by this package and mostly will
         /// succeed. However, creating the host could be from other packages and
         /// fail. In that case, this console is already created and can be used
@@ -77,6 +79,5 @@ namespace NuGetConsole.Implementation.PowerConsole
         {
             Dispose(false);
         }
-
     }
 }

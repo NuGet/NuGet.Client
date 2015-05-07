@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -14,8 +17,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Sets a NuGet user settings property.
         /// </summary>
         /// <param name="property">The name of the settings property to set.</param>
-        /// <param name="value">The value of the settings property. 
-        /// If null, the settings property will be deleted.</param>
+        /// <param name="value">
+        /// The value of the settings property.
+        /// If null, the settings property will be deleted.
+        /// </param>
         public static void Set(string property, string value)
         {
             var settings = ServiceLocator.GetInstance<ISettings>();
@@ -58,7 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static void AddSource(string name, string source)
         {
             var sourceRepositoryProvider = ServiceLocator.GetInstanceSafe<ISourceRepositoryProvider>();
-            if(sourceRepositoryProvider == null)
+            if (sourceRepositoryProvider == null)
             {
                 throw new ArgumentException("sourceRepositoryProvider");
             }

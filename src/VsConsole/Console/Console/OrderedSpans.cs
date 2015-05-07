@@ -1,15 +1,18 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.Text;
 
 namespace NuGetConsole.Implementation.Console
 {
-    interface IGetSpan<T>
+    internal interface IGetSpan<T>
     {
         Span GetSpan(T t);
     }
 
-    class OrderedSpans<T>
+    internal class OrderedSpans<T>
     {
         private List<T> _items = new List<T>();
         private readonly IGetSpan<T> _getSpan;
@@ -20,25 +23,19 @@ namespace NuGetConsole.Implementation.Console
             _getSpan = getSpan;
         }
 
-        Span GetSpan(T t)
+        private Span GetSpan(T t)
         {
             return _getSpan.GetSpan(t);
         }
 
         public int Count
         {
-            get
-            {
-                return _items.Count;
-            }
+            get { return _items.Count; }
         }
 
         public T this[int i]
         {
-            get
-            {
-                return _items[i];
-            }
+            get { return _items[i]; }
         }
 
         public void Clear()
@@ -48,7 +45,8 @@ namespace NuGetConsole.Implementation.Console
 
         public void Add(T t)
         {
-            if (_items.Count > 0 && GetSpan(t).Start < GetSpan(_items[_items.Count - 1]).End)
+            if (_items.Count > 0
+                && GetSpan(t).Start < GetSpan(_items[_items.Count - 1]).End)
             {
                 throw new InvalidOperationException();
             }
@@ -108,7 +106,8 @@ namespace NuGetConsole.Implementation.Console
             if (index >= 0)
             {
                 Span span = GetSpan(t);
-                while (index < _items.Count && GetSpan(_items[index]).OverlapsWith(span))
+                while (index < _items.Count
+                       && GetSpan(_items[index]).OverlapsWith(span))
                 {
                     yield return _items[index];
                     index++;
@@ -116,7 +115,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        class SpanStartComparer : Comparer<T>
+        private class SpanStartComparer : Comparer<T>
         {
             private readonly IGetSpan<T> _getSpan;
 
@@ -133,14 +132,14 @@ namespace NuGetConsole.Implementation.Console
         }
     }
 
-    class OrderedSpans : OrderedSpans<Span>
+    internal class OrderedSpans : OrderedSpans<Span>
     {
         public OrderedSpans()
             : base(new SpanGetSapn())
         {
         }
 
-        class SpanGetSapn : IGetSpan<Span>
+        private class SpanGetSapn : IGetSpan<Span>
         {
             public Span GetSpan(Span t)
             {
@@ -149,7 +148,7 @@ namespace NuGetConsole.Implementation.Console
         }
     }
 
-    class OrderedTupleSpans<T> : OrderedSpans<Tuple<Span, T>>
+    internal class OrderedTupleSpans<T> : OrderedSpans<Tuple<Span, T>>
     {
         public OrderedTupleSpans()
             : base(new TupleGetSpan())
@@ -161,7 +160,7 @@ namespace NuGetConsole.Implementation.Console
             return base.Overlap(Tuple.Create(span, default(T)));
         }
 
-        class TupleGetSpan : IGetSpan<Tuple<Span, T>>
+        private class TupleGetSpan : IGetSpan<Tuple<Span, T>>
         {
             public Span GetSpan(Tuple<Span, T> t)
             {
@@ -170,7 +169,7 @@ namespace NuGetConsole.Implementation.Console
         }
     }
 
-    class ComplexCommandSpans : OrderedTupleSpans<bool>
+    internal class ComplexCommandSpans : OrderedTupleSpans<bool>
     {
         public void Add(Span lineSpan, bool endCommand)
         {
@@ -179,7 +178,8 @@ namespace NuGetConsole.Implementation.Console
 
         public int FindCommandStart(int i)
         {
-            while (i - 1 >= 0 && !this[i - 1].Item2)
+            while (i - 1 >= 0
+                   && !this[i - 1].Item2)
             {
                 i--;
             }
@@ -208,7 +208,8 @@ namespace NuGetConsole.Implementation.Console
                     }
                     yield return spans;
 
-                    if (i >= Count || !this[i].Item1.OverlapsWith(span))
+                    if (i >= Count
+                        || !this[i].Item1.OverlapsWith(span))
                     {
                         break; // Done
                     }

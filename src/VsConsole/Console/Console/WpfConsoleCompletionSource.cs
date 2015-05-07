@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -5,9 +8,9 @@ using Microsoft.VisualStudio.Text;
 
 namespace NuGetConsole.Implementation.Console
 {
-    class WpfConsoleCompletionSource : ObjectWithFactory<WpfConsoleService>, ICompletionSource
+    internal class WpfConsoleCompletionSource : ObjectWithFactory<WpfConsoleService>, ICompletionSource
     {
-        ITextBuffer TextBuffer { get; set; }
+        private ITextBuffer TextBuffer { get; set; }
 
         public WpfConsoleCompletionSource(WpfConsoleService factory, ITextBuffer textBuffer)
             : base(factory)
@@ -16,8 +19,9 @@ namespace NuGetConsole.Implementation.Console
             this.TextBuffer = textBuffer;
         }
 
-        WpfConsole _console;
-        WpfConsole Console
+        private WpfConsole _console;
+
+        private WpfConsole Console
         {
             get
             {
@@ -33,13 +37,14 @@ namespace NuGetConsole.Implementation.Console
 
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
-            if (Console == null || Console.InputLineStart == null)
+            if (Console == null
+                || Console.InputLineStart == null)
             {
                 return;
             }
 
             SimpleExpansion simpleExpansion;
-            if (session.Properties.TryGetProperty<SimpleExpansion>("TabExpansion", out simpleExpansion))
+            if (session.Properties.TryGetProperty("TabExpansion", out simpleExpansion))
             {
                 List<Completion> completions = new List<Completion>();
                 foreach (string s in simpleExpansion.Expansions)
@@ -58,10 +63,12 @@ namespace NuGetConsole.Implementation.Console
         }
 
         #region IDispose
+
         public void Dispose()
         {
             // Nothing to do.
         }
+
         #endregion
     }
 }

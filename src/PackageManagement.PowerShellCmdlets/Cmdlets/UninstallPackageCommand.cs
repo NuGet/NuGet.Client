@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Threading;
@@ -11,11 +14,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public class UninstallPackageCommand : NuGetPowerShellBaseCommand
     {
         private UninstallationContext _context;
-
-        public UninstallPackageCommand()
-            : base()
-        {
-        }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public virtual string Id { get; set; }

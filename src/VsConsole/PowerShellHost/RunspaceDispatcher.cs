@@ -1,6 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Management.Automation;
@@ -9,7 +13,7 @@ using System.Threading;
 using Microsoft.PowerShell;
 using NuGet;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
+using PathUtility = NuGet.ProjectManagement.PathUtility;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -17,23 +21,21 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     /// Wraps a runspace and protects the invoke method from being called on multiple threads through blocking.
     /// </summary>
     /// <remarks>
-    /// Calls to Invoke on this object will block if the runspace is already busy. Calls to InvokeAsync will also block until
+    /// Calls to Invoke on this object will block if the runspace is already busy. Calls to InvokeAsync will also
+    /// block until
     /// the runspace is free. However, it will not block while the pipeline is actually running.
     /// </remarks>
     internal class RunspaceDispatcher : IDisposable
     {
         [ThreadStatic]
-        private static bool IHaveTheLock = false;
+        private static bool IHaveTheLock;
 
         private readonly Runspace _runspace;
         private readonly SemaphoreSlim _dispatcherLock = new SemaphoreSlim(1, 1);
 
         public RunspaceAvailability RunspaceAvailability
         {
-            get
-            {
-                return _runspace.RunspaceAvailability;
-            }
+            get { return _runspace.RunspaceAvailability; }
         }
 
         public RunspaceDispatcher(Runspace runspace)
@@ -46,37 +48,37 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (Runspace.DefaultRunspace == null)
             {
                 WithLock(() =>
-                {
-                    if (Runspace.DefaultRunspace == null)
                     {
-                        // Set this runspace as DefaultRunspace so I can script DTE events.
-                        //
-                        // WARNING: MSDN says this is unsafe. The runspace must not be shared across
-                        // threads. I need this to be able to use ScriptBlock for DTE events. The
-                        // ScriptBlock event handlers execute on DefaultRunspace.
+                        if (Runspace.DefaultRunspace == null)
+                        {
+                            // Set this runspace as DefaultRunspace so I can script DTE events.
+                            //
+                            // WARNING: MSDN says this is unsafe. The runspace must not be shared across
+                            // threads. I need this to be able to use ScriptBlock for DTE events. The
+                            // ScriptBlock event handlers execute on DefaultRunspace.
 
-                        Runspace.DefaultRunspace = _runspace;
-                    }
-                });
+                            Runspace.DefaultRunspace = _runspace;
+                        }
+                    });
             }
         }
 
         public void InvokeCommands(PSCommand[] profileCommands)
         {
             WithLock(() =>
-            {
-                using (var powerShell = System.Management.Automation.PowerShell.Create())
                 {
-                    powerShell.Runspace = _runspace;
-
-                    foreach (PSCommand command in profileCommands)
+                    using (var powerShell = System.Management.Automation.PowerShell.Create())
                     {
-                        powerShell.Commands = command;
-                        powerShell.AddCommand("out-default");
-                        powerShell.Invoke();
+                        powerShell.Runspace = _runspace;
+
+                        foreach (PSCommand command in profileCommands)
+                        {
+                            powerShell.Commands = command;
+                            powerShell.AddCommand("out-default");
+                            powerShell.Invoke();
+                        }
                     }
-                }
-            });
+                });
         }
 
         public Collection<PSObject> Invoke(string command, object[] inputs, bool outputResults)
@@ -92,7 +94,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "It is disposed in the StateChanged event handler.")]
@@ -102,7 +104,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             bool outputResults,
             EventHandler<PipelineStateEventArgs> pipelineStateChanged)
         {
-
             if (String.IsNullOrEmpty(command))
             {
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, command), "command");
@@ -133,7 +134,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 if (!string.IsNullOrEmpty(str))
                 {
                     // Remove \r\n, which is added by the Out-String cmdlet.
-                    return str.TrimEnd(new[] { '\r', '\n' });
+                    return str.TrimEnd('\r', '\n');
                 }
             }
 
@@ -168,15 +169,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 return (ExecutionPolicy)results[0].BaseObject;
             }
-            else
-            {
-                return ExecutionPolicy.Undefined;
-            }
+            return ExecutionPolicy.Undefined;
         }
 
         public void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
-            string command = string.Format(CultureInfo.InvariantCulture, "Set-ExecutionPolicy {0} -Scope {1} -Force", policy.ToString(), scope.ToString());
+            string command = string.Format(CultureInfo.InvariantCulture, "Set-ExecutionPolicy {0} -Scope {1} -Force", policy, scope);
 
             Invoke(command, inputs: null, outputResults: false);
         }
@@ -190,22 +188,22 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 string folderPath = Path.GetDirectoryName(fullPath);
 
                 Invoke(
-                   "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + NuGet.ProjectManagement.PathUtility.EscapePSPath(fullPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
-                   new object[] { installPath, folderPath, package },
-                   outputResults: true);
+                    "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + PathUtility.EscapePSPath(fullPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
+                    new object[] { installPath, folderPath, package },
+                    outputResults: true);
             }
         }
 
         public void ImportModule(string modulePath)
         {
-            Invoke("Import-Module " + NuGet.ProjectManagement.PathUtility.EscapePSPath(modulePath), null, false);
+            Invoke("Import-Module " + PathUtility.EscapePSPath(modulePath), null, false);
         }
 
         public void ChangePSDirectory(string directory)
         {
             if (!String.IsNullOrWhiteSpace(directory))
             {
-                Invoke("Set-Location " + NuGet.ProjectManagement.PathUtility.EscapePSPath(directory), null, false);
+                Invoke("Set-Location " + PathUtility.EscapePSPath(directory), null, false);
             }
         }
 
@@ -241,10 +239,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private Collection<PSObject> InvokeCore(Pipeline pipeline, IEnumerable<object> inputs)
         {
             Collection<PSObject> output = null;
-            WithLock(() =>
-            {
-                output = inputs == null ? pipeline.Invoke() : pipeline.Invoke(inputs);
-            });
+            WithLock(() => { output = inputs == null ? pipeline.Invoke() : pipeline.Invoke(inputs); });
             return output;
         }
 
@@ -253,25 +248,25 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             bool hadTheLockAlready = IHaveTheLock;
 
             pipeline.StateChanged += (sender, e) =>
-            {
-                // Release the lock ASAP
-                bool finished = e.PipelineStateInfo.State == PipelineState.Completed ||
-                                e.PipelineStateInfo.State == PipelineState.Failed ||
-                                e.PipelineStateInfo.State == PipelineState.Stopped;
-                if (finished && !hadTheLockAlready)
                 {
-                    // Release the dispatcher lock
-                    _dispatcherLock.Release();
-                }
+                    // Release the lock ASAP
+                    bool finished = e.PipelineStateInfo.State == PipelineState.Completed ||
+                                    e.PipelineStateInfo.State == PipelineState.Failed ||
+                                    e.PipelineStateInfo.State == PipelineState.Stopped;
+                    if (finished && !hadTheLockAlready)
+                    {
+                        // Release the dispatcher lock
+                        _dispatcherLock.Release();
+                    }
 
-                pipelineStateChanged.Raise(sender, e);
+                    pipelineStateChanged.Raise(sender, e);
 
-                // Dispose Pipeline object upon completion
-                if (finished)
-                {
-                    ((Pipeline)sender).Dispose();
-                }
-            };
+                    // Dispose Pipeline object upon completion
+                    if (finished)
+                    {
+                        ((Pipeline)sender).Dispose();
+                    }
+                };
 
             if (inputs != null)
             {

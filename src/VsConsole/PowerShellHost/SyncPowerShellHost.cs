@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
@@ -12,7 +16,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override bool ExecuteHost(string fullCommand, string command, params object[] inputs)
         {
             SetPrivateDataOnHost(true);
@@ -31,16 +35,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return true;
         }
 
-        protected async override Task<string[]> GetExpansionsAsyncCore(string line, string lastWord, CancellationToken token)
+        protected override Task<string[]> GetExpansionsAsyncCore(string line, string lastWord, CancellationToken token)
         {
-            var expansions = await GetExpansionsAsyncCore(line, lastWord, isSync: true, token: token);
-            return expansions;
+            return GetExpansionsAsyncCore(line, lastWord, isSync: true, token: token);
         }
 
-        protected async override Task<SimpleExpansion> GetPathExpansionsAsyncCore(string line, CancellationToken token)
+        protected override Task<SimpleExpansion> GetPathExpansionsAsyncCore(string line, CancellationToken token)
         {
-            var simpleExpansion = await GetPathExpansionsAsyncCore(line, isSync: true, token: token);
-            return simpleExpansion;
+            return GetPathExpansionsAsyncCore(line, isSync: true, token: token);
         }
     }
 }

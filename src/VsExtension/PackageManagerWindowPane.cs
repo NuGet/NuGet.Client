@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
@@ -20,23 +24,17 @@ namespace NuGetVSExtension
 
         public PackageManagerModel Model
         {
-            get
-            {
-                return _content.Model;
-            }
+            get { return _content.Model; }
         }
 
-        ///-----------------------------------------------------------------------------
+        /// -----------------------------------------------------------------------------
         /// <summary>
         /// IVsWindowPane
         /// </summary>
-        ///-----------------------------------------------------------------------------
+        /// -----------------------------------------------------------------------------
         public override object Content
         {
-            get
-            {
-                return _content;
-            }
+            get { return _content; }
         }
 
         private void CleanUp()
@@ -72,27 +70,27 @@ namespace NuGetVSExtension
             _content.Model.Context.PersistSettings();
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
-            return Microsoft.VisualStudio.VSConstants.S_OK;
+            return VSConstants.S_OK;
         }
 
         public int OnDockableChange(int fDockable, int x, int y, int w, int h)
         {
-            return Microsoft.VisualStudio.VSConstants.S_OK;
+            return VSConstants.S_OK;
         }
 
         public int OnMove(int x, int y, int w, int h)
         {
-            return Microsoft.VisualStudio.VSConstants.S_OK;
+            return VSConstants.S_OK;
         }
 
         public int OnShow(int fShow)
         {
-            return Microsoft.VisualStudio.VSConstants.S_OK;
+            return VSConstants.S_OK;
         }
 
         public int OnSize(int x, int y, int w, int h)
         {
-            return Microsoft.VisualStudio.VSConstants.S_OK;
+            return VSConstants.S_OK;
         }
     }
 }

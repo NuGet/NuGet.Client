@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using EnvDTE;
 using NuGet.PackageManagement.VisualStudio;
@@ -6,7 +9,7 @@ using NuGet.PackageManagement.VisualStudio;
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
-    /// This cmdlet returns the list of project names in the current solution, 
+    /// This cmdlet returns the list of project names in the current solution,
     /// which is used for tab expansion.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Project", DefaultParameterSetName = ParameterSetByName)]
@@ -15,11 +18,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         private const string ParameterSetByName = "ByName";
         private const string ParameterSetAllProjects = "AllProjects";
-
-        public GetProjectCommand()
-            : base()
-        {
-        }
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = ParameterSetByName, ValueFromPipelineByPropertyName = true)]
         [ValidateNotNullOrEmpty]

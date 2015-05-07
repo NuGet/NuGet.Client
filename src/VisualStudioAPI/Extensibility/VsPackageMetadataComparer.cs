@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.VisualStudio
@@ -12,7 +15,8 @@ namespace NuGet.VisualStudio
                 return true;
             }
 
-            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            if (ReferenceEquals(x, null)
+                || ReferenceEquals(y, null))
             {
                 return false;
             }
@@ -28,7 +32,7 @@ namespace NuGet.VisualStudio
                 return 0;
             }
 
-            return obj.Id.ToUpperInvariant().GetHashCode()*397
+            return obj.Id.ToUpperInvariant().GetHashCode() * 397
                    ^ obj.VersionString.ToUpperInvariant().GetHashCode();
         }
     }

@@ -1,11 +1,10 @@
-﻿using NuGet;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
+using NuGet;
 
 namespace NuGetConsole
 {
@@ -14,7 +13,6 @@ namespace NuGetConsole
     {
         public DebugConsoleController()
         {
-
         }
 
         public void Log(DateTime timestamp, string message, TraceEventType level, string source)

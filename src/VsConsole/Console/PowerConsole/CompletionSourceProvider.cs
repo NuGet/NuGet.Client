@@ -1,18 +1,20 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 
 namespace NuGetConsole.Implementation.PowerConsole
 {
-
     [Export(typeof(ICompletionSourceProvider))]
     [ContentType(PowerConsoleWindow.ContentType)]
     [Name("PowerConsoleCompletion")]
-    class CompletionSourceProvider : ICompletionSourceProvider
+    internal class CompletionSourceProvider : ICompletionSourceProvider
     {
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         public IWpfConsoleService WpfConsoleService { get; set; }
 

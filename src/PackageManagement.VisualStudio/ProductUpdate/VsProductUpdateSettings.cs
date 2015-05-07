@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -13,26 +12,22 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string SettingsRoot = "NuGet";
         private const string CheckUpdatePropertyName = "ShouldCheckForUpdate";
 
-        public VsProductUpdateSettings() :
-            this(ServiceLocator.GetInstance<IServiceProvider>())
+        public VsProductUpdateSettings()
+            :
+                this(ServiceLocator.GetInstance<IServiceProvider>())
         {
         }
 
-        public VsProductUpdateSettings(IServiceProvider serviceProvider) :
-            base(serviceProvider)
+        public VsProductUpdateSettings(IServiceProvider serviceProvider)
+            :
+                base(serviceProvider)
         {
         }
 
         public bool ShouldCheckForUpdate
         {
-            get
-            {
-                return ReadInt32(SettingsRoot, CheckUpdatePropertyName, defaultValue: 1) == 1;
-            }
-            set
-            {
-                WriteInt32(SettingsRoot, CheckUpdatePropertyName, value ? 1 : 0);
-            }
+            get { return ReadInt32(SettingsRoot, CheckUpdatePropertyName, defaultValue: 1) == 1; }
+            set { WriteInt32(SettingsRoot, CheckUpdatePropertyName, value ? 1 : 0); }
         }
     }
 }

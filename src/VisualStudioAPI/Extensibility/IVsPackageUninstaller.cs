@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Runtime.InteropServices;
 using EnvDTE;
 
 namespace NuGet.VisualStudio
@@ -11,11 +14,15 @@ namespace NuGet.VisualStudio
     public interface IVsPackageUninstaller
     {
         /// <summary>
-        /// Uninstall the specified package from a project and specify whether to uninstall its dependency packages too.
+        /// Uninstall the specified package from a project and specify whether to uninstall its dependency packages
+        /// too.
         /// </summary>
         /// <param name="project">The project from which the package is uninstalled.</param>
         /// <param name="packageId">The package to be uninstalled</param>
-        /// <param name="removeDependencies">A boolean to indicate whether the dependency packages should be uninstalled too.</param>
+        /// <param name="removeDependencies">
+        /// A boolean to indicate whether the dependency packages should be
+        /// uninstalled too.
+        /// </param>
         void UninstallPackage(Project project, string packageId, bool removeDependencies);
     }
 }

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,7 +16,6 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console
 {
-
     internal interface IPrivateConsoleDispatcher : IConsoleDispatcher, IDisposable
     {
         event EventHandler<EventArgs<Tuple<SnapshotSpan, bool>>> ExecuteInputLine;
@@ -23,13 +25,11 @@ namespace NuGetConsole.Implementation.Console
         void SetExecutingCommand(bool isExecuting);
     }
 
-
     /// <summary>
     /// This class handles input line posting and command line dispatching/execution.
     /// </summary>
     internal class ConsoleDispatcher : IPrivateConsoleDispatcher
     {
-
         private readonly BlockingCollection<VsKeyInfo> _keyBuffer = new BlockingCollection<VsKeyInfo>();
         private CancellationTokenSource _cancelWaitKeySource;
         private bool _isExecutingReadKey;
@@ -60,10 +60,7 @@ namespace NuGetConsole.Implementation.Console
 
         public bool IsExecutingCommand
         {
-            get
-            {
-                return (_dispatcher != null) && _dispatcher.IsExecuting;
-            }
+            get { return (_dispatcher != null) && _dispatcher.IsExecuting; }
         }
 
         public void PostKey(VsKeyInfo key)
@@ -107,7 +104,8 @@ namespace NuGetConsole.Implementation.Console
         {
             Debug.Assert(_dispatcher != null);
 
-            if (_dispatcher != null && WpfConsole != null)
+            if (_dispatcher != null
+                && WpfConsole != null)
             {
                 WpfConsole.BeginInputLine();
             }
@@ -142,13 +140,13 @@ namespace NuGetConsole.Implementation.Console
         private void RaiseEventSafe(EventHandler handler)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                if (handler != null)
                 {
-                    handler(this, EventArgs.Empty);
-                }
-            });
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    if (handler != null)
+                    {
+                        handler(this, EventArgs.Empty);
+                    }
+                });
         }
 
         public bool IsStartCompleted { get; private set; }
@@ -188,36 +186,36 @@ namespace NuGetConsole.Implementation.Console
                             {
                                 // apply the culture of the main thread to this thread so that the PowerShell engine
                                 // will have the same culture as Visual Studio.
-                                System.Threading.Thread.CurrentThread.CurrentCulture = currentCulture;
-                                System.Threading.Thread.CurrentThread.CurrentUICulture = currentUICulture;
+                                Thread.CurrentThread.CurrentCulture = currentCulture;
+                                Thread.CurrentThread.CurrentUICulture = currentUICulture;
 
                                 host.Initialize(WpfConsole);
                             }
-                    ).ContinueWith(
-                        task =>
-                        {
-                            ThreadHelper.JoinableTaskFactory.Run(async delegate
-                            {
-                                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                                if (task.IsFaulted)
+                        ).ContinueWith(
+                            task =>
                                 {
-                                    var exception = ExceptionHelper.Unwrap(task.Exception);
-                                    WriteError(exception.Message);
-                                }
+                                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                                        {
+                                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                                if (host.IsCommandEnabled && _dispatcher != null)
-                                {
+                                            if (task.IsFaulted)
+                                            {
+                                                var exception = ExceptionHelper.Unwrap(task.Exception);
+                                                WriteError(exception.Message);
+                                            }
 
-                                    _dispatcher.Start();
-                                }
+                                            if (host.IsCommandEnabled
+                                                && _dispatcher != null)
+                                            {
+                                                _dispatcher.Start();
+                                            }
 
-                                RaiseEventSafe(StartCompleted);
-                                IsStartCompleted = true;
-                            });
-                        },
-                        TaskContinuationOptions.NotOnCanceled
-                    );
+                                            RaiseEventSafe(StartCompleted);
+                                            IsStartCompleted = true;
+                                        });
+                                },
+                            TaskContinuationOptions.NotOnCanceled
+                        );
                 }
             }
         }
@@ -238,12 +236,14 @@ namespace NuGetConsole.Implementation.Console
                 _dispatcher.ClearConsole();
             }
         }
+
         #endregion
 
         #region IPrivateConsoleDispatcher
+
         public event EventHandler<EventArgs<Tuple<SnapshotSpan, bool>>> ExecuteInputLine;
 
-        void OnExecute(SnapshotSpan inputLineSpan, bool isComplete)
+        private void OnExecute(SnapshotSpan inputLineSpan, bool isComplete)
         {
             ExecuteInputLine.Raise(this, Tuple.Create(inputLineSpan, isComplete));
         }
@@ -256,6 +256,7 @@ namespace NuGetConsole.Implementation.Console
                 _dispatcher.PostInputLine(inputLine);
             }
         }
+
         #endregion
 
         private abstract class Dispatcher
@@ -267,10 +268,7 @@ namespace NuGetConsole.Implementation.Console
 
             public bool IsExecuting
             {
-                get
-                {
-                    return _isExecuting;
-                }
+                get { return _isExecuting; }
                 protected set
                 {
                     _isExecuting = value;
@@ -320,7 +318,7 @@ namespace NuGetConsole.Implementation.Console
 
             protected void PromptNewLine()
             {
-                WpfConsole.Write(WpfConsole.Host.Prompt + (char)32);    // 32 is the space
+                WpfConsole.Write(WpfConsole.Host.Prompt + (char)32); // 32 is the space
                 WpfConsole.BeginInputLine();
             }
 
@@ -396,10 +394,7 @@ namespace NuGetConsole.Implementation.Console
 
             private bool IsStarted
             {
-                get
-                {
-                    return _buffer != null;
-                }
+                get { return _buffer != null; }
             }
 
             public override void Start()

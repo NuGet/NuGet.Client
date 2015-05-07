@@ -1,3 +1,3 @@
 @echo off
 if "%VisualStudioVersion%"=="" call %VS2012CommandPromptBat%
-msbuild build\build.msbuild %*
+msbuild NuGet.VisualStudioExtension.sln /p:VisualStudioVersion="14.0" /p:DeployExtension=false

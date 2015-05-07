@@ -1,16 +1,19 @@
-﻿using System.ComponentModel.Composition;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
 namespace NuGetConsole.Implementation
 {
-
     [Export(typeof(IClassifierProvider))]
     [ContentType(DebugConsoleToolWindow.ContentType)]
-    class DebugClassifierProvider : IClassifierProvider
+    internal class DebugClassifierProvider : IClassifierProvider
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         public IWpfConsoleService WpfConsoleService { get; set; }
 

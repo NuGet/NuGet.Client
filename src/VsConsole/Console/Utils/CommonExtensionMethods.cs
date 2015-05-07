@@ -1,8 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGetConsole
 {
-    static class CommonExtensionMethods
+    internal static class CommonExtensionMethods
     {
         public static void Raise(this EventHandler ev, object sender = null, EventArgs e = default(EventArgs))
         {
@@ -21,7 +25,7 @@ namespace NuGetConsole
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Performance",
             "CA1811:AvoidUncalledPrivateCode",
             Justification = "This file is shared between two projects. One project uses this method, the other don't.")]

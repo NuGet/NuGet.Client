@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
@@ -27,20 +30,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private DependencyBehavior _updateVersionEnum;
         private NuGetVersion _nugetVersion;
 
-        public UpdatePackageCommand()
-            : base()
-        {
-        }
-
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Project")]
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "All")]
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Reinstall")]
         public override string Id
         {
-            get
-            {
-                return _id;
-            }
+            get { return _id; }
             set
             {
                 _id = value;
@@ -53,10 +48,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "Reinstall")]
         public override string ProjectName
         {
-            get
-            {
-                return _projectName;
-            }
+            get { return _projectName; }
             set
             {
                 _projectName = value;
@@ -89,7 +81,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Projects = new List<NuGetProject>() { Project };
+                Projects = new List<NuGetProject> { Project };
             }
         }
 
@@ -145,7 +137,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Update or reinstall a single package installed to a solution. For Update-Package -Id or Update-Package -Id -Reinstall.
+        /// Update or reinstall a single package installed to a solution. For Update-Package -Id or Update-Package -Id
+        /// -Reinstall.
         /// </summary>
         /// <returns></returns>
         private async Task UpdateOrReinstallSinglePackage()
@@ -190,7 +183,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 identitiesToUpdate = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity);
                 // Preview Update-Package -Reinstall actions
                 actions = await PackageManager.PreviewReinstallPackagesAsync(identitiesToUpdate, project, ResolutionContext,
-                this, ActiveSourceRepository, null, token);
+                    this, ActiveSourceRepository, null, token);
             }
             else
             {
@@ -205,7 +198,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         if (update.Version > reference.PackageIdentity.Version)
                         {
                             IEnumerable<NuGetProjectAction> packageActions = await PackageManager.PreviewInstallPackageAsync(project, update, ResolutionContext, this, ActiveSourceRepository, null, token);
-                            if (packageActions != null && packageActions.Any())
+                            if (packageActions != null
+                                && packageActions.Any())
                             {
                                 actions = actions.Concat(packageActions);
                             }
@@ -219,7 +213,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     idsToUpdate = await GeneratePackageIdListForUpdate(project, token);
                     // Preview Update-Package actions
                     actions = await PackageManager.PreviewUpdatePackagesAsync(idsToUpdate, project, ResolutionContext,
-                    this, ActiveSourceRepository, null, token);
+                        this, ActiveSourceRepository, null, token);
                 }
             }
 
@@ -353,7 +347,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (!string.IsNullOrEmpty(Version))
             {
                 DependencyBehavior updateVersion;
-                IsVersionEnum = Enum.TryParse<DependencyBehavior>(Version, true, out updateVersion);
+                IsVersionEnum = Enum.TryParse(Version, true, out updateVersion);
                 if (IsVersionEnum)
                 {
                     _updateVersionEnum = updateVersion;
@@ -390,19 +384,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _uninstallcontext = new UninstallationContext(false , Reinstall.IsPresent);
+                _uninstallcontext = new UninstallationContext(false, Reinstall.IsPresent);
                 return _uninstallcontext;
             }
         }
 
         /// <summary>
-        /// Return dependecy behavior for Update-Package command. 
+        /// Return dependecy behavior for Update-Package command.
         /// </summary>
         /// <returns></returns>
         protected override DependencyBehavior GetDependencyBehavior()
         {
             // Return DependencyBehavior.Highest for Update-Package
-            if (!_idSpecified && !Reinstall.IsPresent)
+            if (!_idSpecified
+                && !Reinstall.IsPresent)
             {
                 return DependencyBehavior.Highest;
             }

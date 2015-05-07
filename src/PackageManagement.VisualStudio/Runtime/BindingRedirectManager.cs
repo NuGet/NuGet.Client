@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -23,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (String.IsNullOrEmpty(configurationFile))
             {
-                throw new ArgumentException(NuGet.ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "configurationFile");
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "configurationFile");
             }
             if (msBuildNuGetProjectSystem == null)
             {
@@ -151,7 +154,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-
         private static XElement GetAssemblyBindingElement(XElement runtime)
         {
             // Pick the first assembly binding element or create one if there aren't any
@@ -189,11 +191,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We're going to need to know which element is associated with what binding for removal
             var assemblyElementPairs = from dependentAssemblyElement in assemblyBindingElements
-                                       select new
-                                       {
-                                           Binding = AssemblyBinding.Parse(dependentAssemblyElement),
-                                           Element = dependentAssemblyElement
-                                       };
+                select new
+                    {
+                        Binding = AssemblyBinding.Parse(dependentAssemblyElement),
+                        Element = dependentAssemblyElement
+                    };
 
             // Return a mapping from binding to element
             return assemblyElementPairs.ToLookup(p => p.Binding, p => p.Element);
@@ -202,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static IEnumerable<XElement> GetAssemblyBindingElements(XElement runtime)
         {
             return runtime.Elements(AssemblyBindingName)
-                          .Elements(DependentAssemblyName);
+                .Elements(DependentAssemblyName);
         }
 
         private XDocument GetConfiguration()

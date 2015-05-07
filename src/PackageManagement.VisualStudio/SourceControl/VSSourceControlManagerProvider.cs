@@ -1,11 +1,14 @@
-﻿using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.ComponentModelHost;
-using NuGet.ProjectManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
+using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
         [ImportingConstructor]
         public VSSourceControlManagerProvider()
             : this(ServiceLocator.GetInstance<DTE>(),
-                   ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>())
+                ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>())
         {
         }
 
@@ -42,44 +45,48 @@ namespace NuGet.PackageManagement.VisualStudio
         public SourceControlManager GetSourceControlManager()
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (_dte != null && _dte.SourceControl != null)
                 {
-                    var sourceControl = (SourceControl2)_dte.SourceControl;
-                    if (sourceControl != null)
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    if (_dte != null
+                        && _dte.SourceControl != null)
                     {
-                        SourceControlBindings sourceControlBinding = null;
-                        try
+                        var sourceControl = (SourceControl2)_dte.SourceControl;
+                        if (sourceControl != null)
                         {
-                            // Get the binding for this solution
-                            sourceControlBinding = sourceControl.GetBindings(_dte.Solution.FullName);
-                        }
-                        catch (NotImplementedException)
-                        {
-                            // Some source control providers don't bother to implement this.
-                            // TFS might be the only one using it
-                        }
+                            SourceControlBindings sourceControlBinding = null;
+                            try
+                            {
+                                // Get the binding for this solution
+                                sourceControlBinding = sourceControl.GetBindings(_dte.Solution.FullName);
+                            }
+                            catch (NotImplementedException)
+                            {
+                                // Some source control providers don't bother to implement this.
+                                // TFS might be the only one using it
+                            }
 
-                        if (sourceControlBinding == null || String.IsNullOrEmpty(sourceControlBinding.ProviderName) ||
+                            if (sourceControlBinding == null
+                                || String.IsNullOrEmpty(sourceControlBinding.ProviderName)
+                                ||
                                 !sourceControlBinding.ProviderName.Equals(TfsProviderName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Return null, if the Source control provider is not TFS
-                            return null;
-                        }
+                            {
+                                // Return null, if the Source control provider is not TFS
+                                return null;
+                            }
 
-                        var tfsProviders = _componentModel.GetExtensions<ITFSSourceControlManagerProvider>();
-                        if (tfsProviders != null && tfsProviders.Any())
-                        {
-                            return tfsProviders.Select(provider => provider.GetTFSSourceControlManager(sourceControlBinding))
-                                .FirstOrDefault(tp => tp != null);
+                            var tfsProviders = _componentModel.GetExtensions<ITFSSourceControlManagerProvider>();
+                            if (tfsProviders != null
+                                && tfsProviders.Any())
+                            {
+                                return tfsProviders.Select(provider => provider.GetTFSSourceControlManager(sourceControlBinding))
+                                    .FirstOrDefault(tp => tp != null);
+                            }
                         }
                     }
-                }
 
-                return null;
-            });            
+                    return null;
+                });
         }
     }
 }

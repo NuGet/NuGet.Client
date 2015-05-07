@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel.Composition;
 using System.Runtime.CompilerServices;
@@ -5,9 +8,8 @@ using NuGetConsole.Host.PowerShell.Implementation;
 
 namespace NuGetConsole.Host.PowerShellProvider
 {
-
     [Export(typeof(IHostProvider))]
-    [HostName(PowerShellHostProvider.HostName)]
+    [HostName(HostName)]
     [DisplayName("NuGet Provider")]
     internal class PowerShellHostProvider : IHostProvider
     {
@@ -30,16 +32,12 @@ namespace NuGetConsole.Host.PowerShellProvider
             {
                 return CreatePowerShellHost(@async);
             }
-            else
-            {
-                return new UnsupportedHost();
-            }
+            return new UnsupportedHost();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static IHost CreatePowerShellHost(bool @async)
         {
-
             // backdoor: allow turning off async mode by setting enviroment variable NuGetSyncMode=1
             string syncModeFlag = Environment.GetEnvironmentVariable("NuGetSyncMode", EnvironmentVariableTarget.User);
             if (syncModeFlag == "1")

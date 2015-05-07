@@ -1,24 +1,30 @@
-﻿using Microsoft.PowerShell.Commands;
-using NuGet.ProjectManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Management.Automation;
+using Microsoft.PowerShell.Commands;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
-    class PSPathUtility
+    internal class PSPathUtility
     {
         /// <summary>
         /// Translate a PSPath into a System.IO.* friendly Win32 path.
         /// Does not resolve/glob wildcards.
         /// </summary>
         /// <param name="session">The SessionState to use.</param>
-        /// <param name="psPath">The PowerShell PSPath to translate which may reference PSDrives or have provider-qualified paths which are syntactically invalid for .NET APIs.</param>
+        /// <param name="psPath">
+        /// The PowerShell PSPath to translate which may reference PSDrives or have
+        /// provider-qualified paths which are syntactically invalid for .NET APIs.
+        /// </param>
         /// <param name="path">The translated PSPath in a format understandable to .NET APIs.</param>
         /// <param name="exists">Returns null if not tested, or a bool representing path existence.</param>
         /// <param name="errorMessage">If translation failed, contains the reason.</param>
-        /// <returns>True if successfully translated, false if not.</returns>        
+        /// <returns>True if successfully translated, false if not.</returns>
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "Following BCL TryParse pattern.")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "3#", Justification = "Following BCL TryParse pattern.")]
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps", Justification = "ps is a common powershell prefix")]

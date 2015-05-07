@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,8 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Task = System.Threading.Tasks.Task;
-
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -21,6 +22,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetVSExtension
 {
@@ -28,7 +30,7 @@ namespace NuGetVSExtension
     {
         private const string LogEntrySource = "NuGet PackageRestorer";
 
-        private DTE _dte;
+        private readonly DTE _dte;
         private bool _outputOptOutMessage;
 
         // The value of the "MSBuild project build output verbosity" setting 
@@ -37,21 +39,21 @@ namespace NuGetVSExtension
 
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected.
-        private BuildEvents _buildEvents;
+        private readonly BuildEvents _buildEvents;
 
-        private SolutionEvents _solutionEvents;
+        private readonly SolutionEvents _solutionEvents;
 
-        private ErrorListProvider _errorListProvider;
+        private readonly ErrorListProvider _errorListProvider;
 
         private IProgress<ThreadedWaitDialogProgressData> ThreadedWaitDialogProgress { get; set; }
 
         private CancellationToken Token { get; set; }
 
-        private IPackageRestoreManager PackageRestoreManager { get; set; }
+        private IPackageRestoreManager PackageRestoreManager { get; }
 
-        private ISolutionManager SolutionManager { get; set; }
+        private ISolutionManager SolutionManager { get; }
 
-        private ISourceRepositoryProvider SourceRepositoryProvider { get; set; }
+        private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
         private int TotalCount { get; set; }
 
@@ -60,7 +62,7 @@ namespace NuGetVSExtension
         private bool HasErrors { get; set; }
         private bool Canceled { get; set; }
 
-        enum VerbosityLevel
+        private enum VerbosityLevel
         {
             Quiet = 0,
             Minimal = 1,
@@ -69,8 +71,8 @@ namespace NuGetVSExtension
             Diagnostic = 4
         };
 
-        internal OnBuildPackageRestorer(ISolutionManager solutionManager, 
-            IPackageRestoreManager packageRestoreManager, 
+        internal OnBuildPackageRestorer(ISolutionManager solutionManager,
+            IPackageRestoreManager packageRestoreManager,
             IServiceProvider serviceProvider,
             ISourceRepositoryProvider sourceRepositoryProvider)
         {
@@ -88,7 +90,7 @@ namespace NuGetVSExtension
             _errorListProvider = new ErrorListProvider(serviceProvider);
         }
 
-        OutputWindowPane GetBuildOutputPane()
+        private OutputWindowPane GetBuildOutputPane()
         {
             // get the "Build" output window pane
             var dte2 = (DTE2)_dte;
@@ -137,42 +139,42 @@ namespace NuGetVSExtension
                 var solutionDirectory = SolutionManager.SolutionDirectory;
 
                 ThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    var projects = SolutionManager.GetNuGetProjects().ToList();
-
-                    // Check legacy project types for missing packages
-                    if (!projects.Any(project => project is INuGetIntegratedProject))
                     {
-                        await RestorePackagesOrCheckForMissingPackagesAsync(solutionDirectory);
-                    }
+                        var projects = SolutionManager.GetNuGetProjects().ToList();
 
-                    // Call DNU to restore for BuildIntegratedProjectSystem projects
-                    var buildEnabled = projects.Select(project => project as BuildIntegratedProjectSystem)
-                                                            .Where(project => project != null);
-                    if (buildEnabled.Any())
-                    {
-                        Action<string> logMessage = (message) =>
+                        // Check legacy project types for missing packages
+                        if (!projects.Any(project => project is INuGetIntegratedProject))
                         {
-                            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                            {
-                                // Switch to main thread to update the error list window or output window
-                                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                                WriteLine(VerbosityLevel.Quiet, "{0}", message);
-                            });
-                        };
-
-                        var context = new LoggingProjectContext(logMessage);
-                        var packageSourceProvider = new PackageSourceProvider(new Settings(SolutionManager.SolutionDirectory));
-
-                        var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
-
-                        // Restore packages and create the lock file for each project
-                        foreach (var project in buildEnabled)
-                        {
-                            await BuildIntegratedRestoreUtility.RestoreForBuildAsync(project, context, enabledSources, CancellationToken.None);
+                            await RestorePackagesOrCheckForMissingPackagesAsync(solutionDirectory);
                         }
-                    }
-                });
+
+                        // Call DNU to restore for BuildIntegratedProjectSystem projects
+                        var buildEnabled = projects.Select(project => project as BuildIntegratedProjectSystem)
+                            .Where(project => project != null);
+                        if (buildEnabled.Any())
+                        {
+                            Action<string> logMessage = message =>
+                                {
+                                    ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                                        {
+                                            // Switch to main thread to update the error list window or output window
+                                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                            WriteLine(VerbosityLevel.Quiet, "{0}", message);
+                                        });
+                                };
+
+                            var context = new LoggingProjectContext(logMessage);
+                            var packageSourceProvider = new PackageSourceProvider(new Settings(SolutionManager.SolutionDirectory));
+
+                            var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
+
+                            // Restore packages and create the lock file for each project
+                            foreach (var project in buildEnabled)
+                            {
+                                await BuildIntegratedRestoreUtility.RestoreForBuildAsync(project, context, enabledSources, CancellationToken.None);
+                            }
+                        }
+                    });
             }
             catch (Exception ex)
             {
@@ -184,7 +186,7 @@ namespace NuGetVSExtension
                 else
                 {
                     // output exception detail when _msBuildOutputVerbosity is >= Detailed.
-                    message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex.ToString());
+                    message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex);
                 }
                 WriteLine(VerbosityLevel.Quiet, message);
                 ActivityLog.LogError(LogEntrySource, message);
@@ -201,7 +203,7 @@ namespace NuGetVSExtension
         /// </summary>
         private void PackageRestoreManager_PackageRestored(object sender, PackageRestoredEventArgs args)
         {
-            if(Token.IsCancellationRequested)
+            if (Token.IsCancellationRequested)
             {
                 Canceled = true;
                 return;
@@ -213,12 +215,12 @@ namespace NuGetVSExtension
                 Interlocked.Increment(ref CurrentCount);
 
                 ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    var progressData = new ThreadedWaitDialogProgressData(String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity.ToString()),
+                    {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        var progressData = new ThreadedWaitDialogProgressData(String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity),
                             String.Empty, String.Empty, isCancelable: true, currentStep: CurrentCount, totalSteps: TotalCount);
-                    ThreadedWaitDialogProgress.Report(progressData);
-                });
+                        ThreadedWaitDialogProgress.Report(progressData);
+                    });
             }
         }
 
@@ -238,27 +240,27 @@ namespace NuGetVSExtension
                 // If Canceled is not already set to true
                 HasErrors = true;
                 ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    // Switch to main thread to update the error list window or output window
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    foreach (var projectName in args.ProjectNames)
                     {
-                        var exceptionMessage = _msBuildOutputVerbosity >= (int)VerbosityLevel.Detailed ?
-                            args.Exception.ToString() :
-                            args.Exception.Message;
-                        var message = String.Format(
-                            CultureInfo.CurrentCulture,
-                            Resources.PackageRestoreFailedForProject, projectName,
-                            exceptionMessage);
+                        // Switch to main thread to update the error list window or output window
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                        WriteLine(VerbosityLevel.Quiet, message);
-                        ActivityLog.LogError(LogEntrySource, message);
-                        ShowError(_errorListProvider, TaskErrorCategory.Error,
-                            TaskPriority.High, message, hierarchyItem: null);
-                        WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
-                    }
-                });
+                        foreach (var projectName in args.ProjectNames)
+                        {
+                            var exceptionMessage = _msBuildOutputVerbosity >= (int)VerbosityLevel.Detailed ?
+                                args.Exception.ToString() :
+                                args.Exception.Message;
+                            var message = String.Format(
+                                CultureInfo.CurrentCulture,
+                                Resources.PackageRestoreFailedForProject, projectName,
+                                exceptionMessage);
+
+                            WriteLine(VerbosityLevel.Quiet, message);
+                            ActivityLog.LogError(LogEntrySource, message);
+                            ShowError(_errorListProvider, TaskErrorCategory.Error,
+                                TaskPriority.High, message, hierarchyItem: null);
+                            WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
+                        }
+                    });
             }
         }
 
@@ -330,7 +332,7 @@ namespace NuGetVSExtension
         }
 
         /// <summary>
-        /// Checks if there are missing packages that should be restored. If so, a warning will 
+        /// Checks if there are missing packages that should be restored. If so, a warning will
         /// be added to the error list.
         /// </summary>
         private void CheckForMissingPackages(IEnumerable<PackageReference> missingPackages)
@@ -454,10 +456,7 @@ namespace NuGetVSExtension
             {
                 return (int)value;
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         private static void ShowError(ErrorListProvider errorListProvider, TaskErrorCategory errorCategory, TaskPriority priority, string errorText, IVsHierarchy hierarchyItem)

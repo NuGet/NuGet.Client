@@ -1,8 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -20,7 +24,8 @@ namespace NuGet.Options
     /// Represents the Tools - Options - Package Manager dialog
     /// </summary>
     /// <remarks>
-    /// The code in this class assumes that while the dialog is open, noone is modifying the VSPackageSourceProvider directly.
+    /// The code in this class assumes that while the dialog is open, noone is modifying the
+    /// VSPackageSourceProvider directly.
     /// Otherwise, we have a problem with synchronization with the package source provider.
     /// </remarks>
     public partial class PackageSourcesOptionsControl : UserControl
@@ -38,15 +43,15 @@ namespace NuGet.Options
         //}
 
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
-            :this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
+            : this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
         {
-
         }
+
         public PackageSourcesOptionsControl(ISourceRepositoryProvider sourceRepositoryProvider, IServiceProvider serviceProvider)
         {
             InitializeComponent();
 
-            if(sourceRepositoryProvider == null)
+            if (sourceRepositoryProvider == null)
             {
                 throw new ArgumentNullException("sourceRepositoryProvider");
             }
@@ -104,7 +109,7 @@ namespace NuGet.Options
 
                 // do not allow deleting the official NuGet source
                 bool allowEditing = selectedSource != null && !selectedSource.IsOfficial;
-                
+
                 BrowseButton.Enabled = updateButton.Enabled = removeButton.Enabled = allowEditing;
                 NewPackageName.ReadOnly = NewPackageSource.ReadOnly = !allowEditing;
 
@@ -131,7 +136,8 @@ namespace NuGet.Options
             int oldIndex = PackageSourcesListBox.SelectedIndex;
             int newIndex = oldIndex + offset;
 
-            if (newIndex < 0 || newIndex > PackageSourcesListBox.Items.Count - 1)
+            if (newIndex < 0
+                || newIndex > PackageSourcesListBox.Items.Count - 1)
             {
                 return;
             }
@@ -207,7 +213,8 @@ namespace NuGet.Options
             // the options will be closed without adding the source, try adding before closing
             // Only apply if nothing was added
             TryUpdateSourceResults result = TryUpdateSource();
-            if (result != TryUpdateSourceResults.NotUpdated &&
+            if (result != TryUpdateSourceResults.NotUpdated
+                &&
                 result != TryUpdateSourceResults.Unchanged)
             {
                 return false;
@@ -238,7 +245,8 @@ namespace NuGet.Options
 
             for (int i = 0; i < existingSources.Count; ++i)
             {
-                if (!existingSources[i].Equals(packageSources[i]) ||
+                if (!existingSources[i].Equals(packageSources[i])
+                    ||
                     existingSources[i].IsEnabled != packageSources[i].IsEnabled)
                 {
                     return true;
@@ -276,18 +284,18 @@ namespace NuGet.Options
             _packageSources.Add(CreateNewPackageSource());
 
             // auto-select the newly-added item
-            PackageSourcesListBox.SelectedIndex = PackageSourcesListBox.Items.Count - 1;    
+            PackageSourcesListBox.SelectedIndex = PackageSourcesListBox.Items.Count - 1;
         }
 
         private PackageSource CreateNewPackageSource()
         {
             var sourcesList = (IEnumerable<PackageSource>)_packageSources.List;
-            for (int i = 0; ; i++)
+            for (int i = 0;; i++)
             {
                 var newName = i == 0 ? "Package source" : "Package source " + i;
                 var newSource = i == 0 ? "http://packagesource" : "http://packagesource" + i;
                 var packageSource = new PackageSource(newSource, newName);
-                if (sourcesList.All(ps => !ps.Equals(packageSource))) 
+                if (sourcesList.All(ps => !ps.Equals(packageSource)))
                 {
                     return packageSource;
                 }
@@ -308,7 +316,8 @@ namespace NuGet.Options
         {
             var name = NewPackageName.Text.Trim();
             var source = NewPackageSource.Text.Trim();
-            if (String.IsNullOrWhiteSpace(name) && String.IsNullOrWhiteSpace(source))
+            if (String.IsNullOrWhiteSpace(name)
+                && String.IsNullOrWhiteSpace(source))
             {
                 return TryUpdateSourceResults.NotUpdated;
             }
@@ -343,7 +352,7 @@ namespace NuGet.Options
             }
 
             var newPackageSource = new PackageSource(source, name, selectedPackageSource.IsEnabled);
-            if (selectedPackageSource.Equals(newPackageSource)) 
+            if (selectedPackageSource.Equals(newPackageSource))
             {
                 return TryUpdateSourceResults.Unchanged;
             }
@@ -353,7 +362,7 @@ namespace NuGet.Options
             // check to see if name has already been added
             // also make sure it's not the same as the aggregate source ('All')
             bool hasName = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                String.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
+                                                 String.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
             if (hasName)
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_UniqueName, Resources.ShowWarning_Title);
@@ -392,7 +401,9 @@ namespace NuGet.Options
         private void PackageSourcesContextMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             var currentListBox = PackageSourcesContextMenu.SourceControl as ListBox;
-            if (currentListBox != null && currentListBox.SelectedItem != null && e.ClickedItem == CopyPackageSourceStripMenuItem)
+            if (currentListBox != null
+                && currentListBox.SelectedItem != null
+                && e.ClickedItem == CopyPackageSourceStripMenuItem)
             {
                 CopySelectedItem((PackageSource)currentListBox.SelectedItem);
             }
@@ -401,7 +412,8 @@ namespace NuGet.Options
         private void PackageSourcesListBox_KeyUp(object sender, KeyEventArgs e)
         {
             var currentListBox = (ListBox)sender;
-            if (e.KeyCode == Keys.C && e.Control)
+            if (e.KeyCode == Keys.C
+                && e.Control)
             {
                 CopySelectedItem((PackageSource)currentListBox.SelectedItem);
                 e.Handled = true;
@@ -415,7 +427,8 @@ namespace NuGet.Options
 
         private void TogglePackageSourceEnabled(int itemIndex, ListBox currentListBox)
         {
-            if (itemIndex < 0 || itemIndex >= currentListBox.Items.Count)
+            if (itemIndex < 0
+                || itemIndex >= currentListBox.Items.Count)
             {
                 return;
             }
@@ -458,7 +471,8 @@ namespace NuGet.Options
             else if (e.Button == MouseButtons.Left)
             {
                 int itemIndex = currentListBox.IndexFromPoint(e.Location);
-                if (itemIndex >= 0 && itemIndex < currentListBox.Items.Count)
+                if (itemIndex >= 0
+                    && itemIndex < currentListBox.Items.Count)
                 {
                     Rectangle checkBoxRectangle = GetCheckBoxRectangleForListBoxItem(currentListBox, itemIndex);
                     // if the mouse click position is inside the checkbox, toggle the IsEnabled property
@@ -476,7 +490,8 @@ namespace NuGet.Options
             Graphics graphics = e.Graphics;
             e.DrawBackground();
 
-            if (e.Index < 0 || e.Index >= currentListBox.Items.Count)
+            if (e.Index < 0
+                || e.Index >= currentListBox.Items.Count)
             {
                 return;
             }
@@ -484,96 +499,101 @@ namespace NuGet.Options
             PackageSource currentItem = (PackageSource)currentListBox.Items[e.Index];
 
             using (StringFormat drawFormat = new StringFormat())
-            using (Brush foreBrush = new SolidBrush(currentListBox.SelectionMode == SelectionMode.None ? SystemColors.WindowText : e.ForeColor))
             {
-                drawFormat.Alignment = StringAlignment.Near;
-                drawFormat.Trimming = StringTrimming.EllipsisCharacter;
-                drawFormat.LineAlignment = StringAlignment.Near;
-                drawFormat.FormatFlags = StringFormatFlags.NoWrap;
-
-                // the margin between the checkbox and the edge of the list box
-                const int edgeMargin = 8;
-                // the margin between the checkbox and the text
-                const int textMargin = 4;
-
-                // draw the enabled/disabled checkbox
-                CheckBoxState checkBoxState = currentItem.IsEnabled ? CheckBoxState.CheckedNormal : CheckBoxState.UncheckedNormal;
-                Size checkBoxSize = CheckBoxRenderer.GetGlyphSize(graphics, checkBoxState);
-                CheckBoxRenderer.DrawCheckBox(
-                    graphics,
-                    new Point(edgeMargin, e.Bounds.Top + edgeMargin),
-                    checkBoxState);
-
-                if (_checkBoxSize.IsEmpty)
+                using (Brush foreBrush = new SolidBrush(currentListBox.SelectionMode == SelectionMode.None ? SystemColors.WindowText : e.ForeColor))
                 {
-                    // save the checkbox size so that we can detect mouse click on the 
-                    // checkbox in the MouseUp event handler.
-                    // here we assume that all checkboxes have the same size, which is reasonable. 
-                    _checkBoxSize = checkBoxSize;
+                    drawFormat.Alignment = StringAlignment.Near;
+                    drawFormat.Trimming = StringTrimming.EllipsisCharacter;
+                    drawFormat.LineAlignment = StringAlignment.Near;
+                    drawFormat.FormatFlags = StringFormatFlags.NoWrap;
+
+                    // the margin between the checkbox and the edge of the list box
+                    const int edgeMargin = 8;
+                    // the margin between the checkbox and the text
+                    const int textMargin = 4;
+
+                    // draw the enabled/disabled checkbox
+                    CheckBoxState checkBoxState = currentItem.IsEnabled ? CheckBoxState.CheckedNormal : CheckBoxState.UncheckedNormal;
+                    Size checkBoxSize = CheckBoxRenderer.GetGlyphSize(graphics, checkBoxState);
+                    CheckBoxRenderer.DrawCheckBox(
+                        graphics,
+                        new Point(edgeMargin, e.Bounds.Top + edgeMargin),
+                        checkBoxState);
+
+                    if (_checkBoxSize.IsEmpty)
+                    {
+                        // save the checkbox size so that we can detect mouse click on the 
+                        // checkbox in the MouseUp event handler.
+                        // here we assume that all checkboxes have the same size, which is reasonable. 
+                        _checkBoxSize = checkBoxSize;
+                    }
+
+                    GraphicsState oldState = graphics.Save();
+                    try
+                    {
+                        // turn on high quality text rendering mode
+                        graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+
+                        // draw each package source as
+                        // 
+                        // [checkbox] Name
+                        //            Source (italics)
+
+                        int textWidth = e.Bounds.Width - checkBoxSize.Width - edgeMargin - textMargin;
+
+                        SizeF nameSize = graphics.MeasureString(currentItem.Name, e.Font, textWidth, drawFormat);
+
+                        // resize the bound rectangle to make room for the checkbox above
+                        var nameBounds = new Rectangle(
+                            e.Bounds.Left + checkBoxSize.Width + edgeMargin + textMargin,
+                            e.Bounds.Top,
+                            textWidth,
+                            (int)nameSize.Height);
+
+                        graphics.DrawString(currentItem.Name, e.Font, foreBrush, nameBounds, drawFormat);
+
+                        var sourceBounds = new Rectangle(
+                            nameBounds.Left,
+                            nameBounds.Bottom,
+                            textWidth,
+                            e.Bounds.Bottom - nameBounds.Bottom);
+                        graphics.DrawString(currentItem.Source, e.Font, foreBrush, sourceBounds, drawFormat);
+                    }
+                    finally
+                    {
+                        graphics.Restore(oldState);
+                    }
+
+                    // If the ListBox has focus, draw a focus rectangle around the selected item.
+                    e.DrawFocusRectangle();
                 }
-
-                GraphicsState oldState = graphics.Save();
-                try
-                {
-                    // turn on high quality text rendering mode
-                    graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-
-                    // draw each package source as
-                    // 
-                    // [checkbox] Name
-                    //            Source (italics)
-
-                    int textWidth = e.Bounds.Width - checkBoxSize.Width - edgeMargin - textMargin;
-
-                    SizeF nameSize = graphics.MeasureString(currentItem.Name, e.Font, textWidth, drawFormat);
-
-                    // resize the bound rectangle to make room for the checkbox above
-                    var nameBounds = new Rectangle(
-                        e.Bounds.Left + checkBoxSize.Width + edgeMargin + textMargin,
-                        e.Bounds.Top,
-                        textWidth,
-                        (int)nameSize.Height);
-
-                    graphics.DrawString(currentItem.Name, e.Font, foreBrush, nameBounds, drawFormat);
-
-                    var sourceBounds = new Rectangle(
-                        nameBounds.Left,
-                        nameBounds.Bottom,
-                        textWidth,
-                        e.Bounds.Bottom - nameBounds.Bottom);
-                    graphics.DrawString(currentItem.Source, e.Font, foreBrush, sourceBounds, drawFormat);
-                }
-                finally
-                {
-                    graphics.Restore(oldState);
-                }
-
-                // If the ListBox has focus, draw a focus rectangle around the selected item.
-                e.DrawFocusRectangle();
             }
         }
 
         private void PackageSourcesListBox_MeasureItem(object sender, MeasureItemEventArgs e)
         {
             var currentListBox = (ListBox)sender;
-            if (e.Index < 0 || e.Index >= currentListBox.Items.Count)
+            if (e.Index < 0
+                || e.Index >= currentListBox.Items.Count)
             {
                 return;
             }
 
             PackageSource currentItem = (PackageSource)currentListBox.Items[e.Index];
             using (StringFormat drawFormat = new StringFormat())
-            using (Font italicFont = new Font(Font, FontStyle.Italic))
             {
-                drawFormat.Alignment = StringAlignment.Near;
-                drawFormat.Trimming = StringTrimming.EllipsisCharacter;
-                drawFormat.LineAlignment = StringAlignment.Near;
-                drawFormat.FormatFlags = StringFormatFlags.NoWrap;
+                using (Font italicFont = new Font(Font, FontStyle.Italic))
+                {
+                    drawFormat.Alignment = StringAlignment.Near;
+                    drawFormat.Trimming = StringTrimming.EllipsisCharacter;
+                    drawFormat.LineAlignment = StringAlignment.Near;
+                    drawFormat.FormatFlags = StringFormatFlags.NoWrap;
 
-                SizeF nameLineHeight = e.Graphics.MeasureString(currentItem.Name, Font, e.ItemWidth, drawFormat);
-                SizeF sourceLineHeight = e.Graphics.MeasureString(currentItem.Source, italicFont, e.ItemWidth, drawFormat);
+                    SizeF nameLineHeight = e.Graphics.MeasureString(currentItem.Name, Font, e.ItemWidth, drawFormat);
+                    SizeF sourceLineHeight = e.Graphics.MeasureString(currentItem.Source, italicFont, e.ItemWidth, drawFormat);
 
-                e.ItemHeight = (int)Math.Ceiling(nameLineHeight.Height + sourceLineHeight.Height);
+                    e.ItemHeight = (int)Math.Ceiling(nameLineHeight.Height + sourceLineHeight.Height);
+                }
             }
         }
 
@@ -582,10 +602,12 @@ namespace NuGet.Options
             var currentListBox = (ListBox)sender;
             int index = currentListBox.IndexFromPoint(e.X, e.Y);
 
-            if (index >= 0 && index < currentListBox.Items.Count && e.Y <= currentListBox.PreferredHeight)
+            if (index >= 0
+                && index < currentListBox.Items.Count
+                && e.Y <= currentListBox.PreferredHeight)
             {
                 var source = (PackageSource)currentListBox.Items[index];
-                string newToolTip = !String.IsNullOrEmpty(source.Description) ? 
+                string newToolTip = !String.IsNullOrEmpty(source.Description) ?
                     source.Description :
                     source.Source;
                 string currentToolTip = packageListToolTip.GetToolTip(currentListBox);
@@ -636,7 +658,7 @@ namespace NuGet.Options
             const int MaxDirectoryLength = 1000;
 
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
-            const int BIF_BROWSEINCLUDEURLS = 0x00000080;   // Allow URLs to be displayed or entered.
+            const int BIF_BROWSEINCLUDEURLS = 0x00000080; // Allow URLs to be displayed or entered.
 
             var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
 
@@ -648,16 +670,16 @@ namespace NuGet.Options
             Marshal.Copy(rgch, 0, bufferPtr, rgch.Length);
 
             VSBROWSEINFOW[] pBrowse = new VSBROWSEINFOW[1];
-            pBrowse[0] = new VSBROWSEINFOW()
-            {
-                lStructSize = (uint)Marshal.SizeOf(pBrowse[0]),
-                dwFlags = (uint)(BIF_BROWSEINCLUDEURLS),
-                pwzDlgTitle = Resources.BrowseFolderDialogDescription,
-                nMaxDirName = (uint)MaxDirectoryLength,
-                hwndOwner = this.Handle,
-                pwzDirName = bufferPtr,
-                pwzInitialDir = DetermineInitialDirectory()
-            };
+            pBrowse[0] = new VSBROWSEINFOW
+                {
+                    lStructSize = (uint)Marshal.SizeOf(pBrowse[0]),
+                    dwFlags = BIF_BROWSEINCLUDEURLS,
+                    pwzDlgTitle = Resources.BrowseFolderDialogDescription,
+                    nMaxDirName = MaxDirectoryLength,
+                    hwndOwner = Handle,
+                    pwzDirName = bufferPtr,
+                    pwzInitialDir = DetermineInitialDirectory()
+                };
 
             var browseInfo = new VSNSEBROWSEINFOW[1] { new VSNSEBROWSEINFOW() };
 
@@ -681,7 +703,8 @@ namespace NuGet.Options
             // determine the inital directory to show in the folder dialog
             string initialDir = NewPackageSource.Text;
 
-            if (IsPathRootedSafe(initialDir) && Directory.Exists(initialDir))
+            if (IsPathRootedSafe(initialDir)
+                && Directory.Exists(initialDir))
             {
                 return initialDir;
             }

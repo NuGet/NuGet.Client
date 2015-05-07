@@ -1,10 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using VSLangProj;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -40,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var results = new List<BuildIntegratedProjectReference>();
 
             // projects to walk
-            var toProcess = new Queue<EnvDTE.Project>();
+            var toProcess = new Queue<EnvDTEProject>();
 
             // start with the current project
             toProcess.Enqueue(EnvDTEProject);
@@ -52,7 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // find the project.json file if it exists in the project
                 // projects with no project.json file should use null for the spec path
-                var jsonConfigItem = project.ProjectItems.OfType<EnvDTE.ProjectItem>()
+                var jsonConfigItem = project.ProjectItems.OfType<ProjectItem>()
                     .FirstOrDefault(pi => StringComparer.Ordinal.Equals(pi.Name, BuildIntegratedProjectUtility.ProjectConfigFileName))?.FileNames[0];
 
                 var childReferences = new List<string>();
@@ -80,18 +85,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return results;
         }
 
-        private static IEnumerable<VSLangProj.Reference> GetProjectReferences(EnvDTEProject project)
+        private static IEnumerable<Reference> GetProjectReferences(EnvDTEProject project)
         {
-            var langProject = project.Object as VSLangProj.VSProject;
+            var langProject = project.Object as VSProject;
             if (langProject != null)
             {
-                foreach (var reference in langProject.References.Cast<VSLangProj.Reference>())
+                foreach (var reference in langProject.References.Cast<Reference>())
                 {
                     yield return reference;
                 }
             }
-
-            yield break;
         }
     }
 }

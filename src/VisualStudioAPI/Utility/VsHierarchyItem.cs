@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -141,14 +144,11 @@ namespace NuGet.VisualStudio
             {
                 return unchecked((uint)((int)o));
             }
-            else if (o is uint)
+            if (o is uint)
             {
                 return (uint)o;
             }
-            else
-            {
-                return VSConstants.VSITEMID_NIL;
-            }
+            return VSConstants.VSITEMID_NIL;
         }
 
         internal VsHierarchyItem GetFirstChild(bool fVisible)
@@ -169,14 +169,11 @@ namespace NuGet.VisualStudio
             {
                 return unchecked((uint)((int)o));
             }
-            else if (o is uint)
+            if (o is uint)
             {
                 return (uint)o;
             }
-            else
-            {
-                return VSConstants.VSITEMID_NIL;
-            }
+            return VSConstants.VSITEMID_NIL;
         }
 
         public bool Equals(VsHierarchyItem other)

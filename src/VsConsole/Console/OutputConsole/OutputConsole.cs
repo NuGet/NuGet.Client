@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics;
+using System.Windows.Media;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -34,24 +39,13 @@ namespace NuGetConsole
             remove { }
         }
 
-        public bool IsStartCompleted
-        {
-            get;
-            private set;
-        }
+        public bool IsStartCompleted { get; private set; }
 
-        public IHost Host
-        {
-            get;
-            set;
-        }
+        public IHost Host { get; set; }
 
         public bool ShowDisclaimerHeader
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
         public IConsoleDispatcher Dispatcher
@@ -61,10 +55,7 @@ namespace NuGetConsole
 
         public int ConsoleWidth
         {
-            get
-            {
-                return 120;
-            }
+            get { return 120; }
         }
 
         public void Write(string text)
@@ -84,7 +75,7 @@ namespace NuGetConsole
             Write(text + Environment.NewLine);
         }
 
-        public void Write(string text, System.Windows.Media.Color? foreground, System.Windows.Media.Color? background)
+        public void Write(string text, Color? foreground, Color? background)
         {
             // the Output window doesn't allow setting text color
             Write(text);
@@ -97,10 +88,7 @@ namespace NuGetConsole
 
         public bool IsExecutingCommand
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
         public bool IsExecutingReadKey
@@ -142,8 +130,8 @@ namespace NuGetConsole
                 {
                     result = _outputWindow.GetPane(ref _outputWindowPaneGuid, out _outputWindowPane);
 
-                    System.Diagnostics.Debug.Assert(result == VSConstants.S_OK);
-                    System.Diagnostics.Debug.Assert(_outputWindowPane != null);
+                    Debug.Assert(result == VSConstants.S_OK);
+                    Debug.Assert(_outputWindowPane != null);
                 }
             }
 

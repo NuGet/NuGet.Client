@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,10 +22,10 @@ namespace NuGet.PackageManagement.VisualStudio
         public static IEnumerable<EnvDTEProject> GetAllEnvDTEProjects(DTE dte)
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var result = await GetAllEnvDTEProjectsAsync(dte);
-                return result;
-            });
+                {
+                    var result = await GetAllEnvDTEProjectsAsync(dte);
+                    return result;
+                });
         }
 
         public static async Task<IEnumerable<EnvDTEProject>> GetAllEnvDTEProjectsAsync(DTE dte)
@@ -30,7 +33,8 @@ namespace NuGet.PackageManagement.VisualStudio
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var envDTESolution = dte.Solution;
-            if (envDTESolution == null || !envDTESolution.IsOpen)
+            if (envDTESolution == null
+                || !envDTESolution.IsOpen)
             {
                 return Enumerable.Empty<EnvDTEProject>();
             }
@@ -86,7 +90,6 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             // Some project system don't implement the SubProject property,
                             // just ignore those
-                            continue;
                         }
                     }
                 }

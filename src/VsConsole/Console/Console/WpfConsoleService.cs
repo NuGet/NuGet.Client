@@ -1,6 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -13,47 +17,47 @@ using Microsoft.VisualStudio.Utilities;
 namespace NuGetConsole.Implementation.Console
 {
     [Export(typeof(IWpfConsoleService))]
-    class WpfConsoleService : IWpfConsoleService
+    internal class WpfConsoleService : IWpfConsoleService
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IContentTypeRegistryService ContentTypeRegistryService { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IVsEditorAdaptersFactoryService VsEditorAdaptersFactoryService { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IEditorOptionsFactoryService EditorOptionsFactoryService { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal ICompletionBroker CompletionBroker { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal ITextFormatClassifierProvider TextFormatClassifierProvider { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal ITextEditorFactoryService TextEditorFactoryService { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany(typeof(ICommandExpansionProvider))]
         internal List<Lazy<ICommandExpansionProvider, IHostNameMetadata>> CommandExpansionProviders { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany(typeof(ICommandTokenizerProvider))]
         internal List<Lazy<ICommandTokenizerProvider, IHostNameMetadata>> CommandTokenizerProviders { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         public IStandardClassificationService StandardClassificationService { get; set; }
 
         private readonly IPrivateConsoleStatus _privateConsoleStatus;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "MEF export")]
         [Export(typeof(IConsoleStatus))]
         public IConsoleStatus ConsoleStatus
@@ -67,7 +71,8 @@ namespace NuGetConsole.Implementation.Console
         }
 
         #region IWpfConsoleService
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+
+        [SuppressMessage(
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "Caller's responsibility to dispose.")]
@@ -76,7 +81,7 @@ namespace NuGetConsole.Implementation.Console
             return new WpfConsole(this, sp, _privateConsoleStatus, contentTypeName, hostName).MarshaledConsole;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "We can't dispose an object if the objective is to return it.")]
@@ -92,24 +97,25 @@ namespace NuGetConsole.Implementation.Console
             return buffer.Properties.GetOrCreateSingletonProperty<IClassifier>(
                 () => new WpfConsoleClassifier(this, buffer));
         }
+
         #endregion
 
         private static IService GetSingletonHostService<IService, IServiceFactory>(WpfConsole console,
             IEnumerable<Lazy<IServiceFactory, IHostNameMetadata>> providers, Func<IServiceFactory, IHost, IService> create, Func<IService> def)
             where IService : class
         {
-            return console.WpfTextView.Properties.GetOrCreateSingletonProperty<IService>(() =>
-            {
-                IService service = null;
-
-                var lazyProvider = providers.FirstOrDefault(f => string.Equals(f.Metadata.HostName, console.HostName));
-                if (lazyProvider != null)
+            return console.WpfTextView.Properties.GetOrCreateSingletonProperty(() =>
                 {
-                    service = create(lazyProvider.Value, console.Host);
-                }
+                    IService service = null;
 
-                return service ?? def();
-            });
+                    var lazyProvider = providers.FirstOrDefault(f => string.Equals(f.Metadata.HostName, console.HostName));
+                    if (lazyProvider != null)
+                    {
+                        service = create(lazyProvider.Value, console.Host);
+                    }
+
+                    return service ?? def();
+                });
         }
 
         public ICommandExpansion GetCommandExpansion(WpfConsole console)
@@ -140,11 +146,7 @@ namespace NuGetConsole.Implementation.Console
                 IsBusy = isBusy;
             }
 
-            public bool IsBusy
-            {
-                get;
-                private set;
-            }
+            public bool IsBusy { get; private set; }
         }
     }
 

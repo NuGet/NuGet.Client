@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -28,11 +31,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private bool _allowPrerelease;
         private bool _isHttp;
 
-        public InstallPackageCommand()
-            : base()
-        {
-        }
-
         [Parameter]
         public SwitchParameter Force { get; set; }
 
@@ -53,7 +51,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Preprocess();
 
             SubscribeToProgressEvents();
-            if (!_readFromPackagesConfig && !_readFromDirectPackagePath && _nugetVersion == null)
+            if (!_readFromPackagesConfig
+                && !_readFromDirectPackagePath
+                && _nugetVersion == null)
             {
                 Task.Run(() => InstallPackageById());
             }
@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Parse user input for Id parameter. 
+        /// Parse user input for Id parameter.
         /// Id can be the name of a package, path to packages.config file or path to .nupkg file.
         /// </summary>
         private void ParseUserInputForId()
@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private IEnumerable<PackageIdentity> GetPackageIdentities()
         {
             IEnumerable<PackageIdentity> identityList = Enumerable.Empty<PackageIdentity>();
-            
+
             if (_readFromPackagesConfig)
             {
                 identityList = CreatePackageIdentitiesFromPackagesConfig();
@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 identity = new PackageIdentity(Id, _nugetVersion);
             }
-            return new List<PackageIdentity>() { identity };
+            return new List<PackageIdentity> { identity };
         }
 
         /// <summary>
@@ -214,7 +214,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
                 // Set _allowPrerelease to true if any of the identities is prerelease version.
-                if (identities != null && identities.Any())
+                if (identities != null
+                    && identities.Any())
                 {
                     foreach (PackageIdentity identity in identities)
                     {
@@ -268,7 +269,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
                 // Set _allowPrerelease to true if identity parsed is prerelease version.
-                if (identity != null && identity.Version != null && identity.Version.IsPrerelease)
+                if (identity != null
+                    && identity.Version != null
+                    && identity.Version.IsPrerelease)
                 {
                     _allowPrerelease = true;
                 }
@@ -278,11 +281,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Log(MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
             }
 
-            return new List<PackageIdentity>() { identity };
+            return new List<PackageIdentity> { identity };
         }
 
         /// <summary>
-        /// Parse package identity from path to .nupkg file, such as https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+        /// Parse package identity from path to .nupkg file, such as
+        /// https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
         /// </summary>
         /// <param name="sourceUrl"></param>
         /// <returns></returns>
@@ -290,9 +294,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (!string.IsNullOrEmpty(path))
             {
-                string lastPart = path.Split(new string[] { divider }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                string lastPart = path.Split(new[] { divider }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
                 lastPart = lastPart.Replace(Constants.PackageExtension, "");
-                string[] parts = lastPart.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                string[] parts = lastPart.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                 StringBuilder builderForId = new StringBuilder();
                 StringBuilder builderForVersion = new StringBuilder();
                 foreach (string s in parts)
@@ -300,7 +304,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     int n;
                     bool isNumeric = int.TryParse(s, out n);
                     // Take pre-release versions such as EntityFramework.6.1.3-beta1 into account.
-                    if ((!isNumeric || string.IsNullOrEmpty(builderForId.ToString())) && string.IsNullOrEmpty(builderForVersion.ToString()))
+                    if ((!isNumeric || string.IsNullOrEmpty(builderForId.ToString()))
+                        && string.IsNullOrEmpty(builderForVersion.ToString()))
                     {
                         builderForId.Append(s);
                         builderForId.Append(".");
@@ -313,7 +318,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(builderForVersion.ToString().TrimEnd('.'));
                 // Set _allowPrerelease to true if nVersion is prerelease version.
-                if (nVersion != null && nVersion.IsPrerelease)
+                if (nVersion != null
+                    && nVersion.IsPrerelease)
                 {
                     _allowPrerelease = true;
                 }

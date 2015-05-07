@@ -1,8 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation;
 using System.Reflection;
+using System.Security;
 using Microsoft.Win32;
 
 namespace NuGetConsole.Host.PowerShell
@@ -19,8 +23,8 @@ namespace NuGetConsole.Host.PowerShell
     /// </summary>
     internal static class HostUtilities
     {
-
         #region GetProfileCommands
+
         /// <summary>
         /// Gets a PSObject whose base object is currentUserCurrentHost and with notes for the other 4 parameters.
         /// </summary>
@@ -39,7 +43,6 @@ namespace NuGetConsole.Host.PowerShell
             return returnValue;
         }
 
-
         /// <summary>
         /// Gets an array of commands that can be run sequentially to set $profile and run the profile commands.
         /// </summary>
@@ -47,7 +50,7 @@ namespace NuGetConsole.Host.PowerShell
         /// <returns></returns>
         public static PSCommand[] GetProfileCommands(string shellId)
         {
-            return HostUtilities.GetProfileCommands(shellId, false);
+            return GetProfileCommands(shellId, false);
         }
 
         /// <summary>
@@ -59,11 +62,11 @@ namespace NuGetConsole.Host.PowerShell
         internal static PSCommand[] GetProfileCommands(string shellId, bool useTestProfile)
         {
             List<PSCommand> commands = new List<PSCommand>();
-            string allUsersAllHosts = HostUtilities.GetFullProfileFileName(null, false, useTestProfile);
-            string allUsersCurrentHost = HostUtilities.GetFullProfileFileName(shellId, false, useTestProfile);
-            string currentUserAllHosts = HostUtilities.GetFullProfileFileName(null, true, useTestProfile);
-            string currentUserCurrentHost = HostUtilities.GetFullProfileFileName(shellId, true, useTestProfile);
-            PSObject dollarProfile = HostUtilities.GetDollarProfile(allUsersAllHosts, allUsersCurrentHost, currentUserAllHosts, currentUserCurrentHost);
+            string allUsersAllHosts = GetFullProfileFileName(null, false, useTestProfile);
+            string allUsersCurrentHost = GetFullProfileFileName(shellId, false, useTestProfile);
+            string currentUserAllHosts = GetFullProfileFileName(null, true, useTestProfile);
+            string currentUserCurrentHost = GetFullProfileFileName(shellId, true, useTestProfile);
+            PSObject dollarProfile = GetDollarProfile(allUsersAllHosts, allUsersCurrentHost, currentUserAllHosts, currentUserCurrentHost);
             PSCommand command = new PSCommand();
             command.AddCommand("set-variable");
             command.AddParameter("Name", "profile");
@@ -71,10 +74,10 @@ namespace NuGetConsole.Host.PowerShell
             command.AddParameter("Option", ScopedItemOptions.None);
             commands.Add(command);
 
-            string[] profilePaths = new string[] { allUsersAllHosts, allUsersCurrentHost, currentUserAllHosts, currentUserCurrentHost };
+            string[] profilePaths = { allUsersAllHosts, allUsersCurrentHost, currentUserAllHosts, currentUserCurrentHost };
             foreach (string profilePath in profilePaths)
             {
-                if (!System.IO.File.Exists(profilePath))
+                if (!File.Exists(profilePath))
                 {
                     continue;
                 }
@@ -100,7 +103,7 @@ namespace NuGetConsole.Host.PowerShell
             if (forCurrentUser)
             {
                 basePath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                basePath = System.IO.Path.Combine(basePath, "WindowsPowerShell");
+                basePath = Path.Combine(basePath, "WindowsPowerShell");
             }
             else
             {
@@ -113,7 +116,6 @@ namespace NuGetConsole.Host.PowerShell
 
             string profileName = useTestProfile ? "profile_test.ps1" : "profile.ps1";
 
-
             if (!string.IsNullOrEmpty(shellId))
             {
                 profileName = shellId + "_" + profileName;
@@ -125,7 +127,6 @@ namespace NuGetConsole.Host.PowerShell
         /// <summary>
         /// Used internally in GetFullProfileFileName to get the base path for all users profiles.
         /// </summary>
-        /// 
         /// <returns>the base path for all users profiles.</returns>
         private static string GetAllUsersFolderPath()
         {
@@ -134,7 +135,7 @@ namespace NuGetConsole.Host.PowerShell
             {
                 folderPath = GetApplicationBase();
             }
-            catch (System.Security.SecurityException)
+            catch (SecurityException)
             {
             }
 
@@ -153,9 +154,10 @@ namespace NuGetConsole.Host.PowerShell
             using (RegistryKey engineKey = Registry.LocalMachine.OpenSubKey(engineKeyPath))
             {
                 if (engineKey != null)
+                {
                     return engineKey.GetValue(MonadEngine_ApplicationBase) as string;
+                }
             }
-
 
             // The default keys aren't installed, so try and use the entry assembly to
             // get the application base. This works for managed apps like minishells...
@@ -180,6 +182,5 @@ namespace NuGetConsole.Host.PowerShell
         }
 
         #endregion GetProfileCommands
-
     }
 }

@@ -1,17 +1,19 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGetConsole.DebugConsole
 {
     public class DebugConsoleViewModel : INotifyPropertyChanged
     {
         private DebugConsoleLevel _activeLevel = DebugConsoleLevel.Trace;
-        
+
         public DebugConsoleLevel ActiveLevel
         {
             get { return _activeLevel; }
@@ -20,15 +22,13 @@ namespace NuGetConsole.DebugConsole
 
         public static IEnumerable<DebugConsoleLevel> AvailableLevels
         {
-            get
-            {
-                return Enum.GetValues(typeof(DebugConsoleLevel)).Cast<DebugConsoleLevel>();
-            }
+            get { return Enum.GetValues(typeof(DebugConsoleLevel)).Cast<DebugConsoleLevel>(); }
         }
 
         #region INotifyPropertyChanged
+
         // This section is ripe for plucking up into a base class!
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#", Justification="A reference is desired here so that the backing field can be set by the helper method")]
+        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#", Justification = "A reference is desired here so that the backing field can be set by the helper method")]
         protected virtual void SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
         {
             if (!Equals(field, newValue))
@@ -38,7 +38,7 @@ namespace NuGetConsole.DebugConsole
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1030:UseEventsWhereAppropriate", Justification="It is an event.")]
+        [SuppressMessage("Microsoft.Design", "CA1030:UseEventsWhereAppropriate", Justification = "It is an event.")]
         protected virtual void RaisePropertyChanged(string propertyName)
         {
             var handler = PropertyChanged;
@@ -49,10 +49,12 @@ namespace NuGetConsole.DebugConsole
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
         #endregion
     }
 
-    public enum DebugConsoleLevel {
+    public enum DebugConsoleLevel
+    {
         Trace = 0,
         Info = 1,
         Warning = 2,

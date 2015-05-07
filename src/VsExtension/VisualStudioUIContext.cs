@@ -1,13 +1,17 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGetVSExtension
 {
     internal class VisualStudioUIContext : NuGetUIContextBase
     {
-        NuGetPackage _package;
+        private NuGetPackage _package;
 
         public VisualStudioUIContext(
             NuGetPackage package,
@@ -17,8 +21,9 @@ namespace NuGetVSExtension
             UIActionEngine uiActionEngine,
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
-            IEnumerable<NuGet.ProjectManagement.NuGetProject> projects) :
-            base(sourceProvider, solutionManager, packageManager, uiActionEngine, packageRestoreManager, optionsPageActivator, projects)
+            IEnumerable<NuGetProject> projects)
+            :
+                base(sourceProvider, solutionManager, packageManager, uiActionEngine, packageRestoreManager, optionsPageActivator, projects)
         {
             _package = package;
         }

@@ -1,35 +1,39 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.VisualStudio
 {
     public static class MessageHelper
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
+        [SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
         public static void ShowWarningMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-               ServiceLocator.GetInstance<IServiceProvider>(),
-               message,
-               title,
-               OLEMSGICON.OLEMSGICON_WARNING,
-               OLEMSGBUTTON.OLEMSGBUTTON_OK,
-               OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                ServiceLocator.GetInstance<IServiceProvider>(),
+                message,
+                title,
+                OLEMSGICON.OLEMSGICON_WARNING,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
+        [SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
         public static void ShowInfoMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-               ServiceLocator.GetInstance<IServiceProvider>(),
-               message,
-               title,
-               OLEMSGICON.OLEMSGICON_INFO,
-               OLEMSGBUTTON.OLEMSGBUTTON_OK,
-               OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                ServiceLocator.GetInstance<IServiceProvider>(),
+                message,
+                title,
+                OLEMSGICON.OLEMSGICON_INFO,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
 
         public static void ShowErrorMessage(Exception exception, string title)
@@ -62,10 +66,7 @@ namespace NuGet.VisualStudio
             {
                 return null;
             }
-            else
-            {
-                return (result == NativeMethods.IDYES);
-            }
+            return (result == NativeMethods.IDYES);
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,6 +24,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -30,12 +34,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     public abstract class NuGetPowerShellBaseCommand : PSCmdlet, IPSNuGetProjectContext, IErrorHandler
     {
         #region Members
+
         private readonly ISourceRepositoryProvider _resourceRepositoryProvider;
-        private readonly ISolutionManager _solutionManager;
-        private readonly ISettings _settings;
         private readonly ICommonOperations _commonOperations;
-        private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
-        private DTE _dte;
         // TODO: Hook up DownloadResource.Progress event
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
@@ -45,15 +46,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         internal const string ActivePackageSourceKey = "activePackageSource";
         internal const string SyncModeKey = "IsSyncMode";
         private const string CancellationTokenKey = "CancellationTokenKey";
+
         #endregion
 
         public NuGetPowerShellBaseCommand()
         {
             _resourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-            _settings = ServiceLocator.GetInstance<ISettings>();
-            _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-            _dte = ServiceLocator.GetInstance<DTE>();
-            _sourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
+            ConfigSettings = ServiceLocator.GetInstance<ISettings>();
+            VsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            DTE = ServiceLocator.GetInstance<DTE>();
+            SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
             _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
 
             if (_commonOperations != null)
@@ -63,37 +65,26 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         #region Properties
+
         /// <summary>
         /// NuGet Package Manager for PowerShell Cmdlets
         /// </summary>
         protected NuGetPackageManager PackageManager
         {
-            get
-            {
-                return new NuGetPackageManager(_resourceRepositoryProvider, _settings, _solutionManager);
-            }
+            get { return new NuGetPackageManager(_resourceRepositoryProvider, ConfigSettings, VsSolutionManager); }
         }
 
         /// <summary>
         /// Vs Solution Manager for PowerShell Cmdlets
         /// </summary>
-        protected ISolutionManager VsSolutionManager
-        {
-            get
-            {
-                return _solutionManager;
-            }
-        }
+        protected ISolutionManager VsSolutionManager { get; }
 
         /// <summary>
         /// Package Source Provider
         /// </summary>
         protected PackageSourceProvider PackageSourceProvider
         {
-            get
-            {
-                return new PackageSourceProvider(_settings);
-            }
+            get { return new PackageSourceProvider(ConfigSettings); }
         }
 
         /// <summary>
@@ -104,24 +95,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Settings read from the config files
         /// </summary>
-        protected ISettings ConfigSettings
-        {
-            get
-            {
-                return _settings;
-            }
-        }
+        protected ISettings ConfigSettings { get; }
 
         /// <summary>
         /// DTE instance for PowerShell Cmdlets
         /// </summary>
-        protected DTE DTE
-        {
-            get
-            {
-                return _dte;
-            }
-        }
+        protected DTE DTE { get; }
 
         /// <summary>
         /// NuGet Project
@@ -137,7 +116,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                if (Host == null || Host.PrivateData == null)
+                if (Host == null
+                    || Host.PrivateData == null)
                 {
                     return CancellationToken.None;
                 }
@@ -159,7 +139,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                if (Host == null || Host.PrivateData == null)
+                if (Host == null
+                    || Host.PrivateData == null)
                 {
                     return false;
                 }
@@ -174,11 +155,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         protected IErrorHandler ErrorHandler
         {
-            get
-            {
-                return this;
-            }
+            get { return this; }
         }
+
         #endregion
 
         internal void Execute()
@@ -189,7 +168,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to display friendly message to the console.")]
-        protected sealed override void ProcessRecord()
+        protected override sealed void ProcessRecord()
         {
             try
             {
@@ -209,11 +188,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by NuGetPowerShellBaseCommand.
+        /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by
+        /// NuGetPowerShellBaseCommand.
         /// </summary>
         protected abstract void ProcessRecordCore();
 
         #region Cmdlets base APIs
+
         /// <summary>
         /// Get the active source repository for PowerShell cmdlets, based on the source string.
         /// </summary>
@@ -230,7 +211,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Look through all available sources (including those disabled) by matching source name and url
                 var matchingSource = packageSources
                     ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
-                    StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
+                                 StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
                     .FirstOrDefault();
 
                 if (matchingSource != null)
@@ -271,7 +252,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     bool? exists;
                     string errorMessage;
                     // translate relative path to absolute path
-                    if (TryTranslatePSPath(source, out outputPath, out exists, out errorMessage) && exists == true)
+                    if (TryTranslatePSPath(source, out outputPath, out exists, out errorMessage)
+                        && exists == true)
                     {
                         source = outputPath;
                         packageSource = new PackageSource(outputPath);
@@ -299,18 +281,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     throw uriException;
                 }
-                else
-                {
-                    throw ex;
-                }
+                throw ex;
             }
         }
 
         /// <summary>
         /// Translate a PSPath into a System.IO.* friendly Win32 path.
         /// Does not resolve/glob wildcards.
-        /// </summary>                
-        /// <param name="psPath">The PowerShell PSPath to translate which may reference PSDrives or have provider-qualified paths which are syntactically invalid for .NET APIs.</param>
+        /// </summary>
+        /// <param name="psPath">
+        /// The PowerShell PSPath to translate which may reference PSDrives or have
+        /// provider-qualified paths which are syntactically invalid for .NET APIs.
+        /// </param>
         /// <param name="path">The translated PSPath in a format understandable to .NET APIs.</param>
         /// <param name="exists">Returns null if not tested, or a bool representing path existence.</param>
         /// <param name="errorMessage">If translation failed, contains the reason.</param>
@@ -328,7 +310,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         protected void CheckForSolutionOpen()
         {
-            if (!_solutionManager.IsSolutionOpen)
+            if (!VsSolutionManager.IsSolutionOpen)
             {
                 ErrorHandler.ThrowSolutionNotOpenTerminatingError();
             }
@@ -342,16 +324,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (string.IsNullOrEmpty(projectName))
             {
-                Project = _solutionManager.DefaultNuGetProject;
-                if (_solutionManager.IsSolutionOpen && Project == null)
+                Project = VsSolutionManager.DefaultNuGetProject;
+                if (VsSolutionManager.IsSolutionOpen
+                    && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError("Default", terminating: true);
                 }
             }
             else
             {
-                Project = _solutionManager.GetNuGetProject(projectName);
-                if (_solutionManager.IsSolutionOpen && Project == null)
+                Project = VsSolutionManager.GetNuGetProject(projectName);
+                if (VsSolutionManager.IsSolutionOpen
+                    && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: true);
                 }
@@ -363,7 +347,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             List<NuGetProject> nuGetProjects = new List<NuGetProject>();
             foreach (Project project in GetProjectsByName(projectNames))
             {
-                NuGetProject nuGetProject = _solutionManager.GetNuGetProject(project.Name);
+                NuGetProject nuGetProject = VsSolutionManager.GetNuGetProject(project.Name);
                 if (nuGetProject != null)
                 {
                     nuGetProjects.Add(nuGetProject);
@@ -381,7 +365,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             string customUniqueName = string.Empty;
             Project defaultDTEProject = null;
 
-            NuGetProject defaultNuGetProject = _solutionManager.DefaultNuGetProject;
+            NuGetProject defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
             // Solution may be open without a project in it. Then defaultNuGetProject is null.
             if (defaultNuGetProject != null)
             {
@@ -389,7 +373,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             // Get all DTE projects in the solution and compare by CustomUnique names, especially for projects under solution folders.
-            IEnumerable<Project> allDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE); 
+            IEnumerable<Project> allDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
             if (allDTEProjects != null)
             {
                 defaultDTEProject = allDTEProjects.Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), customUniqueName)).FirstOrDefault();
@@ -422,8 +406,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var pattern = new WildcardPattern(projectName, WildcardOptions.IgnoreCase);
 
                 var matches = from s in allValidProjectNames
-                              where pattern.IsMatch(s)
-                              select _solutionManager.GetNuGetProject(s);
+                    where pattern.IsMatch(s)
+                    select VsSolutionManager.GetNuGetProject(s);
 
                 int count = 0;
                 foreach (var project in matches)
@@ -433,8 +417,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         count++;
                         string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
                         Project dteProject = allDteProjects
-                                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), name))
-                                .FirstOrDefault();
+                            .Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), name))
+                            .FirstOrDefault();
                         yield return dteProject;
                     }
                 }
@@ -442,7 +426,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // We only emit non-terminating error record if a non-wildcarded name was not found.
                 // This is consistent with built-in cmdlets that support wildcarded search.
                 // A search with a wildcard that returns nothing should not be considered an error.
-                if ((count == 0) && !WildcardPattern.ContainsWildcardCharacters(projectName))
+                if ((count == 0)
+                    && !WildcardPattern.ContainsWildcardCharacters(projectName))
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: false);
                 }
@@ -456,8 +441,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected IEnumerable<string> GetAllValidProjectNames()
         {
-            var nugetProjects = _solutionManager.GetNuGetProjects();
-            var safeNames = nugetProjects?.Select(p => _solutionManager.GetNuGetProjectSafeName(p));
+            var nugetProjects = VsSolutionManager.GetNuGetProjects();
+            var safeNames = nugetProjects?.Select(p => VsSolutionManager.GetNuGetProjectSafeName(p));
             var uniqueNames = nugetProjects?.Select(p => NuGetProject.GetUniqueNameOrName(p));
             return uniqueNames.Concat(safeNames).Distinct();
         }
@@ -466,7 +451,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the list of installed packages based on Filter, Skip and First parameters. Used for Get-Package.
         /// </summary>
         /// <returns></returns>
-        protected async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects, 
+        protected async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
             string filter, int skip, int take)
         {
             Dictionary<NuGetProject, IEnumerable<PackageReference>> installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
@@ -503,7 +488,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="skip"></param>
         /// <param name="take"></param>
         /// <returns></returns>
-        protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks, 
+        protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks,
             bool includePrerelease, int skip, int take)
         {
             SearchFilter searchfilter = new SearchFilter();
@@ -587,7 +572,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="actions"></param>
         protected void PreviewNuGetPackageActions(IEnumerable<NuGetProjectAction> actions)
         {
-            if (actions == null || !actions.Any())
+            if (actions == null
+                || !actions.Any())
             {
                 Log(MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
             }
@@ -599,9 +585,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
             }
         }
+
         #endregion
 
         #region Processing
+
         protected override void BeginProcessing()
         {
             IsExecuting = true;
@@ -620,7 +608,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void UnsubscribeEvents()
         {
-
             if (_httpClientEvents != null)
             {
                 _httpClientEvents.SendingRequest -= OnSendingRequest;
@@ -639,7 +626,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void SubscribeToProgressEvents()
         {
-            if (!IsSyncMode && _httpClientEvents != null)
+            if (!IsSyncMode
+                && _httpClientEvents != null)
             {
                 _httpClientEvents.ProgressAvailable += OnProgressAvailable;
             }
@@ -676,9 +664,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             return null;
         }
+
         #endregion
 
         #region Implementing IErrorHandler
+
         public void HandleError(ErrorRecord errorRecord, bool terminating)
         {
             if (terminating)
@@ -715,7 +705,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     NuGetErrorId.ProjectNotFound, // This is your locale-agnostic error id.
                     ErrorCategory.ObjectNotFound,
                     projectName),
-                    terminating: terminating);
+                terminating: terminating);
         }
 
         public void ThrowSolutionNotOpenTerminatingError()
@@ -735,9 +725,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 errorId: NuGetErrorId.NoCompatibleProjects,
                 category: ErrorCategory.InvalidOperation);
         }
+
         #endregion
 
         #region Logging
+
         [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This exception is passed to PowerShell. We really don't care about the type of exception here.")]
         protected void WriteError(string message)
         {
@@ -814,18 +806,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 return FileConflictAction.IgnoreAll;
             }
 
-            if (ConflictAction != null && ConflictAction != FileConflictAction.PromptUser)
+            if (ConflictAction != null
+                && ConflictAction != FileConflictAction.PromptUser)
             {
                 return (FileConflictAction)ConflictAction;
             }
 
             var choices = new Collection<ChoiceDescription>
-            {
-                new ChoiceDescription(Resources.Cmdlet_Yes, Resources.Cmdlet_FileConflictYesHelp),
-                new ChoiceDescription(Resources.Cmdlet_YesAll, Resources.Cmdlet_FileConflictYesAllHelp),
-                new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_FileConflictNoHelp),
-                new ChoiceDescription(Resources.Cmdlet_NoAll, Resources.Cmdlet_FileConflictNoAllHelp)
-            };
+                {
+                    new ChoiceDescription(Resources.Cmdlet_Yes, Resources.Cmdlet_FileConflictYesHelp),
+                    new ChoiceDescription(Resources.Cmdlet_YesAll, Resources.Cmdlet_FileConflictYesAllHelp),
+                    new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_FileConflictNoHelp),
+                    new ChoiceDescription(Resources.Cmdlet_NoAll, Resources.Cmdlet_FileConflictNoAllHelp)
+                };
 
             int choice = Host.UI.PromptForChoice(Resources.FileConflictTitle, message, choices, defaultChoice: 2);
 
@@ -903,7 +896,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         break;
                     }
-                    else if (message is ScriptMessage)
+                    if (message is ScriptMessage)
                     {
                         ScriptMessage scriptMessage = message as ScriptMessage;
                         ExecutePSScriptInternal(scriptMessage.ScriptPath);
@@ -911,7 +904,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     else if (message is LogMessage)
                     {
                         LogMessage logMessage = message as LogMessage;
-                        LogCore(logMessage.Level, logMessage.Content); 
+                        LogCore(logMessage.Level, logMessage.Content);
                     }
                 }
             }
@@ -956,24 +949,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected BlockingCollection<Message> blockingCollection = new BlockingCollection<Message>();
 
         protected Semaphore scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
+
         #endregion
 
-        public bool IsExecuting
-        {
-            get;
-            private set;
-        }
+        public bool IsExecuting { get; private set; }
 
         public PSCmdlet CurrentPSCmdlet
         {
             get { return this; }
         }
 
-        public PackageExtractionContext PackageExtractionContext
-        {
-            get;
-            set;
-        }
+        public PackageExtractionContext PackageExtractionContext { get; set; }
 
         public void ExecutePSScript(string scriptPath, bool throwOnFailure)
         {
@@ -988,23 +974,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     throw _scriptException;
                 }
-                else
-                {
-                    Log(MessageLevel.Warning, _scriptException.Message);
-                }
+                Log(MessageLevel.Warning, _scriptException.Message);
             }
         }
 
-        public ISourceControlManagerProvider SourceControlManagerProvider
-        {
-            get { return _sourceControlManagerProvider; }
-        }
+        public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 
-        public ProjectManagement.ExecutionContext ExecutionContext
-        {
-            get;
-            protected set;
-        }
+        public ExecutionContext ExecutionContext { get; protected set; }
 
         public void ReportError(string message)
         {

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
@@ -39,11 +42,11 @@ namespace NuGet.VisualStudio
         private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
             var safeSettings = new XmlReaderSettings
-            {
-                XmlResolver = null,
-                DtdProcessing = DtdProcessing.Prohibit,
-                IgnoreWhitespace = ignoreWhiteSpace
-            };
+                {
+                    XmlResolver = null,
+                    DtdProcessing = DtdProcessing.Prohibit,
+                    IgnoreWhitespace = ignoreWhiteSpace
+                };
 
             return safeSettings;
         }

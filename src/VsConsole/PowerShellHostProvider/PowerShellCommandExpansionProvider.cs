@@ -1,8 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGetConsole.Host.PowerShellProvider
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    [SuppressMessage(
         "Microsoft.Performance",
         "CA1812:AvoidUninstantiatedInternalClasses",
         Justification = "MEF requires this class to be non-static.")]
@@ -20,7 +24,6 @@ namespace NuGetConsole.Host.PowerShellProvider
     /// </summary>
     internal class CommandExpansionProvider : ICommandExpansionProvider
     {
-
         public ICommandExpansion Create(IHost host)
         {
             ITabExpansion tabExpansion = host as ITabExpansion;

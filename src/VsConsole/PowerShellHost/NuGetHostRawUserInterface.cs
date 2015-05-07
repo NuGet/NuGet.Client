@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Management.Automation;
 using System.Management.Automation.Host;
@@ -5,16 +8,13 @@ using System.Windows.Input;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
-    class NuGetRawUserInterface : PSHostRawUserInterface
+    internal class NuGetRawUserInterface : PSHostRawUserInterface
     {
         private readonly NuGetPSHost _host;
 
         private IConsole Console
         {
-            get
-            {
-                return _host.ActiveConsole;
-            }
+            get { return _host.ActiveConsole; }
         }
 
         public NuGetRawUserInterface(NuGetPSHost host)
@@ -29,45 +29,25 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // default color controlled by Visual Studio
                 return NuGetHostUserInterface.NoColor;
             }
-            set
-            {
-            }
+            set { }
         }
 
         public override Size BufferSize
         {
-            get
-            {
-                return new Size(Console.ConsoleWidth, 0);
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return new Size(Console.ConsoleWidth, 0); }
+            set { throw new NotImplementedException(); }
         }
 
         public override Coordinates CursorPosition
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public override int CursorSize
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public override void FlushInputBuffer()
@@ -82,9 +62,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 // default color controlled by Visual Studio
                 return NuGetHostUserInterface.NoColor;
             }
-            set
-            {
-            }
+            set { }
         }
 
         public override BufferCell[,] GetBufferContents(Rectangle rectangle)
@@ -94,10 +72,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override bool KeyAvailable
         {
-            get
-            {
-                return Console.Dispatcher.IsKeyAvailable;
-            }
+            get { return Console.Dispatcher.IsKeyAvailable; }
         }
 
         public override Size MaxPhysicalWindowSize
@@ -149,38 +124,20 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override Coordinates WindowPosition
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public override Size WindowSize
         {
-            get
-            {
-                return new Size(Console.ConsoleWidth, 0);
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return new Size(Console.ConsoleWidth, 0); }
+            set { throw new NotImplementedException(); }
         }
 
         public override string WindowTitle
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
     }
 }

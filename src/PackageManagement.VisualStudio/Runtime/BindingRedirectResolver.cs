@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         /// <summary>
         /// Returns a list of assemblies that need binding redirects for a set of assemblies in a path.
-        /// </summary>        
+        /// </summary>
         /// <param name="path">The directory where assemblies are.</param>
         /// <param name="domain">The application domain to load the assemblies into.</param>
         public static IEnumerable<AssemblyBinding> GetBindingRedirects(string path, AppDomain domain)
@@ -35,7 +38,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return GetBindingRedirects(GetAssemblies(path, domain));
         }
-
 
         public static IEnumerable<AssemblyBinding> GetBindingRedirects(IEnumerable<string> assemblyPaths, AppDomain domain)
         {
@@ -80,7 +82,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     IAssembly targetAssembly;
                     // If we have an assembly with the same unique key in our list of a different version then we want to use that version
                     // then we want to add a redirect for that assembly
-                    if (assemblyNameLookup.TryGetValue(key, out targetAssembly) && targetAssembly.Version != referenceAssembly.Version)
+                    if (assemblyNameLookup.TryGetValue(key, out targetAssembly)
+                        && targetAssembly.Version != referenceAssembly.Version)
                     {
                         // BUG #1158: Don't add binding redirects for assemblies without a strong name
                         if (!String.IsNullOrEmpty(targetAssembly.PublicKeyToken))
@@ -111,7 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return GetAssemblies(Directory.GetFiles(path, "*.dll"), domain).Concat(
-                   GetAssemblies(Directory.GetFiles(path, "*.exe"), domain));
+                GetAssemblies(Directory.GetFiles(path, "*.exe"), domain));
         }
 
         private static IEnumerable<IAssembly> GetAssemblies(IEnumerable<string> paths, AppDomain domain)

@@ -1,36 +1,30 @@
-﻿using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
     internal sealed class VSAPIProjectContext : IMSBuildNuGetProjectContext
     {
-        private bool _skipAssemblyReferences;
-        private bool _bindingRedirectsDisabled;
-        private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
-
         public VSAPIProjectContext()
             : this(false, false, true)
         {
-
         }
 
-        public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled, bool useLegacyInstallPaths=true)
+        public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled, bool useLegacyInstallPaths = true)
         {
-            PackageExtractionContext = new Packaging.PackageExtractionContext();
+            PackageExtractionContext = new PackageExtractionContext();
 
             // many templates depend on legacy paths, for the VS API and template wizard we unfortunately need to keep them
             PackageExtractionContext.UseLegacyPackageInstallPath = useLegacyInstallPaths;
 
-            _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
-            _skipAssemblyReferences = skipAssemblyReferences;
-            _bindingRedirectsDisabled = bindingRedirectsDisabled;
+            SourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
+            SkipAssemblyReferences = skipAssemblyReferences;
+            BindingRedirectsDisabled = bindingRedirectsDisabled;
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
@@ -44,35 +38,18 @@ namespace NuGet.VisualStudio
             return FileConflictAction.OverwriteAll;
         }
 
+        public PackageExtractionContext PackageExtractionContext { get; set; }
 
-        public Packaging.PackageExtractionContext PackageExtractionContext { get; set; }
-
-
-        public ISourceControlManagerProvider SourceControlManagerProvider
-        {
-            get { return _sourceControlManagerProvider; }
-        }
+        public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 
         public ExecutionContext ExecutionContext
         {
             get { return null; }
         }
 
-        public bool SkipAssemblyReferences
-        {
-            get
-            {
-                return _skipAssemblyReferences;
-            }
-        }
+        public bool SkipAssemblyReferences { get; }
 
-        public bool BindingRedirectsDisabled
-        {
-            get
-            {
-                return _bindingRedirectsDisabled;
-            }
-        }
+        public bool BindingRedirectsDisabled { get; }
 
         public void ReportError(string message)
         {

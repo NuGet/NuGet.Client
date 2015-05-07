@@ -1,5 +1,9 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -20,14 +24,15 @@ namespace NuGetConsole.Host
         /// <param name="args">Arguments for the method call.</param>
         /// <param name="result">Result of the method call.</param>
         /// <returns>true if the method call is performed.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate")]
         public bool TryInvoke(Type type, string name, object target, object[] args, out object result)
         {
             MemberInfo[] members = type.GetMember(
                 name, MemberTypes.Method, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
 
             // Don't support overload yet
-            if (members.Length == 1 && members[0] is MethodInfo)
+            if (members.Length == 1
+                && members[0] is MethodInfo)
             {
                 result = Invoke((MethodInfo)members[0], target, args);
                 return true;
@@ -75,7 +80,7 @@ namespace NuGetConsole.Host
         /// <param name="arg">A passed in arg.</param>
         /// <param name="argValue">The actual arg value if arg matches paramInfo.</param>
         /// <returns>true if arg matches paramInfo.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate")]
         protected abstract bool TryConvertArg(ParameterInfo parameterInfo, object arg, out object argValue);
 
         /// <summary>
@@ -97,10 +102,11 @@ namespace NuGetConsole.Host
         /// <param name="paramInfo">The parameter info.</param>
         /// <param name="argValue">The output arg value</param>
         /// <returns>true if the parameter is considered optional.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate")]
         protected virtual bool TryGetOptionalArg(ParameterInfo paramInfo, out object argValue)
         {
-            if (paramInfo.IsOut || paramInfo.IsOptional)
+            if (paramInfo.IsOut
+                || paramInfo.IsOptional)
             {
                 argValue = paramInfo.RawDefaultValue;
                 if (argValue == DBNull.Value)
@@ -160,7 +166,7 @@ namespace NuGetConsole.Host
             return parameterInfos.Any(p => p.IsOut);
         }
 
-        object[] UnwrapArgs(MethodInfo m, object[] args)
+        private object[] UnwrapArgs(MethodInfo m, object[] args)
         {
             ParameterInfo[] paramInfos = m.GetParameters();
 
@@ -176,7 +182,8 @@ namespace NuGetConsole.Host
             {
                 ParameterInfo paramInfo = paramInfos[i];
                 object argValue;
-                if (k < args.Length && TryConvertArg(paramInfo, args[k], out argValue)) // If args[k] matches
+                if (k < args.Length
+                    && TryConvertArg(paramInfo, args[k], out argValue)) // If args[k] matches
                 {
                     newArgs[i] = argValue;
                     k++;
@@ -195,7 +202,7 @@ namespace NuGetConsole.Host
             return newArgs;
         }
 
-        object WrapResult(MethodInfo m, object[] args, object result, object[] unwrappedArgs)
+        private object WrapResult(MethodInfo m, object[] args, object result, object[] unwrappedArgs)
         {
             if (args == unwrappedArgs)
             {
@@ -203,7 +210,8 @@ namespace NuGetConsole.Host
             }
 
             List<object> allResults = new List<object>();
-            if (result != null && result.GetType() != typeof(void))
+            if (result != null
+                && result.GetType() != typeof(void))
             {
                 allResults.Add(result);
             }
@@ -213,7 +221,8 @@ namespace NuGetConsole.Host
             for (int i = 0; i < paramInfos.Length; i++)
             {
                 ParameterInfo paramInfo = paramInfos[i];
-                if (k < args.Length && TryReturnArg(paramInfo, args[k], unwrappedArgs[i])) // If args[k] matches
+                if (k < args.Length
+                    && TryReturnArg(paramInfo, args[k], unwrappedArgs[i])) // If args[k] matches
                 {
                     k++;
                     continue;

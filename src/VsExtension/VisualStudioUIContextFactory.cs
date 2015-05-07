@@ -1,16 +1,20 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGetVSExtension
 {
     [Export(typeof(INuGetUIContextFactory))]
-    class VisualStudioUIContextFactory : INuGetUIContextFactory
+    internal class VisualStudioUIContextFactory : INuGetUIContextFactory
     {
         private readonly ISourceRepositoryProvider _repositoryProvider;
         private readonly ISolutionManager _solutionManager;
@@ -19,11 +23,11 @@ namespace NuGetVSExtension
         private readonly ISettings _settings;
 
         [ImportingConstructor]
-        public VisualStudioUIContextFactory([Import]ISourceRepositoryProvider repositoryProvider,
-            [Import]ISolutionManager solutionManager,
-            [Import]ISettings settings,
-            [Import]IPackageRestoreManager packageRestoreManager,
-            [Import]IOptionsPageActivator optionsPage)
+        public VisualStudioUIContextFactory([Import] ISourceRepositoryProvider repositoryProvider,
+            [Import] ISolutionManager solutionManager,
+            [Import] ISettings settings,
+            [Import] IPackageRestoreManager packageRestoreManager,
+            [Import] IOptionsPageActivator optionsPage)
         {
             _repositoryProvider = repositoryProvider;
             _solutionManager = solutionManager;
@@ -32,9 +36,10 @@ namespace NuGetVSExtension
             _settings = settings;
         }
 
-        public INuGetUIContext Create(NuGetPackage package, IEnumerable<NuGet.ProjectManagement.NuGetProject> projects)
+        public INuGetUIContext Create(NuGetPackage package, IEnumerable<NuGetProject> projects)
         {
-            if (projects == null || !projects.Any())
+            if (projects == null
+                || !projects.Any())
             {
                 throw new ArgumentNullException("projects");
             }
@@ -44,12 +49,12 @@ namespace NuGetVSExtension
 
             return new VisualStudioUIContext(
                 package,
-                _repositoryProvider, 
-                _solutionManager, 
-                packageManager, 
-                actionEngine, 
-                _restoreManager, 
-                _optionsPage, 
+                _repositoryProvider,
+                _solutionManager,
+                packageManager,
+                actionEngine,
+                _restoreManager,
+                _optionsPage,
                 projects);
         }
     }

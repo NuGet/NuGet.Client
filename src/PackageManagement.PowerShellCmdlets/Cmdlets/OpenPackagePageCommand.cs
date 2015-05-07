@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -14,11 +17,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsCommon.Open, "PackagePage", DefaultParameterSetName = ParameterAttribute.AllParameterSets, SupportsShouldProcess = true)]
     public class OpenPackagePageCommand : NuGetPowerShellBaseCommand
     {
-        public OpenPackagePageCommand()
-            : base()
-        {
-        }
-
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public string Id { get; set; }
 
@@ -71,7 +69,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
             }
 
-            if (package != null && package.Identity != null)
+            if (package != null
+                && package.Identity != null)
             {
                 Uri targetUrl = null;
                 if (License.IsPresent)
