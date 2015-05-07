@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
@@ -35,18 +38,19 @@ namespace StandaloneUI
 
         public INuGetUIContext Create(string settingsFile, IEnumerable<NuGetProject> projects)
         {
-            if (String.IsNullOrEmpty(settingsFile))
+            if (string.IsNullOrEmpty(settingsFile))
             {
                 throw new ArgumentException("settingsFile");
             }
 
-            if (projects == null || !projects.Any())
+            if (projects == null
+                || !projects.Any())
             {
                 throw new ArgumentNullException("projects");
             }
 
-            NuGetPackageManager packageManager = new NuGetPackageManager(_repositoryProvider, _settings, _solutionManager);
-            UIActionEngine actionEngine = new UIActionEngine(_repositoryProvider, packageManager);
+            var packageManager = new NuGetPackageManager(_repositoryProvider, _settings, _solutionManager);
+            var actionEngine = new UIActionEngine(_repositoryProvider, packageManager);
 
             return new StandaloneUIContext(settingsFile, _repositoryProvider, _solutionManager, packageManager, actionEngine, _restoreManager, _optionsPage, projects);
         }

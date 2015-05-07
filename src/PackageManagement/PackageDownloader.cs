@@ -1,10 +1,11 @@
-﻿using NuGet.Packaging.Core;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -15,8 +16,8 @@ namespace NuGet.PackageManagement
     public static class PackageDownloader
     {
         /// <summary>
-        /// Sets <param name="targetPackageStream"></param> for a given <param name="packageIdentity"></param> 
-        /// from the given <param name="sourceRepository"></param>. If successfully set, returns true. Otherwise, false
+        /// Sets <paramref name="targetPackageStream" /> for a given <paramref name="packageIdentity" /> from the given
+        /// <paramref name="sourceRepository" />. If successfully set, returns true. Otherwise, false.
         /// </summary>
         public static async Task GetPackageStreamAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream, CancellationToken token)
         {
@@ -32,7 +33,7 @@ namespace NuGet.PackageManagement
 
         private static async Task<Stream> GetDownloadStreamAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
         {
-            DownloadResource downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
+            var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
 
             if (downloadResource == null)
             {

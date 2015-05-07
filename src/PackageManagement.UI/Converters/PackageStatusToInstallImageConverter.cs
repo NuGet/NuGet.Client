@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
-    class PackageStatusToInstallImageVisibilityConverter : IValueConverter
+    internal class PackageStatusToInstallImageVisibilityConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            PackageStatus s = (PackageStatus)value;
+            var s = (PackageStatus)value;
             if (s == PackageStatus.Installed)
             {
                 return Visibility.Visible;
@@ -21,17 +21,17 @@ namespace NuGet.PackageManagement.UI
             return Visibility.Hidden;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
     }
 
-    class PackageStatusToUpdateImageVisibilityConverter : IValueConverter
+    internal class PackageStatusToUpdateImageVisibilityConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            PackageStatus s = (PackageStatus)value;
+            var s = (PackageStatus)value;
             if (s == PackageStatus.UpdateAvailable)
             {
                 return Visibility.Visible;
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI
             return Visibility.Hidden;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

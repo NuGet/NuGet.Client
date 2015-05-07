@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -12,13 +15,13 @@ namespace Test.Utility
     public class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
     {
         private const string TestProjectName = "TestProjectName";
-        public Dictionary<string, string> References { get; private set; }
-        public HashSet<string> FrameworkReferences { get; private set; }
-        public HashSet<string> Files { get; private set; }
+        public Dictionary<string, string> References { get; }
+        public HashSet<string> FrameworkReferences { get; }
+        public HashSet<string> Files { get; }
         private HashSet<string> FilesInProcessing { get; set; }
         public HashSet<string> ProcessedFiles { get; private set; }
-        public HashSet<string> Imports { get; private set; }
-        public Dictionary<string, int> ScriptsExecuted { get; private set; }
+        public HashSet<string> Imports { get; }
+        public Dictionary<string, int> ScriptsExecuted { get; }
         public int BindingRedirectsCallCount { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
@@ -31,7 +34,7 @@ namespace Test.Utility
             Files = new HashSet<string>();
             Imports = new HashSet<string>();
             NuGetProjectContext = nuGetProjectContext;
-            ProjectFullPath = String.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
+            ProjectFullPath = string.IsNullOrEmpty(projectFullPath) ? Environment.CurrentDirectory : projectFullPath;
             ScriptsExecuted = new Dictionary<string, int>();
             ProcessedFiles = new HashSet<string>();
             ProjectName = projectName ?? TestProjectName;
@@ -39,7 +42,8 @@ namespace Test.Utility
 
         public void AddFile(string path, Stream stream)
         {
-            if (String.IsNullOrEmpty(path) || String.IsNullOrEmpty(Path.GetFileName(path)))
+            if (string.IsNullOrEmpty(path)
+                || string.IsNullOrEmpty(Path.GetFileName(path)))
             {
                 return;
             }
@@ -55,7 +59,7 @@ namespace Test.Utility
 
         public void AddFrameworkReference(string name)
         {
-            if(FrameworkReferences.Contains(name))
+            if (FrameworkReferences.Contains(name))
             {
                 throw new InvalidOperationException("Cannot add existing reference. That would be a COMException in VS");
             }
@@ -80,31 +84,20 @@ namespace Test.Utility
         public void RemoveFile(string path)
         {
             Files.Remove(path);
-            string fullPath = Path.Combine(ProjectFullPath, path);
+            var fullPath = Path.Combine(ProjectFullPath, path);
             if (File.Exists(fullPath))
             {
                 File.Delete(fullPath);
             }
         }
 
-        public string ProjectFullPath
-        {
-            get;
-            private set;
-        }
+        public string ProjectFullPath { get; }
 
-        public string ProjectName
-        {
-            get;
-            private set;
-        }
+        public string ProjectName { get; }
 
         public string ProjectUniqueName
         {
-            get
-            {
-                return ProjectName;
-            }
+            get { return ProjectName; }
         }
 
         public bool ReferenceExists(string name)
@@ -118,18 +111,14 @@ namespace Test.Utility
         }
 
         public void RemoveReference(string name)
-        {            
-            if(References.ContainsKey(name))
+        {
+            if (References.ContainsKey(name))
             {
                 References.Remove(name);
             }
         }
 
-        public NuGetFramework TargetFramework
-        {
-            get;
-            private set;
-        }
+        public NuGetFramework TargetFramework { get; }
 
         public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
         {
@@ -161,17 +150,15 @@ namespace Test.Utility
             Files.Add(path);
         }
 
-
         public void AddBindingRedirects()
         {
             BindingRedirectsCallCount++;
         }
 
-
         public Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject, bool throwOnFailure)
         {
             var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            if(!File.Exists(scriptFullPath) && throwOnFailure)
+            if (!File.Exists(scriptFullPath) && throwOnFailure)
             {
                 throw new InvalidOperationException(scriptRelativePath + " was not found. Could not execute PS script");
             }
@@ -185,7 +172,6 @@ namespace Test.Utility
             ScriptsExecuted[scriptRelativePath]++;
             return Task.FromResult(0);
         }
-
 
         public void BeginProcessing(IEnumerable<string> files)
         {

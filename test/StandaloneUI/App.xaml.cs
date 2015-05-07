@@ -1,14 +1,6 @@
-﻿using NuGet.PackageManagement.UI;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.Configuration;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Windows;
 using System.Windows.Navigation;
 
@@ -19,15 +11,12 @@ namespace StandaloneUI
     /// </summary>
     public partial class App : Application
     {
-
         private void Application_LoadCompleted(object sender, NavigationEventArgs e)
         {
-
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-
         }
     }
 }

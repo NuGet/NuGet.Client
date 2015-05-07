@@ -1,4 +1,7 @@
-﻿using NuGet.Packaging;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Packaging;
 
 namespace NuGet.ProjectManagement
 {
@@ -18,6 +21,7 @@ namespace NuGet.ProjectManagement
         /// Resolves a file conflict for the given project context
         /// </summary>
         FileConflictAction ResolveFileConflict(string message);
+
         PackageExtractionContext PackageExtractionContext { get; set; }
         ISourceControlManagerProvider SourceControlManagerProvider { get; }
         ExecutionContext ExecutionContext { get; }
@@ -32,14 +36,17 @@ namespace NuGet.ProjectManagement
         /// Information
         /// </summary>
         Info,
+
         /// <summary>
         /// Warning
         /// </summary>
         Warning,
+
         /// <summary>
         /// Debug only
         /// </summary>
         Debug,
+
         /// <summary>
         /// Error
         /// </summary>

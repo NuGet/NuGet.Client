@@ -1,11 +1,12 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -19,7 +20,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static IEnumerable<SourceDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourceDependencyInfo> packages, IEnumerable<PackageIdentity> targets)
         {
-            IEnumerable<SourceDependencyInfo> result = packages;
+            var result = packages;
 
             foreach (var group in targets.GroupBy(p => p.Id, StringComparer.OrdinalIgnoreCase))
             {
@@ -35,8 +36,8 @@ namespace NuGet.PackageManagement
 
         public static IEnumerable<SourceDependencyInfo> PruneDisallowedVersions(IEnumerable<SourceDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
         {
-            IEnumerable<SourceDependencyInfo> result = packages;
-            foreach(var packageReference in packageReferences)
+            var result = packages;
+            foreach (var packageReference in packageReferences)
             {
                 result = RemoveDisallowedVersions(result, packageReference);
             }
@@ -52,7 +53,7 @@ namespace NuGet.PackageManagement
             var comparer = VersionComparer.VersionRelease;
 
             return packages.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(target.Id, p.Id) ||
-                (StringComparer.OrdinalIgnoreCase.Equals(target.Id, p.Id) && comparer.Equals(p.Version, target.Version)));
+                                       (StringComparer.OrdinalIgnoreCase.Equals(target.Id, p.Id) && comparer.Equals(p.Version, target.Version)));
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace NuGet.PackageManagement
         public static IEnumerable<SourceDependencyInfo> RemoveAllPrereleaseVersionsForId(IEnumerable<SourceDependencyInfo> packages, string id)
         {
             return packages.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(id, p.Id) ||
-                (StringComparer.OrdinalIgnoreCase.Equals(id, p.Id) && !p.Version.IsPrerelease));
+                                       (StringComparer.OrdinalIgnoreCase.Equals(id, p.Id) && !p.Version.IsPrerelease));
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace NuGet.PackageManagement
             var comparer = VersionComparer.VersionRelease;
 
             return packages.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(minimum.Id, p.Id) ||
-                (StringComparer.OrdinalIgnoreCase.Equals(minimum.Id, p.Id) && comparer.Compare(p.Version, minimum.Version) >= 0));
+                                       (StringComparer.OrdinalIgnoreCase.Equals(minimum.Id, p.Id) && comparer.Compare(p.Version, minimum.Version) >= 0));
         }
 
         // TODO: Consider removing elements from the collection and check if that is better in performance
@@ -81,7 +82,7 @@ namespace NuGet.PackageManagement
             if (packageReference.AllowedVersions != null)
             {
                 return packages.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(p.Id, packageReference.PackageIdentity.Id)
-                || packageReference.AllowedVersions.Satisfies(p.Version));
+                                           || packageReference.AllowedVersions.Satisfies(p.Version));
             }
             return packages;
         }

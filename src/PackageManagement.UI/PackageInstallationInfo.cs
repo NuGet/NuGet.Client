@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 
@@ -20,10 +19,7 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetVersion Version
         {
-            get
-            {
-                return _version;
-            }
+            get { return _version; }
             set
             {
                 _version = value;
@@ -37,10 +33,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool Selected
         {
-            get
-            {
-                return _selected;
-            }
+            get { return _selected; }
             set
             {
                 if (_selected != value)
@@ -59,10 +52,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool Enabled
         {
-            get
-            {
-                return _enabled;
-            }
+            get { return _enabled; }
             set
             {
                 if (_enabled != value)
@@ -73,13 +63,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public NuGetProject NuGetProject
-        {
-            get;
-            private set;
-        }
+        public NuGetProject NuGetProject { get; }
 
-        private string _name;
+        private readonly string _name;
 
         public PackageInstallationInfo(NuGetProject project, NuGetVersion version, bool enabled)
         {
@@ -97,10 +83,7 @@ namespace NuGet.PackageManagement.UI
         // the text to be displayed in UI
         public string DisplayText
         {
-            get
-            {
-                return _displayText;
-            }
+            get { return _displayText; }
             set
             {
                 if (_displayText != value)
@@ -126,17 +109,18 @@ namespace NuGet.PackageManagement.UI
 
         public int CompareTo(PackageInstallationInfo other)
         {
-            return this._name.CompareTo(other._name);
+            return _name.CompareTo(other._name);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
         protected void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));
             }
         }
-    }    
+    }
 }

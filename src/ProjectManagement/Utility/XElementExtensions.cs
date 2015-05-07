@@ -1,8 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -14,7 +16,7 @@ namespace NuGet.ProjectManagement
         public static string GetOptionalAttributeValue(this XElement element, string localName, string namespaceName = null)
         {
             XAttribute attr;
-            if (String.IsNullOrEmpty(namespaceName))
+            if (string.IsNullOrEmpty(namespaceName))
             {
                 attr = element.Attribute(localName);
             }
@@ -28,7 +30,7 @@ namespace NuGet.ProjectManagement
         public static string GetOptionalElementValue(this XContainer element, string localName, string namespaceName = null)
         {
             XElement child;
-            if (String.IsNullOrEmpty(namespaceName))
+            if (string.IsNullOrEmpty(namespaceName))
             {
                 child = element.ElementsNoNamespace(localName).FirstOrDefault();
             }
@@ -58,8 +60,8 @@ namespace NuGet.ProjectManagement
             }
 
             var attributesToRemove = from e in source.Attributes()
-                                     where AttributeEquals(e, target.Attribute(e.Name))
-                                     select e;
+                where AttributeEquals(e, target.Attribute(e.Name))
+                select e;
             // Remove the attributes
             foreach (var a in attributesToRemove.ToList())
             {
@@ -71,7 +73,7 @@ namespace NuGet.ProjectManagement
                 var sourceChildComment = sourceChildNode as XComment;
                 if (sourceChildComment != null)
                 {
-                    bool hasMatchingComment = HasComment(target, sourceChildComment);
+                    var hasMatchingComment = HasComment(target, sourceChildComment);
                     if (hasMatchingComment)
                     {
                         sourceChildComment.Remove();
@@ -83,10 +85,11 @@ namespace NuGet.ProjectManagement
                 if (sourceChild != null)
                 {
                     var targetChild = FindElement(target, sourceChild);
-                    if (targetChild != null && !HasConflict(sourceChild, targetChild))
+                    if (targetChild != null
+                        && !HasConflict(sourceChild, targetChild))
                     {
                         Except(sourceChild, targetChild);
-                        bool hasContent = sourceChild.HasAttributes || sourceChild.HasElements;
+                        var hasContent = sourceChild.HasAttributes || sourceChild.HasElements;
                         if (!hasContent)
                         {
                             // Remove the element if there is no content
@@ -145,7 +148,8 @@ namespace NuGet.ProjectManagement
                         AddContents(pendingComments, sourceChild.AddBeforeSelf);
                     }
 
-                    if (sourceChild != null && !HasConflict(sourceChild, targetChild))
+                    if (sourceChild != null
+                        && !HasConflict(sourceChild, targetChild))
                     {
                         // Other wise merge recursively
                         sourceChild.MergeWith(targetChild, nodeActions);
@@ -153,7 +157,8 @@ namespace NuGet.ProjectManagement
                     else
                     {
                         Action<XElement, XElement> nodeAction;
-                        if (nodeActions != null && nodeActions.TryGetValue(targetChild.Name, out nodeAction))
+                        if (nodeActions != null
+                            && nodeActions.TryGetValue(targetChild.Name, out nodeAction))
                         {
                             nodeAction(source, targetChild);
                         }
@@ -191,7 +196,7 @@ namespace NuGet.ProjectManagement
         private static bool HasComment(XElement element, XComment comment)
         {
             return element.Nodes().Any(node => node.NodeType == XmlNodeType.Comment &&
-                                               ((XComment)node).Value.Equals(comment.Value, StringComparison.Ordinal));                                                
+                                               ((XComment)node).Value.Equals(comment.Value, StringComparison.Ordinal));
         }
 
         private static int Compare(XElement target, XElement left, XElement right)
@@ -199,14 +204,14 @@ namespace NuGet.ProjectManagement
             Debug.Assert(left.Name == right.Name);
 
             // First check how much attribute names and values match
-            int leftExactMathes = CountMatches(left, target, AttributeEquals);
-            int rightExactMathes = CountMatches(right, target, AttributeEquals);
+            var leftExactMathes = CountMatches(left, target, AttributeEquals);
+            var rightExactMathes = CountMatches(right, target, AttributeEquals);
 
             if (leftExactMathes == rightExactMathes)
             {
                 // Then check which names match
-                int leftNameMatches = CountMatches(left, target, (a, b) => a.Name == b.Name);
-                int rightNameMatches = CountMatches(right, target, (a, b) => a.Name == b.Name);
+                var leftNameMatches = CountMatches(left, target, (a, b) => a.Name == b.Name);
+                var rightNameMatches = CountMatches(right, target, (a, b) => a.Name == b.Name);
 
                 return rightNameMatches.CompareTo(leftNameMatches);
             }
@@ -217,9 +222,9 @@ namespace NuGet.ProjectManagement
         private static int CountMatches(XElement left, XElement right, Func<XAttribute, XAttribute, bool> matcher)
         {
             return (from la in left.Attributes()
-                    from ta in right.Attributes()
-                    where matcher(la, ta)
-                    select la).Count();
+                from ta in right.Attributes()
+                where matcher(la, ta)
+                select la).Count();
         }
 
         private static bool HasConflict(XElement source, XElement target)
@@ -231,7 +236,8 @@ namespace NuGet.ProjectManagement
             {
                 string sourceValue;
                 // if any of the attributes are in the source (names match) but the value doesn't match then we've found a conflict
-                if (sourceAttr.TryGetValue(targetAttr.Name, out sourceValue) && sourceValue != targetAttr.Value)
+                if (sourceAttr.TryGetValue(targetAttr.Name, out sourceValue)
+                    && sourceValue != targetAttr.Value)
                 {
                     return true;
                 }
@@ -242,21 +248,21 @@ namespace NuGet.ProjectManagement
         public static void RemoveAttributes(this XElement element, Func<XAttribute, bool> condition)
         {
             element.Attributes()
-                   .Where(condition)
-                   .ToList()
-                   .Remove();
+                .Where(condition)
+                .ToList()
+                .Remove();
 
             element.Descendants()
-                   .ToList()
-                   .ForEach(e => RemoveAttributes(e, condition));
+                .ToList()
+                .ForEach(e => RemoveAttributes(e, condition));
         }
 
         public static void AddIndented(this XContainer container, XContainer content)
         {
-            string oneIndentLevel = container.ComputeOneLevelOfIndentation();
+            var oneIndentLevel = container.ComputeOneLevelOfIndentation();
 
-            XText leadingText = container.PreviousNode as XText;
-            string parentIndent = leadingText != null ? leadingText.Value : Environment.NewLine;
+            var leadingText = container.PreviousNode as XText;
+            var parentIndent = leadingText != null ? leadingText.Value : Environment.NewLine;
 
             content.IndentChildrenElements(parentIndent + oneIndentLevel, oneIndentLevel);
 
@@ -272,8 +278,8 @@ namespace NuGet.ProjectManagement
 
         private static void AddLeadingIndentation(XContainer container, string containerIndent, string oneIndentLevel)
         {
-            bool containerIsSelfClosed = !container.Nodes().Any();
-            XText lastChildText = container.LastNode as XText;
+            var containerIsSelfClosed = !container.Nodes().Any();
+            var lastChildText = container.LastNode as XText;
             if (containerIsSelfClosed || lastChildText == null)
             {
                 container.Add(new XText(containerIndent + oneIndentLevel));
@@ -286,32 +292,41 @@ namespace NuGet.ProjectManagement
 
         private static void IndentChildrenElements(this XContainer container, string containerIndent, string oneIndentLevel)
         {
-            string childIndent = containerIndent + oneIndentLevel;
-            foreach (XElement element in container.Elements())
+            var childIndent = containerIndent + oneIndentLevel;
+            foreach (var element in container.Elements())
             {
                 element.AddBeforeSelf(new XText(childIndent));
                 element.IndentChildrenElements(childIndent + oneIndentLevel, oneIndentLevel);
             }
 
             if (container.Elements().Any())
+            {
                 container.Add(new XText(containerIndent));
+            }
         }
 
         public static void RemoveIndented(this XNode element)
         {
             // NOTE: this method is tested by BindinRedirectManagerTest and SettingsTest
-            XText textBeforeOrNull = element.PreviousNode as XText;
-            XText textAfterOrNull = element.NextNode as XText;
-            string oneIndentLevel = element.ComputeOneLevelOfIndentation();
-            bool isLastChild = !element.ElementsAfterSelf().Any();
+            var textBeforeOrNull = element.PreviousNode as XText;
+            var textAfterOrNull = element.NextNode as XText;
+            var oneIndentLevel = element.ComputeOneLevelOfIndentation();
+            var isLastChild = !element.ElementsAfterSelf().Any();
 
             element.Remove();
 
-            if (textAfterOrNull != null && textAfterOrNull.IsWhiteSpace())
+            if (textAfterOrNull != null
+                && textAfterOrNull.IsWhiteSpace())
+            {
                 textAfterOrNull.Remove();
+            }
 
-            if (isLastChild && textBeforeOrNull != null && textBeforeOrNull.IsWhiteSpace())
+            if (isLastChild
+                && textBeforeOrNull != null
+                && textBeforeOrNull.IsWhiteSpace())
+            {
                 textBeforeOrNull.Value = textBeforeOrNull.Value.Substring(0, textBeforeOrNull.Value.Length - oneIndentLevel.Length);
+            }
         }
 
         private static bool IsWhiteSpace(this XText textNode)
@@ -322,25 +337,31 @@ namespace NuGet.ProjectManagement
         private static string ComputeOneLevelOfIndentation(this XNode node)
         {
             var depth = node.Ancestors().Count();
-            XText textBeforeOrNull = node.PreviousNode as XText;
-            if (depth == 0 || textBeforeOrNull == null || !textBeforeOrNull.IsWhiteSpace())
+            var textBeforeOrNull = node.PreviousNode as XText;
+            if (depth == 0
+                || textBeforeOrNull == null
+                || !textBeforeOrNull.IsWhiteSpace())
+            {
                 return "  ";
+            }
 
-            string indentString = textBeforeOrNull.Value.Trim(Environment.NewLine.ToCharArray());
-            char lastChar = indentString.LastOrDefault();
-            char indentChar = (lastChar == '\t' ? '\t' : ' ');
-            int indentLevel = Math.Max(1, indentString.Length/depth);
+            var indentString = textBeforeOrNull.Value.Trim(Environment.NewLine.ToCharArray());
+            var lastChar = indentString.LastOrDefault();
+            var indentChar = (lastChar == '\t' ? '\t' : ' ');
+            var indentLevel = Math.Max(1, indentString.Length / depth);
             return new string(indentChar, indentLevel);
         }
 
         private static bool AttributeEquals(XAttribute source, XAttribute target)
         {
-            if (source == null && target == null)
+            if (source == null
+                && target == null)
             {
                 return true;
             }
 
-            if (source == null || target == null)
+            if (source == null
+                || target == null)
             {
                 return false;
             }

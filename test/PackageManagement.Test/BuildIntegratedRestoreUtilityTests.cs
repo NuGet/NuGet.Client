@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +20,7 @@ namespace NuGet.Test
         public async Task BuildIntegratedRestoreUtility_BasicRestoreTest()
         {
             // Arrange
-            string projectName = "testproj";
+            var projectName = "testproj";
 
             var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
             var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
@@ -26,10 +29,10 @@ namespace NuGet.Test
 
             CreateConfigJson(projectConfig.FullName);
 
-            List<string> sources = new List<string>()
-            {
-                "https://www.nuget.org/api/v2/"
-            };
+            var sources = new List<string>
+                {
+                    "https://www.nuget.org/api/v2/"
+                };
 
             var projectTargetFramework = NuGetFramework.Parse("netcore50");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -58,9 +61,9 @@ namespace NuGet.Test
         {
             get
             {
-                JObject json = new JObject();
+                var json = new JObject();
 
-                JObject frameworks = new JObject();
+                var frameworks = new JObject();
                 frameworks["netcore50"] = new JObject();
 
                 json["frameworks"] = frameworks;

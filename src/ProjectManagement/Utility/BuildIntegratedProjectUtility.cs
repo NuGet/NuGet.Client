@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.IO;
 using NuGet.Packaging.Core;
@@ -25,9 +28,9 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
         {
-            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            string nupkgName = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", identity.Id, identity.Version.ToNormalizedString());
+            var nupkgName = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", identity.Id, identity.Version.ToNormalizedString());
 
             return Path.Combine(GetGlobalPackagesFolder(), identity.Id, identity.Version.ToNormalizedString(), nupkgName);
         }
@@ -37,11 +40,11 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static string GetGlobalPackagesFolder()
         {
-            string path = Environment.GetEnvironmentVariable("NUGET_GLOBAL_PACKAGE_CACHE");
+            var path = Environment.GetEnvironmentVariable("NUGET_GLOBAL_PACKAGE_CACHE");
 
-            if (String.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
-                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
                 path = Path.Combine(userProfile, ".nuget\\packages\\");
             }

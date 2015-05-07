@@ -1,14 +1,15 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 
 namespace NuGet.ProjectManagement
 {
@@ -17,11 +18,11 @@ namespace NuGet.ProjectManagement
         internal static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework, IEnumerable<FrameworkSpecificGroup> itemGroups,
             bool altDirSeparator = false)
         {
-            FrameworkReducer reducer = new FrameworkReducer();
-            NuGetFramework mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => i.TargetFramework));
+            var reducer = new FrameworkReducer();
+            var mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => i.TargetFramework));
             if (mostCompatibleFramework != null)
             {
-                IEnumerable<FrameworkSpecificGroup> mostCompatibleGroups = itemGroups.Where(i => i.TargetFramework.Equals(mostCompatibleFramework));
+                var mostCompatibleGroups = itemGroups.Where(i => i.TargetFramework.Equals(mostCompatibleFramework));
                 var mostCompatibleGroup = mostCompatibleGroups.SingleOrDefault();
                 if (IsValid(mostCompatibleGroup))
                 {
@@ -38,7 +39,7 @@ namespace NuGet.ProjectManagement
         internal static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
         {
             return (frameworkSpecificGroup != null && frameworkSpecificGroup.Items != null &&
-                (frameworkSpecificGroup.Items.Any() || !frameworkSpecificGroup.TargetFramework.Equals(NuGetFramework.AnyFramework)));
+                    (frameworkSpecificGroup.Items.Any() || !frameworkSpecificGroup.TargetFramework.Equals(NuGetFramework.AnyFramework)));
         }
 
         internal static void TryAddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Func<Stream> content)
@@ -46,14 +47,15 @@ namespace NuGet.ProjectManagement
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
             {
                 // file exists in project, ask user if he wants to overwrite or ignore
-                string conflictMessage = String.Format(CultureInfo.CurrentCulture,
+                var conflictMessage = string.Format(CultureInfo.CurrentCulture,
                     Strings.FileConflictMessage, path, msBuildNuGetProjectSystem.ProjectName);
-                FileConflictAction fileConflictAction = msBuildNuGetProjectSystem.NuGetProjectContext.ResolveFileConflict(conflictMessage);
-                if (fileConflictAction == FileConflictAction.Overwrite || fileConflictAction == FileConflictAction.OverwriteAll)
+                var fileConflictAction = msBuildNuGetProjectSystem.NuGetProjectContext.ResolveFileConflict(conflictMessage);
+                if (fileConflictAction == FileConflictAction.Overwrite
+                    || fileConflictAction == FileConflictAction.OverwriteAll)
                 {
                     // overwrite
                     msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Info, Strings.Info_OverwritingExistingFile, path);
-                    using (Stream stream = content())
+                    using (var stream = content())
                     {
                         msBuildNuGetProjectSystem.AddFile(path, stream);
                     }
@@ -71,14 +73,14 @@ namespace NuGet.ProjectManagement
         }
 
         internal static void AddFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
-                                        ZipArchive zipArchive,
-                                        FrameworkSpecificGroup frameworkSpecificGroup,
-                                        IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
+            ZipArchive zipArchive,
+            FrameworkSpecificGroup frameworkSpecificGroup,
+            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
 
             // Content files are maintained with AltDirectorySeparatorChar
-            List<string> packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => PathUtility.ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
+            var packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => PathUtility.ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
 
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
@@ -88,7 +90,7 @@ namespace NuGet.ProjectManagement
                 {
                     var paths = zipArchiveEntryList.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
                         GetEffectivePathForContentFile(packageTargetFramework, file.FullName)));
-                    paths = paths.Where(p => !String.IsNullOrEmpty(p));
+                    paths = paths.Where(p => !string.IsNullOrEmpty(p));
                     msBuildNuGetProjectSystem.BeginProcessing(paths);
                 }
                 catch (Exception)
@@ -96,7 +98,7 @@ namespace NuGet.ProjectManagement
                     // Ignore all exceptions for now
                 }
 
-                foreach (ZipArchiveEntry zipArchiveEntry in zipArchiveEntryList)
+                foreach (var zipArchiveEntry in zipArchiveEntryList)
                 {
                     if (zipArchiveEntry == null)
                     {
@@ -112,7 +114,7 @@ namespace NuGet.ProjectManagement
 
                     // Resolve the target path
                     IPackageFileTransformer installTransformer;
-                    string path = ResolveTargetPath(msBuildNuGetProjectSystem,
+                    var path = ResolveTargetPath(msBuildNuGetProjectSystem,
                         fileTransformers,
                         fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
 
@@ -126,7 +128,7 @@ namespace NuGet.ProjectManagement
                         {
                             // Ignore uninstall transform file during installation
                             string truncatedPath;
-                            IPackageFileTransformer uninstallTransformer =
+                            var uninstallTransformer =
                                 FindFileTransformer(fileTransformers, fte => fte.UninstallExtension, effectivePathForContentFile, out truncatedPath);
                             if (uninstallTransformer != null)
                             {
@@ -144,10 +146,10 @@ namespace NuGet.ProjectManagement
         }
 
         internal static void DeleteFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
-                                            ZipArchive zipArchive,
-                                            IEnumerable<string> otherPackagesPath,
-                                            FrameworkSpecificGroup frameworkSpecificGroup,
-                                            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
+            ZipArchive zipArchive,
+            IEnumerable<string> otherPackagesPath,
+            FrameworkSpecificGroup frameworkSpecificGroup,
+            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
             IPackageFileTransformer transformer;
@@ -160,9 +162,9 @@ namespace NuGet.ProjectManagement
 
             // Get all directories that this package may have added
             var directories = from grouping in directoryLookup
-                              from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
-                              orderby directory.Length descending
-                              select directory;
+                from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
+                orderby directory.Length descending
+                select directory;
 
             // Remove files from every directory
             foreach (var directory in directories)
@@ -184,11 +186,11 @@ namespace NuGet.ProjectManagement
                         }
 
                         // Resolve the path
-                        string path = ResolveTargetPath(msBuildNuGetProjectSystem,
-                                                        fileTransformers,
-                                                        fte => fte.UninstallExtension,
-                                                        GetEffectivePathForContentFile(packageTargetFramework, file),
-                                                        out transformer);
+                        var path = ResolveTargetPath(msBuildNuGetProjectSystem,
+                            fileTransformers,
+                            fte => fte.UninstallExtension,
+                            GetEffectivePathForContentFile(packageTargetFramework, file),
+                            out transformer);
 
                         if (msBuildNuGetProjectSystem.IsSupportedFile(path))
                         {
@@ -196,23 +198,24 @@ namespace NuGet.ProjectManagement
                             {
                                 // TODO: use the framework from packages.config instead of the current framework
                                 // which may have changed during re-targeting
-                                NuGetFramework projectFramework = msBuildNuGetProjectSystem.TargetFramework;
+                                var projectFramework = msBuildNuGetProjectSystem.TargetFramework;
 
-                                List<InternalZipFileInfo> matchingFiles = new List<InternalZipFileInfo>();
-                                foreach(var otherPackagePath in otherPackagesPath)
+                                var matchingFiles = new List<InternalZipFileInfo>();
+                                foreach (var otherPackagePath in otherPackagesPath)
                                 {
-                                    using(var otherPackageStream = File.OpenRead(otherPackagePath))
+                                    using (var otherPackageStream = File.OpenRead(otherPackagePath))
                                     {
                                         var otherPackageZipArchive = new ZipArchive(otherPackageStream);
                                         var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
 
                                         // use the project framework to find the group that would have been installed
                                         var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(projectFramework, otherPackageZipReader.GetContentItems(), altDirSeparator: true);
-                                        if(mostCompatibleContentFilesGroup != null && IsValid(mostCompatibleContentFilesGroup))
+                                        if (mostCompatibleContentFilesGroup != null
+                                            && IsValid(mostCompatibleContentFilesGroup))
                                         {
-                                            foreach(var otherPackageItem in mostCompatibleContentFilesGroup.Items)
+                                            foreach (var otherPackageItem in mostCompatibleContentFilesGroup.Items)
                                             {
-                                                if(GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
+                                                if (GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
                                                     .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     matchingFiles.Add(new InternalZipFileInfo(otherPackagePath, otherPackageItem));
@@ -246,9 +249,9 @@ namespace NuGet.ProjectManagement
                         }
                     }
 
-
                     // If the directory is empty then delete it
-                    if (!GetFilesSafe(msBuildNuGetProjectSystem, directory).Any() &&
+                    if (!GetFilesSafe(msBuildNuGetProjectSystem, directory).Any()
+                        &&
                         !GetDirectoriesSafe(msBuildNuGetProjectSystem, directory).Any())
                     {
                         DeleteDirectorySafe(msBuildNuGetProjectSystem, directory, recursive: false);
@@ -256,7 +259,6 @@ namespace NuGet.ProjectManagement
                 }
                 finally
                 {
-
                 }
             }
         }
@@ -336,7 +338,8 @@ namespace NuGet.ProjectManagement
             }
 
             // Only delete this folder if it is empty and we didn't specify that we want to recurse
-            if (!recursive && (GetFiles(msBuildNuGetProjectSystem, path, "*.*", recursive).Any() || GetDirectories(msBuildNuGetProjectSystem, path).Any()))
+            if (!recursive
+                && (GetFiles(msBuildNuGetProjectSystem, path, "*.*", recursive).Any() || GetDirectories(msBuildNuGetProjectSystem, path).Any()))
             {
                 msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_DirectoryNotEmpty, path);
                 return;
@@ -345,7 +348,7 @@ namespace NuGet.ProjectManagement
 
             // Workaround for update-package TFS issue. If we're bound to TFS, do not try and delete directories.
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(msBuildNuGetProjectSystem.NuGetProjectContext);
-            if(sourceControlManager != null)
+            if (sourceControlManager != null)
             {
                 // Source control bound, do not delete
                 return;
@@ -357,9 +360,9 @@ namespace NuGet.ProjectManagement
 
                 // The directory is not guaranteed to be gone since there could be
                 // other open handles. Wait, up to half a second, until the directory is gone.
-                for (int i = 0; Directory.Exists(fullPath) && i < 5; ++i)
+                for (var i = 0; Directory.Exists(fullPath) && i < 5; ++i)
                 {
-                    System.Threading.Thread.Sleep(100);
+                    Thread.Sleep(100);
                 }
                 msBuildNuGetProjectSystem.RemoveFile(path);
 
@@ -414,11 +417,10 @@ namespace NuGet.ProjectManagement
             Func<FileTransformExtensions, string> extensionSelector,
             string effectivePath)
         {
-
             string truncatedPath;
 
             // Remove the transformer extension (e.g. .pp, .transform)
-            IPackageFileTransformer transformer = FindFileTransformer(
+            var transformer = FindFileTransformer(
                 fileTransformers, extensionSelector, effectivePath, out truncatedPath);
 
             if (transformer != null)
@@ -430,10 +432,10 @@ namespace NuGet.ProjectManagement
         }
 
         private static string ResolveTargetPath(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
-                                                IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers,
-                                                Func<FileTransformExtensions, string> extensionSelector,
-                                                string effectivePath,
-                                                out IPackageFileTransformer transformer)
+            IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers,
+            Func<FileTransformExtensions, string> extensionSelector,
+            string effectivePath,
+            out IPackageFileTransformer transformer)
         {
             string truncatedPath;
 
@@ -455,14 +457,14 @@ namespace NuGet.ProjectManagement
         {
             foreach (var transformExtensions in fileTransformers.Keys)
             {
-                string extension = extensionSelector(transformExtensions);
+                var extension = extensionSelector(transformExtensions);
                 if (effectivePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     truncatedPath = effectivePath.Substring(0, effectivePath.Length - extension.Length);
 
                     // Bug 1686: Don't allow transforming packages.config.transform,
                     // but we still want to copy packages.config.transform as-is into the project.
-                    string fileName = Path.GetFileName(truncatedPath);
+                    var fileName = Path.GetFileName(truncatedPath);
                     if (!Constants.PackageReferenceFile.Equals(fileName, StringComparison.OrdinalIgnoreCase))
                     {
                         return fileTransformers[transformExtensions];
@@ -482,10 +484,10 @@ namespace NuGet.ProjectManagement
             if (effectivePathForContentFile.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 effectivePathForContentFile = effectivePathForContentFile.Substring((Constants.ContentDirectory + Path.DirectorySeparatorChar).Length);
-                if(!nuGetFramework.Equals(NuGetFramework.AnyFramework))
+                if (!nuGetFramework.Equals(NuGetFramework.AnyFramework))
                 {
                     // Parsing out the framework name out of the effective path
-                    int frameworkFolderEndIndex = effectivePathForContentFile.IndexOf(Path.DirectorySeparatorChar);
+                    var frameworkFolderEndIndex = effectivePathForContentFile.IndexOf(Path.DirectorySeparatorChar);
                     if (frameworkFolderEndIndex != -1)
                     {
                         if (effectivePathForContentFile.Length > frameworkFolderEndIndex + 1)
@@ -504,7 +506,8 @@ namespace NuGet.ProjectManagement
 
         internal static IEnumerable<string> GetValidPackageItems(IEnumerable<string> items)
         {
-            if(items == null || !items.Any())
+            if (items == null
+                || !items.Any())
             {
                 return Enumerable.Empty<string>();
             }

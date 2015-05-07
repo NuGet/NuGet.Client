@@ -1,9 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
@@ -12,14 +12,13 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// If the value is an empty or null IEnumerable, returns Visibility.Collapsed.
     /// Otherwise, returns Visibility.Visible.
-    /// 
     /// When Inverted is true, the returned values are reversed.
     /// </summary>
     public class EnumerableToVisibilityConverter : IValueConverter
     {
         public bool Inverted { get; set; }
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (targetType == typeof(Visibility))
             {
@@ -37,7 +36,7 @@ namespace NuGet.PackageManagement.UI
             return value;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

@@ -1,12 +1,15 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.ProjectManagement
@@ -17,7 +20,8 @@ namespace NuGet.ProjectManagement
     public class FolderNuGetProject : NuGetProject
     {
         public string Root { get; set; }
-        private PackagePathResolver PackagePathResolver { get; set; }
+        private PackagePathResolver PackagePathResolver { get; }
+
         /// <summary>
         /// PackageSaveMode may be set externally for change in behavior
         /// </summary>
@@ -25,7 +29,7 @@ namespace NuGet.ProjectManagement
 
         public FolderNuGetProject(string root)
         {
-            if(root == null)
+            if (root == null)
             {
                 throw new ArgumentNullException("root");
             }
@@ -41,7 +45,7 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(Enumerable.Empty<PackageReference>());
         }
 
-        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
+        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)
@@ -104,7 +108,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public bool PackageExists(PackageIdentity packageIdentity)
         {
-            return !String.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
+            return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
         }
 
         public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
@@ -119,13 +123,14 @@ namespace NuGet.ProjectManagement
 
         public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
-            return PackagePathResolver.GetInstalledPackageFilePath(packageIdentity) ?? String.Empty;
+            return PackagePathResolver.GetInstalledPackageFilePath(packageIdentity) ?? string.Empty;
         }
 
         public string GetInstalledPath(PackageIdentity packageIdentity)
         {
-            return PackagePathResolver.GetInstalledPath(packageIdentity) ?? String.Empty;
-;        }
+            return PackagePathResolver.GetInstalledPath(packageIdentity) ?? string.Empty;
+            ;
+        }
 
         public async Task<bool> DeletePackage(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
@@ -134,13 +139,13 @@ namespace NuGet.ProjectManagement
             var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
             if (File.Exists(packageFilePath))
             {
-                string packageDirectoryPath = Path.GetDirectoryName(packageFilePath);
+                var packageDirectoryPath = Path.GetDirectoryName(packageFilePath);
                 using (var packageStream = File.OpenRead(packageFilePath))
                 {
                     var installedSatelliteFilesPair = await PackageHelper.GetInstalledSatelliteFiles(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode, token);
                     var runtimePackageDirectory = installedSatelliteFilesPair.Item1;
                     var installedSatelliteFiles = installedSatelliteFilesPair.Item2;
-                    if (!String.IsNullOrEmpty(runtimePackageDirectory))
+                    if (!string.IsNullOrEmpty(runtimePackageDirectory))
                     {
                         try
                         {
@@ -177,8 +182,9 @@ namespace NuGet.ProjectManagement
 
                 // If this is the last package delete the package directory
                 // If this is the last package delete the package directory
-                if (!FileSystemUtility.GetFiles(Root, String.Empty, "*.*").Any() &&
-                    !FileSystemUtility.GetDirectories(Root, String.Empty).Any())
+                if (!FileSystemUtility.GetFiles(Root, string.Empty, "*.*").Any()
+                    &&
+                    !FileSystemUtility.GetDirectories(Root, string.Empty).Any())
                 {
                     FileSystemUtility.DeleteDirectorySafe(Root, recursive: false, nuGetProjectContext: nuGetProjectContext);
                 }

@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Windows;
 using System.Windows.Documents;
 
 namespace NuGet.PackageManagement.UI
@@ -15,8 +18,9 @@ namespace NuGet.PackageManagement.UI
 
         private void OnViewLicenseTermsRequestNavigate(object sender, RoutedEventArgs e)
         {
-            Hyperlink hyperlink = (Hyperlink)sender;
-            if (hyperlink != null && hyperlink.NavigateUri != null)
+            var hyperlink = (Hyperlink)sender;
+            if (hyperlink != null
+                && hyperlink.NavigateUri != null)
             {
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
@@ -25,12 +29,12 @@ namespace NuGet.PackageManagement.UI
 
         private void OnDeclineButtonClick(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
+            DialogResult = false;
         }
 
         private void OnAcceptButtonClick(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = true;
+            DialogResult = true;
         }
     }
 }

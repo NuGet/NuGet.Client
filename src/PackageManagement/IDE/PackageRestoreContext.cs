@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using NuGet.Protocol.Core.Types;
@@ -16,8 +19,10 @@ namespace NuGet.PackageManagement
         public EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent { get; }
         public IEnumerable<SourceRepository> SourceRepositories { get; }
         public int MaxNumberOfParallelTasks { get; }
+
         /// <summary>
-        /// WasRestored is set to true in this class, if one or more packages were restored or that satellite files were copied
+        /// WasRestored is set to true in this class, if one or more packages were restored or that satellite files
+        /// were copied
         /// Note that this property is not read-only unlike other properties
         /// </summary>
         public bool WasRestored { get; private set; }
@@ -58,14 +63,13 @@ namespace NuGet.PackageManagement
             MissingPackagesInfo missingPackagesInfo,
             CancellationToken token)
             : this(nuGetPackageManager,
-                  missingPackagesInfo,
-                  token,
-                  packageRestoredEvent: null,
-                  packageRestoreFailedEvent: null,
-                  sourceRepositories: null,
-                  maxNumberOfParallelTasks: DefaultMaxNumberOfParellelTasks)
+                missingPackagesInfo,
+                token,
+                packageRestoredEvent: null,
+                packageRestoreFailedEvent: null,
+                sourceRepositories: null,
+                maxNumberOfParallelTasks: DefaultMaxNumberOfParellelTasks)
         {
-
         }
 
         /// <summary>

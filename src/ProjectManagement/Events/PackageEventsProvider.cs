@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.Composition;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.ComponentModel.Composition;
 
 namespace NuGet.ProjectManagement
 {
@@ -9,11 +12,6 @@ namespace NuGet.ProjectManagement
     public class PackageEventsProvider : IPackageEventsProvider
     {
         private static PackageEvents _instance;
-
-        public PackageEventsProvider()
-        {
-
-        }
 
         public PackageEvents GetPackageEvents()
         {

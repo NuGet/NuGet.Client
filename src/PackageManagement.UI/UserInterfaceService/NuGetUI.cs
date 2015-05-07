@@ -1,39 +1,37 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Threading;
-using System.Windows;
-using NuGet.ProjectManagement;
-using NuGet.Packaging.Core;
 using System.Diagnostics;
+using System.Linq;
+using System.Windows;
+using System.Windows.Threading;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
     public class NuGetUI : INuGetUI
     {
         private readonly INuGetUIContext _context;
-        private NuGetUIProjectContext _uiProjectContext;
 
         public NuGetUI(
-            INuGetUIContext context,             
+            INuGetUIContext context,
             NuGetUIProjectContext projectContext)
         {
             _context = context;
-            _uiProjectContext = projectContext;
+            ProgressWindow = projectContext;
         }
 
         public bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages)
         {
-            bool result = false;
+            var result = false;
 
-            UIDispatcher.Invoke(() =>
-                    {
-                        result = PromptForLicenseAcceptanceImpl(packages);
-                    });
+            UIDispatcher.Invoke(() => { result = PromptForLicenseAcceptanceImpl(packages); });
 
             return result;
         }
@@ -41,16 +39,16 @@ namespace NuGet.PackageManagement.UI
         private bool PromptForLicenseAcceptanceImpl(
             IEnumerable<PackageLicenseInfo> packages)
         {
-            var licenseWindow = new LicenseAcceptanceWindow()
-            {
-                DataContext = packages
-            };
+            var licenseWindow = new LicenseAcceptanceWindow
+                {
+                    DataContext = packages
+                };
 
             using (NuGetEventTrigger.Instance.TriggerEventBeginEnd(
                 NuGetEvent.LicenseWindowBegin,
                 NuGetEvent.LicenseWindowEnd))
             {
-                bool? dialogResult = licenseWindow.ShowModal();
+                var dialogResult = licenseWindow.ShowModal();
                 return dialogResult ?? false;
             }
         }
@@ -62,12 +60,10 @@ namespace NuGet.PackageManagement.UI
 
         public void LaunchNuGetOptionsDialog()
         {
-            if (_context != null && _context.OptionsPageActivator != null)
+            if (_context != null
+                && _context.OptionsPageActivator != null)
             {
-                UIDispatcher.Invoke(() =>
-                    {
-                        _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null);
-                    });
+                UIDispatcher.Invoke(() => { _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null); });
             }
             else
             {
@@ -77,21 +73,22 @@ namespace NuGet.PackageManagement.UI
 
         public bool PromptForPreviewAcceptance(IEnumerable<PreviewResult> actions)
         {
-            bool result = false;
+            var result = false;
 
             UIDispatcher.Invoke(() =>
-            {
-                var w = new PreviewWindow();
-                w.DataContext = new PreviewWindowModel(actions);
-
-                if (StandaloneSwitch.IsRunningStandalone && DetailControl != null)
                 {
-                    Window win = Window.GetWindow(DetailControl);
-                    w.Owner = win;
-                }
+                    var w = new PreviewWindow();
+                    w.DataContext = new PreviewWindowModel(actions);
 
-                result = w.ShowModal() == true;
-            });
+                    if (StandaloneSwitch.IsRunningStandalone
+                        && DetailControl != null)
+                    {
+                        var win = Window.GetWindow(DetailControl);
+                        w.Owner = win;
+                    }
+
+                    result = w.ShowModal() == true;
+                });
 
             return result;
         }
@@ -99,24 +96,18 @@ namespace NuGet.PackageManagement.UI
         // TODO: rename it to something like Start
         public void ShowProgressDialog(DependencyObject ownerWindow)
         {
-            _uiProjectContext.Start();
-            _uiProjectContext.FileConflictAction = FileConflictAction;
+            ProgressWindow.Start();
+            ProgressWindow.FileConflictAction = FileConflictAction;
         }
 
         // TODO: rename it to something like End
         public void CloseProgressDialog()
         {
-            _uiProjectContext.End();
+            ProgressWindow.End();
         }
 
         // TODO: rename it
-        public NuGetUIProjectContext ProgressWindow
-        {
-            get
-            {
-                return _uiProjectContext;
-            }
-        }
+        public NuGetUIProjectContext ProgressWindow { get; }
 
         public IEnumerable<NuGetProject> Projects
         {
@@ -126,10 +117,10 @@ namespace NuGet.PackageManagement.UI
                 if (DetailControl != null)
                 {
                     UIDispatcher.Invoke(() =>
-                    {
-                        var model = (DetailControlModel)DetailControl.DataContext;
-                        projects = model.SelectedProjects;
-                    });
+                        {
+                            var model = (DetailControlModel)DetailControl.DataContext;
+                            projects = model.SelectedProjects;
+                        });
                 }
 
                 return projects;
@@ -140,15 +131,15 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                bool result = true;
+                var result = true;
 
                 if (DetailControl != null)
                 {
                     UIDispatcher.Invoke(() =>
-                    {
-                        var model = (DetailControlModel)DetailControl.DataContext;
-                        result = model.Options.ShowPreviewWindow;
-                    });
+                        {
+                            var model = (DetailControlModel)DetailControl.DataContext;
+                            result = model.Options.ShowPreviewWindow;
+                        });
                 }
 
                 return result;
@@ -159,34 +150,34 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                FileConflictAction result = FileConflictAction.PromptUser;
+                var result = FileConflictAction.PromptUser;
 
                 if (DetailControl != null)
                 {
                     UIDispatcher.Invoke(() =>
-                    {
-                        var model = (DetailControlModel)DetailControl.DataContext;
-                        result = model.Options.SelectedFileConflictAction.Action;
-                    });
+                        {
+                            var model = (DetailControlModel)DetailControl.DataContext;
+                            result = model.Options.SelectedFileConflictAction.Action;
+                        });
                 }
 
                 return result;
             }
         }
 
-        public Resolver.DependencyBehavior DependencyBehavior
+        public DependencyBehavior DependencyBehavior
         {
             get
             {
-                var result = Resolver.DependencyBehavior.Lowest;
+                var result = DependencyBehavior.Lowest;
 
                 if (DetailControl != null)
                 {
                     UIDispatcher.Invoke(() =>
-                    {
-                        var model = (DetailControlModel)DetailControl.DataContext;
-                        result = model.Options.SelectedDependencyBehavior.Behavior;
-                    });
+                        {
+                            var model = (DetailControlModel)DetailControl.DataContext;
+                            result = model.Options.SelectedDependencyBehavior.Behavior;
+                        });
                 }
 
                 return result;
@@ -197,14 +188,14 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                bool result = false;
+                var result = false;
                 if (DetailControl != null)
                 {
                     UIDispatcher.Invoke(() =>
-                    {
-                        var model = (DetailControlModel)DetailControl.DataContext;
-                        result = model.Options.RemoveDependencies;
-                    });
+                        {
+                            var model = (DetailControlModel)DetailControl.DataContext;
+                            result = model.Options.RemoveDependencies;
+                        });
                 }
                 return result;
             }
@@ -214,14 +205,14 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                bool result = false;
+                var result = false;
                 if (DetailControl != null)
                 {
                     UIDispatcher.Invoke(() =>
-                    {
-                        var model = (DetailControlModel)DetailControl.DataContext;
-                        result = model.Options.ForceRemove;
-                    });
+                        {
+                            var model = (DetailControlModel)DetailControl.DataContext;
+                            result = model.Options.ForceRemove;
+                        });
                 }
                 return result;
             }
@@ -235,10 +226,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (DetailControl != null)
                 {
-                    UIDispatcher.Invoke(() =>
-                    {
-                        result = DetailControl.GetUserAction();
-                    });
+                    UIDispatcher.Invoke(() => { result = DetailControl.GetUserAction(); });
                 }
 
                 return result;
@@ -247,28 +235,19 @@ namespace NuGet.PackageManagement.UI
 
         public PackageIdentity SelectedPackage
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
         }
 
         public void RefreshPackageStatus()
         {
             if (PackageManagerControl != null)
             {
-                UIDispatcher.Invoke(() =>
-                {
-                    PackageManagerControl.UpdatePackageStatus();
-                });
+                UIDispatcher.Invoke(() => { PackageManagerControl.UpdatePackageStatus(); });
             }
 
             if (DetailControl != null)
             {
-                UIDispatcher.Invoke(() =>
-                {
-                    DetailControl.Refresh();
-                });
+                UIDispatcher.Invoke(() => { DetailControl.Refresh(); });
             }
         }
 
@@ -280,10 +259,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (PackageManagerControl != null)
                 {
-                    UIDispatcher.Invoke(() =>
-                    {
-                        source = PackageManagerControl.ActiveSource;
-                    });
+                    UIDispatcher.Invoke(() => { source = PackageManagerControl.ActiveSource; });
                 }
 
                 return source;
@@ -315,22 +291,26 @@ namespace NuGet.PackageManagement.UI
 
         public void ShowError(Exception ex)
         {
-            if (ex is NuGet.Resolver.NuGetResolverConstraintException ||
-                ex is PackageAlreadyInstalledException ||
-                ex is NuGetVersionNotSatisfiedException ||
-                ex is NuGet.Frameworks.FrameworkException ||
-                ex is NuGet.Packaging.Core.PackagingException)
+            if (ex is NuGetResolverConstraintException
+                ||
+                ex is PackageAlreadyInstalledException
+                ||
+                ex is NuGetVersionNotSatisfiedException
+                ||
+                ex is FrameworkException
+                ||
+                ex is PackagingException)
             {
                 // for exceptions that are known to be normal error cases, just
                 // display the message.
-                _uiProjectContext.Log(MessageLevel.Info, ex.Message);
+                ProgressWindow.Log(MessageLevel.Info, ex.Message);
             }
             else
             {
-                _uiProjectContext.Log(MessageLevel.Error, ex.ToString());
+                ProgressWindow.Log(MessageLevel.Error, ex.ToString());
             }
 
-            _uiProjectContext.ReportError(ex.Message);
+            ProgressWindow.ReportError(ex.Message);
         }
     }
 
@@ -338,13 +318,16 @@ namespace NuGet.PackageManagement.UI
     {
         public static void LaunchExternalLink(Uri url)
         {
-            if (url == null || !url.IsAbsoluteUri)
+            if (url == null
+                || !url.IsAbsoluteUri)
             {
                 return;
             }
 
             // mitigate security risk
-            if (url.IsFile || url.IsLoopback || url.IsUnc)
+            if (url.IsFile
+                || url.IsLoopback
+                || url.IsUnc)
             {
                 return;
             }
@@ -353,7 +336,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // REVIEW: Will this allow a package author to execute arbitrary program on user's machine?
                 // We have limited the url to be HTTP only, but is it sufficient?
-                System.Diagnostics.Process.Start(url.AbsoluteUri);
+                Process.Start(url.AbsoluteUri);
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.LinkOpened);
             }
         }

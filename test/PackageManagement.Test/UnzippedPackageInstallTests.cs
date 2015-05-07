@@ -1,17 +1,17 @@
-﻿using NuGet.Configuration;
-using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Resolver;
-using NuGet.Versioning;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
@@ -19,13 +19,14 @@ namespace NuGet.Test
 {
     public class UnzippedPackageInstallTests
     {
-        private List<PackageIdentity> NoDependencyLibPackages = new List<PackageIdentity>()
-        {
-            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("2.0.30506")),
-            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.0.0")),
-            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.2.0-rc")),
-            new PackageIdentity("Antlr", new NuGetVersion("3.5.0.2")),
-        };
+        private readonly List<PackageIdentity> NoDependencyLibPackages = new List<PackageIdentity>
+            {
+                new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("2.0.30506")),
+                new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.0.0")),
+                new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.2.0-rc")),
+                new PackageIdentity("Antlr", new NuGetVersion("3.5.0.2"))
+            };
+
         [Fact]
         public async Task UnzippedPackageInstall_Basic()
         {
@@ -69,7 +70,5 @@ namespace NuGet.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
         }
-
-
     }
 }

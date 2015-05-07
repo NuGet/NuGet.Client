@@ -1,5 +1,7 @@
-﻿using System;
-using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Xunit;
 
 namespace NuGet.Test
@@ -13,9 +15,9 @@ namespace NuGet.Test
 
         public static void Throws<TException>(Assert.ThrowsDelegate act, Action<TException> condition) where TException : Exception
         {
-            Exception ex = Record.Exception(act);
+            var ex = Record.Exception(act);
             Assert.NotNull(ex);
-            TException tex = Assert.IsAssignableFrom<TException>(ex);
+            var tex = Assert.IsAssignableFrom<TException>(ex);
             condition(tex);
         }
 
@@ -43,16 +45,13 @@ namespace NuGet.Test
         {
             if (minimum == null)
             {
-                return String.Format(equalAllowed ? "Argument_Must_Be_LessThanOrEqualTo" : "Argument_Must_Be_LessThan", maximum);
+                return string.Format(equalAllowed ? "Argument_Must_Be_LessThanOrEqualTo" : "Argument_Must_Be_LessThan", maximum);
             }
-            else if (maximum == null)
+            if (maximum == null)
             {
-                return String.Format(equalAllowed ? "Argument_Must_Be_GreaterThanOrEqualTo" : "Argument_Must_Be_GreaterThan", minimum);
+                return string.Format(equalAllowed ? "Argument_Must_Be_GreaterThanOrEqualTo" : "Argument_Must_Be_GreaterThan", minimum);
             }
-            else
-            {
-                return String.Format("Argument_Must_Be_Between", minimum, maximum);
-            }
+            return string.Format("Argument_Must_Be_Between", minimum, maximum);
         }
 
         public static void ThrowsArgumentException(Assert.ThrowsDelegate act, string message)
@@ -73,13 +72,13 @@ namespace NuGet.Test
         public static void ThrowsArgumentException<TArgException>(Assert.ThrowsDelegate act, string paramName, string message) where TArgException : ArgumentException
         {
             Throws<TArgException>(act, ex =>
-            {
-                Assert.Equal(paramName, ex.ParamName);
-                var lines = ex.Message.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                Assert.Equal(2, lines.Length);
-                Assert.Equal(message, lines[0]);
-                Assert.True(lines[1].EndsWith(paramName));
-            });
+                {
+                    Assert.Equal(paramName, ex.ParamName);
+                    var lines = ex.Message.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                    Assert.Equal(2, lines.Length);
+                    Assert.Equal(message, lines[0]);
+                    Assert.True(lines[1].EndsWith(paramName));
+                });
         }
     }
 }

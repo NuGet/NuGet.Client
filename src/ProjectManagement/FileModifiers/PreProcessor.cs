@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -36,15 +39,15 @@ namespace NuGet.ProjectManagement
         public static string Process(Stream stream, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, bool throwIfNotFound = true)
         {
             string text;
-            using(StreamReader streamReader = new StreamReader(stream))
+            using (var streamReader = new StreamReader(stream))
             {
                 text = streamReader.ReadToEnd();
             }
             var tokenizer = new Tokenizer(text);
-            StringBuilder result = new StringBuilder();
-            for (; ; )
+            var result = new StringBuilder();
+            for (;;)
             {
-                Token token = tokenizer.Read();
+                var token = tokenizer.Read();
                 if (token == null)
                 {
                     break;
@@ -69,7 +72,7 @@ namespace NuGet.ProjectManagement
             var value = msBuildNuGetProjectSystem.GetPropertyValue(propertyName);
             if (value == null && throwIfNotFound)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.TokenHasNoValue, propertyName));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.TokenHasNoValue, propertyName));
             }
             return value;
         }

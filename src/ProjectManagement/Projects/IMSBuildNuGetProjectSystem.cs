@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -11,25 +14,29 @@ namespace NuGet.ProjectManagement
         NuGetFramework TargetFramework { get; }
         string ProjectName { get; }
         string ProjectUniqueName { get; }
-        string ProjectFullPath { get;}
+        string ProjectFullPath { get; }
         INuGetProjectContext NuGetProjectContext { get; }
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);
         void AddExistingFile(string path);
         void RemoveFile(string path);
         bool FileExistsInProject(string path);
+
         /// <summary>
         /// Method called when adding an assembly reference to the project.
         /// </summary>
         /// <param name="referencePath">Physical path to the assembly file relative to the project root.</param>
         void AddReference(string referencePath);
+
         void RemoveReference(string name);
         bool ReferenceExists(string name);
+
         /// <summary>
         /// Adds an assembly reference to a framework assembly (one in the GAC).
         /// </summary>
         /// <param name="name">name of the assembly</param>
         void AddFrameworkReference(string name);
+
         void AddImport(string targetFullPath, ImportLocation location);
         void RemoveImport(string targetFullPath);
         dynamic GetPropertyValue(string propertyName);
@@ -46,7 +53,7 @@ namespace NuGet.ProjectManagement
         IEnumerable<string> GetFiles(string path, string filter, bool recursive);
 
         /// <summary>
-        /// Returns the directories under the directory <paramref name="path"/>.
+        /// Returns the directories under the directory <paramref name="path" />.
         /// </summary>
         /// <param name="path">The directory under which to search for subdirectories.</param>
         /// <returns>The list of subdirectories in relative path.</returns>

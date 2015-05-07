@@ -1,13 +1,17 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -30,14 +34,10 @@ namespace NuGet.PackageManagement.UI
         public DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
         {
             _nugetProjects = nugetProjects;
-            _options = new UI.Options();
+            _options = new Options();
         }
 
-        abstract public IEnumerable<NuGetProject> SelectedProjects
-        {
-            get;
-        }
-
+        public abstract IEnumerable<NuGetProject> SelectedProjects { get; }
 
         /// <summary>
         /// Sets the package to be displayed in the detail control.
@@ -65,15 +65,15 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
-                    foreach (var project in _nugetProjects)
                     {
-                        var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                        installedPackages.AddRange(projectInstalledPackages);
-                    }
-                    return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
-                });
+                        var installedPackages = new List<PackageReference>();
+                        foreach (var project in _nugetProjects)
+                        {
+                            var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                            installedPackages.AddRange(projectInstalledPackages);
+                        }
+                        return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
+                    });
             }
         }
 
@@ -115,40 +115,40 @@ namespace NuGet.PackageManagement.UI
         // Create the _actions list
         protected void CreateActions()
         {
-            _actions = new List<string>();
+            Actions = new List<string>();
 
             if (CanInstall())
             {
-                _actions.Add(Resources.Action_Install);
+                Actions.Add(Resources.Action_Install);
             }
 
             if (CanUpgrade())
             {
-                _actions.Add(Resources.Action_Upgrade);
+                Actions.Add(Resources.Action_Upgrade);
             }
 
             if (CanUninstall())
             {
-                _actions.Add(Resources.Action_Uninstall);
+                Actions.Add(Resources.Action_Uninstall);
             }
 
             if (CanDowngrade())
             {
-                _actions.Add(Resources.Action_Downgrade);
+                Actions.Add(Resources.Action_Downgrade);
             }
 
-            bool canUpdate = CanUpdate();
+            var canUpdate = CanUpdate();
             if (canUpdate)
             {
-                _actions.Add(Resources.Action_Update);
+                Actions.Add(Resources.Action_Update);
             }
 
             if (CanConsolidate())
             {
-                _actions.Add(Resources.Action_Consolidate);
+                Actions.Add(Resources.Action_Consolidate);
             }
 
-            if (_actions.Count > 0)
+            if (Actions.Count > 0)
             {
                 if (_filter == Filter.UpdatesAvailable && canUpdate)
                 {
@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    SelectedAction = _actions[0];
+                    SelectedAction = Actions[0];
                 }
             }
             else
@@ -171,47 +171,30 @@ namespace NuGet.PackageManagement.UI
 
         protected void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));
             }
         }
 
-        private List<string> _actions;
-
-        public List<string> Actions
-        {
-            get
-            {
-                return _actions;
-            }
-        }
+        public List<string> Actions { get; private set; }
 
         public string Id
         {
-            get
-            {
-                return _searchResultPackage.Id;
-            }
+            get { return _searchResultPackage.Id; }
         }
 
         public Uri IconUrl
         {
-            get
-            {
-                return _searchResultPackage.IconUrl;
-            }
+            get { return _searchResultPackage.IconUrl; }
         }
 
         private DetailedPackageMetadata _packageMetadata;
 
         public DetailedPackageMetadata PackageMetadata
         {
-            get
-            {
-                return _packageMetadata;
-            }
+            get { return _packageMetadata; }
             set
             {
                 if (_packageMetadata != value)
@@ -226,10 +209,7 @@ namespace NuGet.PackageManagement.UI
 
         public string SelectedAction
         {
-            get
-            {
-                return _selectedAction;
-            }
+            get { return _selectedAction; }
             set
             {
                 _selectedAction = value;
@@ -242,17 +222,14 @@ namespace NuGet.PackageManagement.UI
         protected abstract void CreateVersions();
 
         // indicates whether the selected action is install or uninstall.
-        bool _selectedActionIsInstall;
+        private bool _selectedActionIsInstall;
 
         /// <summary>
         /// This is used by the UI to decide whether the install options or uninstall options are displayed.
         /// </summary>
         public bool SelectedActionIsInstall
         {
-            get
-            {
-                return _selectedActionIsInstall;
-            }
+            get { return _selectedActionIsInstall; }
             set
             {
                 if (_selectedActionIsInstall != value)
@@ -267,20 +244,14 @@ namespace NuGet.PackageManagement.UI
 
         public List<VersionForDisplay> Versions
         {
-            get
-            {
-                return _versions;
-            }
+            get { return _versions; }
         }
 
         private VersionForDisplay _selectedVersion;
 
         public VersionForDisplay SelectedVersion
         {
-            get
-            {
-                return _selectedVersion;
-            }
+            get { return _selectedVersion; }
             set
             {
                 if (_selectedVersion != value)
@@ -288,7 +259,8 @@ namespace NuGet.PackageManagement.UI
                     _selectedVersion = value;
 
                     DetailedPackageMetadata packageMetadata;
-                    if (_metadataDict != null &&
+                    if (_metadataDict != null
+                        &&
                         _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
                     {
                         PackageMetadata = packageMetadata;
@@ -369,7 +341,8 @@ namespace NuGet.PackageManagement.UI
             _metadataDict = dict;
 
             DetailedPackageMetadata p;
-            if (SelectedVersion != null &&
+            if (SelectedVersion != null
+                &&
                 _metadataDict.TryGetValue(SelectedVersion.Version, out p))
             {
                 PackageMetadata = p;
@@ -378,19 +351,13 @@ namespace NuGet.PackageManagement.UI
 
         protected abstract void OnSelectedVersionChanged();
 
-        public abstract bool IsSolution
-        {
-            get;
-        }
+        public abstract bool IsSolution { get; }
 
         private Options _options;
 
         public Options Options
         {
-            get
-            {
-                return _options;
-            }
+            get { return _options; }
             set
             {
                 _options = value;
@@ -400,10 +367,7 @@ namespace NuGet.PackageManagement.UI
 
         public IUIBrushes UIBrushes
         {
-            get
-            {
-                return null;
-            }
+            get { return null; }
         }
     }
 }

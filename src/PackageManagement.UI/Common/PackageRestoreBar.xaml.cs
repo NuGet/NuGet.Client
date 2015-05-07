@@ -1,11 +1,13 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using Microsoft.VisualStudio.Shell;
-using Task = System.Threading.Tasks.Task;
+using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -16,7 +18,7 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly IPackageRestoreManager _packageRestoreManager;
         private readonly ISolutionManager _solutionManager;
-        private Dispatcher _uiDispatcher;
+        private readonly Dispatcher _uiDispatcher;
 
         public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
         {
@@ -46,6 +48,7 @@ namespace NuGet.PackageManagement.UI
                 _packageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
             }
         }
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             // Loaded should only fire once
@@ -53,12 +56,12 @@ namespace NuGet.PackageManagement.UI
 
             if (_packageRestoreManager != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    var solutionDirectory = _solutionManager.SolutionDirectory;
-                    // when the control is first loaded, check for missing packages
-                    await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                });
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
+                    {
+                        var solutionDirectory = _solutionManager.SolutionDirectory;
+                        // when the control is first loaded, check for missing packages
+                        return _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                    });
             }
         }
 
@@ -87,15 +90,11 @@ namespace NuGet.PackageManagement.UI
         private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
             ShowProgressUI();
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                await RestorePackagesAsync();
-            });
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await RestorePackagesAsync(); });
         }
 
         private async Task RestorePackagesAsync()
         {
-            TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             try
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
@@ -115,14 +114,14 @@ namespace NuGet.PackageManagement.UI
         {
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
-            StatusMessage.Text = NuGet.PackageManagement.UI.Resources.AskForRestoreMessage;
+            StatusMessage.Text = UI.Resources.AskForRestoreMessage;
         }
 
         private void ShowProgressUI()
         {
             RestoreButton.Visibility = Visibility.Collapsed;
             ProgressBar.Visibility = Visibility.Visible;
-            StatusMessage.Text = NuGet.PackageManagement.UI.Resources.PackageRestoreProgressMessage;
+            StatusMessage.Text = UI.Resources.PackageRestoreProgressMessage;
         }
 
         private void ShowErrorUI(string error)
@@ -130,7 +129,7 @@ namespace NuGet.PackageManagement.UI
             // re-enable the Restore button to allow users to try again
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
-            StatusMessage.Text = NuGet.PackageManagement.UI.Resources.PackageRestoreErrorTryAgain + " " + error;
+            StatusMessage.Text = UI.Resources.PackageRestoreErrorTryAgain + " " + error;
         }
     }
 }

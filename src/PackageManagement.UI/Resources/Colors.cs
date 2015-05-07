@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Windows;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
@@ -13,74 +12,47 @@ namespace NuGet.PackageManagement.UI
     {
         public static object HeaderBackground
         {
-            get
-            {
-                return VsBrushes.BrandedUIBackgroundKey;
-            }
+            get { return VsBrushes.BrandedUIBackgroundKey; }
         }
 
         public static object BorderBrush
         {
-            get
-            {
-                return VsBrushes.BrandedUIBorderKey;
-            }
+            get { return VsBrushes.BrandedUIBorderKey; }
         }
 
         public static object ListPaneBackground
         {
-            get
-            {
-                return VsBrushes.BrandedUIBackgroundKey;
-            }
+            get { return VsBrushes.BrandedUIBackgroundKey; }
         }
 
         public static object DetailPaneBackground
         {
-            get
-            {
-                return VsBrushes.BrandedUIBackgroundKey;
-            }
+            get { return VsBrushes.BrandedUIBackgroundKey; }
         }
 
         public static object LegalMessageBackground
         {
-            get
-            {
-                return VsBrushes.BrandedUIBackgroundKey;
-            }
+            get { return VsBrushes.BrandedUIBackgroundKey; }
         }
 
         public static object UIText
         {
-            get
-            {
-                return VsBrushes.BrandedUITextKey;
-            }
+            get { return VsBrushes.BrandedUITextKey; }
         }
 
         public static object ControlLinkTextKey
         {
-            get
-            {
-                return Microsoft.VisualStudio.Shell.VsBrushes.ControlLinkTextKey;
-            }
+            get { return VsBrushes.ControlLinkTextKey; }
         }
 
         public static object ControlLinkTextHoverKey
         {
-            get
-            {
-                return Microsoft.VisualStudio.Shell.VsBrushes.ControlLinkTextHoverKey;
-            }
+            get { return VsBrushes.ControlLinkTextHoverKey; }
         }
 
         public static object WindowTextKey
         {
-            get
-            {
-                return Microsoft.VisualStudio.Shell.VsBrushes.WindowTextKey;
-            }
+            get { return VsBrushes.WindowTextKey; }
         }
 
         public static object IndicatorFillBrushKey
@@ -89,12 +61,9 @@ namespace NuGet.PackageManagement.UI
             {
                 if (StandaloneSwitch.IsRunningStandalone)
                 {
-                    return System.Windows.SystemColors.WindowFrameColor;
+                    return SystemColors.WindowFrameColor;
                 }
-                else
-                {
-                    return Microsoft.VisualStudio.PlatformUI.ProgressBarColors.IndicatorFillBrushKey;
-                }
+                return ProgressBarColors.IndicatorFillBrushKey;
             }
         }
 
@@ -102,59 +71,27 @@ namespace NuGet.PackageManagement.UI
         {
             var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
             var colorResources = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.ColorResources");
-            
+
             var prop = colorResources.GetProperty("ContentMouseOverBrushKey");
-            _contentMouseOverBrushKey = prop.GetValue(null);
+            ContentMouseOverBrushKey = prop.GetValue(null);
 
             prop = colorResources.GetProperty("ContentInactiveSelectedBrushKey");
-            _contentInactiveSelectedBrushKey = prop.GetValue(null);
+            ContentInactiveSelectedBrushKey = prop.GetValue(null);
 
             prop = colorResources.GetProperty("ContentSelectedBrushKey");
-            _contentSelectedBrushKey = prop.GetValue(null);
+            ContentSelectedBrushKey = prop.GetValue(null);
 
             prop = colorResources.GetProperty("ContentSelectedTextBrushKey");
-            _contentSelectedTextBrushKey = prop.GetValue(null);
+            ContentSelectedTextBrushKey = prop.GetValue(null);
         }
 
-        private static object _contentMouseOverBrushKey;
+        public static object ContentMouseOverBrushKey { get; private set; }
 
-        public static object ContentMouseOverBrushKey
-        {
-            get
-            {
-                return _contentMouseOverBrushKey;
-            }
-        }
+        public static object ContentInactiveSelectedBrushKey { get; private set; }
 
-        private static object _contentInactiveSelectedBrushKey;
+        public static object ContentSelectedBrushKey { get; private set; }
 
-        public static object ContentInactiveSelectedBrushKey
-        {
-            get
-            {
-                return _contentInactiveSelectedBrushKey;
-            }
-        }
-
-        private static object _contentSelectedBrushKey;
-
-        public static object ContentSelectedBrushKey
-        {
-            get
-            {
-                return _contentSelectedBrushKey;
-            }
-        }
-
-        private static object _contentSelectedTextBrushKey;
-
-        public static object ContentSelectedTextBrushKey
-        {
-            get
-            {
-                return _contentSelectedTextBrushKey;
-            }
-        }
+        public static object ContentSelectedTextBrushKey { get; private set; }
     }
 
     public static class Styles
@@ -163,18 +100,10 @@ namespace NuGet.PackageManagement.UI
         {
             var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
             var comboBoxType = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.AutomationComboBox");
-            _themedComboStyle = Application.Current.FindResource(
+            ThemedComboStyle = Application.Current.FindResource(
                 new ComponentResourceKey(comboBoxType, "ThemedComboBoxStyle")) as Style;
         }
 
-        private static Style _themedComboStyle;
-
-        public static Style ThemedComboStyle 
-        {
-            get
-            {
-                return _themedComboStyle;
-            }
-        }
+        public static Style ThemedComboStyle { get; private set; }
     }
 }

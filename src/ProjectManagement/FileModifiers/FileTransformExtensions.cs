@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace NuGet.ProjectManagement
 {
     public sealed class FileTransformExtensions : IEquatable<FileTransformExtensions>
     {
-        public string InstallExtension { get; private set; }
-        public string UninstallExtension { get; private set; }
+        public string InstallExtension { get; }
+        public string UninstallExtension { get; }
 
         public FileTransformExtensions(string installExtension, string uninstallExtension)
         {
-            if (String.IsNullOrEmpty(installExtension))
+            if (string.IsNullOrEmpty(installExtension))
             {
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, "installExtension");
             }
 
-            if (String.IsNullOrEmpty(uninstallExtension))
+            if (string.IsNullOrEmpty(uninstallExtension))
             {
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, "uninstallExtension");
             }
@@ -29,8 +28,8 @@ namespace NuGet.ProjectManagement
 
         public bool Equals(FileTransformExtensions other)
         {
-            return String.Equals(InstallExtension, other.InstallExtension, StringComparison.OrdinalIgnoreCase) &&
-                   String.Equals(UninstallExtension, other.UninstallExtension, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(InstallExtension, other.InstallExtension, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(UninstallExtension, other.UninstallExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()

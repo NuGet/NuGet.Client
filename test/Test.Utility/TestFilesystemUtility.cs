@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 
 namespace Test.Utility
@@ -6,8 +9,8 @@ namespace Test.Utility
     public static class TestFilesystemUtility
     {
         private static readonly string NuGetTestFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "NuGetTestFolder");
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "NuGetTestFolder");
 
         public static string CreateRandomTestFolder()
         {
@@ -19,7 +22,7 @@ namespace Test.Utility
 
         public static void DeleteRandomTestFolders(params string[] randomTestPaths)
         {
-            foreach(var randomTestPath in randomTestPaths)
+            foreach (var randomTestPath in randomTestPaths)
             {
                 DeleteRandomTestFolder(randomTestPath);
             }
@@ -33,7 +36,6 @@ namespace Test.Utility
                 {
                     Directory.Delete(randomTestPath, recursive: true);
                 }
-
             }
             catch (Exception)
             {

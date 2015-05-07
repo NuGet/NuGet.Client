@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -58,7 +61,7 @@ namespace NuGet.PackageManagement
             IEnumerable<string> sources,
             CancellationToken token)
         {
-            FileInfo file = new FileInfo(project.JsonConfigPath);
+            var file = new FileInfo(project.JsonConfigPath);
 
             PackageSpec spec;
 
@@ -68,7 +71,7 @@ namespace NuGet.PackageManagement
             }
 
             var packageSources = sources.Select(source => new PackageSource(source));
-            RestoreRequest request = new RestoreRequest(spec, packageSources, BuildIntegratedProjectUtility.GetGlobalPackagesFolder());
+            var request = new RestoreRequest(spec, packageSources, BuildIntegratedProjectUtility.GetGlobalPackagesFolder());
 
             request.LockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(file.FullName);
             request.MaxDegreeOfConcurrency = 4;
@@ -77,7 +80,7 @@ namespace NuGet.PackageManagement
             var projectReferences = await project.GetProjectReferenceClosureAsync();
             request.ExternalProjects = projectReferences.Select(reference => ConvertProjectReference(reference)).ToList();
 
-            RestoreCommand command = new RestoreCommand(new ProjectContextLogger(projectContext));
+            var command = new RestoreCommand(new ProjectContextLogger(projectContext));
 
             // Execute the restore
             return await command.ExecuteAsync(request);

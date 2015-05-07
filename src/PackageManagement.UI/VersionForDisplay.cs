@@ -1,13 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
     public class VersionForDisplay
     {
-        private string _additionalInfo;
+        private readonly string _additionalInfo;
 
-        private string _toString;
+        private readonly string _toString;
 
         public VersionForDisplay(
             NuGetVersion version,
@@ -21,11 +23,7 @@ namespace NuGet.PackageManagement.UI
                 _additionalInfo + " " + Version.ToNormalizedString();
         }
 
-        public NuGetVersion Version
-        {
-            get;
-            private set;
-        }
+        public NuGetVersion Version { get; }
 
         public override string ToString()
         {

@@ -1,10 +1,12 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
@@ -20,8 +22,8 @@ namespace NuGet.PackageManagement
             if (Constants.NuGetSemanticVersion < packageMinClientVersion)
             {
                 throw new NuGetVersionNotSatisfiedException(
-                    String.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied, packageIdentity,
-                    packageMinClientVersion.ToNormalizedString(), Constants.NuGetSemanticVersion.ToNormalizedString()));
+                    string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied, packageIdentity,
+                        packageMinClientVersion.ToNormalizedString(), Constants.NuGetSemanticVersion.ToNormalizedString()));
             }
         }
     }

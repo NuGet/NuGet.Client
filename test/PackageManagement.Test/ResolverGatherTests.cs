@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,6 +11,7 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
 using NuGet.Versioning;
 using Xunit;
 
@@ -19,86 +23,86 @@ namespace NuGet.Test
         public void ResolverGather_MissingPrimaryPackage()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "2.0.0");
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            var repoA = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0"),
-                CreateDependencyInfo("a", "3.0.0"),
-            };
+            var repoA = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "3.0.0")
+                };
 
             var repoInstalled = new List<PackageDependencyInfo>()
-            {
-                // missing packages
-            };
+                {
+                    // missing packages
+                };
 
-            List<SourceRepository> primaryRepo = new List<SourceRepository>();
+            var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(CreateRepo("a", repoA));
 
-            var installedPackages = new List<PackageIdentity>()
-            {
-                CreatePackage("a", "1.0.0")
-            };
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0")
+                };
 
             // Act and Assert
             Assert.Throws(typeof(InvalidOperationException), () =>
-            {
-                try
                 {
-                    ResolverGather.GatherPackageDependencyInfo(context, targets,
-                    installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None).Wait();
-                }
-                catch (AggregateException ex)
-                {
-                    throw ex.InnerException;
-                }
-            });
+                    try
+                    {
+                        ResolverGather.GatherPackageDependencyInfo(context, targets,
+                            installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None).Wait();
+                    }
+                    catch (AggregateException ex)
+                    {
+                        throw ex.InnerException;
+                    }
+                });
         }
 
         [Fact]
         public async Task ResolverGather_MissingPackageGatheredFromSource()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "2.0.0");
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            var repoA = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0"),
-                CreateDependencyInfo("a", "2.0.0"),
-                CreateDependencyInfo("a", "3.0.0"),
-                CreateDependencyInfo("b", "1.0.0"),
-                CreateDependencyInfo("b", "2.0.0"),
-            };
+            var repoA = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0"),
+                    CreateDependencyInfo("a", "3.0.0"),
+                    CreateDependencyInfo("b", "1.0.0"),
+                    CreateDependencyInfo("b", "2.0.0")
+                };
 
             var repoInstalled = new List<PackageDependencyInfo>()
-            {
-                // missing packages
-            };
+                {
+                    // missing packages
+                };
 
-            List<SourceRepository> primaryRepo = new List<SourceRepository>();
+            var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(CreateRepo("a", repoA));
 
-            var installedPackages = new List<PackageIdentity>()
-            {
-                CreatePackage("a", "1.0.0"),
-                CreatePackage("b", "1.0.0"),
-            };
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "1.0.0")
+                };
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
@@ -118,39 +122,39 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyUnrelatedPackageIsIgnored()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "2.0.0");
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            var repoA = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0"),
-                CreateDependencyInfo("a", "2.0.0"),
-                CreateDependencyInfo("a", "3.0.0"),
-                CreateDependencyInfo("b", "1.0.0"),
-                CreateDependencyInfo("b", "2.0.0"),
-            };
+            var repoA = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0"),
+                    CreateDependencyInfo("a", "3.0.0"),
+                    CreateDependencyInfo("b", "1.0.0"),
+                    CreateDependencyInfo("b", "2.0.0")
+                };
 
-            var repoInstalled = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0"),
-                CreateDependencyInfo("b", "1.0.0"),
-            };
+            var repoInstalled = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("b", "1.0.0")
+                };
 
-            List<SourceRepository> primaryRepo = new List<SourceRepository>();
+            var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(CreateRepo("a", repoA));
 
-            var installedPackages = new List<PackageIdentity>()
-            {
-                CreatePackage("a", "1.0.0"),
-                CreatePackage("b", "1.0.0"),
-            };
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "1.0.0")
+                };
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
@@ -170,42 +174,42 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyParentDependencyIsExpanded()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("c", "2.0.0");
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            var repoA = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "2.0.0", "d"),
-                CreateDependencyInfo("a", "1.0.0", "b"),
-                CreateDependencyInfo("b", "1.0.0", "c"),
-                CreateDependencyInfo("b", "2.0.0", "c"),
-                CreateDependencyInfo("c", "1.0.0"),
-                CreateDependencyInfo("c", "2.0.0"),
-                CreateDependencyInfo("d", "1.0.0"),
-            };
+            var repoA = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "2.0.0", "d"),
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0", "c"),
+                    CreateDependencyInfo("b", "2.0.0", "c"),
+                    CreateDependencyInfo("c", "1.0.0"),
+                    CreateDependencyInfo("c", "2.0.0"),
+                    CreateDependencyInfo("d", "1.0.0")
+                };
 
-            var repoInstalled = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0", "b"),
-                CreateDependencyInfo("b", "1.0.0", "c"),
-                CreateDependencyInfo("c", "1.0.0"),
-            };
+            var repoInstalled = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0", "c"),
+                    CreateDependencyInfo("c", "1.0.0")
+                };
 
-            List<SourceRepository> primaryRepo = new List<SourceRepository>();
+            var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(CreateRepo("a", repoA));
 
-            var installedPackages = new List<PackageIdentity>()
-            {
-                CreatePackage("a", "1.0.0"),
-                CreatePackage("b", "1.0.0"),
-            };
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "1.0.0")
+                };
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
@@ -225,39 +229,39 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyDependencyIsExpanded()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "2.0.0");
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            var repoA = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "2.0.0", "b"),
-                CreateDependencyInfo("a", "1.0.0", "b"),
-                CreateDependencyInfo("b", "1.0.0"),
-                CreateDependencyInfo("b", "2.0.0", "c"),
-                CreateDependencyInfo("c", "2.0.0"),
-            };
+            var repoA = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "2.0.0", "b"),
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0"),
+                    CreateDependencyInfo("b", "2.0.0", "c"),
+                    CreateDependencyInfo("c", "2.0.0")
+                };
 
-            var repoInstalled = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0", "b"),
-                CreateDependencyInfo("b", "1.0.0"),
-            };
+            var repoInstalled = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0")
+                };
 
-            List<SourceRepository> primaryRepo = new List<SourceRepository>();
+            var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(CreateRepo("a", repoA));
 
-            var installedPackages = new List<PackageIdentity>()
-            {
-                CreatePackage("a", "1.0.0"),
-                CreatePackage("b", "1.0.0"),
-            };
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "1.0.0")
+                };
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
@@ -278,39 +282,39 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyParentIsExpanded()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("b", "2.0.0");
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            var repoA = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "2.0.0", "b", "c"),
-                CreateDependencyInfo("a", "1.0.0", "b"),
-                CreateDependencyInfo("b", "1.0.0"),
-                CreateDependencyInfo("b", "2.0.0"),
-                CreateDependencyInfo("c", "2.0.0"),
-            };
+            var repoA = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "2.0.0", "b", "c"),
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0"),
+                    CreateDependencyInfo("b", "2.0.0"),
+                    CreateDependencyInfo("c", "2.0.0")
+                };
 
-            var repoInstalled = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0", "b"),
-                CreateDependencyInfo("b", "1.0.0"),
-            };
+            var repoInstalled = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0")
+                };
 
-            List<SourceRepository> primaryRepo = new List<SourceRepository>();
+            var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(CreateRepo("a", repoA));
 
-            var installedPackages = new List<PackageIdentity>()
-            {
-                CreatePackage("a", "1.0.0"),
-                CreatePackage("b", "1.0.0"),
-            };
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "1.0.0")
+                };
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
@@ -331,67 +335,67 @@ namespace NuGet.Test
         public async Task ResolverGather_ComplexGraphNeedingMultiplePasses()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "1.0.0");
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            var repoA = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("a", "1.0.0", "b", "d"),
-                CreateDependencyInfo("a", "2.0.0", "z"),
-                CreateDependencyInfo("b", "1.0.0", "c"),
-                CreateDependencyInfo("b", "2.0.0", "c"),
-                CreateDependencyInfo("c", "1.0.0"),
-                CreateDependencyInfo("d", "1.0.0", "f"),
-                CreateDependencyInfo("f", "1.0.0"),
-                CreateDependencyInfo("g", "1.0.0"),
-                CreateDependencyInfo("g", "2.0.0"),
-                CreateDependencyInfo("c", "2.0.0"),
-                CreateDependencyInfo("j", "2.0.0"),
-                CreateDependencyInfo("z", "1.0.0"),
-                CreateDependencyInfo("g", "1.0.0", "a"),
-                CreateDependencyInfo("h", "1.0.0", "c", "g"),
-                CreateDependencyInfo("h", "2.0.0", "c"),
-                CreateDependencyInfo("h", "3.0.0", "j"),
-                CreateDependencyInfo("i", "1.0.0", "a", "b"),
-                CreateDependencyInfo("y", "1.0.0", "c"),
-                CreateDependencyInfo("y", "2.0.0", "c"),
-            };
+            var repoA = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0", "b", "d"),
+                    CreateDependencyInfo("a", "2.0.0", "z"),
+                    CreateDependencyInfo("b", "1.0.0", "c"),
+                    CreateDependencyInfo("b", "2.0.0", "c"),
+                    CreateDependencyInfo("c", "1.0.0"),
+                    CreateDependencyInfo("d", "1.0.0", "f"),
+                    CreateDependencyInfo("f", "1.0.0"),
+                    CreateDependencyInfo("g", "1.0.0"),
+                    CreateDependencyInfo("g", "2.0.0"),
+                    CreateDependencyInfo("c", "2.0.0"),
+                    CreateDependencyInfo("j", "2.0.0"),
+                    CreateDependencyInfo("z", "1.0.0"),
+                    CreateDependencyInfo("g", "1.0.0", "a"),
+                    CreateDependencyInfo("h", "1.0.0", "c", "g"),
+                    CreateDependencyInfo("h", "2.0.0", "c"),
+                    CreateDependencyInfo("h", "3.0.0", "j"),
+                    CreateDependencyInfo("i", "1.0.0", "a", "b"),
+                    CreateDependencyInfo("y", "1.0.0", "c"),
+                    CreateDependencyInfo("y", "2.0.0", "c")
+                };
 
-            var repoB = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("b", "3.0.0", "c"),
-                CreateDependencyInfo("h", "3.0.0", "c"),
-                CreateDependencyInfo("c", "3.0.0"),
-                CreateDependencyInfo("g", "1.0.0"),
-            };
+            var repoB = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("b", "3.0.0", "c"),
+                    CreateDependencyInfo("h", "3.0.0", "c"),
+                    CreateDependencyInfo("c", "3.0.0"),
+                    CreateDependencyInfo("g", "1.0.0")
+                };
 
-            var repoInstalled = new List<PackageDependencyInfo>()
-            {
-                CreateDependencyInfo("y", "1.0.0", "c"),
-                CreateDependencyInfo("c", "1.0.0"),
-                CreateDependencyInfo("h", "1.0.0", "c", "g"),
-                CreateDependencyInfo("x", "1.0.0"),
-                CreateDependencyInfo("g", "1.0.0"),
-            };
+            var repoInstalled = new List<PackageDependencyInfo>
+                {
+                    CreateDependencyInfo("y", "1.0.0", "c"),
+                    CreateDependencyInfo("c", "1.0.0"),
+                    CreateDependencyInfo("h", "1.0.0", "c", "g"),
+                    CreateDependencyInfo("x", "1.0.0"),
+                    CreateDependencyInfo("g", "1.0.0")
+                };
 
-            List<SourceRepository> primaryRepo = new List<SourceRepository>();
+            var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(CreateRepo("a", repoA));
             repos.Add(CreateRepo("b", repoB));
 
-            var installedPackages = new List<PackageIdentity>()
-            {
-                CreatePackage("y", "1.0.0"),
-                CreatePackage("c", "1.0.0"),
-                CreatePackage("h", "1.0.0"),
-                CreatePackage("g", "1.0.0"),
-            };
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("y", "1.0.0"),
+                    CreatePackage("c", "1.0.0"),
+                    CreatePackage("h", "1.0.0"),
+                    CreatePackage("g", "1.0.0")
+                };
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
@@ -428,38 +432,38 @@ namespace NuGet.Test
         public async Task ResolverGather_Basic()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
-            PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            List<PackageDependencyInfo> packagesA = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
-                new PackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
-            };
+            var packagesA = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
+                    new PackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
+                };
 
-            List<PackageDependencyInfo> packagesB = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
-            };
+            var packagesB = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
+                };
 
-            List<Lazy<INuGetResourceProvider>> providersA = new List<Lazy<INuGetResourceProvider>>();
+            var providersA = new List<Lazy<INuGetResourceProvider>>();
             providersA.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesA)));
 
-            List<Lazy<INuGetResourceProvider>> providersB = new List<Lazy<INuGetResourceProvider>>();
+            var providersB = new List<Lazy<INuGetResourceProvider>>();
             providersB.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesB)));
 
-            List<Lazy<INuGetResourceProvider>> providersC = new List<Lazy<INuGetResourceProvider>>();
+            var providersC = new List<Lazy<INuGetResourceProvider>>();
             providersC.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(new List<PackageDependencyInfo>())));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
             repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
@@ -486,38 +490,38 @@ namespace NuGet.Test
         public async Task ResolverGather_BasicGatherWithExtraPackages()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
-            PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            List<PackageDependencyInfo> packagesA = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
-                new PackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
-            };
+            var packagesA = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
+                    new PackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
+                };
 
-            List<PackageDependencyInfo> packagesB = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
-            };
+            var packagesB = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
+                };
 
-            List<Lazy<INuGetResourceProvider>> providersC = new List<Lazy<INuGetResourceProvider>>();
+            var providersC = new List<Lazy<INuGetResourceProvider>>();
             providersC.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(new List<PackageDependencyInfo>())));
 
-            List<Lazy<INuGetResourceProvider>> providersA = new List<Lazy<INuGetResourceProvider>>();
+            var providersA = new List<Lazy<INuGetResourceProvider>>();
             providersA.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesA)));
 
-            List<Lazy<INuGetResourceProvider>> providersB = new List<Lazy<INuGetResourceProvider>>();
+            var providersB = new List<Lazy<INuGetResourceProvider>>();
             providersB.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesB)));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
             repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
@@ -544,37 +548,37 @@ namespace NuGet.Test
         public async Task ResolverGather_GatherWithNotFoundPackages()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
-            PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            List<PackageDependencyInfo> packagesA = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
-                new PackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
-            };
+            var packagesA = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
+                    new PackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
+                };
 
-            List<PackageDependencyInfo> packagesB = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-                new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
-            };
+            var packagesB = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
+                    new PackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
+                };
 
-            List<Lazy<INuGetResourceProvider>> providersA = new List<Lazy<INuGetResourceProvider>>();
+            var providersA = new List<Lazy<INuGetResourceProvider>>();
             providersA.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesA)));
 
-            List<Lazy<INuGetResourceProvider>> providersB = new List<Lazy<INuGetResourceProvider>>();
+            var providersB = new List<Lazy<INuGetResourceProvider>>();
             providersB.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesB)));
 
-            List<Lazy<INuGetResourceProvider>> providersC = new List<Lazy<INuGetResourceProvider>>();
+            var providersC = new List<Lazy<INuGetResourceProvider>>();
             providersC.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(new List<PackageDependencyInfo>())));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
             repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
             repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
@@ -599,41 +603,41 @@ namespace NuGet.Test
         public async Task ResolverGather_DependenciesSpreadAcrossRepos()
         {
             // Arrange
-            ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
+            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
-            PackageIdentity target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
-            IEnumerable<PackageIdentity> targets = new PackageIdentity[] { target };
+            var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new[] { target };
 
-            NuGetFramework framework = NuGetFramework.Parse("net451");
+            var framework = NuGetFramework.Parse("net451");
 
-            List<PackageDependencyInfo> packages1 = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new PackageDependency[] { }),
-            };
+            var packages1 = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new PackageDependency[] { })
+                };
 
-            List<PackageDependencyInfo> packages2 = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-            };
+            var packages2 = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) })
+                };
 
-            List<PackageDependencyInfo> packages3 = new List<PackageDependencyInfo>()
-            {
-                new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new PackageDependency[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }),
-            };
+            var packages3 = new List<PackageDependencyInfo>
+                {
+                    new PackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) })
+                };
 
-            List<Lazy<INuGetResourceProvider>> providers1 = new List<Lazy<INuGetResourceProvider>>();
+            var providers1 = new List<Lazy<INuGetResourceProvider>>();
             providers1.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages1)));
 
-            List<Lazy<INuGetResourceProvider>> providers2 = new List<Lazy<INuGetResourceProvider>>();
+            var providers2 = new List<Lazy<INuGetResourceProvider>>();
             providers2.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages2)));
 
-            List<Lazy<INuGetResourceProvider>> providers3 = new List<Lazy<INuGetResourceProvider>>();
+            var providers3 = new List<Lazy<INuGetResourceProvider>>();
             providers3.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages3)));
 
-            List<Lazy<INuGetResourceProvider>> providersPackagesFolder = new List<Lazy<INuGetResourceProvider>>();
+            var providersPackagesFolder = new List<Lazy<INuGetResourceProvider>>();
             providersPackagesFolder.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(new List<PackageDependencyInfo>())));
 
-            List<SourceRepository> repos = new List<SourceRepository>();
+            var repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://1"), providers1));
             repos.Add(new SourceRepository(new PackageSource("http://2"), providers2));
             repos.Add(new SourceRepository(new PackageSource("http://3"), providers3));

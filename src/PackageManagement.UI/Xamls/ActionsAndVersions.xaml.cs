@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -30,10 +22,10 @@ namespace NuGet.PackageManagement.UI
             var dataTrigger = new DataTrigger();
             dataTrigger.Binding = new Binding();
             dataTrigger.Value = null;
-            dataTrigger.Setters.Add(new Setter(ComboBoxItem.TemplateProperty, this.FindResource("SeparatorControlTemplate")));
+            dataTrigger.Setters.Add(new Setter(TemplateProperty, FindResource("SeparatorControlTemplate")));
 
             // make sure the separator can't be selected thru keyboard navigation.
-            dataTrigger.Setters.Add(new Setter(UIElement.IsEnabledProperty, false));
+            dataTrigger.Setters.Add(new Setter(IsEnabledProperty, false));
 
             var style = new Style(typeof(ComboBoxItem), _versions.ItemContainerStyle);
             style.Triggers.Add(dataTrigger);

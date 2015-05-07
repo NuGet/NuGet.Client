@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,7 +12,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Resx = NuGet.PackageManagement.UI;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -18,8 +20,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class InfiniteScrollList : UserControl
     {
-        private ObservableCollection<object> _items;
-        private LoadingStatusIndicator _loadingStatusIndicator;
+        private readonly LoadingStatusIndicator _loadingStatusIndicator;
         private ScrollViewer _scrollViewer;
 
         public event SelectionChangedEventHandler SelectionChanged;
@@ -35,31 +36,25 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
-            PackageItemStyle = (Style)this.FindResource("packageItemStyle");
-            LoadingStatusIndicatorStyle = (Style)this.FindResource("loadingStatusIndicatorStyle");
+            PackageItemStyle = (Style)FindResource("packageItemStyle");
+            LoadingStatusIndicatorStyle = (Style)FindResource("loadingStatusIndicatorStyle");
 
             if (!StandaloneSwitch.IsRunningStandalone)
             {
                 // it's running inside VS. Load needed resources
                 Brushes.Initialize();
 
-                var setter = new Setter(ListBoxItem.TemplateProperty, this.FindResource("ListBoxItemTemplate"));
+                var setter = new Setter(TemplateProperty, FindResource("ListBoxItemTemplate"));
                 PackageItemStyle.Setters.Add(setter);
             }
 
             _loadingStatusIndicator = new LoadingStatusIndicator();
-            _items = new ObservableCollection<object>();
-            _list.ItemsSource = _items;
+            Items = new ObservableCollection<object>();
+            _list.ItemsSource = Items;
             _startIndex = 0;
         }
 
-        public ObservableCollection<object> Items
-        {
-            get
-            {
-                return _items;
-            }
-        }
+        public ObservableCollection<object> Items { get; }
 
         private ILoader _loader;
 
@@ -71,8 +66,8 @@ namespace NuGet.PackageManagement.UI
 
             var selectedItem = _list.SelectedItem as SearchResultPackageMetadata;
 
-            _items.Clear();
-            _items.Add(_loadingStatusIndicator);
+            Items.Clear();
+            Items.Add(_loadingStatusIndicator);
             _startIndex = 0;
 
             // now the package list
@@ -98,7 +93,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task LoadAsync()
+        private Task LoadAsync()
         {
             if (_cts != null)
             {
@@ -107,7 +102,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             _cts = new CancellationTokenSource();
-            await LoadWorkAsync(_cts.Token);
+            return LoadWorkAsync(_cts.Token);
         }
 
         private async Task LoadWorkAsync(CancellationToken token)
@@ -126,12 +121,14 @@ namespace NuGet.PackageManagement.UI
                 var r = await Task.Run(async () => await _loader.LoadItemsAsync(_startIndex, _cts.Token));
 
                 // multiple loads may occur at the same time
-                if (!token.IsCancellationRequested && currentLoader == _loader)
+                if (!token.IsCancellationRequested
+                    && currentLoader == _loader)
                 {
                     UpdatePackageList(r);
 
                     // select the first item if none was selected before
-                    if (_list.SelectedIndex == -1 && _items.Count > 1)
+                    if (_list.SelectedIndex == -1
+                        && Items.Count > 1)
                     {
                         _list.SelectedIndex = 0;
                     }
@@ -142,10 +139,10 @@ namespace NuGet.PackageManagement.UI
                 // only display errors if this is still relevant
                 if (!token.IsCancellationRequested)
                 {
-                    var message = String.Format(
-                            CultureInfo.CurrentCulture,
-                            Resx.Resources.Text_ErrorOccurred,
-                            ex);
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resx.Resources.Text_ErrorOccurred,
+                        ex);
                     _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
                     _loadingStatusIndicator.ErrorMessage = message;
                 }
@@ -155,21 +152,21 @@ namespace NuGet.PackageManagement.UI
         private void UpdatePackageList(LoadResult r)
         {
             // remove the loading status indicator if it's in the list
-            if (_items[_items.Count - 1] == _loadingStatusIndicator)
+            if (Items[Items.Count - 1] == _loadingStatusIndicator)
             {
-                _items.RemoveAt(_items.Count - 1);
+                Items.RemoveAt(Items.Count - 1);
             }
 
             // add newly loaded items
             foreach (var obj in r.Items)
             {
-                _items.Add(obj);
+                Items.Add(obj);
             }
 
             // update loading status indicator
             if (!r.HasMoreItems)
             {
-                if (_items.Count == 0)
+                if (Items.Count == 0)
                 {
                     _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                 }
@@ -186,21 +183,19 @@ namespace NuGet.PackageManagement.UI
 
             if (_loadingStatusIndicator.Status != LoadingStatus.NoMoreItems)
             {
-                _items.Add(_loadingStatusIndicator);
+                Items.Add(_loadingStatusIndicator);
             }
         }
 
         public object SelectedItem
         {
-            get
-            {
-                return _list.SelectedItem;
-            }
+            get { return _list.SelectedItem; }
         }
 
         private void List_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] is LoadingStatusIndicator)
+            if (e.AddedItems.Count > 0
+                && e.AddedItems[0] is LoadingStatusIndicator)
             {
                 // make the loading object not selectable
                 if (e.RemovedItems.Count > 0)
@@ -245,27 +240,24 @@ namespace NuGet.PackageManagement.UI
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                if (_loadingStatusIndicator.Status != LoadingStatus.Ready)
                 {
-                    return;
-                }
+                    if (_loadingStatusIndicator.Status != LoadingStatus.Ready)
+                    {
+                        return;
+                    }
 
-                var first = _scrollViewer.VerticalOffset;
-                var last = _scrollViewer.ViewportHeight + first;
-                if (last >= _items.Count)
-                {
-                    await LoadAsync();
-                }
-            });
+                    var first = _scrollViewer.VerticalOffset;
+                    var last = _scrollViewer.ViewportHeight + first;
+                    if (last >= Items.Count)
+                    {
+                        await LoadAsync();
+                    }
+                });
         }
 
         private void RetryButtonClicked(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                await LoadAsync();
-            });
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => { return LoadAsync(); });
         }
     }
 
@@ -317,10 +309,7 @@ namespace NuGet.PackageManagement.UI
 
         public string LoadingMessage
         {
-            get
-            {
-                return _loadingMessage;
-            }
+            get { return _loadingMessage; }
             set
             {
                 if (_loadingMessage != value)
@@ -333,10 +322,7 @@ namespace NuGet.PackageManagement.UI
 
         public string ErrorMessage
         {
-            get
-            {
-                return _errorMessage;
-            }
+            get { return _errorMessage; }
             set
             {
                 if (_errorMessage != value)
@@ -351,7 +337,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (PropertyChanged != null)
             {
-                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
+                var e = new PropertyChangedEventArgs(propertyName);
                 PropertyChanged(this, e);
             }
         }

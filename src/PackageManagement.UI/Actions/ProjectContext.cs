@@ -1,19 +1,13 @@
-﻿using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Packaging;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
     public sealed class ProjectContext : INuGetProjectContext
     {
-        public ProjectContext()
-        {
-
-        }
-
         public void Log(MessageLevel level, string message, params object[] args)
         {
             // TODO: log to the console
@@ -26,18 +20,12 @@ namespace NuGet.PackageManagement.UI
             return FileConflictAction.Ignore;
         }
 
-        public Packaging.PackageExtractionContext PackageExtractionContext
-        {
-            get;
-            set;
-        }
-
+        public PackageExtractionContext PackageExtractionContext { get; set; }
 
         public ISourceControlManagerProvider SourceControlManagerProvider
         {
             get { return null; }
         }
-
 
         public ExecutionContext ExecutionContext
         {

@@ -1,4 +1,6 @@
-﻿
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 namespace NuGet.PackageManagement
 {
     /// <summary>
@@ -21,5 +23,5 @@ namespace NuGet.PackageManagement
         public static readonly int PackageManagerConsoleLoaded = 25712;
         public static readonly int PackageManagerConsoleCommandExecutionBegin = 25713;
         public static readonly int PackageManagerConsoleCommandExecutionEnd = 25714;
-    }    
+    }
 }

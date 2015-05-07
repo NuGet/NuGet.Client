@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,7 +75,6 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
 
-
         [Fact]
         public async Task TestBuildIntegratedNuGetProjectUninstallContentFiles()
         {
@@ -104,7 +106,7 @@ namespace ProjectManagement.Test
                 // Install
                 await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
                 await buildIntegratedProject.InstallPackageContentAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-                
+
                 // Act
                 await buildIntegratedProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
                 await buildIntegratedProject.UninstallPackageContentAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -139,9 +141,9 @@ namespace ProjectManagement.Test
         {
             get
             {
-                JObject json = new JObject();
+                var json = new JObject();
 
-                JObject frameworks = new JObject();
+                var frameworks = new JObject();
                 frameworks["netcore50"] = new JObject();
 
                 json["frameworks"] = frameworks;

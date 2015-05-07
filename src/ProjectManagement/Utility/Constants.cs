@@ -1,11 +1,12 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectManagement
 {
@@ -59,12 +60,12 @@ namespace NuGet.ProjectManagement
         // The magic unpublished date is 1900-01-01T00:00:00
         public static readonly DateTimeOffset Unpublished = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8));
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Security",
             "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
             Justification = "The type is immutable.")]
         public static readonly ICollection<string> AssemblyReferencesExtensions
-            = new ReadOnlyCollection<string>(new string[] { ".dll", ".exe", ".winmd" });
+            = new ReadOnlyCollection<string>(new[] { ".dll", ".exe", ".winmd" });
 
         public const string ResourceAssemblyExtension = ".resources.dll";
 

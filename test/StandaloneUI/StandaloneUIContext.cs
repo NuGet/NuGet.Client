@@ -1,8 +1,13 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
 namespace StandaloneUI
@@ -20,22 +25,23 @@ namespace StandaloneUI
             UIActionEngine uiActionEngine,
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
-            IEnumerable<NuGet.ProjectManagement.NuGetProject> projects) :
-            base(sourceProvider, solutionManager, packageManager, uiActionEngine, packageRestoreManager, optionsPageActivator, projects)
+            IEnumerable<NuGetProject> projects)
+            :
+                base(sourceProvider, solutionManager, packageManager, uiActionEngine, packageRestoreManager, optionsPageActivator, projects)
         {
-            _settingsFile = settingsFile;            
+            _settingsFile = settingsFile;
             LoadSettings();
         }
 
-        void LoadSettings()
+        private void LoadSettings()
         {
             _settings = new Dictionary<string, UserSettings>();
-            try            
+            try
             {
                 using (var reader = new StreamReader(_settingsFile))
                 {
                     var str = reader.ReadToEnd();
-                    var obj = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, UserSettings>>(str);
+                    var obj = JsonConvert.DeserializeObject<Dictionary<string, UserSettings>>(str);
                     if (obj != null)
                     {
                         _settings = obj;
@@ -59,17 +65,14 @@ namespace StandaloneUI
             {
                 return settings;
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         public override void PersistSettings()
         {
             try
             {
-                var str = Newtonsoft.Json.JsonConvert.SerializeObject(_settings);
+                var str = JsonConvert.SerializeObject(_settings);
                 using (var writer = new StreamWriter(_settingsFile))
                 {
                     writer.Write(str);

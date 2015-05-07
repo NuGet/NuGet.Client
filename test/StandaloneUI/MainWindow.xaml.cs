@@ -1,10 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -51,7 +56,7 @@ namespace StandaloneUI
 
             NuGetUIThreadHelper.SetCustomJoinableTaskFactory(mainThread, synchronizationContext);
 
-            this.Title = "NuGet Standalone UI";
+            Title = "NuGet Standalone UI";
             Height = 800;
             Width = 1000;
 
@@ -64,7 +69,7 @@ namespace StandaloneUI
             var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
             //var projectC = testSolutionManager.AddProjectKProject("projectK");
 
-            var projects = new NuGetProject[] { projectA, projectB };
+            var projects = new[] { projectA, projectB };
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
             var contextFactory = new StandaloneUIContextFactory(
@@ -78,7 +83,7 @@ namespace StandaloneUI
                 context,
                 new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider, _commonOperations));
 
-            PackageManagerModel model = new PackageManagerModel(uiController, context);
+            var model = new PackageManagerModel(uiController, context);
             model.SolutionName = "test solution";
             _packageManagerControl = new PackageManagerControl(model, _settings);
             layoutGrid.Children.Add(_packageManagerControl);
@@ -86,13 +91,13 @@ namespace StandaloneUI
 
         private CompositionContainer Initialize()
         {
-            string assemblyName = Assembly.GetEntryAssembly().FullName;
+            var assemblyName = Assembly.GetEntryAssembly().FullName;
 
-            var path = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             using (var catalog = new AggregateCatalog(
                 new AssemblyCatalog(Assembly.Load(assemblyName)),
-                new DirectoryCatalog(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll")))
+                new DirectoryCatalog(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll")))
             {
                 var container = new CompositionContainer(catalog);
 
@@ -103,7 +108,7 @@ namespace StandaloneUI
                 }
                 catch (Exception ex)
                 {
-                    Debug.Fail("MEF: " + ex.ToString());
+                    Debug.Fail("MEF: " + ex);
 
                     throw;
                 }
@@ -119,26 +124,26 @@ namespace StandaloneUI
 
     internal class V3OnlyPackageSourceProvider : IPackageSourceProvider
     {
-        public void DisablePackageSource(NuGet.Configuration.PackageSource source)
+        public void DisablePackageSource(PackageSource source)
         {
             throw new NotImplementedException();
         }
 
-        public bool IsPackageSourceEnabled(NuGet.Configuration.PackageSource source)
+        public bool IsPackageSourceEnabled(PackageSource source)
         {
             return true;
         }
 
-        public IEnumerable<NuGet.Configuration.PackageSource> LoadPackageSources()
+        public IEnumerable<PackageSource> LoadPackageSources()
         {
-            return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://api.nuget.org/v3/index.json", "nuget.org v3") };
+            return new List<PackageSource> { new PackageSource("https://api.nuget.org/v3/index.json", "nuget.org v3") };
         }
 
 #pragma warning disable 0067
         public event EventHandler PackageSourcesChanged;
 #pragma warning restore 0067
 
-        public void SavePackageSources(IEnumerable<NuGet.Configuration.PackageSource> sources)
+        public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
             throw new NotImplementedException();
         }
@@ -156,7 +161,7 @@ namespace StandaloneUI
 
     internal class StandAloneUICommonOperations : ICommonOperations
     {
-        public System.Threading.Tasks.Task OpenFile(string fullPath)
+        public Task OpenFile(string fullPath)
         {
             try
             {
@@ -165,7 +170,7 @@ namespace StandaloneUI
             catch (Exception)
             {
             }
-            return System.Threading.Tasks.Task.FromResult(0);
+            return Task.FromResult(0);
         }
     }
 }

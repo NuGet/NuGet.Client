@@ -1,11 +1,12 @@
-﻿using NuGet.PackageManagement;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.PackageManagement;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Test
@@ -14,17 +15,18 @@ namespace NuGet.Test
     {
         private static PackageDependencyInfo CreatePackageDependencyInfo(PackageIdentity packageIdentity, params string[] dependencies)
         {
-            if(dependencies != null && dependencies.Length % 2 != 0)
+            if (dependencies != null
+                && dependencies.Length % 2 != 0)
             {
                 throw new ArgumentException("dependencies array length should be even");
             }
 
-            List<PackageDependency> dependencyList = new List<PackageDependency>();
-            if(dependencies != null)
+            var dependencyList = new List<PackageDependency>();
+            if (dependencies != null)
             {
-                for (int i = 0; i < dependencies.Length; i += 2)
+                for (var i = 0; i < dependencies.Length; i += 2)
                 {
-                    var packageDependency = new PackageDependency(dependencies[i], VersionRange.Parse(dependencies[i+1]));
+                    var packageDependency = new PackageDependency(dependencies[i], VersionRange.Parse(dependencies[i + 1]));
                     dependencyList.Add(packageDependency);
                 }
             }
@@ -32,61 +34,61 @@ namespace NuGet.Test
             return new PackageDependencyInfo(packageIdentity, dependencyList);
         }
 
-        private static PackageIdentity A1 = new PackageIdentity("A", new NuGetVersion("1.0"));
+        private static readonly PackageIdentity A1 = new PackageIdentity("A", new NuGetVersion("1.0"));
         private static PackageIdentity A2 = new PackageIdentity("A", new NuGetVersion("2.0"));
-        private static PackageIdentity B1 = new PackageIdentity("B", new NuGetVersion("1.0"));
+        private static readonly PackageIdentity B1 = new PackageIdentity("B", new NuGetVersion("1.0"));
         private static PackageIdentity B2 = new PackageIdentity("B", new NuGetVersion("2.0"));
-        private static PackageIdentity C1 = new PackageIdentity("C", new NuGetVersion("1.0"));
-        private static PackageIdentity D1 = new PackageIdentity("D", new NuGetVersion("1.0"));
-        private static PackageIdentity E1 = new PackageIdentity("E", new NuGetVersion("1.0"));
+        private static readonly PackageIdentity C1 = new PackageIdentity("C", new NuGetVersion("1.0"));
+        private static readonly PackageIdentity D1 = new PackageIdentity("D", new NuGetVersion("1.0"));
+        private static readonly PackageIdentity E1 = new PackageIdentity("E", new NuGetVersion("1.0"));
         private static PackageIdentity F1 = new PackageIdentity("F", new NuGetVersion("1.0"));
 
-        private static List<PackageDependencyInfo> PackageDependencyInfo1 = new List<PackageDependencyInfo>()
-        {
-            CreatePackageDependencyInfo(A1, B1.Id, "1.0", C1.Id, "1.0"),
-            CreatePackageDependencyInfo(C1, D1.Id, "1.0", E1.Id, "1.0"),
-        };
+        private static readonly List<PackageDependencyInfo> PackageDependencyInfo1 = new List<PackageDependencyInfo>
+            {
+                CreatePackageDependencyInfo(A1, B1.Id, "1.0", C1.Id, "1.0"),
+                CreatePackageDependencyInfo(C1, D1.Id, "1.0", E1.Id, "1.0")
+            };
 
-        private static IEnumerable<PackageIdentity> InstalledPackages1 = new List<PackageIdentity>()
-        {
-            A1,
-            B1,
-            C1,
-            D1,
-            E1
-        };
+        private static readonly IEnumerable<PackageIdentity> InstalledPackages1 = new List<PackageIdentity>
+            {
+                A1,
+                B1,
+                C1,
+                D1,
+                E1
+            };
 
-        private static List<PackageDependencyInfo> DiamondDependencyInfo = new List<PackageDependencyInfo>()
-        {
-            CreatePackageDependencyInfo(A1, B1.Id, "1.0", C1.Id, "1.0"),
-            CreatePackageDependencyInfo(B1, D1.Id, "1.0"),
-            CreatePackageDependencyInfo(C1, D1.Id, "1.0"),
-        };
+        private static readonly List<PackageDependencyInfo> DiamondDependencyInfo = new List<PackageDependencyInfo>
+            {
+                CreatePackageDependencyInfo(A1, B1.Id, "1.0", C1.Id, "1.0"),
+                CreatePackageDependencyInfo(B1, D1.Id, "1.0"),
+                CreatePackageDependencyInfo(C1, D1.Id, "1.0")
+            };
 
-        private static IEnumerable<PackageIdentity> DiamondDependencyInstalledPackages = new List<PackageIdentity>()
-        {
-            A1,
-            B1,
-            C1,
-            D1,
-        };
+        private static readonly IEnumerable<PackageIdentity> DiamondDependencyInstalledPackages = new List<PackageIdentity>
+            {
+                A1,
+                B1,
+                C1,
+                D1
+            };
 
-        private static List<PackageDependencyInfo> DeepDiamondDependencyInfo = new List<PackageDependencyInfo>()
-        {
-            CreatePackageDependencyInfo(A1, B1.Id, "1.0", C1.Id, "1.0"),
-            CreatePackageDependencyInfo(B1, D1.Id, "1.0"),
-            CreatePackageDependencyInfo(C1, E1.Id, "1.0"),
-            CreatePackageDependencyInfo(E1, D1.Id, "1.0"),
-        };
+        private static readonly List<PackageDependencyInfo> DeepDiamondDependencyInfo = new List<PackageDependencyInfo>
+            {
+                CreatePackageDependencyInfo(A1, B1.Id, "1.0", C1.Id, "1.0"),
+                CreatePackageDependencyInfo(B1, D1.Id, "1.0"),
+                CreatePackageDependencyInfo(C1, E1.Id, "1.0"),
+                CreatePackageDependencyInfo(E1, D1.Id, "1.0")
+            };
 
-        private static IEnumerable<PackageIdentity> DeepDiamondDependencyInstalledPackages = new List<PackageIdentity>()
-        {
-            A1,
-            B1,
-            C1,
-            D1,
-            E1,
-        };
+        private static readonly IEnumerable<PackageIdentity> DeepDiamondDependencyInstalledPackages = new List<PackageIdentity>
+            {
+                A1,
+                B1,
+                C1,
+                D1,
+                E1
+            };
 
         [Fact]
         public void TestUninstallResolverGetDependentsDict()
@@ -156,9 +158,9 @@ namespace NuGet.Test
             try
             {
                 var result = UninstallResolver.GetPackagesToBeUninstalled(E1,
-                                                PackageDependencyInfo1,
-                                                InstalledPackages1,
-                                                new UninstallationContext(removeDependencies: true)).ToList();
+                    PackageDependencyInfo1,
+                    InstalledPackages1,
+                    new UninstallationContext(removeDependencies: true)).ToList();
             }
             catch (InvalidOperationException ex)
             {

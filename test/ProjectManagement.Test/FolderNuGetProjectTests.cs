@@ -1,14 +1,15 @@
-﻿using Ionic.Zip;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
+using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Threading;
-using System.Threading.Tasks;
 using Test.Utility;
 using Xunit;
 
@@ -30,7 +31,7 @@ namespace ProjectManagement.Test
             var nupkgFilePath = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var token = CancellationToken.None;
-            using(var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = packageFileInfo.OpenRead())
             {
                 // Act
                 await folderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -39,7 +40,7 @@ namespace ProjectManagement.Test
             // Assert
             Assert.True(File.Exists(nupkgFilePath));
             Assert.True(File.Exists(Path.Combine(packageInstallPath, "lib/test.dll")));
-            using(var packageStream = File.OpenRead(nupkgFilePath))
+            using (var packageStream = File.OpenRead(nupkgFilePath))
             {
                 var zipArchive = new ZipArchive(packageStream);
                 Assert.Equal(5, zipArchive.Entries.Count);
@@ -58,9 +59,9 @@ namespace ProjectManagement.Test
 
             // Act & Assert
             NuGetFramework targetFramework;
-            Assert.True(folderNuGetProject.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out targetFramework));
+            Assert.True(folderNuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out targetFramework));
             string name;
-            Assert.True(folderNuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out name));
+            Assert.True(folderNuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out name));
             Assert.Equal(NuGetFramework.AnyFramework, targetFramework);
             Assert.Equal(randomTestFolder, name);
             Assert.Equal(2, folderNuGetProject.Metadata.Count);
@@ -105,7 +106,7 @@ namespace ProjectManagement.Test
             // Assert
             Assert.NotNull(installedPackageFilePath);
             Assert.True(File.Exists(installedPackageFilePath));
-            Assert.True(String.Equals(nupkgFilePath, installedPackageFilePath));
+            Assert.True(string.Equals(nupkgFilePath, installedPackageFilePath));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
@@ -147,7 +148,7 @@ namespace ProjectManagement.Test
             // Assert
             Assert.NotNull(installedPath);
             Assert.True(Directory.Exists(installedPath));
-            Assert.True(String.Equals(packageInstallPath, installedPath));
+            Assert.True(string.Equals(packageInstallPath, installedPath));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
@@ -226,7 +227,7 @@ namespace ProjectManagement.Test
             }
             Assert.True(folderNuGetProject.PackageExists(packageIdentity));
             var packageDirectoryPath = folderNuGetProject.GetInstalledPath(unNormalizedPackageIdentity);
-            Assert.True(!String.IsNullOrEmpty(packageDirectoryPath));
+            Assert.True(!string.IsNullOrEmpty(packageDirectoryPath));
             Assert.True(Directory.Exists(packageDirectoryPath));
 
             // Main Act

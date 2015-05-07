@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -39,11 +42,11 @@ namespace NuGet.ProjectManagement
         private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
             var safeSettings = new XmlReaderSettings
-            {
-                XmlResolver = null,
-                DtdProcessing = DtdProcessing.Prohibit,
-                IgnoreWhitespace = ignoreWhiteSpace
-            };
+                {
+                    XmlResolver = null,
+                    DtdProcessing = DtdProcessing.Prohibit,
+                    IgnoreWhitespace = ignoreWhiteSpace
+                };
 
             return safeSettings;
         }
@@ -82,7 +85,7 @@ namespace NuGet.ProjectManagement
 
         public static XDocument CreateDocument(XName rootName, string path, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            XDocument document = new XDocument(new XElement(rootName));
+            var document = new XDocument(new XElement(rootName));
             // Add it to the project system
             MSBuildNuGetProjectSystemUtility.AddFile(msBuildNuGetProjectSystem, path, document.Save);
             return document;
@@ -91,7 +94,7 @@ namespace NuGet.ProjectManagement
         public static XDocument CreateDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
         {
             var fullPath = Path.Combine(root, path);
-            XDocument document = new XDocument(new XElement(rootName));
+            var document = new XDocument(new XElement(rootName));
             // Add it to the file system
             FileSystemUtility.AddFile(root, path, document.Save, nuGetProjectContext);
             return document;
@@ -102,7 +105,7 @@ namespace NuGet.ProjectManagement
             var fullPath = Path.Combine(root, path);
             using (Stream configStream = File.OpenRead(fullPath))
             {
-                return XmlUtility.LoadSafe(configStream, LoadOptions.PreserveWhitespace);
+                return LoadSafe(configStream, LoadOptions.PreserveWhitespace);
             }
         }
 

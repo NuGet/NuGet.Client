@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,13 +32,13 @@ namespace NuGet.PackageManagement
         /// Gather dependency info for the install packages and the new targets.
         /// </summary>
         public static async Task<HashSet<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
-        IEnumerable<PackageIdentity> primaryTargets,
-        IEnumerable<PackageIdentity> installedPackages,
-        NuGetFramework targetFramework,
-        IEnumerable<SourceRepository> primarySources,
-        IEnumerable<SourceRepository> allSources,
-        SourceRepository packagesFolderSource,
-        CancellationToken token)
+            IEnumerable<PackageIdentity> primaryTargets,
+            IEnumerable<PackageIdentity> installedPackages,
+            NuGetFramework targetFramework,
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> allSources,
+            SourceRepository packagesFolderSource,
+            CancellationToken token)
         {
             return await GatherPackageDependencyInfo(context, null, primaryTargets, installedPackages,
                 targetFramework, primarySources, allSources, packagesFolderSource, token);
@@ -71,7 +72,7 @@ namespace NuGet.PackageManagement
             var getResourceTasks = new List<Task>();
 
             var depResources = new Dictionary<SourceRepository, Task<DependencyInfoResource>>();
-            foreach (var source in allSources.Concat(primarySources).Concat(new SourceRepository[] { packagesFolderSource }))
+            foreach (var source in allSources.Concat(primarySources).Concat(new[] { packagesFolderSource }))
             {
                 if (!depResources.ContainsKey(source))
                 {
@@ -159,7 +160,7 @@ namespace NuGet.PackageManagement
             {
                 if (!combinedResults.Any(package => StringComparer.OrdinalIgnoreCase.Equals(primaryId, package.Id)))
                 {
-                    throw new InvalidOperationException(String.Format(Strings.PackageNotFound, primaryId));
+                    throw new InvalidOperationException(string.Format(Strings.PackageNotFound, primaryId));
                 }
             }
 
@@ -187,7 +188,7 @@ namespace NuGet.PackageManagement
             idsSearched.UnionWith(allPrimaryIds);
 
             // gather all missing dependencies
-            bool complete = false;
+            var complete = false;
 
             // closure of all packages related to the new package
             // start with just the primary ids
@@ -268,8 +269,8 @@ namespace NuGet.PackageManagement
                     packageCache.UnionWith(await results.Dequeue());
                 }
 
-                SourceRepository source = sourceTuple.Item1;
-                DependencyInfoResource resolverRes = sourceTuple.Item2;
+                var source = sourceTuple.Item1;
+                var resolverRes = sourceTuple.Item2;
 
                 var task = Task.Run(async () => await GatherPackageCore(packageId, version,
                     source, resolverRes, targetFramework, context, ignoreExceptions, token));
@@ -311,7 +312,7 @@ namespace NuGet.PackageManagement
                     var packages = await resource.ResolvePackages(packageId, targetFramework, token);
 
                     results.AddRange(packages.Select(package =>
-                            CreateSourceDependencyInfo(context, source, package)));
+                        CreateSourceDependencyInfo(context, source, package)));
                 }
                 else
                 {

@@ -1,6 +1,9 @@
-﻿using NuGet.Configuration;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement
 {
@@ -10,15 +13,16 @@ namespace NuGet.PackageManagement
     public static class PackagesFolderPathUtility
     {
         private const string DefaultRepositoryPath = "packages";
+
         public static string GetPackagesFolderPath(ISolutionManager solutionManager, ISettings settings)
         {
-            if(solutionManager == null)
+            if (solutionManager == null)
             {
                 throw new ArgumentNullException("solutionManager");
             }
 
             // If the solution directory is unavailable then throw an exception
-            if(solutionManager.SolutionDirectory == null)
+            if (solutionManager.SolutionDirectory == null)
             {
                 throw new InvalidOperationException(Strings.SolutionDirectoryNotAvailable);
             }
@@ -28,9 +32,9 @@ namespace NuGet.PackageManagement
 
         public static string GetPackagesFolderPath(string solutionDirectory, ISettings settings)
         {
-            if (String.IsNullOrEmpty(solutionDirectory))
+            if (string.IsNullOrEmpty(solutionDirectory))
             {
-                throw new ArgumentException(String.Format(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, solutionDirectory));
+                throw new ArgumentException(string.Format(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, solutionDirectory));
             }
 
             if (settings == null)
@@ -38,12 +42,12 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("settings");
             }
 
-            string path = SettingsUtility.GetRepositoryPath(settings);
-            if (!String.IsNullOrEmpty(path))
+            var path = SettingsUtility.GetRepositoryPath(settings);
+            if (!string.IsNullOrEmpty(path))
             {
                 return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
             }
-            return Path.Combine(solutionDirectory, String.IsNullOrEmpty(path) ? DefaultRepositoryPath : path);
+            return Path.Combine(solutionDirectory, string.IsNullOrEmpty(path) ? DefaultRepositoryPath : path);
         }
     }
 }

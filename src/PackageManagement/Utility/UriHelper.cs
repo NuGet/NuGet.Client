@@ -1,8 +1,12 @@
-﻿using NuGet.Configuration;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement
 {
@@ -17,13 +21,16 @@ namespace NuGet.PackageManagement
         /// <param name="url"></param>
         public static void OpenExternalLink(Uri url)
         {
-            if (url == null || !url.IsAbsoluteUri)
+            if (url == null
+                || !url.IsAbsoluteUri)
             {
                 return;
             }
 
             // mitigate security risk
-            if (url.IsFile || url.IsLoopback || url.IsUnc)
+            if (url.IsFile
+                || url.IsLoopback
+                || url.IsUnc)
             {
                 return;
             }
@@ -32,7 +39,7 @@ namespace NuGet.PackageManagement
             {
                 // REVIEW: Will this allow a package author to execute arbitrary program on user's machine?
                 // We have limited the url to be HTTP only, but is it sufficient?
-                System.Diagnostics.Process.Start(url.AbsoluteUri);
+                Process.Start(url.AbsoluteUri);
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.LinkOpened);
             }
         }
@@ -44,7 +51,7 @@ namespace NuGet.PackageManagement
         /// <returns></returns>
         public static bool IsHttpSource(string source)
         {
-            if (String.IsNullOrEmpty(source))
+            if (string.IsNullOrEmpty(source))
             {
                 return false;
             }
@@ -54,10 +61,7 @@ namespace NuGet.PackageManagement
             {
                 return IsHttpUrl(uri);
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
@@ -81,14 +85,11 @@ namespace NuGet.PackageManagement
                 return packageSourceProvider.LoadPackageSources().Any(s => IsHttpSource(s.Source));
             }
             // For API V3, the source could be a local .json file.
-            else if (activeSource.Source.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            if (activeSource.Source.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            else
-            {
-                return IsHttpSource(activeSource.Source);
-            }
+            return IsHttpSource(activeSource.Source);
         }
 
         /// <summary>
@@ -107,7 +108,7 @@ namespace NuGet.PackageManagement
                 }
 
                 var packageSource = packageSourceProvider.LoadPackageSources()
-                                                          .FirstOrDefault(p => p.Name.Equals(source, StringComparison.CurrentCultureIgnoreCase));
+                    .FirstOrDefault(p => p.Name.Equals(source, StringComparison.CurrentCultureIgnoreCase));
                 return (packageSource != null) && IsHttpSource(packageSource.Source);
             }
 
@@ -172,7 +173,7 @@ namespace NuGet.PackageManagement
                 if (activeSource.IsEnabled)
                 {
                     sources = packageSourceProvider.LoadPackageSources();
-                    foreach (PackageSource s in sources)
+                    foreach (var s in sources)
                     {
                         if (IsLocal(s.Source))
                         {
@@ -183,14 +184,17 @@ namespace NuGet.PackageManagement
                 }
                 else
                 {
-                    if (IsLocal(activeSource.Source)) return true;
+                    if (IsLocal(activeSource.Source))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
         }
 
         /// <summary>
-        /// Determine if any source is available 
+        /// Determine if any source is available
         /// </summary>
         /// <param name="packageSourceProvider"></param>
         /// <param name="checkHttp"></param>
@@ -201,7 +205,7 @@ namespace NuGet.PackageManagement
             if (checkHttp)
             {
                 bool isHttpSource;
-                isHttpSource = UriHelper.IsHttpSource(packageSourceProvider);
+                isHttpSource = IsHttpSource(packageSourceProvider);
                 if (isHttpSource)
                 {
                     return true;
@@ -220,14 +224,22 @@ namespace NuGet.PackageManagement
                 if (activeSource.IsEnabled)
                 {
                     sources = packageSourceProvider.LoadPackageSources();
-                    foreach (PackageSource s in sources)
+                    foreach (var s in sources)
                     {
-                        if (IsLocal(s.Source) || IsUNC(s.Source)) return true;
+                        if (IsLocal(s.Source)
+                            || IsUNC(s.Source))
+                        {
+                            return true;
+                        }
                     }
                 }
                 else
                 {
-                    if (IsLocal(activeSource.Source) || IsUNC(activeSource.Source)) return true;
+                    if (IsLocal(activeSource.Source)
+                        || IsUNC(activeSource.Source))
+                    {
+                        return true;
+                    }
                 }
             }
 

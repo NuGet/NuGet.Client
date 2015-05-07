@@ -1,9 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -17,25 +20,26 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
             _projectList.MaxHeight = _self.FontSize * 15;
-            this.DataContextChanged += PackageSolutionDetailControl_DataContextChanged;
+            DataContextChanged += PackageSolutionDetailControl_DataContextChanged;
         }
 
         private void PackageSolutionDetailControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (DataContext is DetailControlModel)
             {
-                _root.Visibility = System.Windows.Visibility.Visible;
+                _root.Visibility = Visibility.Visible;
             }
             else
             {
-                _root.Visibility = System.Windows.Visibility.Collapsed;
+                _root.Visibility = Visibility.Collapsed;
             }
         }
 
         private void ExecuteOpenLicenseLink(object sender, ExecutedRoutedEventArgs e)
         {
-            Hyperlink hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink != null && hyperlink.NavigateUri != null)
+            var hyperlink = e.OriginalSource as Hyperlink;
+            if (hyperlink != null
+                && hyperlink.NavigateUri != null)
             {
                 Control.Model.UIController.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
@@ -50,7 +54,7 @@ namespace NuGet.PackageManagement.UI
         public UserAction GetUserAction()
         {
             var model = (DetailControlModel)DataContext;
-            var action = model.SelectedAction == NuGet.PackageManagement.UI.Resources.Action_Uninstall ?
+            var action = model.SelectedAction == UI.Resources.Action_Uninstall ?
                 NuGetProjectActionType.Uninstall :
                 NuGetProjectActionType.Install;
 
@@ -72,40 +76,37 @@ namespace NuGet.PackageManagement.UI
         private void ActionButtonClicked(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                var action = GetUserAction();
-                Control.IsEnabled = false;
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
-                try
                 {
-                    await Task.Run(() =>
-                        Control.Model.Context.UIActionEngine.PerformActionAsync(
-                            Control.Model.UIController,
-                            action,
-                            this,
-                            CancellationToken.None));
-                }
-                finally
-                {
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
-                    Control.IsEnabled = true;
-                }
-            });
+                    var action = GetUserAction();
+                    Control.IsEnabled = false;
+                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
+                    try
+                    {
+                        await Task.Run(() =>
+                            Control.Model.Context.UIActionEngine.PerformActionAsync(
+                                Control.Model.UIController,
+                                action,
+                                this,
+                                CancellationToken.None));
+                    }
+                    finally
+                    {
+                        NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
+                        Control.IsEnabled = true;
+                    }
+                });
         }
 
         public PackageManagerControl Control
         {
-            get
-            {
-                return _control;
-            }
+            get { return _control; }
 
             set
             {
                 if (_control == null)
                 {
                     // register with the UI controller the first time we get the control model
-                    NuGetUI controller = value.Model.UIController as NuGetUI;
+                    var controller = value.Model.UIController as NuGetUI;
                     if (controller != null)
                     {
                         controller.DetailControl = this;

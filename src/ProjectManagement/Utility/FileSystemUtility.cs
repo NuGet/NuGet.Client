@@ -1,11 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.ProjectManagement
@@ -16,7 +17,7 @@ namespace NuGet.ProjectManagement
         {
             if (File.Exists(fullPath))
             {
-                FileAttributes attributes = File.GetAttributes(fullPath);
+                var attributes = File.GetAttributes(fullPath);
                 if (attributes.HasFlag(FileAttributes.ReadOnly))
                 {
                     File.SetAttributes(fullPath, attributes & ~FileAttributes.ReadOnly);
@@ -32,7 +33,7 @@ namespace NuGet.ProjectManagement
 
         public static string GetFullPath(string root, string path)
         {
-            if (String.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
                 return root;
             }
@@ -61,14 +62,17 @@ namespace NuGet.ProjectManagement
 
         private static void AddFileCore(string root, string path, Action<Stream> writeToStream, INuGetProjectContext nuGetProjectContext)
         {
-            if (String.IsNullOrEmpty(path) || String.IsNullOrEmpty(Path.GetFileName(path)))
+            if (string.IsNullOrEmpty(path)
+                || string.IsNullOrEmpty(Path.GetFileName(path)))
+            {
                 return;
+            }
 
             Directory.CreateDirectory(GetFullPath(root, Path.GetDirectoryName(path)));
 
-            string fullPath = GetFullPath(root, path);
+            var fullPath = GetFullPath(root, path);
 
-            using (Stream outputStream = CreateFile(fullPath, nuGetProjectContext))
+            using (var outputStream = CreateFile(fullPath, nuGetProjectContext))
             {
                 writeToStream(outputStream);
             }
@@ -78,12 +82,14 @@ namespace NuGet.ProjectManagement
 
         private static void WriteAddedFileAndDirectory(string path, INuGetProjectContext nuGetProjectContext)
         {
-            if (String.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
+            {
                 return;
+            }
 
-            string folderPath = Path.GetDirectoryName(path);
+            var folderPath = Path.GetDirectoryName(path);
 
-            if (!String.IsNullOrEmpty(folderPath))
+            if (!string.IsNullOrEmpty(folderPath))
             {
                 nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToFolder, Path.GetFileName(path), folderPath);
             }
@@ -100,13 +106,14 @@ namespace NuGet.ProjectManagement
 
         public static Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
-            if (String.IsNullOrEmpty(fullPath) || String.IsNullOrEmpty(Path.GetFileName(fullPath)))
+            if (string.IsNullOrEmpty(fullPath)
+                || string.IsNullOrEmpty(Path.GetFileName(fullPath)))
             {
                 throw new ArgumentException("fullPath");
             }
             // MakeWriteable(fullPath); SourceControlManager will do that
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if(sourceControlManager != null)
+            if (sourceControlManager != null)
             {
                 return sourceControlManager.CreateFile(fullPath, nuGetProjectContext);
             }
@@ -116,7 +123,8 @@ namespace NuGet.ProjectManagement
 
         public static Stream CreateFile(string fullPath)
         {
-            if (String.IsNullOrEmpty(fullPath) || String.IsNullOrEmpty(Path.GetFileName(fullPath)))
+            if (string.IsNullOrEmpty(fullPath)
+                || string.IsNullOrEmpty(Path.GetFileName(fullPath)))
             {
                 throw new ArgumentException("fullPath");
             }
@@ -133,7 +141,7 @@ namespace NuGet.ProjectManagement
         public static IEnumerable<string> GetFiles(string root, string path, string filter, bool recursive)
         {
             path = PathUtility.EnsureTrailingSlash(Path.Combine(root, path));
-            if (String.IsNullOrEmpty(filter))
+            if (string.IsNullOrEmpty(filter))
             {
                 filter = "*.*";
             }
@@ -144,9 +152,9 @@ namespace NuGet.ProjectManagement
                     return Enumerable.Empty<string>();
                 }
 
-                IEnumerable<string> filePaths = Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-                List<string> trimmedPaths = new List<string>();
-                foreach (string filePath in filePaths)
+                var filePaths = Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                var trimmedPaths = new List<string>();
+                foreach (var filePath in filePaths)
                 {
                     if (filePath.Length > root.Length)
                     {
@@ -161,11 +169,9 @@ namespace NuGet.ProjectManagement
             }
             catch (UnauthorizedAccessException)
             {
-
             }
             catch (DirectoryNotFoundException)
             {
-
             }
 
             return Enumerable.Empty<string>();
@@ -184,12 +190,12 @@ namespace NuGet.ProjectManagement
                 var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
                 if (sourceControlManager != null)
                 {
-                    sourceControlManager.PendDeleteFiles(new List<string>() { fullPath }, String.Empty, nuGetProjectContext);
+                    sourceControlManager.PendDeleteFiles(new List<string> { fullPath }, string.Empty, nuGetProjectContext);
                 }
 
                 File.Delete(fullPath);
-                string folderPath = Path.GetDirectoryName(fullPath);
-                if (!String.IsNullOrEmpty(folderPath))
+                var folderPath = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrEmpty(folderPath))
                 {
                     nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(fullPath), folderPath);
                 }
@@ -200,19 +206,21 @@ namespace NuGet.ProjectManagement
             }
             catch (FileNotFoundException)
             {
-
             }
         }
 
         public static void DeleteFiles(IEnumerable<ZipFilePair> packageFiles, string packagesDir, INuGetProjectContext nuGetProjectContext)
         {
-            List<string> filesToDelete = new List<string>();
+            var filesToDelete = new List<string>();
 
-            foreach(var packageFile in packageFiles)
+            foreach (var packageFile in packageFiles)
             {
-                if(packageFile != null && packageFile.Item1 != null && packageFile.Item2 != null && File.Exists(packageFile.Item1))
+                if (packageFile != null
+                    && packageFile.Item1 != null
+                    && packageFile.Item2 != null
+                    && File.Exists(packageFile.Item1))
                 {
-                    if(ContentEquals(packageFile.Item1, packageFile.Item2.Open))
+                    if (ContentEquals(packageFile.Item1, packageFile.Item2.Open))
                     {
                         MakeWriteable(packageFile.Item1);
                         filesToDelete.Add(packageFile.Item1);
@@ -239,18 +247,17 @@ namespace NuGet.ProjectManagement
                 // First get all directories that contain files
                 var directoryLookup = filesToDelete.ToLookup(p => Path.GetDirectoryName(p));
 
-
                 // Get all directories that this package may have added
                 var directories = from grouping in directoryLookup
-                                  from directory in GetDirectories(grouping.Key, altDirectorySeparator: false)
-                                  orderby directory.Length descending
-                                  select directory;
+                    from directory in GetDirectories(grouping.Key, altDirectorySeparator: false)
+                    orderby directory.Length descending
+                    select directory;
 
                 // Remove files from every directory
                 foreach (var directory in directories)
                 {
                     var directoryFiles = directoryLookup.Contains(directory) ? directoryLookup[directory] : Enumerable.Empty<string>();
-                    string dirPath = Path.Combine(packagesDir, directory);
+                    var dirPath = Path.Combine(packagesDir, directory);
 
                     if (!Directory.Exists(dirPath))
                     {
@@ -259,12 +266,13 @@ namespace NuGet.ProjectManagement
 
                     foreach (var file in directoryFiles)
                     {
-                        string path = Path.Combine(packagesDir, file);
+                        var path = Path.Combine(packagesDir, file);
                         File.Delete(path);
                     }
 
                     // If the directory is empty then delete it
-                    if (!GetFiles(packagesDir, dirPath, "*.*").Any() &&
+                    if (!GetFiles(packagesDir, dirPath, "*.*").Any()
+                        &&
                         !GetDirectories(packagesDir, dirPath).Any())
                     {
                         DeleteDirectorySafe(Path.Combine(packagesDir, dirPath), recursive: false, nuGetProjectContext: nuGetProjectContext);
@@ -288,7 +296,7 @@ namespace NuGet.ProjectManagement
         public static void PendAddFiles(IEnumerable<string> addedPackageFiles, string packagesDir, INuGetProjectContext nuGetProjectContext)
         {
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if(sourceControlManager != null)
+            if (sourceControlManager != null)
             {
                 sourceControlManager.PendAddFiles(addedPackageFiles, packagesDir, nuGetProjectContext);
             }
@@ -306,21 +314,19 @@ namespace NuGet.ProjectManagement
             // first delete the file itself
             DeleteFileSafe(fullPath, nuGetProjectContext);
 
-            if (!String.IsNullOrEmpty(filePath))
+            if (!string.IsNullOrEmpty(filePath))
             {
                 // now delete all parent directories if they are empty
-                for (string path = Path.GetDirectoryName(filePath); !String.IsNullOrEmpty(path); path = Path.GetDirectoryName(path))
+                for (var path = Path.GetDirectoryName(filePath); !string.IsNullOrEmpty(path); path = Path.GetDirectoryName(path))
                 {
-                    if (GetFiles(root, path, "*.*").Any() || GetDirectories(root, path).Any())
+                    if (GetFiles(root, path, "*.*").Any()
+                        || GetDirectories(root, path).Any())
                     {
                         // if this directory is not empty, stop
                         break;
                     }
-                    else
-                    {
-                        // otherwise, delete it, and move up to its parent
-                        DeleteDirectorySafe(fullPath, false, nuGetProjectContext);
-                    }
+                    // otherwise, delete it, and move up to its parent
+                    DeleteDirectorySafe(fullPath, false, nuGetProjectContext);
                 }
             }
         }
@@ -343,9 +349,9 @@ namespace NuGet.ProjectManagement
 
                 // The directory is not guaranteed to be gone since there could be
                 // other open handles. Wait, up to half a second, until the directory is gone.
-                for (int i = 0; Directory.Exists(fullPath) && i < 5; ++i)
+                for (var i = 0; Directory.Exists(fullPath) && i < 5; ++i)
                 {
-                    System.Threading.Thread.Sleep(100);
+                    Thread.Sleep(100);
                 }
 
                 nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
@@ -365,15 +371,13 @@ namespace NuGet.ProjectManagement
                     return Enumerable.Empty<string>();
                 }
                 return Directory.EnumerateDirectories(path)
-                                .Select((x)=> MakeRelativePath(root, x));
+                    .Select(x => MakeRelativePath(root, x));
             }
             catch (UnauthorizedAccessException)
             {
-
             }
             catch (DirectoryNotFoundException)
             {
-
             }
 
             return Enumerable.Empty<string>();
@@ -390,7 +394,7 @@ namespace NuGet.ProjectManagement
 
         private static IEnumerable<int> IndexOfAll(string value, char ch)
         {
-            int index = -1;
+            var index = -1;
             do
             {
                 index = value.IndexOf(ch, index + 1);

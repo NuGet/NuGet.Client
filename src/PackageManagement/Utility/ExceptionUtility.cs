@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Reflection;
 
 namespace NuGet.PackageManagement
@@ -18,7 +21,8 @@ namespace NuGet.PackageManagement
             }
 
             // Always return the inner exception from a target invocation exception
-            if (exception is AggregateException ||
+            if (exception is AggregateException
+                ||
                 exception is TargetInvocationException)
             {
                 return exception.GetBaseException();

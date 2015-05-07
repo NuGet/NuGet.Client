@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
@@ -10,14 +13,15 @@ namespace NuGet.PackageManagement
     /// </summary>
     public class NuGetEventTrigger
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Security",
             "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
             Justification = "The type is immutable.")]
         public static readonly NuGetEventTrigger Instance = new NuGetEventTrigger();
 
         public delegate void TriggerEventMethod(int id);
-        private TriggerEventMethod _triggerEventMethod = null;
+
+        private readonly TriggerEventMethod _triggerEventMethod;
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "By design, we want to move on if any error occured.")]
         private NuGetEventTrigger()
@@ -76,12 +80,12 @@ namespace NuGet.PackageManagement
             public EventTriggerBeginEnd(int beginId, int endId)
             {
                 _endId = endId;
-                NuGetEventTrigger.Instance.TriggerEvent(beginId);
+                Instance.TriggerEvent(beginId);
             }
 
             public void Dispose()
             {
-                NuGetEventTrigger.Instance.TriggerEvent(_endId);
+                Instance.TriggerEvent(_endId);
             }
         }
     }

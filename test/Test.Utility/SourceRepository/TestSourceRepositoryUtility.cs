@@ -1,11 +1,10 @@
-﻿using NuGet.Configuration;
-using NuGet.PackageManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
 using System.IO;
-using System.Reflection;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 
@@ -15,7 +14,6 @@ namespace Test.Utility
     {
         public static PackageSource V2PackageSource = new PackageSource("https://www.nuget.org/api/v2/", "v2");
         public static PackageSource V3PackageSource = new PackageSource("https://api.nuget.org/v3/index.json", "v3");
-        public TestSourceRepositoryUtility() {}
 
         public IEnumerable<Lazy<INuGetResourceProvider>> ResourceProviders { get; private set; }
 
@@ -33,12 +31,12 @@ namespace Test.Utility
 
         public static SourceRepositoryProvider CreateV3OnlySourceRepositoryProvider()
         {
-            return CreateSourceRepositoryProvider(new List<PackageSource>() { V3PackageSource });
+            return CreateSourceRepositoryProvider(new List<PackageSource> { V3PackageSource });
         }
 
         public static SourceRepositoryProvider CreateV2OnlySourceRepositoryProvider()
         {
-            return CreateSourceRepositoryProvider(new List<PackageSource>() { V2PackageSource });
+            return CreateSourceRepositoryProvider(new List<PackageSource> { V2PackageSource });
         }
 
         public static SourceRepositoryProvider CreateSourceRepositoryProvider(IEnumerable<PackageSource> packageSources)
@@ -69,10 +67,12 @@ namespace Test.Utility
     public class TestPackageSourceProvider : IPackageSourceProvider
     {
         private IEnumerable<PackageSource> PackageSources { get; set; }
+
         public TestPackageSourceProvider(IEnumerable<PackageSource> packageSources)
         {
             PackageSources = packageSources;
         }
+
         public void DisablePackageSource(PackageSource source)
         {
             source.IsEnabled = false;

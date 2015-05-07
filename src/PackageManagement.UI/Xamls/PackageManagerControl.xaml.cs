@@ -1,19 +1,25 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.Win32;
+using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -27,8 +33,7 @@ namespace NuGet.PackageManagement.UI
 
         private const int PageSize = 10;
 
-        private bool _initialized;
-        private SourceRepository _activeSource;
+        private readonly bool _initialized;
 
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
@@ -36,23 +41,23 @@ namespace NuGet.PackageManagement.UI
 
         private PackageRestoreBar _restoreBar;
 
-        private IVsWindowSearchHost _windowSearchHost;
-        private IVsWindowSearchHostFactory _windowSearchHostFactory;
+        private readonly IVsWindowSearchHost _windowSearchHost;
+        private readonly IVsWindowSearchHostFactory _windowSearchHostFactory;
 
-        private DetailControlModel _detailModel;
+        private readonly DetailControlModel _detailModel;
 
-        private Dispatcher _uiDispatcher;
+        private readonly Dispatcher _uiDispatcher;
 
-        public PackageManagerModel Model { get; private set; }
+        public PackageManagerModel Model { get; }
 
-        public PackageManagerControl(PackageManagerModel model, NuGet.Configuration.ISettings nugetSettings)
+        public PackageManagerControl(PackageManagerModel model, ISettings nugetSettings)
             : this(model, nugetSettings, new SimpleSearchBoxFactory())
         {
         }
 
         public PackageManagerControl(
             PackageManagerModel model,
-            NuGet.Configuration.ISettings nugetSettings,
+            ISettings nugetSettings,
             IVsWindowSearchHostFactory searchFactory)
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -95,7 +100,7 @@ namespace NuGet.PackageManagement.UI
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
 
             // register with the UI controller
-            NuGetUI controller = model.UIController as NuGetUI;
+            var controller = model.UIController as NuGetUI;
             if (controller != null)
             {
                 controller.PackageManagerControl = this;
@@ -105,18 +110,19 @@ namespace NuGet.PackageManagement.UI
 
             if (IsUILegalDisclaimerSuppressed())
             {
-                _legalDisclaimer.Visibility = System.Windows.Visibility.Collapsed;
+                _legalDisclaimer.Visibility = Visibility.Collapsed;
             }
         }
 
         private void InitializeFilterList(UserSettings settings)
         {
             _filter.DisplayMemberPath = "Text";
-            var items = new[] {
-                new FilterItem(Filter.All, Resx.Resources.Filter_All),
-                new FilterItem(Filter.Installed, Resx.Resources.Filter_Installed),
-                new FilterItem(Filter.UpdatesAvailable, Resx.Resources.Filter_UpgradeAvailable)
-            };
+            var items = new[]
+                {
+                    new FilterItem(Filter.All, Resx.Resources.Filter_All),
+                    new FilterItem(Filter.Installed, Resx.Resources.Filter_Installed),
+                    new FilterItem(Filter.UpdatesAvailable, Resx.Resources.Filter_UpgradeAvailable)
+                };
 
             foreach (var item in items)
             {
@@ -137,11 +143,11 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
-                var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(NuGetRegistryKey);
+                var key = Registry.CurrentUser.OpenSubKey(NuGetRegistryKey);
                 var setting =
                     key == null ?
-                    null :
-                    key.GetValue(SuppressUIDisclaimerRegistryName) as string;
+                        null :
+                        key.GetValue(SuppressUIDisclaimerRegistryName) as string;
                 return setting != null && setting != "0";
             }
             catch (Exception)
@@ -151,26 +157,23 @@ namespace NuGet.PackageManagement.UI
         }
 
         protected DependencyBehavior GetDependencyBehaviorFromConfig(
-            NuGet.Configuration.ISettings nugetSettings)
+            ISettings nugetSettings)
         {
-            string dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
+            var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
             DependencyBehavior behavior;
-            bool success = Enum.TryParse<DependencyBehavior>(dependencySetting, true, out behavior);
+            var success = Enum.TryParse(dependencySetting, true, out behavior);
             if (success)
             {
                 return behavior;
             }
-            else
-            {
-                // Default to Lowest
-                return DependencyBehavior.Lowest;
-            }
+            // Default to Lowest
+            return DependencyBehavior.Lowest;
         }
 
         private void SetSelectedDepencyBehavior(DependencyBehavior dependencyBehavior)
         {
             var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
-                    .FirstOrDefault(d => d.Behavior == dependencyBehavior);
+                .FirstOrDefault(d => d.Behavior == dependencyBehavior);
             if (selectedDependencyBehavior != null)
             {
                 _detailModel.Options.SelectedDependencyBehavior = selectedDependencyBehavior;
@@ -179,7 +182,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ApplySettings(
             UserSettings settings,
-            NuGet.Configuration.ISettings nugetSettings)
+            ISettings nugetSettings)
         {
             if (settings == null)
             {
@@ -245,12 +248,12 @@ namespace NuGet.PackageManagement.UI
                 SetNewActiveSource(newSources, oldActiveSource);
 
                 // force a new search explicitly if active source has changed
-                if ((oldActiveSource == null && _activeSource != null) ||
-                    (oldActiveSource != null && _activeSource == null) ||
-                    (oldActiveSource != null && _activeSource != null &&
-                    !StringComparer.OrdinalIgnoreCase.Equals(
-                        oldActiveSource.PackageSource.Source,
-                        _activeSource.PackageSource.Source)))
+                if ((oldActiveSource == null && ActiveSource != null)
+                    || (oldActiveSource != null && ActiveSource == null)
+                    || (oldActiveSource != null && ActiveSource != null &&
+                        !StringComparer.OrdinalIgnoreCase.Equals(
+                            oldActiveSource.PackageSource.Source,
+                            ActiveSource.PackageSource.Source)))
                 {
                     SaveSettings();
                     SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
@@ -269,7 +272,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var project = Model.Context.Projects.First();
                 string projectName = null;
-                if (!project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out projectName))
+                if (!project.TryGetMetadata(NuGetProjectMetadataKeys.Name, out projectName))
                 {
                     projectName = "unknown";
                 }
@@ -288,10 +291,10 @@ namespace NuGet.PackageManagement.UI
         // to persist the settings.
         public void SaveSettings()
         {
-            UserSettings settings = new UserSettings();
-            if (_activeSource != null)
+            var settings = new UserSettings();
+            if (ActiveSource != null)
             {
-                settings.SourceRepository = _activeSource.PackageSource.Name;
+                settings.SourceRepository = ActiveSource.PackageSource.Name;
             }
 
             settings.ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow;
@@ -307,15 +310,12 @@ namespace NuGet.PackageManagement.UI
                 settings.SelectedFilter = filterItem.Filter;
             }
 
-            string key = GetSettingsKey();
-            Model.Context.AddSettings(key, settings);
+            Model.Context.AddSettings(GetSettingsKey(), settings);
         }
 
         private UserSettings LoadSettings()
         {
-            string key = GetSettingsKey();
-            UserSettings settings = Model.Context.GetSettings(key);
-            return settings;
+            return Model.Context.GetSettings(GetSettingsKey());
         }
 
         /// <summary>
@@ -327,14 +327,14 @@ namespace NuGet.PackageManagement.UI
         {
             if (!newSources.Any())
             {
-                _activeSource = null;
+                ActiveSource = null;
             }
             else
             {
                 if (oldActiveSource == null)
                 {
                     // use the first enabled source as the active source
-                    _activeSource = newSources.FirstOrDefault();
+                    ActiveSource = newSources.FirstOrDefault();
                 }
                 else
                 {
@@ -344,20 +344,20 @@ namespace NuGet.PackageManagement.UI
                     {
                         // the old active source does not exist any more. In this case,
                         // use the first eneabled source as the active source.
-                        _activeSource = newSources.FirstOrDefault();
+                        ActiveSource = newSources.FirstOrDefault();
                     }
                     else
                     {
                         // the old active source still exists. Keep it as the active source.
-                        _activeSource = s;
+                        ActiveSource = s;
                     }
                 }
             }
 
-            _sourceRepoList.SelectedItem = _activeSource;
-            if (_activeSource != null)
+            _sourceRepoList.SelectedItem = ActiveSource;
+            if (ActiveSource != null)
             {
-                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(_activeSource.PackageSource);
+                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
             }
         }
 
@@ -400,10 +400,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!_uiDispatcher.CheckAccess())
             {
-                _uiDispatcher.Invoke(() =>
-                {
-                    this.UpdateAfterPackagesMissingStatusChanged();
-                });
+                _uiDispatcher.Invoke(() => { UpdateAfterPackagesMissingStatusChanged(); });
 
                 return;
             }
@@ -425,7 +422,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var project = Model.Context.Projects.First();
                 string projectName = null;
-                if (!project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out projectName))
+                if (!project.TryGetMetadata(NuGetProjectMetadataKeys.Name, out projectName))
                 {
                     projectName = "unknown";
                 }
@@ -451,7 +448,8 @@ namespace NuGet.PackageManagement.UI
             string activeSourceName = null;
 
             // try saved user settings first.
-            if (settings != null && !String.IsNullOrEmpty(settings.SourceRepository))
+            if (settings != null
+                && !string.IsNullOrEmpty(settings.SourceRepository))
             {
                 activeSourceName = settings.SourceRepository;
             }
@@ -463,18 +461,18 @@ namespace NuGet.PackageManagement.UI
 
             if (activeSourceName != null)
             {
-                _activeSource = enabledSources
+                ActiveSource = enabledSources
                     .FirstOrDefault(s => activeSourceName.Equals(s.PackageSource.Name, StringComparison.CurrentCultureIgnoreCase));
             }
 
-            if (_activeSource == null)
+            if (ActiveSource == null)
             {
-                _activeSource = enabledSources.FirstOrDefault();
+                ActiveSource = enabledSources.FirstOrDefault();
             }
 
-            if (_activeSource != null)
+            if (ActiveSource != null)
             {
-                _sourceRepoList.SelectedItem = _activeSource;
+                _sourceRepoList.SelectedItem = ActiveSource;
             }
         }
 
@@ -498,19 +496,10 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease
         {
-            get
-            {
-                return _checkboxPrerelease.IsChecked == true;
-            }
+            get { return _checkboxPrerelease.IsChecked == true; }
         }
 
-        internal SourceRepository ActiveSource
-        {
-            get
-            {
-                return _activeSource;
-            }
-        }
+        internal SourceRepository ActiveSource { get; private set; }
 
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
@@ -518,22 +507,22 @@ namespace NuGet.PackageManagement.UI
         private void SearchPackageInActivePackageSource(string searchText)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                var filterItem = _filter.SelectedItem as FilterItem;
-                Filter filter = filterItem != null ?
-                    filterItem.Filter :
-                    Filter.All;
+                {
+                    var filterItem = _filter.SelectedItem as FilterItem;
+                    var filter = filterItem != null ?
+                        filterItem.Filter :
+                        Filter.All;
 
-                PackageLoaderOption option = new PackageLoaderOption(filter, IncludePrerelease);
-                var loader = new PackageLoader(
-                    option,
-                    Model.Context.PackageManager,
-                    Model.Context.Projects,
-                    _activeSource,
-                    searchText);
-                await loader.InitializeAsync();
-                await _packageList.LoadAsync(loader);
-            });
+                    var option = new PackageLoaderOption(filter, IncludePrerelease);
+                    var loader = new PackageLoader(
+                        option,
+                        Model.Context.PackageManager,
+                        Model.Context.Projects,
+                        ActiveSource,
+                        searchText);
+                    await loader.InitializeAsync();
+                    await _packageList.LoadAsync(loader);
+                });
         }
 
         private void SettingsButtonClick(object sender, RoutedEventArgs e)
@@ -543,10 +532,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                await UpdateDetailPaneAsync();
-            });
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(UpdateDetailPaneAsync);
         }
 
         /// <summary>
@@ -570,14 +556,14 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.DataContext = _detailModel;
                 _packageDetail.ScrollToHome();
 
-                var uiMetadataResource = await _activeSource.GetResourceAsync<UIMetadataResource>();
+                var uiMetadataResource = await ActiveSource.GetResourceAsync<UIMetadataResource>();
                 await _detailModel.LoadPackageMetadaAsync(uiMetadataResource, CancellationToken.None);
             }
         }
 
-        private static string GetPackageSourceTooltip(Configuration.PackageSource packageSource)
+        private static string GetPackageSourceTooltip(PackageSource packageSource)
         {
-            if (String.IsNullOrEmpty(packageSource.Description))
+            if (string.IsNullOrEmpty(packageSource.Description))
             {
                 return string.Format(
                     CultureInfo.CurrentCulture,
@@ -585,15 +571,12 @@ namespace NuGet.PackageManagement.UI
                     packageSource.Name,
                     packageSource.Source);
             }
-            else
-            {
-                return string.Format(
-                    CultureInfo.CurrentCulture,
-                    "{0} - {1} - {2}",
-                    packageSource.Name,
-                    packageSource.Description,
-                    packageSource.Source);
-            }
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "{0} - {1} - {2}",
+                packageSource.Name,
+                packageSource.Description,
+                packageSource.Source);
         }
 
         private void SourceRepoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -603,13 +586,13 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            _activeSource = _sourceRepoList.SelectedItem as SourceRepository;
-            if (_activeSource != null)
+            ActiveSource = _sourceRepoList.SelectedItem as SourceRepository;
+            if (ActiveSource != null)
             {
                 _sourceTooltip.Visibility = Visibility.Visible;
-                _sourceTooltip.DataContext = GetPackageSourceTooltip(_activeSource.PackageSource);
+                _sourceTooltip.DataContext = GetPackageSourceTooltip(ActiveSource.PackageSource);
 
-                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(_activeSource.PackageSource);
+                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
                 SaveSettings();
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             }
@@ -642,7 +625,7 @@ namespace NuGet.PackageManagement.UI
                         continue;
                     }
 
-                    package.Status = PackageManagerControl.GetPackageStatus(
+                    package.Status = GetPackageStatus(
                         package.Id,
                         Model.Context.Projects,
                         package.Versions);
@@ -651,11 +634,11 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Gets the status of the package specified by <paramref name="packageId"/> in
+        /// Gets the status of the package specified by <paramref name="packageId" /> in
         /// the specified installation target.
         /// </summary>
         /// <param name="packageId">package id.</param>
-        /// <param name="target">The installation target.</param>
+        /// <param name="projects">The installation target.</param>
         /// <param name="allVersions">List of all versions of the package.</param>
         /// <returns>The status of the package in the installation target.</returns>
         public static PackageStatus GetPackageStatus(
@@ -664,43 +647,43 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<VersionInfo> allVersions)
         {
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var latestStableVersion = allVersions
-                    .Where(p => !p.Version.IsPrerelease)
-                    .Max(p => p.Version);
-                List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
-                foreach (var project in projects)
                 {
-                    var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                    installedPackages.AddRange(projectInstalledPackages);
-                }
-
-                // Get the minimum version installed in any target project/solution
-                var minimumInstalledPackage = installedPackages
-                    .Where(p => p != null)
-                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
-                    .OrderBy(r => r.PackageIdentity.Version)
-                    .FirstOrDefault();
-
-                PackageStatus status;
-                if (minimumInstalledPackage != null)
-                {
-                    if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
+                    var latestStableVersion = allVersions
+                        .Where(p => !p.Version.IsPrerelease)
+                        .Max(p => p.Version);
+                    var installedPackages = new List<PackageReference>();
+                    foreach (var project in projects)
                     {
-                        status = PackageStatus.UpdateAvailable;
+                        var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                        installedPackages.AddRange(projectInstalledPackages);
+                    }
+
+                    // Get the minimum version installed in any target project/solution
+                    var minimumInstalledPackage = installedPackages
+                        .Where(p => p != null)
+                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
+                        .OrderBy(r => r.PackageIdentity.Version)
+                        .FirstOrDefault();
+
+                    PackageStatus status;
+                    if (minimumInstalledPackage != null)
+                    {
+                        if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
+                        {
+                            status = PackageStatus.UpdateAvailable;
+                        }
+                        else
+                        {
+                            status = PackageStatus.Installed;
+                        }
                     }
                     else
                     {
-                        status = PackageStatus.Installed;
+                        status = PackageStatus.NotInstalled;
                     }
-                }
-                else
-                {
-                    status = PackageStatus.NotInstalled;
-                }
 
-                return status;
-            });
+                    return status;
+                });
         }
 
         private void SearchControl_SearchStart(object sender, EventArgs e)
@@ -735,19 +718,12 @@ namespace NuGet.PackageManagement.UI
                 get { return 0; }
             }
 
-            public string SearchString
-            {
-                get;
-                set;
-            }
+            public string SearchString { get; set; }
         }
 
         public Guid Category
         {
-            get
-            {
-                return Guid.Empty;
-            }
+            get { return Guid.Empty; }
         }
 
         public void ClearSearch()
@@ -810,13 +786,13 @@ namespace NuGet.PackageManagement.UI
 
         public void Search(string searchText)
         {
-            if (String.IsNullOrWhiteSpace(searchText))
+            if (string.IsNullOrWhiteSpace(searchText))
             {
                 return;
             }
 
             _windowSearchHost.Activate();
-            _windowSearchHost.SearchAsync(new SearchQuery() { SearchString = searchText });
+            _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
         }
 
         public void CleanUp()
@@ -827,12 +803,12 @@ namespace NuGet.PackageManagement.UI
 
         private void SuppressDisclaimerChecked(object sender, RoutedEventArgs e)
         {
-            _legalDisclaimer.Visibility = System.Windows.Visibility.Collapsed;
+            _legalDisclaimer.Visibility = Visibility.Collapsed;
 
             try
             {
-                var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(NuGetRegistryKey);
-                key.SetValue(SuppressUIDisclaimerRegistryName, "1", Microsoft.Win32.RegistryValueKind.String);
+                var key = Registry.CurrentUser.CreateSubKey(NuGetRegistryKey);
+                key.SetValue(SuppressUIDisclaimerRegistryName, "1", RegistryValueKind.String);
             }
             catch (Exception)
             {

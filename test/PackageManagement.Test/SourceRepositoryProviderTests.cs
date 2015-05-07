@@ -1,7 +1,10 @@
-﻿using NuGet.Configuration;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 using Test.Utility;
 using Xunit;
 
@@ -15,7 +18,7 @@ namespace NuGet.Test
             // Arrange
             var localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var localPackageSource = new PackageSource(localAppDataPath);
-            var oldPackageSources = new List<PackageSource>() { localPackageSource };
+            var oldPackageSources = new List<PackageSource> { localPackageSource };
             var packageSourceProvider = new TestPackageSourceProvider(oldPackageSources);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSourceProvider);
 
@@ -27,7 +30,7 @@ namespace NuGet.Test
             Assert.Equal(localAppDataPath, oldEffectivePackageSources[0].PackageSource.Source);
 
             // Main Act
-            var newPackageSources = new List<PackageSource>() { TestSourceRepositoryUtility.V3PackageSource, localPackageSource };
+            var newPackageSources = new List<PackageSource> { TestSourceRepositoryUtility.V3PackageSource, localPackageSource };
             packageSourceProvider.SavePackageSources(newPackageSources);
 
             var newEffectivePackageSources = sourceRepositoryProvider.GetRepositories().ToList();
@@ -55,8 +58,11 @@ namespace NuGet.Test
             Assert.Equal(TestSourceRepositoryUtility.V2PackageSource.Source, oldEffectivePackageSources[0].PackageSource.Source);
 
             // Main Act
-            var newPackageSources = new List<PackageSource>() { TestSourceRepositoryUtility.V3PackageSource,
-                TestSourceRepositoryUtility.V2PackageSource };
+            var newPackageSources = new List<PackageSource>
+                {
+                    TestSourceRepositoryUtility.V3PackageSource,
+                    TestSourceRepositoryUtility.V2PackageSource
+                };
             packageSourceProvider.SavePackageSources(newPackageSources);
 
             var newEffectivePackageSources = sourceRepositoryProvider.GetRepositories().ToList();

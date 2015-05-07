@@ -1,22 +1,22 @@
-﻿using NuGet.PackageManagement;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.Frameworks;
-using NuGet.Versioning;
-using NuGet.Resolver;
-using NuGet.Packaging;
-using System.Diagnostics;
 using System.Threading;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGet.Versioning;
 
 namespace ResolverTestApp
 {
@@ -25,7 +25,7 @@ namespace ResolverTestApp
         [ImportMany]
         public Lazy<INuGetResourceProvider>[] ResourceProviders;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             // Import Dependencies  
             var p = new Program();
@@ -34,7 +34,7 @@ namespace ResolverTestApp
             var container = p.Initialize();
 
             // Json.NET is already installed
-            List<PackageReference> installed = new List<PackageReference>();
+            var installed = new List<PackageReference>();
             installed.Add(new PackageReference(new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.5")), NuGetFramework.Parse("portable-net40+win8")));
 
             // build the repo provider instead of importing it so that it has only v3
@@ -48,10 +48,10 @@ namespace ResolverTestApp
 
             // build repos
             var repos = repositoryProvider.GetRepositories();
-            Stopwatch timer = new Stopwatch();
+            var timer = new Stopwatch();
 
             // get a distinct set of packages from all repos
-            HashSet<PackageDependencyInfo> packages = new HashSet<PackageDependencyInfo>(PackageDependencyInfo.Comparer);
+            var packages = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
 
             // find all needed packages from online
             foreach (var repo in repos)
@@ -77,8 +77,8 @@ namespace ResolverTestApp
             timer.Restart();
 
             // find the best set to install
-            PackageResolver resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var toInstall = resolver.Resolve(new PackageIdentity[] { target }, packages, installed, CancellationToken.None);
+            var resolver = new PackageResolver(DependencyBehavior.Lowest);
+            var toInstall = resolver.Resolve(new[] { target }, packages, installed, CancellationToken.None);
 
             timer.Stop();
             Console.WriteLine("Resolve time: " + timer.Elapsed);
@@ -90,10 +90,9 @@ namespace ResolverTestApp
             }
         }
 
-
         private CompositionContainer Initialize()
         {
-            string assemblyName = Assembly.GetEntryAssembly().FullName;
+            var assemblyName = Assembly.GetEntryAssembly().FullName;
 
             using (var catalog = new AggregateCatalog(new AssemblyCatalog(Assembly.GetExecutingAssembly().Location),
                 new AssemblyCatalog(Assembly.Load(assemblyName)),
@@ -110,26 +109,26 @@ namespace ResolverTestApp
         /// </summary>
         private class V3OnlyPackageSourceProvider : IPackageSourceProvider
         {
-            public void DisablePackageSource(NuGet.Configuration.PackageSource source)
+            public void DisablePackageSource(PackageSource source)
             {
                 throw new NotImplementedException();
             }
 
-            public bool IsPackageSourceEnabled(NuGet.Configuration.PackageSource source)
+            public bool IsPackageSourceEnabled(PackageSource source)
             {
                 return true;
             }
 
-            public IEnumerable<NuGet.Configuration.PackageSource> LoadPackageSources()
+            public IEnumerable<PackageSource> LoadPackageSources()
             {
-                return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3") };
+                return new List<PackageSource> { new PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3") };
             }
 
 #pragma warning disable 0067
             public event EventHandler PackageSourcesChanged;
 #pragma warning restore 0067
 
-            public void SavePackageSources(IEnumerable<NuGet.Configuration.PackageSource> sources)
+            public void SavePackageSources(IEnumerable<PackageSource> sources)
             {
                 throw new NotImplementedException();
             }

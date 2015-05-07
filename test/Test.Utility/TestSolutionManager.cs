@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,15 +13,15 @@ namespace Test.Utility
 {
     public class TestSolutionManager : ISolutionManager
     {
-        private List<NuGetProject> NuGetProjects { get; set; }
+        private List<NuGetProject> NuGetProjects { get; }
 
-        public string SolutionDirectory { get; private set; }
+        public string SolutionDirectory { get; }
 
         private const string PackagesFolder = "packages";
 
         public TestSolutionManager(string solutionDirectory = null)
         {
-            SolutionDirectory = String.IsNullOrEmpty(solutionDirectory) ? TestFilesystemUtility.CreateRandomTestFolder() : solutionDirectory;
+            SolutionDirectory = string.IsNullOrEmpty(solutionDirectory) ? TestFilesystemUtility.CreateRandomTestFolder() : solutionDirectory;
             NuGetProjects = new List<NuGetProject>();
             NuGetProjectContext = new TestNuGetProjectContext();
         }
@@ -31,7 +34,7 @@ namespace Test.Utility
             }
 
             var packagesFolder = Path.Combine(SolutionDirectory, PackagesFolder);
-            projectName = String.IsNullOrEmpty(projectName) ? Guid.NewGuid().ToString() : projectName;
+            projectName = string.IsNullOrEmpty(projectName) ? Guid.NewGuid().ToString() : projectName;
             var projectFullPath = Path.Combine(SolutionDirectory, projectName);
             Directory.CreateDirectory(projectFullPath);
 
@@ -53,22 +56,13 @@ namespace Test.Utility
 
         public NuGetProject DefaultNuGetProject
         {
-            get
-            {
-                return NuGetProjects.FirstOrDefault();
-            }
+            get { return NuGetProjects.FirstOrDefault(); }
         }
 
         public string DefaultNuGetProjectName
         {
-            get
-            {
-                return DefaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { return DefaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name); }
+            set { throw new NotImplementedException(); }
         }
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
@@ -90,17 +84,10 @@ namespace Test.Utility
 
         public bool IsSolutionOpen
         {
-            get
-            {
-                return NuGetProjects.Count > 0;
-            }
+            get { return NuGetProjects.Count > 0; }
         }
 
-        public INuGetProjectContext NuGetProjectContext
-        {
-            get;
-            set;
-        }
+        public INuGetProjectContext NuGetProjectContext { get; set; }
 
 #pragma warning disable 0067
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -9,50 +12,32 @@ namespace NuGet.PackageManagement.UI
     /// Encapsulates the document model behind the Package Manager document window
     /// </summary>
     /// <remarks>
-    /// This class just proxies all calls through to the PackageManagerSession and implements IVsPersistDocData to fit
-    /// into the VS model. It's basically an adaptor that turns PackageManagerSession into an IVsPersistDocData so VS is happy.
+    /// This class just proxies all calls through to the PackageManagerSession and implements IVsPersistDocData to
+    /// fit into the VS model. It's basically an adaptor that turns PackageManagerSession into an IVsPersistDocData
+    /// so VS is happy.
     /// </remarks>
     public class PackageManagerModel : IVsPersistDocData, INotifyPropertyChanged
     {
         internal const string EditorFactoryGuidString = "EC269AD5-3EA8-4A13-AAF8-76741843B3CD";
         public static readonly Guid EditorFactoryGuid = new Guid(EditorFactoryGuidString);
 
-        private readonly INuGetUIContext _context;
-        private readonly INuGetUI _uiController;
-
         public PackageManagerModel(INuGetUI uiController, INuGetUIContext context)
         {
-            _context = context;
-            _uiController = uiController;
+            Context = context;
+            UIController = uiController;
         }
 
-        public INuGetUIContext Context
-        {
-            get
-            {
-                return _context;
-            }
-        }
+        public INuGetUIContext Context { get; }
 
-        public string SolutionName
-        {
-            get;
-            set;
-        }
+        public string SolutionName { get; set; }
 
-        public INuGetUI UIController
-        {
-            get
-            {
-                return _uiController;
-            }
-        }
+        public INuGetUI UIController { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));

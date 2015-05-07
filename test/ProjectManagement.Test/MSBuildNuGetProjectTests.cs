@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,6 +20,7 @@ namespace ProjectManagement.Test
     public class MSBuildNuGetProjectTests
     {
         #region Assembly references tests
+
         [Fact]
         public async Task TestMSBuildNuGetProjectInstallReferences()
         {
@@ -26,7 +30,8 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
-            var token = CancellationToken.None; ;
+            var token = CancellationToken.None;
+            ;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -134,10 +139,11 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
-            var token = CancellationToken.None; ;
+            var token = CancellationToken.None;
+            ;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
-            var testNuGetProjectContext = new TestNuGetProjectContext() { SkipAssemblyReferences = true };
+            var testNuGetProjectContext = new TestNuGetProjectContext { SkipAssemblyReferences = true };
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
 
@@ -215,16 +221,18 @@ namespace ProjectManagement.Test
 
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
-            var errorMessage = String.Format(CultureInfo.CurrentCulture,
-                           Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
+            var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
             Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
+
         #endregion
 
         #region Framework reference tests
+
         [Fact]
         public async Task TestMSBuildNuGetProjectInstallFrameworkReferences()
         {
@@ -272,9 +280,11 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
+
         #endregion
 
         #region Content files tests
+
         [Fact]
         public async Task TestMSBuildNuGetProjectInstallContentFiles()
         {
@@ -572,9 +582,11 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
+
         #endregion
 
         #region XmlTransform tests
+
         [Fact]
         public async Task TestMSBuildNuGetProjectInstallWebConfigTransform()
         {
@@ -592,7 +604,7 @@ namespace ProjectManagement.Test
 
             // Important: Added "web.config" to project so that the transform may get applied
             msBuildNuGetProjectSystem.AddFile("web.config", StreamUtility.StreamFromString(
-@"<configuration>
+                @"<configuration>
     <system.webServer>
       <modules>
         <add name=""MyOldModule"" type=""Sample.MyOldModule"" />
@@ -612,7 +624,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithWebConfigTransform(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString(),
-@"<configuration>
+                @"<configuration>
     <system.webServer>
         <modules>
             <add name=""MyNewModule"" type=""Sample.MyNewModule"" />
@@ -675,7 +687,7 @@ namespace ProjectManagement.Test
 
             // Important: Added "web.config" to project so that the transform may get applied
             msBuildNuGetProjectSystem.AddFile("web.config", StreamUtility.StreamFromString(
-@"<configuration>
+                @"<configuration>
     <system.web>
         <compilation baz=""test"" />
     </system.web>
@@ -693,7 +705,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithWebConfigTransform(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString(),
-@"<configuration>
+                @"<configuration>
     <system.web>
         <compilation debug=""true"" targetFramework=""4.0"" />
     </system.web>
@@ -759,6 +771,7 @@ namespace ProjectManagement.Test
         #endregion
 
         #region Import tests
+
         [Fact]
         public async Task TestMSBuildNuGetProjectAddImport()
         {
@@ -868,9 +881,11 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
+
         #endregion
 
         #region Powershell tests
+
         [Fact]
         public async Task TestMSBuildNuGetProjectPSInstallAndInit()
         {
@@ -993,9 +1008,11 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
+
         #endregion
 
         #region Legacy solution-level packages as project packages
+
         [Fact]
         public async Task TestMSBuildNuGetProjectInstallLegacySolutionLevelPackage()
         {
@@ -1096,9 +1113,11 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
+
         #endregion
 
         #region Anamolies
+
         [Fact]
         public async Task TestMSBuildNuGetProjectIncompatiblePackage()
         {
@@ -1142,8 +1161,8 @@ namespace ProjectManagement.Test
 
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
-            var errorMessage = String.Format(CultureInfo.CurrentCulture,
-                           Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
+            var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
             Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
@@ -1193,8 +1212,8 @@ namespace ProjectManagement.Test
 
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
-            var errorMessage = String.Format(CultureInfo.CurrentCulture,
-                           Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
+            var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
             Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
@@ -1359,7 +1378,8 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
-            var token = CancellationToken.None; ;
+            var token = CancellationToken.None;
+            ;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1422,7 +1442,8 @@ namespace ProjectManagement.Test
             var randomPackagesFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
-            var token = CancellationToken.None; ;
+            var token = CancellationToken.None;
+            ;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1492,12 +1513,13 @@ namespace ProjectManagement.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
+
         #endregion
 
-        static void AssertEqualExceptWhitespaceAndLineEndings(string expected, string actual)
+        private static void AssertEqualExceptWhitespaceAndLineEndings(string expected, string actual)
         {
-            expected = Regex.Replace(Regex.Replace(expected, @"^\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
-            actual = Regex.Replace(Regex.Replace(actual, @"^\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
+            expected = Regex.Replace(Regex.Replace(expected, @"^\s*", "", RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
+            actual = Regex.Replace(Regex.Replace(actual, @"^\s*", "", RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
 
             Assert.Equal(expected, actual);
         }

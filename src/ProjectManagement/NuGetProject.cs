@@ -1,18 +1,23 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.ProjectManagement
 {
     public abstract class NuGetProject
     {
-        protected NuGetProject() : this(new Dictionary<string, object>()) { }
+        protected NuGetProject()
+            : this(new Dictionary<string, object>())
+        {
+        }
+
         protected NuGetProject(IDictionary<string, object> metadata)
         {
             if (metadata == null)
@@ -21,42 +26,51 @@ namespace NuGet.ProjectManagement
             }
             InternalMetadata = metadata;
         }
+
         protected IDictionary<string, object> InternalMetadata { get; set; }
+
         public IReadOnlyDictionary<string, object> Metadata
         {
-            get
-            {
-                return (IReadOnlyDictionary<string, object>)InternalMetadata;
-            }
+            get { return (IReadOnlyDictionary<string, object>)InternalMetadata; }
         }
+
         // TODO: Consider adding CancellationToken here
         /// <summary>
         /// This installs a package into the NuGetProject using the packageStream passed in
-        /// <param name="packageStream"></param> should be seekable
+        /// <param name="packageStream"></param>
+        /// should be seekable
         /// </summary>
-        /// <returns>Returns false if the package was already present in the NuGetProject. On successful installation, returns true</returns>
+        /// <returns>
+        /// Returns false if the package was already present in the NuGetProject. On successful installation,
+        /// returns true
+        /// </returns>
         public abstract Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token);
+
         /// <summary>
         /// This uninstalls the package from the NuGetProject, if found
         /// </summary>
         /// <returns>Returns false if the package was not found. On successful uninstallation, returns true</returns>
         public abstract Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token);
+
         /// <summary>
         /// GetInstalledPackages will be used by Dependency Resolver and more
         /// </summary>
         /// <returns></returns>
         public abstract Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token);
+
         public virtual Task PreProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Do Nothing by default
             return Task.FromResult(0);
         }
+
         public virtual Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Do Nothing by default
             return Task.FromResult(0);
         }
+
         public T GetMetadata<T>(string key)
         {
             if (key == null)
@@ -64,7 +78,7 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("key");
             }
 
-            object value = Metadata[key];
+            var value = Metadata[key];
             return (T)value;
         }
 
@@ -90,8 +104,8 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        ///  This static helper method returns the unique name on the project if present
-        ///  Otherwise, returns the name. If name is not present, it will throw
+        /// This static helper method returns the unique name on the project if present
+        /// Otherwise, returns the name. If name is not present, it will throw
         /// </summary>
         /// <param name="nuGetProject"></param>
         /// <returns></returns>
@@ -103,7 +117,7 @@ namespace NuGet.ProjectManagement
             }
 
             string nuGetProjectName;
-            if (!nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.UniqueName, out nuGetProjectName))
+            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out nuGetProjectName))
             {
                 // Unique name is not set, simply return the name
                 nuGetProjectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
@@ -14,7 +12,9 @@ namespace NuGet.PackageManagement.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (parameter == null)
+            {
                 return null;
+            }
 
             if (StandaloneSwitch.IsRunningStandalone)
             {

@@ -1,9 +1,7 @@
-﻿using NuGet.Resolver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Resolver;
 
 namespace NuGet.PackageManagement
 {
@@ -16,7 +14,7 @@ namespace NuGet.PackageManagement
         /// The only public constructor to create the resolution context
         /// </summary>
         public ResolutionContext(
-            DependencyBehavior dependencyBehavior = Resolver.DependencyBehavior.Lowest,
+            DependencyBehavior dependencyBehavior = DependencyBehavior.Lowest,
             bool includePrelease = false,
             bool includeUnlisted = true)
         {
@@ -29,10 +27,12 @@ namespace NuGet.PackageManagement
         /// Determines the dependency behavior
         /// </summary>
         public DependencyBehavior DependencyBehavior { get; private set; }
+
         /// <summary>
         /// Determines if prerelease may be included in the installation
         /// </summary>
         public bool IncludePrerelease { get; private set; }
+
         /// <summary>
         /// Determines if unlisted packages may be included in installation
         /// </summary>

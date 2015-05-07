@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -11,14 +14,14 @@ namespace NuGet.PackageManagement.UI
 
         public SimpleSearchBox()
         {
-            this.KeyDown += SimpleSearchBox_KeyDown;
+            KeyDown += SimpleSearchBox_KeyDown;
         }
 
         private void SimpleSearchBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                _control.Search(this.Text.Trim());
+                _control.Search(Text.Trim());
             }
         }
 
@@ -29,7 +32,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Activate()
         {
-            this.Focus();
+            Focus();
         }
 
         public string HelpTopic { get; set; }
@@ -57,7 +60,7 @@ namespace NuGet.PackageManagement.UI
 
         public IVsSearchQuery SearchQuery
         {
-            get { return new SimpleSearchQuery(this.Text); }
+            get { return new SimpleSearchQuery(Text); }
         }
 
         public IVsSearchQueryParser SearchQueryParser
@@ -91,11 +94,7 @@ namespace NuGet.PackageManagement.UI
                 get { throw new NotImplementedException(); }
             }
 
-            public string SearchString
-            {
-                get;
-                private set;
-            }
+            public string SearchString { get; }
         }
     }
 }

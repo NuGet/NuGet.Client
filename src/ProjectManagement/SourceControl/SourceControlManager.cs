@@ -1,13 +1,17 @@
-﻿using NuGet.Configuration;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Configuration;
 
 namespace NuGet.ProjectManagement
 {
     public abstract class SourceControlManager
     {
         protected ISettings Settings { get; set; }
+
         protected SourceControlManager(ISettings settings)
         {
             if (settings == null)

@@ -1,27 +1,18 @@
-﻿using NuGet.ProjectManagement;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
     [Export(typeof(INuGetUIFactory))]
     public class NuGetUIFactory : INuGetUIFactory
     {
-
-        public NuGetUIFactory()
-        {
-            // TODO: import options page
-        }
-
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
         public INuGetUI Create(
-            INuGetUIContext uiContext, 
+            INuGetUIContext uiContext,
             NuGetUIProjectContext uiProjectContext)
         {
             return new NuGetUI(uiContext, uiProjectContext);

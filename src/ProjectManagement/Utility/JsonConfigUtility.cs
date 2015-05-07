@@ -1,11 +1,13 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Newtonsoft.Json.Linq;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using NuGet.Frameworks;
 
 namespace NuGet.ProjectManagement
 {
@@ -27,8 +29,6 @@ namespace NuGet.ProjectManagement
                     yield return ParseDependency(dependency);
                 }
             }
-
-            yield break;
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace NuGet.ProjectManagement
         {
             var property = dependencyToken as JProperty;
 
-            string id = property.Name;
+            var id = property.Name;
 
             VersionRange range = null;
 
@@ -104,7 +104,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static IEnumerable<NuGetFramework> GetFrameworks(JObject json)
         {
-            List<NuGetFramework> results = new List<NuGetFramework>();
+            var results = new List<NuGetFramework>();
 
             JToken node = null;
             if (json.TryGetValue("frameworks", out node))

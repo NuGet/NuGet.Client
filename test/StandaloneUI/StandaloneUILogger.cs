@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using NuGet.PackageManagement.UI;
@@ -42,7 +44,7 @@ namespace StandaloneUI
             if (!_uiDispatcher.CheckAccess())
             {
                 _uiDispatcher.Invoke(
-                    new Action(Start));
+                    Start);
                 return;
             }
 

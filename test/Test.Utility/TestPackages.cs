@@ -1,17 +1,17 @@
-﻿using Ionic.Zip;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using Ionic.Zip;
+using NuGet.Versioning;
 
 namespace Test.Utility
 {
     public static class TestPackages
     {
-        private static string NuspecStringFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
+        private static readonly string NuspecStringFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
                               <metadata{3}>
                                 <id>{0}</id>
@@ -25,18 +25,18 @@ namespace Test.Utility
                               </metadata>
                             </package>";
 
-        private static string FrameworkAssembliesStringFormat = @"<frameworkAssemblies>
+        private static readonly string FrameworkAssembliesStringFormat = @"<frameworkAssemblies>
             <frameworkAssembly assemblyName='{0}' targetFramework='{1}' />
         </frameworkAssemblies>";
 
-        private static string DependenciesStringFormat = @"<dependencies>
+        private static readonly string DependenciesStringFormat = @"<dependencies>
             <dependency id='{0}' version='{1}' />
         </dependencies>";
 
         public static FileInfo GetLegacyTestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("lib/test.dll", new byte[] { 0 });
             zipFile.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
@@ -52,7 +52,7 @@ namespace Test.Utility
         public static FileInfo GetNet45TestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("tools/tool.exe", new byte[] { 0 });
             zipFile.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
@@ -66,7 +66,7 @@ namespace Test.Utility
         public static FileInfo GetEmptyNet45TestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("lib/net45/", new byte[] { 0 });
 
@@ -79,7 +79,7 @@ namespace Test.Utility
         public static FileInfo GetLegacyContentPackage(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("Content/", new byte[] { 0 });
             zipFile.AddEntry("Content/Scripts/", new byte[] { 0 });
@@ -96,7 +96,7 @@ namespace Test.Utility
         public static FileInfo GetPackageWithPPFiles(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("Content/", new byte[] { 0 });
             zipFile.AddEntry("Content/Bar.cs.pp", new byte[] { 0 });
@@ -111,7 +111,7 @@ namespace Test.Utility
         public static FileInfo GetContentPackageWithTargetFramework(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("Content/", new byte[] { 0 });
             zipFile.AddEntry("Content/net45/", new byte[] { 0 });
@@ -125,11 +125,11 @@ namespace Test.Utility
 
             return fileInfo;
         }
-        
+
         public static FileInfo GetPackageWithWebConfigTransform(string path, string packageId, string packageVersion, string webConfigTransformContent)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("Content/", new byte[] { 0 });
             zipFile.AddEntry("Content/web.config.transform", webConfigTransformContent);
@@ -142,7 +142,7 @@ namespace Test.Utility
         public static FileInfo GetPackageWithBuildFiles(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("build/net45/" + packageId + ".targets", new byte[] { 0 });
             SetSimpleNuspec(zipFile, packageId, packageVersion);
@@ -154,7 +154,7 @@ namespace Test.Utility
         public static FileInfo GetPackageWithFrameworkReference(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             SetSimpleNuspec(zipFile, packageId, packageVersion, frameworkAssemblies: true);
             zipFile.Save();
@@ -165,7 +165,7 @@ namespace Test.Utility
         public static FileInfo GetPackageWithPowershellScripts(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("tools/InIT.ps1", new byte[] { 0 });
             zipFile.AddEntry("tools/net45/inSTAll.ps1", new byte[] { 0 });
@@ -179,7 +179,7 @@ namespace Test.Utility
         public static FileInfo GetLegacySolutionLevelPackage(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             zipFile.AddEntry("tools/tool.exe", new byte[] { 0 });
             SetSimpleNuspec(zipFile, packageId, packageVersion);
@@ -191,7 +191,7 @@ namespace Test.Utility
         public static FileInfo GetInvalidPackage(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             SetSimpleNuspec(zipFile, packageId, packageVersion);
             zipFile.Save();
@@ -202,7 +202,7 @@ namespace Test.Utility
         public static FileInfo GetEmptyPackageWithDependencies(string path, string packageId, string packageVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             SetSimpleNuspec(zipFile, packageId, packageVersion, false, null, true);
             zipFile.Save();
@@ -213,7 +213,7 @@ namespace Test.Utility
         public static FileInfo GetPackageWithMinClientVersion(string path, string packageId, string packageVersion, SemanticVersion minClientVersion)
         {
             ZipFile zipFile;
-            FileInfo fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             SetSimpleNuspec(zipFile, packageId, packageVersion, false, minClientVersion);
             zipFile.Save();
@@ -223,8 +223,8 @@ namespace Test.Utility
 
         private static FileInfo GetFileInfo(string path, string packageId, string packageVersion, out ZipFile zipFile)
         {
-            string file = Guid.NewGuid().ToString() + ".nupkg";
-            FileInfo fileInfo = new FileInfo(file);
+            var file = Guid.NewGuid() + ".nupkg";
+            var fileInfo = new FileInfo(file);
 
             zipFile = new ZipFile(fileInfo.FullName);
 
@@ -237,18 +237,19 @@ namespace Test.Utility
         }
 
         private static readonly string MinClientVersionStringFormat = "minClientVersion=\"{0}\"";
+
         private static string GetSimpleNuspecString(string packageId, string packageVersion, bool frameworkAssemblies, SemanticVersion minClientVersion, bool dependencies)
         {
-            string frameworkAssemblyReferences = frameworkAssemblies ?
-                String.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : String.Empty;
+            var frameworkAssemblyReferences = frameworkAssemblies ?
+                string.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
 
-            string minClientVersionString = minClientVersion == null ? String.Empty :
-                String.Format(MinClientVersionStringFormat, minClientVersion.ToNormalizedString());
+            var minClientVersionString = minClientVersion == null ? string.Empty :
+                string.Format(MinClientVersionStringFormat, minClientVersion.ToNormalizedString());
 
-            string dependenciesString = dependencies ?
-                String.Format(DependenciesStringFormat, "Owin", "1.0") : String.Empty;
-            return String.Format(NuspecStringFormat, packageId, packageVersion,
-                String.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString),
+            var dependenciesString = dependencies ?
+                string.Format(DependenciesStringFormat, "Owin", "1.0") : string.Empty;
+            return string.Format(NuspecStringFormat, packageId, packageVersion,
+                string.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString),
                 minClientVersionString);
         }
     }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +12,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
-using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -44,12 +46,12 @@ namespace NuGet.PackageManagement.UI
 
                 // TODO: should stable packages allow prerelease dependencies if include prerelease was checked?
                 // Allow prerelease packages only if the target is prerelease
-                bool includePrelease = userAction.PackageIdentity.Version.IsPrerelease || userAction.Action == NuGetProjectActionType.Uninstall;
-                bool includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
+                var includePrelease = userAction.PackageIdentity.Version.IsPrerelease || userAction.Action == NuGetProjectActionType.Uninstall;
+                var includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
 
-                ResolutionContext resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted);
+                var resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted);
 
-                IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions = await GetActionsAsync(
+                var actions = await GetActionsAsync(
                     uiService,
                     projects,
                     userAction,
@@ -58,7 +60,7 @@ namespace NuGet.PackageManagement.UI
                     resolutionContext: resolutionContext,
                     projectContext: uiService.ProgressWindow,
                     token: token);
-                IEnumerable<PreviewResult> results = GetPreviewResults(actions);
+                var results = GetPreviewResults(actions);
 
                 // preview window
                 if (uiService.DisplayPreviewWindow)
@@ -73,7 +75,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                bool accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
+                var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
                 if (!accepted)
                 {
                     return;
@@ -105,7 +107,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken token)
         {
             // find all the packages that might need a license acceptance
-            HashSet<PackageIdentity> licenseCheck = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+            var licenseCheck = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
             foreach (var result in results)
             {
                 foreach (var pkg in result.Added)
@@ -142,12 +144,13 @@ namespace NuGet.PackageManagement.UI
         protected async Task ExecuteActionsAsync(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions,
             NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
         {
-            HashSet<PackageIdentity> processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+            var processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
             foreach (var projectActions in actions.GroupBy(e => e.Item1))
             {
                 var nuGetProjectActions = projectActions.Select(e => e.Item2);
                 var directInstall = GetDirectInstall(nuGetProjectActions, userAction, projectContext.CommonOperations);
-                if (directInstall != null && !processedDirectInstalls.Contains(directInstall))
+                if (directInstall != null
+                    && !processedDirectInstalls.Contains(directInstall))
                 {
                     NuGetPackageManager.SetDirectInstall(directInstall, projectContext);
                     processedDirectInstalls.Add(directInstall);
@@ -161,17 +164,20 @@ namespace NuGet.PackageManagement.UI
             UserAction userAction,
             ICommonOperations commonOperations)
         {
-            if (commonOperations != null && userAction != null && userAction.Action == NuGetProjectActionType.Install && nuGetProjectActions.Any())
+            if (commonOperations != null
+                && userAction != null
+                && userAction.Action == NuGetProjectActionType.Install
+                && nuGetProjectActions.Any())
             {
                 PackageIdentity directInstall = null;
-                if(userAction.PackageIdentity != null)
+                if (userAction.PackageIdentity != null)
                 {
                     directInstall = userAction.PackageIdentity;
                 }
                 else
                 {
                     var identitiesWithSameId = nuGetProjectActions.Where(n => n.PackageIdentity.Id.Equals(userAction)).ToList();
-                    if(identitiesWithSameId.Count == 1)
+                    if (identitiesWithSameId.Count == 1)
                     {
                         directInstall = identitiesWithSameId[0].PackageIdentity;
                     }
@@ -200,7 +206,7 @@ namespace NuGet.PackageManagement.UI
             INuGetProjectContext projectContext,
             CancellationToken token)
         {
-            List<Tuple<NuGetProject, NuGetProjectAction>> results = new List<Tuple<NuGetProject, NuGetProjectAction>>();
+            var results = new List<Tuple<NuGetProject, NuGetProjectAction>>();
 
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
             if (userAction.Action == NuGetProjectActionType.Install)
@@ -217,7 +223,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                UninstallationContext uninstallationContext = new UninstallationContext(
+                var uninstallationContext = new UninstallationContext(
                     removeDependencies: removeDependencies,
                     forceRemove: forceRemove);
 
@@ -244,7 +250,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         protected IEnumerable<PreviewResult> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
         {
-            List<PreviewResult> results = new List<PreviewResult>();
+            var results = new List<PreviewResult>();
             var actionsByProject = projectActions.GroupBy(action => action.Item1);
             foreach (var actions in actionsByProject)
             {
@@ -266,9 +272,9 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                List<PackageIdentity> added = new List<PackageIdentity>();
-                List<PackageIdentity> deleted = new List<PackageIdentity>();
-                List<UpdatePreviewResult> updated = new List<UpdatePreviewResult>();
+                var added = new List<PackageIdentity>();
+                var deleted = new List<PackageIdentity>();
+                var updated = new List<UpdatePreviewResult>();
                 foreach (var packageId in packageIds)
                 {
                     var isInstalled = installed.ContainsKey(packageId);
@@ -292,7 +298,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                PreviewResult result = new PreviewResult(actions.Key, added, deleted, updated);
+                var result = new PreviewResult(actions.Key, added, deleted, updated);
                 results.Add(result);
             }
 
@@ -306,7 +312,7 @@ namespace NuGet.PackageManagement.UI
         {
             var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
-            List<UIPackageMetadata> results = new List<UIPackageMetadata>();
+            var results = new List<UIPackageMetadata>();
             foreach (var package in packages)
             {
                 var metadata = await GetPackageMetadataAsync(sources, package, token);

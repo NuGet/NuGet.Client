@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -9,7 +12,6 @@ namespace ProjectManagement.Test
 {
     public class JsonConfigUtilityTests
     {
-
         [Fact]
         public void JsonConfigUtility_GetTargetFramework()
         {
@@ -73,9 +75,9 @@ namespace ProjectManagement.Test
         {
             get
             {
-                JObject json = new JObject();
+                var json = new JObject();
 
-                JObject frameworks = new JObject();
+                var frameworks = new JObject();
                 frameworks["netcore50"] = new JObject();
 
                 json["frameworks"] = frameworks;
@@ -85,6 +87,5 @@ namespace ProjectManagement.Test
                 return json;
             }
         }
-
     }
 }

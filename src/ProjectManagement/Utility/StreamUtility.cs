@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -31,7 +33,7 @@ namespace NuGet.ProjectManagement
         {
             Debug.Assert(otherStream.CanSeek);
 
-            bool isBinaryFile = IsBinary(otherStream);
+            var isBinaryFile = IsBinary(otherStream);
             otherStream.Seek(0, SeekOrigin.Begin);
 
             return isBinaryFile ? CompareBinary(stream, otherStream) : CompareText(stream, otherStream);
@@ -42,34 +44,34 @@ namespace NuGet.ProjectManagement
             // Quick and dirty trick to check if a stream represents binary content.
             // We read the first 30 bytes. If there's a character 0 in those bytes, 
             // we assume this is a binary file. 
-            byte[] a = new byte[30];
-            int bytesRead = stream.Read(a, 0, 30);
-            int byteZeroIndex = Array.FindIndex(a, 0, bytesRead, d => d == 0);
+            var a = new byte[30];
+            var bytesRead = stream.Read(a, 0, 30);
+            var byteZeroIndex = Array.FindIndex(a, 0, bytesRead, d => d == 0);
             return byteZeroIndex >= 0;
         }
 
         private static bool CompareText(Stream stream, Stream otherStream)
         {
-            IEnumerable<string> lines = ReadStreamLines(stream);
-            IEnumerable<string> otherLines = ReadStreamLines(otherStream);
+            var lines = ReadStreamLines(stream);
+            var otherLines = ReadStreamLines(otherStream);
 
             // IMPORTANT: this comparison has to be case-sensitive, hence Ordinal instead of OrdinalIgnoreCase
             return lines.SequenceEqual(otherLines, StringComparer.Ordinal);
         }
 
         /// <summary>
-        /// Read the specified stream and return all lines, but ignoring those within the 
+        /// Read the specified stream and return all lines, but ignoring those within the
         /// NUGET: BEGIN LICENSE TEXT and NUGET: END LICENSE TEXT markers, case-insenstively.
         /// </summary>
         private static IEnumerable<string> ReadStreamLines(Stream stream)
         {
             using (var reader = new StreamReader(stream))
             {
-                bool hasSeenBeginLine = false;
+                var hasSeenBeginLine = false;
 
                 while (reader.Peek() != -1)
                 {
-                    string line = reader.ReadLine();
+                    var line = reader.ReadLine();
 
                     if (line.IndexOf(Constants.EndIgnoreMarker, StringComparison.OrdinalIgnoreCase) > -1)
                     {
@@ -90,7 +92,8 @@ namespace NuGet.ProjectManagement
 
         private static bool CompareBinary(Stream stream, Stream otherStream)
         {
-            if (stream.CanSeek && otherStream.CanSeek)
+            if (stream.CanSeek
+                && otherStream.CanSeek)
             {
                 if (stream.Length != otherStream.Length)
                 {
@@ -98,22 +101,22 @@ namespace NuGet.ProjectManagement
                 }
             }
 
-            byte[] buffer = new byte[4 * 1024];
-            byte[] otherBuffer = new byte[4 * 1024];
+            var buffer = new byte[4 * 1024];
+            var otherBuffer = new byte[4 * 1024];
 
-            int bytesRead = 0;
+            var bytesRead = 0;
             do
             {
                 bytesRead = stream.Read(buffer, 0, buffer.Length);
                 if (bytesRead > 0)
                 {
-                    int otherBytesRead = otherStream.Read(otherBuffer, 0, bytesRead);
+                    var otherBytesRead = otherStream.Read(otherBuffer, 0, bytesRead);
                     if (bytesRead != otherBytesRead)
                     {
                         return false;
                     }
 
-                    for (int i = 0; i < bytesRead; i++)
+                    for (var i = 0; i < bytesRead; i++)
                     {
                         if (buffer[i] != otherBuffer[i])
                         {

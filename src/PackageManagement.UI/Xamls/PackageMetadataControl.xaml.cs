@@ -1,4 +1,8 @@
-﻿using System.Windows.Controls;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Windows;
+using System.Windows.Controls;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -11,19 +15,19 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
-            Visibility = System.Windows.Visibility.Collapsed;
-            this.DataContextChanged += PackageMetadataControl_DataContextChanged;
+            Visibility = Visibility.Collapsed;
+            DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
 
-        void PackageMetadataControl_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+        private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (DataContext is DetailedPackageMetadata)
             {
-                Visibility = System.Windows.Visibility.Visible;
+                Visibility = Visibility.Visible;
             }
             else
             {
-                Visibility = System.Windows.Visibility.Collapsed;
+                Visibility = Visibility.Collapsed;
             }
         }
     }

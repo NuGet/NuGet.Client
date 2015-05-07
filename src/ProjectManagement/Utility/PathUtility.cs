@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -22,7 +22,7 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("relativePath");
             }
 
-            Uri resultUri = new Uri(new Uri(basePath), new Uri(relativePath, UriKind.Relative));
+            var resultUri = new Uri(new Uri(basePath), new Uri(relativePath, UriKind.Relative));
             return resultUri.LocalPath;
         }
 
@@ -44,7 +44,8 @@ namespace NuGet.ProjectManagement
             }
 
             // if the path is empty, we want to return the original string instead of a single trailing character.
-            if (path.Length == 0 || path[path.Length - 1] == trailingCharacter)
+            if (path.Length == 0
+                || path[path.Length - 1] == trailingCharacter)
             {
                 return path;
             }
@@ -67,15 +68,15 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("path2");
             }
 
-            Uri source = new Uri(path1);
-            Uri target = new Uri(path2);
+            var source = new Uri(path1);
+            var target = new Uri(path2);
 
             return GetPath(source.MakeRelativeUri(target));
         }
 
         public static string GetPath(Uri uri)
         {
-            string path = uri.OriginalString;
+            var path = uri.OriginalString;
             if (path.StartsWith("/", StringComparison.Ordinal))
             {
                 path = path.Substring(1);
@@ -103,18 +104,15 @@ namespace NuGet.ProjectManagement
                 // will be interpreted as variables. Thus we escape the $ characters.
                 return "\"" + path.Replace("$", "`$") + "\"";
             }
-            else
-            {
-                // if the path doesn't have apostrophe, then it's safe to enclose it with apostrophes
-                return "'" + path + "'";
-            }
+            // if the path doesn't have apostrophe, then it's safe to enclose it with apostrophes
+            return "'" + path + "'";
         }
 
         public static string SmartTruncate(string path, int maxWidth)
         {
             if (maxWidth < 6)
             {
-                string message = String.Format(CultureInfo.CurrentCulture, Strings.Argument_Must_Be_GreaterThanOrEqualTo, 6);
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Argument_Must_Be_GreaterThanOrEqualTo, 6);
                 throw new ArgumentOutOfRangeException("maxWidth", message);
             }
 
@@ -130,32 +128,29 @@ namespace NuGet.ProjectManagement
 
             // get the leaf folder name of this directory path
             // e.g. if the path is C:\documents\projects\visualstudio\, we want to get the 'visualstudio' part.
-            string folder = path.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? String.Empty;
+            var folder = path.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
             // surround the folder name with the pair of \ characters.
             folder = Path.DirectorySeparatorChar + folder + Path.DirectorySeparatorChar;
 
-            string root = Path.GetPathRoot(path);
-            int remainingWidth = maxWidth - root.Length - 3;       // 3 = length(ellipsis)
+            var root = Path.GetPathRoot(path);
+            var remainingWidth = maxWidth - root.Length - 3; // 3 = length(ellipsis)
 
             // is the directory name too big? 
             if (folder.Length >= remainingWidth)
             {
                 // yes drop leading backslash and eat into name
-                return String.Format(
+                return string.Format(
                     CultureInfo.InvariantCulture,
                     "{0}...{1}",
                     root,
                     folder.Substring(folder.Length - remainingWidth));
             }
-            else
-            {
-                // no, show like VS solution explorer (drive+ellipsis+end)
-                return String.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}...{1}",
-                    root,
-                    folder);
-            }
+            // no, show like VS solution explorer (drive+ellipsis+end)
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}...{1}",
+                root,
+                folder);
         }
 
         public static bool IsSubdirectory(string basePath, string path)

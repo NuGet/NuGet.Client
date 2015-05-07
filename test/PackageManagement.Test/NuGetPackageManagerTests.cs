@@ -1,11 +1,6 @@
-﻿using NuGet.Configuration;
-using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Resolver;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Resolver;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
@@ -21,48 +24,48 @@ namespace NuGet.Test
     public class NuGetPackageManagerTests
     {
         // Following are the various sets of packages that are small in size. To be used by the functional tests
-        private List<PackageIdentity> NoDependencyLibPackages = new List<PackageIdentity>()
-        {
-            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("2.0.30506")),
-            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.0.0")),
-            new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.2.0-rc")),
-            new PackageIdentity("Antlr", new NuGetVersion("3.5.0.2")),
-        };
+        private readonly List<PackageIdentity> NoDependencyLibPackages = new List<PackageIdentity>
+            {
+                new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("2.0.30506")),
+                new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.0.0")),
+                new PackageIdentity("Microsoft.AspNet.Razor", new NuGetVersion("3.2.0-rc")),
+                new PackageIdentity("Antlr", new NuGetVersion("3.5.0.2"))
+            };
 
-        private List<PackageIdentity> PackageWithDependents = new List<PackageIdentity>()
-        {
-            new PackageIdentity("jQuery", new NuGetVersion("1.4.4")),
-            new PackageIdentity("jQuery", new NuGetVersion("1.6.4")),
-            new PackageIdentity("jQuery.Validation", new NuGetVersion("1.13.1")),
-            new PackageIdentity("jQuery.UI.Combined", new NuGetVersion("1.11.2")),
-        };
+        private readonly List<PackageIdentity> PackageWithDependents = new List<PackageIdentity>
+            {
+                new PackageIdentity("jQuery", new NuGetVersion("1.4.4")),
+                new PackageIdentity("jQuery", new NuGetVersion("1.6.4")),
+                new PackageIdentity("jQuery.Validation", new NuGetVersion("1.13.1")),
+                new PackageIdentity("jQuery.UI.Combined", new NuGetVersion("1.11.2"))
+            };
 
-        private List<PackageIdentity> PackageWithDeepDependency = new List<PackageIdentity>()
-        {
-            new PackageIdentity("Microsoft.Data.Edm", new NuGetVersion("5.6.2")),
-            new PackageIdentity("Microsoft.WindowsAzure.ConfigurationManager" , new NuGetVersion("1.8.0.0")),
-            new PackageIdentity("Newtonsoft.Json", new NuGetVersion("5.0.8")),
-            new PackageIdentity("System.Spatial", new NuGetVersion("5.6.2")),
-            new PackageIdentity("Microsoft.Data.OData", new NuGetVersion("5.6.2")),
-            new PackageIdentity("Microsoft.Data.Services.Client", new NuGetVersion("5.6.2")),
-            new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.0")),
-        };
+        private readonly List<PackageIdentity> PackageWithDeepDependency = new List<PackageIdentity>
+            {
+                new PackageIdentity("Microsoft.Data.Edm", new NuGetVersion("5.6.2")),
+                new PackageIdentity("Microsoft.WindowsAzure.ConfigurationManager", new NuGetVersion("1.8.0.0")),
+                new PackageIdentity("Newtonsoft.Json", new NuGetVersion("5.0.8")),
+                new PackageIdentity("System.Spatial", new NuGetVersion("5.6.2")),
+                new PackageIdentity("Microsoft.Data.OData", new NuGetVersion("5.6.2")),
+                new PackageIdentity("Microsoft.Data.Services.Client", new NuGetVersion("5.6.2")),
+                new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.0"))
+            };
 
-        private List<PackageIdentity> MorePackageWithDependents = new List<PackageIdentity>()
-        {
-            new PackageIdentity("Microsoft.Bcl.Build", new NuGetVersion("1.0.14")),
-            new PackageIdentity("Microsoft.Bcl.Build", new NuGetVersion("1.0.21")),
-            new PackageIdentity("Microsoft.Bcl", new NuGetVersion("1.1.9")),
-            new PackageIdentity("Microsoft.Net.Http", new NuGetVersion("2.2.22")),
-            new PackageIdentity("Microsoft.Net.Http", new NuGetVersion("2.2.28")),
-        };
+        private readonly List<PackageIdentity> MorePackageWithDependents = new List<PackageIdentity>
+            {
+                new PackageIdentity("Microsoft.Bcl.Build", new NuGetVersion("1.0.14")),
+                new PackageIdentity("Microsoft.Bcl.Build", new NuGetVersion("1.0.21")),
+                new PackageIdentity("Microsoft.Bcl", new NuGetVersion("1.1.9")),
+                new PackageIdentity("Microsoft.Net.Http", new NuGetVersion("2.2.22")),
+                new PackageIdentity("Microsoft.Net.Http", new NuGetVersion("2.2.28"))
+            };
 
-        private List<PackageIdentity> LatestAspNetPackages = new List<PackageIdentity>()
-        {
-            new PackageIdentity("Microsoft.AspNet.Mvc", new NuGetVersion("6.0.0-beta3")),
-            new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta3")),
-            new PackageIdentity("Microsoft.AspNet.Mvc.Core",  new NuGetVersion("6.0.0-beta3")),
-        };
+        private readonly List<PackageIdentity> LatestAspNetPackages = new List<PackageIdentity>
+            {
+                new PackageIdentity("Microsoft.AspNet.Mvc", new NuGetVersion("6.0.0-beta3")),
+                new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta3")),
+                new PackageIdentity("Microsoft.AspNet.Mvc.Core", new NuGetVersion("6.0.0-beta3"))
+            };
 
         [Fact]
         public async Task TestPacManInstallPackage()
@@ -89,7 +92,7 @@ namespace NuGet.Test
             // Check that there are no packages returned by PackagesConfigProject
             var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
-            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);            
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
@@ -152,7 +155,7 @@ namespace NuGet.Test
             try
             {
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-            new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
             }
             catch (InvalidOperationException ex)
             {
@@ -160,7 +163,7 @@ namespace NuGet.Test
             }
 
             Assert.NotNull(alreadyInstalledException);
-            Assert.Equal(String.Format(NuGet.ProjectManagement.Strings.PackageAlreadyExistsInProject, packageIdentity, msBuildNuGetProjectSystem.ProjectName),
+            Assert.Equal(string.Format(Strings.PackageAlreadyExistsInProject, packageIdentity, msBuildNuGetProjectSystem.ProjectName),
                 alreadyInstalledException.Message);
             Assert.Equal(alreadyInstalledException.InnerException.GetType(), typeof(PackageAlreadyInstalledException));
 
@@ -198,7 +201,6 @@ namespace NuGet.Test
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, firstPackageIdentity,
                 new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
-
 
             var secondPackageIdentity = NoDependencyLibPackages[3];
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, secondPackageIdentity,
@@ -249,7 +251,6 @@ namespace NuGet.Test
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, firstPackageIdentity,
                 new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
-
 
             var secondPackageIdentity = NoDependencyLibPackages[1];
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, secondPackageIdentity,
@@ -359,7 +360,6 @@ namespace NuGet.Test
             Assert.Equal(NuGetProjectActionType.Install, packageActions[2].NuGetProjectActionType);
             Assert.Equal(sourceRepositoryProvider.GetRepositories().Single().PackageSource.Source,
                 packageActions[0].SourceRepository.PackageSource.Source);
-
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
@@ -475,9 +475,9 @@ namespace NuGet.Test
             {
                 var uninstallationContext = new UninstallationContext();
                 await nuGetPackageManager.UninstallPackageAsync(msBuildNuGetProject, "jQuery",
-                        uninstallationContext, testNuGetProjectContext, token);
+                    uninstallationContext, testNuGetProjectContext, token);
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 exception = ex;
             }
@@ -545,7 +545,7 @@ namespace NuGet.Test
             {
                 var uninstallationContext = new UninstallationContext();
                 var packageActions = await nuGetPackageManager.PreviewUninstallPackageAsync(msBuildNuGetProject, "jQuery",
-                        uninstallationContext, testNuGetProjectContext, token);
+                    uninstallationContext, testNuGetProjectContext, token);
             }
             catch (InvalidOperationException ex)
             {
@@ -1210,7 +1210,7 @@ namespace NuGet.Test
             {
                 var uninstallationContext = new UninstallationContext(removeDependencies: true);
                 await nuGetPackageManager.UninstallPackageAsync(projectA, packageIdentity2.Id,
-            uninstallationContext, testNuGetProjectContext, token);
+                    uninstallationContext, testNuGetProjectContext, token);
             }
             catch (InvalidOperationException ex)
             {
@@ -1277,7 +1277,7 @@ namespace NuGet.Test
             // Main Act
             var uninstallationContext = new UninstallationContext(removeDependencies: false, forceRemove: true);
             await nuGetPackageManager.UninstallPackageAsync(msBuildNuGetProject, "jQuery",
-                        uninstallationContext, testNuGetProjectContext, token);
+                uninstallationContext, testNuGetProjectContext, token);
 
             // Assert
             // Check that the packages.config file exists after the installation
@@ -1455,7 +1455,7 @@ namespace NuGet.Test
             // Check that there are no packages returned by PackagesConfigProject
             var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(0, packagesInPackagesConfig.Count);
-            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);            
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
@@ -1468,7 +1468,7 @@ namespace NuGet.Test
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(7, packagesInPackagesConfig.Count);
             var installedPackages = PackageWithDeepDependency.OrderBy(f => f.Id).ToList();
-            for (int i = 0; i < 7; i++)
+            for (var i = 0; i < 7; i++)
             {
                 Assert.Equal(installedPackages[i], packagesInPackagesConfig[i].PackageIdentity);
                 Assert.Equal(projectTargetFramework, packagesInPackagesConfig[i].TargetFramework);
@@ -1547,7 +1547,7 @@ namespace NuGet.Test
 
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                new ResolutionContext(), new TestNuGetProjectContext() { BindingRedirectsDisabled = true }, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                new ResolutionContext(), new TestNuGetProjectContext { BindingRedirectsDisabled = true }, sourceRepositoryProvider.GetRepositories().First(), null, token);
 
             // Assert
             // Check that the packages.config file exists after the installation
@@ -1597,17 +1597,17 @@ namespace NuGet.Test
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(7, packagesInPackagesConfig.Count);
             var installedPackages = PackageWithDeepDependency.OrderBy(f => f.Id).ToList();
-            for (int i = 0; i < 7; i++)
+            for (var i = 0; i < 7; i++)
             {
                 Assert.True(installedPackages[i].Equals(packagesInPackagesConfig[i].PackageIdentity));
                 Assert.Equal(projectTargetFramework, packagesInPackagesConfig[i].TargetFramework);
             }
 
             // Main Assert
-            List<PackageIdentity> installedPackagesInDependencyOrder = (await nuGetPackageManager.GetInstalledPackagesInDependencyOrder
+            var installedPackagesInDependencyOrder = (await nuGetPackageManager.GetInstalledPackagesInDependencyOrder
                 (msBuildNuGetProject, testNuGetProjectContext, token)).ToList();
             Assert.Equal(7, installedPackagesInDependencyOrder.Count);
-            for (int i = 0; i < 7; i++)
+            for (var i = 0; i < 7; i++)
             {
                 Assert.Equal(PackageWithDeepDependency[i], installedPackagesInDependencyOrder[i], PackageIdentity.Comparer);
             }
@@ -1650,7 +1650,7 @@ namespace NuGet.Test
             // Assert
             Assert.Equal(7, packageActions.Count);
             var soleSourceRepository = sourceRepositoryProvider.GetRepositories().Single();
-            for (int i = 0; i < 7; i++)
+            for (var i = 0; i < 7; i++)
             {
                 Assert.Equal(PackageWithDeepDependency[i], packageActions[i].PackageIdentity, PackageIdentity.Comparer);
                 Assert.Equal(NuGetProjectActionType.Install, packageActions[i].NuGetProjectActionType);
@@ -1805,7 +1805,6 @@ namespace NuGet.Test
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
                     resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
-
             }
             catch (Exception ex)
             {
@@ -1814,8 +1813,8 @@ namespace NuGet.Test
 
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
-            var errorMessage = String.Format(CultureInfo.CurrentCulture,
-                           Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
+            var errorMessage = string.Format(CultureInfo.CurrentCulture,
+                Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
             Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
@@ -1840,7 +1839,7 @@ namespace NuGet.Test
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
             var packageIdentity0 = PackageWithDependents[0]; // jQuery.1.4.4
-            
+
             var resolutionContext = new ResolutionContext();
             var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(packageIdentity0.Id, new ResolutionContext(),
                 sourceRepositoryProvider.GetRepositories().First(), token);
@@ -2171,7 +2170,7 @@ namespace NuGet.Test
             Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
             Assert.Equal(1, testNuGetProjectContext.TestExecutionContext.FilesOpened.Count);
-            Assert.True(String.Equals(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), "ReadMe.txt"),
+            Assert.True(string.Equals(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), "ReadMe.txt"),
                 testNuGetProjectContext.TestExecutionContext.FilesOpened.First(), StringComparison.OrdinalIgnoreCase));
 
             // Clean-up
@@ -2222,7 +2221,7 @@ namespace NuGet.Test
             try
             {
                 var packageActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, packageId,
-            new ResolutionContext(), testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
+                    new ResolutionContext(), testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
             }
             catch (Exception ex)
             {
@@ -2283,7 +2282,7 @@ namespace NuGet.Test
             try
             {
                 var packageActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, packageIdentityA,
-            new ResolutionContext(), testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
+                    new ResolutionContext(), testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
             }
             catch (Exception ex)
             {
@@ -2323,7 +2322,7 @@ namespace NuGet.Test
             var newtonsoftJsonPackageId = "newtonsoft.json";
 
             // Act
-            NuGetVersion latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
+            var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
             var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
 
             var nuGetProjectActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, dotnetrdfPackageIdentity, resolutionContext,
@@ -2360,7 +2359,7 @@ namespace NuGet.Test
             var newtonsoftJsonPackageId = "newtonsoft.json";
 
             // Act
-            NuGetVersion latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
+            var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
             var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
 
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, webgreasePackageIdentity, resolutionContext,
@@ -2516,7 +2515,7 @@ namespace NuGet.Test
             Assert.NotNull(newtonsoftJsonPackageReference.AllowedVersions);
 
             // Main Act
-            var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<string>() { newtonsoftJsonPackageId, "Microsoft.Web.Infrastructure" }, msBuildNuGetProject,
+            var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<string> { newtonsoftJsonPackageId, "Microsoft.Web.Infrastructure" }, msBuildNuGetProject,
                 resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
 
             // Microsoft.Web.Infrastructure has no updates. However, newtonsoft.json has updates but does not satisfy the version range

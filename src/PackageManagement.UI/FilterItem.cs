@@ -1,4 +1,7 @@
-﻿namespace NuGet.PackageManagement.UI
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace NuGet.PackageManagement.UI
 {
     // The item added to the filter combobox on the UI
     public class FilterItem
@@ -9,18 +12,10 @@
             Text = text;
         }
 
-        public Filter Filter
-        {
-            get;
-            private set;
-        }
+        public Filter Filter { get; private set; }
 
         // The text that is displayed on UI
-        public string Text
-        {
-            get;
-            private set;
-        }
+        public string Text { get; }
 
         public override string ToString()
         {

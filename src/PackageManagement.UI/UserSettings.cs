@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 
@@ -30,6 +33,6 @@ namespace NuGet.PackageManagement.UI
 
         public DependencyBehavior DependencyBehavior { get; set; }
 
-        public FileConflictAction FileConflictAction { get; set; }        
+        public FileConflictAction FileConflictAction { get; set; }
     }
 }

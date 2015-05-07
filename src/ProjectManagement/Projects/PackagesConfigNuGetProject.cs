@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,10 +27,7 @@ namespace NuGet.ProjectManagement
                 {
                     return PackagesProjectNameConfigPath;
                 }
-                else
-                {
-                    return PackagesConfigPath;
-                }
+                return PackagesConfigPath;
             }
         }
 
@@ -42,9 +42,11 @@ namespace NuGet.ProjectManagement
         /// Represents the full path to "packages.'projectName'.config"
         /// </summary>
         private string PackagesProjectNameConfigPath { get; }
+
         private NuGetFramework TargetFramework { get; }
 
-        public PackagesConfigNuGetProject(string folderPath, IDictionary<string, object> metadata) : base(metadata)
+        public PackagesConfigNuGetProject(string folderPath, IDictionary<string, object> metadata)
+            : base(metadata)
         {
             if (folderPath == null)
             {
@@ -73,7 +75,7 @@ namespace NuGet.ProjectManagement
             }
 
             var newPackageReference = new PackageReference(packageIdentity, TargetFramework);
-            List<PackageReference> installedPackagesList = GetInstalledPackagesList();
+            var installedPackagesList = GetInstalledPackagesList();
             var packageReferenceWithSameId = installedPackagesList.Where(p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             if (packageReferenceWithSameId != null)
             {
@@ -82,12 +84,9 @@ namespace NuGet.ProjectManagement
                     nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
                     return Task.FromResult(false);
                 }
-                else
-                {
-                    // Higher version of an installed package is being installed. Remove old and add new
-                    installedPackagesList.Remove(packageReferenceWithSameId);
-                    installedPackagesList.Add(newPackageReference);
-                }
+                // Higher version of an installed package is being installed. Remove old and add new
+                installedPackagesList.Remove(packageReferenceWithSameId);
+                installedPackagesList.Add(newPackageReference);
             }
             else
             {
@@ -120,7 +119,7 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            List<PackageReference> installedPackagesList = GetInstalledPackagesList();
+            var installedPackagesList = GetInstalledPackagesList();
             var packageReference = installedPackagesList.Where(p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
             if (packageReference == null)
             {
@@ -157,15 +156,16 @@ namespace NuGet.ProjectManagement
 
         private void UpdateFullPath()
         {
-            if (UsingPackagesProjectNameConfigPath && !File.Exists(PackagesProjectNameConfigPath) && File.Exists(PackagesConfigPath))
+            if (UsingPackagesProjectNameConfigPath
+                && !File.Exists(PackagesProjectNameConfigPath)
+                && File.Exists(PackagesConfigPath))
             {
                 UsingPackagesProjectNameConfigPath = false;
-                return;
             }
-            else if (!File.Exists(PackagesConfigPath) && File.Exists(PackagesProjectNameConfigPath))
+            else if (!File.Exists(PackagesConfigPath)
+                     && File.Exists(PackagesProjectNameConfigPath))
             {
                 UsingPackagesProjectNameConfigPath = true;
-                return;
             }
         }
 

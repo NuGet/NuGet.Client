@@ -1,9 +1,7 @@
-﻿using NuGet.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Configuration;
 
 namespace NuGet.ProjectManagement
 {
@@ -16,7 +14,7 @@ namespace NuGet.ProjectManagement
         {
             var value = settings.GetValue(SolutionSection, DisableSourceControlIntegerationKey);
             bool disableSourceControlIntegration;
-            return !String.IsNullOrEmpty(value) && Boolean.TryParse(value, out disableSourceControlIntegration) && disableSourceControlIntegration;
+            return !string.IsNullOrEmpty(value) && bool.TryParse(value, out disableSourceControlIntegration) && disableSourceControlIntegration;
         }
 
         public static void DisableSourceControlMode(ISettings settings)

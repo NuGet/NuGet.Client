@@ -1,28 +1,26 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Windows.Threading;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
     public class NuGetUIProjectContext : INuGetProjectContext
     {
-        public FileConflictAction FileConflictAction
-        {
-            get;
-            set;
-        }
+        public FileConflictAction FileConflictAction { get; set; }
 
         private readonly Dispatcher _uiDispatcher;
         private readonly INuGetUILogger _logger;
-        private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
-        private readonly ICommonOperations _commonOperations;
 
         public NuGetUIProjectContext(INuGetUILogger logger, ISourceControlManagerProvider sourceControlManagerProvider, ICommonOperations commonOperations)
         {
             _logger = logger;
             _uiDispatcher = Dispatcher.CurrentDispatcher;
-            _sourceControlManagerProvider = sourceControlManagerProvider;
-            _commonOperations = commonOperations;
+            SourceControlManagerProvider = sourceControlManagerProvider;
+            CommonOperations = commonOperations;
             if (commonOperations != null)
             {
                 ExecutionContext = new IDEExecutionContext(commonOperations);
@@ -38,25 +36,22 @@ namespace NuGet.PackageManagement.UI
         {
             if (!_uiDispatcher.CheckAccess())
             {
-                object result = _uiDispatcher.Invoke(
+                var result = _uiDispatcher.Invoke(
                     new Func<string, FileConflictAction>(ShowFileConflictResolution),
                     message);
                 return (FileConflictAction)result;
             }
 
-            var fileConflictDialog = new FileConflictDialog()
-            {
-                Question = message
-            };
+            var fileConflictDialog = new FileConflictDialog
+                {
+                    Question = message
+                };
 
             if (fileConflictDialog.ShowModal() == true)
             {
                 return fileConflictDialog.UserSelection;
             }
-            else
-            {
-                return FileConflictAction.IgnoreAll;
-            }
+            return FileConflictAction.IgnoreAll;
         }
 
         public FileConflictAction ResolveFileConflict(string message)
@@ -65,7 +60,8 @@ namespace NuGet.PackageManagement.UI
             {
                 var resolution = ShowFileConflictResolution(message);
 
-                if (resolution == FileConflictAction.IgnoreAll ||
+                if (resolution == FileConflictAction.IgnoreAll
+                    ||
                     resolution == FileConflictAction.OverwriteAll)
                 {
                     FileConflictAction = resolution;
@@ -87,30 +83,13 @@ namespace NuGet.PackageManagement.UI
             _logger.End();
         }
 
-        public Packaging.PackageExtractionContext PackageExtractionContext
-        {
-            get;
-            set;
-        }
+        public PackageExtractionContext PackageExtractionContext { get; set; }
 
-        public ISourceControlManagerProvider SourceControlManagerProvider
-        {
-            get { return _sourceControlManagerProvider; }
-        }
+        public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 
-        public ICommonOperations CommonOperations
-        {
-            get
-            {
-                return _commonOperations;
-            }
-        }
+        public ICommonOperations CommonOperations { get; }
 
-        public ExecutionContext ExecutionContext
-        {
-            get;
-            private set;
-        }
+        public ExecutionContext ExecutionContext { get; }
 
         public void ReportError(string message)
         {

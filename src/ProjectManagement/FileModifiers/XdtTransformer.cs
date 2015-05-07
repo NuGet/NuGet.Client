@@ -1,8 +1,12 @@
-﻿using Microsoft.Web.XmlTransform;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using Microsoft.Web.XmlTransform;
 
 namespace NuGet.ProjectManagement
 {
@@ -13,16 +17,16 @@ namespace NuGet.ProjectManagement
             PerformXdtTransform(packageFile, targetPath, msBuildNuGetProjectSystem);
         }
 
-        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, System.Collections.Generic.IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             PerformXdtTransform(packageFile, targetPath, msBuildNuGetProjectSystem);
         }
 
         private static void PerformXdtTransform(ZipArchiveEntry packageFile, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            if(FileSystemUtility.FileExists(msBuildNuGetProjectSystem.ProjectFullPath, targetPath))
+            if (FileSystemUtility.FileExists(msBuildNuGetProjectSystem.ProjectFullPath, targetPath))
             {
-                string content = Preprocessor.Process(packageFile, msBuildNuGetProjectSystem);
+                var content = Preprocessor.Process(packageFile, msBuildNuGetProjectSystem);
 
                 try
                 {
@@ -39,7 +43,7 @@ namespace NuGet.ProjectManagement
                                 document.Load(inputStream);
                             }
 
-                            bool succeeded = transformation.Apply(document);
+                            var succeeded = transformation.Apply(document);
                             if (succeeded)
                             {
                                 // save the result into a memoryStream first so that if there is any
@@ -52,7 +56,7 @@ namespace NuGet.ProjectManagement
                 catch (Exception exception)
                 {
                     throw new InvalidDataException(
-                        String.Format(
+                        string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.XdtError + " " + exception.Message,
                             targetPath,

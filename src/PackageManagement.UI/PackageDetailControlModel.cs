@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using NuGet.Versioning;
-using NuGet.ProjectManagement;
-using System;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -21,7 +23,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public override void SetCurrentPackage(
-            SearchResultPackageMetadata searchResultPackage, 
+            SearchResultPackageMetadata searchResultPackage,
             Filter filter)
         {
             base.SetCurrentPackage(searchResultPackage, filter);
@@ -115,7 +117,8 @@ namespace NuGet.PackageManagement.UI
             }
             else if (SelectedAction == Resources.Action_Install)
             {
-                if (latestPrerelease != null && (latestStableVersion == null || latestPrerelease > latestStableVersion))
+                if (latestPrerelease != null
+                    && (latestStableVersion == null || latestPrerelease > latestStableVersion))
                 {
                     _versions.Add(new VersionForDisplay(latestPrerelease, Resources.Version_LatestPrerelease));
                 }
@@ -138,7 +141,8 @@ namespace NuGet.PackageManagement.UI
             }
             else if (SelectedAction == Resources.Action_Upgrade)
             {
-                if (latestStableVersion != null &&
+                if (latestStableVersion != null
+                    &&
                     latestStableVersion != installedVersion.Version)
                 {
                     _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
@@ -161,7 +165,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                Debug.Fail("Unexpected Action: " + SelectedAction.ToString());
+                Debug.Fail("Unexpected Action: " + SelectedAction);
             }
 
             SelectVersion();
@@ -178,10 +182,7 @@ namespace NuGet.PackageManagement.UI
 
         public string InstalledVersion
         {
-            get
-            {
-                return _installedVersion;
-            }
+            get { return _installedVersion; }
             private set
             {
                 _installedVersion = value;
@@ -191,10 +192,7 @@ namespace NuGet.PackageManagement.UI
 
         public override IEnumerable<NuGetProject> SelectedProjects
         {
-            get
-            {
-                return _nugetProjects;
-            }
+            get { return _nugetProjects; }
         }
     }
 }

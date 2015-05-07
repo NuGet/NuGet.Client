@@ -1,4 +1,6 @@
-﻿
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 namespace NuGet.ProjectManagement
 {
     public class HashCodeCombiner
@@ -17,7 +19,7 @@ namespace NuGet.ProjectManagement
 
         public void AddObject(object o)
         {
-            int oHashCode = (o != null) ? o.GetHashCode() : 0;
+            var oHashCode = (o != null) ? o.GetHashCode() : 0;
             AddInt32(oHashCode);
         }
     }

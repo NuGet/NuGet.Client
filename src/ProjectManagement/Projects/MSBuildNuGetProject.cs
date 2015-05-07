@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -41,7 +44,8 @@ namespace NuGet.ProjectManagement
     }
 
     /// <summary>
-    /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a FolderNuGetProject
+    /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a
+    /// FolderNuGetProject
     /// </summary>
     public class MSBuildNuGetProject : NuGetProject
     {
@@ -75,17 +79,17 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public event EventHandler<PackageEventArgs> PackageReferenceRemoved;
 
-        public IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; private set; }
-        public FolderNuGetProject FolderNuGetProject { get; private set; }
-        public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; private set; }
+        public IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; }
+        public FolderNuGetProject FolderNuGetProject { get; }
+        public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; }
 
         private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
-            new Dictionary<FileTransformExtensions, IPackageFileTransformer>()
-        {
-            { new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
-            { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() },
-            { new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
-        };
+            new Dictionary<FileTransformExtensions, IPackageFileTransformer>
+                {
+                    { new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
+                    { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() },
+                    { new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
+                };
 
         public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFolderPath)
         {
@@ -149,7 +153,7 @@ namespace NuGet.ProjectManagement
             return msBuildNuGetProjectContext != null ? msBuildNuGetProjectContext.SkipAssemblyReferences : false;
         }
 
-        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
+        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)
@@ -187,40 +191,40 @@ namespace NuGet.ProjectManagement
             // Step-2: Create PackageReader using the PackageStream and obtain the various item groups            
             packageStream.Seek(0, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
-            PackageReader packageReader = new PackageReader(zipArchive);
-            IEnumerable<FrameworkSpecificGroup> libItemGroups = packageReader.GetLibItems();
-            IEnumerable<FrameworkSpecificGroup> referenceItemGroups = packageReader.GetReferenceItems();
-            IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
-            IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
-            IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
-            IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
+            var packageReader = new PackageReader(zipArchive);
+            var libItemGroups = packageReader.GetLibItems();
+            var referenceItemGroups = packageReader.GetReferenceItems();
+            var frameworkReferenceGroups = packageReader.GetFrameworkItems();
+            var contentFileGroups = packageReader.GetContentItems();
+            var buildFileGroups = packageReader.GetBuildItems();
+            var toolItemGroups = packageReader.GetToolItems();
 
             // Step-3: Get the most compatible items groups for all items groups
-            bool hasCompatibleProjectLevelContent = false;
+            var hasCompatibleProjectLevelContent = false;
 
-            FrameworkSpecificGroup compatibleLibItemsGroup =
+            var compatibleLibItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, libItemGroups);
-            FrameworkSpecificGroup compatibleReferenceItemsGroup =
+            var compatibleReferenceItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, referenceItemGroups);
-            FrameworkSpecificGroup compatibleFrameworkReferencesGroup =
+            var compatibleFrameworkReferencesGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, frameworkReferenceGroups);
-            FrameworkSpecificGroup compatibleContentFilesGroup =
+            var compatibleContentFilesGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, contentFileGroups);
-            FrameworkSpecificGroup compatibleBuildFilesGroup =
+            var compatibleBuildFilesGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, buildFileGroups);
-            FrameworkSpecificGroup compatibleToolItemsGroup =
+            var compatibleToolItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, toolItemGroups);
 
             hasCompatibleProjectLevelContent = MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup) ||
-                MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
-                MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
-                MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
+                                               MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
+                                               MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
+                                               MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFilesGroup);
 
             // Check if package has any content for project
-            bool hasProjectLevelContent = libItemGroups.Any() || frameworkReferenceGroups.Any()
-                || contentFileGroups.Any() || buildFileGroups.Any();
-            bool onlyHasCompatibleTools = false;
-            bool onlyHasDependencies = false;
+            var hasProjectLevelContent = libItemGroups.Any() || frameworkReferenceGroups.Any()
+                                         || contentFileGroups.Any() || buildFileGroups.Any();
+            var onlyHasCompatibleTools = false;
+            var onlyHasDependencies = false;
 
             if (!hasProjectLevelContent)
             {
@@ -238,34 +242,36 @@ namespace NuGet.ProjectManagement
             }
             else
             {
-                string shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
+                var shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
                 nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
-                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
+                    GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
             }
 
             // Step-4: Check if there are any compatible items in the package or that this is not a package with only tools group. If not, throw
-            if (!hasCompatibleProjectLevelContent && !onlyHasCompatibleTools && !onlyHasDependencies)
+            if (!hasCompatibleProjectLevelContent
+                && !onlyHasCompatibleTools
+                && !onlyHasDependencies)
             {
                 throw new InvalidOperationException(
-                           String.Format(CultureInfo.CurrentCulture,
-                           Strings.UnableToFindCompatibleItems, packageIdentity, MSBuildNuGetProjectSystem.TargetFramework));
+                    string.Format(CultureInfo.CurrentCulture,
+                        Strings.UnableToFindCompatibleItems, packageIdentity, MSBuildNuGetProjectSystem.TargetFramework));
             }
 
             if (hasCompatibleProjectLevelContent)
             {
-                string shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
+                var shortFramework = MSBuildNuGetProjectSystem.TargetFramework.GetShortFolderName();
                 nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
-                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
+                    GetMetadata<string>(NuGetProjectMetadataKeys.Name), shortFramework);
             }
             else if (onlyHasCompatibleTools)
             {
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyToolsGroup, packageIdentity,
-                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             }
             else if (onlyHasDependencies)
             {
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageWithOnlyDependencies, packageIdentity,
-                    this.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             }
 
             // Step-5: Raise PackageInstalling event
@@ -292,7 +298,8 @@ namespace NuGet.ProjectManagement
 
             // Step-8: MSBuildNuGetProjectSystem operations
             // Step-8.1: Add references to project
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup) && !IsSkipAssemblyReferences(nuGetProjectContext))
+            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup)
+                && !IsSkipAssemblyReferences(nuGetProjectContext))
             {
                 foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
                 {
@@ -334,7 +341,7 @@ namespace NuGet.ProjectManagement
             {
                 foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
                 {
-                    string fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
+                    var fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
                     MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
                         fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
                 }
@@ -354,13 +361,13 @@ namespace NuGet.ProjectManagement
             PackageEventsProvider.Instance.NotifyReferenceAdded(packageEventArgs);
 
             // Step-12: Execute powershell script - install.ps1
-            string packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
-            FrameworkSpecificGroup anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
+            var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
+            var anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
             if (anyFrameworkToolsGroup != null)
             {
-                string initPS1RelativePath = anyFrameworkToolsGroup.Items.Where(p =>
+                var initPS1RelativePath = anyFrameworkToolsGroup.Items.Where(p =>
                     p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if (!String.IsNullOrEmpty(initPS1RelativePath))
+                if (!string.IsNullOrEmpty(initPS1RelativePath))
                 {
                     initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
                     await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, initPS1RelativePath, zipArchive, this, throwOnFailure: true);
@@ -369,9 +376,9 @@ namespace NuGet.ProjectManagement
 
             if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
             {
-                string installPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
+                var installPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
                     p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if (!String.IsNullOrEmpty(installPS1RelativePath))
+                if (!string.IsNullOrEmpty(installPS1RelativePath))
                 {
                     await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this, throwOnFailure: true);
                 }
@@ -379,7 +386,7 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)
             {
@@ -412,19 +419,19 @@ namespace NuGet.ProjectManagement
                 var zipArchive = new ZipArchive(packageStream);
                 var packageReader = new PackageReader(zipArchive);
 
-                IEnumerable<FrameworkSpecificGroup> referenceItemGroups = packageReader.GetReferenceItems();
-                IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups = packageReader.GetFrameworkItems();
-                IEnumerable<FrameworkSpecificGroup> contentFileGroups = packageReader.GetContentItems();
-                IEnumerable<FrameworkSpecificGroup> buildFileGroups = packageReader.GetBuildItems();
+                var referenceItemGroups = packageReader.GetReferenceItems();
+                var frameworkReferenceGroups = packageReader.GetFrameworkItems();
+                var contentFileGroups = packageReader.GetContentItems();
+                var buildFileGroups = packageReader.GetBuildItems();
 
                 // Step-3: Get the most compatible items groups for all items groups
-                FrameworkSpecificGroup compatibleReferenceItemsGroup =
+                var compatibleReferenceItemsGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, referenceItemGroups);
-                FrameworkSpecificGroup compatibleFrameworkReferencesGroup =
+                var compatibleFrameworkReferencesGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, frameworkReferenceGroups);
-                FrameworkSpecificGroup compatibleContentFilesGroup =
+                var compatibleContentFilesGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, contentFileGroups);
-                FrameworkSpecificGroup compatibleBuildFilesGroup =
+                var compatibleBuildFilesGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, buildFileGroups);
 
                 // TODO: Need to handle References element??
@@ -441,8 +448,8 @@ namespace NuGet.ProjectManagement
 
                 // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
                 //         OR Add it again (to ensure that Source Control works), when there are some packages
-                if(!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
-                {                    
+                if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
+                {
                     MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
                 }
                 else
@@ -480,7 +487,7 @@ namespace NuGet.ProjectManagement
                 {
                     foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
                     {
-                        string fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
+                        var fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
                         MSBuildNuGetProjectSystem.RemoveImport(fullImportFilePath);
                     }
                 }
@@ -495,16 +502,16 @@ namespace NuGet.ProjectManagement
                 PackageEventsProvider.Instance.NotifyReferenceRemoved(packageEventArgs);
 
                 // Step-9: Execute powershell script - uninstall.ps1
-                IEnumerable<FrameworkSpecificGroup> toolItemGroups = packageReader.GetToolItems();
-                FrameworkSpecificGroup compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework,
+                var toolItemGroups = packageReader.GetToolItems();
+                var compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework,
                     toolItemGroups);
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
                 {
-                    string uninstallPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
+                    var uninstallPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
                         p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                    if (!String.IsNullOrEmpty(uninstallPS1RelativePath))
+                    if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
-                        string packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
+                        var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
                         await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, uninstallPS1RelativePath, zipArchive, this, throwOnFailure: false);
                     }
                 }
@@ -534,7 +541,7 @@ namespace NuGet.ProjectManagement
 
         private static string GetTargetFrameworkLogString(NuGetFramework targetFramework)
         {
-            return (targetFramework == null || targetFramework == NuGetFramework.AnyFramework) ? Strings.Debug_TargetFrameworkInfo_NotFrameworkSpecific : String.Empty;
+            return (targetFramework == null || targetFramework == NuGetFramework.AnyFramework) ? Strings.Debug_TargetFrameworkInfo_NotFrameworkSpecific : string.Empty;
         }
 
         private static bool IsAssemblyReference(string filePath)
@@ -556,7 +563,7 @@ namespace NuGet.ProjectManagement
 
             // Assembly reference must have a .dll|.exe|.winmd extension and is not a resource assembly;
             return !filePath.EndsWith(Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase) &&
-                Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
+                   Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
         }
 
         private static IDictionary<XName, Action<XElement, XElement>> GetConfigMappings()
@@ -564,9 +571,10 @@ namespace NuGet.ProjectManagement
             // REVIEW: This might be an edge case, but we're setting this rule for all xml files.
             // If someone happens to do a transform where the xml file has a configSections node
             // we will add it first. This is probably fine, but this is a config specific scenario
-            return new Dictionary<XName, Action<XElement, XElement>>() {
-                { "configSections" , (parent, element) => parent.AddFirst(element) }
-            };
+            return new Dictionary<XName, Action<XElement, XElement>>
+                {
+                    { "configSections", (parent, element) => parent.AddFirst(element) }
+                };
         }
     }
 

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,13 +19,13 @@ namespace NuGet.Test
 {
     public class PackageRestoreManagerTests
     {
-        private List<PackageIdentity> Packages = new List<PackageIdentity>()
-        {
-            new PackageIdentity("jQuery", new NuGetVersion("1.4.4")),
-            new PackageIdentity("jQuery", new NuGetVersion("1.6.4")),
-            new PackageIdentity("jQuery.Validation", new NuGetVersion("1.13.1")),
-            new PackageIdentity("jQuery.UI.Combined", new NuGetVersion("1.11.2")),
-        };
+        private readonly List<PackageIdentity> Packages = new List<PackageIdentity>
+            {
+                new PackageIdentity("jQuery", new NuGetVersion("1.4.4")),
+                new PackageIdentity("jQuery", new NuGetVersion("1.6.4")),
+                new PackageIdentity("jQuery.Validation", new NuGetVersion("1.13.1")),
+                new PackageIdentity("jQuery.UI.Combined", new NuGetVersion("1.11.2"))
+            };
 
         [Fact]
         public async Task TestGetMissingPackagesForSolution()
@@ -91,13 +94,12 @@ namespace NuGet.Test
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var restoredPackages = new List<PackageIdentity>();
             packageRestoreManager.PackageRestoredEvent += delegate(object sender, PackageRestoredEventArgs args)
-            {
-                if(args.Restored)
                 {
-                    restoredPackages.Add(args.Package);
-                }
-            };
-
+                    if (args.Restored)
+                    {
+                        restoredPackages.Add(args.Package);
+                    }
+                };
 
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(packageIdentity));
 
@@ -139,13 +141,13 @@ namespace NuGet.Test
             var testSettings = NullSettings.Instance;
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
-            int packagesMissingEventCount = 0;
-            bool packagesMissing = false;
+            var packagesMissingEventCount = 0;
+            var packagesMissing = false;
             packageRestoreManager.PackagesMissingStatusChanged += delegate(object sender, PackagesMissingStatusEventArgs args)
-            {
-                packagesMissingEventCount++;
-                packagesMissing = args.PackagesMissing;
-            };
+                {
+                    packagesMissingEventCount++;
+                    packagesMissing = args.PackagesMissing;
+                };
 
             // Act
             await packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
@@ -235,7 +237,6 @@ namespace NuGet.Test
             var testPackage1 = new PackageIdentity("package1A", new NuGetVersion("1.0.0"));
             var testPackage2 = new PackageIdentity("package1B", new NuGetVersion("1.0.0"));
 
-
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 testPackage1.Id, testPackage1.Version.ToNormalizedString());
             using (var packageStream = packageFileInfo.OpenRead())
@@ -256,16 +257,10 @@ namespace NuGet.Test
 
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var restoredPackages = new List<PackageIdentity>();
-            packageRestoreManager.PackageRestoredEvent += delegate (object sender, PackageRestoredEventArgs args)
-            {
-                restoredPackages.Add(args.Package);
-            };
+            packageRestoreManager.PackageRestoredEvent += delegate(object sender, PackageRestoredEventArgs args) { restoredPackages.Add(args.Package); };
 
             var restoreFailedPackages = new Dictionary<PackageReference, IReadOnlyCollection<string>>(new PackageReferenceComparer());
-            packageRestoreManager.PackageRestoreFailedEvent += delegate (object sender, PackageRestoreFailedEventArgs args)
-            {
-                restoreFailedPackages.Add(args.RestoreFailedPackageReference, args.ProjectNames);
-            };
+            packageRestoreManager.PackageRestoreFailedEvent += delegate(object sender, PackageRestoreFailedEventArgs args) { restoreFailedPackages.Add(args.RestoreFailedPackageReference, args.ProjectNames); };
 
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(jQueryValidation));
 

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Globalization;
-using System.Linq;
-using System.Text;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -11,26 +11,17 @@ namespace NuGet.PackageManagement.UI
     {
         public PackageDependencyMetadata()
         {
-
         }
 
-        public PackageDependencyMetadata(NuGet.Packaging.Core.PackageDependency serverData)
+        public PackageDependencyMetadata(PackageDependency serverData)
         {
             Id = serverData.Id;
             Range = serverData.VersionRange;
         }
 
-        public string Id
-        {
-            get;
-            private set;
-        }
+        public string Id { get; }
 
-        public VersionRange Range
-        {
-            get;
-            private set;
-        }
+        public VersionRange Range { get; }
 
         public PackageDependencyMetadata(string id, VersionRange range)
         {
@@ -44,13 +35,10 @@ namespace NuGet.PackageManagement.UI
             {
                 return Id;
             }
-            else
-            {
-                return String.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0} {1}",
-                    Id, Range.PrettyPrint());
-            }
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} {1}",
+                Id, Range.PrettyPrint());
         }
     }
 }
