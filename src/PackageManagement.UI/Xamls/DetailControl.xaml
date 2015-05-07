@@ -1,97 +1,117 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.DetailControl"
-             xmlns:Tools="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:k ="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             Background="{Binding UIBrushes.DetailPaneBackground }"
-             x:Name="_self"
-             mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="400">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <UserControl.CommandBindings>
-        <CommandBinding
-            Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}"
-            Executed="ExecuteOpenLicenseLink" />
-    </UserControl.CommandBindings>
-    <ScrollViewer x:Name="_root" HorizontalScrollBarVisibility="Disabled">
-        <Grid Margin="24,0,7,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+﻿<UserControl
+  x:Class="NuGet.PackageManagement.UI.DetailControl"
+  xmlns:Tools="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:k="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  Background="{Binding UIBrushes.DetailPaneBackground }"
+  x:Name="_self"
+  mc:Ignorable="d"
+  d:DesignHeight="600"
+  d:DesignWidth="400">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary
+          Source="Resources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <UserControl.CommandBindings>
+    <CommandBinding
+      Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}"
+      Executed="ExecuteOpenLicenseLink" />
+  </UserControl.CommandBindings>
+  <ScrollViewer
+    x:Name="_root"
+    HorizontalScrollBarVisibility="Disabled">
+    <Grid
+      Margin="24,0,7,0">
+      <Grid.RowDefinitions>
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+      </Grid.RowDefinitions>
 
-            <!-- Icon and Id -->
-            <StackPanel Grid.Row="0"
-                        Orientation="Horizontal"
-                        MinHeight="32"
-                        Margin="0,8">
-                <Image
-                    Source="{Binding Path=IconUrl,TargetNullValue={StaticResource BitmapImage_DefaultIcon}}"
-                    Margin="0,0,8,0"
-                    Height="32"
-                    Width="32"
-                    Style="{StaticResource PackageIconImageStyle}"
-                    RenderOptions.BitmapScalingMode="HighQuality" />
-                <TextBlock
-                    Text="{Binding Path=Id}"
-                    FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
-            </StackPanel>
+      <!-- Icon and Id -->
+      <StackPanel
+        Grid.Row="0"
+        Orientation="Horizontal"
+        MinHeight="32"
+        Margin="0,8">
+        <Image
+          Source="{Binding Path=IconUrl,TargetNullValue={StaticResource BitmapImage_DefaultIcon}}"
+          Margin="0,0,8,0"
+          Height="32"
+          Width="32"
+          Style="{StaticResource PackageIconImageStyle}"
+          RenderOptions.BitmapScalingMode="HighQuality" />
+        <TextBlock
+          Text="{Binding Path=Id}"
+          FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
+      </StackPanel>
 
-            <!-- Action and Versions -->
-            <Tools:ActionsAndVersions Grid.Row="1"  Margin="0,8" />
+      <!-- Action and Versions -->
+      <Tools:ActionsAndVersions
+        Grid.Row="1"
+        Margin="0,8" />
 
-            <!-- Project list -->
-            <Tools:ProjectList
-                x:Name="_projectList"
-                Grid.Row="2"
-                Margin="0,12,0,8"
-                Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}" />
-            
-            <!-- Installed Version  -->
-            <StackPanel Grid.Row="2"
-                        Margin="0,12,0,8"
-                        Visibility="{Binding Path=InstalledVersion,Converter={StaticResource NullToVisibilityConverter}}">
-                <TextBlock Text="{Binding Path=InstalledVersion}" />
-            </StackPanel>
+      <!-- Project list -->
+      <Tools:ProjectList
+        x:Name="_projectList"
+        Grid.Row="2"
+        Margin="0,12,0,8"
+        Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-            <Border Grid.Row="3"
-                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-                    BorderThickness="0,0,0,1">
-                <Button
-                    Margin="0,8,0,16"
-                    MinWidth="100"
-                    MinHeight="24"
-                    HorizontalAlignment="Left"
-                    IsEnabled="{Binding Path=ActionEnabled}"
-                    Content="{Binding Path=SelectedAction}"
-                    Click="ActionButtonClicked" />
-            </Border>
+      <!-- Installed Version  -->
+      <StackPanel
+        Grid.Row="2"
+        Margin="0,12,0,8"
+        Visibility="{Binding Path=InstalledVersion,Converter={StaticResource NullToVisibilityConverter}}">
+        <TextBlock
+          Text="{Binding Path=InstalledVersion}" />
+      </StackPanel>
 
-            <!-- options -->
-            <Border Grid.Row="4"
-                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-                    BorderThickness="0,0,0,1">
-                <Tools:OptionsControl
-                    Margin="0,12,0,16"
-                    DataContext="{Binding}" />
-            </Border>
+      <Border
+        Grid.Row="3"
+        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+        BorderThickness="0,0,0,1">
+        <Button
+          Margin="0,8,0,16"
+          MinWidth="100"
+          MinHeight="24"
+          HorizontalAlignment="Left"
+          IsEnabled="{Binding Path=ActionEnabled}"
+          Content="{Binding Path=SelectedAction}"
+          Click="ActionButtonClicked" />
+      </Border>
 
-            <Tools:PackageMetadataControl
-                Grid.Row="5" Margin="0,12,0,0"
-                DataContext="{Binding PackageMetadata}" />
-        </Grid>
-    </ScrollViewer>
+      <!-- options -->
+      <Border
+        Grid.Row="4"
+        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+        BorderThickness="0,0,0,1">
+        <Tools:OptionsControl
+          Margin="0,12,0,16"
+          DataContext="{Binding}" />
+      </Border>
+
+      <Tools:PackageMetadataControl
+        Grid.Row="5"
+        Margin="0,12,0,0"
+        DataContext="{Binding PackageMetadata}" />
+    </Grid>
+  </ScrollViewer>
 </UserControl>

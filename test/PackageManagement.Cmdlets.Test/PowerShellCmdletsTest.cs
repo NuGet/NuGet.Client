@@ -1,10 +1,8 @@
-﻿using NuGet.Configuration;
-using NuGet.PackageManagement;
-using System;
+﻿using System;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using Xunit;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using Xunit;
 
 namespace PackageManagement.Cmdlets.Test
 {

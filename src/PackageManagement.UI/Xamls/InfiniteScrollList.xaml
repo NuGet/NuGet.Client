@@ -1,149 +1,249 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.InfiniteScrollList"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:self="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
-        <self:InfiniteScrollListItemStyleSelector x:Key="itemStyleSelector" />
-        <DataTemplate DataType="{x:Type self:LoadingStatusIndicator}">
-            <Grid Margin="0,8">
-                <TextBlock Name="_noItemsFound"
-                           FontStyle="Italic"
-                           HorizontalAlignment="Center"
-                           Text="{x:Static resx:Resources.Text_NoItemsFound}"
-                           Visibility="Collapsed" />
+﻿<UserControl
+  x:Class="NuGet.PackageManagement.UI.InfiniteScrollList"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:self="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  mc:Ignorable="d"
+  d:DesignHeight="300"
+  d:DesignWidth="300">
+  <UserControl.Resources>
+    <self:InfiniteScrollListItemStyleSelector
+      x:Key="itemStyleSelector" />
+    <DataTemplate
+      DataType="{x:Type self:LoadingStatusIndicator}">
+      <Grid
+        Margin="0,8">
+        <TextBlock
+          Name="_noItemsFound"
+          FontStyle="Italic"
+          HorizontalAlignment="Center"
+          Text="{x:Static resx:Resources.Text_NoItemsFound}"
+          Visibility="Collapsed" />
 
-                <TextBlock Name="_ready"
-                           HorizontalAlignment="Center"
-                           Text="{x:Static resx:Resources.Text_Ready}"
-                           Visibility="Collapsed" />
+        <TextBlock
+          Name="_ready"
+          HorizontalAlignment="Center"
+          Text="{x:Static resx:Resources.Text_Ready}"
+          Visibility="Collapsed" />
 
-                <StackPanel Orientation="Vertical"
-                            Name="_progressBar"
-                            Visibility="Collapsed">
-                    <ProgressBar
-                        Margin="24,0"
-                        Height="15" IsIndeterminate="True" />
-                    <TextBlock Margin="0,8"
-                               Text="{Binding Path=LoadingMessage}"
-                               HorizontalAlignment="Center" />
-                </StackPanel>
+        <StackPanel
+          Orientation="Vertical"
+          Name="_progressBar"
+          Visibility="Collapsed">
+          <ProgressBar
+            Margin="24,0"
+            Height="15"
+            IsIndeterminate="True" />
+          <TextBlock
+            Margin="0,8"
+            Text="{Binding Path=LoadingMessage}"
+            HorizontalAlignment="Center" />
+        </StackPanel>
 
 
-                <StackPanel Orientation="Vertical" Name="_errorOccurred"
-                            Visibility="Collapsed">
-                    <Button Click="RetryButtonClicked"
-                            Content="{x:Static resx:Resources.Button_Retry}"
-                            MinWidth="150" />
-                    <Expander Margin="0,8,0,0"
-                              Header="{x:Static resx:Resources.Text_ErrorDetails}"
-                              >
-                        <TextBox 
-                             IsReadOnly="True"
-                             TextWrapping="Wrap"
-                             Text="{Binding ErrorMessage}" />
-                    </Expander>
-                </StackPanel>
-            </Grid>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Path=Status}" Value="Loading">
-                    <Setter TargetName="_progressBar"
-                            Property="Visibility"
-                            Value="Visible" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=Status}" Value="Ready">
-                    <Setter TargetName="_ready"
-                            Property="Visibility"
-                            Value="Visible" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=Status}" Value="NoItemsFound">
-                    <Setter TargetName="_noItemsFound"
-                            Property="Visibility"
-                            Value="Visible" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=Status}" Value="ErrorOccured">
-                    <Setter TargetName="_errorOccurred"
-                            Property="Visibility"
-                            Value="Visible" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
+        <StackPanel
+          Orientation="Vertical"
+          Name="_errorOccurred"
+          Visibility="Collapsed">
+          <Button
+            Click="RetryButtonClicked"
+            Content="{x:Static resx:Resources.Button_Retry}"
+            MinWidth="150" />
+          <Expander
+            Margin="0,8,0,0"
+            Header="{x:Static resx:Resources.Text_ErrorDetails}">
+            <TextBox
+              IsReadOnly="True"
+              TextWrapping="Wrap"
+              Text="{Binding ErrorMessage}" />
+          </Expander>
+        </StackPanel>
+      </Grid>
+      <DataTemplate.Triggers>
+        <DataTrigger
+          Binding="{Binding Path=Status}"
+          Value="Loading">
+          <Setter
+            TargetName="_progressBar"
+            Property="Visibility"
+            Value="Visible" />
+        </DataTrigger>
+        <DataTrigger
+          Binding="{Binding Path=Status}"
+          Value="Ready">
+          <Setter
+            TargetName="_ready"
+            Property="Visibility"
+            Value="Visible" />
+        </DataTrigger>
+        <DataTrigger
+          Binding="{Binding Path=Status}"
+          Value="NoItemsFound">
+          <Setter
+            TargetName="_noItemsFound"
+            Property="Visibility"
+            Value="Visible" />
+        </DataTrigger>
+        <DataTrigger
+          Binding="{Binding Path=Status}"
+          Value="ErrorOccured">
+          <Setter
+            TargetName="_errorOccurred"
+            Property="Visibility"
+            Value="Visible" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
 
-        <!-- Template used by ListBoxItem that represents a package. -->
-        <ControlTemplate x:Key="ListBoxItemTemplate" TargetType="{x:Type ListBoxItem}">
-            <Border x:Name="Bd" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" SnapsToDevicePixels="true">
-                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            </Border>
-            <ControlTemplate.Triggers>
-                <!-- set the background for IsEnabled == false -->
-                <Trigger Property="IsEnabled" Value="false" >
-                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}" />
-                </Trigger>
-                
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="True" />
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" TargetName="Bd" 
-                                            Value="{DynamicResource {x:Static resx:Brushes.ContentMouseOverBrushKey}}" />
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="Selector.IsSelectionActive" Value="False" />
-                        <Condition Property="IsSelected" Value="True" />
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static resx:Brushes.ContentInactiveSelectedBrushKey}}" />
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="Selector.IsSelectionActive" Value="True" />
-                        <Condition Property="IsSelected" Value="True" />
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedBrushKey}}" />
-                    <Setter Property="TextBlock.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedTextBrushKey}}" />
-                </MultiTrigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
+    <!-- Template used by ListBoxItem that represents a package. -->
+    <ControlTemplate
+      x:Key="ListBoxItemTemplate"
+      TargetType="{x:Type ListBoxItem}">
+      <Border
+        x:Name="Bd"
+        BorderThickness="0"
+        Background="{TemplateBinding Background}"
+        Padding="0"
+        SnapsToDevicePixels="true">
+        <ContentPresenter
+          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </Border>
+      <ControlTemplate.Triggers>
+        <!-- set the background for IsEnabled == false -->
+        <Trigger
+          Property="IsEnabled"
+          Value="false">
+          <Setter
+            Property="Background"
+            TargetName="Bd"
+            Value="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}" />
+        </Trigger>
 
-        <!-- Template used by the LoadingIndicator. We use it to disable the background change when mouse hovers over it. -->
-        <ControlTemplate x:Key="LoadingIndicatorListBoxItemTemplate" TargetType="{x:Type ListBoxItem}">
-            <Border x:Name="Bd" BorderThickness="0" Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}" Padding="0" SnapsToDevicePixels="true">
-                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            </Border>
-        </ControlTemplate>
+        <MultiTrigger>
+          <MultiTrigger.Conditions>
+            <Condition
+              Property="IsMouseOver"
+              Value="True" />
+          </MultiTrigger.Conditions>
+          <Setter
+            Property="Background"
+            TargetName="Bd"
+            Value="{DynamicResource {x:Static resx:Brushes.ContentMouseOverBrushKey}}" />
+        </MultiTrigger>
+        <MultiTrigger>
+          <MultiTrigger.Conditions>
+            <Condition
+              Property="Selector.IsSelectionActive"
+              Value="False" />
+            <Condition
+              Property="IsSelected"
+              Value="True" />
+          </MultiTrigger.Conditions>
+          <Setter
+            Property="Background"
+            TargetName="Bd"
+            Value="{DynamicResource {x:Static resx:Brushes.ContentInactiveSelectedBrushKey}}" />
+        </MultiTrigger>
+        <MultiTrigger>
+          <MultiTrigger.Conditions>
+            <Condition
+              Property="Selector.IsSelectionActive"
+              Value="True" />
+            <Condition
+              Property="IsSelected"
+              Value="True" />
+          </MultiTrigger.Conditions>
+          <Setter
+            Property="Background"
+            TargetName="Bd"
+            Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedBrushKey}}" />
+          <Setter
+            Property="TextBlock.Foreground"
+            TargetName="Bd"
+            Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedTextBrushKey}}" />
+        </MultiTrigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate>
 
-        <Style x:Key="FocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" />
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+    <!-- Template used by the LoadingIndicator. We use it to disable the background change when mouse hovers over it. -->
+    <ControlTemplate
+      x:Key="LoadingIndicatorListBoxItemTemplate"
+      TargetType="{x:Type ListBoxItem}">
+      <Border
+        x:Name="Bd"
+        BorderThickness="0"
+        Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
+        Padding="0"
+        SnapsToDevicePixels="true">
+        <ContentPresenter
+          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </Border>
+    </ControlTemplate>
 
-        <!-- the base style of the ListBoxItem. -->
-        <Style x:Key="listBoxItemStyle" TargetType="{x:Type ListBoxItem}">
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="SnapsToDevicePixels" Value="True" />
-            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
-            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
-        </Style>
+    <Style
+      x:Key="FocusVisual">
+      <Setter
+        Property="Control.Template">
+        <Setter.Value>
+          <ControlTemplate>
+            <Rectangle
+              Margin="2"
+              SnapsToDevicePixels="true"
+              Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
+              StrokeThickness="1"
+              StrokeDashArray="1 2" />
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
 
-        <!-- the style of the ListBoxItem when the item is the loading status indicator. -->
-        <Style x:Key="loadingStatusIndicatorStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource listBoxItemStyle}">
-            <Setter Property="Template" Value="{StaticResource LoadingIndicatorListBoxItemTemplate}" />
-        </Style>
+    <!-- the base style of the ListBoxItem. -->
+    <Style
+      x:Key="listBoxItemStyle"
+      TargetType="{x:Type ListBoxItem}">
+      <Setter
+        Property="Padding"
+        Value="0" />
+      <Setter
+        Property="SnapsToDevicePixels"
+        Value="True" />
+      <Setter
+        Property="HorizontalContentAlignment"
+        Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+      <Setter
+        Property="VerticalContentAlignment"
+        Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+      <Setter
+        Property="Background"
+        Value="Transparent" />
+      <Setter
+        Property="FocusVisualStyle"
+        Value="{StaticResource FocusVisual}" />
+    </Style>
 
-        <!-- the style of the ListBoxItem when the item is a package. -->
-        <Style x:Key="packageItemStyle" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource listBoxItemStyle}">
-            <!-- 
+    <!-- the style of the ListBoxItem when the item is the loading status indicator. -->
+    <Style
+      x:Key="loadingStatusIndicatorStyle"
+      TargetType="{x:Type ListBoxItem}"
+      BasedOn="{StaticResource listBoxItemStyle}">
+      <Setter
+        Property="Template"
+        Value="{StaticResource LoadingIndicatorListBoxItemTemplate}" />
+    </Style>
+
+    <!-- the style of the ListBoxItem when the item is a package. -->
+    <Style
+      x:Key="packageItemStyle"
+      TargetType="{x:Type ListBoxItem}"
+      BasedOn="{StaticResource listBoxItemStyle}">
+      <!-- 
             Note that we cannot set the template property in xaml list this:
             
                <Setter Property="Template" Value="{StaticResource ListBoxItemTemplate}" /> 
@@ -152,27 +252,38 @@
             available when this is used in the standalone mode, i.e. outside of VisualStudio. So the setter is 
             added by code when Standalone == false.
             -->
-        </Style>
-    </UserControl.Resources>
-    <ListBox x:Name="_list"
-             Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
-             Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-             ScrollViewer.VerticalScrollBarVisibility="Visible"
-             ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
-             BorderThickness="0,0,0,1"
-             HorizontalContentAlignment="Stretch"
-             SelectionChanged="List_SelectionChanged"
-             Loaded="List_Loaded">
-        <!-- set the template to disable the background change when the IsEnabled is false. -->
-        <ListBox.Template>
-            <ControlTemplate TargetType="{x:Type ListBox}">
-                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="1" SnapsToDevicePixels="true">
-                    <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
-                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                    </ScrollViewer>
-                </Border>                
-            </ControlTemplate>
-        </ListBox.Template>
-    </ListBox>
+    </Style>
+  </UserControl.Resources>
+  <ListBox
+    x:Name="_list"
+    Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
+    Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+    ScrollViewer.VerticalScrollBarVisibility="Visible"
+    ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
+    BorderThickness="0,0,0,1"
+    HorizontalContentAlignment="Stretch"
+    SelectionChanged="List_SelectionChanged"
+    Loaded="List_Loaded">
+    <!-- set the template to disable the background change when the IsEnabled is false. -->
+    <ListBox.Template>
+      <ControlTemplate
+        TargetType="{x:Type ListBox}">
+        <Border
+          x:Name="Bd"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          Background="{TemplateBinding Background}"
+          Padding="1"
+          SnapsToDevicePixels="true">
+          <ScrollViewer
+            Focusable="false"
+            Padding="{TemplateBinding Padding}">
+            <ItemsPresenter
+              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </ListBox.Template>
+  </ListBox>
 </UserControl>
