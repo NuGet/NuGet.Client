@@ -255,8 +255,8 @@
       <HintPath>..\..\packages\NuGet.ContentModel.3.0.0-beta\lib\net45\NuGet.ContentModel.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.60314.59, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Core.2.8.5-beta-00002\lib\net45\NuGet.Core.dll</HintPath>
+    <Reference Include="NuGet.Core">
+      <HintPath>..\..\packages\NuGet.Core.2.8.6-beta-01\lib\net45\NuGet.Core.dll</HintPath>
       <Aliases>Legacy</Aliases>
     </Reference>
     <Reference Include="NuGet.DependencyResolver, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
