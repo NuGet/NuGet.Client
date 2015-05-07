@@ -176,6 +176,25 @@ function Test-PackageRestore-ErrorMessage {
     Assert-True ($output.Contains('NuGet package restore failed.'))
 }
 
+# Tests that output does not contain package restore finished
+# when there are no missing packages
+function Test-PackageRestore-PackageAlreadyInstalled {
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary	
+    $p | Install-Package jQuery.Validation
+
+    # Act
+    # package restore will just exit as there are no missing packages
+    Build-Solution
+
+    # Assert
+    $output = GetBuildOutput
+    Assert-True ($output.Contains('All packages are already installed and there is nothing to restore.'))
+	Assert-False ($output.Contains('NuGet package restore finished.'))
+}
+
 # Test that package restore will check for missing packages when consent is not granted,
 # while IsAutomatic is true.
 function Test-PackageRestore-CheckForMissingPackages {

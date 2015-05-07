@@ -389,25 +389,28 @@ namespace NuGetVSExtension
 
         private void WriteLine(bool canceled, bool hasMissingPackages, bool hasErrors)
         {
-            if(canceled)
+            // Write just "PackageRestore Canceled" message if package restore has been canceled
+            if (canceled)
             {
                 WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreCanceled);
+                return;
+            }
+
+            // Write just "Nothing to restore" message when there are no missing packages.
+            if (!hasMissingPackages)
+            {
+                WriteLine(VerbosityLevel.Minimal, Resources.NothingToRestore);
+                return;
+            }
+
+            // Here package restore has happened. It can finish with/without error.
+            if (hasErrors)
+            {
+                WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinishedWithError);
             }
             else
             {
-                if (!hasMissingPackages)
-                {
-                    WriteLine(VerbosityLevel.Minimal, Resources.NothingToRestore);
-                }
-
-                if (hasErrors)
-                {
-                    WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinishedWithError);
-                }
-                else
-                {
-                    WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinished);
-                }
+                WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinished);
             }
         }
 
