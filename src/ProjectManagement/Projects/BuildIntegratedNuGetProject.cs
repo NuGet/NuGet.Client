@@ -14,7 +14,6 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using System.Globalization;
 
 namespace NuGet.ProjectManagement.Projects
 {
@@ -93,11 +92,11 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// Retrieve the full closure of project to project references.
         /// </summary>
-        public virtual Task<IReadOnlyList<NuGetProjectReference>> GetProjectReferenceClosure()
+        public virtual Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync()
         {
             // This cannot be resolved with DTE currently, it is overridden at a higher level
-            return Task.FromResult<IReadOnlyList<NuGetProjectReference>>(
-                Enumerable.Empty<NuGetProjectReference>().ToList());
+            return Task.FromResult<IReadOnlyList<BuildIntegratedProjectReference>>(
+                Enumerable.Empty<BuildIntegratedProjectReference>().ToList());
         }
 
         /// <summary>
@@ -174,14 +173,14 @@ namespace NuGet.ProjectManagement.Projects
             {
                 foreach (var buildImportFile in compatibleBuildFileGroups.Items)
                 {
-                    string fullImportFilePath = Path.Combine(GetFolderPathFromGlobalSource(identity), buildImportFile);
+                    string fullImportFilePath = Path.Combine(Path.GetDirectoryName(BuildIntegratedProjectUtility.GetNupkgPathFromGlobalSource(identity)), buildImportFile);
                     MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
                         fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
                 }
             }
 
             // Step-12: Execute powershell script - install.ps1
-            string packageInstallPath = GetFolderPathFromGlobalSource(identity);
+            string packageInstallPath = Path.GetDirectoryName(BuildIntegratedProjectUtility.GetNupkgPathFromGlobalSource(identity));
             FrameworkSpecificGroup anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
             if (anyFrameworkToolsGroup != null)
             {
@@ -272,7 +271,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             using (var streamReader = new StreamReader(_jsonConfig.OpenRead()))
             {
-                return JObject.Parse(streamReader.ReadToEnd());
+                return JObject.Parse(await streamReader.ReadToEndAsync());
             }
         }
 
@@ -288,7 +287,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             using (var writer = new StreamWriter(_jsonConfig.FullName, false, Encoding.UTF8))
             {
-                writer.Write(json.ToString());
+                await writer.WriteAsync(json.ToString());
             }
         }
 
@@ -308,34 +307,6 @@ namespace NuGet.ProjectManagement.Projects
             return new Dictionary<XName, Action<XElement, XElement>>() {
                 { "configSections" , (parent, element) => parent.AddFirst(element) }
             };
-        }
-
-        private static string GetFolderPathFromGlobalSource(PackageIdentity identity)
-        {
-            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            return Path.Combine(GlobalPackagesFolder, identity.Id, identity.Version.ToNormalizedString());
-        }
-
-        /// <summary>
-        /// nupkg path from the global cache folder
-        /// </summary>
-        public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
-        {
-            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-            string nupkgName = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", identity.Id, identity.Version.ToNormalizedString());
-
-            return Path.Combine(GlobalPackagesFolder, identity.Id, identity.Version.ToNormalizedString(), nupkgName);
-        }
-
-        private static string GlobalPackagesFolder
-        {
-            get
-            {
-                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-                return Path.Combine(userProfile, ".nuget\\packages\\");
-            }
         }
     }
 }

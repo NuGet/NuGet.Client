@@ -84,7 +84,7 @@
     <Compile Include="FileModifiers\XdtTransformer.cs" />
     <Compile Include="FileModifiers\XmlTransformer.cs" />
     <Compile Include="INuGetProjectContext.cs" />
-    <Compile Include="NuGetProjectReference.cs" />
+    <Compile Include="BuildIntegratedProjectReference.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Projects\IMSBuildNuGetProjectContext.cs" />
     <Compile Include="Projects\INuGetIntegratedProject.cs" />

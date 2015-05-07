@@ -1,7 +1,7 @@
-﻿using NuGet.Packaging.Core;
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
+using NuGet.Packaging.Core;
 
 namespace NuGet.ProjectManagement
 {
@@ -43,7 +43,7 @@ namespace NuGet.ProjectManagement
             {
                 string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-                path = Path.Combine(userProfile, ".dnu\\packages\\");
+                path = Path.Combine(userProfile, ".nuget\\packages\\");
             }
 
             return path;

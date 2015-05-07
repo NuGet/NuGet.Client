@@ -1085,7 +1085,7 @@ namespace NuGet.PackageManagement
             var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
 
             // Restore before performing the actions, we will need the previous packages for uninstalls
-            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject, nuGetProjectContext, enabledSources, token);
+            await BuildIntegratedRestoreUtility.RestoreAsync(buildIntegratedProject, nuGetProjectContext, enabledSources, token);
 
             // Retrieve the list of currently installed packages
             // TOOD: get the full closure
@@ -1117,7 +1117,7 @@ namespace NuGet.PackageManagement
             // Add all enabled sources for the existing packages
             additionalSources.UnionWith(enabledSources);
 
-            await BuildIntegratedRestoreUtility.Restore(buildIntegratedProject, nuGetProjectContext, additionalSources, token);
+            await BuildIntegratedRestoreUtility.RestoreAsync(buildIntegratedProject, nuGetProjectContext, additionalSources, token);
 
             // Find all new packages and check if they have content or scripts
             var afterInstallPackages = new HashSet<PackageIdentity>(

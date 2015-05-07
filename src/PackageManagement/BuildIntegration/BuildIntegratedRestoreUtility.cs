@@ -1,13 +1,13 @@
-﻿using NuGet.Commands;
-using NuGet.Configuration;
-using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands;
+using NuGet.Configuration;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement
 {
@@ -18,16 +18,21 @@ namespace NuGet.PackageManagement
     {
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-        public static async Task RestoreForBuild(
+        public static async Task RestoreForBuildAsync(
             BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
             IEnumerable<string> additionalSources,
             CancellationToken token)
         {
-            await Restore(project, projectContext, additionalSources, token);
+            await RestoreAsync(project, projectContext, additionalSources, token);
         }
 
-        public static async Task<RestoreResult> Restore(
+        /// <summary>
+        /// Restore a build integrated project and update the lock file
+        /// </summary>
+        /// <param name="projectContext">Logging context</param>
+        /// <param name="additionalSources">repository sources</param>
+        public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
             IEnumerable<string> additionalSources,
@@ -40,7 +45,7 @@ namespace NuGet.PackageManagement
             {
                 token.ThrowIfCancellationRequested();
 
-                return await RestoreCore(project, projectContext, additionalSources, token);
+                return await RestoreCoreAsync(project, projectContext, additionalSources, token);
             }
             finally
             {
@@ -48,7 +53,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private static async Task<RestoreResult> RestoreCore(BuildIntegratedNuGetProject project,
+        private static async Task<RestoreResult> RestoreCoreAsync(BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
             IEnumerable<string> sources,
             CancellationToken token)
@@ -68,34 +73,22 @@ namespace NuGet.PackageManagement
             request.LockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(file.FullName);
             request.MaxDegreeOfConcurrency = 4;
 
-            var projectReferences = await GetExternalProjectReferences(project);
-            request.ExternalProjects = projectReferences.ToList();
+            // Find the full closure of project.json files and referenced projects
+            var projectReferences = await project.GetProjectReferenceClosureAsync();
+            request.ExternalProjects = projectReferences.Select(reference => ConvertProjectReference(reference)).ToList();
 
             RestoreCommand command = new RestoreCommand(new ProjectContextLogger(projectContext));
 
+            // Execute the restore
             return await command.ExecuteAsync(request);
         }
 
-        public static async Task<IEnumerable<ExternalProjectReference>> GetExternalProjectReferences(BuildIntegratedNuGetProject project)
+        /// <summary>
+        /// BuildIntegratedProjectReference -> ExternalProjectReference
+        /// </summary>
+        private static ExternalProjectReference ConvertProjectReference(BuildIntegratedProjectReference reference)
         {
-            var references = new List<ExternalProjectReference>();
-
-            var projectReferences = await project.GetProjectReferenceClosure();
-
-            return projectReferences.Select(ConvertProjectReference);
-        }
-
-        public static ExternalProjectReference ConvertProjectReference(NuGetProjectReference reference)
-        {
-            // this may be null for non-build integrated dependencies
-            var project = reference.Project as BuildIntegratedNuGetProject;
-
-            var references = reference.ProjectReferences.Select(projectReference =>
-                projectReference.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
-
-            return new ExternalProjectReference(reference.Project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName),
-                project?.JsonConfigPath,
-                references);
+            return new ExternalProjectReference(reference.Name, reference.PackageSpecPath, reference.ExternalProjectReferences);
         }
     }
 }
