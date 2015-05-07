@@ -1,7 +1,6 @@
-﻿using NuGet.Protocol.Core.Types;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol.ApiApps
@@ -26,8 +25,7 @@ namespace NuGet.Protocol.ApiApps
             yield return new Lazy<INuGetResourceProvider>(() => new ApiAppSearchResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new ServiceIndexResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV3Provider());
-
+            yield return new Lazy<INuGetResourceProvider>(() => new RegistrationResourceV3Provider());
             yield break;
         }
     }
