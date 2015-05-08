@@ -110,7 +110,6 @@ namespace ResolverTestApp
         /// </summary>
         private class V3OnlyPackageSourceProvider : IPackageSourceProvider
         {
-
             public void DisablePackageSource(NuGet.Configuration.PackageSource source)
             {
                 throw new NotImplementedException();
@@ -126,7 +125,9 @@ namespace ResolverTestApp
                 return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://az320820.vo.msecnd.net/ver3-preview/index.json", "v3") };
             }
 
+#pragma warning disable 0067
             public event EventHandler PackageSourcesChanged;
+#pragma warning restore 0067
 
             public void SavePackageSources(IEnumerable<NuGet.Configuration.PackageSource> sources)
             {

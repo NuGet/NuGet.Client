@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StandaloneUI
 {
@@ -18,6 +15,7 @@ namespace StandaloneUI
             Instance = Settings.LoadDefaultSettings(null, null, null);
         }
 
+#pragma warning disable 0067
         public event EventHandler SettingsChanged;
 
         public bool DeleteSection(string section)

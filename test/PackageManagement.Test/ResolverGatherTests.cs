@@ -16,7 +16,7 @@ namespace NuGet.Test
     public class ResolverGatherTests
     {
         [Fact]
-        public async Task ResolverGather_MissingPrimaryPackage()
+        public void ResolverGather_MissingPrimaryPackage()
         {
             // Arrange
             ResolutionContext context = new ResolutionContext(Resolver.DependencyBehavior.Lowest, true);
@@ -49,7 +49,7 @@ namespace NuGet.Test
             };
 
             // Act and Assert
-            Assert.Throws(typeof(InvalidOperationException), () => 
+            Assert.Throws(typeof(InvalidOperationException), () =>
             {
                 try
                 {
@@ -580,7 +580,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, 
+            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
                 Enumerable.Empty<PackageIdentity>(), framework, repos, repos, repos[2], CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
@@ -676,7 +676,7 @@ namespace NuGet.Test
     {
         public List<PackageDependencyInfo> Packages { get; set; }
 
-        public TestDependencyInfoProvider(List<PackageDependencyInfo> packages) 
+        public TestDependencyInfoProvider(List<PackageDependencyInfo> packages)
             : base(typeof(DependencyInfoResource))
         {
             Packages = packages;
@@ -701,18 +701,20 @@ namespace NuGet.Test
             Packages = packages;
         }
 
-        public override async Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
+        public override Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
         {
-            return Packages.FirstOrDefault(e => PackageIdentity.Comparer.Equals(e, package));
+            var matchingPackage = Packages.FirstOrDefault(e => PackageIdentity.Comparer.Equals(e, package));
+
+            return Task.FromResult<PackageDependencyInfo>(matchingPackage);
         }
 
-        public override async Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
+        public override Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
         {
             var results = new HashSet<PackageDependencyInfo>(
                 Packages.Where(e => StringComparer.OrdinalIgnoreCase.Equals(packageId, e.Id)),
                 PackageIdentity.Comparer);
 
-            return results;
+            return Task.FromResult<IEnumerable<PackageDependencyInfo>>(results);
         }
     }
 }

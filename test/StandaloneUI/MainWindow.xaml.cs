@@ -37,7 +37,7 @@ namespace StandaloneUI
         {
             InitializeComponent();
             _commonOperations = new StandAloneUICommonOperations();
-            CreatePackageManagerControl();            
+            CreatePackageManagerControl();
         }
 
         private void CreatePackageManagerControl()
@@ -47,23 +47,23 @@ namespace StandaloneUI
             this.Title = "NuGet Standalone UI";
             Height = 800;
             Width = 1000;
-            
+
             var repositoryProvider = new SourceRepositoryProvider(_settings, Repository.Provider.GetVisualStudio());
             var settings = new DefaultSettings();
 
             var testSolutionManager = new TestSolutionManager(@"c:\temp\test");
-            
+
             var projectA = testSolutionManager.AddNewMSBuildProject("projectA");
             var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
             //var projectC = testSolutionManager.AddProjectKProject("projectK");
 
-            var projects = new NuGetProject[] { projectA, projectB };            
+            var projects = new NuGetProject[] { projectA, projectB };
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
             var contextFactory = new StandaloneUIContextFactory(
-                repositoryProvider, 
-                testSolutionManager, 
-                settings, 
+                repositoryProvider,
+                testSolutionManager,
+                settings,
                 packageRestoreManager: packageRestoreManager,
                 optionsPage: null);
             var context = contextFactory.Create(@"c:\temp\test\settings.txt", projects);
@@ -127,7 +127,9 @@ namespace StandaloneUI
             return new List<NuGet.Configuration.PackageSource>() { new NuGet.Configuration.PackageSource("https://api.nuget.org/v3/index.json", "nuget.org v3") };
         }
 
+#pragma warning disable 0067
         public event EventHandler PackageSourcesChanged;
+#pragma warning restore 0067
 
         public void SavePackageSources(IEnumerable<NuGet.Configuration.PackageSource> sources)
         {

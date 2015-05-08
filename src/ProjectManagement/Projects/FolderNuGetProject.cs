@@ -93,10 +93,10 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public async override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // Do nothing. Return true
-            return true;
+            return Task.FromResult(true);
         }
 
         /// <summary>

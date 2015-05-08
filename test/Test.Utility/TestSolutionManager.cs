@@ -5,8 +5,6 @@ using System.Linq;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
-using Test.Utility.ProjectManagement;
 
 namespace Test.Utility
 {
@@ -104,6 +102,7 @@ namespace Test.Utility
             set;
         }
 
+#pragma warning disable 0067
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
@@ -116,5 +115,7 @@ namespace Test.Utility
 
         public event EventHandler SolutionOpened;
         public event EventHandler SolutionOpening;
+
+#pragma warning restore 0067
     }
 }

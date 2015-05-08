@@ -1,11 +1,7 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -36,54 +32,13 @@ namespace NuGet.PackageManagement.UI
             this.Focus();
         }
 
-        public string HelpTopic
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public string HelpTopic { get; set; }
 
-        bool IVsWindowSearchHost.IsEnabled
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        bool IVsWindowSearchHost.IsEnabled { get; set; }
 
-        public bool IsPopupVisible
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public bool IsPopupVisible { get; set; }
 
-        private bool _visible;
-        public bool IsVisible
-        {
-            get
-            {
-                return _visible;
-            }
-            set
-            {
-                _visible = value;
-            }
-        }
+        bool IVsWindowSearchHost.IsVisible { get; set; }
 
         public void SearchAsync(IVsSearchQuery pSearchQuery)
         {
@@ -92,12 +47,12 @@ namespace NuGet.PackageManagement.UI
 
         public IVsWindowSearchEvents SearchEvents
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public IVsWindowSearch SearchObject
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public IVsSearchQuery SearchQuery
@@ -107,17 +62,16 @@ namespace NuGet.PackageManagement.UI
 
         public IVsSearchQueryParser SearchQueryParser
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public IVsSearchTask SearchTask
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public void TerminateSearch()
         {
-            throw new NotImplementedException();
         }
 
         internal class SimpleSearchQuery : IVsSearchQuery

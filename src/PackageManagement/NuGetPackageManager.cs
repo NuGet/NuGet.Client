@@ -893,7 +893,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall <param name="packageId"></param> into <param name="nuGetProject"></param>
+        /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall <param name="packageIdentity"></param> into <param name="nuGetProject"></param>
         /// <param name="uninstallationContext"></param> and <param name="nuGetProjectContext"></param> are used in the process
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
@@ -1288,8 +1288,8 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Checks if package <paramref name="packageIdentity"/> that is installed in 
-        /// project <paramref name="nugetProject"/> is also installed in any 
+        /// Checks if package <paramref name="packageIdentity"/> that is installed in
+        /// project <paramref name="nuGetProject"/> is also installed in any
         /// other projects in the solution.
         /// </summary>
         public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token)

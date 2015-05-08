@@ -15,7 +15,7 @@ namespace NuGet.ProjectManagement
         protected NuGetProject() : this(new Dictionary<string, object>()) { }
         protected NuGetProject(IDictionary<string, object> metadata)
         {
-            if(metadata == null)
+            if (metadata == null)
             {
                 throw new ArgumentNullException("metadata");
             }
@@ -59,7 +59,7 @@ namespace NuGet.ProjectManagement
         }
         public T GetMetadata<T>(string key)
         {
-            if(key == null)
+            if (key == null)
             {
                 throw new ArgumentNullException("key");
             }
@@ -76,15 +76,16 @@ namespace NuGet.ProjectManagement
                 value = GetMetadata<T>(key);
                 return true;
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
             }
-            catch(InvalidCastException ex)
+            catch (InvalidCastException)
             {
             }
-            catch(Exception ex)
+            catch (Exception)
             {
             }
+
             return false;
         }
 
@@ -96,13 +97,13 @@ namespace NuGet.ProjectManagement
         /// <returns></returns>
         public static string GetUniqueNameOrName(NuGetProject nuGetProject)
         {
-            if(nuGetProject == null)
+            if (nuGetProject == null)
             {
                 throw new ArgumentNullException("nuGetProject");
             }
 
             string nuGetProjectName;
-            if(!nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.UniqueName, out nuGetProjectName))
+            if (!nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.UniqueName, out nuGetProjectName))
             {
                 // Unique name is not set, simply return the name
                 nuGetProjectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
