@@ -16,7 +16,7 @@ namespace NuGet.ProjectModel
 {
     public class LockFileFormat
     {
-        public static readonly int Version = -9997;
+        public static readonly int Version = -9996;
         public static readonly string LockFileName = "project.lock.json";
 
         private static readonly char[] PathSplitChars = new[] { '/' };
@@ -34,6 +34,7 @@ namespace NuGet.ProjectModel
         private const string RuntimeProperty = "runtime";
         private const string CompileProperty = "compile";
         private const string NativeProperty = "native";
+        private const string ResourceProperty = "resource";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -41,7 +42,7 @@ namespace NuGet.ProjectModel
 
         public LockFile Read(string filePath)
         {
-            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var stream = File.OpenRead(filePath))
             {
                 return Read(stream);
             }
@@ -188,9 +189,10 @@ namespace NuGet.ProjectModel
 
             library.Dependencies = ReadObject(json[DependenciesProperty] as JObject, ReadPackageDependency);
             library.FrameworkAssemblies = ReadArray(json[FrameworkAssembliesProperty] as JArray, ReadString);
-            library.RuntimeAssemblies = ReadPathArray(json[RuntimeProperty] as JArray, ReadString);
-            library.CompileTimeAssemblies = ReadPathArray(json[CompileProperty] as JArray, ReadString);
-            library.NativeLibraries = ReadPathArray(json[NativeProperty] as JArray, ReadString);
+            library.RuntimeAssemblies = ReadObject(json[RuntimeProperty] as JObject, ReadFileItem);
+            library.CompileTimeAssemblies = ReadObject(json[CompileProperty] as JObject, ReadFileItem);
+            library.ResourceAssemblies = ReadObject(json[ResourceProperty] as JObject, ReadFileItem);
+            library.NativeLibraries = ReadObject(json[NativeProperty] as JObject, ReadFileItem);
 
             return library;
         }
@@ -211,45 +213,25 @@ namespace NuGet.ProjectModel
 
             if (library.CompileTimeAssemblies.Count > 0)
             {
-                json[CompileProperty] = WritePathArray(library.CompileTimeAssemblies, WriteString);
+                json[CompileProperty] = WriteObject(library.CompileTimeAssemblies, WriteFileItem);
             }
 
             if (library.RuntimeAssemblies.Count > 0)
             {
-                json[RuntimeProperty] = WritePathArray(library.RuntimeAssemblies, WriteString);
+                json[RuntimeProperty] = WriteObject(library.RuntimeAssemblies, WriteFileItem);
+            }
+
+            if (library.ResourceAssemblies.Count > 0)
+            {
+                json[ResourceProperty] = WriteObject(library.ResourceAssemblies, WriteFileItem);
             }
 
             if (library.NativeLibraries.Count > 0)
             {
-                json[NativeProperty] = WritePathArray(library.NativeLibraries, WriteString);
+                json[NativeProperty] = WriteObject(library.NativeLibraries, WriteFileItem);
             }
 
             return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);
-        }
-
-
-        private LockFileFrameworkGroup ReadFrameworkGroup(string property, JToken json)
-        {
-            var group = new LockFileFrameworkGroup();
-
-            group.TargetFramework = NuGetFramework.Parse(property);
-            group.Dependencies = ReadObject(json[DependenciesProperty] as JObject, ReadPackageDependency);
-            group.FrameworkAssemblies = ReadArray(json[FrameworkAssembliesProperty] as JArray, ReadString);
-            group.RuntimeAssemblies = ReadPathArray(json[RuntimeAssembliesProperty] as JArray, ReadString);
-            group.CompileTimeAssemblies = ReadPathArray(json[CompileAssembliesProperty] as JArray, ReadString);
-
-            return group;
-        }
-
-        private JProperty WriteFrameworkGroup(LockFileFrameworkGroup group)
-        {
-            var json = new JObject();
-            json[DependenciesProperty] = WriteObject(group.Dependencies, WritePackageDependency);
-            json[FrameworkAssembliesProperty] = WriteArray(group.FrameworkAssemblies, WriteString);
-            json[RuntimeAssembliesProperty] = WritePathArray(group.RuntimeAssemblies, WriteString);
-            json[CompileAssembliesProperty] = WritePathArray(group.CompileTimeAssemblies, WriteString);
-
-            return new JProperty(group.TargetFramework.DotNetFrameworkName, json);
         }
 
         private ProjectFileDependencyGroup ReadProjectFileDependencyGroup(string property, JToken json)
@@ -309,6 +291,23 @@ namespace NuGet.ProjectModel
             return new JProperty(
                 item.Id,
                 WriteString(versionRange));
+        }
+
+        private LockFileItem ReadFileItem(string property, JToken json)
+        {
+            var item = new LockFileItem { Path = property };
+            foreach (var subProperty in json.OfType<JProperty>())
+            {
+                item.Properties[subProperty.Name] = subProperty.Value.Value<string>();
+            }
+            return item;
+        }
+
+        private JProperty WriteFileItem(LockFileItem item)
+        {
+            return new JProperty(
+                item.Path,
+               new JObject(item.Properties.Select(x => new JProperty(x.Key, x.Value))));
         }
 
         private IList<TItem> ReadArray<TItem>(JArray json, Func<JToken, TItem> readItem)

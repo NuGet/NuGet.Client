@@ -10,11 +10,29 @@ namespace NuGet.ProjectModel
 {
     public class LockFileDependencyProvider : IDependencyProvider
     {
-        private readonly ILookup<string, LockFileLibrary> _libraries;
+        private readonly IDictionary<Tuple<NuGetFramework, string>, LockFileTargetLibrary> _targetLibraries;
+        private readonly IDictionary<Tuple<string, NuGetVersion>, LockFileLibrary> _libraries;
 
         public LockFileDependencyProvider(LockFile lockFile)
         {
-            _libraries = lockFile.Libraries.ToLookup(l => l.Name);
+            // List of all the libraries in the lock file, there can be multiple versions per id
+            _libraries = lockFile.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
+
+            // Dependencies can only vary by target framework so only look at that target
+            _targetLibraries = new Dictionary<Tuple<NuGetFramework, string>, LockFileTargetLibrary>();
+
+            foreach (var target in lockFile.Targets)
+            {
+                if (!string.IsNullOrEmpty(target.RuntimeIdentifier))
+                {
+                    continue;
+                }
+
+                foreach (var library in target.Libraries)
+                {
+                    _targetLibraries[Tuple.Create(target.TargetFramework, library.Name)] = library;
+                }
+            }
         }
 
         public bool SupportsType(string libraryType)
@@ -25,23 +43,14 @@ namespace NuGet.ProjectModel
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
-            var library = FindCandidate(libraryRange);
+            var key = Tuple.Create(targetFramework, libraryRange.Name);
+            LockFileTargetLibrary library = null;
 
-            if (library != null)
+            // Determine if we have a library for this target
+            if (_targetLibraries.TryGetValue(key, out library) &&
+                libraryRange.VersionRange.IsBetter(current: null, considering: library.Version))
             {
-                IEnumerable<LibraryDependency> dependencies;
-                bool resolved = true;
-                var frameworkGroup = library.FrameworkGroups.FirstOrDefault(g => g.TargetFramework.Equals(targetFramework));
-                if (frameworkGroup == null)
-                {
-                    // Library does not exist for this target framework
-                    dependencies = Enumerable.Empty<LibraryDependency>();
-                    resolved = false;
-                }
-                else
-                {
-                    dependencies = GetDependencies(frameworkGroup);
-                }
+                var dependencies = GetDependencies(library, targetFramework);
 
                 var description = new Library
                 {
@@ -52,57 +61,36 @@ namespace NuGet.ProjectModel
                         Version = library.Version,
                         Type = LibraryTypes.Package
                     },
-                    Resolved = resolved,
+                    Resolved = true,
                     Dependencies = dependencies,
 
-                    [KnownLibraryProperties.LockFileLibrary] = library,
-                    [KnownLibraryProperties.LockFileFrameworkGroup] = frameworkGroup
+                    [KnownLibraryProperties.LockFileLibrary] = _libraries[Tuple.Create(library.Name, library.Version)],
+                    [KnownLibraryProperties.LockFileTargetLibrary] = library
                 };
-
-                description.Items[KnownLibraryProperties.LockFileLibrary] = library;
-                if (frameworkGroup != null)
-                {
-                    description.Items[KnownLibraryProperties.LockFileFrameworkGroup] = frameworkGroup;
-                }
-
+                
                 return description;
             }
 
             return null;
         }
 
-        private IList<LibraryDependency> GetDependencies(LockFileFrameworkGroup frameworkGroup)
+        private IList<LibraryDependency> GetDependencies(LockFileTargetLibrary library, NuGetFramework targetFramework)
         {
             var libraryDependencies = new List<LibraryDependency>();
 
-            if (frameworkGroup.Dependencies != null)
+            foreach (var d in library.Dependencies)
             {
-                foreach (var d in frameworkGroup.Dependencies)
+                libraryDependencies.Add(new LibraryDependency
                 {
-                    libraryDependencies.Add(new LibraryDependency
+                    LibraryRange = new LibraryRange
                     {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = d.Id,
-                            VersionRange = d.VersionRange
-                        }
-                    });
-                }
+                        Name = d.Id,
+                        VersionRange = d.VersionRange
+                    }
+                });
             }
-
-            if (!frameworkGroup.TargetFramework.IsDesktop())
-            {
-                // REVIEW: This isn't 100% correct since none *can* mean 
-                // any in theory, but in practice it means .NET full reference assembly
-                // If there's no supported target frameworks and we're not targeting
-                // the desktop framework then skip it.
-
-                // To do this properly we'll need all reference assemblies supported
-                // by each supported target framework which isn't always available.
-                return libraryDependencies;
-            }
-
-            foreach (var name in frameworkGroup.FrameworkAssemblies)
+            
+            foreach (var name in library.FrameworkAssemblies)
             {
                 libraryDependencies.Add(new LibraryDependency
                 {
@@ -116,13 +104,7 @@ namespace NuGet.ProjectModel
 
             return libraryDependencies;
         }
-
-        private LockFileLibrary FindCandidate(LibraryRange libraryRange)
-        {
-            var packages = _libraries[libraryRange.Name];
-            return packages.FindBestMatch(libraryRange.VersionRange, library => library?.Version);
-        }
-
+        
         public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
         {
             throw new NotImplementedException();

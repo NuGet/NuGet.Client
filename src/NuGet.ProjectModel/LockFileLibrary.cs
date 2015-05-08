@@ -19,12 +19,6 @@ namespace NuGet.ProjectModel
         public string Sha512 { get; set; }
 
         public IList<string> Files { get; set; } = new List<string>();
-
-        // Old stuff
-
-        public string Sha { get; set; }
-
-        public IList<LockFileFrameworkGroup> FrameworkGroups { get; set; } = new List<LockFileFrameworkGroup>();
     }
 
     public class LockFileTarget
@@ -46,26 +40,24 @@ namespace NuGet.ProjectModel
 
         public IList<string> FrameworkAssemblies { get; set; } = new List<string>();
 
-        public IList<string> RuntimeAssemblies { get; set; } = new List<string>();
+        public IList<LockFileItem> RuntimeAssemblies { get; set; } = new List<LockFileItem>();
+        
+        public IList<LockFileItem> ResourceAssemblies { get; set; } = new List<LockFileItem>();
 
-        public IList<string> CompileTimeAssemblies { get; set; } = new List<string>();
+        public IList<LockFileItem> CompileTimeAssemblies { get; set; } = new List<LockFileItem>();
 
-        public IList<string> NativeLibraries { get; set; } = new List<string>();
+        public IList<LockFileItem> NativeLibraries { get; set; } = new List<LockFileItem>();
     }
-
-    // Old stuff
-    public class LockFileFrameworkGroup
+    public class LockFileItem
     {
-        public NuGetFramework TargetFramework { get; set; }
+        public string Path { get; set; }
 
-        public IList<PackageDependency> Dependencies { get; set; } = new List<PackageDependency>();
+        public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-        public IList<string> FrameworkAssemblies { get; set; } = new List<string>();
+        public static implicit operator string (LockFileItem item) => item.Path;
+        
+        public static implicit operator LockFileItem(string path) => new LockFileItem { Path = path };
 
-        public IList<string> RuntimeAssemblies { get; set; } = new List<string>();
-
-        public IList<string> CompileTimeAssemblies { get; set; } = new List<string>();
-
-        public IList<string> NativeLibraries { get; set; } = new List<string>();
+        public override string ToString() => Path;
     }
 }

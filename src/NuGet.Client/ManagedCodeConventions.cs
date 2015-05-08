@@ -69,16 +69,6 @@ namespace NuGet.Client
 
         private static object TargetFrameworkName_Parser(string name)
         {
-            if (name.Contains('.') || name.Contains('/'))
-            {
-                return null;
-            }
-
-            if (name == "contract")
-            {
-                return null;
-            }
-
             var result = NuGetFramework.Parse(name);
 
             if (!result.IsUnsupported)
@@ -169,6 +159,7 @@ namespace NuGet.Client
             public PatternSet RuntimeAssemblies { get; }
             public PatternSet CompileAssemblies { get; }
             public PatternSet NativeLibraries { get; }
+            public PatternSet ResourceAssemblies { get; }
 
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
@@ -178,7 +169,7 @@ namespace NuGet.Client
                     {
                         "runtimes/{rid}/lib/{tfm}/{any?}",
                         "lib/{tfm}/{any?}",
-                        new PatternDefinition("lib/{assembly?}", defaults: new Dictionary<string, object> 
+                        new PatternDefinition("lib/{assembly?}", defaults: new Dictionary<string, object>
                         {
                             { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
                         })
@@ -187,7 +178,7 @@ namespace NuGet.Client
                     {
                         "runtimes/{rid}/lib/{tfm}/{assembly}",
                         "lib/{tfm}/{assembly}",
-                        new PatternDefinition("lib/{assembly}", defaults: new Dictionary<string, object> 
+                        new PatternDefinition("lib/{assembly}", defaults: new Dictionary<string, object>
                         {
                             { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
                         })
@@ -215,16 +206,29 @@ namespace NuGet.Client
                         "runtimes/{rid}/native/{any}",
                         "native/{any}",
                     });
+
+                ResourceAssemblies = ResourceAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        "runtimes/{rid}/lib/{tfm}/{locale?}/{any?}",
+                        "lib/{tfm}/{locale?}/{any?}"
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        "runtimes/{rid}/lib/{tfm}/{locale}/{resources}",
+                        "lib/{tfm}/{locale}/{resources}"
+                    });
             }
-        }
-
-        public static class PropertyNames
-        {
-            public static readonly string TargetFrameworkMoniker = "tfm";
-            public static readonly string RuntimeIdentifier = "rid";
-            public static readonly string AnyValue = "any";
-            public static readonly string ManagedAssembly = "assembly";
-
-        }
     }
+
+    public static class PropertyNames
+    {
+        public static readonly string TargetFrameworkMoniker = "tfm";
+        public static readonly string RuntimeIdentifier = "rid";
+        public static readonly string AnyValue = "any";
+        public static readonly string ManagedAssembly = "assembly";
+
+    }
+}
 }
