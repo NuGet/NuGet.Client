@@ -26,7 +26,7 @@ namespace NuGet.CommandLine
         public int Lockfile(string projectOrLockfile, string target, string library)
         {
             // Locate the lock file
-            if(!string.Equals(Path.GetFileName(projectOrLockfile), LockFileFormat.LockFileName, StringComparison.Ordinal))
+            if (!string.Equals(Path.GetFileName(projectOrLockfile), LockFileFormat.LockFileName, StringComparison.Ordinal))
             {
                 projectOrLockfile = Path.Combine(projectOrLockfile, LockFileFormat.LockFileName);
             }
@@ -36,12 +36,12 @@ namespace NuGet.CommandLine
             // Attempt to locate the project
             var projectPath = Path.Combine(Path.GetDirectoryName(projectOrLockfile), PackageSpec.PackageSpecFileName);
             PackageSpec project = null;
-            if(File.Exists(projectPath))
+            if (File.Exists(projectPath))
             {
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectPath), Path.GetFileName(Path.GetDirectoryName(projectPath)), projectPath); 
-            }            
+                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectPath), Path.GetFileName(Path.GetDirectoryName(projectPath)), projectPath);
+            }
 
-            if(string.IsNullOrEmpty(library))
+            if (string.IsNullOrEmpty(library))
             {
                 return SummarizeLockfile(project, lockfile, target);
             }
@@ -54,7 +54,7 @@ namespace NuGet.CommandLine
         private int LibraryDetail(PackageSpec project, LockFile lockfile, string targetName, string library)
         {
             var lib = lockfile.Libraries.FirstOrDefault(l => l.Name.Equals(library, StringComparison.OrdinalIgnoreCase));
-            if(lib == null)
+            if (lib == null)
             {
                 _log.LogError($"Library not found: {library}");
                 return -1;
@@ -64,13 +64,13 @@ namespace NuGet.CommandLine
             _log.LogInformation($"Servicable: {lib.IsServiceable}");
             _log.LogInformation($"SHA512 Hash: {lib.Sha512}");
             _log.LogInformation($"Files:");
-            foreach(var file in lib.Files)
+            foreach (var file in lib.Files)
             {
                 _log.LogInformation($" * {file}");
             }
 
             IEnumerable<LockFileTarget> targets = lockfile.Targets;
-            if(!string.IsNullOrEmpty(targetName))
+            if (!string.IsNullOrEmpty(targetName))
             {
                 var parts = targetName.Split('/');
                 var tfm = NuGetFramework.Parse(parts[0]);
@@ -87,9 +87,9 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    WriteList(Compile, libraryTarget.Library.CompileTimeAssemblies);
-                    WriteList(Runtime, libraryTarget.Library.RuntimeAssemblies);
-                    WriteList(Native, libraryTarget.Library.NativeLibraries);
+                    WriteList(Compile, libraryTarget.Library.CompileTimeAssemblies.Select(f => f.Path));
+                    WriteList(Runtime, libraryTarget.Library.RuntimeAssemblies.Select(f => f.Path));
+                    WriteList(Native, libraryTarget.Library.NativeLibraries.Select(f => f.Path));
                     WriteList(Framework, libraryTarget.Library.FrameworkAssemblies);
                 }
             }
@@ -97,7 +97,7 @@ namespace NuGet.CommandLine
             return 0;
         }
 
-        private void WriteList(string header, IList<string> items)
+        private void WriteList(string header, IEnumerable<string> items)
         {
             _log.LogInformation($" {header}:");
             foreach (var item in items)
@@ -110,16 +110,17 @@ namespace NuGet.CommandLine
         {
             _log.LogInformation($"Locked: {lockfile.IsLocked}");
 
-            if(project == null)
+            if (project == null)
             {
                 _log.LogInformation($"Up-to-date: Unknown");
-            } else
+            }
+            else
             {
                 _log.LogInformation($"Up-to-date: {lockfile.IsValidForPackageSpec(project)}");
             }
 
             _log.LogInformation("Project Dependencies:");
-            foreach(var group in lockfile.ProjectFileDependencyGroups)
+            foreach (var group in lockfile.ProjectFileDependencyGroups)
             {
                 var fxName = string.IsNullOrEmpty(group.FrameworkName) ? "All Frameworks" : group.FrameworkName;
                 if (group.Dependencies.Any())
@@ -129,20 +130,21 @@ namespace NuGet.CommandLine
                     {
                         _log.LogInformation($"  * {dep}");
                     }
-                } else
+                }
+                else
                 {
                     _log.LogInformation($" {fxName}: none");
                 }
             }
 
             _log.LogInformation("All Libraries:");
-            foreach(var lib in lockfile.Libraries)
+            foreach (var lib in lockfile.Libraries)
             {
                 _log.LogInformation($"* {lib.Name} {lib.Version}");
             }
 
             IEnumerable<LockFileTarget> targets = lockfile.Targets;
-            if(!string.IsNullOrEmpty(targetName))
+            if (!string.IsNullOrEmpty(targetName))
             {
                 var parts = targetName.Split('/');
                 var tfm = NuGetFramework.Parse(parts[0]);
@@ -153,27 +155,27 @@ namespace NuGet.CommandLine
             foreach (var target in targets)
             {
                 _log.LogInformation($"Target: {target.TargetFramework} {target.RuntimeIdentifier}");
-                foreach(var lib in target.Libraries)
+                foreach (var lib in target.Libraries)
                 {
                     string provides = string.Empty;
-                    if(lib.NativeLibraries.Any())
+                    if (lib.NativeLibraries.Any())
                     {
                         provides += Native + ",";
                     }
-                    if(lib.RuntimeAssemblies.Any())
+                    if (lib.RuntimeAssemblies.Any())
                     {
-                        provides += Runtime + ","; 
+                        provides += Runtime + ",";
                     }
-                    if(lib.CompileTimeAssemblies.Any())
+                    if (lib.CompileTimeAssemblies.Any())
                     {
-                        provides += Compile + ","; 
+                        provides += Compile + ",";
                     }
-                    if(lib.FrameworkAssemblies.Any())
+                    if (lib.FrameworkAssemblies.Any())
                     {
                         provides += Framework + ",";
                     }
                     provides = provides.TrimEnd(',');
-                    if(string.IsNullOrEmpty(provides))
+                    if (string.IsNullOrEmpty(provides))
                     {
                         provides = Nothing;
                     }
