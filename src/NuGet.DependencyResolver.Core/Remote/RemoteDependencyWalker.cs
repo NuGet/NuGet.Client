@@ -21,7 +21,7 @@ namespace NuGet.DependencyResolver
             _context = context;
         }
 
-        public Task<GraphNode<RemoteResolveResult>> Walk(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph)
+        public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph)
         {
             var cache = new Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>>();
 
@@ -31,9 +31,9 @@ namespace NuGet.DependencyResolver
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, Func<string, bool> predicate)
         {
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
-                {
-                    Item = await FindLibraryCached(cache, libraryRange, framework),
-                };
+            {
+                Item = await FindLibraryCached(cache, libraryRange, framework),
+            };
 
             if (node.Item == null)
             {
@@ -71,10 +71,10 @@ namespace NuGet.DependencyResolver
                             {
                                 // Add the dependency to the tasks
                                 var runtimeLibraryRange = new LibraryRange()
-                                    {
-                                        Name = runtimeDependency.Id,
-                                        VersionRange = runtimeDependency.VersionRange
-                                    };
+                                {
+                                    Name = runtimeDependency.Id,
+                                    VersionRange = runtimeDependency.VersionRange
+                                };
                                 tasks.Add(CreateGraphNode(
                                     cache,
                                     runtimeLibraryRange,
@@ -150,13 +150,13 @@ namespace NuGet.DependencyResolver
             var dependencies = await match.Provider.GetDependenciesAsync(match.Library, framework, cancellationToken);
 
             return new GraphItem<RemoteResolveResult>(match.Library)
+            {
+                Data = new RemoteResolveResult
                 {
-                    Data = new RemoteResolveResult
-                        {
-                            Match = match,
-                            Dependencies = dependencies
-                        },
-                };
+                    Match = match,
+                    Dependencies = dependencies
+                },
+            };
         }
 
         private async Task<RemoteMatch> FindLibraryMatch(LibraryRange libraryRange, NuGetFramework framework, CancellationToken cancellationToken)
@@ -255,9 +255,9 @@ namespace NuGet.DependencyResolver
         private async Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework, CancellationToken cancellationToken)
         {
             var libraryRange = new LibraryRange
-                {
-                    Name = name
-                };
+            {
+                Name = name
+            };
 
             foreach (var provider in _context.ProjectLibraryProviders)
             {
@@ -312,22 +312,22 @@ namespace NuGet.DependencyResolver
             foreach (var provider in providers)
             {
                 Func<Task<RemoteMatch>> taskWrapper = async () => new RemoteMatch
-                    {
-                        Provider = provider,
-                        Library = await action(provider)
-                    };
+                {
+                    Provider = provider,
+                    Library = await action(provider)
+                };
 
                 tasks.Add(taskWrapper());
             }
 
             RemoteMatch bestMatch = null;
-            
+
             while (tasks.Count > 0)
             {
                 var task = await Task.WhenAny(tasks);
                 tasks.Remove(task);
                 var match = await task;
-                
+
                 // If we found an exact match then use it.
                 // This allows us to shortcircuit slow feeds even if there's an exact match
                 if (!libraryRange.VersionRange.IsFloating &&
@@ -336,7 +336,7 @@ namespace NuGet.DependencyResolver
                 {
                     return match;
                 }
-                
+
                 // Otherwise just find the best out of the matches
                 if (libraryRange.VersionRange.IsBetter(
                     current: bestMatch?.Library?.Version,
@@ -345,7 +345,7 @@ namespace NuGet.DependencyResolver
                     bestMatch = match;
                 }
             }
-            
+
             return bestMatch;
         }
     }

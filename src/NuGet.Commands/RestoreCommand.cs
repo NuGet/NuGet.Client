@@ -370,7 +370,7 @@ namespace NuGet.Commands
         private async Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context)
         {
             _log.LogInformation($"Restoring packages for {framework}");
-            var graph = await walker.Walk(
+            var graph = await walker.WalkAsync(
                 projectRange,
                 framework,
                 runtimeIdentifier,

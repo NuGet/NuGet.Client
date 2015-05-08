@@ -14,7 +14,7 @@ namespace NuGet.DependencyResolver.Core.Tests
     public class ResolverFacts
     {
         [Fact]
-        public void FasterProviderReturnsResultsBeforeSlowOnesIfExactMatchFound()
+        public async Task FasterProviderReturnsResultsBeforeSlowOnesIfExactMatchFound()
         {
             // A 
             var slowProvider = new TestProvider(TimeSpan.FromSeconds(2));
@@ -36,14 +36,14 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(fastProvider);
 
             var walker = new RemoteDependencyWalker(context);
-            var result = walker.Walk(new LibraryRange
+            var result = await walker.WalkAsync(new LibraryRange
             {
                 Name = "A",
                 VersionRange = VersionRange.Parse("1.0.0"),
             },
             NuGetFramework.Parse("net45"),
             runtimeIdentifier: null,
-            runtimeGraph: null).Result;
+            runtimeGraph: null);
 
             Assert.NotNull(result.Item.Data.Match);
             Assert.NotNull(result.Item.Data.Match.Library);
@@ -53,7 +53,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public void SlowerFeedWinsIfBetterMatchExists()
+        public async Task SlowerFeedWinsIfBetterMatchExists()
         {
             // A 
             var slowProvider = new TestProvider(TimeSpan.FromSeconds(2));
@@ -75,14 +75,14 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(fastProvider);
 
             var walker = new RemoteDependencyWalker(context);
-            var result = walker.Walk(new LibraryRange
+            var result = await walker.WalkAsync(new LibraryRange
             {
                 Name = "A",
                 VersionRange = VersionRange.Parse("1.0.0"),
             },
             NuGetFramework.Parse("net45"),
             runtimeIdentifier: null,
-            runtimeGraph: null).Result;
+            runtimeGraph: null);
 
             Assert.NotNull(result.Item.Data.Match);
             Assert.NotNull(result.Item.Data.Match.Library);
