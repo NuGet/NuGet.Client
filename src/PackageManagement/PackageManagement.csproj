@@ -25,6 +25,7 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn>CS1591; CS1573</NoWarn>
     <DocumentationFile>bin\Debug\NuGet.PackageManagement.XML</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
