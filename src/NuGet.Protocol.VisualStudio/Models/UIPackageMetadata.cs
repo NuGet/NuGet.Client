@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -11,19 +14,19 @@ namespace NuGet.Protocol.VisualStudio
     public sealed class UIPackageMetadata
     {
         public UIPackageMetadata(
-            PackageIdentity identity, 
-            string title, 
-            string summary, 
-            string description, 
-            string authors, 
-            string owners, 
-            Uri iconUrl, 
-            Uri licenseUrl, 
-            Uri projectUrl, 
+            PackageIdentity identity,
+            string title,
+            string summary,
+            string description,
+            string authors,
+            string owners,
+            Uri iconUrl,
+            Uri licenseUrl,
+            Uri projectUrl,
             Uri reportAbuseUrl,
-            string tags, 
-            DateTimeOffset? published, 
-            IEnumerable<PackageDependencyGroup> dependencySet, 
+            string tags,
+            DateTimeOffset? published,
+            IEnumerable<PackageDependencyGroup> dependencySet,
             bool requireLicenseAccept,
             int? downloadCount)
         {

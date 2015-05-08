@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.LibraryModel
@@ -7,7 +10,7 @@ namespace NuGet.LibraryModel
     {
         public static bool IsEclipsedBy(this LibraryRange library, LibraryRange other)
         {
-            return string.Equals(library.Name, other.Name, StringComparison.OrdinalIgnoreCase) && 
+            return string.Equals(library.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(library.TypeConstraint, other.TypeConstraint);
         }
 

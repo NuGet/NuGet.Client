@@ -1,8 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Linq;
+using System.Text;
 
 namespace NuGet.Frameworks
 {
@@ -21,25 +24,21 @@ namespace NuGet.Frameworks
         public NuGetFramework(string framework)
             : this(framework, FrameworkConstants.EmptyVersion)
         {
-
         }
 
         public NuGetFramework(string framework, Version version)
             : this(framework, version, null)
         {
-
         }
 
         public NuGetFramework(string framework, Version version, string profile)
             : this(framework, version, profile, null, null)
         {
-
         }
 
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string platformIdentifier, Version platformVersion)
             : this(frameworkIdentifier, frameworkVersion, null, platformIdentifier, platformVersion)
         {
-
         }
 
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile, string platformIdentifier, Version platformVersion)
@@ -66,10 +65,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public string Framework
         {
-            get
-            {
-                return _frameworkIdentifier;
-            }
+            get { return _frameworkIdentifier; }
         }
 
         /// <summary>
@@ -77,10 +73,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public Version Version
         {
-            get
-            {
-                return _frameworkVersion;
-            }
+            get { return _frameworkVersion; }
         }
 
         /// <summary>
@@ -88,10 +81,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool HasProfile
         {
-            get
-            {
-                return !String.IsNullOrEmpty(Profile);
-            }
+            get { return !String.IsNullOrEmpty(Profile); }
         }
 
         /// <summary>
@@ -99,10 +89,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public string Profile
         {
-            get
-            {
-                return _frameworkProfile;
-            }
+            get { return _frameworkProfile; }
         }
 
         /// <summary>
@@ -111,10 +98,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public string Platform
         {
-            get
-            {
-                return _platformIdentifier;
-            }
+            get { return _platformIdentifier; }
         }
 
         /// <summary>
@@ -123,10 +107,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public Version PlatformVersion
         {
-            get
-            {
-                return _platformVersion;
-            }
+            get { return _platformVersion; }
         }
 
         /// <summary>
@@ -137,11 +118,11 @@ namespace NuGet.Frameworks
         {
             get
             {
-                string result = string.Empty;
+                var result = string.Empty;
 
                 if (IsSpecificFramework)
                 {
-                    List<string> parts = new List<string>(3) { Framework };
+                    var parts = new List<string>(3) { Framework };
 
                     parts.Add(String.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(Version)));
 
@@ -175,11 +156,11 @@ namespace NuGet.Frameworks
         /// </summary>
         public string GetShortFolderName(IFrameworkNameProvider mappings)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             if (IsSpecificFramework)
             {
-                string shortFramework = string.Empty;
+                var shortFramework = string.Empty;
 
                 // get the framework
                 if (!mappings.TryGetShortIdentifier(Framework, out shortFramework))
@@ -206,9 +187,11 @@ namespace NuGet.Frameworks
                     sb.Append("-");
 
                     IEnumerable<NuGetFramework> frameworks = null;
-                    if (HasProfile && mappings.TryGetPortableFrameworks(Profile, false, out frameworks) && frameworks.Any())
+                    if (HasProfile
+                        && mappings.TryGetPortableFrameworks(Profile, false, out frameworks)
+                        && frameworks.Any())
                     {
-                        HashSet<NuGetFramework> required = new HashSet<NuGetFramework>(frameworks, NuGetFramework.Comparer);
+                        var required = new HashSet<NuGetFramework>(frameworks, Comparer);
 
                         // Normalize by removing all optional frameworks
                         mappings.TryGetPortableFrameworks(Profile, false, out frameworks);
@@ -218,7 +201,7 @@ namespace NuGet.Frameworks
                         // HashSet<NuGetFramework> optional = new HashSet<NuGetFramework>(frameworks.Where(e => !required.Contains(e)), NuGetFramework.Comparer);
 
                         // sort the PCL frameworks by alphabetical order
-                        List<string> sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
+                        var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
 
                         // add optional frameworks at the end
                         // sortedFrameworks.AddRange(optional.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
@@ -233,7 +216,7 @@ namespace NuGet.Frameworks
                 else
                 {
                     // add the profile
-                    string shortProfile = string.Empty;
+                    var shortProfile = string.Empty;
 
                     if (HasProfile && !mappings.TryGetShortProfile(Framework, Profile, out shortProfile))
                     {
@@ -259,9 +242,10 @@ namespace NuGet.Frameworks
 
         private static string GetDisplayVersion(Version version)
         {
-            StringBuilder sb = new StringBuilder(String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
+            var sb = new StringBuilder(String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
 
-            if (version.Build > 0 || version.Revision > 0)
+            if (version.Build > 0
+                || version.Revision > 0)
             {
                 sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Build);
 
@@ -276,7 +260,7 @@ namespace NuGet.Frameworks
 
         private static string GetLettersAndDigitsOnly(string s)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             foreach (var c in s.ToCharArray())
             {
@@ -294,10 +278,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool IsPCL
         {
-            get
-            {
-                return StringComparer.OrdinalIgnoreCase.Equals(Framework, FrameworkConstants.FrameworkIdentifiers.Portable) && Version.Major < 5;
-            }
+            get { return StringComparer.OrdinalIgnoreCase.Equals(Framework, FrameworkConstants.FrameworkIdentifiers.Portable) && Version.Major < 5; }
         }
 
         /// <summary>
@@ -305,22 +286,16 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool AnyPlatform
         {
-            get
-            {
-                return String.IsNullOrEmpty(Platform);
-            }
+            get { return String.IsNullOrEmpty(Platform); }
         }
 
         /// <summary>
-        /// True if this framework matches for all versions. 
+        /// True if this framework matches for all versions.
         /// Ex: net
         /// </summary>
         public bool AllFrameworkVersions
         {
-            get
-            {
-                return Version.Major == 0 && Version.Minor == 0 && Version.Build == 0 && Version.Revision == 0;
-            }
+            get { return Version.Major == 0 && Version.Minor == 0 && Version.Build == 0 && Version.Revision == 0; }
         }
 
         /// <summary>
@@ -328,10 +303,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool IsUnsupported
         {
-            get
-            {
-                return UnsupportedFramework.Equals(this);
-            }
+            get { return UnsupportedFramework.Equals(this); }
         }
 
         /// <summary>
@@ -339,10 +311,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool IsAgnostic
         {
-            get
-            {
-                return AgnosticFramework.Equals(this);
-            }
+            get { return AgnosticFramework.Equals(this); }
         }
 
         /// <summary>
@@ -350,10 +319,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool IsAny
         {
-            get
-            {
-                return AnyFramework.Equals(this);
-            }
+            get { return AnyFramework.Equals(this); }
         }
 
         /// <summary>
@@ -361,10 +327,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool IsSpecificFramework
         {
-            get
-            {
-                return !IsAgnostic && !IsAny && !IsUnsupported;
-            }
+            get { return !IsAgnostic && !IsAny && !IsUnsupported; }
         }
 
         /// <summary>
@@ -379,7 +342,7 @@ namespace NuGet.Frameworks
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder(DotNetFrameworkName);
+            var sb = new StringBuilder(DotNetFrameworkName);
 
             if (!String.IsNullOrEmpty(Platform))
             {
@@ -401,7 +364,7 @@ namespace NuGet.Frameworks
 
         public override bool Equals(object obj)
         {
-            NuGetFramework other = obj as NuGetFramework;
+            var other = obj as NuGetFramework;
 
             if (other != null)
             {
@@ -415,15 +378,16 @@ namespace NuGet.Frameworks
 
         private static Version NormalizeVersion(Version version)
         {
-            Version normalized = version;
+            var normalized = version;
 
-            if (version.Build < 0 || version.Revision < 0)
+            if (version.Build < 0
+                || version.Revision < 0)
             {
                 normalized = new Version(
-                               version.Major,
-                               version.Minor,
-                               Math.Max(version.Build, 0),
-                               Math.Max(version.Revision, 0));
+                    version.Major,
+                    version.Minor,
+                    Math.Max(version.Build, 0),
+                    Math.Max(version.Revision, 0));
             }
 
             return normalized;

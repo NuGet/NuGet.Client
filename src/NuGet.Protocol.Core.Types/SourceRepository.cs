@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,7 +11,8 @@ using NuGet.Configuration;
 namespace NuGet.Protocol.Core.Types
 {
     /// <summary>
-    /// Represents a Server endpoint. Exposes methods to get a specific resource such as Search, Metrics service and so on for the given server endpoint.
+    /// Represents a Server endpoint. Exposes methods to get a specific resource such as Search, Metrics service
+    /// and so on for the given server endpoint.
     /// </summary>
     public class SourceRepository
     {
@@ -23,7 +27,6 @@ namespace NuGet.Protocol.Core.Types
         public SourceRepository(PackageSource source, IEnumerable<INuGetResourceProvider> providers)
             : this(source, providers.Select(p => new Lazy<INuGetResourceProvider>(() => p)))
         {
-
         }
 
         /// <summary>
@@ -65,10 +68,7 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public virtual PackageSource PackageSource
         {
-            get
-            {
-                return _source;
-            }
+            get { return _source; }
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace NuGet.Protocol.Core.Types
         /// <returns>Null if the resource does not exist</returns>
         public virtual T GetResource<T>(CancellationToken token) where T : class, INuGetResource
         {
-            Task<T> task = GetResourceAsync<T>(token);
+            var task = GetResourceAsync<T>(token);
             task.Wait();
 
             return task.Result;
@@ -111,14 +111,14 @@ namespace NuGet.Protocol.Core.Types
         /// <returns>Null if the resource does not exist</returns>
         public virtual async Task<T> GetResourceAsync<T>(CancellationToken token) where T : class, INuGetResource
         {
-            Type resourceType = typeof(T);
+            var resourceType = typeof(T);
             INuGetResourceProvider[] possible = null;
 
             if (_providerCache.TryGetValue(resourceType, out possible))
             {
                 foreach (var provider in possible)
                 {
-                    Tuple<bool, INuGetResource> result = await provider.TryCreate(this, token);
+                    var result = await provider.TryCreate(this, token);
                     if (result.Item1)
                     {
                         return (T)result.Item2;
@@ -154,16 +154,16 @@ namespace NuGet.Protocol.Core.Types
             var items = new List<INuGetResourceProvider>(
                 group.Select(e => e.Value).OrderBy(e => e.Name).ThenBy(e => e.After.Count()).ThenBy(e => e.Before.Count()));
 
-            ProviderComparer comparer = new ProviderComparer();
+            var comparer = new ProviderComparer();
 
             var ordered = new Queue<INuGetResourceProvider>();
 
             // List.Sort does not work when lists have unsolvable gaps, which can occur here
             while (items.Count > 0)
             {
-                INuGetResourceProvider best = items[0];
+                var best = items[0];
 
-                for (int i = 1; i < items.Count; i++)
+                for (var i = 1; i < items.Count; i++)
                 {
                     if (comparer.Compare(items[i], best) < 0)
                     {

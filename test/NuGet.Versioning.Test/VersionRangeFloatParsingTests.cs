@@ -1,18 +1,17 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NuGet.Versioning.Test
 {
     public class VersionRangeFloatParsingTests
     {
-
         [Fact]
         public void VersionRangeFloatParsing_Prerelease()
         {
-            VersionRange range = VersionRange.Parse("1.0.0-*");
+            var range = VersionRange.Parse("1.0.0-*");
 
             Assert.True(range.IncludePrerelease);
             Assert.True(range.MinVersion.IsPrerelease);
@@ -28,11 +27,11 @@ namespace NuGet.Versioning.Test
         {
             var range = VersionRange.Parse(rangeString);
 
-            List<NuGetVersion> versions = new List<NuGetVersion>()
-            {
-                NuGetVersion.Parse("1.0.0"),
-                NuGetVersion.Parse("1.1.0")
-            };
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.0.0"),
+                    NuGetVersion.Parse("1.1.0")
+                };
 
             Assert.Equal("1.0.0", range.FindBestMatch(versions).ToNormalizedString());
         }
@@ -42,11 +41,11 @@ namespace NuGet.Versioning.Test
         {
             var range = VersionRange.Parse("1.0.0-*");
 
-            List<NuGetVersion> versions = new List<NuGetVersion>()
-            {
-                NuGetVersion.Parse("1.0.0-alpha"),
-                NuGetVersion.Parse("1.0.0-beta")
-            };
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.0.0-alpha"),
+                    NuGetVersion.Parse("1.0.0-beta")
+                };
 
             Assert.Equal("1.0.0-beta", range.FindBestMatch(versions).ToNormalizedString());
         }
@@ -56,11 +55,11 @@ namespace NuGet.Versioning.Test
         {
             var range = VersionRange.Parse("1.0.0-*");
 
-            List<NuGetVersion> versions = new List<NuGetVersion>()
-            {
-                NuGetVersion.Parse("1.0.0-beta"),
-                NuGetVersion.Parse("1.0.1-omega"),
-            };
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.0.0-beta"),
+                    NuGetVersion.Parse("1.0.1-omega"),
+                };
 
             Assert.Equal("1.0.0-beta", range.FindBestMatch(versions).ToNormalizedString());
         }
@@ -70,12 +69,12 @@ namespace NuGet.Versioning.Test
         {
             var range = VersionRange.Parse("1.0.0-beta.*");
 
-            List<NuGetVersion> versions = new List<NuGetVersion>()
-            {
-                NuGetVersion.Parse("1.0.0-beta.1"),
-                NuGetVersion.Parse("1.0.0-beta.2"),
-                NuGetVersion.Parse("1.0.0-omega.3"),
-            };
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.0.0-beta.1"),
+                    NuGetVersion.Parse("1.0.0-beta.2"),
+                    NuGetVersion.Parse("1.0.0-omega.3"),
+                };
 
             Assert.Equal("1.0.0-beta.2", range.FindBestMatch(versions).ToNormalizedString());
         }
@@ -85,12 +84,12 @@ namespace NuGet.Versioning.Test
         {
             var range = VersionRange.Parse("1.0.0-beta.*");
 
-            List<NuGetVersion> versions = new List<NuGetVersion>()
-            {
-                NuGetVersion.Parse("1.0.0-beta.1"),
-                NuGetVersion.Parse("1.0.0-beta.2"),
-                NuGetVersion.Parse("1.0.0-beta.a"),
-            };
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.0.0-beta.1"),
+                    NuGetVersion.Parse("1.0.0-beta.2"),
+                    NuGetVersion.Parse("1.0.0-beta.a"),
+                };
 
             Assert.Equal("1.0.0-beta.a", range.FindBestMatch(versions).ToNormalizedString());
         }

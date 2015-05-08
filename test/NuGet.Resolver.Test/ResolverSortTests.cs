@@ -1,14 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using NuGet.Resolver;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using NuGet.Packaging;
-using System.Threading;
+using Xunit;
 
 namespace NuGet.Resolver.Test
 {
@@ -18,7 +15,7 @@ namespace NuGet.Resolver.Test
         public void ResolverSort_Ignore()
         {
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Ignore, installed, newPackages);
 
@@ -36,7 +33,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Ignore, installed, newPackages);
 
@@ -53,7 +50,7 @@ namespace NuGet.Resolver.Test
         public void ResolverSort_HighestMinor()
         {
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestMinor, installed, newPackages);
 
@@ -71,7 +68,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestMinor, installed, newPackages);
 
@@ -89,7 +86,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestMinor, installed, newPackages);
 
@@ -109,7 +106,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestMinor, installed, newPackages);
 
@@ -123,12 +120,11 @@ namespace NuGet.Resolver.Test
             Assert.Equal("1.3.2", packages.First().Version.ToNormalizedString());
         }
 
-
         [Fact]
         public void ResolverSort_HighestPatch()
         {
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestPatch, installed, newPackages);
 
@@ -146,7 +142,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestPatch, installed, newPackages);
 
@@ -164,7 +160,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestPatch, installed, newPackages);
 
@@ -184,7 +180,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.HighestPatch, installed, newPackages);
 
@@ -198,13 +194,11 @@ namespace NuGet.Resolver.Test
             Assert.Equal("1.3.2", packages.First().Version.ToNormalizedString());
         }
 
-
-
         [Fact]
         public void ResolverSort_Highest()
         {
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Highest, installed, newPackages);
 
@@ -222,7 +216,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Highest, installed, newPackages);
 
@@ -241,7 +235,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Highest, installed, newPackages);
 
@@ -256,12 +250,11 @@ namespace NuGet.Resolver.Test
             Assert.Equal("0.1.0", packages.Last().Version.ToNormalizedString());
         }
 
-
         [Fact]
         public void ResolverSort_Lowest()
         {
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Lowest, installed, newPackages);
 
@@ -278,7 +271,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Lowest, installed, newPackages);
 
@@ -296,7 +289,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Lowest, installed, newPackages);
 
@@ -316,7 +309,7 @@ namespace NuGet.Resolver.Test
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
             installed.Add(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")));
 
-            HashSet<string> newPackages = new HashSet<string>();
+            var newPackages = new HashSet<string>();
 
             var comparer = new ResolverComparer(DependencyBehavior.Lowest, installed, newPackages);
 
@@ -330,29 +323,28 @@ namespace NuGet.Resolver.Test
             Assert.Equal("1.3.2", packages.First().Version.ToNormalizedString());
         }
 
-
         private static List<NuGetVersion> VersionList = new List<NuGetVersion>()
-        {
-            NuGetVersion.Parse("0.1.0"),
-            NuGetVersion.Parse("0.1.1"),
-            NuGetVersion.Parse("0.1.2"),
-            NuGetVersion.Parse("0.2.0"),
-            NuGetVersion.Parse("0.3.0"),
-            NuGetVersion.Parse("0.3.1"),
-            NuGetVersion.Parse("1.0.0"),
-            NuGetVersion.Parse("1.0.1"),
-            NuGetVersion.Parse("1.1.1"),
-            NuGetVersion.Parse("1.1.2"),
-            NuGetVersion.Parse("1.1.3"),
-            NuGetVersion.Parse("1.2.0"),
-            NuGetVersion.Parse("1.3.1"),
-            NuGetVersion.Parse("1.3.2"),
-            NuGetVersion.Parse("2.0.0"),
-            NuGetVersion.Parse("2.0.1"),
-            NuGetVersion.Parse("2.0.2"),
-            NuGetVersion.Parse("2.5.0"),
-            NuGetVersion.Parse("3.0.0"),
-            NuGetVersion.Parse("3.0.9"),
-        };
+            {
+                NuGetVersion.Parse("0.1.0"),
+                NuGetVersion.Parse("0.1.1"),
+                NuGetVersion.Parse("0.1.2"),
+                NuGetVersion.Parse("0.2.0"),
+                NuGetVersion.Parse("0.3.0"),
+                NuGetVersion.Parse("0.3.1"),
+                NuGetVersion.Parse("1.0.0"),
+                NuGetVersion.Parse("1.0.1"),
+                NuGetVersion.Parse("1.1.1"),
+                NuGetVersion.Parse("1.1.2"),
+                NuGetVersion.Parse("1.1.3"),
+                NuGetVersion.Parse("1.2.0"),
+                NuGetVersion.Parse("1.3.1"),
+                NuGetVersion.Parse("1.3.2"),
+                NuGetVersion.Parse("2.0.0"),
+                NuGetVersion.Parse("2.0.1"),
+                NuGetVersion.Parse("2.0.2"),
+                NuGetVersion.Parse("2.5.0"),
+                NuGetVersion.Parse("3.0.0"),
+                NuGetVersion.Parse("3.0.9"),
+            };
     }
 }

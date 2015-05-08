@@ -1,14 +1,15 @@
-﻿#if !DNXCORE50
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#if !DNXCORE50
 using System;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Linq;
 
 namespace NuGet.Configuration
 {
     public class ProxyCache : IProxyCache
     {
-       
         /// <summary>
         /// Capture the default System Proxy so that it can be re-used by the IProxyFinder
         /// because we can't rely on WebRequest.DefaultWebProxy since someone can modify the DefaultWebProxy
@@ -21,7 +22,7 @@ namespace NuGet.Configuration
         private readonly ConcurrentDictionary<Uri, WebProxy> _cache = new ConcurrentDictionary<Uri, WebProxy>();
 
 #if BOOTSTRAPPER
-        // Temporarily commenting these out until we can figure out a nicer way of doing this in the bootstrapper.
+    // Temporarily commenting these out until we can figure out a nicer way of doing this in the bootstrapper.
 
         private static readonly Lazy<ProxyCache> _instance = new Lazy<ProxyCache>(() => new ProxyCache());
                 public ProxyCache()
@@ -45,17 +46,14 @@ namespace NuGet.Configuration
 
         public static ProxyCache Instance
         {
-            get
-            {
-                return _instance.Value;
-            }
+            get { return _instance.Value; }
         }
 
         public IWebProxy GetProxy(Uri uri)
         {
 #if !BOOTSTRAPPER
             // Check if the user has configured proxy details in settings or in the environment.
-            WebProxy configuredProxy = GetUserConfiguredProxy();
+            var configuredProxy = GetUserConfiguredProxy();
             if (configuredProxy != null)
             {
                 // If a proxy was cached, it means the stored credentials are incorrect. Use the cached one in this case.
@@ -72,7 +70,7 @@ namespace NuGet.Configuration
                 return null;
             }
 
-            WebProxy systemProxy = GetSystemProxy(uri);
+            var systemProxy = GetSystemProxy(uri);
 
             WebProxy effectiveProxy;
             // See if we have a proxy instance cached for this proxy address
@@ -93,10 +91,11 @@ namespace NuGet.Configuration
             {
                 // The host is the minimal value we need to assume a user configured proxy. 
                 var webProxy = new WebProxy(host);
-                string userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.UserKey);
-                string password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationContants.PasswordKey);
+                var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.UserKey);
+                var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationContants.PasswordKey);
 
-                if (!String.IsNullOrEmpty(userName) && !String.IsNullOrEmpty(password))
+                if (!String.IsNullOrEmpty(userName)
+                    && !String.IsNullOrEmpty(password))
                 {
                     webProxy.Credentials = new NetworkCredential(userName, password);
                 }
@@ -106,7 +105,8 @@ namespace NuGet.Configuration
             // Next try reading from the environment variable http_proxy. This would be specified as http://<username>:<password>@proxy.com
             host = _environment.GetEnvironmentVariable(ConfigurationContants.HostKey);
             Uri uri;
-            if (!String.IsNullOrEmpty(host) && Uri.TryCreate(host, UriKind.Absolute, out uri))
+            if (!String.IsNullOrEmpty(host)
+                && Uri.TryCreate(host, UriKind.Absolute, out uri))
             {
                 var webProxy = new WebProxy(uri.GetComponents(UriComponents.HttpRequestUrl, UriFormat.SafeUnescaped));
                 if (!String.IsNullOrEmpty(uri.UserInfo))
@@ -140,7 +140,6 @@ namespace NuGet.Configuration
             return new WebProxy(proxyUri);
         }
 
-
         /// <summary>
         /// Return true or false if connecting through a proxy server
         /// </summary>
@@ -156,18 +155,18 @@ namespace NuGet.Configuration
             // Anyway the reason why we need the DefaultWebProxy is to see if the uri that we are
             // getting the proxy for to should be bypassed or not. If it should be bypassed then
             // return that we don't need a proxy and we should try to connect directly.
-            IWebProxy proxy = WebRequest.DefaultWebProxy;
+            var proxy = WebRequest.DefaultWebProxy;
             if (proxy != null)
             {
-                Uri proxyUri = proxy.GetProxy(uri);
+                var proxyUri = proxy.GetProxy(uri);
                 if (proxyUri != null)
                 {
-                    Uri proxyAddress = new Uri(proxyUri.AbsoluteUri);
+                    var proxyAddress = new Uri(proxyUri.AbsoluteUri);
                     if (String.Equals(proxyAddress.AbsoluteUri, uri.AbsoluteUri))
                     {
                         return false;
                     }
-                    bool bypassUri = proxy.IsBypassed(uri);
+                    var bypassUri = proxy.IsBypassed(uri);
                     if (bypassUri)
                     {
                         return false;
@@ -179,6 +178,6 @@ namespace NuGet.Configuration
             return proxy != null;
         }
     }
-
 }
+
 #endif

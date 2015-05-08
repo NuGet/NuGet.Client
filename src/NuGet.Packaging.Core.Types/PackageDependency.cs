@@ -1,10 +1,9 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
 {
@@ -17,9 +16,8 @@ namespace NuGet.Packaging.Core
         private readonly VersionRange _versionRange;
 
         public PackageDependency(string id)
-            : this (id, VersionRange.All)
+            : this(id, VersionRange.All)
         {
-
         }
 
         public PackageDependency(string id, VersionRange versionRange)
@@ -38,10 +36,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public string Id
         {
-            get
-            {
-                return _id;
-            }
+            get { return _id; }
         }
 
         /// <summary>
@@ -49,10 +44,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public VersionRange VersionRange
         {
-            get
-            {
-                return _versionRange;
-            }
+            get { return _versionRange; }
         }
 
         public bool Equals(PackageDependency other)
@@ -62,7 +54,7 @@ namespace NuGet.Packaging.Core
 
         public override bool Equals(object obj)
         {
-            PackageDependency dependency = obj as PackageDependency;
+            var dependency = obj as PackageDependency;
 
             if (dependency != null)
             {

@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace NuGet.Versioning
 {
@@ -35,7 +36,7 @@ namespace NuGet.Versioning
             if (includePrerelease == null)
             {
                 _includePrerelease = (_maxVersion != null && IsPrerelease(_maxVersion) == true) ||
-                    (_minVersion != null && IsPrerelease(_minVersion) == true);
+                                     (_minVersion != null && IsPrerelease(_minVersion) == true);
             }
             else
             {
@@ -48,10 +49,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool HasLowerBound
         {
-            get
-            {
-                return _minVersion != null;
-            }
+            get { return _minVersion != null; }
         }
 
         /// <summary>
@@ -59,10 +57,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool HasUpperBound
         {
-            get
-            {
-                return _maxVersion != null;
-            }
+            get { return _maxVersion != null; }
         }
 
         /// <summary>
@@ -70,10 +65,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool HasLowerAndUpperBounds
         {
-            get
-            {
-                return HasLowerBound && HasUpperBound;
-            }
+            get { return HasLowerBound && HasUpperBound; }
         }
 
         /// <summary>
@@ -81,10 +73,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool IsMinInclusive
         {
-            get
-            {
-                return HasLowerBound && _includeMinVersion;
-            }
+            get { return HasLowerBound && _includeMinVersion; }
         }
 
         /// <summary>
@@ -92,10 +81,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool IsMaxInclusive
         {
-            get
-            {
-                return HasUpperBound && _includeMaxVersion;
-            }
+            get { return HasUpperBound && _includeMaxVersion; }
         }
 
         /// <summary>
@@ -103,10 +89,7 @@ namespace NuGet.Versioning
         /// </summary>
         public NuGetVersion MaxVersion
         {
-            get
-            {
-                return _maxVersion;
-            }
+            get { return _maxVersion; }
         }
 
         /// <summary>
@@ -114,10 +97,7 @@ namespace NuGet.Versioning
         /// </summary>
         public NuGetVersion MinVersion
         {
-            get
-            {
-                return _minVersion;
-            }
+            get { return _minVersion; }
         }
 
         /// <summary>
@@ -125,10 +105,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool IncludePrerelease
         {
-            get
-            {
-                return _includePrerelease;
-            }
+            get { return _includePrerelease; }
         }
 
         /// <summary>
@@ -167,7 +144,7 @@ namespace NuGet.Versioning
             }
 
             // Determine if version is in the given range using the comparer.
-            bool condition = true;
+            var condition = true;
             if (HasLowerBound)
             {
                 if (IsMinInclusive)
@@ -205,7 +182,7 @@ namespace NuGet.Versioning
         /// </summary>
         public override bool Equals(object obj)
         {
-            VersionRangeBase range = obj as VersionRangeBase;
+            var range = obj as VersionRangeBase;
 
             if (range != null)
             {
@@ -254,7 +231,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        ///  Use a specific IVersionComparer for comparison
+        /// Use a specific IVersionComparer for comparison
         /// </summary>
         public bool Equals(VersionRangeBase other, IVersionComparer versionComparer)
         {
@@ -275,10 +252,10 @@ namespace NuGet.Versioning
         /// </summary>
         public bool IsSubSetOrEqualTo(VersionRangeBase possibleSuperSet, IVersionComparer comparer)
         {
-            VersionRangeComparer rangeComparer = new VersionRangeComparer(comparer);
+            var rangeComparer = new VersionRangeComparer(comparer);
 
-            VersionRangeBase possibleSubSet = this;
-            VersionRangeBase target = possibleSuperSet;
+            var possibleSubSet = this;
+            var target = possibleSuperSet;
 
             if (rangeComparer.Equals(possibleSubSet, VersionRange.None))
             {
@@ -300,9 +277,10 @@ namespace NuGet.Versioning
                 possibleSubSet = VersionRange.All;
             }
 
-            bool result = true;
+            var result = true;
 
-            if (possibleSubSet.IncludePrerelease && !target.IncludePrerelease)
+            if (possibleSubSet.IncludePrerelease
+                && !target.IncludePrerelease)
             {
                 result = false;
             }
@@ -313,7 +291,8 @@ namespace NuGet.Versioning
                 if (!target.Satisfies(possibleSubSet.MinVersion))
                 {
                     // it's possible we didn't need that version, do a special non inclusive check
-                    if (!possibleSubSet.IsMinInclusive && !target.IsMinInclusive)
+                    if (!possibleSubSet.IsMinInclusive
+                        && !target.IsMinInclusive)
                     {
                         result &= comparer.Equals(target.MinVersion, possibleSubSet.MinVersion);
                     }
@@ -334,7 +313,8 @@ namespace NuGet.Versioning
                 if (!target.Satisfies(possibleSubSet.MaxVersion))
                 {
                     // it's possible we didn't need that version, do a special non inclusive check
-                    if (!possibleSubSet.IsMaxInclusive && !target.IsMaxInclusive)
+                    if (!possibleSubSet.IsMaxInclusive
+                        && !target.IsMaxInclusive)
                     {
                         result &= comparer.Equals(target.MaxVersion, possibleSubSet.MaxVersion);
                     }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -20,7 +23,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="dependencyGroups">package dependency groups</param>
         /// <param name="contentUri">The content uri for the dependency.</param>
         public RemoteSourceDependencyInfo(
-            PackageIdentity identity, 
+            PackageIdentity identity,
             IEnumerable<PackageDependencyGroup> dependencyGroups,
             string contentUri)
         {
@@ -57,9 +60,9 @@ namespace NuGet.Protocol.Core.Types
         public bool Equals(RemoteSourceDependencyInfo other)
         {
             return other != null &&
-                Identity.Equals(other.Identity) &&
-                new HashSet<PackageDependencyGroup>(DependencyGroups).SetEquals(other.DependencyGroups) &&
-                string.Equals(ContentUri, other.ContentUri, StringComparison.Ordinal);
+                   Identity.Equals(other.Identity) &&
+                   new HashSet<PackageDependencyGroup>(DependencyGroups).SetEquals(other.DependencyGroups) &&
+                   string.Equals(ContentUri, other.ContentUri, StringComparison.Ordinal);
         }
 
         public override bool Equals(object obj) => Equals(obj as PackageDependencyInfo);
@@ -70,7 +73,7 @@ namespace NuGet.Protocol.Core.Types
 
             combiner.AddObject(Identity);
 
-            foreach (int hash in DependencyGroups.Select(group => group.GetHashCode()).OrderBy(x => x))
+            foreach (var hash in DependencyGroups.Select(group => group.GetHashCode()).OrderBy(x => x))
             {
                 combiner.AddInt32(hash);
             }

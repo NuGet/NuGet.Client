@@ -1,9 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -23,7 +24,6 @@ namespace NuGet.Frameworks
         public FrameworkReducer()
             : this(DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
-
         }
 
         /// <summary>
@@ -59,13 +59,14 @@ namespace NuGet.Frameworks
             if (nearest == null)
             {
                 // Elimate non-compatible frameworks
-                IEnumerable<NuGetFramework> compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
+                var compatible = possibleFrameworks.Where(f => _compat.IsCompatible(framework, f));
 
                 // Remove lower versions of compatible frameworks
-                IEnumerable<NuGetFramework> reduced = ReduceUpwards(compatible);
+                var reduced = ReduceUpwards(compatible);
 
                 // Reduce to the same framework name if possible
-                if (reduced.Count() > 1 && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
+                if (reduced.Count() > 1
+                    && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
                 {
                     reduced = reduced.Where(f => _fwNameComparer.Equals(f, framework));
                 }
@@ -74,7 +75,8 @@ namespace NuGet.Frameworks
                 if (reduced.Count() > 1)
                 {
                     // if we have a pcl and non-pcl mix, throw out the pcls
-                    if (reduced.Any(f => f.IsPCL) && reduced.Any(f => !f.IsPCL))
+                    if (reduced.Any(f => f.IsPCL)
+                        && reduced.Any(f => !f.IsPCL))
                     {
                         reduced = reduced.Where(f => !f.IsPCL);
                     }
@@ -100,13 +102,14 @@ namespace NuGet.Frameworks
                 }
 
                 // Profile reduce
-                if (reduced.Count() > 1 && !reduced.Any(f => f.IsPCL))
+                if (reduced.Count() > 1
+                    && !reduced.Any(f => f.IsPCL))
                 {
                     // Prefer the same framework and profile
                     if (framework.HasProfile)
                     {
                         var sameProfile = reduced.Where(f => _fwNameComparer.Equals(framework, f)
-                            && StringComparer.OrdinalIgnoreCase.Equals(framework.Profile, f.Profile));
+                                                             && StringComparer.OrdinalIgnoreCase.Equals(framework.Profile, f.Profile));
 
                         if (sameProfile.Any())
                         {
@@ -115,7 +118,9 @@ namespace NuGet.Frameworks
                     }
 
                     // Prefer frameworks without profiles
-                    if (reduced.Count() > 1 && reduced.Any(f => f.HasProfile) && reduced.Any(f => !f.HasProfile))
+                    if (reduced.Count() > 1
+                        && reduced.Any(f => f.HasProfile)
+                        && reduced.Any(f => !f.HasProfile))
                     {
                         reduced = reduced.Where(f => !f.HasProfile);
                     }
@@ -132,7 +137,8 @@ namespace NuGet.Frameworks
                 // this should be a very rare occurrence
                 // at this point we are unable to decide between the remaining frameworks in any useful way
                 // just take the first one by rev alphabetical order if we can't narrow it down at all
-                if (nearest == null && reduced.Any())
+                if (nearest == null
+                    && reduced.Any())
                 {
                     nearest = reduced.OrderByDescending(f => f, new NuGetFrameworkSorter()).ThenBy(f => f.GetHashCode()).First();
                 }
@@ -147,13 +153,13 @@ namespace NuGet.Frameworks
         public IEnumerable<NuGetFramework> Reduce(IEnumerable<NuGetFramework> frameworks)
         {
             // order first so we get consistent results for equivalent frameworks
-            NuGetFramework[] input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
+            var input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
 
             var comparer = new NuGetFrameworkFullComparer();
 
-            for (int i = 0; i < input.Length; i++)
+            for (var i = 0; i < input.Length; i++)
             {
-                bool dupe = false;
+                var dupe = false;
 
                 IEnumerable<NuGetFramework> eqFrameworks = null;
                 if (!_mappings.TryGetEquivalentFrameworks(input[i], out eqFrameworks))
@@ -161,7 +167,7 @@ namespace NuGet.Frameworks
                     eqFrameworks = new List<NuGetFramework>() { input[i] };
                 }
 
-                for (int j = i + 1; !dupe && j < input.Length; j++)
+                for (var j = i + 1; !dupe && j < input.Length; j++)
                 {
                     dupe = eqFrameworks.Contains(input[j], comparer);
                 }
@@ -212,28 +218,28 @@ namespace NuGet.Frameworks
         private IEnumerable<NuGetFramework> ReduceCore(IEnumerable<NuGetFramework> frameworks, Func<NuGetFramework, NuGetFramework, bool> isCompat)
         {
             // remove duplicate frameworks
-            NuGetFramework[] input = frameworks.Distinct(_fullComparer).ToArray();
+            var input = frameworks.Distinct(_fullComparer).ToArray();
 
-            List<NuGetFramework> results = new List<NuGetFramework>(input.Length);
+            var results = new List<NuGetFramework>(input.Length);
 
-            for (int i = 0; i < input.Length; i++)
+            for (var i = 0; i < input.Length; i++)
             {
-                bool dupe = false;
+                var dupe = false;
 
-                NuGetFramework x = input[i];
+                var x = input[i];
 
-                for (int j = 0; !dupe && j < input.Length; j++)
+                for (var j = 0; !dupe && j < input.Length; j++)
                 {
                     if (j != i)
                     {
-                        NuGetFramework y = input[j];
+                        var y = input[j];
 
                         // remove frameworks that are compatible with other frameworks in the list
                         // do not remove frameworks which tie with others, for example: net40 and net40-client
                         // these equivalent frameworks should both be returned to let the caller decide between them
                         if (isCompat(x, y))
                         {
-                            bool revCompat = isCompat(y, x);
+                            var revCompat = isCompat(y, x);
 
                             dupe = !revCompat;
 
@@ -264,11 +270,11 @@ namespace NuGet.Frameworks
             // If framework is not a PCL, find the PCL with the sub framework nearest to framework
             // Collect all frameworks from all PCLs we are considering
             var pclToFrameworks = ExplodePortableFrameworks(reduced);
-            IEnumerable<NuGetFramework> allPclFrameworks = pclToFrameworks.Values.SelectMany(f => f);
+            var allPclFrameworks = pclToFrameworks.Values.SelectMany(f => f);
 
             // Find the nearest (no PCLs are involved at this point)
             Debug.Assert(allPclFrameworks.All(f => !f.IsPCL), "a PCL returned a PCL as its profile framework");
-            NuGetFramework nearestProfileFramework = GetNearest(framework, allPclFrameworks);
+            var nearestProfileFramework = GetNearest(framework, allPclFrameworks);
 
             // Reduce to only PCLs that include the nearest match
             reduced = pclToFrameworks.Where(pair =>
@@ -291,7 +297,7 @@ namespace NuGet.Frameworks
 
             // Find all frameworks in all PCLs
             var pclToFrameworks = ExplodePortableFrameworks(reduced);
-            IEnumerable<NuGetFramework> allPclFrameworks = pclToFrameworks.Values.SelectMany(f => f).Distinct(_fullComparer);
+            var allPclFrameworks = pclToFrameworks.Values.SelectMany(f => f).Distinct(_fullComparer);
 
             var scores = new Dictionary<NuGetFramework, int>(NuGetFramework.Comparer);
 
@@ -329,13 +335,13 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Create lookup of the given PCLs to their actual frameworks
         /// </summary>
-        private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls, bool includeOptional=true)
+        private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls, bool includeOptional = true)
         {
             var result = new Dictionary<NuGetFramework, IEnumerable<NuGetFramework>>(NuGetFramework.Comparer);
 
             foreach (var pcl in pcls)
             {
-                IEnumerable<NuGetFramework> frameworks = ExplodePortableFramework(pcl);
+                var frameworks = ExplodePortableFramework(pcl);
                 result.Add(pcl, frameworks);
             }
 
@@ -345,7 +351,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// portable-net45+win8 -> net45, win8
         /// </summary>
-        private IEnumerable<NuGetFramework> ExplodePortableFramework(NuGetFramework pcl, bool includeOptional=true)
+        private IEnumerable<NuGetFramework> ExplodePortableFramework(NuGetFramework pcl, bool includeOptional = true)
         {
             IEnumerable<NuGetFramework> frameworks = null;
             if (!_mappings.TryGetPortableFrameworks(pcl.Profile, includeOptional, out frameworks))
@@ -366,7 +372,8 @@ namespace NuGet.Frameworks
 
             foreach (var considering in reduced)
             {
-                if (current == null || IsBetterPCL(current, considering))
+                if (current == null
+                    || IsBetterPCL(current, considering))
                 {
                     current = considering;
                 }
@@ -408,11 +415,11 @@ namespace NuGet.Frameworks
                 .Where(f =>
                     currentFrameworks.Any(consideringFramework => StringComparer.OrdinalIgnoreCase.Equals(f, consideringFramework.Framework)));
 
-            int consideringHighest = 0;
-            int currentHighest = 0;
+            var consideringHighest = 0;
+            var currentHighest = 0;
 
             // Determine which framework has the highest version of each shared framework
-            foreach (string sharedId in sharedFrameworkIds)
+            foreach (var sharedId in sharedFrameworkIds)
             {
                 var consideringFramework = consideringFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId)).First();
                 var currentFramework = currentFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId)).First();
@@ -443,7 +450,8 @@ namespace NuGet.Frameworks
 
             // Compare using .NET only if both frameworks have it. PCLs should always have .NET, but since users can make these strings up we should
             // try to handle that as best as possible.
-            if (consideringNet != null && currentNet != null)
+            if (consideringNet != null
+                && currentNet != null)
             {
                 if (currentNet.Version < consideringNet.Version)
                 {

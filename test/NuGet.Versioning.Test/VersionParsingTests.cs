@@ -1,11 +1,8 @@
-﻿using NuGet.Versioning;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Versioning.Test
 {
@@ -21,7 +18,7 @@ namespace NuGet.Versioning.Test
             // Arrange & Act
             var semVer = new NuGetVersion(version);
 
-           Assert.Equal("2.0.0", semVer.ToNormalizedString());
+            Assert.Equal("2.0.0", semVer.ToNormalizedString());
         }
 
         [Theory]
@@ -38,12 +35,8 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v =>
-            {
-                Assert.Equal(version, v.ToNormalizedString());
-            });
+            versions.ForEach(v => { Assert.Equal(version, v.ToNormalizedString()); });
         }
-
 
         [Theory]
         [InlineData("Beta", "1.0.0-Beta")]
@@ -56,10 +49,7 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v =>
-            {
-                Assert.Equal(expected, v.Release);
-            });
+            versions.ForEach(v => { Assert.Equal(expected, v.Release); });
         }
 
         [Theory]
@@ -68,17 +58,14 @@ namespace NuGet.Versioning.Test
         [InlineData(new string[] { "Beta" }, "1.0.0-Beta")]
         [InlineData(new string[] { "Beta" }, "1.0.0-Beta+Meta")]
         [InlineData(new string[] { "RC", "X" }, "1.0.0-RC.X+Meta")]
-        [InlineData(new string[] { "RC","X","35","A","3455" }, "1.0.0-RC.X.35.A.3455+Meta")]
+        [InlineData(new string[] { "RC", "X", "35", "A", "3455" }, "1.0.0-RC.X.35.A.3455+Meta")]
         public void ReleaseLabelParsing(string[] expected, string version)
         {
             // Arrange & Act
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v =>
-            {
-                Assert.Equal(expected, v.ReleaseLabels);
-            });
+            versions.ForEach(v => { Assert.Equal(expected, v.ReleaseLabels); });
         }
 
         [Theory]
@@ -94,10 +81,7 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v =>
-            {
-                Assert.Equal(expected, v.IsPrerelease);
-            });
+            versions.ForEach(v => { Assert.Equal(expected, v.IsPrerelease); });
         }
 
         [Theory]
@@ -111,10 +95,7 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v =>
-            {
-                Assert.Equal(expected, v.Metadata);
-            });
+            versions.ForEach(v => { Assert.Equal(expected, v.Metadata); });
         }
 
         [Theory]
@@ -131,10 +112,7 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v =>
-            {
-                Assert.Equal(expected, v.HasMetadata);
-            });
+            versions.ForEach(v => { Assert.Equal(expected, v.HasMetadata); });
         }
 
         [Theory]
@@ -151,18 +129,18 @@ namespace NuGet.Versioning.Test
 
             // Assert
             versions.ForEach(v =>
-            {
-                Assert.Equal(major, v.Major);
-                Assert.Equal(minor, v.Minor);
-                Assert.Equal(patch, v.Patch);
-            });
+                {
+                    Assert.Equal(major, v.Major);
+                    Assert.Equal(minor, v.Minor);
+                    Assert.Equal(patch, v.Patch);
+                });
         }
 
         // All possible ways to parse a version from a string
         private static List<NuGetVersion> Parse(string version)
         {
             // Parse
-            List<NuGetVersion> versions = new List<NuGetVersion>();
+            var versions = new List<NuGetVersion>();
             versions.Add(NuGetVersion.Parse(version));
             versions.Add(NuGetVersion.Parse(version));
 

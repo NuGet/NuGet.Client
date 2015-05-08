@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using NuGet.Versioning;
 
@@ -15,7 +14,7 @@ namespace NuGet.Packaging
         {
             _path = path;
         }
-        
+
         public virtual string GetInstallPath(string packageId, SemanticVersion version)
         {
             return Path.Combine(_path, GetPackageDirectory(packageId, version));
@@ -24,19 +23,19 @@ namespace NuGet.Packaging
         public string GetPackageFilePath(string packageId, SemanticVersion version)
         {
             return Path.Combine(GetInstallPath(packageId, version),
-                                GetPackageFileName(packageId, version));
+                GetPackageFileName(packageId, version));
         }
 
         public string GetManifestFilePath(string packageId, SemanticVersion version)
         {
             return Path.Combine(GetInstallPath(packageId, version),
-                                GetManifestFileName(packageId, version));
+                GetManifestFileName(packageId, version));
         }
 
         public string GetHashPath(string packageId, SemanticVersion version)
         {
             return Path.Combine(GetInstallPath(packageId, version),
-                                string.Format("{0}.{1}.nupkg.sha512", packageId, version));
+                string.Format("{0}.{1}.nupkg.sha512", packageId, version));
         }
 
         public virtual string GetPackageDirectory(string packageId, SemanticVersion version)

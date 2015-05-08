@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -71,10 +71,10 @@ namespace NuGet.ProjectModel
                 {
                     // Ran into parsing errors, mark it as unlocked and out-of-date
                     return new LockFile
-                    {
-                        IsLocked = false,
-                        Version = int.MinValue
-                    };
+                        {
+                            IsLocked = false,
+                            Version = int.MinValue
+                        };
                 }
             }
         }
@@ -263,7 +263,6 @@ namespace NuGet.ProjectModel
                 WriteObject(item.Packages, WritePackageDependency));
         }
 
-
         private PackageDependency ReadPackageDependency(string property, JToken json)
         {
             var versionStr = json.Value<string>();
@@ -278,7 +277,8 @@ namespace NuGet.ProjectModel
 
             if (item.VersionRange != null)
             {
-                if (item.VersionRange.IsMinInclusive && item.VersionRange.MaxVersion == null)
+                if (item.VersionRange.IsMinInclusive
+                    && item.VersionRange.MaxVersion == null)
                 {
                     versionRange = item.VersionRange.MinVersion.ToString();
                 }
@@ -438,6 +438,7 @@ namespace NuGet.ProjectModel
         {
             return json == null ? null : new NuGetFramework(json.Value<string>());
         }
+
         private JToken WriteFrameworkName(NuGetFramework item)
         {
             return item != null ? new JValue(item.ToString()) : JValue.CreateNull();
@@ -464,6 +465,5 @@ namespace NuGet.ProjectModel
                 return GetPathWithBackSlashes(path);
             }
         }
-
     }
 }

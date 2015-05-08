@@ -1,11 +1,14 @@
-﻿using NuGet.Frameworks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Protocol.Core.v2
 {
@@ -13,22 +16,22 @@ namespace NuGet.Protocol.Core.v2
     {
         public static ServerPackageMetadata Parse(IPackage package)
         {
-            NuGetVersion Version = NuGetVersion.Parse(package.Version.ToString());
-            DateTimeOffset? Published = package.Published;
-            string title = String.IsNullOrEmpty(package.Title) ? package.Id : package.Title;
-            string summary = package.Summary;
-            string desc = package.Description;
+            var Version = NuGetVersion.Parse(package.Version.ToString());
+            var Published = package.Published;
+            var title = String.IsNullOrEmpty(package.Title) ? package.Id : package.Title;
+            var summary = package.Summary;
+            var desc = package.Description;
             //*TODOs: Check if " " is the separator in the case of V3 jobjects ...
-            IEnumerable<string> authors = package.Authors;
-            IEnumerable<string> owners = package.Owners;
-            Uri iconUrl = package.IconUrl;
-            Uri licenseUrl = package.LicenseUrl;
-            Uri projectUrl = package.ProjectUrl;
+            var authors = package.Authors;
+            var owners = package.Owners;
+            var iconUrl = package.IconUrl;
+            var licenseUrl = package.LicenseUrl;
+            var projectUrl = package.ProjectUrl;
             IEnumerable<string> tags = package.Tags == null ? new string[0] : package.Tags.Split(' ');
-            IEnumerable<PackageDependencyGroup> dependencySets = package.DependencySets.Select(p => GetVisualStudioUIPackageDependencySet(p));
-            bool requiresLiceneseAcceptance = package.RequireLicenseAcceptance;
+            var dependencySets = package.DependencySets.Select(p => GetVisualStudioUIPackageDependencySet(p));
+            var requiresLiceneseAcceptance = package.RequireLicenseAcceptance;
 
-            PackageIdentity identity = new PackageIdentity(package.Id, Version);
+            var identity = new PackageIdentity(package.Id, Version);
 
             NuGetVersion minClientVersion = null;
 
@@ -37,7 +40,7 @@ namespace NuGet.Protocol.Core.v2
                 NuGetVersion.TryParse(package.MinClientVersion.ToString(), out minClientVersion);
             }
 
-            int downloadCount = package.DownloadCount;
+            var downloadCount = package.DownloadCount;
 
             // This concept is not in v2 yet
             IEnumerable<string> types = new string[] { "Package" };
@@ -47,19 +50,21 @@ namespace NuGet.Protocol.Core.v2
                 projectUrl, tags, Published, dependencySets, requiresLiceneseAcceptance, minClientVersion, downloadCount, -1, owners, types);
         }
 
-        private static NuGet.Packaging.Core.PackageDependency GetVisualStudioUIPackageDependency(PackageDependency dependency)
+        private static Packaging.Core.PackageDependency GetVisualStudioUIPackageDependency(PackageDependency dependency)
         {
-            string id = dependency.Id;
-            VersionRange versionRange = dependency.VersionSpec == null ? null : VersionRange.Parse(dependency.VersionSpec.ToString());
-            return new NuGet.Packaging.Core.PackageDependency(id, versionRange);
+            var id = dependency.Id;
+            var versionRange = dependency.VersionSpec == null ? null : VersionRange.Parse(dependency.VersionSpec.ToString());
+            return new Packaging.Core.PackageDependency(id, versionRange);
         }
 
         private static PackageDependencyGroup GetVisualStudioUIPackageDependencySet(PackageDependencySet dependencySet)
         {
-            IEnumerable<NuGet.Packaging.Core.PackageDependency> visualStudioUIPackageDependencies = dependencySet.Dependencies.Select(d => GetVisualStudioUIPackageDependency(d));
-            NuGetFramework fxName = NuGetFramework.AnyFramework;
+            var visualStudioUIPackageDependencies = dependencySet.Dependencies.Select(d => GetVisualStudioUIPackageDependency(d));
+            var fxName = NuGetFramework.AnyFramework;
             if (dependencySet.TargetFramework != null)
+            {
                 fxName = NuGetFramework.Parse(dependencySet.TargetFramework.FullName);
+            }
             return new PackageDependencyGroup(fxName, visualStudioUIPackageDependencies);
         }
     }

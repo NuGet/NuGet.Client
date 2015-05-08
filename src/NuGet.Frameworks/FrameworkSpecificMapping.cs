@@ -1,8 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -17,7 +16,6 @@ namespace NuGet.Frameworks
         public FrameworkSpecificMapping(string frameworkIdentifier, string key, string value)
             : this(frameworkIdentifier, new KeyValuePair<string, string>(key, value))
         {
-
         }
 
         public FrameworkSpecificMapping(string frameworkIdentifier, KeyValuePair<string, string> mapping)
@@ -28,18 +26,12 @@ namespace NuGet.Frameworks
 
         public string FrameworkIdentifier
         {
-            get
-            {
-                return _frameworkIdentifier;
-            }
+            get { return _frameworkIdentifier; }
         }
 
         public KeyValuePair<string, string> Mapping
         {
-            get
-            {
-                return _mapping;
-            }
+            get { return _mapping; }
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGet.Packaging
 {
@@ -12,7 +12,7 @@ namespace NuGet.Packaging
         public bool CopySatelliteFiles { get; set; }
 
         /// <summary>
-        /// If True package folder paths will use the non-normalized version path, 
+        /// If True package folder paths will use the non-normalized version path,
         /// even for new installs.
         /// </summary>
         public bool UseLegacyPackageInstallPath { get; set; }
@@ -30,7 +30,7 @@ namespace NuGet.Packaging
         None = 0,
         Nuspec = 1,
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Microsoft.Naming",
             "CA1704:IdentifiersShouldBeSpelledCorrectly",
             MessageId = "Nupkg",

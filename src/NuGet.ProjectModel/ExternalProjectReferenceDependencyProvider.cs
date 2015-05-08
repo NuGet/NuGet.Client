@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -6,11 +9,12 @@ using System.Linq;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// Resolves dependencies retrieved from a list of <see cref="ExternalProjectReference"/>.
+    /// Resolves dependencies retrieved from a list of <see cref="ExternalProjectReference" />.
     /// </summary>
     public class ExternalProjectReferenceDependencyProvider : IDependencyProvider
     {
@@ -42,18 +46,19 @@ namespace NuGet.ProjectModel
 
             // Fill dependencies from external project references
             var dependencies = externalProject.ExternalProjectReferences.Select(s => new LibraryDependency()
-            {
-                LibraryRange = new LibraryRange()
                 {
-                    Name = s,
-                    VersionRange = null,
-                    TypeConstraint = LibraryTypes.ExternalProject
-                },
-                Type = LibraryDependencyType.Default
-            }).ToList();
+                    LibraryRange = new LibraryRange()
+                        {
+                            Name = s,
+                            VersionRange = null,
+                            TypeConstraint = LibraryTypes.ExternalProject
+                        },
+                    Type = LibraryDependencyType.Default
+                }).ToList();
 
             // Add dependencies from the nuget.json file
-            if (!string.IsNullOrEmpty(externalProject.PackageSpecPath) && File.Exists(externalProject.PackageSpecPath))
+            if (!string.IsNullOrEmpty(externalProject.PackageSpecPath)
+                && File.Exists(externalProject.PackageSpecPath))
             {
                 PackageSpec packageSpec;
                 using (var stream = new FileStream(externalProject.PackageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -74,17 +79,18 @@ namespace NuGet.ProjectModel
 
             // Construct the library and return it
             return new Library()
-            {
-                Identity = new LibraryIdentity() {
-                    Name = externalProject.Name,
-                    Version = new Versioning.NuGetVersion("1.0.0"),
-                    Type = LibraryTypes.ExternalProject
-                },
-                LibraryRange = libraryRange,
-                Dependencies = dependencies,
-                Path = externalProject.PackageSpecPath,
-                Resolved = true
-            };
+                {
+                    Identity = new LibraryIdentity()
+                        {
+                            Name = externalProject.Name,
+                            Version = new NuGetVersion("1.0.0"),
+                            Type = LibraryTypes.ExternalProject
+                        },
+                    LibraryRange = libraryRange,
+                    Dependencies = dependencies,
+                    Path = externalProject.PackageSpecPath,
+                    Resolved = true
+                };
         }
     }
 }

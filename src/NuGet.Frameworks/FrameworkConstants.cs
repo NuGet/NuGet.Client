@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace NuGet.Frameworks
 {
@@ -58,43 +61,43 @@ namespace NuGet.Frameworks
         /// </summary>
         public static class CommonFrameworks
         {
-            public static readonly NuGetFramework Net11 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(1, 1, 0, 0));
-            public static readonly NuGetFramework Net2 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(2, 0, 0, 0));
-            public static readonly NuGetFramework Net35 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(3, 5, 0, 0));
-            public static readonly NuGetFramework Net4 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0, 0, 0));
-            public static readonly NuGetFramework Net403 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 0, 3, 0));
-            public static readonly NuGetFramework Net45 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5, 0, 0));
-            public static readonly NuGetFramework Net451 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5, 1, 0));
-            public static readonly NuGetFramework Net452 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5, 2, 0));
-            public static readonly NuGetFramework Net46 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 6, 0, 0));
+            public static readonly NuGetFramework Net11 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(1, 1, 0, 0));
+            public static readonly NuGetFramework Net2 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(2, 0, 0, 0));
+            public static readonly NuGetFramework Net35 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(3, 5, 0, 0));
+            public static readonly NuGetFramework Net4 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 0, 0, 0));
+            public static readonly NuGetFramework Net403 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 0, 3, 0));
+            public static readonly NuGetFramework Net45 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 5, 0, 0));
+            public static readonly NuGetFramework Net451 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 5, 1, 0));
+            public static readonly NuGetFramework Net452 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 5, 2, 0));
+            public static readonly NuGetFramework Net46 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 0, 0));
 
-            public static readonly NuGetFramework Win8 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 0, 0, 0));
-            public static readonly NuGetFramework Win81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 1, 0, 0));
-            public static readonly NuGetFramework Win10 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(10, 0, 0, 0));
+            public static readonly NuGetFramework Win8 = new NuGetFramework(FrameworkIdentifiers.Windows, new Version(8, 0, 0, 0));
+            public static readonly NuGetFramework Win81 = new NuGetFramework(FrameworkIdentifiers.Windows, new Version(8, 1, 0, 0));
+            public static readonly NuGetFramework Win10 = new NuGetFramework(FrameworkIdentifiers.Windows, new Version(10, 0, 0, 0));
 
-            public static readonly NuGetFramework SL4 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(4, 0, 0, 0));
-            public static readonly NuGetFramework SL5 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, new Version(5, 0, 0, 0));
+            public static readonly NuGetFramework SL4 = new NuGetFramework(FrameworkIdentifiers.Silverlight, new Version(4, 0, 0, 0));
+            public static readonly NuGetFramework SL5 = new NuGetFramework(FrameworkIdentifiers.Silverlight, new Version(5, 0, 0, 0));
 
-            public static readonly NuGetFramework WP7 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 0, 0, 0));
-            public static readonly NuGetFramework WP75 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(7, 5, 0, 0));
-            public static readonly NuGetFramework WP8 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8, 0, 0, 0));
-            public static readonly NuGetFramework WP81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8, 1, 0, 0));
+            public static readonly NuGetFramework WP7 = new NuGetFramework(FrameworkIdentifiers.WindowsPhone, new Version(7, 0, 0, 0));
+            public static readonly NuGetFramework WP75 = new NuGetFramework(FrameworkIdentifiers.WindowsPhone, new Version(7, 5, 0, 0));
+            public static readonly NuGetFramework WP8 = new NuGetFramework(FrameworkIdentifiers.WindowsPhone, new Version(8, 0, 0, 0));
+            public static readonly NuGetFramework WP81 = new NuGetFramework(FrameworkIdentifiers.WindowsPhone, new Version(8, 1, 0, 0));
 
-            public static readonly NuGetFramework WPA81 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1, 0, 0));
+            public static readonly NuGetFramework WPA81 = new NuGetFramework(FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1, 0, 0));
 
-            public static readonly NuGetFramework AspNet = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, EmptyVersion);
-            public static readonly NuGetFramework AspNetCore = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, EmptyVersion);
-            public static readonly NuGetFramework AspNet50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNet, Version5);
-            public static readonly NuGetFramework AspNetCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.AspNetCore, Version5);
+            public static readonly NuGetFramework AspNet = new NuGetFramework(FrameworkIdentifiers.AspNet, EmptyVersion);
+            public static readonly NuGetFramework AspNetCore = new NuGetFramework(FrameworkIdentifiers.AspNetCore, EmptyVersion);
+            public static readonly NuGetFramework AspNet50 = new NuGetFramework(FrameworkIdentifiers.AspNet, Version5);
+            public static readonly NuGetFramework AspNetCore50 = new NuGetFramework(FrameworkIdentifiers.AspNetCore, Version5);
 
-            public static readonly NuGetFramework Dnx = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, EmptyVersion);
-            public static readonly NuGetFramework Dnx451 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, new Version(4, 5, 1, 0));
-            public static readonly NuGetFramework Dnx452 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, new Version(4, 5, 2, 0));
-            public static readonly NuGetFramework DnxCore = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, EmptyVersion);
-            public static readonly NuGetFramework DnxCore50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.DnxCore, Version5);
+            public static readonly NuGetFramework Dnx = new NuGetFramework(FrameworkIdentifiers.Dnx, EmptyVersion);
+            public static readonly NuGetFramework Dnx451 = new NuGetFramework(FrameworkIdentifiers.Dnx, new Version(4, 5, 1, 0));
+            public static readonly NuGetFramework Dnx452 = new NuGetFramework(FrameworkIdentifiers.Dnx, new Version(4, 5, 2, 0));
+            public static readonly NuGetFramework DnxCore = new NuGetFramework(FrameworkIdentifiers.DnxCore, EmptyVersion);
+            public static readonly NuGetFramework DnxCore50 = new NuGetFramework(FrameworkIdentifiers.DnxCore, Version5);
 
-            public static readonly NuGetFramework Core = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, EmptyVersion);
-            public static readonly NuGetFramework Core50 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, Version5);
+            public static readonly NuGetFramework Core = new NuGetFramework(FrameworkIdentifiers.CoreCLR, EmptyVersion);
+            public static readonly NuGetFramework Core50 = new NuGetFramework(FrameworkIdentifiers.CoreCLR, Version5);
         }
 
         // public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;

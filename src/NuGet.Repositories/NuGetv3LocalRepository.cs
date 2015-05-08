@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,7 @@ namespace NuGet.Repositories
         }
 
         public string RepositoryRoot { get; }
-        
+
         public IEnumerable<LocalPackageInfo> FindPackagesById(string packageId)
         {
             if (string.IsNullOrEmpty(packageId))
@@ -31,49 +31,49 @@ namespace NuGet.Repositories
 
             // packages\{packageId}\{version}\{packageId}.nuspec
             return GetOrAdd(packageId, id =>
-            {
-                var packages = new List<LocalPackageInfo>();
-
-                var packageIdRoot = Path.Combine(RepositoryRoot, id);
-
-                if (!Directory.Exists(packageIdRoot))
                 {
-                    return packages;
-                }
+                    var packages = new List<LocalPackageInfo>();
 
-                foreach (var fullVersionDir in Directory.EnumerateDirectories(packageIdRoot))
-                {
-                    var versionPart = fullVersionDir.Substring(packageIdRoot.Length).TrimStart(Path.DirectorySeparatorChar);
+                    var packageIdRoot = Path.Combine(RepositoryRoot, id);
 
-                    // Get the version part and parse it
-                    NuGetVersion version;
-                    if (!NuGetVersion.TryParse(versionPart, out version))
+                    if (!Directory.Exists(packageIdRoot))
                     {
-                        continue;
+                        return packages;
                     }
 
-                    // If we need to help ensure case-sensitivity, we try to get
-                    // the package id in accurate casing by extracting the name of nuspec file
-                    // Otherwise we just use the passed in package id for efficiency
-                    if (_checkPackageIdCase)
+                    foreach (var fullVersionDir in Directory.EnumerateDirectories(packageIdRoot))
                     {
-                        var manifestFileName = Path.GetFileName(
-                            Directory.EnumerateFiles(fullVersionDir, "*.nuspec")
-                                    .FirstOrDefault());
+                        var versionPart = fullVersionDir.Substring(packageIdRoot.Length).TrimStart(Path.DirectorySeparatorChar);
 
-                        if (string.IsNullOrEmpty(manifestFileName))
+                        // Get the version part and parse it
+                        NuGetVersion version;
+                        if (!NuGetVersion.TryParse(versionPart, out version))
                         {
                             continue;
                         }
 
-                        id = Path.GetFileNameWithoutExtension(manifestFileName);
+                        // If we need to help ensure case-sensitivity, we try to get
+                        // the package id in accurate casing by extracting the name of nuspec file
+                        // Otherwise we just use the passed in package id for efficiency
+                        if (_checkPackageIdCase)
+                        {
+                            var manifestFileName = Path.GetFileName(
+                                Directory.EnumerateFiles(fullVersionDir, "*.nuspec")
+                                    .FirstOrDefault());
+
+                            if (string.IsNullOrEmpty(manifestFileName))
+                            {
+                                continue;
+                            }
+
+                            id = Path.GetFileNameWithoutExtension(manifestFileName);
+                        }
+
+                        packages.Add(new LocalPackageInfo(id, version, fullVersionDir));
                     }
 
-                    packages.Add(new LocalPackageInfo(id, version, fullVersionDir));
-                }
-
-                return packages;
-            });
+                    return packages;
+                });
         }
 
         private IEnumerable<LocalPackageInfo> GetOrAdd(string packageId, Func<string, List<LocalPackageInfo>> factory)

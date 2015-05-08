@@ -1,16 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -63,7 +65,8 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public virtual Uri GetUri(string id, NuGetVersion version)
         {
-            if (String.IsNullOrEmpty(id) || version == null)
+            if (String.IsNullOrEmpty(id)
+                || version == null)
             {
                 throw new InvalidOperationException();
             }
@@ -76,7 +79,9 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public virtual Uri GetUri(PackageIdentity package)
         {
-            if (package == null || package.Id == null || package.Version == null)
+            if (package == null
+                || package.Id == null
+                || package.Version == null)
             {
                 throw new InvalidOperationException();
             }
@@ -109,25 +114,27 @@ namespace NuGet.Protocol.Core.v3
         /// <remarks>The inlined entries are potentially going away soon</remarks>
         public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, VersionRange range, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            List<JObject> results = new List<JObject>();
+            var results = new List<JObject>();
 
             var entries = await GetPackageEntries(packageId, includeUnlisted, token);
 
             foreach (var entry in entries)
             {
-                JToken catalogEntry = entry["catalogEntry"];
+                var catalogEntry = entry["catalogEntry"];
 
                 if (catalogEntry != null)
                 {
                     NuGetVersion version = null;
 
-                    if (catalogEntry["version"] != null && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
+                    if (catalogEntry["version"] != null
+                        && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
                     {
-                        if (range.Satisfies(version) && (includePrerelease || !version.IsPrerelease))
+                        if (range.Satisfies(version)
+                            && (includePrerelease || !version.IsPrerelease))
                         {
                             if (catalogEntry["published"] != null)
                             {
-                                DateTime published = catalogEntry["published"].ToObject<DateTime>();
+                                var published = catalogEntry["published"].ToObject<DateTime>();
 
                                 if ((published != null && published.Year > 1901) || includeUnlisted)
                                 {
@@ -153,9 +160,9 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public virtual async Task<IEnumerable<JObject>> GetPages(string packageId, CancellationToken token)
         {
-            List<JObject> results = new List<JObject>();
+            var results = new List<JObject>();
 
-            JObject indexJson = await GetIndex(packageId, token);
+            var indexJson = await GetIndex(packageId, token);
 
             var items = indexJson["items"] as JArray;
 
@@ -163,7 +170,8 @@ namespace NuGet.Protocol.Core.v3
             {
                 foreach (var item in items)
                 {
-                    if (item["@type"] != null && StringComparer.Ordinal.Equals(item["@type"].ToString(), "catalog:CatalogPage"))
+                    if (item["@type"] != null
+                        && StringComparer.Ordinal.Equals(item["@type"].ToString(), "catalog:CatalogPage"))
                     {
                         if (item["items"] != null)
                         {
@@ -173,9 +181,9 @@ namespace NuGet.Protocol.Core.v3
                         else
                         {
                             // fetch the page
-                            string url = item["@id"].ToString();
+                            var url = item["@id"].ToString();
 
-                            JObject catalogPage = await GetJson(new Uri(url), token);
+                            var catalogPage = await GetJson(new Uri(url), token);
 
                             results.Add(catalogPage);
                         }
@@ -191,19 +199,20 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public virtual async Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, CancellationToken token)
         {
-            List<JObject> results = new List<JObject>();
+            var results = new List<JObject>();
 
             var pages = await GetPages(packageId, token);
 
-            foreach (JObject catalogPage in pages)
+            foreach (var catalogPage in pages)
             {
-                JArray array = catalogPage["items"] as JArray;
+                var array = catalogPage["items"] as JArray;
 
                 if (array != null)
                 {
-                    foreach (JToken item in array)
+                    foreach (var item in array)
                     {
-                        if (item["@type"] != null && StringComparer.Ordinal.Equals(item["@type"].ToString(), "Package"))
+                        if (item["@type"] != null
+                            && StringComparer.Ordinal.Equals(item["@type"].ToString(), "Package"))
                         {
                             // TODO: listed check
                             results.Add(item as JObject);
@@ -220,7 +229,7 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public virtual async Task<JObject> GetIndex(string packageId, CancellationToken token)
         {
-            Uri uri = GetUri(packageId);
+            var uri = GetUri(packageId);
 
             return await GetJson(uri, token);
         }

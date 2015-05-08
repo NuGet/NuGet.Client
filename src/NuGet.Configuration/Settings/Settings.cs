@@ -1,11 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -70,48 +71,45 @@ namespace NuGet.Configuration
         /// <summary>
         /// Folder under which the config file is present
         /// </summary>
-        public string Root
-        {
-            get;
-            private set;
-        }
+        public string Root { get; private set; }
 
         /// <summary>
         /// Full path to the ConfigFile corresponding to this Settings object
         /// </summary>
         public string ConfigFilePath
         {
-            get
-            {
-                return Path.GetFullPath(Path.Combine(Root, ConfigFileName));
-            }
+            get { return Path.GetFullPath(Path.Combine(Root, ConfigFileName)); }
         }
 
         /// <summary>
         /// Loads user settings from the NuGet configuration files. The method walks the directory
-        /// tree in <paramref name="fileSystem"/> up to its root, and reads each NuGet.config file
+        /// tree in <paramref name="fileSystem" /> up to its root, and reads each NuGet.config file
         /// it finds in the directories. It then reads the user specific settings,
-        /// which is file <paramref name="configFileName"/>
-        /// in <paramref name="fileSystem"/> if <paramref name="configFileName"/> is not null,
-        /// If <paramref name="configFileName"/> is null, the user specific settings file is
+        /// which is file <paramref name="configFileName" />
+        /// in <paramref name="fileSystem" /> if <paramref name="configFileName" /> is not null,
+        /// If <paramref name="configFileName" /> is null, the user specific settings file is
         /// %AppData%\NuGet\NuGet.config.
         /// After that, the machine wide settings files are added.
         /// </summary>
         /// <remarks>
-        /// For example, if <paramref name="fileSystem"/> is c:\dir1\dir2, <paramref name="configFileName"/>
+        /// For example, if <paramref name="fileSystem" /> is c:\dir1\dir2, <paramref name="configFileName" />
         /// is "userConfig.file", the files loaded are (in the order that they are loaded):
-        ///     c:\dir1\dir2\nuget.config
-        ///     c:\dir1\nuget.config
-        ///     c:\nuget.config
-        ///     c:\dir1\dir2\userConfig.file
-        ///     machine wide settings (e.g. c:\programdata\NuGet\Config\*.config)
+        /// c:\dir1\dir2\nuget.config
+        /// c:\dir1\nuget.config
+        /// c:\nuget.config
+        /// c:\dir1\dir2\userConfig.file
+        /// machine wide settings (e.g. c:\programdata\NuGet\Config\*.config)
         /// </remarks>
-        /// <param name="fileSystem">The file system to walk to find configuration files.
-        /// Can be null.</param>
+        /// <param name="fileSystem">
+        /// The file system to walk to find configuration files.
+        /// Can be null.
+        /// </param>
         /// <param name="configFileName">The user specified configuration file.</param>
-        /// <param name="machineWideSettings">The machine wide settings. If it's not null, the
+        /// <param name="machineWideSettings">
+        /// The machine wide settings. If it's not null, the
         /// settings files in the machine wide settings are added after the user sepcific
-        /// config file.</param>
+        /// config file.
+        /// </param>
         /// <returns>The settings object loaded.</returns>
         public static ISettings LoadDefaultSettings(
             string root,
@@ -155,7 +153,8 @@ namespace NuGet.Configuration
                             s => new Settings(s.Root, s.ConfigFileName, s.IsMachineWideSettings)));
                 }
 
-                if (validSettingFiles == null || !validSettingFiles.Any())
+                if (validSettingFiles == null
+                    || !validSettingFiles.Any())
                 {
                     // This means we've failed to load all config files and also failed to load or create the one in %AppData%
                     // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
@@ -166,7 +165,7 @@ namespace NuGet.Configuration
                 validSettingFiles[0]._priority = validSettingFiles.Count;
 
                 // if multiple setting files were loaded, chain them in a linked list
-                for (int i = 1; i < validSettingFiles.Count; ++i)
+                for (var i = 1; i < validSettingFiles.Count; ++i)
                 {
                     validSettingFiles[i]._next = validSettingFiles[i - 1];
                     validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
@@ -199,7 +198,7 @@ namespace NuGet.Configuration
             {
                 // load %AppData%\NuGet\NuGet.config
 #if !DNXCORE50
-                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #else
                 string appDataPath = Environment.GetEnvironmentVariable("AppData");
 #endif
@@ -219,7 +218,7 @@ namespace NuGet.Configuration
             {
                 if (!FileSystemUtility.DoesFileExistIn(root, configFileName))
                 {
-                    string message = String.Format(CultureInfo.CurrentCulture,
+                    var message = String.Format(CultureInfo.CurrentCulture,
                         Resources.FileDoesNotExist,
                         Path.Combine(root, configFileName));
                     throw new InvalidOperationException(message);
@@ -238,12 +237,12 @@ namespace NuGet.Configuration
         /// Loads the machine wide settings.
         /// </summary>
         /// <remarks>
-        /// For example, if <paramref name="paths"/> is {"IDE", "Version", "SKU" }, then
+        /// For example, if <paramref name="paths" /> is {"IDE", "Version", "SKU" }, then
         /// the files loaded are (in the order that they are loaded):
-        ///     %programdata%\NuGet\Config\IDE\Version\SKU\*.config
-        ///     %programdata%\NuGet\Config\IDE\Version\*.config
-        ///     %programdata%\NuGet\Config\IDE\*.config
-        ///     %programdata%\NuGet\Config\*.config
+        /// %programdata%\NuGet\Config\IDE\Version\SKU\*.config
+        /// %programdata%\NuGet\Config\IDE\Version\*.config
+        /// %programdata%\NuGet\Config\IDE\*.config
+        /// %programdata%\NuGet\Config\*.config
         /// </remarks>
         /// <param name="root">The file system in which the settings files are read.</param>
         /// <param name="paths">The additional paths under which to look for settings files.</param>
@@ -257,13 +256,13 @@ namespace NuGet.Configuration
                 throw new ArgumentException("root cannot be null or empty");
             }
 
-            List<Settings> settingFiles = new List<Settings>();
-            string basePath = @"NuGet\Config";
-            string combinedPath = Path.Combine(paths);
+            var settingFiles = new List<Settings>();
+            var basePath = @"NuGet\Config";
+            var combinedPath = Path.Combine(paths);
 
             while (true)
             {
-                string directory = Path.Combine(basePath, combinedPath);
+                var directory = Path.Combine(basePath, combinedPath);
 
                 // load setting files in directory
                 foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, directory, "*.config", SearchOption.TopDirectoryOnly))
@@ -280,7 +279,7 @@ namespace NuGet.Configuration
                     break;
                 }
 
-                int index = combinedPath.LastIndexOf(Path.DirectorySeparatorChar);
+                var index = combinedPath.LastIndexOf(Path.DirectorySeparatorChar);
                 if (index < 0)
                 {
                     index = 0;
@@ -290,7 +289,6 @@ namespace NuGet.Configuration
 
             return settingFiles;
         }
-
 
         public string GetValue(string section, string key, bool isPath = false)
         {
@@ -310,8 +308,8 @@ namespace NuGet.Configuration
             var curr = this;
             while (curr != null)
             {
-                XElement newElement = curr.GetValueInternal(section, key, element);
-                if (!object.ReferenceEquals(element, newElement))
+                var newElement = curr.GetValueInternal(section, key, element);
+                if (!ReferenceEquals(element, newElement))
                 {
                     element = newElement;
 
@@ -475,8 +473,10 @@ namespace NuGet.Configuration
         {
             foreach (var existingAttribute in element.Attributes())
             {
-                if (!string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.ValueAttribute, StringComparison.OrdinalIgnoreCase) &&
+                if (!string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.OrdinalIgnoreCase)
+                    &&
+                    !string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
+                    &&
                     !attributes.ContainsKey(existingAttribute.Name.LocalName))
                 {
                     // Remove previously existing attributes that are no longer present.
@@ -629,15 +629,16 @@ namespace NuGet.Configuration
 
         private static XElement FindElementByKey(XElement sectionElement, string key, XElement curr)
         {
-            XElement result = curr;
+            var result = curr;
             foreach (var element in sectionElement.Elements())
             {
-                string elementName = element.Name.LocalName;
+                var elementName = element.Name.LocalName;
                 if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
                 {
                     result = null;
                 }
-                else if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase) &&
+                else if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase)
+                         &&
                          XElementUtility.GetOptionalAttributeValue(element, ConfigurationContants.KeyAttribute).Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
                     result = element;
@@ -654,8 +655,9 @@ namespace NuGet.Configuration
             }
 
             // Return the optional value which if not there will be null;
-            string value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationContants.ValueAttribute);
-            if (!isPath || String.IsNullOrEmpty(value))
+            var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationContants.ValueAttribute);
+            if (!isPath
+                || String.IsNullOrEmpty(value))
             {
                 return value;
             }
@@ -673,7 +675,9 @@ namespace NuGet.Configuration
             // However, Path.Combine(path1, path2) always returns path2 when Path.IsRooted(path2) == true (which is current case)
             var root = Path.GetPathRoot(value);
             // this corresponds to 3rd case
-            if (root != null && root.Length == 1 && (root[0] == Path.DirectorySeparatorChar || value[0] == Path.AltDirectorySeparatorChar))
+            if (root != null
+                && root.Length == 1
+                && (root[0] == Path.DirectorySeparatorChar || value[0] == Path.AltDirectorySeparatorChar))
             {
                 return Path.Combine(Path.GetPathRoot(configDirectory), value.Substring(1));
             }
@@ -710,7 +714,7 @@ namespace NuGet.Configuration
 
             foreach (var element in elements)
             {
-                string elementName = element.Name.LocalName;
+                var elementName = element.Name.LocalName;
                 if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase))
                 {
                     values.Add(ReadSettingsValue(element, isPath));
@@ -727,7 +731,9 @@ namespace NuGet.Configuration
             var keyAttribute = element.Attribute(ConfigurationContants.KeyAttribute);
             var valueAttribute = element.Attribute(ConfigurationContants.ValueAttribute);
 
-            if (keyAttribute == null || String.IsNullOrEmpty(keyAttribute.Value) || valueAttribute == null)
+            if (keyAttribute == null
+                || String.IsNullOrEmpty(keyAttribute.Value)
+                || valueAttribute == null)
             {
                 throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
             }
@@ -736,7 +742,7 @@ namespace NuGet.Configuration
             Uri uri;
             if (isPath && Uri.TryCreate(value, UriKind.Relative, out uri))
             {
-                string configDirectory = Path.GetDirectoryName(ConfigFilePath);
+                var configDirectory = Path.GetDirectoryName(ConfigFilePath);
                 value = Path.Combine(Root, Path.Combine(configDirectory, value));
             }
 
@@ -744,7 +750,8 @@ namespace NuGet.Configuration
             foreach (var attribute in element.Attributes())
             {
                 // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
-                if (!string.Equals(attribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.Ordinal) &&
+                if (!string.Equals(attribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.Ordinal)
+                    &&
                     !string.Equals(attribute.Name.LocalName, ConfigurationContants.ValueAttribute, StringComparison.Ordinal))
                 {
                     settingValue.AdditionalData[attribute.Name.LocalName] = attribute.Value;
@@ -785,7 +792,7 @@ namespace NuGet.Configuration
             try
             {
                 var tuple = GetFileNameAndItsRoot(root, settingsPath);
-                string fileName = tuple.Item1;
+                var fileName = tuple.Item1;
                 root = tuple.Item2;
                 return new Settings(root, fileName, isMachineWideSettings);
             }
@@ -829,7 +836,7 @@ namespace NuGet.Configuration
             // otherwise we'd end up creating them.
             foreach (var dir in GetSettingsFilePaths(root))
             {
-                string fileName = Path.Combine(dir, DefaultSettingsFileName);
+                var fileName = Path.Combine(dir, DefaultSettingsFileName);
                 if (FileSystemUtility.DoesFileExistIn(root, fileName))
                 {
                     yield return fileName;

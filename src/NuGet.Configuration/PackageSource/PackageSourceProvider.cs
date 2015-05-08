@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -55,10 +58,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(settings));
             }
             Settings = settings;
-            Settings.SettingsChanged += (_, __) =>
-            {
-                OnPackageSourcesChanged();
-            };
+            Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
             _providerDefaultPrimarySources = providerDefaultPrimarySources ?? Enumerable.Empty<PackageSource>();
             _providerDefaultSecondarySources = providerDefaultSecondarySources ?? Enumerable.Empty<PackageSource>();
             _migratePackageSources = migratePackageSources;
@@ -103,14 +103,15 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Returns PackageSources if specified in the config file. Else returns the default sources specified in the constructor.
+        /// Returns PackageSources if specified in the config file. Else returns the default sources specified in the
+        /// constructor.
         /// If no default values were specified, returns an empty sequence.
         /// </summary>
         public IEnumerable<PackageSource> LoadPackageSources()
         {
             var settingsValue = new List<SettingValue>();
             var sourceSettingValues = Settings.GetSettingValues(ConfigurationContants.PackageSources, isPath: true) ??
-                Enumerable.Empty<SettingValue>();
+                                      Enumerable.Empty<SettingValue>();
 
             // Order the list so that they are ordered in priority order
             var settingValues = sourceSettingValues.OrderByDescending(setting => setting.Priority);
@@ -137,9 +138,10 @@ namespace NuGet.Configuration
             {
                 var name = setting.Key;
 
-                bool isEnabled = true;
+                var isEnabled = true;
                 SettingValue disabledSource;
-                if (disabledSources.TryGetValue(name, out disabledSource) &&
+                if (disabledSources.TryGetValue(name, out disabledSource)
+                    &&
                     disabledSource.Priority >= setting.Priority)
                 {
                     isEnabled = false;
@@ -173,9 +175,9 @@ namespace NuGet.Configuration
         {
             var name = setting.Key;
             var packageSource = new PackageSource(setting.Value, name, isEnabled)
-            {
-                IsMachineWide = setting.IsMachineWide
-            };
+                {
+                    IsMachineWide = setting.IsMachineWide
+                };
 
             var credentials = ReadCredential(name);
             if (credentials != null)
@@ -194,7 +196,8 @@ namespace NuGet.Configuration
         {
             string protocolVersionString;
             int protocolVersion;
-            if (setting.AdditionalData.TryGetValue(ConfigurationContants.ProtocolVersionAttribute, out protocolVersionString) &&
+            if (setting.AdditionalData.TryGetValue(ConfigurationContants.ProtocolVersionAttribute, out protocolVersionString)
+                &&
                 int.TryParse(protocolVersionString, out protocolVersion))
             {
                 return protocolVersion;
@@ -212,13 +215,14 @@ namespace NuGet.Configuration
             if (!packageSourceLookup.TryGetValue(packageSource.Name, out previouslyAddedSource))
             {
                 packageSourceLookup[packageSource.Name] = new IndexedPackageSource
-                {
-                    PackageSource = packageSource,
-                    Index = packageIndex++
-                };
+                    {
+                        PackageSource = packageSource,
+                        Index = packageIndex++
+                    };
             }
-            else if (previouslyAddedSource.PackageSource.ProtocolVersion < packageSource.ProtocolVersion &&
-                  packageSource.ProtocolVersion <= MaxSupportedProtocolVersion)
+            else if (previouslyAddedSource.PackageSource.ProtocolVersion < packageSource.ProtocolVersion
+                     &&
+                     packageSource.ProtocolVersion <= MaxSupportedProtocolVersion)
             {
                 // Pick the package source with the highest supported protocol version
                 previouslyAddedSource.PackageSource = packageSource;
@@ -226,7 +230,6 @@ namespace NuGet.Configuration
 
             return packageIndex;
         }
-
 
         // Gets the description of the source if it matches a default source.
         // Returns null if it does not match a default source
@@ -244,7 +247,7 @@ namespace NuGet.Configuration
 
         private PackageSourceCredential ReadCredential(string sourceName)
         {
-            PackageSourceCredential environmentCredentials = ReadCredentialFromEnvironment(sourceName);
+            var environmentCredentials = ReadCredentialFromEnvironment(sourceName);
 
             if (environmentCredentials != null)
             {
@@ -252,19 +255,20 @@ namespace NuGet.Configuration
             }
 
             var values = Settings.GetNestedValues(ConfigurationContants.CredentialsSectionName, sourceName);
-            if (values != null && values.Any())
+            if (values != null
+                && values.Any())
             {
-                string userName = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.UsernameToken, StringComparison.OrdinalIgnoreCase)).Value;
+                var userName = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.UsernameToken, StringComparison.OrdinalIgnoreCase)).Value;
 
                 if (!String.IsNullOrEmpty(userName))
                 {
-                    string encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
+                    var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
                     if (!String.IsNullOrEmpty(encryptedPassword))
                     {
                         return new PackageSourceCredential(userName, EncryptionUtility.DecryptString(encryptedPassword), isPasswordClearText: false);
                     }
 
-                    string clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
+                    var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
                     if (!String.IsNullOrEmpty(clearTextPassword))
                     {
                         return new PackageSourceCredential(userName, clearTextPassword, isPasswordClearText: true);
@@ -276,7 +280,7 @@ namespace NuGet.Configuration
 
         private PackageSourceCredential ReadCredentialFromEnvironment(string sourceName)
         {
-            string rawCredentials = Environment.GetEnvironmentVariable("NuGetPackageSourceCredentials_" + sourceName);
+            var rawCredentials = Environment.GetEnvironmentVariable("NuGetPackageSourceCredentials_" + sourceName);
             if (string.IsNullOrEmpty(rawCredentials))
             {
                 return null;
@@ -293,13 +297,13 @@ namespace NuGet.Configuration
 
         private void MigrateSources(List<PackageSource> loadedPackageSources)
         {
-            bool hasChanges = false;
-            List<PackageSource> packageSourcesToBeRemoved = new List<PackageSource>();
+            var hasChanges = false;
+            var packageSourcesToBeRemoved = new List<PackageSource>();
 
             // doing migration
-            for (int i = 0; i < loadedPackageSources.Count; i++)
+            for (var i = 0; i < loadedPackageSources.Count; i++)
             {
-                PackageSource ps = loadedPackageSources[i];
+                var ps = loadedPackageSources[i];
                 PackageSource targetPackageSource;
                 if (_migratePackageSources.TryGetValue(ps, out targetPackageSource))
                 {
@@ -317,7 +321,7 @@ namespace NuGet.Configuration
                 }
             }
 
-            foreach (PackageSource packageSource in packageSourcesToBeRemoved)
+            foreach (var packageSource in packageSourcesToBeRemoved)
             {
                 loadedPackageSources.Remove(packageSource);
             }
@@ -332,7 +336,8 @@ namespace NuGet.Configuration
         {
             var defaultPackageSourcesToBeAdded = new List<PackageSource>();
 
-            if (_configurationDefaultSources == null || !_configurationDefaultSources.Any<PackageSource>())
+            if (_configurationDefaultSources == null
+                || !_configurationDefaultSources.Any<PackageSource>())
             {
                 // Update provider default sources and use provider default sources since _configurationDefaultSources is empty
                 UpdateProviderDefaultSources(loadedPackageSources);
@@ -364,9 +369,9 @@ namespace NuGet.Configuration
             // for the first time, promote Primary to Enabled and demote secondary to disabled, if it is already enabled
 
             var defaultPackageSourcesToBeAdded = new List<PackageSource>();
-            foreach (PackageSource packageSource in allDefaultPackageSources)
+            foreach (var packageSource in allDefaultPackageSources)
             {
-                int sourceMatchingIndex = loadedPackageSources.FindIndex(p => p.Source.Equals(packageSource.Source, StringComparison.OrdinalIgnoreCase));
+                var sourceMatchingIndex = loadedPackageSources.FindIndex(p => p.Source.Equals(packageSource.Source, StringComparison.OrdinalIgnoreCase));
                 if (sourceMatchingIndex != -1)
                 {
                     if (loadedPackageSources[sourceMatchingIndex].Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase))
@@ -381,7 +386,7 @@ namespace NuGet.Configuration
                 }
                 else
                 {
-                    int nameMatchingIndex = loadedPackageSources.FindIndex(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+                    var nameMatchingIndex = loadedPackageSources.FindIndex(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
                     if (nameMatchingIndex != -1)
                     {
                         // Case 3: Only feed name matches but source is different. Override it entirely
@@ -393,7 +398,6 @@ namespace NuGet.Configuration
                         defaultPackageSourcesToBeAdded.Add(packageSource);
                         packageSource.IsOfficial = true;
                     }
-
                 }
             }
             return defaultPackageSourcesToBeAdded;
@@ -402,17 +406,17 @@ namespace NuGet.Configuration
         private void UpdateProviderDefaultSources(List<PackageSource> loadedSources)
         {
             // If there are NO other non-machine wide sources, providerDefaultPrimarySource should be enabled
-            bool areProviderDefaultSourcesEnabled = loadedSources.Count == 0 || loadedSources.Where(p => !p.IsMachineWide).Count() == 0
-                                                    || loadedSources.Where(p => p.IsEnabled).Count() == 0;
+            var areProviderDefaultSourcesEnabled = loadedSources.Count == 0 || loadedSources.Where(p => !p.IsMachineWide).Count() == 0
+                                                   || loadedSources.Where(p => p.IsEnabled).Count() == 0;
 
-            foreach (PackageSource packageSource in _providerDefaultPrimarySources)
+            foreach (var packageSource in _providerDefaultPrimarySources)
             {
                 packageSource.IsEnabled = areProviderDefaultSourcesEnabled;
                 packageSource.IsOfficial = true;
             }
 
             //Mark secondary sources as official but not enable them
-            foreach (PackageSource secondaryPackageSource in _providerDefaultSecondarySources)
+            foreach (var secondaryPackageSource in _providerDefaultSecondarySources)
             {
                 secondaryPackageSource.IsEnabled = false;
                 secondaryPackageSource.IsOfficial = true;
@@ -426,11 +430,11 @@ namespace NuGet.Configuration
             var sourcesToWrite = sources.Where(s => !s.IsMachineWide && s.IsPersistable);
 
             var existingSettings = (Settings.GetSettingValues(ConfigurationContants.PackageSources, isPath: true) ??
-                Enumerable.Empty<SettingValue>()).Where(setting => !setting.IsMachineWide).ToList();
+                                    Enumerable.Empty<SettingValue>()).Where(setting => !setting.IsMachineWide).ToList();
             existingSettings.RemoveAll(setting => !sources.Any(s => string.Equals(s.Name, setting.Key, StringComparison.OrdinalIgnoreCase)));
             var existingSettingsLookup = existingSettings.ToLookup(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
             var existingDisabledSources = Settings.GetSettingValues(ConfigurationContants.DisabledPackageSources) ??
-                Enumerable.Empty<SettingValue>();
+                                          Enumerable.Empty<SettingValue>();
             var existingDisabledSourcesLookup = existingDisabledSources.ToLookup(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
 
             var sourceSettings = new List<SettingValue>();
@@ -498,10 +502,11 @@ namespace NuGet.Configuration
             var sourceWithCredentials = sources.Where(s => !String.IsNullOrEmpty(s.UserName) && !String.IsNullOrEmpty(s.Password));
             foreach (var source in sourceWithCredentials)
             {
-                Settings.SetNestedValues(ConfigurationContants.CredentialsSectionName, source.Name, new[] {
-                    new KeyValuePair<string, string>(ConfigurationContants.UsernameToken, source.UserName),
-                    ReadPasswordValues(source)
-                });
+                Settings.SetNestedValues(ConfigurationContants.CredentialsSectionName, source.Name, new[]
+                    {
+                        new KeyValuePair<string, string>(ConfigurationContants.UsernameToken, source.UserName),
+                        ReadPasswordValues(source)
+                    });
             }
 
             OnPackageSourcesChanged();
@@ -520,8 +525,8 @@ namespace NuGet.Configuration
 
         private static KeyValuePair<string, string> ReadPasswordValues(PackageSource source)
         {
-            string passwordToken = source.IsPasswordClearText ? ConfigurationContants.ClearTextPasswordToken : ConfigurationContants.PasswordToken;
-            string passwordValue = source.IsPasswordClearText ? source.Password : EncryptionUtility.EncryptString(source.Password);
+            var passwordToken = source.IsPasswordClearText ? ConfigurationContants.ClearTextPasswordToken : ConfigurationContants.PasswordToken;
+            var passwordValue = source.IsPasswordClearText ? source.Password : EncryptionUtility.EncryptString(source.Password);
 
             return new KeyValuePair<string, string>(passwordToken, passwordValue);
         }
@@ -543,7 +548,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException("source");
             }
 
-            string value = Settings.GetValue(ConfigurationContants.DisabledPackageSources, source.Name);
+            var value = Settings.GetValue(ConfigurationContants.DisabledPackageSources, source.Name);
 
             // It doesn't matter what value it is.
             // As long as the package source name is persisted in the <disabledPackageSources> section, the source is disabled.
@@ -568,7 +573,7 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Saves the <paramref name="source"/> as the active source.
+        /// Saves the <paramref name="source" /> as the active source.
         /// </summary>
         /// <param name="source"></param>
         public void SaveActivePackageSource(PackageSource source)

@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -12,8 +14,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public HttpFileSystemBasedFindPackageByIdResourceProvider()
             : base(typeof(FindPackageByIdResource),
-                   nameof(HttpFileSystemBasedFindPackageByIdResourceProvider), 
-                   before: nameof(RemoteV3FindPackagePackageByIdResourceProvider))
+                nameof(HttpFileSystemBasedFindPackageByIdResourceProvider),
+                before: nameof(RemoteV3FindPackagePackageByIdResourceProvider))
         {
         }
 
@@ -23,7 +25,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var serviceIndexResource = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
             var packageBaseAddress = serviceIndexResource?[HttpFileSystemIndexType];
 
-            if (packageBaseAddress != null && packageBaseAddress.Count > 0)
+            if (packageBaseAddress != null
+                && packageBaseAddress.Count > 0)
             {
                 resource = new HttpFileSystemBasedFindPackageByIdResource(packageBaseAddress);
             }

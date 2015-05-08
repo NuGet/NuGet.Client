@@ -1,8 +1,7 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using NuGet;
 using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
@@ -17,23 +16,38 @@ namespace NuGet.LibraryModel
 
         public override string ToString()
         {
-            return Type + "/" + Name + " " + Version?.ToString();
+            return Type + "/" + Name + " " + Version;
         }
 
         public bool Equals(LibraryIdentity other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
             return string.Equals(Name, other.Name) &&
-                Equals(Version, other.Version) &&
-                Equals(Type, other.Type);
+                   Equals(Version, other.Version) &&
+                   Equals(Type, other.Type);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
             return Equals((LibraryIdentity)obj);
         }
 
@@ -42,8 +56,8 @@ namespace NuGet.LibraryModel
             unchecked
             {
                 return ((Name != null ? Name.GetHashCode() : 0) * 397) ^
-                    (Version != null ? Version.GetHashCode() : 0) ^
-                    (Type != null ? Type.GetHashCode() : 0);
+                       (Version != null ? Version.GetHashCode() : 0) ^
+                       (Type != null ? Type.GetHashCode() : 0);
             }
         }
 
@@ -60,17 +74,17 @@ namespace NuGet.LibraryModel
         public static implicit operator LibraryRange(LibraryIdentity library)
         {
             return new LibraryRange
-            {
-                Name = library.Name,
-                TypeConstraint = library.Type,
-                VersionRange = library.Version == null ? null : new VersionRange(library.Version, new FloatRange(NuGetVersionFloatBehavior.None, library.Version))
-            };
+                {
+                    Name = library.Name,
+                    TypeConstraint = library.Type,
+                    VersionRange = library.Version == null ? null : new VersionRange(library.Version, new FloatRange(NuGetVersionFloatBehavior.None, library.Version))
+                };
         }
 
         public int CompareTo(LibraryIdentity other)
         {
-            int compare = string.Compare(Type, other.Type, StringComparison.OrdinalIgnoreCase);
-            if(compare != 0)
+            var compare = string.Compare(Type, other.Type, StringComparison.OrdinalIgnoreCase);
+            if (compare != 0)
             {
                 return compare;
             }
@@ -78,7 +92,8 @@ namespace NuGet.LibraryModel
             compare = string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
             if (compare == 0)
             {
-                if (Version == null && other.Version == null)
+                if (Version == null
+                    && other.Version == null)
                 {
                     // NOOP;
                 }

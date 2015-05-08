@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -56,10 +59,7 @@ namespace NuGet.Packaging
         /// </summary>
         public NuGetFramework TargetFramework
         {
-            get
-            {
-                return _targetFramework;
-            }
+            get { return _targetFramework; }
         }
 
         /// <summary>
@@ -67,20 +67,17 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<PackageDependency> Packages
         {
-            get
-            {
-                return _packages;
-            }
+            get { return _packages; }
         }
 
         public bool Equals(PackageDependencyGroup other)
         {
-            if (Object.ReferenceEquals(this, other))
+            if (ReferenceEquals(this, other))
             {
                 return true;
             }
 
-            if (Object.ReferenceEquals(other, null))
+            if (ReferenceEquals(other, null))
             {
                 return false;
             }
@@ -90,7 +87,7 @@ namespace NuGet.Packaging
 
         public override bool Equals(object obj)
         {
-            PackageDependencyGroup other = obj as PackageDependencyGroup;
+            var other = obj as PackageDependencyGroup;
 
             if (other != null)
             {
@@ -102,13 +99,13 @@ namespace NuGet.Packaging
 
         public override int GetHashCode()
         {
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddObject(TargetFramework);
 
             if (Packages != null)
             {
-                foreach (int hash in Packages.Select(e => e.GetHashCode()).OrderBy(e => e))
+                foreach (var hash in Packages.Select(e => e.GetHashCode()).OrderBy(e => e))
                 {
                     combiner.AddObject(hash);
                 }

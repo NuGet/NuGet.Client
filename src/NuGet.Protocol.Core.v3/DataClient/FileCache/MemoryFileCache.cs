@@ -1,10 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
@@ -21,7 +20,8 @@ namespace NuGet.Protocol.Core.v3.Data
         public override void Remove(Uri uri)
         {
             MemoryStream entry = null;
-            if (_entries.TryRemove(uri, out entry) && entry != null)
+            if (_entries.TryRemove(uri, out entry)
+                && entry != null)
             {
                 entry.Dispose();
             }
@@ -45,7 +45,7 @@ namespace NuGet.Protocol.Core.v3.Data
 
         public override void Add(Uri uri, TimeSpan lifeSpan, Stream stream)
         {
-            MemoryStream cacheStream = new MemoryStream();
+            var cacheStream = new MemoryStream();
 
             stream.CopyTo(cacheStream);
             stream.Seek(0, SeekOrigin.Begin);

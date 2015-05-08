@@ -1,18 +1,13 @@
-﻿using NuGet.Versioning;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Versioning.Test
 {
     public class ExternalComparerTests
     {
-
         [Theory]
         [InlineData("(2.3.1-RC+srv01-a5c5ff9, 2.3.1-RC+srv02-dbf5ec0)", "2.3.1-RC+srv03-d9375a6")]
         [InlineData("(2.3.1-RC+srv01-a5c5ff9, 2.3.1-RC+srv02-dbf5ec0)", "2.3.1-RC+srv04-0ed1eb0")]
@@ -26,7 +21,7 @@ namespace NuGet.Versioning.Test
             var comparer = new GitMetadataComparer();
 
             // Act
-            bool result = versionInfo.Satisfies(version, comparer);
+            var result = versionInfo.Satisfies(version, comparer);
 
             // Assert
             Assert.True(result);
@@ -45,7 +40,7 @@ namespace NuGet.Versioning.Test
             var comparer = new GitMetadataComparer();
 
             // Act
-            bool result = versionInfo.Satisfies(version, comparer);
+            var result = versionInfo.Satisfies(version, comparer);
 
             // Assert
             Assert.False(result);
@@ -62,7 +57,7 @@ namespace NuGet.Versioning.Test
             var comparer = new GitMetadataComparer();
 
             // Act
-            int result = comparer.Compare(semVer1, semVer2);
+            var result = comparer.Compare(semVer1, semVer2);
 
             // Assert
             Assert.Equal(0, result);
@@ -79,7 +74,7 @@ namespace NuGet.Versioning.Test
             var comparer = new GitMetadataComparer();
 
             // Act
-            bool result = comparer.Compare(semVer1, semVer2) == 0;
+            var result = comparer.Compare(semVer1, semVer2) == 0;
 
             // Assert
             Assert.False(result);

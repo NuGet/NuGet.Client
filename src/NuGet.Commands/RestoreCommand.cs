@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -75,11 +78,11 @@ namespace NuGet.Commands
             var remoteWalker = new RemoteDependencyWalker(context);
 
             var projectRange = new LibraryRange()
-            {
-                Name = request.Project.Name,
-                VersionRange = new VersionRange(request.Project.Version),
-                TypeConstraint = LibraryTypes.Project
-            };
+                {
+                    Name = request.Project.Name,
+                    VersionRange = new VersionRange(request.Project.Version),
+                    TypeConstraint = LibraryTypes.Project
+                };
 
             // Resolve dependency graphs
             var frameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
@@ -143,7 +146,6 @@ namespace NuGet.Commands
 
             return new RestoreResult(true, graphs, lockFile);
         }
-
 
         private LockFile CreateLockFile(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
         {
@@ -281,7 +283,8 @@ namespace NuGet.Commands
 
                 // TODO: Remove this when we do #596
                 // ASP.NET Core isn't compatible with generic PCL profiles
-                if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase) &&
+                if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase)
+                    &&
                     !string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.DnxCore, StringComparison.OrdinalIgnoreCase))
                 {
                     var frameworkAssemblies = packageReader.GetFrameworkItems().GetNearest(framework);
@@ -324,11 +327,13 @@ namespace NuGet.Commands
             }
 
             // COMPAT: Support lib/contract so older packages can be consumed
-            string contractPath = "lib/contract/" + package.Id + ".dll";
+            var contractPath = "lib/contract/" + package.Id + ".dll";
             var hasContract = files.Any(path => path == contractPath);
             var hasLib = lockFileLib.RuntimeAssemblies.Any();
 
-            if (hasContract && hasLib && !framework.IsDesktop())
+            if (hasContract
+                && hasLib
+                && !framework.IsDesktop())
             {
                 lockFileLib.CompileTimeAssemblies.Clear();
                 lockFileLib.CompileTimeAssemblies.Add(contractPath);
@@ -373,7 +378,7 @@ namespace NuGet.Commands
 
             // Resolve conflicts
             _log.LogVerbose($"Resolving Conflicts for {framework}");
-            bool inConflict = !graph.TryResolveConflicts();
+            var inConflict = !graph.TryResolveConflicts();
 
             // Flatten and create the RestoreTargetGraph to hold the packages
             return RestoreTargetGraph.Create(inConflict, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
@@ -385,22 +390,25 @@ namespace NuGet.Commands
             _log.LogVerbose("Scanning packages for runtime.json files...");
             var runtimeGraph = projectRuntimeGraph;
             graph.Graph.ForEach(node =>
-            {
-                var match = node?.Item?.Data?.Match;
-                if (match == null) { return; }
-
-                // Locate the package in the local repository
-                var package = localRepository.FindPackagesById(match.Library.Name).FirstOrDefault(p => p.Version == match.Library.Version);
-                if (package != null)
                 {
-                    var nextGraph = LoadRuntimeGraph(package);
-                    if (nextGraph != null)
+                    var match = node?.Item?.Data?.Match;
+                    if (match == null)
                     {
-                        _log.LogVerbose($"Merging in runtimes defined in {match.Library}");
-                        runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
+                        return;
                     }
-                }
-            });
+
+                    // Locate the package in the local repository
+                    var package = localRepository.FindPackagesById(match.Library.Name).FirstOrDefault(p => p.Version == match.Library.Version);
+                    if (package != null)
+                    {
+                        var nextGraph = LoadRuntimeGraph(package);
+                        if (nextGraph != null)
+                        {
+                            _log.LogVerbose($"Merging in runtimes defined in {match.Library}");
+                            runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
+                        }
+                    }
+                });
 
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in projectRuntimeGraph.Runtimes.Keys)
@@ -440,13 +448,13 @@ namespace NuGet.Commands
                 var bag = new ConcurrentBag<RemoteMatch>(packagesToInstall);
                 var tasks = Enumerable.Range(0, maxDegreeOfConcurrency)
                     .Select(async _ =>
-                    {
-                        RemoteMatch match;
-                        while (bag.TryTake(out match))
                         {
-                            await InstallPackage(match, packagesDirectory);
-                        }
-                    });
+                            RemoteMatch match;
+                            while (bag.TryTake(out match))
+                            {
+                                await InstallPackage(match, packagesDirectory);
+                            }
+                        });
                 await Task.WhenAll(tasks);
             }
         }

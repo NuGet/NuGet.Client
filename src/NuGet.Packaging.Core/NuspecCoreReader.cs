@@ -1,11 +1,10 @@
-﻿using NuGet.Versioning;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
 {
@@ -14,14 +13,12 @@ namespace NuGet.Packaging.Core
     /// </summary>
     public class NuspecCoreReader : NuspecCoreReaderBase
     {
-
         /// <summary>
         /// Read a nuspec from a stream.
         /// </summary>
         public NuspecCoreReader(Stream stream)
             : base(stream)
         {
-
         }
 
         /// <summary>
@@ -30,7 +27,6 @@ namespace NuGet.Packaging.Core
         public NuspecCoreReader(XDocument xml)
             : base(xml)
         {
-
         }
 
         /// <summary>
@@ -45,7 +41,7 @@ namespace NuGet.Packaging.Core
             {
                 var versionNode = node.Attribute(XName.Get(Version));
 
-                VersionRange range = VersionRange.All;
+                var range = VersionRange.All;
 
                 if (versionNode != null)
                 {

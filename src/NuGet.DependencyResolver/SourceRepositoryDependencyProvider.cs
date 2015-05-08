@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -26,7 +26,6 @@ namespace NuGet.DependencyResolver
             ILogger logger)
             : this(sourceRepository, logger, noCache: false)
         {
-
         }
 
         public SourceRepositoryDependencyProvider(
@@ -52,11 +51,11 @@ namespace NuGet.DependencyResolver
             if (packageVersion != null)
             {
                 return new LibraryIdentity
-                {
-                    Name = libraryRange.Name,
-                    Version = packageVersion,
-                    Type = LibraryTypes.Package
-                };
+                    {
+                        Name = libraryRange.Name,
+                        Version = packageVersion,
+                        Type = LibraryTypes.Package
+                    };
             }
 
             return null;
@@ -84,19 +83,19 @@ namespace NuGet.DependencyResolver
         private IEnumerable<LibraryDependency> GetDependencies(FindPackageByIdDependencyInfo packageInfo, NuGetFramework targetFramework)
         {
             var dependencies = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
-                                                      targetFramework,
-                                                      item => item.TargetFramework);
+                targetFramework,
+                item => item.TargetFramework);
 
             var frameworkAssemblies = NuGetFrameworkUtility.GetNearest(packageInfo.FrameworkReferenceGroups,
-                                                             targetFramework,
-                                                             item => item.TargetFramework);
+                targetFramework,
+                item => item.TargetFramework);
 
             return GetDependencies(targetFramework, dependencies, frameworkAssemblies);
         }
 
         private static IList<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
-                                                                PackageDependencyGroup dependencies,
-                                                                FrameworkSpecificGroup frameworkAssemblies)
+            PackageDependencyGroup dependencies,
+            FrameworkSpecificGroup frameworkAssemblies)
         {
             var libraryDependencies = new List<LibraryDependency>();
 
@@ -105,13 +104,13 @@ namespace NuGet.DependencyResolver
                 foreach (var d in dependencies.Packages)
                 {
                     libraryDependencies.Add(new LibraryDependency
-                    {
-                        LibraryRange = new LibraryRange
                         {
-                            Name = d.Id,
-                            VersionRange = d.VersionRange
-                        }
-                    });
+                            LibraryRange = new LibraryRange
+                                {
+                                    Name = d.Id,
+                                    VersionRange = d.VersionRange
+                                }
+                        });
                 }
             }
 
@@ -120,7 +119,8 @@ namespace NuGet.DependencyResolver
                 return libraryDependencies;
             }
 
-            if (frameworkAssemblies.TargetFramework.AnyPlatform && !targetFramework.IsDesktop())
+            if (frameworkAssemblies.TargetFramework.AnyPlatform
+                && !targetFramework.IsDesktop())
             {
                 // REVIEW: This isn't 100% correct since none *can* mean 
                 // any in theory, but in practice it means .NET full reference assembly
@@ -135,13 +135,13 @@ namespace NuGet.DependencyResolver
             foreach (var name in frameworkAssemblies.Items)
             {
                 libraryDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
                     {
-                        Name = name,
-                        TypeConstraint = LibraryTypes.Reference
-                    }
-                });
+                        LibraryRange = new LibraryRange
+                            {
+                                Name = name,
+                                TypeConstraint = LibraryTypes.Reference
+                            }
+                    });
             }
 
             return libraryDependencies;

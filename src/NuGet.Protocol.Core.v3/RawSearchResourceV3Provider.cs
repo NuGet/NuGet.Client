@@ -1,13 +1,11 @@
-﻿using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -16,13 +14,12 @@ namespace NuGet.Protocol.Core.v3
         public RawSearchResourceV3Provider()
             : base(typeof(RawSearchResourceV3), "RawSearchResourceV3", NuGetResourceProviderPositions.Last)
         {
-
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             RawSearchResourceV3 curResource = null;
-            ServiceIndexResourceV3 serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>();
+            var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>();
 
             if (serviceIndex != null)
             {
@@ -41,4 +38,3 @@ namespace NuGet.Protocol.Core.v3
         }
     }
 }
-

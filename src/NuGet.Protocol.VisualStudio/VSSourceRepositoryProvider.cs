@@ -1,14 +1,12 @@
-﻿using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -18,19 +16,21 @@ namespace NuGet.Protocol.VisualStudio
     [Export(typeof(ISourceRepositoryProvider))]
     public sealed class ExtensibleSourceRepositoryProvider : ISourceRepositoryProvider
     {
-        private static Configuration.PackageSource[] DefaultPrimarySources = new [] {
-            new Configuration.PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName, isEnabled:true, isOfficial: true)
+        private static Configuration.PackageSource[] DefaultPrimarySources = new[]
             {
-                Description = Strings.v3sourceDescription
-            }
-        };
+                new Configuration.PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName, isEnabled: true, isOfficial: true)
+                    {
+                        Description = Strings.v3sourceDescription
+                    }
+            };
 
-        private static Configuration.PackageSource[] DefaultSecondarySources = new [] {
-            new Configuration.PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, isEnabled:false, isOfficial: true)
+        private static Configuration.PackageSource[] DefaultSecondarySources = new[]
             {
-                Description = Strings.v2sourceDescription
-            }
-        };
+                new Configuration.PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, isEnabled: false, isOfficial: true)
+                    {
+                        Description = Strings.v2sourceDescription
+                    }
+            };
 
         // TODO: add support for reloading sources when changes occur
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
@@ -42,17 +42,15 @@ namespace NuGet.Protocol.VisualStudio
         /// </summary>
         public ExtensibleSourceRepositoryProvider()
         {
-
         }
 
         /// <summary>
         /// Public importing constructor for SourceRepositoryProvider
         /// </summary>
         [ImportingConstructor]
-        public ExtensibleSourceRepositoryProvider([ImportMany]IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, [Import]Configuration.ISettings settings)
+        public ExtensibleSourceRepositoryProvider([ImportMany] IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, [Import] Configuration.ISettings settings)
             : this(new Configuration.PackageSourceProvider(settings, DefaultPrimarySources, DefaultSecondarySources, migratePackageSources: null), resourceProviders)
         {
-
         }
 
         /// <summary>
@@ -68,10 +66,7 @@ namespace NuGet.Protocol.VisualStudio
             Init();
 
             // Hook up event to refresh package sources when the package sources changed
-            packageSourceProvider.PackageSourcesChanged += (sender, e) =>
-            {
-                Init();
-            };
+            packageSourceProvider.PackageSourcesChanged += (sender, e) => { Init(); };
         }
 
         /// <summary>
@@ -93,10 +88,7 @@ namespace NuGet.Protocol.VisualStudio
 
         public Configuration.IPackageSourceProvider PackageSourceProvider
         {
-            get
-            {
-				return _packageSourceProvider;
-            }
+            get { return _packageSourceProvider; }
         }
 
         private void Init()
@@ -106,7 +98,7 @@ namespace NuGet.Protocol.VisualStudio
             {
                 if (source.IsEnabled)
                 {
-                    SourceRepository sourceRepo = new SourceRepository(source, _resourceProviders);
+                    var sourceRepo = new SourceRepository(source, _resourceProviders);
                     _repositories.Add(sourceRepo);
                 }
             }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,23 +19,19 @@ namespace NuGet.Protocol.Core.Types
         public ResourceProvider(Type resourceType)
             : this(resourceType, string.Empty, null)
         {
-
         }
 
         public ResourceProvider(Type resourceType, string name)
             : this(resourceType, name, null)
         {
-
         }
 
         public ResourceProvider(Type resourceType, string name, string before)
             : this(resourceType, name, ToArray(before), Enumerable.Empty<string>())
         {
-
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="resourceType">Type this resource provider creates</param>
         /// <param name="name">name used for ordering</param>
@@ -68,38 +67,25 @@ namespace NuGet.Protocol.Core.Types
 
         public IEnumerable<string> After
         {
-            get
-            {
-                return _after;
-            }
+            get { return _after; }
         }
 
         public IEnumerable<string> Before
         {
-            get
-            {
-                return _before;
-            }
+            get { return _before; }
         }
 
         public string Name
         {
-            get
-            {
-                return _name;
-            }
+            get { return _name; }
         }
 
         public Type ResourceType
         {
-            get
-            {
-                return _resourceType;
-            }
+            get { return _resourceType; }
         }
 
         public abstract Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token);
-
 
         private static IEnumerable<string> ToArray(string s)
         {

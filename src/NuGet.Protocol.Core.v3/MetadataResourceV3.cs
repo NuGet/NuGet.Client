@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -45,7 +45,7 @@ namespace NuGet.Protocol.Core.v3
         /// <param name="includeUnlisted">not implemented yet</param>
         public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            List<KeyValuePair<string, NuGetVersion>> results = new List<KeyValuePair<string, NuGetVersion>>();
+            var results = new List<KeyValuePair<string, NuGetVersion>>();
 
             foreach (var id in packageIds)
             {
@@ -88,7 +88,7 @@ namespace NuGet.Protocol.Core.v3
 
         public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            List<NuGetVersion> results = new List<NuGetVersion>();
+            var results = new List<NuGetVersion>();
 
             var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, token);
 
@@ -96,7 +96,8 @@ namespace NuGet.Protocol.Core.v3
             {
                 NuGetVersion version = null;
 
-                if (catalogEntry["version"] != null && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
+                if (catalogEntry["version"] != null
+                    && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
                 {
                     if (includePrerelease || !version.IsPrerelease)
                     {

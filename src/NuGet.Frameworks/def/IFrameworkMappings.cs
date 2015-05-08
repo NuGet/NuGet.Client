@@ -1,15 +1,15 @@
-﻿using NuGet.Versioning;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
     /// <summary>
-    /// A raw list of framework mappings. These are indexed by the framework name provider and in most cases all mappings are
-    /// mirrored so that the IFrameworkMappings implementation only needs to provide the minimum amount of mappings.
+    /// A raw list of framework mappings. These are indexed by the framework name provider and in most cases all
+    /// mappings are
+    /// mirrored so that the IFrameworkMappings implementation only needs to provide the minimum amount of
+    /// mappings.
     /// </summary>
     public interface IFrameworkMappings
     {
@@ -26,7 +26,8 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// Ex: WindowsPhone -> wp
-        /// </summary>;
+        /// </summary>
+        /// ;
         IEnumerable<FrameworkSpecificMapping> ProfileShortNames { get; }
 
         /// <summary>

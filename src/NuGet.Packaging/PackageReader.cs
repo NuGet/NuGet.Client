@@ -1,15 +1,12 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -21,15 +18,13 @@ namespace NuGet.Packaging
         private readonly ZipArchive _zip;
 
         public PackageReader(Stream stream)
-            : this (stream, false)
+            : this(stream, false)
         {
-
         }
 
         public PackageReader(Stream stream, bool leaveStreamOpen)
-            : this (new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen))
+            : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen))
         {
-
         }
 
         public PackageReader(ZipArchive zipArchive)

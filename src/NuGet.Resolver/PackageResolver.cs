@@ -1,10 +1,13 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Resolver
 {
@@ -52,7 +55,6 @@ namespace NuGet.Resolver
             // find the list of new packages to add
             _newPackageIds = new HashSet<string>(targets.Select(e => e.Id).Except(_installedPackages.Select(e => e.Id), StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
 
-
             // validation 
             foreach (var target in targets)
             {
@@ -85,11 +87,11 @@ namespace NuGet.Resolver
 
             var comparer = new ResolverComparer(_dependencyBehavior, _installedPackages, _newPackageIds);
 
-            List<List<ResolverPackage>> grouped = new List<List<ResolverPackage>>();
+            var grouped = new List<List<ResolverPackage>>();
 
             var packageComparer = PackageIdentity.Comparer;
 
-            List<ResolverPackage> resolverPackages = new List<ResolverPackage>();
+            var resolverPackages = new List<ResolverPackage>();
 
             // convert the available packages into ResolverPackages
             foreach (var package in availablePackages)
@@ -113,14 +115,14 @@ namespace NuGet.Resolver
             resolverPackages.Sort(PackageIdentityComparer.Default);
 
             // Keep track of the ids we have added
-            HashSet<string> groupsAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var groupsAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // group the packages by id
             foreach (var group in resolverPackages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
             {
                 groupsAdded.Add(group.Key);
 
-                List<ResolverPackage> curSet = group.ToList();
+                var curSet = group.ToList();
 
                 // add an absent package for non-targets
                 // being absent allows the resolver to throw it out if it is not needed
@@ -135,7 +137,7 @@ namespace NuGet.Resolver
             // find all needed dependencies
             var dependencyIds = resolverPackages.Where(e => e.Dependencies != null).SelectMany(e => e.Dependencies.Select(d => d.Id).Distinct(StringComparer.OrdinalIgnoreCase));
 
-            foreach (string depId in dependencyIds)
+            foreach (var depId in dependencyIds)
             {
                 // packages which are unavailable need to be added as absent packages
                 // ex: if A -> B  and B is not found anywhere in the source repositories we add B as absent
@@ -165,19 +167,16 @@ namespace NuGet.Resolver
 
         private IEnumerable<ResolverPackage> TopologicalSort(IEnumerable<ResolverPackage> nodes)
         {
-            List<ResolverPackage> result = new List<ResolverPackage>();
+            var result = new List<ResolverPackage>();
 
-            var dependsOn = new Func<ResolverPackage, ResolverPackage, bool>((x, y) =>
-            {
-                return x.FindDependencyRange(y.Id) != null;
-            });
+            var dependsOn = new Func<ResolverPackage, ResolverPackage, bool>((x, y) => { return x.FindDependencyRange(y.Id) != null; });
 
             var dependenciesAreSatisfied = new Func<ResolverPackage, bool>(node =>
-            {
-                var dependencies = node.Dependencies;
-                return dependencies == null || !dependencies.Any() ||
-                       dependencies.All(d => result.Any(r => StringComparer.OrdinalIgnoreCase.Equals(r.Id, d.Id)));
-            });
+                {
+                    var dependencies = node.Dependencies;
+                    return dependencies == null || !dependencies.Any() ||
+                           dependencies.All(d => result.Any(r => StringComparer.OrdinalIgnoreCase.Equals(r.Id, d.Id)));
+                });
 
             var satisfiedNodes = new HashSet<ResolverPackage>(nodes.Where(n => dependenciesAreSatisfied(n)));
             while (satisfiedNodes.Any())
@@ -190,8 +189,8 @@ namespace NuGet.Resolver
                 // Find unprocessed nodes that depended on the node we just added to the result.
                 // If all of its dependencies are now satisfied, add it to the set of nodes to process.
                 var newlySatisfiedNodes = nodes.Except(result)
-                                               .Where(n => dependsOn(n, node))
-                                               .Where(n => dependenciesAreSatisfied(n));
+                    .Where(n => dependsOn(n, node))
+                    .Where(n => dependenciesAreSatisfied(n));
 
                 foreach (var cur in newlySatisfiedNodes)
                 {

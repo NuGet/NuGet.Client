@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +22,6 @@ namespace NuGet.Versioning
         public SemanticVersion(SemanticVersion version)
             : this(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata)
         {
-
         }
 
         /// <summary>
@@ -31,7 +33,6 @@ namespace NuGet.Versioning
         public SemanticVersion(int major, int minor, int patch)
             : this(major, minor, patch, Enumerable.Empty<string>(), null)
         {
-
         }
 
         /// <summary>
@@ -44,7 +45,6 @@ namespace NuGet.Versioning
         public SemanticVersion(int major, int minor, int patch, string releaseLabel)
             : this(major, minor, patch, ParseReleaseLabels(releaseLabel), null)
         {
-
         }
 
         /// <summary>
@@ -56,9 +56,8 @@ namespace NuGet.Versioning
         /// <param name="releaseLabel">Prerelease label</param>
         /// <param name="metadata">Build metadata</param>
         public SemanticVersion(int major, int minor, int patch, string releaseLabel, string metadata)
-            :this(major, minor, patch, ParseReleaseLabels(releaseLabel), metadata)
+            : this(major, minor, patch, ParseReleaseLabels(releaseLabel), metadata)
         {
-
         }
 
         /// <summary>
@@ -70,27 +69,23 @@ namespace NuGet.Versioning
         /// <param name="releaseLabels">Release labels that have been split by the dot separator</param>
         /// <param name="metadata">Build metadata</param>
         public SemanticVersion(int major, int minor, int patch, IEnumerable<string> releaseLabels, string metadata)
-            :this(new Version(major, minor, patch, 0), releaseLabels, metadata)
+            : this(new Version(major, minor, patch, 0), releaseLabels, metadata)
         {
-
         }
 
         protected SemanticVersion(Version version, string releaseLabel = null, string metadata = null)
             : this(version, ParseReleaseLabels(releaseLabel), metadata)
         {
-
         }
 
         protected SemanticVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
-            :this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
+            : this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
         {
-
         }
 
         protected SemanticVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
             : this(new Version(major, minor, patch, revision), releaseLabels, metadata)
         {
-
         }
 
         protected SemanticVersion(Version version, IEnumerable<string> releaseLabels, string metadata)
@@ -113,27 +108,33 @@ namespace NuGet.Versioning
         /// <summary>
         /// Major version X (X.y.z)
         /// </summary>
-        public int Major { get { return _version.Major; } }
+        public int Major
+        {
+            get { return _version.Major; }
+        }
 
         /// <summary>
         /// Minor version Y (x.Y.z)
         /// </summary>
-        public int Minor { get { return _version.Minor; } }
+        public int Minor
+        {
+            get { return _version.Minor; }
+        }
 
         /// <summary>
         /// Patch version Z (x.y.Z)
         /// </summary>
-        public int Patch { get { return _version.Build; } }
+        public int Patch
+        {
+            get { return _version.Build; }
+        }
 
         /// <summary>
         /// A collection of pre-release labels attached to the version.
         /// </summary>
         public IEnumerable<string> ReleaseLabels
         {
-            get
-            {
-                return _releaseLabels ?? Enumerable.Empty<string>();
-            }
+            get { return _releaseLabels ?? Enumerable.Empty<string>(); }
         }
 
         /// <summary>
@@ -174,10 +175,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual bool HasMetadata
         {
-            get
-            {
-                return !String.IsNullOrEmpty(Metadata);
-            }
+            get { return !String.IsNullOrEmpty(Metadata); }
         }
 
         /// <summary>
@@ -185,10 +183,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual string Metadata
         {
-            get
-            {
-                return _metadata;
-            }
+            get { return _metadata; }
         }
     }
 }

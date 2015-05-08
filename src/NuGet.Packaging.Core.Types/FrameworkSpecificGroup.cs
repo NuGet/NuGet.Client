@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
@@ -58,10 +61,7 @@ namespace NuGet.Packaging
         /// </summary>
         public NuGetFramework TargetFramework
         {
-            get
-            {
-                return _targetFramework;
-            }
+            get { return _targetFramework; }
         }
 
         /// <summary>
@@ -69,20 +69,17 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<string> Items
         {
-            get
-            {
-                return _items;
-            }
+            get { return _items; }
         }
 
         public bool Equals(FrameworkSpecificGroup other)
         {
-            if (Object.ReferenceEquals(this, other))
+            if (ReferenceEquals(this, other))
             {
                 return true;
             }
 
-            if (Object.ReferenceEquals(other, null))
+            if (ReferenceEquals(other, null))
             {
                 return false;
             }
@@ -92,7 +89,7 @@ namespace NuGet.Packaging
 
         public override bool Equals(object obj)
         {
-            FrameworkSpecificGroup other = obj as FrameworkSpecificGroup;
+            var other = obj as FrameworkSpecificGroup;
 
             if (other != null)
             {
@@ -104,18 +101,18 @@ namespace NuGet.Packaging
 
         public override int GetHashCode()
         {
-            if (Object.ReferenceEquals(this, null))
+            if (ReferenceEquals(this, null))
             {
                 return 0;
             }
 
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddObject(TargetFramework);
 
             if (Items != null)
             {
-                foreach (int hash in Items.Select(e => e.GetHashCode()).OrderBy(e => e))
+                foreach (var hash in Items.Select(e => e.GetHashCode()).OrderBy(e => e))
                 {
                     combiner.AddObject(hash);
                 }

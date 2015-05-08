@@ -1,5 +1,6 @@
-﻿using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +10,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace Test.Utility
 {
@@ -61,10 +64,7 @@ namespace Test.Utility
 
         public override HttpMessageHandler MessageHandler
         {
-            get
-            {
-                return _messageHandler;
-            }
+            get { return _messageHandler; }
         }
     }
 
@@ -79,7 +79,7 @@ namespace Test.Utility
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            HttpResponseMessage msg = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            var msg = new HttpResponseMessage(HttpStatusCode.OK);
 
             string s = null;
             if (_responses.TryGetValue(request.RequestUri.AbsoluteUri, out s))

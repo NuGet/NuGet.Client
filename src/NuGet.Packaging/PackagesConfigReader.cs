@@ -1,13 +1,14 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
@@ -26,7 +27,6 @@ namespace NuGet.Packaging
         public PackagesConfigReader(XDocument xml)
             : this(DefaultFrameworkNameProvider.Instance, xml)
         {
-
         }
 
         public PackagesConfigReader(IFrameworkNameProvider frameworkMappings, XDocument xml)
@@ -52,7 +52,6 @@ namespace NuGet.Packaging
         public PackagesConfigReader(Stream stream)
             : this(stream, false)
         {
-
         }
 
         /// <summary>
@@ -63,7 +62,6 @@ namespace NuGet.Packaging
         public PackagesConfigReader(Stream stream, bool leaveStreamOpen)
             : this(DefaultFrameworkNameProvider.Instance, stream, leaveStreamOpen)
         {
-
         }
 
         /// <summary>
@@ -96,7 +94,7 @@ namespace NuGet.Packaging
         {
             NuGetVersion version = null;
 
-            XAttribute node = _doc.Root.Attribute(XName.Get("minClientVersion"));
+            var node = _doc.Root.Attribute(XName.Get("minClientVersion"));
 
             if (node == null)
             {
@@ -116,20 +114,22 @@ namespace NuGet.Packaging
         /// <returns></returns>
         public IEnumerable<PackageReference> GetPackages()
         {
-            List<PackageReference> packages = new List<PackageReference>();
+            var packages = new List<PackageReference>();
 
             foreach (var package in _doc.Root.Elements(XName.Get("package")))
             {
                 string id = null;
 
-                if (!TryGetAttribute(package, "id", out id) || String.IsNullOrEmpty(id))
+                if (!TryGetAttribute(package, "id", out id)
+                    || String.IsNullOrEmpty(id))
                 {
                     throw new PackagesConfigReaderException("Invalid package id");
                 }
 
                 string version = null;
 
-                if (!TryGetAttribute(package, "version", out version) || String.IsNullOrEmpty(version))
+                if (!TryGetAttribute(package, "version", out version)
+                    || String.IsNullOrEmpty(version))
                 {
                     throw new PackagesConfigReaderException("Invalid package version");
                 }
@@ -152,17 +152,17 @@ namespace NuGet.Packaging
                     }
                 }
 
-                NuGetFramework targetFramework = NuGetFramework.UnsupportedFramework;
+                var targetFramework = NuGetFramework.UnsupportedFramework;
                 if (TryGetAttribute(package, "targetFramework", out attributeValue))
                 {
                     targetFramework = NuGetFramework.Parse(attributeValue, _frameworkMappings);
                 }
 
-                bool developmentDependency = BoolAttribute(package, "developmentDependency");
-                bool requireReinstallation = BoolAttribute(package, "requireReinstallation");
-                bool userInstalled = BoolAttribute(package, "userInstalled", true);
+                var developmentDependency = BoolAttribute(package, "developmentDependency");
+                var requireReinstallation = BoolAttribute(package, "requireReinstallation");
+                var userInstalled = BoolAttribute(package, "userInstalled", true);
 
-                PackageReference entry = new PackageReference(new PackageIdentity(id, semver), targetFramework, userInstalled, developmentDependency, requireReinstallation, allowedVersions);
+                var entry = new PackageReference(new PackageIdentity(id, semver), targetFramework, userInstalled, developmentDependency, requireReinstallation, allowedVersions);
 
                 packages.Add(entry);
             }
@@ -171,7 +171,7 @@ namespace NuGet.Packaging
         }
 
         // Get a boolean attribute value, or false if it does not exist
-        private static bool BoolAttribute(XElement node, string name, bool defaultValue=false)
+        private static bool BoolAttribute(XElement node, string name, bool defaultValue = false)
         {
             string value = null;
             if (TryGetAttribute(node, name, out value))
@@ -194,7 +194,8 @@ namespace NuGet.Packaging
         {
             var attribute = node.Attributes(XName.Get(name)).FirstOrDefault();
 
-            if (attribute != null && !String.IsNullOrEmpty(attribute.Value))
+            if (attribute != null
+                && !String.IsNullOrEmpty(attribute.Value))
             {
                 value = attribute.Value;
                 return true;

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -27,7 +30,7 @@ namespace NuGet.Versioning
             }
 
             string formatted = null;
-            Type argType = arg.GetType();
+            var argType = arg.GetType();
 
             if (argType == typeof(IFormattable))
             {
@@ -35,7 +38,7 @@ namespace NuGet.Versioning
             }
             else if (!String.IsNullOrEmpty(format))
             {
-                VersionRange range = arg as VersionRange;
+                var range = arg as VersionRange;
 
                 if (range != null)
                 {
@@ -46,11 +49,11 @@ namespace NuGet.Versioning
                     }
                     else
                     {
-                        StringBuilder sb = new StringBuilder(format.Length);
+                        var sb = new StringBuilder(format.Length);
 
-                        for (int i = 0; i < format.Length; i++)
+                        for (var i = 0; i < format.Length; i++)
                         {
-                            string s = Format(format[i], range);
+                            var s = Format(format[i], range);
 
                             if (s == null)
                             {
@@ -116,7 +119,7 @@ namespace NuGet.Versioning
         private string GetNormalizedString(VersionRange range)
         {
             // TODO: write out the float version
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             sb.Append(range.HasLowerBound && range.IsMinInclusive ? '[' : '(');
 
@@ -151,12 +154,17 @@ namespace NuGet.Versioning
         {
             string s = null;
 
-            if (range.HasLowerBound && range.IsMinInclusive && !range.HasUpperBound)
+            if (range.HasLowerBound
+                && range.IsMinInclusive
+                && !range.HasUpperBound)
             {
                 s = String.Format(_versionFormatter, ZeroN, range.MinVersion);
             }
-            else if(range.HasLowerAndUpperBounds && range.IsMinInclusive && range.IsMaxInclusive &&
-                range.MinVersion.Equals(range.MaxVersion))
+            else if (range.HasLowerAndUpperBounds
+                     && range.IsMinInclusive
+                     && range.IsMaxInclusive
+                     &&
+                     range.MinVersion.Equals(range.MaxVersion))
             {
                 // TODO: Does this need a specific version comparision? Does metadata matter?
 
@@ -175,7 +183,7 @@ namespace NuGet.Versioning
         /// </summary>
         private string GetLegacyString(VersionRangeBase range)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             sb.Append(range.HasLowerBound && range.IsMinInclusive ? '[' : '(');
 
@@ -201,16 +209,20 @@ namespace NuGet.Versioning
         /// </summary>
         private string PrettyPrint(VersionRange range)
         {
-            StringBuilder sb = new StringBuilder("(");
+            var sb = new StringBuilder("(");
 
             // no upper
-            if (range.HasLowerBound && !range.HasUpperBound)
+            if (range.HasLowerBound
+                && !range.HasUpperBound)
             {
                 sb.Append(GreaterThanOrEqualTo);
                 sb.AppendFormat(_versionFormatter, " {0:N}", range.MinVersion);
             }
             // single version
-            else if (range.HasLowerAndUpperBounds && range.MaxVersion.Equals(range.MinVersion) && range.IsMinInclusive && range.IsMaxInclusive)
+            else if (range.HasLowerAndUpperBounds
+                     && range.MaxVersion.Equals(range.MinVersion)
+                     && range.IsMinInclusive
+                     && range.IsMaxInclusive)
             {
                 sb.AppendFormat(_versionFormatter, "= {0:N}", range.MinVersion);
             }
@@ -235,7 +247,7 @@ namespace NuGet.Versioning
                     sb.Append(" && ");
                 }
 
-                if(range.HasUpperBound)
+                if (range.HasUpperBound)
                 {
                     if (range.IsMaxInclusive)
                     {

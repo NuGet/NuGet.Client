@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,18 +44,24 @@ namespace NuGet.Configuration
         /// <summary>
         /// Gets additional values with the specified setting.
         /// </summary>
-        /// <remarks>When reading from an XML based settings file, this includes all attributes on the element
-        /// other than the <c>Key</c> and <c>Value</c>.</remarks>
+        /// <remarks>
+        /// When reading from an XML based settings file, this includes all attributes on the element
+        /// other than the <c>Key</c> and <c>Value</c>.
+        /// </remarks>
         public IDictionary<string, string> AdditionalData { get; }
 
         public override bool Equals(object obj)
         {
             var rhs = obj as SettingValue;
 
-            if (rhs != null &&
-                string.Equals(rhs.Key, Key, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(rhs.Value, Value, StringComparison.OrdinalIgnoreCase) &&
-                rhs.IsMachineWide == rhs.IsMachineWide &&
+            if (rhs != null
+                &&
+                string.Equals(rhs.Key, Key, StringComparison.OrdinalIgnoreCase)
+                &&
+                string.Equals(rhs.Value, Value, StringComparison.OrdinalIgnoreCase)
+                &&
+                rhs.IsMachineWide == rhs.IsMachineWide
+                &&
                 rhs.AdditionalData.Count == AdditionalData.Count)
             {
                 return Enumerable.SequenceEqual(

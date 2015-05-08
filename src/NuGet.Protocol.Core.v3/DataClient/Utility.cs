@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
@@ -24,8 +26,8 @@ namespace NuGet.Protocol.Core.v3.Data
         {
             if (uri != null)
             {
-                string s = uri.AbsoluteUri;
-                int hash = s.IndexOf('#');
+                var s = uri.AbsoluteUri;
+                var hash = s.IndexOf('#');
 
                 if (hash > -1)
                 {
@@ -123,7 +125,7 @@ namespace NuGet.Protocol.Core.v3.Data
         public static bool? IsEntityFromPage(JToken token, Uri entityUri = null)
         {
             bool? result = null;
-            Uri uri = entityUri == null ? GetEntityUri(token) : entityUri;
+            var uri = entityUri == null ? GetEntityUri(token) : entityUri;
 
             if (uri != null)
             {
@@ -144,7 +146,7 @@ namespace NuGet.Protocol.Core.v3.Data
         }
 
         /// <summary>
-        /// Checks if the uris match or differ only in the # part. 
+        /// Checks if the uris match or differ only in the # part.
         /// If either are null this returns false.
         /// </summary>
         /// <param name="a"></param>
@@ -152,20 +154,21 @@ namespace NuGet.Protocol.Core.v3.Data
         /// <returns></returns>
         public static bool CompareRootUris(Uri a, Uri b)
         {
-            if (a == null || b == null)
+            if (a == null
+                || b == null)
             {
                 return false;
             }
 
-            var x = Utility.GetUriWithoutHash(a);
-            var y = Utility.GetUriWithoutHash(b);
+            var x = GetUriWithoutHash(a);
+            var y = GetUriWithoutHash(b);
 
             return x.Equals(y);
         }
 
         public static JToken GetRoot(JToken token)
         {
-            JToken parent = token;
+            var parent = token;
 
             while (parent.Parent != null)
             {
@@ -196,7 +199,7 @@ namespace NuGet.Protocol.Core.v3.Data
             {
                 JToken urlValue;
 
-                foreach (string idName in IdNames)
+                foreach (var idName in IdNames)
                 {
                     if (jObj.TryGetValue(idName, out urlValue))
                     {
@@ -215,21 +218,21 @@ namespace NuGet.Protocol.Core.v3.Data
 
         public static Task<JToken> FindEntityInJson(Uri entity, JObject json)
         {
-            string search = entity.AbsoluteUri;
+            var search = entity.AbsoluteUri;
 
             var idNode = json.Descendants().Concat(json).Where(n =>
-            {
-                JProperty prop = n as JProperty;
-
-                if (prop != null)
                 {
-                    string url = prop.Value.ToString();
+                    var prop = n as JProperty;
 
-                    return StringComparer.Ordinal.Equals(url, search);
-                }
+                    if (prop != null)
+                    {
+                        var url = prop.Value.ToString();
 
-                return false;
-            }).FirstOrDefault();
+                        return StringComparer.Ordinal.Equals(url, search);
+                    }
+
+                    return false;
+                }).FirstOrDefault();
 
             if (idNode != null)
             {
@@ -241,13 +244,14 @@ namespace NuGet.Protocol.Core.v3.Data
 
         public static bool IsInContext(JToken token)
         {
-            JToken parent = token;
+            var parent = token;
 
             while (parent != null)
             {
-                JProperty prop = parent as JProperty;
+                var prop = parent as JProperty;
 
-                if (prop != null && StringComparer.Ordinal.Equals(prop.Name, Constants.ContextName))
+                if (prop != null
+                    && StringComparer.Ordinal.Equals(prop.Name, Constants.ContextName))
                 {
                     return true;
                 }
@@ -264,7 +268,7 @@ namespace NuGet.Protocol.Core.v3.Data
                 .Descendants()
                 .Where(t => t.Type == JTokenType.Property)
                 .Cast<JProperty>()
-                .Where(p => Utility.IdNames.Contains(p.Name))
+                .Where(p => IdNames.Contains(p.Name))
                 .ToList();
 
             foreach (var prop in props)

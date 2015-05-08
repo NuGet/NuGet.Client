@@ -1,9 +1,12 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -49,98 +52,62 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public string Title
         {
-            get
-            {
-                return _title;
-            }
+            get { return _title; }
         }
 
         public string Summary
         {
-            get
-            {
-                return _summary;
-            }
+            get { return _summary; }
         }
 
         public string Description
         {
-            get
-            {
-                return _description;
-            }
+            get { return _description; }
         }
 
         public IEnumerable<string> Authors
         {
-            get
-            {
-                return _authors;
-            }
+            get { return _authors; }
         }
 
         public Uri IconUrl
         {
-            get
-            {
-                return _iconUrl;
-            }
+            get { return _iconUrl; }
         }
 
         public Uri LicenseUrl
         {
-            get
-            {
-                return _licenseUrl;
-            }
+            get { return _licenseUrl; }
         }
 
         public Uri ProjectUrl
         {
-            get
-            {
-                return _projectUrl;
-            }
+            get { return _projectUrl; }
         }
 
         public IEnumerable<string> Tags
         {
-            get
-            {
-                return _tags;
-            }
+            get { return _tags; }
         }
 
         public DateTimeOffset? Published
         {
-            get
-            {
-                return _published;
-            }
+            get { return _published; }
         }
 
         public IEnumerable<PackageDependencyGroup> DependencySets
         {
-            get
-            {
-                return _dependencySets;
-            }
+            get { return _dependencySets; }
         }
 
         public bool RequireLicenseAcceptance
         {
-            get
-            {
-                return _requireLicenseAcceptance;
-            }
+            get { return _requireLicenseAcceptance; }
         }
 
         public NuGetVersion MinClientVersion
         {
-            get
-            {
-                return _minClientVersion;
-            }
+            get { return _minClientVersion; }
         }
     }
 }

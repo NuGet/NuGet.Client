@@ -1,12 +1,9 @@
-﻿using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Configuration;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -23,7 +20,6 @@ namespace NuGet.Protocol.Core.Types
         public SourceRepositoryProvider(ISettings settings, IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders)
             : this(new PackageSourceProvider(settings), resourceProviders)
         {
-
         }
 
         /// <summary>
@@ -39,10 +35,7 @@ namespace NuGet.Protocol.Core.Types
             Init();
 
             // Hook up event to refresh package sources when the package sources changed
-            packageSourceProvider.PackageSourcesChanged += (sender, e) =>
-            {
-                Init();
-            };
+            packageSourceProvider.PackageSourcesChanged += (sender, e) => { Init(); };
         }
 
         /// <summary>
@@ -74,7 +67,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 if (source.IsEnabled)
                 {
-                    SourceRepository sourceRepo = new SourceRepository(source, _resourceProviders);
+                    var sourceRepo = new SourceRepository(source, _resourceProviders);
                     _repositories.Add(sourceRepo);
                 }
             }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -26,7 +29,7 @@ namespace NuGet.Configuration
 
         private static XDocument CreateDocument(XName rootName, string fullPath)
         {
-            XDocument document = new XDocument(new XElement(rootName));
+            var document = new XDocument(new XElement(rootName));
             // Add it to the file system
             FileSystemUtility.AddFile(fullPath, document.Save);
             return document;
@@ -36,7 +39,7 @@ namespace NuGet.Configuration
         {
             using (Stream configStream = File.OpenRead(fullPath))
             {
-                return XmlUtility.LoadSafe(configStream, LoadOptions.PreserveWhitespace);
+                return LoadSafe(configStream, LoadOptions.PreserveWhitespace);
             }
         }
 
@@ -50,13 +53,13 @@ namespace NuGet.Configuration
         private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
             var safeSettings = new XmlReaderSettings
-            {
+                {
 #if !DNXCORE50
-                XmlResolver = null,
+                    XmlResolver = null,
 #endif
-                DtdProcessing = DtdProcessing.Prohibit,
-                IgnoreWhitespace = ignoreWhiteSpace
-            };
+                    DtdProcessing = DtdProcessing.Prohibit,
+                    IgnoreWhitespace = ignoreWhiteSpace
+                };
 
             return safeSettings;
         }
@@ -80,14 +83,14 @@ namespace NuGet.Configuration
 
         internal static void AddIndented(XContainer container, XContainer content)
         {
-            string oneIndentLevel = ComputeOneLevelOfIndentation(container);
+            var oneIndentLevel = ComputeOneLevelOfIndentation(container);
 
-            XText leadingText = container.PreviousNode as XText;
-            string parentIndent = leadingText != null ? leadingText.Value : Environment.NewLine;
+            var leadingText = container.PreviousNode as XText;
+            var parentIndent = leadingText != null ? leadingText.Value : Environment.NewLine;
 
-            XElementUtility.IndentChildrenElements(content, parentIndent + oneIndentLevel, oneIndentLevel);
+            IndentChildrenElements(content, parentIndent + oneIndentLevel, oneIndentLevel);
 
-            XElementUtility.AddLeadingIndentation(container, parentIndent, oneIndentLevel);
+            AddLeadingIndentation(container, parentIndent, oneIndentLevel);
             container.Add(content);
             AddTrailingIndentation(container, parentIndent);
         }
@@ -95,31 +98,42 @@ namespace NuGet.Configuration
         internal static void RemoveIndented(XNode element)
         {
             // NOTE: this method is tested by BindinRedirectManagerTest and SettingsTest
-            XText textBeforeOrNull = element.PreviousNode as XText;
-            XText textAfterOrNull = element.NextNode as XText;
-            string oneIndentLevel = ComputeOneLevelOfIndentation(element);
-            bool isLastChild = !element.ElementsAfterSelf().Any();
+            var textBeforeOrNull = element.PreviousNode as XText;
+            var textAfterOrNull = element.NextNode as XText;
+            var oneIndentLevel = ComputeOneLevelOfIndentation(element);
+            var isLastChild = !element.ElementsAfterSelf().Any();
 
             element.Remove();
 
-            if (textAfterOrNull != null && IsWhiteSpace(textAfterOrNull))
+            if (textAfterOrNull != null
+                && IsWhiteSpace(textAfterOrNull))
+            {
                 textAfterOrNull.Remove();
+            }
 
-            if (isLastChild && textBeforeOrNull != null && IsWhiteSpace(textAfterOrNull))
+            if (isLastChild
+                && textBeforeOrNull != null
+                && IsWhiteSpace(textAfterOrNull))
+            {
                 textBeforeOrNull.Value = textBeforeOrNull.Value.Substring(0, textBeforeOrNull.Value.Length - oneIndentLevel.Length);
+            }
         }
 
         private static string ComputeOneLevelOfIndentation(XNode node)
         {
             var depth = node.Ancestors().Count();
-            XText textBeforeOrNull = node.PreviousNode as XText;
-            if (depth == 0 || textBeforeOrNull == null || !IsWhiteSpace(textBeforeOrNull))
+            var textBeforeOrNull = node.PreviousNode as XText;
+            if (depth == 0
+                || textBeforeOrNull == null
+                || !IsWhiteSpace(textBeforeOrNull))
+            {
                 return "  ";
+            }
 
-            string indentString = textBeforeOrNull.Value.Trim(Environment.NewLine.ToCharArray());
-            char lastChar = indentString.LastOrDefault();
-            char indentChar = (lastChar == '\t' ? '\t' : ' ');
-            int indentLevel = Math.Max(1, indentString.Length / depth);
+            var indentString = textBeforeOrNull.Value.Trim(Environment.NewLine.ToCharArray());
+            var lastChar = indentString.LastOrDefault();
+            var indentChar = (lastChar == '\t' ? '\t' : ' ');
+            var indentLevel = Math.Max(1, indentString.Length / depth);
             return new string(indentChar, indentLevel);
         }
 
@@ -130,21 +144,23 @@ namespace NuGet.Configuration
 
         private static void IndentChildrenElements(XContainer container, string containerIndent, string oneIndentLevel)
         {
-            string childIndent = containerIndent + oneIndentLevel;
-            foreach (XElement element in container.Elements())
+            var childIndent = containerIndent + oneIndentLevel;
+            foreach (var element in container.Elements())
             {
                 element.AddBeforeSelf(new XText(childIndent));
                 IndentChildrenElements(element, childIndent + oneIndentLevel, oneIndentLevel);
             }
 
             if (container.Elements().Any())
+            {
                 container.Add(new XText(containerIndent));
+            }
         }
 
         private static void AddLeadingIndentation(XContainer container, string containerIndent, string oneIndentLevel)
         {
-            bool containerIsSelfClosed = !container.Nodes().Any();
-            XText lastChildText = container.LastNode as XText;
+            var containerIsSelfClosed = !container.Nodes().Any();
+            var lastChildText = container.LastNode as XText;
             if (containerIsSelfClosed || lastChildText == null)
             {
                 container.Add(new XText(containerIndent + oneIndentLevel));

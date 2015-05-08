@@ -1,15 +1,13 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -24,7 +22,6 @@ namespace NuGet.Packaging
         public PackageReaderBase()
             : base()
         {
-
         }
 
         /// <summary>
@@ -32,7 +29,7 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<NuGetFramework> GetSupportedFrameworks()
         {
-            HashSet<NuGetFramework> frameworks = new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer());
+            var frameworks = new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer());
 
             frameworks.UnionWith(GetLibItems().Select(g => g.TargetFramework));
 
@@ -54,13 +51,13 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetBuildItems()
         {
-            string id = GetIdentity().Id;
+            var id = GetIdentity().Id;
 
-            List<FrameworkSpecificGroup> results = new List<FrameworkSpecificGroup>();
+            var results = new List<FrameworkSpecificGroup>();
 
-            foreach (FrameworkSpecificGroup group in GetFileGroups("build"))
+            foreach (var group in GetFileGroups("build"))
             {
-                FrameworkSpecificGroup filteredGroup = group;
+                var filteredGroup = group;
 
                 if (group.Items.Any(e => !IsAllowedBuildFile(id, e)))
                 {
@@ -88,10 +85,10 @@ namespace NuGet.Packaging
         /// </summary>
         private static bool IsAllowedBuildFile(string packageId, string path)
         {
-            string file = Path.GetFileName(path);
+            var file = Path.GetFileName(path);
 
-            return StringComparer.OrdinalIgnoreCase.Equals(file, String.Format(CultureInfo.InvariantCulture, "{0}.targets", packageId)) 
-                || StringComparer.OrdinalIgnoreCase.Equals(file, String.Format(CultureInfo.InvariantCulture, "{0}.props", packageId));
+            return StringComparer.OrdinalIgnoreCase.Equals(file, String.Format(CultureInfo.InvariantCulture, "{0}.targets", packageId))
+                   || StringComparer.OrdinalIgnoreCase.Equals(file, String.Format(CultureInfo.InvariantCulture, "{0}.props", packageId));
         }
 
         public IEnumerable<FrameworkSpecificGroup> GetToolItems()
@@ -119,9 +116,9 @@ namespace NuGet.Packaging
         /// </summary>
         private static bool IsReferenceAssembly(string path)
         {
-            bool result = false;
+            var result = false;
 
-            string extension = Path.GetExtension(path);
+            var extension = Path.GetExtension(path);
 
             if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".dll"))
             {
@@ -144,8 +141,8 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetReferenceItems()
         {
-            IEnumerable<FrameworkSpecificGroup> referenceGroups = Nuspec.GetReferenceGroups();
-            List<FrameworkSpecificGroup> fileGroups = new List<FrameworkSpecificGroup>();
+            var referenceGroups = Nuspec.GetReferenceGroups();
+            var fileGroups = new List<FrameworkSpecificGroup>();
 
             // filter out non reference assemblies
             foreach (var group in GetLibItems())
@@ -154,14 +151,14 @@ namespace NuGet.Packaging
             }
 
             // results
-            List<FrameworkSpecificGroup> libItems = new List<FrameworkSpecificGroup>();
+            var libItems = new List<FrameworkSpecificGroup>();
 
             if (referenceGroups.Any())
             {
                 // the 'any' group from references, for pre2.5 nuspecs this will be the only group
                 var fallbackGroup = referenceGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
 
-                foreach (FrameworkSpecificGroup fileGroup in fileGroups)
+                foreach (var fileGroup in fileGroups)
                 {
                     // check for a matching reference group to use for filtering
                     var referenceGroup = referenceGroups.Where(g => g.TargetFramework.Equals(fileGroup.TargetFramework)).FirstOrDefault();
@@ -178,12 +175,12 @@ namespace NuGet.Packaging
                     }
                     else
                     {
-                        List<string> filteredItems = new List<string>();
+                        var filteredItems = new List<string>();
 
-                        foreach (string path in fileGroup.Items)
+                        foreach (var path in fileGroup.Items)
                         {
                             // reference groups only have the file name, not the path
-                            string file = Path.GetFileName(path);
+                            var file = Path.GetFileName(path);
 
                             if (referenceGroup.Items.Any(s => StringComparer.OrdinalIgnoreCase.Equals(s, file)))
                             {
@@ -206,12 +203,9 @@ namespace NuGet.Packaging
             return libItems;
         }
 
-        protected sealed override NuspecCoreReaderBase NuspecCore
+        protected override sealed NuspecCoreReaderBase NuspecCore
         {
-            get
-            {
-                return Nuspec;
-            }
+            get { return Nuspec; }
         }
 
         protected virtual NuspecReader Nuspec
@@ -229,15 +223,15 @@ namespace NuGet.Packaging
 
         protected IEnumerable<FrameworkSpecificGroup> GetFileGroups(string folder)
         {
-            Dictionary<NuGetFramework, List<string>> groups = new Dictionary<NuGetFramework, List<string>>(new NuGetFrameworkFullComparer());
+            var groups = new Dictionary<NuGetFramework, List<string>>(new NuGetFrameworkFullComparer());
 
-            bool isContentFolder = StringComparer.OrdinalIgnoreCase.Equals(folder, PackagingConstants.ContentFolder);
-            bool allowSubFolders = true;
+            var isContentFolder = StringComparer.OrdinalIgnoreCase.Equals(folder, PackagingConstants.ContentFolder);
+            var allowSubFolders = true;
 
-            foreach (string path in GetFiles(folder))
+            foreach (var path in GetFiles(folder))
             {
                 // Use the known framework or if the folder did not parse, use the Any framework and consider it a sub folder
-                NuGetFramework framework = GetFrameworkFromPath(path, allowSubFolders);
+                var framework = GetFrameworkFromPath(path, allowSubFolders);
 
                 List<string> items = null;
                 if (!groups.TryGetValue(framework, out items))
@@ -250,7 +244,7 @@ namespace NuGet.Packaging
             }
 
             // Sort the groups by framework, and the items by ordinal string compare to keep things deterministic
-            foreach (NuGetFramework framework in groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter()))
+            foreach (var framework in groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter()))
             {
                 yield return new FrameworkSpecificGroup(framework, groups[framework].OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
             }
@@ -286,14 +280,15 @@ namespace NuGet.Packaging
 
         private static NuGetFramework GetFrameworkFromPath(string path, bool allowSubFolders = false)
         {
-            NuGetFramework framework = NuGetFramework.AnyFramework;
+            var framework = NuGetFramework.AnyFramework;
 
-            string[] parts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             // ignore paths that are too short, and ones that have additional sub directories
-            if (parts.Length == 3 || (parts.Length > 3 && allowSubFolders))
+            if (parts.Length == 3
+                || (parts.Length > 3 && allowSubFolders))
             {
-                string folderName = parts[1];
+                var folderName = parts[1];
 
                 var parsedFramework = NuGetFramework.ParseFolder(folderName);
 

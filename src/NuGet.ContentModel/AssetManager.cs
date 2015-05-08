@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 
 namespace NuGet.ContentModel
@@ -12,8 +15,10 @@ namespace NuGet.ContentModel
             foreach (var path in Directory.EnumerateFiles(packageDirectory, "*.*", SearchOption.AllDirectories))
             {
                 var item = new Asset();
-                if (Path.GetExtension(path) == ".nuspec" ||
-                    Path.GetExtension(path) == ".nupkg" ||
+                if (Path.GetExtension(path) == ".nuspec"
+                    ||
+                    Path.GetExtension(path) == ".nupkg"
+                    ||
                     Path.GetExtension(path) == ".sha512")
                 {
                     continue;

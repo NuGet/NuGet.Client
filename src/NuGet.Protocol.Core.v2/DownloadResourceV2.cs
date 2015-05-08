@@ -1,21 +1,22 @@
-﻿using NuGet;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Globalization;
-using NuGet.Packaging.Core;
 using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v2
 {
     public class DownloadResourceV2 : DownloadResource
     {
         private readonly IPackageRepository V2Client;
+
         public DownloadResourceV2(IPackageRepository repo)
         {
             V2Client = repo;
@@ -42,11 +43,11 @@ namespace NuGet.Protocol.Core.v2
             }
             else if (V2Client is LocalPackageRepository)
             {
-                LocalPackageRepository lrepo = V2Client as LocalPackageRepository;
+                var lrepo = V2Client as LocalPackageRepository;
                 //Using Path resolver doesnt work. It doesnt consider the subfolders present inside the source directory. Hence using PackageLookupPaths.
                 //return new Uri(Path.Combine(V2Client.Source, lrepo.PathResolver.GetPackageFileName(identity.Id, semVer)));
                 //Using version.ToString() as version.Version gives the normalized string even if the nupkg has unnormalized version in its path.
-                List<string> paths = lrepo.GetPackageLookupPaths(identity.Id, new SemanticVersion(identity.Version.ToString())).ToList();
+                var paths = lrepo.GetPackageLookupPaths(identity.Id, new SemanticVersion(identity.Version.ToString())).ToList();
                 foreach (var path in paths)
                 {
                     if (File.Exists(Path.Combine(V2Client.Source, path)))
@@ -71,17 +72,17 @@ namespace NuGet.Protocol.Core.v2
             Stream result = null;
             IPackage package = null;
 
-            SemanticVersion version = SemanticVersion.Parse(identity.Version.ToString());
+            var version = SemanticVersion.Parse(identity.Version.ToString());
 
             // attempt a normal lookup first
             if (!V2Client.TryFindPackage(identity.Id, version, out package))
             {
                 // skip further look ups for online repos
-                DataServicePackageRepository v2Online = V2Client as DataServicePackageRepository;
+                var v2Online = V2Client as DataServicePackageRepository;
 
                 if (v2Online == null)
                 {
-                    IVersionComparer versionComparer = VersionComparer.VersionRelease;
+                    var versionComparer = VersionComparer.VersionRelease;
 
                     // otherwise search further to find the package - this is needed for v2 non-normalized versions
                     V2Client.FindPackagesById(identity.Id).Any(p => versionComparer.Equals(identity.Version, NuGetVersion.Parse(p.ToString())));

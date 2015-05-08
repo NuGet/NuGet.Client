@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NuGet.Versioning;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Versioning;
 
 namespace NuGet.RuntimeModel
 {
@@ -95,7 +97,7 @@ namespace NuGet.RuntimeModel
 
         private static RuntimeDescription ReadRuntimeDescription(KeyValuePair<string, JToken> json)
         {
-            string name = json.Key;
+            var name = json.Key;
             IList<string> inheritedRuntimes = new List<string>();
             IList<RuntimeDependencySet> additionalDependencies = new List<RuntimeDependencySet>();
             foreach (var property in EachProperty(json.Value))
@@ -132,20 +134,19 @@ namespace NuGet.RuntimeModel
         private static IEnumerable<KeyValuePair<string, JToken>> EachProperty(JToken json)
         {
             return (json as IEnumerable<KeyValuePair<string, JToken>>)
-                ?? Enumerable.Empty<KeyValuePair<string, JToken>>();
+                   ?? Enumerable.Empty<KeyValuePair<string, JToken>>();
         }
 
         private static IEnumerable<KeyValuePair<string, JToken>> EachProperty(JToken json, string defaultPropertyName)
         {
             return (json as IEnumerable<KeyValuePair<string, JToken>>)
-                ?? new[] { new KeyValuePair<string, JToken>(defaultPropertyName, json) };
+                   ?? new[] { new KeyValuePair<string, JToken>(defaultPropertyName, json) };
         }
 
         private static IEnumerable<JToken> EachArray(JToken json)
         {
             return (IEnumerable<JToken>)(json as JArray)
-                ?? new[] { json };
+                   ?? new[] { json };
         }
-
     }
 }

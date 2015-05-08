@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,12 +18,13 @@ using NuGet.Versioning;
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
     /// <summary>
-    /// A <see cref="FindPackageByIdResource"/> for a Http-based file system where files are laid out in the format
+    /// A <see cref="FindPackageByIdResource" /> for a Http-based file system where files are laid out in the
+    /// format
     /// /root/
-    ///     PackageA/
-    ///         Version0/
-    ///             PackageA.nuspec
-    ///             PackageA.Version0.nupkg
+    /// PackageA/
+    /// Version0/
+    /// PackageA.nuspec
+    /// PackageA.Version0.nupkg
     /// and are accessible via HTTP Gets.
     /// </summary>
     public class HttpFileSystemBasedFindPackageByIdResource : FindPackageByIdResource
@@ -59,10 +60,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public override ILogger Logger
         {
-            get
-            {
-                return base.Logger;
-            }
+            get { return base.Logger; }
             set
             {
                 base.Logger = value;
@@ -72,10 +70,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public override bool NoCache
         {
-            get
-            {
-                return base.NoCache;
-            }
+            get { return base.NoCache; }
             set
             {
                 base.NoCache = value;
@@ -148,7 +143,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsync(string id, CancellationToken cancellationToken)
         {
-            for (int retry = 0; retry != 3; ++retry)
+            for (var retry = 0; retry != 3; ++retry)
             {
                 if (_ignored)
                 {
@@ -211,7 +206,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     }
 
                     var message = Strings.FormatLog_FailedToRetrievePackage(baseUri).Red().Bold() +
-                        Environment.NewLine + ex.Message;
+                                  Environment.NewLine + ex.Message;
                     Logger.LogError(message);
                     throw;
                 }
@@ -225,14 +220,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersionString = parsedVersion.ToNormalizedString();
             return new PackageInfo
-            {
-                // If 'Id' element exist, use its value as accurate package Id
-                // Otherwise, use the value of 'title' if it exist
-                // Use the given Id as final fallback if all elements above don't exist
-                Id = id,
-                Version = parsedVersion,
-                ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
-            };
+                {
+                    // If 'Id' element exist, use its value as accurate package Id
+                    // Otherwise, use the value of 'title' if it exist
+                    // Use the given Id as final fallback if all elements above don't exist
+                    Id = id,
+                    Version = parsedVersion,
+                    ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
+                };
         }
 
         private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
@@ -255,16 +250,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
             return await ConcurrencyUtilities.ExecuteWithFileLocked(result.TempFileName, _ =>
-            {
-                return Task.FromResult(
-                    new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete));
-            });
+                {
+                    return Task.FromResult(
+                        new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
+                            FileShare.ReadWrite | FileShare.Delete));
+                });
         }
 
         private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(PackageInfo package, CancellationToken cancellationToken)
         {
-            for (int retry = 0; retry != 3; ++retry)
+            for (var retry = 0; retry != 3; ++retry)
             {
                 try
                 {
@@ -275,16 +270,15 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         cancellationToken))
                     {
                         return new NupkgEntry
-                        {
-                            TempFileName = data.CacheFileName
-                        };
+                            {
+                                TempFileName = data.CacheFileName
+                            };
                     }
                 }
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
                     Logger.LogInformation(message.Yellow().Bold());
-
                 }
                 catch (Exception ex) when (retry == 2)
                 {

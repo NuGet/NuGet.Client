@@ -1,10 +1,8 @@
-﻿using NuGet.Packaging.Core;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -28,7 +26,10 @@ namespace NuGet.Packaging
         /// <summary>
         /// Returns all items found in the content folder.
         /// </summary>
-        /// <remarks>Some legacy behavior has been dropped here due to the mix of content folders and target framework folders here.</remarks>
+        /// <remarks>
+        /// Some legacy behavior has been dropped here due to the mix of content folders and target framework
+        /// folders here.
+        /// </remarks>
         IEnumerable<FrameworkSpecificGroup> GetContentItems();
 
         /// <summary>

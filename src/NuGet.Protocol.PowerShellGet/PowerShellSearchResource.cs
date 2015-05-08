@@ -1,12 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.PowerShellGet
 {
@@ -26,13 +29,13 @@ namespace NuGet.Protocol.PowerShellGet
         /// Retrieve search results
         /// </summary>
         public virtual async Task<IEnumerable<PowerShellSearchPackage>> Search(
-           string searchTerm,
-           SearchFilter filters,
-           int skip,
-           int take,
-           CancellationToken cancellationToken)
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            CancellationToken cancellationToken)
         {
-            IEnumerable<JObject> jsonResults = await _rawSearch.Search(searchTerm, filters, skip, take, cancellationToken);
+            var jsonResults = await _rawSearch.Search(searchTerm, filters, skip, take, cancellationToken);
 
             return jsonResults.Select(e => Parse(e)).ToArray();
         }
@@ -42,24 +45,24 @@ namespace NuGet.Protocol.PowerShellGet
         /// </summary>
         private static PowerShellSearchPackage Parse(JObject json)
         {
-            ServerPackageMetadata basePackage = PackageMetadataParser.ParseMetadata(json);
+            var basePackage = PackageMetadataParser.ParseMetadata(json);
 
-            PSPackageMetadata psMetadata = new PSPackageMetadata(basePackage.Id, basePackage.Version)
-            {
-                ModuleVersion = GetVersionOrNull(json, "ModuleVersion"),
-                CLRVersion = GetVersionOrNull(json, "CLRVersion"),
-                CmdletsToExport = GetStringArray(json, "CmdletsToExport"),
-                CompanyName = GetStringOrNull(json, "CompanyName"),
-                DotNetFrameworkVersion = GetVersionOrNull(json, "DotNetFrameworkVersion"),
-                DscResourcesToExport = GetStringArray(json, "DscResourcesToExport"),
-                FunctionsToExport = GetStringArray(json, "FunctionsToExport"),
-                Guid = GetGuidOrEmpty(json, "GUID"),
-                LicenseUrl = GetUriOrNull(json, "licenseUrl"),
-                PowerShellHostVersion = GetVersionOrNull(json, "PowerShellHostVersion"),
-                ProcessorArchitecture = GetStringOrNull(json, "ProcessorArchitecture"),
-                ProjectUrl = GetUriOrNull(json, "projectUrl"),
-                ReleaseNotes = GetStringOrNull(json, "releaseNotes")
-            };
+            var psMetadata = new PSPackageMetadata(basePackage.Id, basePackage.Version)
+                {
+                    ModuleVersion = GetVersionOrNull(json, "ModuleVersion"),
+                    CLRVersion = GetVersionOrNull(json, "CLRVersion"),
+                    CmdletsToExport = GetStringArray(json, "CmdletsToExport"),
+                    CompanyName = GetStringOrNull(json, "CompanyName"),
+                    DotNetFrameworkVersion = GetVersionOrNull(json, "DotNetFrameworkVersion"),
+                    DscResourcesToExport = GetStringArray(json, "DscResourcesToExport"),
+                    FunctionsToExport = GetStringArray(json, "FunctionsToExport"),
+                    Guid = GetGuidOrEmpty(json, "GUID"),
+                    LicenseUrl = GetUriOrNull(json, "licenseUrl"),
+                    PowerShellHostVersion = GetVersionOrNull(json, "PowerShellHostVersion"),
+                    ProcessorArchitecture = GetStringOrNull(json, "ProcessorArchitecture"),
+                    ProjectUrl = GetUriOrNull(json, "projectUrl"),
+                    ReleaseNotes = GetStringOrNull(json, "releaseNotes")
+                };
 
             return new PowerShellSearchPackage(basePackage, psMetadata);
         }
@@ -81,7 +84,7 @@ namespace NuGet.Protocol.PowerShellGet
         {
             Uri uri = null;
 
-            string s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(json, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {
@@ -93,9 +96,9 @@ namespace NuGet.Protocol.PowerShellGet
 
         private static Guid GetGuidOrEmpty(JObject json, string propertyName)
         {
-            Guid guid = Guid.Empty;
+            var guid = Guid.Empty;
 
-            string s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(json, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {
@@ -112,7 +115,7 @@ namespace NuGet.Protocol.PowerShellGet
 
             if (json.TryGetValue(propertyName, out token))
             {
-                JArray array = token as JArray;
+                var array = token as JArray;
 
                 if (array != null)
                 {
@@ -127,7 +130,7 @@ namespace NuGet.Protocol.PowerShellGet
         {
             NuGetVersion version = null;
 
-            string s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(json, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {

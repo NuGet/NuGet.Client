@@ -1,6 +1,9 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.DependencyInfo
 {
@@ -13,17 +16,17 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
         public static void TrimByAllowedVersions(RegistrationInfo registrationInfo, IDictionary<string, VersionRange> allowedVersions)
         {
-            foreach (KeyValuePair<string, VersionRange> allowedVersion in allowedVersions)
+            foreach (var allowedVersion in allowedVersions)
             {
                 Execute(registrationInfo, allowedVersion);
             }
         }
 
-        static void Execute(RegistrationInfo registrationInfo, KeyValuePair<string, VersionRange> allowedVersion)
+        private static void Execute(RegistrationInfo registrationInfo, KeyValuePair<string, VersionRange> allowedVersion)
         {
             Pass1(registrationInfo, allowedVersion);
 
-            bool updated = true;
+            var updated = true;
             while (updated)
             {
                 updated = false;
@@ -34,27 +37,27 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //  Pass1
 
-        static void Pass1(PackageInfo packageInfo, string id, KeyValuePair<string, VersionRange> allowedVersion)
+        private static void Pass1(PackageInfo packageInfo, string id, KeyValuePair<string, VersionRange> allowedVersion)
         {
-            foreach (DependencyInfo dependencyInfo in packageInfo.Dependencies)
+            foreach (var dependencyInfo in packageInfo.Dependencies)
             {
                 Pass1(dependencyInfo.RegistrationInfo, allowedVersion);
             }
         }
 
-        static void Pass1(RegistrationInfo registrationInfo, KeyValuePair<string, VersionRange> allowedVersion)
+        private static void Pass1(RegistrationInfo registrationInfo, KeyValuePair<string, VersionRange> allowedVersion)
         {
             if (registrationInfo.Id == allowedVersion.Key)
             {
                 IList<PackageInfo> packagesToRemove = registrationInfo.Packages.Where(p => !allowedVersion.Value.Satisfies(p.Version)).ToList();
 
-                foreach (PackageInfo packageToRemove in packagesToRemove)
+                foreach (var packageToRemove in packagesToRemove)
                 {
                     registrationInfo.Packages.Remove(packageToRemove);
                 }
             }
 
-            foreach (PackageInfo child in registrationInfo.Packages)
+            foreach (var child in registrationInfo.Packages)
             {
                 Pass1(child, registrationInfo.Id, allowedVersion);
             }
@@ -63,19 +66,19 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //  Pass2
 
-        static void Pass2(PackageInfo packageInfo, string id, ref bool updated)
+        private static void Pass2(PackageInfo packageInfo, string id, ref bool updated)
         {
-            foreach (DependencyInfo dependencyInfo in packageInfo.Dependencies)
+            foreach (var dependencyInfo in packageInfo.Dependencies)
             {
                 Pass2(dependencyInfo.RegistrationInfo, ref updated);
             }
         }
 
-        static void Pass2(RegistrationInfo registrationInfo, ref bool updated)
+        private static void Pass2(RegistrationInfo registrationInfo, ref bool updated)
         {
             IList<PackageInfo> packagesToRemove = new List<PackageInfo>();
 
-            foreach (PackageInfo package in registrationInfo.Packages)
+            foreach (var package in registrationInfo.Packages)
             {
                 if (!CheckDependenciesExists(package))
                 {
@@ -83,21 +86,21 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 }
             }
 
-            foreach (PackageInfo packageToRemove in packagesToRemove)
+            foreach (var packageToRemove in packagesToRemove)
             {
                 registrationInfo.Packages.Remove(packageToRemove);
                 updated = true;
             }
 
-            foreach (PackageInfo child in registrationInfo.Packages)
+            foreach (var child in registrationInfo.Packages)
             {
                 Pass2(child, registrationInfo.Id, ref updated);
             }
         }
 
-        static bool CheckDependenciesExists(PackageInfo packageInfo)
+        private static bool CheckDependenciesExists(PackageInfo packageInfo)
         {
-            foreach (DependencyInfo dependencyInfo in packageInfo.Dependencies)
+            foreach (var dependencyInfo in packageInfo.Dependencies)
             {
                 if (dependencyInfo.RegistrationInfo.Packages.Count == 0)
                 {

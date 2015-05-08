@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.ContentModel.Infrastructure
@@ -43,9 +46,9 @@ namespace NuGet.ContentModel.Infrastructure
         public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
             var item = new ContentItem
-            {
-                Path = path
-            };
+                {
+                    Path = path
+                };
             var startIndex = 0;
             foreach (var segment in _segments)
             {
@@ -58,11 +61,11 @@ namespace NuGet.ContentModel.Infrastructure
                 return null;
             }
 
-            if(startIndex == path.Length)
+            if (startIndex == path.Length)
             {
                 // Successful match!
                 // Apply defaults from the pattern
-                foreach(var pair in _defaults)
+                foreach (var pair in _defaults)
                 {
                     item.Properties[pair.Key] = pair.Value;
                 }
@@ -128,7 +131,8 @@ namespace NuGet.ContentModel.Infrastructure
                 for (var scanIndex = startIndex; scanIndex != item.Path.Length;)
                 {
                     var delimiterIndex = (item.Path + _delimiter).IndexOf(_delimiter, scanIndex + 1);
-                    if (delimiterIndex == item.Path.Length && _delimiter != '\0')
+                    if (delimiterIndex == item.Path.Length
+                        && _delimiter != '\0')
                     {
                         break;
                     }

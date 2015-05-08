@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
     public class NullFileCache : FileCacheBase
     {
-
         public NullFileCache()
             : base()
         {
-
         }
 
         public override void Remove(Uri uri)
@@ -28,7 +25,7 @@ namespace NuGet.Protocol.Core.v3.Data
             return false;
         }
 
-        public override void Add(Uri uri, TimeSpan lifeSpan, System.IO.Stream stream)
+        public override void Add(Uri uri, TimeSpan lifeSpan, Stream stream)
         {
             // do nothing
         }

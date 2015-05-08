@@ -1,11 +1,8 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Versioning.Test
 {
@@ -20,12 +17,12 @@ namespace NuGet.Versioning.Test
         public void NormalizedFormatTest(string versionString, string expected)
         {
             // arrange
-            VersionFormatter formatter = new VersionFormatter();
-            NuGetVersion version = NuGetVersion.Parse(versionString);
+            var formatter = new VersionFormatter();
+            var version = NuGetVersion.Parse(versionString);
 
             // act
-            string s = String.Format(formatter, "{0:N}", version);
-            string s2 = version.ToString("N", formatter);
+            var s = String.Format(formatter, "{0:N}", version);
+            var s2 = version.ToString("N", formatter);
 
             // assert
             Assert.Equal(expected, s);
@@ -39,12 +36,12 @@ namespace NuGet.Versioning.Test
         public void FormatMetadataTest(string versionString, string expected)
         {
             // arrange
-            VersionFormatter formatter = new VersionFormatter();
-            NuGetVersion version = NuGetVersion.Parse(versionString);
+            var formatter = new VersionFormatter();
+            var version = NuGetVersion.Parse(versionString);
 
             // act
-            string s = String.Format(formatter, "{0:M}", version);
-            string s2 = version.ToString("M", formatter);
+            var s = String.Format(formatter, "{0:M}", version);
+            var s2 = version.ToString("M", formatter);
 
             // assert
             Assert.Equal(expected, s);
@@ -59,12 +56,12 @@ namespace NuGet.Versioning.Test
         public void FormatReleaseTest(string versionString, string expected)
         {
             // arrange
-            VersionFormatter formatter = new VersionFormatter();
-            NuGetVersion version = NuGetVersion.Parse(versionString);
+            var formatter = new VersionFormatter();
+            var version = NuGetVersion.Parse(versionString);
 
             // act
-            string s = String.Format(formatter, "{0:R}", version);
-            string s2 = version.ToString("R", formatter);
+            var s = String.Format(formatter, "{0:R}", version);
+            var s2 = version.ToString("R", formatter);
 
             // assert
             Assert.Equal(expected, s);
@@ -79,12 +76,12 @@ namespace NuGet.Versioning.Test
         public void FormatVersionTest(string versionString, string expected)
         {
             // arrange
-            VersionFormatter formatter = new VersionFormatter();
-            NuGetVersion version = NuGetVersion.Parse(versionString);
+            var formatter = new VersionFormatter();
+            var version = NuGetVersion.Parse(versionString);
 
             // act
-            string s = String.Format(formatter, "{0:V}", version);
-            string s2 = version.ToString("V", formatter);
+            var s = String.Format(formatter, "{0:V}", version);
+            var s2 = version.ToString("V", formatter);
 
             // assert
             Assert.Equal(expected, s);
@@ -99,12 +96,12 @@ namespace NuGet.Versioning.Test
         public void FormatComplexTest(string versionString, string expected)
         {
             // arrange
-            VersionFormatter formatter = new VersionFormatter();
-            NuGetVersion version = NuGetVersion.Parse(versionString);
+            var formatter = new VersionFormatter();
+            var version = NuGetVersion.Parse(versionString);
 
             // act
-            string s = String.Format(formatter, "{0:x}.{0:x}.{0:y}.{0:z}.{0:r}({0:M})*{0:R}: {0:V}", version, version, version, version, version, version, version, version);
-            string s2 = version.ToString("x.x.y.z.r(M)*R: V", formatter);
+            var s = String.Format(formatter, "{0:x}.{0:x}.{0:y}.{0:z}.{0:r}({0:M})*{0:R}: {0:V}", version, version, version, version, version, version, version, version);
+            var s2 = version.ToString("x.x.y.z.r(M)*R: V", formatter);
 
             // assert
             Assert.Equal(expected, s);

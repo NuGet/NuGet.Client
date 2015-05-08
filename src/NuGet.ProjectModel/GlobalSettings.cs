@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -14,7 +14,11 @@ namespace NuGet.ProjectModel
         public IList<string> ProjectPaths { get; private set; }
         public string PackagesPath { get; private set; }
         public string FilePath { get; private set; }
-        public string RootPath {  get { return Path.GetDirectoryName(FilePath); } }
+
+        public string RootPath
+        {
+            get { return Path.GetDirectoryName(FilePath); }
+        }
 
         public static bool TryGetGlobalSettings(string path, out GlobalSettings globalSettings)
         {
@@ -38,7 +42,7 @@ namespace NuGet.ProjectModel
 
             globalSettings = new GlobalSettings();
 
-            string json = File.ReadAllText(globalJsonPath);
+            var json = File.ReadAllText(globalJsonPath);
             var settings = JObject.Parse(json);
             var projects = settings["projects"];
             var dependencies = settings["dependencies"] as JObject;
@@ -52,7 +56,7 @@ namespace NuGet.ProjectModel
 
         public static bool HasGlobalFile(string path)
         {
-            string projectPath = Path.Combine(path, GlobalFileName);
+            var projectPath = Path.Combine(path, GlobalFileName);
 
             return File.Exists(projectPath);
         }

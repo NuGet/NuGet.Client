@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -27,18 +26,12 @@ namespace NuGet.ProjectModel
 
         public IEnumerable<string> SearchPaths
         {
-            get
-            {
-                return _searchPaths;
-            }
+            get { return _searchPaths; }
         }
 
         public GlobalSettings GlobalSettings
         {
-            get
-            {
-                return _globalSettings;
-            }
+            get { return _globalSettings; }
         }
 
         public bool TryResolvePackageSpec(string name, out PackageSpec project)
@@ -81,16 +74,16 @@ namespace NuGet.ProjectModel
                 {
                     // Create the path to the project.json file.
                     var projectFilePath = Path.Combine(projectDirectory.FullName, PackageSpec.PackageSpecFileName);
-                    
+
                     // We INTENTIONALLY do not do an exists check here because it requires disk I/O
                     // Instead, we'll do an exists check when we try to resolve 
 
                     // The name of the folder is the project
                     _projects[projectDirectory.Name] = new PackageSpecInformation
-                    {
-                        Name = projectDirectory.Name,
-                        FullPath = projectFilePath
-                    };
+                        {
+                            Name = projectDirectory.Name,
+                            FullPath = projectFilePath
+                        };
                 }
             }
         }
@@ -130,20 +123,20 @@ namespace NuGet.ProjectModel
                 get
                 {
                     return LazyInitializer.EnsureInitialized(ref _packageSpec, ref _initialized, ref _lockObj, () =>
-                    {
-                        PackageSpec project = null;
-
-                        if (File.Exists(FullPath))
                         {
-                            using (var stream = File.OpenRead(FullPath))
-                            {
-                                // TODO: does this need more error handling?
-                                project = JsonPackageSpecReader.GetPackageSpec(stream, Name, FullPath);
-                            }
-                        }
+                            PackageSpec project = null;
 
-                        return project;
-                    });
+                            if (File.Exists(FullPath))
+                            {
+                                using (var stream = File.OpenRead(FullPath))
+                                {
+                                    // TODO: does this need more error handling?
+                                    project = JsonPackageSpecReader.GetPackageSpec(stream, Name, FullPath);
+                                }
+                            }
+
+                            return project;
+                        });
                 }
             }
         }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,7 +14,11 @@ namespace NuGet.RuntimeModel
         public string Id { get; }
         public IReadOnlyDictionary<string, RuntimePackageDependency> Dependencies { get; }
 
-        public RuntimeDependencySet(string id) : this(id, Enumerable.Empty<RuntimePackageDependency>()) { }
+        public RuntimeDependencySet(string id)
+            : this(id, Enumerable.Empty<RuntimePackageDependency>())
+        {
+        }
+
         public RuntimeDependencySet(string id, IEnumerable<RuntimePackageDependency> dependencies)
         {
             Id = id;
@@ -21,8 +28,8 @@ namespace NuGet.RuntimeModel
         public bool Equals(RuntimeDependencySet other)
         {
             return other != null &&
-                string.Equals(other.Id, Id, StringComparison.Ordinal) &&
-                Dependencies.OrderBy(p => p.Key).SequenceEqual(other.Dependencies.OrderBy(p => p.Key));
+                   string.Equals(other.Id, Id, StringComparison.Ordinal) &&
+                   Dependencies.OrderBy(p => p.Key).SequenceEqual(other.Dependencies.OrderBy(p => p.Key));
         }
 
         public override bool Equals(object obj)

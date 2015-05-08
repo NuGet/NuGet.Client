@@ -1,7 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace NuGet.DependencyResolver
@@ -29,17 +30,18 @@ namespace NuGet.DependencyResolver
                 var tracker = new Tracker<TItem>();
 
                 root.ForEach(true, (node, state) =>
-                {
-                    if (!state || node.Disposition == Disposition.Rejected)
                     {
-                        // Mark all nodes as rejected if they aren't already marked
-                        node.Disposition = Disposition.Rejected;
-                        return false;
-                    }
+                        if (!state
+                            || node.Disposition == Disposition.Rejected)
+                        {
+                            // Mark all nodes as rejected if they aren't already marked
+                            node.Disposition = Disposition.Rejected;
+                            return false;
+                        }
 
-                    tracker.Track(node.Item);
-                    return true;
-                });
+                        tracker.Track(node.Item);
+                        return true;
+                    });
 
                 // Inform tracker of ambiguity beneath nodes that are not resolved yet
                 // between:
@@ -54,45 +56,47 @@ namespace NuGet.DependencyResolver
                 //  x1 is no longer seen, and z1 is not ambiguous
                 //  z1 is accepted
                 root.ForEach(WalkState.Walking, (node, state) =>
-                {
-                    if (node.Disposition == Disposition.Rejected)
                     {
-                        return WalkState.Rejected;
-                    }
+                        if (node.Disposition == Disposition.Rejected)
+                        {
+                            return WalkState.Rejected;
+                        }
 
-                    if (state == WalkState.Walking && tracker.IsDisputed(node.Item))
-                    {
-                        return WalkState.Ambiguous;
-                    }
+                        if (state == WalkState.Walking
+                            && tracker.IsDisputed(node.Item))
+                        {
+                            return WalkState.Ambiguous;
+                        }
 
-                    if (state == WalkState.Ambiguous)
-                    {
-                        tracker.MarkAmbiguous(node.Item);
-                    }
+                        if (state == WalkState.Ambiguous)
+                        {
+                            tracker.MarkAmbiguous(node.Item);
+                        }
 
-                    return state;
-                });
+                        return state;
+                    });
 
                 // Now mark unambiguous nodes as accepted or rejected
                 root.ForEach(true, (node, state) =>
-                {
-                    if (!state || node.Disposition == Disposition.Rejected)
                     {
-                        return false;
-                    }
+                        if (!state
+                            || node.Disposition == Disposition.Rejected)
+                        {
+                            return false;
+                        }
 
-                    if (tracker.IsAmbiguous(node.Item))
-                    {
-                        return false;
-                    }
+                        if (tracker.IsAmbiguous(node.Item))
+                        {
+                            return false;
+                        }
 
-                    if (node.Disposition == Disposition.Acceptable)
-                    {
-                        node.Disposition = tracker.IsBestVersion(node.Item) ? Disposition.Accepted : Disposition.Rejected;
-                    }
+                        if (node.Disposition == Disposition.Acceptable)
+                        {
+                            node.Disposition = tracker.IsBestVersion(node.Item) ? Disposition.Accepted : Disposition.Rejected;
+                        }
 
-                    return node.Disposition == Disposition.Accepted;
-                });
+                        return node.Disposition == Disposition.Accepted;
+                    });
 
                 incomplete = false;
 
@@ -123,17 +127,17 @@ namespace NuGet.DependencyResolver
         {
             // breadth-first walk of Node tree, without TState parameter
             ForEach(root, 0, (node, _) =>
-            {
-                visitor(node);
-                return 0;
-            });
+                {
+                    visitor(node);
+                    return 0;
+                });
         }
 
         // Box Drawing Unicode characters:
         // http://www.unicode.org/charts/PDF/U2500.pdf
-        const char LIGHT_HORIZONTAL = '\u2500';
-        const char LIGHT_UP_AND_RIGHT = '\u2514';
-        const char LIGHT_VERTICAL_AND_RIGHT = '\u251C';
+        private const char LIGHT_HORIZONTAL = '\u2500';
+        private const char LIGHT_UP_AND_RIGHT = '\u2514';
+        private const char LIGHT_VERTICAL_AND_RIGHT = '\u251C';
 
         public static void Dump<TItem>(this GraphNode<TItem> root, Action<string> write)
         {
@@ -144,7 +148,7 @@ namespace NuGet.DependencyResolver
         private static void DumpChildren<TItem>(GraphNode<TItem> root, Action<string> write, int level)
         {
             var children = root.InnerNodes;
-            for(int i = 0; i < children.Count; i++)
+            for (var i = 0; i < children.Count; i++)
             {
                 DumpNode(children[i], write, level + 1);
                 DumpChildren(children[i], write, level + 1);
@@ -153,8 +157,8 @@ namespace NuGet.DependencyResolver
 
         private static void DumpNode<TItem>(GraphNode<TItem> node, Action<string> write, int level)
         {
-            StringBuilder output = new StringBuilder();
-            if(level > 0)
+            var output = new StringBuilder();
+            if (level > 0)
             {
                 output.Append(LIGHT_VERTICAL_AND_RIGHT);
                 output.Append(new string(LIGHT_HORIZONTAL, level));
@@ -163,7 +167,8 @@ namespace NuGet.DependencyResolver
 
             output.Append($"{node.Key} ({node.Disposition})");
 
-            if(node.Item != null && node.Item.Key != null)
+            if (node.Item != null
+                && node.Item.Key != null)
             {
                 output.Append($" => {node.Item.Key.ToString()}");
             }

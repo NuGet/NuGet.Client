@@ -1,10 +1,11 @@
-﻿using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using NuGet.Protocol.Core.v3.Data;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
@@ -13,7 +14,6 @@ namespace NuGet.Protocol
         public V3TotalsStatsResourceProvider()
             : base(typeof(V3TotalsStatsResource), "V3TotalsStatsResourceProvider")
         {
-
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken cancellationToken)
@@ -33,7 +33,6 @@ namespace NuGet.Protocol
 
                 //var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(cancellationToken);
                 //DataClient client = new DataClient(messageHandlerResource.MessageHandler);
-
 
                 //// construct a new resource
                 //totalsStatsResource = new V3TotalsStatsResource(client, resourceUri);

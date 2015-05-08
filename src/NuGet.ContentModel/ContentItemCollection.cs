@@ -1,6 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.ContentModel.Infrastructure;
 
 namespace NuGet.ContentModel
 {
@@ -24,10 +28,10 @@ namespace NuGet.ContentModel
             if (asset.Path.StartsWith("lib/contract"))
             {
                 yield return new Asset
-                {
-                    Path = "ref/any" + asset.Path.Substring("lib/contract".Length),
-                    Link = asset.Link ?? asset.Path
-                };
+                    {
+                        Path = "ref/any" + asset.Path.Substring("lib/contract".Length),
+                        Link = asset.Link ?? asset.Path
+                    };
             }
         }
 
@@ -39,7 +43,7 @@ namespace NuGet.ContentModel
         public IEnumerable<ContentItemGroup> FindItemGroups(PatternSet definition)
         {
             var groupPatterns = definition.GroupPatterns
-                .Select(pattern => new Infrastructure.PatternExpression(pattern))
+                .Select(pattern => new PatternExpression(pattern))
                 .ToList();
 
             var groupAssets = new List<Tuple<ContentItem, Asset>>();
@@ -47,7 +51,7 @@ namespace NuGet.ContentModel
             {
                 foreach (var groupPattern in groupPatterns)
                 {
-                    ContentItem item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                    var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
                     if (item != null)
                     {
                         groupAssets.Add(Tuple.Create(item, asset));
@@ -155,7 +159,6 @@ namespace NuGet.ContentModel
                                 }
                             }
                         }
-
                     }
                     if (bestGroup != null)
                     {
@@ -173,14 +176,14 @@ namespace NuGet.ContentModel
         private IEnumerable<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
         {
             var pathPatterns = definition.PathPatterns
-                .Select(pattern => new Infrastructure.PatternExpression(pattern))
+                .Select(pattern => new PatternExpression(pattern))
                 .ToList();
 
             foreach (var asset in assets)
             {
                 foreach (var pathPattern in pathPatterns)
                 {
-                    ContentItem contentItem = pathPattern.Match(asset.Path, definition.PropertyDefinitions);
+                    var contentItem = pathPattern.Match(asset.Path, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
                         yield return contentItem;
@@ -229,7 +232,6 @@ namespace NuGet.ContentModel
 
                 return true;
             }
-
         }
     }
 }

@@ -1,10 +1,7 @@
-﻿using NuGet.Protocol;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using NuGet.Protocol.Core.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Protocol.Core.v2
 {
@@ -28,10 +25,7 @@ namespace NuGet.Protocol.Core.v2
 
         public IPackageRepository V2Client
         {
-            get
-            {
-                return _v2Client;
-            }
+            get { return _v2Client; }
         }
     }
 }

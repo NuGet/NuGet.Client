@@ -1,14 +1,17 @@
-﻿using NuGet.LibraryModel;
-using NuGet.ProjectModel;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.LibraryModel;
+using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
     public class RestoreResult
     {
         public bool Success { get; }
-        
+
         /// <summary>
         /// Gets the resolved dependency graphs produced by the restore operation
         /// </summary>
@@ -25,7 +28,8 @@ namespace NuGet.Commands
 
         public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs)
             : this(success, restoreGraphs, lockfile: null)
-        { }
+        {
+        }
 
         public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs, LockFile lockfile)
         {

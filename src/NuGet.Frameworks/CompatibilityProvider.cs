@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,12 +42,9 @@ namespace NuGet.Frameworks
             }
 
             // check the cache for a solution
-            int cacheKey = GetCacheKey(target, candidate);
+            var cacheKey = GetCacheKey(target, candidate);
 
-            bool? result = _cache.GetOrAdd(cacheKey, (Func<int, bool>)((key) =>
-            {
-                return IsCompatibleCore(target, candidate) == true;
-            }));
+            bool? result = _cache.GetOrAdd(cacheKey, (Func<int, bool>)((key) => { return IsCompatibleCore(target, candidate) == true; }));
 
             return result == true;
         }
@@ -63,7 +63,8 @@ namespace NuGet.Frameworks
             }
 
             // special cased frameworks
-            if (!target.IsSpecificFramework || !candidate.IsSpecificFramework)
+            if (!target.IsSpecificFramework
+                || !candidate.IsSpecificFramework)
             {
                 result = IsSpecialFrameworkCompatible(target, candidate);
             }
@@ -71,7 +72,8 @@ namespace NuGet.Frameworks
             if (result == null)
             {
                 // PCL compat logic
-                if (target.IsPCL || candidate.IsPCL)
+                if (target.IsPCL
+                    || candidate.IsPCL)
                 {
                     result = IsPCLCompatible(target, candidate);
                 }
@@ -88,7 +90,8 @@ namespace NuGet.Frameworks
         private bool? IsSpecialFrameworkCompatible(NuGetFramework target, NuGetFramework candidate)
         {
             // TODO: Revist these
-            if (target.IsAny || candidate.IsAny)
+            if (target.IsAny
+                || candidate.IsAny)
             {
                 return true;
             }
@@ -114,7 +117,8 @@ namespace NuGet.Frameworks
         private bool? IsPCLCompatible(NuGetFramework target, NuGetFramework candidate)
         {
             // TODO: PCLs can only depend on other PCLs?
-            if (target.IsPCL && !candidate.IsPCL)
+            if (target.IsPCL
+                && !candidate.IsPCL)
             {
                 return false;
             }
@@ -155,10 +159,10 @@ namespace NuGet.Frameworks
         private bool? IsCompatibleWithTarget(NuGetFramework target, NuGetFramework candidate)
         {
             // find all possible substitutions
-            List<NuGetFramework> targetSet = new List<NuGetFramework>() { target };
+            var targetSet = new List<NuGetFramework>() { target };
             targetSet.AddRange(_expander.Expand(target));
 
-            List<NuGetFramework> candidateSet = new List<NuGetFramework>() { candidate };
+            var candidateSet = new List<NuGetFramework>() { candidate };
             candidateSet.AddRange(GetEquivalentFrameworksClosure(candidate));
 
             // check for compat
@@ -208,7 +212,7 @@ namespace NuGet.Frameworks
 
         private static int GetCacheKey(NuGetFramework target, NuGetFramework candidate)
         {
-            HashCombiner combiner = new HashCombiner();
+            var combiner = new HashCombiner();
 
             // create the cache key from the hash codes of both frameworks
             // the order is important here since compatibility is usually one way
@@ -220,22 +224,20 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// Find all equivalent frameworks, and their equivalent frameworks.
-        /// Example: 
-        /// 
+        /// Example:
         /// Mappings:
         /// A <-> B
         /// B <-> C
         /// C <-> D
-        /// 
         /// For A we need to find B, C, and D so we must retrieve equivalent frameworks for A, B, and C
         /// also as we discover them.
         /// </summary>
         private IEnumerable<NuGetFramework> GetEquivalentFrameworksClosure(NuGetFramework framework)
         {
             // add the current framework to the seen list to avoid returning it later
-            HashSet<NuGetFramework> seen = new HashSet<NuGetFramework>() { framework };
+            var seen = new HashSet<NuGetFramework>() { framework };
 
-            Stack<NuGetFramework> toExpand = new Stack<NuGetFramework>();
+            var toExpand = new Stack<NuGetFramework>();
             toExpand.Push(framework);
 
             while (toExpand.Count > 0)

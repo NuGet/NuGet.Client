@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using NuGet.Client;
 using NuGet.DependencyResolver;
@@ -17,17 +20,17 @@ namespace NuGet.Commands
         public string RuntimeIdentifier { get; }
 
         /// <summary>
-        /// Gets the <see cref="NuGetFramework"/> used during the restore operation on this graph
+        /// Gets the <see cref="NuGetFramework" /> used during the restore operation on this graph
         /// </summary>
         public NuGetFramework Framework { get; }
 
         /// <summary>
-        /// Gets the <see cref="ManagedCodeConventions"/> used to resolve assets from packages in this graph
+        /// Gets the <see cref="ManagedCodeConventions" /> used to resolve assets from packages in this graph
         /// </summary>
         public ManagedCodeConventions Conventions { get; }
 
         /// <summary>
-        /// Gets the <see cref="RuntimeGraph"/> that defines runtimes and their relationships for this graph
+        /// Gets the <see cref="RuntimeGraph" /> that defines runtimes and their relationships for this graph
         /// </summary>
         public RuntimeGraph RuntimeGraph { get; }
 
@@ -75,38 +78,42 @@ namespace NuGet.Commands
             var unresolved = new HashSet<LibraryRange>();
 
             graph.ForEach(node =>
-            {
-                if (node == null || node.Key == null || node.Disposition == Disposition.Rejected)
                 {
-                    return;
-                }
-
-                if (node.Item == null || node.Item.Data.Match == null)
-                {
-                    if (node.Key.TypeConstraint != LibraryTypes.Reference &&
-                        node.Key.VersionRange != null)
+                    if (node == null
+                        || node.Key == null
+                        || node.Disposition == Disposition.Rejected)
                     {
-                        unresolved.Add(node.Key);
+                        return;
                     }
 
-                    return;
-                }
+                    if (node.Item == null
+                        || node.Item.Data.Match == null)
+                    {
+                        if (node.Key.TypeConstraint != LibraryTypes.Reference
+                            &&
+                            node.Key.VersionRange != null)
+                        {
+                            unresolved.Add(node.Key);
+                        }
 
-                if (!string.Equals(node.Item.Data.Match.Library.Name, node.Key.Name, StringComparison.Ordinal))
-                {
-                    // Fix casing of the library name to be installed
-                    node.Item.Data.Match.Library.Name = node.Key.Name;
-                }
+                        return;
+                    }
 
-                // If the package came from a remote library provider, it needs to be installed locally
-                var isRemote = context.RemoteLibraryProviders.Contains(node.Item.Data.Match.Provider);
-                if (isRemote)
-                {
-                    install.Add(node.Item.Data.Match);
-                }
+                    if (!string.Equals(node.Item.Data.Match.Library.Name, node.Key.Name, StringComparison.Ordinal))
+                    {
+                        // Fix casing of the library name to be installed
+                        node.Item.Data.Match.Library.Name = node.Key.Name;
+                    }
 
-                flattened.Add(node.Item);
-            });
+                    // If the package came from a remote library provider, it needs to be installed locally
+                    var isRemote = context.RemoteLibraryProviders.Contains(node.Item.Data.Match.Provider);
+                    if (isRemote)
+                    {
+                        install.Add(node.Item.Data.Match);
+                    }
+
+                    flattened.Add(node.Item);
+                });
 
             return new RestoreTargetGraph(
                 inConflict,

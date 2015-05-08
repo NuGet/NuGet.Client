@@ -1,5 +1,7 @@
-﻿using System;
-using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -13,9 +15,9 @@ namespace NuGet.Versioning.Test
 
         public static void Throws<TException>(Action act, Action<TException> condition) where TException : Exception
         {
-            Exception ex = Record.Exception(act);
+            var ex = Record.Exception(act);
             Assert.NotNull(ex);
-            TException tex = Assert.IsAssignableFrom<TException>(ex);
+            var tex = Assert.IsAssignableFrom<TException>(ex);
             condition(tex);
         }
 
@@ -73,13 +75,13 @@ namespace NuGet.Versioning.Test
         public static void ThrowsArgumentException<TArgException>(Action act, string paramName, string message) where TArgException : ArgumentException
         {
             Throws<TArgException>(act, ex =>
-            {
-                Assert.Equal(paramName, ex.ParamName);
-                var lines = ex.Message.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                Assert.Equal(2, lines.Length);
-                Assert.Equal(message, lines[0]);
-                Assert.True(lines[1].EndsWith(paramName));
-            });
+                {
+                    Assert.Equal(paramName, ex.ParamName);
+                    var lines = ex.Message.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                    Assert.Equal(2, lines.Length);
+                    Assert.Equal(message, lines[0]);
+                    Assert.True(lines[1].EndsWith(paramName));
+                });
         }
     }
 }

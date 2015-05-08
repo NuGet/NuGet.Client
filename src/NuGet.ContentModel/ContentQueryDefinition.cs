@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,7 +14,7 @@ namespace NuGet.ContentModel
     {
         public PatternSet(IReadOnlyDictionary<string, ContentPropertyDefinition> properties, IEnumerable<PatternDefinition> groupPatterns, IEnumerable<PatternDefinition> pathPatterns)
         {
-            GroupPatterns = groupPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<PatternDefinition>(); 
+            GroupPatterns = groupPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<PatternDefinition>();
             PathPatterns = pathPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<PatternDefinition>();
             PropertyDefinitions = properties;
         }
@@ -34,19 +36,24 @@ namespace NuGet.ContentModel
     }
 
     /// <summary>
-    /// A pattern that can be used to match file paths given a provided criteria. 
+    /// A pattern that can be used to match file paths given a provided criteria.
     /// </summary>
     /// <remarks>
-    /// The pattern is defined as a sequence of literal path strings that must match exactly and property references,
+    /// The pattern is defined as a sequence of literal path strings that must match exactly and property
+    /// references,
     /// wrapped in {} characters, which are tested for compatibility with the consumer-provided criteria.
-    /// <seealso cref="ContentPropertyDefinition"/>
+    /// <seealso cref="ContentPropertyDefinition" />
     /// </remarks>
     public class PatternDefinition
     {
         public string Pattern { get; }
         public IReadOnlyDictionary<string, object> Defaults { get; }
 
-        public PatternDefinition(string pattern) : this(pattern, Enumerable.Empty<KeyValuePair<string, object>>()) { }
+        public PatternDefinition(string pattern)
+            : this(pattern, Enumerable.Empty<KeyValuePair<string, object>>())
+        {
+        }
+
         public PatternDefinition(string pattern, IEnumerable<KeyValuePair<string, object>> defaults)
         {
             Pattern = pattern;

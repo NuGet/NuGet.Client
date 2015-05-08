@@ -1,6 +1,8 @@
-﻿using NuGet.Versioning;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.RuntimeModel.Test
@@ -40,20 +42,22 @@ namespace NuGet.RuntimeModel.Test
 }";
 
             Assert.Equal(
-                new RuntimeGraph(new []
-                {
-                    new RuntimeDescription("any"),
-                    new RuntimeDescription("win8-x86", new[]
-                        {
-                            "win8",
-                            "win7-x86"
-                        }, new[] {
-                            new RuntimeDependencySet("Some.Package", new [] {
-                                new RuntimePackageDependency("Some.Package.For.win8-x86", new VersionRange(new NuGetVersion("4.2")))
-                            })
-                        }),
-                    new RuntimeDescription("win8", new[] { "win7" })
-                }), ParseRuntimeJsonString(content));
+                new RuntimeGraph(new[]
+                    {
+                        new RuntimeDescription("any"),
+                        new RuntimeDescription("win8-x86", new[]
+                            {
+                                "win8",
+                                "win7-x86"
+                            }, new[]
+                                {
+                                    new RuntimeDependencySet("Some.Package", new[]
+                                        {
+                                            new RuntimePackageDependency("Some.Package.For.win8-x86", new VersionRange(new NuGetVersion("4.2")))
+                                        })
+                                }),
+                        new RuntimeDescription("win8", new[] { "win7" })
+                    }), ParseRuntimeJsonString(content));
         }
 
         private RuntimeGraph ParseRuntimeJsonString(string content)

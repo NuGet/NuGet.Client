@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace NuGet.Packaging.Build
@@ -25,7 +25,6 @@ namespace NuGet.Packaging.Build
             return null;
         }
 
-
         public void SetMetadataValue(string name, object value)
         {
             _metadata[name] = KeepRawValue(value) ? value : value?.ToString();
@@ -47,7 +46,7 @@ namespace NuGet.Packaging.Build
             foreach (var item in _metadata)
             {
                 sb.AppendFormat("{0} = {1}", item.Key, item.Value)
-                  .AppendLine();
+                    .AppendLine();
             }
             return sb.ToString();
         }

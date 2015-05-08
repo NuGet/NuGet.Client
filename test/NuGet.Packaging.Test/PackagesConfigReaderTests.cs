@@ -1,10 +1,7 @@
-﻿using NuGet.Packaging;
-using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Xunit;
 
@@ -12,7 +9,6 @@ namespace NuGet.Packaging.Test
 {
     public class PackagesConfigReaderTests
     {
-
         [Fact]
         public void PackagesConfigReader_Basic()
         {
@@ -34,7 +30,6 @@ namespace NuGet.Packaging.Test
             Assert.False(packageEntries[0].RequireReinstallation);
             Assert.Null(packageEntries[0].AllowedVersions);
         }
-
 
         [Fact]
         public void PackagesConfigReader_Basic2()
@@ -74,38 +69,29 @@ namespace NuGet.Packaging.Test
             Assert.Equal("TestPackage", packageEntries[1].PackageIdentity.Id);
         }
 
-        private static XDocument PackagesConf1 
+        private static XDocument PackagesConf1
         {
-            get
-            {
-                return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            get { return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
                                 <packages>
                                     <package id=""Newtonsoft.Json"" version=""6.0.4"" targetFramework=""net45"" />
-                                </packages>");
-            }
+                                </packages>"); }
         }
 
         private static XDocument PackagesConf2
         {
-            get
-            {
-                return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            get { return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
                                 <packages>
                                     <package id=""Newtonsoft.Json"" version=""6.0.4"" targetFramework=""net45"" allowedVersions=""6.0.0"" developmentDependency=""true"" requireReinstallation=""true"" userInstalled=""true"" />
-                                </packages>");
-            }
+                                </packages>"); }
         }
 
         private static XDocument PackagesConf3
         {
-            get
-            {
-                return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            get { return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
                                 <packages minClientVersion=""3.0.0"">
                                     <package id=""Newtonsoft.Json"" version=""6.0.4"" targetFramework=""net45"" />
                                     <package id=""TestPackage"" version=""1.0.0"" targetFramework=""net4"" />
-                                </packages>");
-            }
+                                </packages>"); }
         }
 
         [Fact]
@@ -126,14 +112,11 @@ namespace NuGet.Packaging.Test
 
         private static XDocument BadPackagesConf1
         {
-            get
-            {
-                return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            get { return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
                                 <packages minClientVersion=""abc"">
                                     <package version=""6.0.4"" targetFramework=""net45"" />
                                     <package id=""TestPackage"" version=""1.0.0"" targetFramework=""net4"" />
-                                </packages>");
-            }
+                                </packages>"); }
         }
     }
 }

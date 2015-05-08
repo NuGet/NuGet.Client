@@ -1,14 +1,13 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using NuGet.Resolver;
+using System.Threading;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using NuGet.Packaging;
-using System.Threading;
+using Xunit;
 
 namespace NuGet.Resolver.Test
 {
@@ -29,13 +28,14 @@ namespace NuGet.Resolver.Test
             // OldB is the lowest but it has a missing dependency
             var packageOldB = CreatePackage("B", "1.0", new Dictionary<string, string>() { { "E", "0.0" } });
 
-            var sourceRepository = new List<ResolverPackage>() {
-                packageA,
-                packageB,
-                packageC,
-                packageD,
-                packageOldB
-            };
+            var sourceRepository = new List<ResolverPackage>()
+                {
+                    packageA,
+                    packageB,
+                    packageC,
+                    packageD,
+                    packageOldB
+                };
 
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
             var packages = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
@@ -63,13 +63,14 @@ namespace NuGet.Resolver.Test
             // OldB is the lowest but it has a missing dependency
             var packageOldB = CreatePackage("B", "1.0", new Dictionary<string, string>() { { "E", null } });
 
-            var sourceRepository = new List<ResolverPackage>() {
-                packageA,
-                packageB,
-                packageC,
-                packageD,
-                packageOldB
-            };
+            var sourceRepository = new List<ResolverPackage>()
+                {
+                    packageA,
+                    packageB,
+                    packageC,
+                    packageD,
+                    packageOldB
+                };
 
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
             var packages = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
@@ -87,12 +88,13 @@ namespace NuGet.Resolver.Test
         {
             var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", null }, { "C", null } });
 
-            var sourceRepository = new List<ResolverPackage>() { 
-                target, 
-                CreatePackage("B", "1.0", new Dictionary<string, string>() { { "D", null } }),
-                CreatePackage("C", "1.0", new Dictionary<string, string>() { { "D", null } }),
-                CreatePackage("D", "1.0"),
-            };
+            var sourceRepository = new List<ResolverPackage>()
+                {
+                    target,
+                    CreatePackage("B", "1.0", new Dictionary<string, string>() { { "D", null } }),
+                    CreatePackage("C", "1.0", new Dictionary<string, string>() { { "D", null } }),
+                    CreatePackage("D", "1.0"),
+                };
 
             var resolver = new PackageResolver(DependencyBehavior.Ignore);
             var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
@@ -116,12 +118,13 @@ namespace NuGet.Resolver.Test
             //    D 
             var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", null }, { "C", null } });
 
-            var sourceRepository = new List<ResolverPackage>() { 
-                target, 
-                CreatePackage("B", "1.0", new Dictionary<string, string>() { { "D", null } }),
-                CreatePackage("C", "1.0", new Dictionary<string, string>() { { "D", null } }),
-                CreatePackage("D", "1.0"),
-            };
+            var sourceRepository = new List<ResolverPackage>()
+                {
+                    target,
+                    CreatePackage("B", "1.0", new Dictionary<string, string>() { { "D", null } }),
+                    CreatePackage("C", "1.0", new Dictionary<string, string>() { { "D", null } }),
+                    CreatePackage("D", "1.0"),
+                };
 
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
             var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
@@ -203,18 +206,20 @@ namespace NuGet.Resolver.Test
             var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", "1.0" }, { "C", "1.0" } });
 
             // Expect: Install A 1.0 (no change to B or C)
-            var sourceRepository = new List<ResolverPackage>() {
-                target, 
-                CreatePackage("B", "1.0"),
-                CreatePackage("B", "1.1"),
-                CreatePackage("C", "1.0"),
-                CreatePackage("C", "2.0"),
-            };
+            var sourceRepository = new List<ResolverPackage>()
+                {
+                    target,
+                    CreatePackage("B", "1.0"),
+                    CreatePackage("B", "1.1"),
+                    CreatePackage("C", "1.0"),
+                    CreatePackage("C", "2.0"),
+                };
 
-            var install = new List<PackageReference>() {
-                new PackageReference(new PackageIdentity("B", NuGetVersion.Parse("1.0")), null),
-                new PackageReference(new PackageIdentity("C", NuGetVersion.Parse("1.0")), null),
-            };
+            var install = new List<PackageReference>()
+                {
+                    new PackageReference(new PackageIdentity("B", NuGetVersion.Parse("1.0")), null),
+                    new PackageReference(new PackageIdentity("C", NuGetVersion.Parse("1.0")), null),
+                };
 
             List<PackageIdentity> targets = new List<PackageIdentity>();
             targets.Add(target);
@@ -239,18 +244,18 @@ namespace NuGet.Resolver.Test
             // Installed: A, B
             // A 1.0 -> B [1.0]
             var project = new List<ResolverPackage>()
-            {
-                CreatePackage("A", "1.0", new Dictionary<string, string> { { "B", "1.0" } } ),
-                CreatePackage("B", "1.0"),
-            };
+                {
+                    CreatePackage("A", "1.0", new Dictionary<string, string> { { "B", "1.0" } }),
+                    CreatePackage("B", "1.0"),
+                };
 
             var target = CreatePackage("A", "2.0", new Dictionary<string, string> { { "B", "1.0" } });
 
             var sourceRepository = new List<ResolverPackage>()
-            {
-                target,
-                CreatePackage("B", "1.0"),
-            };
+                {
+                    target,
+                    CreatePackage("B", "1.0"),
+                };
 
             // Act
             var resolver = new PackageResolver(DependencyBehavior.HighestPatch);
@@ -260,7 +265,6 @@ namespace NuGet.Resolver.Test
             // Assert
             Assert.Equal(2, solution.Length);
             Assert.Equal("2.0.0", packages["A"].Version.ToNormalizedString());
-
         }
 
         [Fact]
@@ -274,18 +278,19 @@ namespace NuGet.Resolver.Test
 
             var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", "1.0" } });
 
-            var sourceRepository = new List<ResolverPackage>() {
-                target,
-                CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.0", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.0.1"),
-                CreatePackage("D", "2.0"),
-                CreatePackage("C", "1.1.3", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("C", "1.1.1", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("C", "1.5.1", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("B", "1.0.9", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.1", new Dictionary<string, string>() { { "C", "1.1" } })
-            };
+            var sourceRepository = new List<ResolverPackage>()
+                {
+                    target,
+                    CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.0", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.0.1"),
+                    CreatePackage("D", "2.0"),
+                    CreatePackage("C", "1.1.3", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("C", "1.1.1", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("C", "1.5.1", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("B", "1.0.9", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.1", new Dictionary<string, string>() { { "C", "1.1" } })
+                };
 
             // Act
             var resolver = new PackageResolver(DependencyBehavior.HighestMinor);
@@ -300,7 +305,6 @@ namespace NuGet.Resolver.Test
             Assert.Equal("1.0.0", packages["A"].Version.ToNormalizedString());
         }
 
-
         // Tests that when DependencyVersion is Lowest, the dependency with the lowest major minor and highest patch version
         // is picked.
         [Fact]
@@ -314,17 +318,18 @@ namespace NuGet.Resolver.Test
 
             var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", "1.0" } });
 
-            var sourceRepository = new List<ResolverPackage>() {
-                target,
-                CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.0.1"),
-                CreatePackage("D", "2.0"),
-                CreatePackage("C", "1.1.3", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("C", "1.1.1", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("C", "1.5.1", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("B", "1.0.9", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.1", new Dictionary<string, string>() { { "C", "1.1" } })
-            };
+            var sourceRepository = new List<ResolverPackage>()
+                {
+                    target,
+                    CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.0.1"),
+                    CreatePackage("D", "2.0"),
+                    CreatePackage("C", "1.1.3", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("C", "1.1.1", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("C", "1.5.1", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("B", "1.0.9", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.1", new Dictionary<string, string>() { { "C", "1.1" } })
+                };
 
             // Act
             var resolver = new PackageResolver(DependencyBehavior.Lowest);
@@ -348,18 +353,18 @@ namespace NuGet.Resolver.Test
             // B 1.0 -> C 1.1
             // C 1.1 -> D 1.0
             var sourceRepository = new List<ResolverPackage>()
-            {
-                target,
-                CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.0", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.0.1"),
-                CreatePackage("D", "2.0"),
-                CreatePackage("C", "1.1.3", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("C", "1.1.1", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("C", "1.5.1", new Dictionary<string, string>() { { "D", "1.0" } }),
-                CreatePackage("B", "1.0.9", new Dictionary<string, string>() { { "C", "1.1" } }),
-                CreatePackage("B", "1.1", new Dictionary<string, string>() { { "C", "1.1" } })
-            };
+                {
+                    target,
+                    CreatePackage("B", "2.0", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.0", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.0.1"),
+                    CreatePackage("D", "2.0"),
+                    CreatePackage("C", "1.1.3", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("C", "1.1.1", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("C", "1.5.1", new Dictionary<string, string>() { { "D", "1.0" } }),
+                    CreatePackage("B", "1.0.9", new Dictionary<string, string>() { { "C", "1.1" } }),
+                    CreatePackage("B", "1.1", new Dictionary<string, string>() { { "C", "1.1" } })
+                };
 
             // Act
             var resolver = new PackageResolver(DependencyBehavior.HighestPatch);
@@ -376,9 +381,11 @@ namespace NuGet.Resolver.Test
         [Fact]
         public void Resolver_Basic()
         {
-            ResolverPackage target = new ResolverPackage("a", new NuGetVersion(1, 0, 0), 
-                new NuGet.Packaging.Core.PackageDependency[] { 
-                    new NuGet.Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(3, 0, 0), true)) });
+            ResolverPackage target = new ResolverPackage("a", new NuGetVersion(1, 0, 0),
+                new NuGet.Packaging.Core.PackageDependency[]
+                    {
+                        new NuGet.Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(3, 0, 0), true))
+                    });
 
             var dep1 = new ResolverPackage("b", new NuGetVersion(2, 0, 0));
             var dep2 = new ResolverPackage("b", new NuGetVersion(2, 5, 0));

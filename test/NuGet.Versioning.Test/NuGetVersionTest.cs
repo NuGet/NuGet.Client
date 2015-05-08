@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Xunit;
@@ -63,10 +66,10 @@ namespace NuGet.Versioning.Test
         public void StringConstructorParsesValuesCorrectly(string version, string versionValueString, string specialValue)
         {
             // Arrange
-            Version versionValue = new Version(versionValueString);
+            var versionValue = new Version(versionValueString);
 
             // Act
-            NuGetVersion semanticVersion = NuGetVersion.Parse(version);
+            var semanticVersion = NuGetVersion.Parse(version);
 
             // Assert
             Assert.Equal(versionValue, semanticVersion.Version);
@@ -106,7 +109,7 @@ namespace NuGet.Versioning.Test
         public void ParseReadsLegacyStyleVersionNumbers(string versionString, string expectedString)
         {
             // Arrange
-            NuGetVersion expected = new NuGetVersion(new Version(expectedString), "");
+            var expected = new NuGetVersion(new Version(expectedString), "");
 
             // Act
             var actual = NuGetVersion.Parse(versionString);
@@ -175,7 +178,6 @@ namespace NuGet.Versioning.Test
             Assert.True(itemB >= itemA);
             Assert.False(itemA.Equals(itemB));
             Assert.False(itemA.Equals(objectB));
-
         }
 
         [Theory]
@@ -241,7 +243,7 @@ namespace NuGet.Versioning.Test
         public void ToStringReturnsOriginalValue(string version)
         {
             // Act
-            NuGetVersion semVer = NuGetVersion.Parse(version);
+            var semVer = NuGetVersion.Parse(version);
 
             // Assert
             Assert.Equal(version, semVer.ToString());
@@ -258,7 +260,7 @@ namespace NuGet.Versioning.Test
             var version = new Version(versionString);
 
             // Act
-            NuGetVersion semVer = new NuGetVersion(version, specialVersion);
+            var semVer = new NuGetVersion(version, specialVersion);
 
             // Assert
             Assert.Equal(expected, semVer.ToString());
@@ -275,13 +277,11 @@ namespace NuGet.Versioning.Test
             var version = new Version(versionString);
 
             // Act
-            NuGetVersion semVer = new NuGetVersion(version, specialVersion);
+            var semVer = new NuGetVersion(version, specialVersion);
 
             // Assert
             Assert.Equal(expected, String.Format("{0}", semVer));
         }
-
-
 
         [Fact]
         public void TryParseStrictParsesStrictVersion()
@@ -291,13 +291,12 @@ namespace NuGet.Versioning.Test
 
             // Act
             NuGetVersion version;
-            bool result = NuGetVersion.TryParseStrict(versionString, out version);
+            var result = NuGetVersion.TryParseStrict(versionString, out version);
 
             // Assert
             Assert.True(result);
             Assert.Equal(new Version("1.3.2.0"), version.Version);
             Assert.Equal("CTP-2-Refresh-Alpha", version.Release);
         }
-
     }
 }

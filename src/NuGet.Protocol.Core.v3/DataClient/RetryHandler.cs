@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,16 +20,18 @@ namespace NuGet.Protocol.Core.v3.Data
         // TODO: Revist this logic
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            int tries = 0;
+            var tries = 0;
 
             HttpResponseMessage response = null;
 
-            bool success = false;
+            var success = false;
 
-            while (tries < _retries && !success)
+            while (tries < _retries
+                   && !success)
             {
                 // wait progressively longer
-                if (!success && tries > 0)
+                if (!success
+                    && tries > 0)
                 {
                     await Task.Delay(500 * tries, cancellationToken);
                 }

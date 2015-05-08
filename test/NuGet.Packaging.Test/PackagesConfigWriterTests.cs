@@ -1,30 +1,27 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
     public class PackagesConfigWriterTests
     {
-
         [Fact]
         public void PackagesConfigWriter_Basic()
         {
-            MemoryStream stream = new MemoryStream();
+            var stream = new MemoryStream();
 
             using (PackagesConfigWriter writer = new PackagesConfigWriter(stream))
             {
                 writer.WriteMinClientVersion(NuGetVersion.Parse("3.0.1"));
-                
+
                 writer.WritePackageEntry("packageB", NuGetVersion.Parse("2.0.0"), NuGetFramework.Parse("portable-net45+win8"));
 
                 writer.WritePackageEntry("packageA", NuGetVersion.Parse("1.0.1"), NuGetFramework.Parse("net45"));
@@ -54,7 +51,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackagesConfigWriter_Duplicate()
         {
-            MemoryStream stream = new MemoryStream();
+            var stream = new MemoryStream();
 
             using (PackagesConfigWriter writer = new PackagesConfigWriter(stream))
             {

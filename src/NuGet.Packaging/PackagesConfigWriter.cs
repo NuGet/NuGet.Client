@@ -1,14 +1,15 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
@@ -31,7 +32,6 @@ namespace NuGet.Packaging
         public PackagesConfigWriter(Stream stream)
             : this(DefaultFrameworkNameProvider.Instance, stream)
         {
-
         }
 
         public PackagesConfigWriter(IFrameworkNameProvider frameworkMappings, Stream stream)
@@ -117,12 +117,12 @@ namespace NuGet.Packaging
 
         private void WriteFile()
         {
-            XDocument xml = new XDocument();
+            var xml = new XDocument();
             var packages = new XElement(XName.Get("packages"));
 
             if (_minClientVersion != null)
             {
-                XAttribute minClientVersionAttribute = new XAttribute(XName.Get("minClientVersion"), _minClientVersion.ToNormalizedString());
+                var minClientVersionAttribute = new XAttribute(XName.Get("minClientVersion"), _minClientVersion.ToNormalizedString());
                 packages.Add(minClientVersionAttribute);
             }
 
@@ -141,7 +141,7 @@ namespace NuGet.Packaging
                 // special frameworks such as any and unsupported will be ignored here
                 if (entry.TargetFramework.IsSpecificFramework)
                 {
-                    string frameworkShortName = entry.TargetFramework.GetShortFolderName(_frameworkMappings);
+                    var frameworkShortName = entry.TargetFramework.GetShortFolderName(_frameworkMappings);
 
                     if (!String.IsNullOrEmpty(frameworkShortName))
                     {

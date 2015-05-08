@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +21,7 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         private readonly string _source;
 
         public LocalV2FindPackageByIdResource(PackageSource packageSource,
-                                              ConcurrentDictionary<string, List<CachedPackageInfo>> packageInfoCache)
+            ConcurrentDictionary<string, List<CachedPackageInfo>> packageInfoCache)
         {
             _source = packageSource.Source;
             _packageInfoCache = packageInfoCache;
@@ -73,7 +76,8 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             foreach (var nupkgInfo in GetNupkgFiles(_source, id))
             {
                 var cachedPackageInfo = cachedPackageInfos?.FirstOrDefault(package => string.Equals(package.Path, nupkgInfo.FullName, StringComparison.OrdinalIgnoreCase));
-                if (cachedPackageInfo != null && cachedPackageInfo.LastWriteTimeUtc == nupkgInfo.LastWriteTimeUtc)
+                if (cachedPackageInfo != null
+                    && cachedPackageInfo.LastWriteTimeUtc == nupkgInfo.LastWriteTimeUtc)
                 {
                     result.Add(cachedPackageInfo);
                 }
@@ -118,6 +122,6 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             {
                 yield return path;
             }
-        } 
+        }
     }
 }

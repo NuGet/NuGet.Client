@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -48,7 +51,6 @@ namespace NuGet.Protocol.Core.v3
                 throw new ArgumentNullException(nameof(source));
             }
 
-
             _client = client;
             _regResource = regResource;
             _source = source;
@@ -60,7 +62,10 @@ namespace NuGet.Protocol.Core.v3
         /// <param name="package">package id and version</param>
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
-        /// <returns>Returns dependency info for the given package if it exists. If the package is not found null is returned.</returns>
+        /// <returns>
+        /// Returns dependency info for the given package if it exists. If the package is not found null is
+        /// returned.
+        /// </returns>
         public override async Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
         {
             try
@@ -68,7 +73,7 @@ namespace NuGet.Protocol.Core.v3
                 PackageDependencyInfo result = null;
 
                 // Construct the registration index url
-                Uri uri = _regResource.GetUri(package.Id);
+                var uri = _regResource.GetUri(package.Id);
 
                 // Retrieve the registration blob
                 var singleVersion = new VersionRange(minVersion: package.Version, includeMinVersion: true, maxVersion: package.Version, includeMaxVersion: true);
@@ -86,7 +91,7 @@ namespace NuGet.Protocol.Core.v3
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, _source.Source);
+                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, _source.Source);
 
                 throw new NuGetProtocolException(error, ex);
             }
@@ -104,10 +109,10 @@ namespace NuGet.Protocol.Core.v3
         {
             try
             {
-                List<PackageDependencyInfo> results = new List<PackageDependencyInfo>();
+                var results = new List<PackageDependencyInfo>();
 
                 // Construct the registration index url
-                Uri uri = _regResource.GetUri(packageId);
+                var uri = _regResource.GetUri(packageId);
 
                 // Retrieve the registration blob
                 var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, VersionRange.All, projectFramework, _cache);
@@ -127,7 +132,7 @@ namespace NuGet.Protocol.Core.v3
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source.Source);
+                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source.Source);
 
                 throw new NuGetProtocolException(error, ex);
             }
@@ -146,7 +151,7 @@ namespace NuGet.Protocol.Core.v3
             try
             {
                 // Construct the registration index url
-                Uri uri = _regResource.GetUri(packageId);
+                var uri = _regResource.GetUri(packageId);
 
                 // Retrieve the registration blob
                 return ResolverMetadataClient.GetDependencies(_client, uri, VersionRange.All, _cache);
@@ -154,7 +159,7 @@ namespace NuGet.Protocol.Core.v3
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source.Source);
+                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source.Source);
 
                 throw new NuGetProtocolException(error, ex);
             }

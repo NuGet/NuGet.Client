@@ -1,11 +1,10 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using NuGet.Frameworks;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -261,7 +260,7 @@ namespace NuGet.Packaging.Test
 
         private static NuspecReader GetReader(string nuspec)
         {
-            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(nuspec)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(nuspec)))
             {
                 return new NuspecReader(stream);
             }

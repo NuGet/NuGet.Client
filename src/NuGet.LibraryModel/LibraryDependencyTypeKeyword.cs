@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,49 +39,49 @@ namespace NuGet.LibraryModel
             Default = Declare(
                 "default",
                 flagsToAdd: new[]
-                {
-                    LibraryDependencyTypeFlag.MainReference,
-                    LibraryDependencyTypeFlag.MainSource,
-                    LibraryDependencyTypeFlag.MainExport,
-                    LibraryDependencyTypeFlag.RuntimeComponent,
-                    LibraryDependencyTypeFlag.BecomesNupkgDependency,
-                },
+                    {
+                        LibraryDependencyTypeFlag.MainReference,
+                        LibraryDependencyTypeFlag.MainSource,
+                        LibraryDependencyTypeFlag.MainExport,
+                        LibraryDependencyTypeFlag.RuntimeComponent,
+                        LibraryDependencyTypeFlag.BecomesNupkgDependency,
+                    },
                 flagsToRemove: emptyFlags);
 
             Private = Declare(
                 "private",
                 flagsToAdd: new[]
-                {
-                    LibraryDependencyTypeFlag.MainReference,
-                    LibraryDependencyTypeFlag.MainSource,
-                    LibraryDependencyTypeFlag.RuntimeComponent,
-                    LibraryDependencyTypeFlag.BecomesNupkgDependency,
-                },
+                    {
+                        LibraryDependencyTypeFlag.MainReference,
+                        LibraryDependencyTypeFlag.MainSource,
+                        LibraryDependencyTypeFlag.RuntimeComponent,
+                        LibraryDependencyTypeFlag.BecomesNupkgDependency,
+                    },
                 flagsToRemove: emptyFlags);
 
             Dev = Declare(
                 "dev",
                 flagsToAdd: new[]
-                {
-                    LibraryDependencyTypeFlag.DevComponent,
-                },
+                    {
+                        LibraryDependencyTypeFlag.DevComponent,
+                    },
                 flagsToRemove: emptyFlags);
 
             Build = Declare(
                 "build",
                 flagsToAdd: new[]
-                {
-                    LibraryDependencyTypeFlag.MainSource,
-                    LibraryDependencyTypeFlag.PreprocessComponent,
-                },
+                    {
+                        LibraryDependencyTypeFlag.MainSource,
+                        LibraryDependencyTypeFlag.PreprocessComponent,
+                    },
                 flagsToRemove: emptyFlags);
 
             Preprocess = Declare(
                 "preprocess",
                 flagsToAdd: new[]
-                {
-                    LibraryDependencyTypeFlag.PreprocessReference,
-                },
+                    {
+                        LibraryDependencyTypeFlag.PreprocessReference,
+                    },
                 flagsToRemove: emptyFlags);
 
             DeclareOnOff("MainReference", LibraryDependencyTypeFlag.MainReference, emptyFlags);
@@ -98,8 +98,8 @@ namespace NuGet.LibraryModel
         private static void DeclareOnOff(string name, LibraryDependencyTypeFlag flag, IEnumerable<LibraryDependencyTypeFlag> emptyFlags)
         {
             Declare(name,
-                    flagsToAdd: new[] { flag },
-                    flagsToRemove: emptyFlags);
+                flagsToAdd: new[] { flag },
+                flagsToRemove: emptyFlags);
 
             Declare(
                 name + "-off",

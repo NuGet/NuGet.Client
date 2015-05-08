@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -41,10 +40,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public NuGetFramework Min
         {
-            get
-            {
-                return _minFramework;
-            }
+            get { return _minFramework; }
         }
 
         /// <summary>
@@ -52,10 +48,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public NuGetFramework Max
         {
-            get
-            {
-                return _maxFramework;
-            }
+            get { return _maxFramework; }
         }
 
         /// <summary>
@@ -63,10 +56,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public string FrameworkIdentifier
         {
-            get
-            {
-                return Min.Framework;
-            }
+            get { return Min.Framework; }
         }
 
         /// <summary>
@@ -75,19 +65,18 @@ namespace NuGet.Frameworks
         public bool Satisfies(NuGetFramework framework)
         {
             return SameExceptForVersion(_minFramework, framework)
-                && _minFramework.Version <= framework.Version
-                && _maxFramework.Version >= framework.Version;
+                   && _minFramework.Version <= framework.Version
+                   && _maxFramework.Version >= framework.Version;
 
             // TODO: platform version check?
         }
-
 
         // TODO: should the range be 2D and work on both framework and platform versions?
         private static bool SameExceptForVersion(NuGetFramework x, NuGetFramework y)
         {
             return StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
-                && (StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile))
-                && (StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform));
+                   && (StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile))
+                   && (StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform));
         }
 
         public override string ToString()
@@ -103,7 +92,7 @@ namespace NuGet.Frameworks
 
         public override bool Equals(object obj)
         {
-            FrameworkRange other = obj as FrameworkRange;
+            var other = obj as FrameworkRange;
 
             if (other != null)
             {

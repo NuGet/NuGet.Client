@@ -1,4 +1,7 @@
-﻿#if !DNXCORE50
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#if !DNXCORE50
 using System;
 using System.Collections.Concurrent;
 using System.Net;
@@ -13,18 +16,16 @@ namespace NuGet.Configuration
 
         public static CredentialStore Instance
         {
-            get
-            {
-                return _instance;
-            }
+            get { return _instance; }
         }
 
         public ICredentials GetCredentials(Uri uri)
         {
-            Uri rootUri = GetRootUri(uri);
+            var rootUri = GetRootUri(uri);
 
             ICredentials credentials;
-            if (_credentialCache.TryGetValue(uri, out credentials) ||
+            if (_credentialCache.TryGetValue(uri, out credentials)
+                ||
                 _credentialCache.TryGetValue(rootUri, out credentials))
             {
                 return credentials;
@@ -35,7 +36,7 @@ namespace NuGet.Configuration
 
         public void Add(Uri uri, ICredentials credentials)
         {
-            Uri rootUri = GetRootUri(uri);
+            var rootUri = GetRootUri(uri);
             _credentialCache.TryAdd(uri, credentials);
             _credentialCache.AddOrUpdate(rootUri, credentials, (u, c) => credentials);
         }
@@ -46,4 +47,5 @@ namespace NuGet.Configuration
         }
     }
 }
+
 #endif

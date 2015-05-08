@@ -1,10 +1,9 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
 {
@@ -38,10 +37,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public string Id
         {
-            get
-            {
-                return _id;
-            }
+            get { return _id; }
         }
 
         /// <summary>
@@ -50,10 +46,7 @@ namespace NuGet.Packaging.Core
         /// <remarks>can be null</remarks>
         public NuGetVersion Version
         {
-            get
-            {
-                return _version;
-            }
+            get { return _version; }
         }
 
         /// <summary>
@@ -61,10 +54,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public bool HasVersion
         {
-            get
-            {
-                return _version != null;
-            }
+            get { return _version != null; }
         }
 
         /// <summary>
@@ -82,7 +72,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public virtual bool Equals(PackageIdentity other, VersionComparison versionComparison)
         {
-            PackageIdentityComparer comparer = new PackageIdentityComparer(versionComparison);
+            var comparer = new PackageIdentityComparer(versionComparison);
 
             return comparer.Equals(this, other);
         }
@@ -100,7 +90,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public override bool Equals(object obj)
         {
-            PackageIdentity identity = obj as PackageIdentity;
+            var identity = obj as PackageIdentity;
 
             if (identity == null)
             {
@@ -123,10 +113,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public static PackageIdentityComparer Comparer
         {
-            get
-            {
-                return PackageIdentityComparer.Default;
-            }
+            get { return PackageIdentityComparer.Default; }
         }
 
         /// <summary>

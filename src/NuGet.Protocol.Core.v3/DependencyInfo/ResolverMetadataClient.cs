@@ -1,8 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -19,21 +23,22 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         private static async Task<JObject> LoadResource(HttpClient httpClient, Uri uri, ConcurrentDictionary<Uri, JObject> sessionCache)
         {
             JObject obj;
-            if (sessionCache != null && sessionCache.TryGetValue(uri, out obj))
+            if (sessionCache != null
+                && sessionCache.TryGetValue(uri, out obj))
             {
                 return obj;
             }
 
-            HttpResponseMessage response = await httpClient.GetAsync(uri);
+            var response = await httpClient.GetAsync(uri);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
 
             response.EnsureSuccessStatusCode();
 
-            string json = await response.Content.ReadAsStringAsync();
+            var json = await response.Content.ReadAsStringAsync();
             obj = JObject.Parse(json);
 
             if (sessionCache != null)
@@ -45,7 +50,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         }
 
         /// <summary>
-        /// Retrieve the <see cref="RemoteSourceDependencyInfo"/> for a registration.
+        /// Retrieve the <see cref="RemoteSourceDependencyInfo" /> for a registration.
         /// </summary>
         /// <returns>Returns an empty sequence if the package does not exist.</returns>
         public static async Task<IEnumerable<RemoteSourceDependencyInfo>> GetDependencies(
@@ -54,7 +59,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             VersionRange range,
             ConcurrentDictionary<Uri, JObject> sessionCache)
         {
-            JObject index = await LoadResource(httpClient, registrationUri, sessionCache);
+            var index = await LoadResource(httpClient, registrationUri, sessionCache);
 
             if (index == null)
             {
@@ -62,21 +67,21 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 return Enumerable.Empty<RemoteSourceDependencyInfo>();
             }
 
-            VersionRange preFilterRange = Utils.SetIncludePrerelease(range, true);
+            var preFilterRange = Utils.SetIncludePrerelease(range, true);
 
             IList<Task<JObject>> rangeTasks = new List<Task<JObject>>();
 
             foreach (JObject item in index["items"])
             {
-                NuGetVersion lower = NuGetVersion.Parse(item["lower"].ToString());
-                NuGetVersion upper = NuGetVersion.Parse(item["upper"].ToString());
+                var lower = NuGetVersion.Parse(item["lower"].ToString());
+                var upper = NuGetVersion.Parse(item["upper"].ToString());
 
                 if (IsItemRangeRequired(preFilterRange, lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))
                     {
-                        Uri rangeUri = item["@id"].ToObject<Uri>();
+                        var rangeUri = item["@id"].ToObject<Uri>();
 
                         rangeTasks.Add(LoadResource(httpClient, rangeUri, sessionCache));
                     }
@@ -89,10 +94,10 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
             await Task.WhenAll(rangeTasks.ToArray());
 
-            string id = string.Empty;
+            var id = string.Empty;
 
             var results = new HashSet<RemoteSourceDependencyInfo>();
-            foreach (JObject rangeObj in rangeTasks.Select((t) => t.Result))
+            foreach (var rangeObj in rangeTasks.Select((t) => t.Result))
             {
                 if (rangeObj == null)
                 {
@@ -101,13 +106,13 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
                 foreach (JObject packageObj in rangeObj["items"])
                 {
-                    JObject catalogEntry = (JObject)packageObj["catalogEntry"];
+                    var catalogEntry = (JObject)packageObj["catalogEntry"];
 
-                    NuGetVersion packageVersion = NuGetVersion.Parse(catalogEntry["version"].ToString());
+                    var packageVersion = NuGetVersion.Parse(catalogEntry["version"].ToString());
 
                     id = catalogEntry["id"].ToString();
 
-                    int publishedDate = 0;
+                    var publishedDate = 0;
                     JToken publishedValue;
 
                     if (catalogEntry.TryGetValue("published", out publishedValue))
@@ -117,18 +122,19 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
                     //publishedDate = 0 means the property doesn't exist in index.json
                     //publishedDate = 19000101 means the property exists but the package is unlisted
-                    if (range.Satisfies(packageVersion) && (publishedDate != 19000101))
+                    if (range.Satisfies(packageVersion)
+                        && (publishedDate != 19000101))
                     {
                         var identity = new PackageIdentity(id, packageVersion);
                         var dependencyGroups = new List<PackageDependencyGroup>();
 
-                        JArray dependencyGroupsArray = (JArray)catalogEntry["dependencyGroups"];
+                        var dependencyGroupsArray = (JArray)catalogEntry["dependencyGroups"];
 
                         if (dependencyGroupsArray != null)
                         {
                             foreach (JObject dependencyGroupObj in dependencyGroupsArray)
                             {
-                                NuGetFramework currentFramework = GetFramework(dependencyGroupObj);
+                                var currentFramework = GetFramework(dependencyGroupObj);
 
                                 var groupDependencies = new List<PackageDependency>();
 
@@ -172,21 +178,21 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             NuGetFramework projectTargetFramework,
             ConcurrentDictionary<Uri, JObject> sessionCache = null)
         {
-            NuGetFrameworkFullComparer frameworkComparer = new NuGetFrameworkFullComparer();
-            FrameworkReducer frameworkReducer = new FrameworkReducer();
+            var frameworkComparer = new NuGetFrameworkFullComparer();
+            var frameworkReducer = new FrameworkReducer();
             var dependencies = await GetDependencies(httpClient, registrationUri, range, sessionCache);
 
             var result = new HashSet<RegistrationInfo>();
-            RegistrationInfo registrationInfo = new RegistrationInfo();
+            var registrationInfo = new RegistrationInfo();
 
             registrationInfo.IncludePrerelease = range.IncludePrerelease;
             foreach (var item in dependencies)
             {
-                PackageInfo packageInfo = new PackageInfo
-                {
-                    Version = item.Identity.Version,
-                    PackageContent = new Uri(item.ContentUri)
-                };
+                var packageInfo = new PackageInfo
+                    {
+                        Version = item.Identity.Version,
+                        PackageContent = new Uri(item.ContentUri)
+                    };
 
                 // only one target framework group will be used at install time, which means 
                 // we can filter down to that group now by using the project target framework
@@ -202,10 +208,10 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                         foreach (var dependency in dependencyGroup.Packages)
                         {
                             var dependencyInfo = new DependencyInfo
-                            {
-                                Id = dependency.Id,
-                                Range = dependency.VersionRange
-                            };
+                                {
+                                    Id = dependency.Id,
+                                    Range = dependency.VersionRange
+                                };
 
                             packageInfo.Dependencies.Add(dependencyInfo);
                         }
@@ -224,7 +230,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         /// </summary>
         private static NuGetFramework GetFramework(JObject dependencyGroupObj)
         {
-            NuGetFramework framework = NuGetFramework.AnyFramework;
+            var framework = NuGetFramework.AnyFramework;
 
             if (dependencyGroupObj["targetFramework"] != null)
             {
@@ -236,7 +242,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
         private static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
-            VersionRange catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
+            var catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
                 maxVersion: catalogItemUpper, includeMaxVersion: true, includePrerelease: true);
 
             if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case

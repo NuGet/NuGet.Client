@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -7,7 +10,7 @@ using NuGet.Protocol.Core.v3.LocalRepositories;
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
     /// <summary>
-    /// A <see cref="ResourceProvider"/> for <see cref="FindPackageByIdResource"/> over v2 NuGet feeds.
+    /// A <see cref="ResourceProvider" /> for <see cref="FindPackageByIdResource" /> over v2 NuGet feeds.
     /// </summary>
     public class RemoteV2FindPackageByIdResourceProvider : ResourceProvider
     {
@@ -20,7 +23,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
             INuGetResource resource = null;
 
-            if (sourceRepository.PackageSource.IsHttp &&
+            if (sourceRepository.PackageSource.IsHttp
+                &&
                 !sourceRepository.PackageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase))
             {
                 resource = new RemoteV2FindPackageByIdResourcce(sourceRepository.PackageSource);

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,7 +56,7 @@ namespace NuGet.Common
 
         public static void ExtractFiles(this ZipArchive archive, string targetPath, Func<string, bool> shouldInclude)
         {
-            foreach (ZipArchiveEntry entry in archive.Entries)
+            foreach (var entry in archive.Entries)
             {
                 var entryFullName = entry.FullName;
                 if (entryFullName.StartsWith("/", StringComparison.Ordinal))
@@ -64,7 +64,6 @@ namespace NuGet.Common
                     entryFullName = entryFullName.Substring(1);
                 }
                 entryFullName = Uri.UnescapeDataString(entryFullName.Replace('/', Path.DirectorySeparatorChar));
-
 
                 var targetFile = Path.Combine(targetPath, entryFullName);
                 if (!targetFile.StartsWith(targetPath, StringComparison.OrdinalIgnoreCase))

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -22,13 +25,15 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             INuGetResource resource = null;
 
             Uri uri;
-            if (!Uri.TryCreate(source.PackageSource.Source, UriKind.Absolute, out uri) ||
+            if (!Uri.TryCreate(source.PackageSource.Source, UriKind.Absolute, out uri)
+                ||
                 !uri.IsFile)
             {
                 return Task.FromResult(Tuple.Create(false, resource));
             }
 
-            if (Directory.Exists(source.PackageSource.Source) &&
+            if (Directory.Exists(source.PackageSource.Source)
+                &&
                 Directory.EnumerateFiles(source.PackageSource.Source, "*.nupkg").Any())
             {
                 return Task.FromResult(Tuple.Create(false, resource));
@@ -39,5 +44,3 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         }
     }
 }
-
-

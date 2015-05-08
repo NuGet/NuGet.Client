@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -36,23 +39,23 @@ namespace NuGet.Protocol.Core.v2
                     }
 
                     // execute the query
-                    List<IPackage> allPackages = query
+                    var allPackages = query
                         .Skip(skip)
                         .Take(take)
                         .ToList();
 
-                    HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                    List<ServerPackageMetadata> results = new List<ServerPackageMetadata>();
+                    var results = new List<ServerPackageMetadata>();
 
                     foreach (var package in allPackages)
                     {
                         if (seen.Add(package.Id))
                         {
                             var highest = allPackages.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id))
-                                    .OrderByDescending(p => p.Version).First();
+                                .OrderByDescending(p => p.Version).First();
 
-                            ServerPackageMetadata metadata = ParsePackageMetadataV2.Parse(highest);
+                            var metadata = ParsePackageMetadataV2.Parse(highest);
                             results.Add(metadata);
                         }
                     }

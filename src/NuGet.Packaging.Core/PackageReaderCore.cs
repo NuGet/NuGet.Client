@@ -1,11 +1,10 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Packaging.Core
 {
@@ -24,14 +23,16 @@ namespace NuGet.Packaging.Core
         public PackageReaderCore(Stream stream)
             : this(stream, false)
         {
-
         }
 
         /// <summary>
         /// PackageReaderCore
         /// </summary>
         /// <param name="stream">nupkg zip stream</param>
-        /// <param name="leaveStreamOpen">true if the stream should not be disposed of when the package reader is disposed</param>
+        /// <param name="leaveStreamOpen">
+        /// true if the stream should not be disposed of when the package reader is
+        /// disposed
+        /// </param>
         public PackageReaderCore(Stream stream, bool leaveStreamOpen)
         {
             if (stream == null)
@@ -57,12 +58,9 @@ namespace NuGet.Packaging.Core
             return ZipArchiveHelper.GetFiles(_zip);
         }
 
-        protected sealed override NuspecCoreReaderBase NuspecCore
+        protected override sealed NuspecCoreReaderBase NuspecCore
         {
-            get
-            {
-                return Nuspec;
-            }
+            get { return Nuspec; }
         }
 
         protected virtual NuspecCoreReader Nuspec

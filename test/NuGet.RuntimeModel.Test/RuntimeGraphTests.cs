@@ -1,8 +1,8 @@
-﻿using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Linq;
-using System.Threading.Tasks;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.RuntimeModel.Test
@@ -12,90 +12,107 @@ namespace NuGet.RuntimeModel.Test
         [Fact]
         public void MergingInEmptyGraphHasNoEffect()
         {
-            var graph = new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any" })
+            var graph = new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any" })
                 });
             var newGraph = RuntimeGraph.Merge(graph, RuntimeGraph.Empty);
-            Assert.Equal(new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any" })
+            Assert.Equal(new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any" })
                 }), newGraph);
         }
 
         [Fact]
         public void MergingAddsCompletelyNewRuntimes()
         {
-            var leftGraph = new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any", "win7" })
+            var leftGraph = new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any", "win7" })
                 });
             var rightGraph = new RuntimeGraph(new[]
-            {
-                new RuntimeDescription("win7")
-            });
+                {
+                    new RuntimeDescription("win7")
+                });
             var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
-            Assert.Equal(new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any", "win7" }),
-                new RuntimeDescription("win7")
+            Assert.Equal(new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any", "win7" }),
+                    new RuntimeDescription("win7")
                 }), graph);
         }
 
         [Fact]
         public void MergingCombinesDependencySetsInRuntimesDefinedInBoth()
         {
-            var leftGraph = new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any", "win7" }, new [] {
-                    new RuntimeDependencySet("Foo"),
-                })
-            });
+            var leftGraph = new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any", "win7" }, new[]
+                        {
+                            new RuntimeDependencySet("Foo"),
+                        })
+                });
             var rightGraph = new RuntimeGraph(new[]
-            {
-                new RuntimeDescription("win8", new[] {
-                    new RuntimeDependencySet("Bar")
-                })
-            });
+                {
+                    new RuntimeDescription("win8", new[]
+                        {
+                            new RuntimeDependencySet("Bar")
+                        })
+                });
             var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
-            Assert.Equal(new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any", "win7" }, new [] {
-                    new RuntimeDependencySet("Foo"),
-                    new RuntimeDependencySet("Bar")
-                }),
-            }), leftGraph);
+            Assert.Equal(new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any", "win7" }, new[]
+                        {
+                            new RuntimeDependencySet("Foo"),
+                            new RuntimeDependencySet("Bar")
+                        }),
+                }), leftGraph);
         }
 
         [Fact]
         public void MergingCombinesDependenciesInDependencySetsDefinedInBoth()
         {
-            var leftGraph = new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any", "win7" }, new [] {
-                    new RuntimeDependencySet("Foo", new [] {
-                        new RuntimePackageDependency("Foo.win8", new VersionRange(new NuGetVersion(1, 2, 3)))
-                    }),
-                })
-            });
+            var leftGraph = new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any", "win7" }, new[]
+                        {
+                            new RuntimeDependencySet("Foo", new[]
+                                {
+                                    new RuntimePackageDependency("Foo.win8", new VersionRange(new NuGetVersion(1, 2, 3)))
+                                }),
+                        })
+                });
             var rightGraph = new RuntimeGraph(new[]
-            {
-                new RuntimeDescription("win8", new[] {
-                    new RuntimeDependencySet("Foo", new [] {
-                        new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
-                    }),
-                })
-            });
+                {
+                    new RuntimeDescription("win8", new[]
+                        {
+                            new RuntimeDependencySet("Foo", new[]
+                                {
+                                    new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
+                                }),
+                        })
+                });
             var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
-            Assert.Equal(new RuntimeGraph(new[] {
-                new RuntimeDescription("any"),
-                new RuntimeDescription("win8", new[] { "any", "win7" }, new [] {
-                    new RuntimeDependencySet("Foo", new [] {
-                        new RuntimePackageDependency("Foo.win8", new VersionRange(new NuGetVersion(1, 2, 3))),
-                        new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
-                    }),
-                }),
-            }), leftGraph);
+            Assert.Equal(new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription("any"),
+                    new RuntimeDescription("win8", new[] { "any", "win7" }, new[]
+                        {
+                            new RuntimeDependencySet("Foo", new[]
+                                {
+                                    new RuntimePackageDependency("Foo.win8", new VersionRange(new NuGetVersion(1, 2, 3))),
+                                    new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
+                                }),
+                        }),
+                }), leftGraph);
         }
 
         [Theory]
@@ -105,12 +122,12 @@ namespace NuGet.RuntimeModel.Test
         public void ExpandShouldExpandRuntimeBasedOnGraph(string start, string expanded)
         {
             var graph = new RuntimeGraph(new[]
-            {
-                new RuntimeDescription("win8-x86", new [] { "win8", "win7-x86" }),
-                new RuntimeDescription("win8", new [] { "win7" }),
-                new RuntimeDescription("win7-x86", new [] { "win7" }),
-                new RuntimeDescription("win7"),
-            });
+                {
+                    new RuntimeDescription("win8-x86", new[] { "win8", "win7-x86" }),
+                    new RuntimeDescription("win8", new[] { "win7" }),
+                    new RuntimeDescription("win7-x86", new[] { "win7" }),
+                    new RuntimeDescription("win7"),
+                });
             Assert.Equal(
                 expanded.Split(','),
                 graph.ExpandRuntime(start).ToArray());

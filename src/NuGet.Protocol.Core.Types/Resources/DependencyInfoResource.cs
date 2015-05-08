@@ -1,16 +1,18 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
 {
     /// <summary>
-    /// Provides methods for resolving a package and its dependencies. This might change based on the new dependency resolver.
+    /// Provides methods for resolving a package and its dependencies. This might change based on the new
+    /// dependency resolver.
     /// </summary>
     public abstract class DependencyInfoResource : INuGetResource
     {
@@ -20,7 +22,10 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="package">package id and version</param>
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
-        /// <returns>Returns dependency info for the given package if it exists. If the package is not found null is returned.</returns>
+        /// <returns>
+        /// Returns dependency info for the given package if it exists. If the package is not found null is
+        /// returned.
+        /// </returns>
         public abstract Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package,
             NuGetFramework projectFramework,
             CancellationToken token);
@@ -44,7 +49,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="packageId">package Id to search</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public virtual Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, 
+        public virtual Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId,
             CancellationToken token)
         {
             throw new NotSupportedException();

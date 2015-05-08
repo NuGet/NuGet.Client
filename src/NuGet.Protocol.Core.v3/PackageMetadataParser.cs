@@ -1,12 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -14,7 +17,7 @@ namespace NuGet.Protocol.Core.v3
     {
         public static ServerPackageMetadata ParseMetadata(JObject metadata)
         {
-            NuGetVersion version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
+            var version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
             DateTimeOffset? published = null;
             var publishedToken = metadata[Properties.Published];
             if (publishedToken != null)
@@ -22,18 +25,18 @@ namespace NuGet.Protocol.Core.v3
                 published = publishedToken.ToObject<DateTimeOffset>();
             }
 
-            string id = metadata.Value<string>(Properties.PackageId);
-            string title = metadata.Value<string>(Properties.Title);
-            string summary = metadata.Value<string>(Properties.Summary);
-            string description = metadata.Value<string>(Properties.Description);
+            var id = metadata.Value<string>(Properties.PackageId);
+            var title = metadata.Value<string>(Properties.Title);
+            var summary = metadata.Value<string>(Properties.Summary);
+            var description = metadata.Value<string>(Properties.Description);
             var authors = GetFieldAsArray(metadata, Properties.Authors);
             var owners = GetFieldAsArray(metadata, Properties.Owners);
-            Uri iconUrl = GetUri(metadata, Properties.IconUrl);
-            Uri licenseUrl = GetUri(metadata, Properties.LicenseUrl);
-            Uri projectUrl = GetUri(metadata, Properties.ProjectUrl);
+            var iconUrl = GetUri(metadata, Properties.IconUrl);
+            var licenseUrl = GetUri(metadata, Properties.LicenseUrl);
+            var projectUrl = GetUri(metadata, Properties.ProjectUrl);
             var tags = GetFieldAsArray(metadata, Properties.Tags);
-            IEnumerable<PackageDependencyGroup> dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
-            bool requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
+            var dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
+            var requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
             IEnumerable<string> types = metadata.Value<string>(Properties.Type).Split(' ');
 
             //Uri reportAbuseUrl =
@@ -49,24 +52,24 @@ namespace NuGet.Protocol.Core.v3
 
             // TODO: populate these
             NuGetVersion minClientVersion = null;
-            int downloadCount = 0;
-            int downloadCountForVersion = 0;
+            var downloadCount = 0;
+            var downloadCountForVersion = 0;
 
-            return new ServerPackageMetadata(new PackageIdentity(id, version), title, summary, description, 
-                authors, iconUrl, licenseUrl, projectUrl, tags, published, dependencySets, 
+            return new ServerPackageMetadata(new PackageIdentity(id, version), title, summary, description,
+                authors, iconUrl, licenseUrl, projectUrl, tags, published, dependencySets,
                 requireLicenseAcceptance, minClientVersion, downloadCount, downloadCountForVersion, owners, types);
         }
 
         private static IEnumerable<string> GetFieldAsArray(JObject json, string property)
         {
-            JToken value = json[property];
+            var value = json[property];
 
             if (value == null)
             {
                 return Enumerable.Empty<string>();
             }
 
-            JArray array = value as JArray;
+            var array = value as JArray;
 
             if (array != null)
             {
@@ -83,14 +86,14 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         private static string GetField(JObject json, string property)
         {
-            JToken value = json[property];
+            var value = json[property];
 
             if (value == null)
             {
                 return string.Empty;
             }
 
-            JArray array = value as JArray;
+            var array = value as JArray;
 
             if (array != null)
             {
@@ -106,7 +109,7 @@ namespace NuGet.Protocol.Core.v3
             {
                 return null;
             }
-            string str = json[property].ToString();
+            var str = json[property].ToString();
             if (String.IsNullOrEmpty(str))
             {
                 return null;
@@ -118,7 +121,7 @@ namespace NuGet.Protocol.Core.v3
         {
             var fxName = set.Value<string>(Properties.TargetFramework);
 
-            NuGetFramework framework = NuGetFramework.AnyFramework;
+            var framework = NuGetFramework.AnyFramework;
 
             if (!String.IsNullOrEmpty(fxName))
             {
@@ -137,6 +140,5 @@ namespace NuGet.Protocol.Core.v3
                 dep.Value<string>(Properties.PackageId),
                 String.IsNullOrEmpty(ver) ? null : VersionRange.Parse(ver));
         }
-
     }
 }

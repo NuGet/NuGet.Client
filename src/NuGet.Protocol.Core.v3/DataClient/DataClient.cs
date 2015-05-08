@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,9 +8,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json.Linq;
 #if !DNXCORE50
 using System.Net.Cache;
+
 #endif
 
 namespace NuGet.Protocol.Core.v3.Data
@@ -39,7 +42,6 @@ namespace NuGet.Protocol.Core.v3.Data
         public DataClient()
             : this(CachingHandler)
         {
-
         }
 
         /// <summary>
@@ -56,10 +58,7 @@ namespace NuGet.Protocol.Core.v3.Data
         /// </summary>
         public static HttpMessageHandler DefaultHandler
         {
-            get
-            {
-                return AssembleHandlers(CachingHandler, Enumerable.Empty<INuGetMessageHandlerProvider>());
-            }
+            get { return AssembleHandlers(CachingHandler, Enumerable.Empty<INuGetMessageHandlerProvider>()); }
         }
 
         /// <summary>
@@ -104,7 +103,7 @@ namespace NuGet.Protocol.Core.v3.Data
         {
             var response = await GetAsync(address, token);
 
-            string json = await response.Content.ReadAsStringAsync();
+            var json = await response.Content.ReadAsStringAsync();
 
             return await Task.Run(() =>
                 {
@@ -124,10 +123,10 @@ namespace NuGet.Protocol.Core.v3.Data
             get
             {
 #if !DNXCORE50
-				return new WebRequestHandler()
-                {
-                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default)
-                };
+                return new WebRequestHandler()
+                    {
+                        CachePolicy = new RequestCachePolicy(RequestCacheLevel.Default)
+                    };
 #else
                 return new HttpClientHandler();
 #endif
@@ -139,10 +138,10 @@ namespace NuGet.Protocol.Core.v3.Data
             get
             {
 #if !DNXCORE50
-				return new WebRequestHandler()
-                {
-                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache)
-                };
+                return new WebRequestHandler()
+                    {
+                        CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache)
+                    };
 #else
                 return new HttpClientHandler();
 #endif

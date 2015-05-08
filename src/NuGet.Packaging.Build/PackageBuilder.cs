@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -52,13 +55,13 @@ namespace NuGet.Packaging.Build
 
         private void WriteManifest(ZipArchive package)
         {
-            string path = Manifest.GetMetadataValue("id") + ".nuspec";
+            var path = Manifest.GetMetadataValue("id") + ".nuspec";
 
             WriteOpcManifestRelationship(package, path);
 
             var entry = package.CreateEntry(path, CompressionLevel.Optimal);
 
-            using (Stream stream = entry.Open())
+            using (var stream = entry.Open())
             {
                 new NuSpecFormatter().Save(Manifest, stream);
             }

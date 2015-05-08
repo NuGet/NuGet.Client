@@ -1,8 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
-using System.Globalization;
 
 namespace NuGet.Test.Utility
 {
@@ -15,8 +17,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyFolderPackage()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -45,8 +47,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyTestPackage()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -85,8 +87,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyTestPackageMinClient(string minClientVersion)
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -96,8 +98,8 @@ namespace NuGet.Test.Utility
                 zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
 
                 var nuspec = string.Format(
-                CultureInfo.InvariantCulture,
-                @"<?xml version=""1.0"" encoding=""utf-8""?>
+                    CultureInfo.InvariantCulture,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
                               <metadata minClientVersion=""{0}"">
                                 <id>packageA</id>
@@ -120,7 +122,7 @@ namespace NuGet.Test.Utility
                                 </dependencies>
                               </metadata>
                             </package>",
-                minClientVersion);
+                    minClientVersion);
 
                 zip.AddEntry("packageA.nuspec", nuspec, Encoding.UTF8);
 
@@ -130,8 +132,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLibSubFolderPackage()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -168,8 +170,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLibEmptyFolderPackage()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -209,8 +211,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyTestPackageWithReferenceGroups()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -261,8 +263,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyTestPackageWithPre25References()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -310,8 +312,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyContentPackage()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -331,7 +333,6 @@ namespace NuGet.Test.Utility
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
                               </metadata>
                             </package>", Encoding.UTF8);
-
             }
 
             return result;
@@ -339,8 +340,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyContentPackageWithFrameworks()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {
@@ -367,8 +368,8 @@ namespace NuGet.Test.Utility
 
         public static FileInfo GetLegacyContentPackageMixed()
         {
-            string file = Path.GetTempFileName() + ".nupkg";
-            FileInfo result = new FileInfo(file);
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new FileInfo(file);
 
             using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
             {

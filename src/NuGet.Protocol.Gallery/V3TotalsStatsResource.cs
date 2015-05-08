@@ -1,10 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol
 {
@@ -24,8 +27,14 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown when client or resourceUrl are not specified</exception>
         public V3TotalsStatsResource(DataClient client, Uri resourceUrl)
         {
-            if (client == null) throw new ArgumentNullException("client");
-            if (resourceUrl == null) throw new ArgumentNullException("resourceUrl");
+            if (client == null)
+            {
+                throw new ArgumentNullException("client");
+            }
+            if (resourceUrl == null)
+            {
+                throw new ArgumentNullException("resourceUrl");
+            }
 
             _client = client;
             _resourceUrl = resourceUrl;

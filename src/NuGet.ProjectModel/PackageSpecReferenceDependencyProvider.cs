@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,7 +32,7 @@ namespace NuGet.ProjectModel
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
-            string name = libraryRange.Name;
+            var name = libraryRange.Name;
 
             PackageSpec packageSpec;
 
@@ -50,64 +49,63 @@ namespace NuGet.ProjectModel
             if (targetFramework.IsDesktop())
             {
                 targetFrameworkDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
                     {
-                        Name = "mscorlib",
-                        TypeConstraint = LibraryTypes.Reference
-                    }
-                });
+                        LibraryRange = new LibraryRange
+                            {
+                                Name = "mscorlib",
+                                TypeConstraint = LibraryTypes.Reference
+                            }
+                    });
 
                 targetFrameworkDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
                     {
-                        Name = "System",
-                        TypeConstraint = LibraryTypes.Reference
-                    }
-                });
+                        LibraryRange = new LibraryRange
+                            {
+                                Name = "System",
+                                TypeConstraint = LibraryTypes.Reference
+                            }
+                    });
 
                 targetFrameworkDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
                     {
-                        Name = "System.Core",
-                        TypeConstraint = LibraryTypes.Reference
-                    }
-                });
+                        LibraryRange = new LibraryRange
+                            {
+                                Name = "System.Core",
+                                TypeConstraint = LibraryTypes.Reference
+                            }
+                    });
 
                 targetFrameworkDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
                     {
-                        Name = "Microsoft.CSharp",
-                        TypeConstraint = LibraryTypes.Reference
-                    }
-                });
+                        LibraryRange = new LibraryRange
+                            {
+                                Name = "Microsoft.CSharp",
+                                TypeConstraint = LibraryTypes.Reference
+                            }
+                    });
             }
 
             var dependencies = packageSpec.Dependencies.Concat(targetFrameworkDependencies).ToList();
 
             // Mark the library as unresolved if there were specified frameworks
             // and none of them resolved
-            bool unresolved = targetFrameworkInfo.FrameworkName == null &&
-                              packageSpec.TargetFrameworks.Any();
+            var unresolved = targetFrameworkInfo.FrameworkName == null &&
+                             packageSpec.TargetFrameworks.Any();
 
             var library = new Library
-            {
-                LibraryRange = libraryRange,
-                Identity = new LibraryIdentity
                 {
-                    Name = packageSpec.Name,
-                    Version = packageSpec.Version,
-                    Type = LibraryTypes.Project,
-                },
-                Path = packageSpec.FilePath,
-                Dependencies = dependencies,
-                Resolved = !unresolved,
-
-                [KnownLibraryProperties.PackageSpec] = packageSpec
-            };
+                    LibraryRange = libraryRange,
+                    Identity = new LibraryIdentity
+                        {
+                            Name = packageSpec.Name,
+                            Version = packageSpec.Version,
+                            Type = LibraryTypes.Project,
+                        },
+                    Path = packageSpec.FilePath,
+                    Dependencies = dependencies,
+                    Resolved = !unresolved,
+                    [KnownLibraryProperties.PackageSpec] = packageSpec
+                };
 
             return library;
         }

@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
@@ -66,7 +67,7 @@ namespace NuGet.ProjectModel
         // DNU REFACTORING TODO: temp hack to make generated lockfile work with runtime lockfile validation
         private static string RuntimeStyleLibraryRangeToString(LibraryRange libraryRange)
         {
-            var sb = new System.Text.StringBuilder();
+            var sb = new StringBuilder();
             sb.Append(libraryRange.Name);
             sb.Append(" ");
 

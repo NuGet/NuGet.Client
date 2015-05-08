@@ -1,13 +1,10 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Packaging.Test
 {
@@ -115,7 +112,6 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(expected, version.ToNormalizedString());
             }
         }
-        
 
         [Fact]
         public void PackageReader_ContentWithMixedFrameworks()

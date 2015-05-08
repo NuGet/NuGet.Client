@@ -1,9 +1,8 @@
-﻿using NuGet.Versioning;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Globalization;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Versioning.Test
 {
@@ -18,7 +17,7 @@ namespace NuGet.Versioning.Test
         public void VersionComparisonDefaultEqual(string version1, string version2)
         {
             // Arrange & Act
-            bool match = Equals(VersionComparer.Default, version1, version2);
+            var match = Equals(VersionComparer.Default, version1, version2);
 
             // Assert
             Assert.True(match);
@@ -36,7 +35,7 @@ namespace NuGet.Versioning.Test
         public void VersionComparisonDefaultNotEqual(string version1, string version2)
         {
             // Arrange & Act
-            bool match = !Equals(version1, version2);
+            var match = !Equals(version1, version2);
 
             // Assert
             Assert.True(match);
@@ -55,18 +54,17 @@ namespace NuGet.Versioning.Test
         public void VersionComparisonDefaultLess(string version1, string version2)
         {
             // Arrange & Act
-            int result = Compare(VersionComparer.Default, version1, version2);
+            var result = Compare(VersionComparer.Default, version1, version2);
 
             // Assert
             Assert.True(result < 0);
         }
 
-        
         private static int Compare(IVersionComparer comparer, string version1, string version2)
         {
             // Act
-            int x = CompareOneWay(comparer, version1, version2);
-            int y = CompareOneWay(comparer, version2, version1) * -1;
+            var x = CompareOneWay(comparer, version1, version2);
+            var y = CompareOneWay(comparer, version2, version1) * -1;
 
             // Assert
             Assert.Equal(x, y);
@@ -74,17 +72,16 @@ namespace NuGet.Versioning.Test
             return x;
         }
 
-        
         private static int CompareOneWay(IVersionComparer comparer, string version1, string version2)
         {
             // Arrange
-            NuGetVersion a = NuGetVersion.Parse(version1);
-            NuGetVersion b = NuGetVersion.Parse(version2);
-            SemanticVersion c = SemanticVersion.Parse(version1);
-            SemanticVersion d = SemanticVersion.Parse(version2);
+            var a = NuGetVersion.Parse(version1);
+            var b = NuGetVersion.Parse(version2);
+            var c = SemanticVersion.Parse(version1);
+            var d = SemanticVersion.Parse(version2);
 
             // Act
-            List<int> results = new List<int>();
+            var results = new List<int>();
             results.Add(comparer.Compare(a, b));
             results.Add(comparer.Compare(a, d));
             results.Add(comparer.Compare(c, b));
@@ -94,24 +91,23 @@ namespace NuGet.Versioning.Test
             Assert.True(results.FindAll(x => x == results[0]).Count == results.Count);
 
             return results[0];
-        } 
+        }
 
         private static bool Equals(IVersionComparer comparer, string version1, string version2)
         {
             return EqualsOneWay(comparer, version1, version2) && EqualsOneWay(comparer, version2, version1);
         }
 
-        
         private static bool EqualsOneWay(IVersionComparer comparer, string version1, string version2)
         {
             // Arrange
-            NuGetVersion a = NuGetVersion.Parse(version1);
-            NuGetVersion b = NuGetVersion.Parse(version2);
+            var a = NuGetVersion.Parse(version1);
+            var b = NuGetVersion.Parse(version2);
             SemanticVersion c = NuGetVersion.Parse(version1);
             SemanticVersion d = NuGetVersion.Parse(version2);
 
             // Act
-            bool match = Compare(comparer, version1, version2) == 0;
+            var match = Compare(comparer, version1, version2) == 0;
             match &= comparer.Equals(a, b);
             match &= comparer.Equals(a, d);
             match &= comparer.Equals(c, d);

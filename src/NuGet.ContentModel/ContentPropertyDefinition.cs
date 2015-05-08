@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,32 +10,71 @@ namespace NuGet.ContentModel
 {
     /// <summary>
     /// Defines a property that can be used in Content Model query patterns
-    /// <seealso cref="PatternSet"/>
+    /// <seealso cref="PatternSet" />
     /// </summary>
     public class ContentPropertyDefinition
     {
-        public ContentPropertyDefinition(string name) : this(name, null, null, null, null, false) { }
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table) : this(name, table, null, null, null, false) { }
-        public ContentPropertyDefinition(string name, Func<string, object> parser) : this(name, null, parser, null, null, false) { }
-        public ContentPropertyDefinition(string name, Func<object, object, bool> compatibilityTest) : this(name, null, null, compatibilityTest, null, false) { }
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser) : this(name, table, parser, null, null, false) { }
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<object, object, bool> compatibilityTest) : this(name, table, null, compatibilityTest, null, false) { }
-        public ContentPropertyDefinition(string name, Func<string, object> parser, Func<object, object, bool> compatibilityTest) : this(name, null, parser, compatibilityTest, null, false) { }
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser, Func<object, object, bool> compatibilityTest) : this(name, table, parser, compatibilityTest, null, false) { }
-        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions) : this(name, null, null, null, fileExtensions, false) { }
-        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions, bool allowSubfolders) : this(name, null, null, null, fileExtensions, allowSubfolders) { }
+        public ContentPropertyDefinition(string name)
+            : this(name, null, null, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table)
+            : this(name, table, null, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, Func<string, object> parser)
+            : this(name, null, parser, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, Func<object, object, bool> compatibilityTest)
+            : this(name, null, null, compatibilityTest, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser)
+            : this(name, table, parser, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<object, object, bool> compatibilityTest)
+            : this(name, table, null, compatibilityTest, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, Func<string, object> parser, Func<object, object, bool> compatibilityTest)
+            : this(name, null, parser, compatibilityTest, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser, Func<object, object, bool> compatibilityTest)
+            : this(name, table, parser, compatibilityTest, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions)
+            : this(name, null, null, null, fileExtensions, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions, bool allowSubfolders)
+            : this(name, null, null, null, fileExtensions, allowSubfolders)
+        {
+        }
 
         public ContentPropertyDefinition(
-            string name, 
+            string name,
             IDictionary<string, object> table,
             Func<string, object> parser,
             Func<object, object, bool> compatibilityTest,
-            IEnumerable<string> fileExtensions, 
+            IEnumerable<string> fileExtensions,
             bool allowSubfolders)
         {
             Name = name;
 
-            if(table == null)
+            if (table == null)
             {
                 table = new Dictionary<string, object>();
             }
@@ -43,7 +85,7 @@ namespace NuGet.ContentModel
             Table = new ReadOnlyDictionary<string, object>(table); // Wraps the dictionary in a read-only container. Does NOT copy!
 
             Parser = parser ?? (o => o);
-            CompatibilityTest = compatibilityTest ?? Object.Equals;
+            CompatibilityTest = compatibilityTest ?? Equals;
             FileExtensions = (fileExtensions ?? Enumerable.Empty<string>()).ToList();
             FileExtensionAllowSubFolders = allowSubfolders;
         }
@@ -66,20 +108,22 @@ namespace NuGet.ContentModel
                 return false;
             }
 
-            if (Table != null && Table.TryGetValue(name, out value))
+            if (Table != null
+                && Table.TryGetValue(name, out value))
             {
                 return true;
             }
 
-            if (FileExtensions != null && FileExtensions.Any())
+            if (FileExtensions != null
+                && FileExtensions.Any())
             {
-                if (FileExtensionAllowSubFolders == true || name.IndexOfAny(new[] { '/', '\\' }) == -1)
+                if (FileExtensionAllowSubFolders == true
+                    || name.IndexOfAny(new[] { '/', '\\' }) == -1)
                 {
                     foreach (var fileExtension in FileExtensions)
                     {
                         if (name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
                         {
-
                             value = name;
                             return true;
                         }

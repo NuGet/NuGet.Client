@@ -1,12 +1,12 @@
-﻿using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using NuGet.Protocol.Core.v3.Data;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
+using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -17,7 +17,6 @@ namespace NuGet.Protocol.VisualStudio
         public UIMetadataResourceV3Provider()
             : this(new DataClient())
         {
-
         }
 
         public UIMetadataResourceV3Provider(DataClient client)

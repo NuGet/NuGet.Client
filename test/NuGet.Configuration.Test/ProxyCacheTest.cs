@@ -1,8 +1,9 @@
-﻿using System.Net;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Net;
 using Moq;
 using Xunit;
-using Xunit.Extensions;
-using NuGet.Configuration;
 
 namespace NuGet.Configuration.Test
 {
@@ -49,8 +50,8 @@ namespace NuGet.Configuration.Test
         public void GetUserConfiguredProxyReadsProxyValuesFromSettings()
         {
             // Arrange
-            string host = "http://127.0.0.1";
-            string user = "username";
+            var host = "http://127.0.0.1";
+            var user = "username";
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetValue("config", "http_proxy", false)).Returns(host);
             settings.Setup(s => s.GetValue("config", "http_proxy.user", false)).Returns(user);
@@ -69,7 +70,7 @@ namespace NuGet.Configuration.Test
         public void GetUserConfiguredProxyDoesNotSetProxyCredentialsIfNullOrEmptyInSettings()
         {
             // Arrange
-            string host = "http://127.0.0.1";
+            var host = "http://127.0.0.1";
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetValue("config", "http_proxy", false)).Returns(host);
             settings.Setup(s => s.GetValue("config", "http_proxy.user", false)).Returns<string>(null);

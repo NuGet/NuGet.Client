@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,8 +18,8 @@ namespace NuGet.Frameworks
 
             var nearest = reducer.GetNearest(framework, frameworkLookup.Keys) ??
                           frameworkLookup.Where(f => comparer.Equals(f.Key, NuGetFramework.AnyFramework))
-                                         .Select(f => f.Key)
-                                         .FirstOrDefault();
+                              .Select(f => f.Key)
+                              .FirstOrDefault();
 
             if (nearest == null)
             {

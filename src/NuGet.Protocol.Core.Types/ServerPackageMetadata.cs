@@ -1,9 +1,12 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -20,10 +23,9 @@ namespace NuGet.Protocol.Core.Types
         public ServerPackageMetadata(PackageIdentity identity, string title, string summary, string description, IEnumerable<string> authors, Uri iconUrl,
             Uri licenseUrl, Uri projectUrl, IEnumerable<string> tags, DateTimeOffset? published, IEnumerable<PackageDependencyGroup> dependencySets,
             bool requireLicenseAcceptance, NuGetVersion minClientVersion, int downloadCount, int downloadCountForVersion, IEnumerable<string> owners, IEnumerable<string> packageTypes)
-
             : base(identity, title, summary, description, authors, iconUrl,
-                    licenseUrl, projectUrl, tags, published, dependencySets,
-                    requireLicenseAcceptance, minClientVersion)
+                licenseUrl, projectUrl, tags, published, dependencySets,
+                requireLicenseAcceptance, minClientVersion)
         {
             _downloadCount = downloadCount;
             _downloadCountForVersion = downloadCountForVersion;
@@ -33,34 +35,22 @@ namespace NuGet.Protocol.Core.Types
 
         public int DownloadCount
         {
-            get
-            {
-                return _downloadCount;
-            }
+            get { return _downloadCount; }
         }
 
         public int DownloadCountForVersion
         {
-            get
-            {
-                return _downloadCountForVersion;
-            }
+            get { return _downloadCountForVersion; }
         }
 
         public IEnumerable<string> Owners
         {
-            get
-            {
-                return _owners;
-            }
+            get { return _owners; }
         }
 
         public IEnumerable<string> PackageTypes
         {
-            get
-            {
-                return _packageTypes;
-            }
+            get { return _packageTypes; }
         }
     }
 }

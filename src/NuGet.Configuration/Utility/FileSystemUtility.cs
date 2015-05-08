@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -40,15 +43,13 @@ namespace NuGet.Configuration
                     return Enumerable.Empty<string>();
                 }
                 return Directory.EnumerateFiles(path, filter, searchOption)
-                                .Select(f => GetRelativePath(root, f));
+                    .Select(f => GetRelativePath(root, f));
             }
             catch (UnauthorizedAccessException)
             {
-
             }
             catch (DirectoryNotFoundException)
             {
-
             }
 
             return Enumerable.Empty<string>();
@@ -77,7 +78,8 @@ namespace NuGet.Configuration
             }
 
             // if the path is empty, we want to return the original string instead of a single trailing character.
-            if (path.Length == 0 || path[path.Length - 1] == trailingCharacter)
+            if (path.Length == 0
+                || path[path.Length - 1] == trailingCharacter)
             {
                 return path;
             }

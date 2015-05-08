@@ -1,5 +1,6 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +8,8 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.Packaging
@@ -14,6 +17,7 @@ namespace NuGet.Packaging
     public static class PackageHelper
     {
         private static readonly string[] ExcludePaths = new[] { "_rels", "package" };
+
         public static bool IsManifest(string path)
         {
             return Path.GetExtension(path).Equals(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase);
@@ -21,7 +25,8 @@ namespace NuGet.Packaging
 
         public static bool IsPackageFile(string packageFileName, PackageSaveModes packageSaveMode)
         {
-            if (String.IsNullOrEmpty(packageFileName) || String.IsNullOrEmpty(Path.GetFileName(packageFileName)))
+            if (String.IsNullOrEmpty(packageFileName)
+                || String.IsNullOrEmpty(Path.GetFileName(packageFileName)))
             {
                 // This is to ignore archive entries that are not really files
                 return false;
@@ -37,7 +42,8 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// A package is deemed to be a satellite package if it has a language property set, the id of the package is of the format [.*].[Language]
+        /// A package is deemed to be a satellite package if it has a language property set, the id of the package is
+        /// of the format [.*].[Language]
         /// and it has at least one dependency with an id that maps to the runtime package .
         /// </summary>
         public static bool IsSatellitePackage(NuspecReader nuspecReader, out PackageIdentity runtimePackageIdentity, out string packageLanguage)
@@ -48,12 +54,13 @@ namespace NuGet.Packaging
             //     3) The dependency can be found by Id in the repository (as its path is needed for installation)
             // Example: foo.ja-jp, with a dependency on foo
 
-            string packageId = nuspecReader.GetId();
+            var packageId = nuspecReader.GetId();
             packageLanguage = nuspecReader.GetLanguage();
             string localruntimePackageId = null;
 
-            if (!String.IsNullOrEmpty(packageLanguage) &&
-                    packageId.EndsWith('.' + packageLanguage, StringComparison.OrdinalIgnoreCase))
+            if (!String.IsNullOrEmpty(packageLanguage)
+                &&
+                packageId.EndsWith('.' + packageLanguage, StringComparison.OrdinalIgnoreCase))
             {
                 // The satellite pack's Id is of the format <Core-Package-Id>.<Language>. Extract the core package id using this.
                 // Additionally satellite packages have a strict dependency on the core package
@@ -66,7 +73,8 @@ namespace NuGet.Packaging
                         if (dependencyPackage.Id.Equals(localruntimePackageId, StringComparison.OrdinalIgnoreCase)
                             && dependencyPackage.VersionRange != null
                             && dependencyPackage.VersionRange.MaxVersion == dependencyPackage.VersionRange.MinVersion
-                            && dependencyPackage.VersionRange.IsMaxInclusive && dependencyPackage.VersionRange.IsMinInclusive)
+                            && dependencyPackage.VersionRange.IsMaxInclusive
+                            && dependencyPackage.VersionRange.IsMinInclusive)
                         {
                             var runtimePackageVersion = new NuGetVersion(dependencyPackage.VersionRange.MinVersion.ToNormalizedString());
                             runtimePackageIdentity = new PackageIdentity(dependencyPackage.Id, runtimePackageVersion);
@@ -89,22 +97,22 @@ namespace NuGet.Packaging
 
             PackageIdentity runtimePackageIdentity = null;
             string packageLanguage = null;
-            if (PackageHelper.IsSatellitePackage(nuspecReader, out runtimePackageIdentity, out packageLanguage))
+            if (IsSatellitePackage(nuspecReader, out runtimePackageIdentity, out packageLanguage))
             {
                 // Now, we know that the package is a satellite package and that the runtime package is 'runtimePackageId'
                 // Check, if the runtimePackage is installed and get the folder to copy over files
 
-                string runtimePackageFilePath = packagePathResolver.GetInstalledPackageFilePath(runtimePackageIdentity);
+                var runtimePackageFilePath = packagePathResolver.GetInstalledPackageFilePath(runtimePackageIdentity);
                 if (File.Exists(runtimePackageFilePath))
                 {
                     runtimePackageDirectory = Path.GetDirectoryName(runtimePackageFilePath);
                     // Existence of the package file is the validation that the package exists
                     var libItemGroups = packageReader.GetLibItems();
-                    List<ZipArchiveEntry> satelliteFileEntries = new List<ZipArchiveEntry>();
+                    var satelliteFileEntries = new List<ZipArchiveEntry>();
                     foreach (var libItemGroup in libItemGroups)
                     {
                         var satelliteFilesInGroup = libItemGroup.Items.Where(item => Path.GetDirectoryName(item).Split(Path.DirectorySeparatorChar)
-                                                                .Contains(packageLanguage, StringComparer.OrdinalIgnoreCase));
+                            .Contains(packageLanguage, StringComparer.OrdinalIgnoreCase));
 
                         foreach (var satelliteFile in satelliteFilesInGroup)
                         {
@@ -116,7 +124,7 @@ namespace NuGet.Packaging
                         }
                     }
 
-                    if(satelliteFileEntries.Count > 0)
+                    if (satelliteFileEntries.Count > 0)
                     {
                         language = packageLanguage;
                         satelliteFiles = satelliteFileEntries;
@@ -134,12 +142,12 @@ namespace NuGet.Packaging
         public static Task<IEnumerable<ZipFilePair>> GetPackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
-            List<ZipFilePair> effectivePackageFiles = new List<ZipFilePair>();
+            var effectivePackageFiles = new List<ZipFilePair>();
             foreach (var entry in packageFiles)
             {
-                string path = ZipArchiveHelper.UnescapePath(entry.FullName);
+                var path = ZipArchiveHelper.UnescapePath(entry.FullName);
 
-                if (PackageHelper.IsPackageFile(path, packageSaveMode))
+                if (IsPackageFile(path, packageSaveMode))
                 {
                     var packageFileFullPath = Path.Combine(packageDirectory, path);
                     effectivePackageFiles.Add(new ZipFilePair(packageFileFullPath, entry));
@@ -151,10 +159,13 @@ namespace NuGet.Packaging
 
         public static IEnumerable<ZipFilePair> GetInstalledPackageFiles(IEnumerable<ZipFilePair> packageFiles)
         {
-            List<ZipFilePair> installedPackageFiles = new List<ZipFilePair>();
+            var installedPackageFiles = new List<ZipFilePair>();
             foreach (var packageFile in packageFiles)
             {
-                if (packageFile != null && packageFile.Item1 != null && packageFile.Item2 != null && File.Exists(packageFile.Item1))
+                if (packageFile != null
+                    && packageFile.Item1 != null
+                    && packageFile.Item2 != null
+                    && File.Exists(packageFile.Item1))
                 {
                     installedPackageFiles.Add(packageFile);
                 }
@@ -178,9 +189,9 @@ namespace NuGet.Packaging
             PackageSaveModes packageSaveMode,
             CancellationToken token)
         {
-            List<ZipFilePair> installedPackageFiles = new List<ZipFilePair>();
-            string packageDirectory = packagePathResolver.GetInstalledPath(packageIdentity);
-            if(!String.IsNullOrEmpty(packageDirectory))
+            var installedPackageFiles = new List<ZipFilePair>();
+            var packageDirectory = packagePathResolver.GetInstalledPath(packageIdentity);
+            if (!String.IsNullOrEmpty(packageDirectory))
             {
                 var zipArchive = new ZipArchive(packageStream);
                 var packageFiles = await GetPackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
@@ -196,11 +207,11 @@ namespace NuGet.Packaging
             PackageSaveModes packageSaveMode,
             CancellationToken token)
         {
-            List<ZipFilePair> installedSatelliteFiles = new List<ZipFilePair>();
+            var installedSatelliteFiles = new List<ZipFilePair>();
             string language;
             string runtimePackageDirectory;
             IEnumerable<ZipArchiveEntry> satelliteFileEntries;
-            if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
+            if (GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
             {
                 var satelliteFiles = await GetPackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
                 installedSatelliteFiles.AddRange(GetInstalledPackageFiles(satelliteFiles));
@@ -211,7 +222,7 @@ namespace NuGet.Packaging
 
         internal static async Task<string> CreatePackageFile(string packageFileFullPath, Stream inputStream, CancellationToken token)
         {
-            string directory = Path.GetDirectoryName(packageFileFullPath);
+            var directory = Path.GetDirectoryName(packageFileFullPath);
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -234,7 +245,7 @@ namespace NuGet.Packaging
         internal static async Task<IEnumerable<string>> CreatePackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
-            IEnumerable<ZipFilePair> effectivePackageFiles = await GetPackageFiles(packageFiles, packageDirectory, packageSaveMode, token);
+            var effectivePackageFiles = await GetPackageFiles(packageFiles, packageDirectory, packageSaveMode, token);
             foreach (var effectivePackageFile in effectivePackageFiles)
             {
                 var packageFileFullPath = effectivePackageFile.Item1;

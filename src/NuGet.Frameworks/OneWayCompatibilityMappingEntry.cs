@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -29,10 +28,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public FrameworkRange TargetFrameworkRange
         {
-            get
-            {
-                return _targetFramework;
-            }
+            get { return _targetFramework; }
         }
 
         /// <summary>
@@ -40,18 +36,12 @@ namespace NuGet.Frameworks
         /// </summary>
         public FrameworkRange SupportedFrameworkRange
         {
-            get
-            {
-                return _supportedFramework;
-            }
+            get { return _supportedFramework; }
         }
 
         public static CompatibilityMappingComparer Comparer
         {
-            get
-            {
-                return new CompatibilityMappingComparer();
-            }
+            get { return new CompatibilityMappingComparer(); }
         }
 
         public bool Equals(OneWayCompatibilityMappingEntry other)

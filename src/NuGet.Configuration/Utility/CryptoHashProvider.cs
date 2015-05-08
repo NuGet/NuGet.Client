@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -25,12 +29,11 @@ namespace NuGet.Configuration
         private readonly string _hashAlgorithm;
 
         /// <summary>
-        ///  Creates an instance of CryptoHashProvider. Since the algorithm is not specified, SHA512 is assumed
+        /// Creates an instance of CryptoHashProvider. Since the algorithm is not specified, SHA512 is assumed
         /// </summary>
         public CryptoHashProvider()
             : this(null)
         {
-
         }
 
         /// <summary>
@@ -42,8 +45,9 @@ namespace NuGet.Configuration
             {
                 hashAlgorithm = SHA512HashAlgorithm;
             }
-            else if (!hashAlgorithm.Equals(SHA512HashAlgorithm, StringComparison.OrdinalIgnoreCase) &&
-                    !hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
+            else if (!hashAlgorithm.Equals(SHA512HashAlgorithm, StringComparison.OrdinalIgnoreCase)
+                     &&
+                     !hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 // Only support a vetted list of hash algorithms.
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.UnsupportedHashAlgorithm, hashAlgorithm), "hashAlgorithm");
@@ -53,17 +57,14 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Determines if we are to only allow Fips compliant algorithms. 
+        /// Determines if we are to only allow Fips compliant algorithms.
         /// </summary>
         /// <remarks>
-        /// CryptoConfig.AllowOnlyFipsAlgorithm does not exist in Mono. 
+        /// CryptoConfig.AllowOnlyFipsAlgorithm does not exist in Mono.
         /// </remarks>
         private static bool AllowOnlyFipsAlgorithms
         {
-            get
-            {
-                return ReadFipsConfigValue();
-            }
+            get { return ReadFipsConfigValue(); }
         }
 
         /// <summary>
@@ -93,11 +94,11 @@ namespace NuGet.Configuration
         /// </summary>
         public bool VerifyHash(byte[] data, byte[] hash)
         {
-            byte[] dataHash = CalculateHash(data);
+            var dataHash = CalculateHash(data);
             return Enumerable.SequenceEqual(dataHash, hash);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We want to return the object.")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We want to return the object.")]
         private HashAlgorithm GetHashAlgorithm()
         {
 #if !DNXCORE50
@@ -108,7 +109,7 @@ namespace NuGet.Configuration
 
             return AllowOnlyFipsAlgorithms ? (HashAlgorithm)new SHA512CryptoServiceProvider() : (HashAlgorithm)new SHA512Managed();
 #else
-            // TODO: Review FIPS compliance for CoreCLR
+    // TODO: Review FIPS compliance for CoreCLR
             if (_hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 return SHA256.Create();
@@ -122,7 +123,7 @@ namespace NuGet.Configuration
         {
 #if !DNXCORE50
             // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
-            var cryptoConfig = typeof(System.Security.Cryptography.CryptoConfig);
+            var cryptoConfig = typeof(CryptoConfig);
 
             if (cryptoConfig != null)
             {

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
@@ -11,9 +14,20 @@ namespace NuGet.RuntimeModel
         public IReadOnlyList<string> InheritedRuntimes { get; }
         public IReadOnlyDictionary<string, RuntimeDependencySet> RuntimeDependencySets { get; }
 
-        public RuntimeDescription(string runtimeIdentifier) : this(runtimeIdentifier, Enumerable.Empty<string>(), Enumerable.Empty<RuntimeDependencySet>()) { }
-        public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes) : this(runtimeIdentifier, inheritedRuntimes, Enumerable.Empty<RuntimeDependencySet>()) { }
-        public RuntimeDescription(string runtimeIdentifier, IEnumerable<RuntimeDependencySet> runtimeDependencySets) : this(runtimeIdentifier, Enumerable.Empty<string>(), runtimeDependencySets) { }
+        public RuntimeDescription(string runtimeIdentifier)
+            : this(runtimeIdentifier, Enumerable.Empty<string>(), Enumerable.Empty<RuntimeDependencySet>())
+        {
+        }
+
+        public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes)
+            : this(runtimeIdentifier, inheritedRuntimes, Enumerable.Empty<RuntimeDependencySet>())
+        {
+        }
+
+        public RuntimeDescription(string runtimeIdentifier, IEnumerable<RuntimeDependencySet> runtimeDependencySets)
+            : this(runtimeIdentifier, Enumerable.Empty<string>(), runtimeDependencySets)
+        {
+        }
 
         public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes, IEnumerable<RuntimeDependencySet> runtimeDependencySets)
         {
@@ -25,9 +39,9 @@ namespace NuGet.RuntimeModel
         public bool Equals(RuntimeDescription other)
         {
             return other != null &&
-                string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
-                InheritedRuntimes.OrderBy(s => s).SequenceEqual(other.InheritedRuntimes.OrderBy(s => s)) &&
-                RuntimeDependencySets.OrderBy(p => p.Key).SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
+                   string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
+                   InheritedRuntimes.OrderBy(s => s).SequenceEqual(other.InheritedRuntimes.OrderBy(s => s)) &&
+                   RuntimeDependencySets.OrderBy(p => p.Key).SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
         }
 
         public RuntimeDescription Clone()
@@ -67,7 +81,7 @@ namespace NuGet.RuntimeModel
             }
 
             // Merge dependency sets
-            Dictionary<string, RuntimeDependencySet> newSets = new Dictionary<string, RuntimeDependencySet>();
+            var newSets = new Dictionary<string, RuntimeDependencySet>();
             foreach (var dependencySet in left.RuntimeDependencySets.Values)
             {
                 newSets[dependencySet.Id] = dependencySet.Clone();

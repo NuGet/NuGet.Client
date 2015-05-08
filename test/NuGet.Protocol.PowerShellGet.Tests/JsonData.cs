@@ -1,6 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace PowerShellGet.Tests
+namespace NuGet.Protocol.PowerShellGet.Tests
 {
     public static class JsonData
     {
@@ -122,6 +123,7 @@ namespace PowerShellGet.Tests
   ""@vocab"": ""https://schema.nuget.org/services#""
  }
 }";
+
         #endregion
 
         #region Non-PSMetadata search page

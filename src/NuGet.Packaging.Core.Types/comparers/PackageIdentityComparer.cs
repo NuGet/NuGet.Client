@@ -1,11 +1,9 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
 {
@@ -22,7 +20,6 @@ namespace NuGet.Packaging.Core
         public PackageIdentityComparer()
             : this(new VersionComparer(VersionComparison.Default))
         {
-
         }
 
         /// <summary>
@@ -31,7 +28,6 @@ namespace NuGet.Packaging.Core
         public PackageIdentityComparer(VersionComparison versionComparison)
             : this(new VersionComparer(versionComparison))
         {
-
         }
 
         /// <summary>
@@ -52,10 +48,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public static PackageIdentityComparer Default
         {
-            get
-            {
-                return new PackageIdentityComparer();
-            }
+            get { return new PackageIdentityComparer(); }
         }
 
         /// <summary>
@@ -63,18 +56,19 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public bool Equals(PackageIdentity x, PackageIdentity y)
         {
-            if (Object.ReferenceEquals(x, y))
+            if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+            if (ReferenceEquals(x, null)
+                || ReferenceEquals(y, null))
             {
                 return false;
             }
 
             return _versionComparer.Equals(x.Version, y.Version)
-                && StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
+                   && StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
         }
 
         /// <summary>
@@ -82,12 +76,12 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public int GetHashCode(PackageIdentity obj)
         {
-            if (Object.ReferenceEquals(obj, null))
+            if (ReferenceEquals(obj, null))
             {
                 return 0;
             }
 
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddObject(obj.Id.ToUpperInvariant());
             combiner.AddObject(_versionComparer.GetHashCode(obj.Version));
@@ -100,22 +94,22 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public int Compare(PackageIdentity x, PackageIdentity y)
         {
-            if (Object.ReferenceEquals(x, y))
+            if (ReferenceEquals(x, y))
             {
                 return 0;
             }
 
-            if (Object.ReferenceEquals(x, null))
+            if (ReferenceEquals(x, null))
             {
                 return -1;
             }
 
-            if (Object.ReferenceEquals(y, null))
+            if (ReferenceEquals(y, null))
             {
                 return 1;
             }
 
-            int result = StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id);
+            var result = StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id);
 
             if (result != 0)
             {

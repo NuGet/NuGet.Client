@@ -1,11 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NuGet.Versioning
 {
     /// <summary>
-    /// A hybrid implementation of SemVer that supports semantic versioning as described at http://semver.org while not strictly enforcing it to 
+    /// A hybrid implementation of SemVer that supports semantic versioning as described at http://semver.org while
+    /// not strictly enforcing it to
     /// allow older 4-digit versioning schemes to continue working.
     /// </summary>
     public partial class NuGetVersion : SemanticVersion
@@ -19,7 +23,6 @@ namespace NuGet.Versioning
         public NuGetVersion(string version)
             : this(Parse(version))
         {
-
         }
 
         /// <summary>
@@ -28,7 +31,6 @@ namespace NuGet.Versioning
         public NuGetVersion(NuGetVersion version)
             : this(version.Version, version.ReleaseLabels, version.Metadata, version.ToString())
         {
-
         }
 
         /// <summary>
@@ -40,7 +42,6 @@ namespace NuGet.Versioning
         public NuGetVersion(Version version, string releaseLabel = null, string metadata = null)
             : this(version, ParseReleaseLabels(releaseLabel), metadata, GetLegacyString(version, ParseReleaseLabels(releaseLabel), metadata))
         {
-
         }
 
         /// <summary>
@@ -52,7 +53,6 @@ namespace NuGet.Versioning
         public NuGetVersion(int major, int minor, int patch)
             : this(major, minor, patch, Enumerable.Empty<string>(), null)
         {
-
         }
 
         /// <summary>
@@ -65,7 +65,6 @@ namespace NuGet.Versioning
         public NuGetVersion(int major, int minor, int patch, string releaseLabel)
             : this(major, minor, patch, ParseReleaseLabels(releaseLabel), null)
         {
-
         }
 
         /// <summary>
@@ -79,7 +78,6 @@ namespace NuGet.Versioning
         public NuGetVersion(int major, int minor, int patch, string releaseLabel, string metadata)
             : this(major, minor, patch, ParseReleaseLabels(releaseLabel), metadata)
         {
-
         }
 
         /// <summary>
@@ -93,7 +91,6 @@ namespace NuGet.Versioning
         public NuGetVersion(int major, int minor, int patch, IEnumerable<string> releaseLabels, string metadata)
             : this(new Version(major, minor, patch, 0), releaseLabels, metadata, null)
         {
-
         }
 
         /// <summary>
@@ -106,7 +103,6 @@ namespace NuGet.Versioning
         public NuGetVersion(int major, int minor, int patch, int revision)
             : this(major, minor, patch, revision, Enumerable.Empty<string>(), null)
         {
-
         }
 
         /// <summary>
@@ -121,7 +117,6 @@ namespace NuGet.Versioning
         public NuGetVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
             : this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
         {
-
         }
 
         /// <summary>
@@ -136,11 +131,11 @@ namespace NuGet.Versioning
         public NuGetVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
             : this(new Version(major, minor, patch, revision), releaseLabels, metadata, null)
         {
-
         }
 
         /// <summary>
-        /// Creates a NuGetVersion from a .NET Version with additional release labels, build metadata, and a non-normalized version string.
+        /// Creates a NuGetVersion from a .NET Version with additional release labels, build metadata, and a
+        /// non-normalized version string.
         /// </summary>
         /// <param name="version">Version numbers</param>
         /// <param name="releaseLabels">prerelease labels</param>
@@ -185,6 +180,9 @@ namespace NuGet.Versioning
         /// <summary>
         /// Revision version R (x.y.z.R)
         /// </summary>
-        public int Revision { get { return _version.Revision; } }
+        public int Revision
+        {
+            get { return _version.Revision; }
+        }
     }
 }

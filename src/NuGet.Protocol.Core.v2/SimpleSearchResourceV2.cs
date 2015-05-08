@@ -1,26 +1,30 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v2
 {
     public class SimpleSearchResourceV2 : SimpleSearchResource
     {
         private readonly IPackageRepository V2Client;
+
         public SimpleSearchResourceV2(IPackageRepository repo)
         {
             V2Client = repo;
         }
+
         public SimpleSearchResourceV2(V2Resource resource)
         {
             V2Client = resource.V2Client;
         }
-        public override Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, System.Threading.CancellationToken cancellationToken)
+
+        public override Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
             var query = V2Client.Search(
                 searchTerm,
@@ -67,18 +71,18 @@ namespace NuGet.Protocol.Core.v2
             {
                 versions = new[] { package };
             }
-            string id = package.Id;
-            NuGetVersion version = V2Utilities.SafeToNuGetVer(package.Version);
-            string summary = package.Summary;
-            IEnumerable<NuGetVersion> nuGetVersions = versions.Select(p => V2Utilities.SafeToNuGetVer(p.Version));
+            var id = package.Id;
+            var version = V2Utilities.SafeToNuGetVer(package.Version);
+            var summary = package.Summary;
+            var nuGetVersions = versions.Select(p => V2Utilities.SafeToNuGetVer(p.Version));
             if (string.IsNullOrWhiteSpace(summary))
             {
                 summary = package.Description;
             }
 
-            Uri iconUrl = package.IconUrl;
-            PackageIdentity identity = new PackageIdentity(id, version);
-            SimpleSearchMetadata searchMetaData = new SimpleSearchMetadata(identity, summary, nuGetVersions);
+            var iconUrl = package.IconUrl;
+            var identity = new PackageIdentity(id, version);
+            var searchMetaData = new SimpleSearchMetadata(identity, summary, nuGetVersions);
             return searchMetaData;
         }
     }

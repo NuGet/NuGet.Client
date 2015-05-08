@@ -1,26 +1,25 @@
-﻿using System.ComponentModel.Composition;
-using System.Collections.Concurrent;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Threading.Tasks;
 using System.Threading;
-using NuGet.Protocol.Core.v2;
+using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v2;
 
 namespace NuGet.Protocol.VisualStudio
 {
-
     public class UISearchResourceV2Provider : V2ResourceProvider
     {
         public UISearchResourceV2Provider()
             : base(typeof(UISearchResource), "UISearchResourceV2Provider", NuGetResourceProviderPositions.Last)
         {
-
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             UISearchResourceV2 resource = null;
-            V2Resource v2repo = await GetRepository(source, token);
+            var v2repo = await GetRepository(source, token);
 
             if (v2repo != null)
             {

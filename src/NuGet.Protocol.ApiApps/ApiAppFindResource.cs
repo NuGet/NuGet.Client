@@ -1,5 +1,7 @@
-﻿using NuGet.Protocol.Core.Types;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.ApiApps
 {
@@ -8,7 +10,6 @@ namespace NuGet.Protocol.ApiApps
         // http://nugetservicessecuresearch.azurewebsites.net/find?namespace=com.contoso&id=SampleApiApp6
         public ApiAppFindResource()
         {
-
         }
 
         // Get package by namespace, id, version

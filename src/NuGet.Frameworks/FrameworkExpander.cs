@@ -1,8 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -16,7 +16,6 @@ namespace NuGet.Frameworks
         public FrameworkExpander()
             : this(DefaultFrameworkNameProvider.Instance)
         {
-
         }
 
         public FrameworkExpander(IFrameworkNameProvider mappings)
@@ -29,8 +28,8 @@ namespace NuGet.Frameworks
         /// </summary>
         public IEnumerable<NuGetFramework> Expand(NuGetFramework framework)
         {
-            HashSet<NuGetFramework> seen = new HashSet<NuGetFramework>(NuGetFramework.Comparer) { framework };
-            Stack<NuGetFramework> toExpand = new Stack<NuGetFramework>();
+            var seen = new HashSet<NuGetFramework>(NuGetFramework.Comparer) { framework };
+            var toExpand = new Stack<NuGetFramework>();
             toExpand.Push(framework);
 
             while (toExpand.Count > 0)
@@ -66,7 +65,7 @@ namespace NuGet.Frameworks
             }
 
             // 0.0 through the current framework
-            FrameworkRange frameworkRange = new FrameworkRange(
+            var frameworkRange = new FrameworkRange(
                 new NuGetFramework(framework.Framework, new Version(0, 0), framework.Profile, framework.Platform, framework.PlatformVersion),
                 framework);
 

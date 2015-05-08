@@ -1,13 +1,11 @@
-﻿using NuGet.Packaging;
-using NuGet.Packaging.Core;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -19,11 +17,11 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageFolderReader_Basic()
         {
-            FileInfo packageNupkg = TestPackages.GetLegacyTestPackage();
+            var packageNupkg = TestPackages.GetLegacyTestPackage();
             var zip = new ZipArchive(packageNupkg.OpenRead());
             PackageReader zipReader = new PackageReader(zip);
 
-            string folder = Path.Combine(packageNupkg.Directory.FullName, Guid.NewGuid().ToString());
+            var folder = Path.Combine(packageNupkg.Directory.FullName, Guid.NewGuid().ToString());
 
             var zipFile = new ZipArchive(File.OpenRead(packageNupkg.FullName));
 

@@ -1,10 +1,13 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
@@ -29,11 +32,9 @@ namespace NuGet.Packaging
             }
             catch (UnauthorizedAccessException)
             {
-
             }
             catch (DirectoryNotFoundException)
             {
-
             }
 
             return Enumerable.Empty<string>();
@@ -52,11 +53,9 @@ namespace NuGet.Packaging
             }
             catch (UnauthorizedAccessException)
             {
-
             }
             catch (DirectoryNotFoundException)
             {
-
             }
 
             return Enumerable.Empty<string>();
@@ -101,18 +100,18 @@ namespace NuGet.Packaging
         }
 
         public static IEnumerable<string> GetPackageLookupPaths(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver)
-        {            
-            if(packageIdentity == null)
+        {
+            if (packageIdentity == null)
             {
                 throw new ArgumentNullException("packageIdentity");
             }
 
-            if(packageIdentity.Version == null)
+            if (packageIdentity.Version == null)
             {
                 throw new ArgumentNullException("packageIdentity.Version");
             }
 
-            if(packagePathResolver == null)
+            if (packagePathResolver == null)
             {
                 throw new ArgumentNullException("packagePathResolver");
             }
@@ -129,7 +128,8 @@ namespace NuGet.Packaging
                 GetPackageFiles(root, packageFileName),
                 GetPackageFiles(root, manifestFileName));
 
-            if (version != null && version.Version.Revision < 1)
+            if (version != null
+                && version.Version.Revision < 1)
             {
                 // If the build or revision number is not set, we need to look for combinations of the format
                 // * Foo.1.2.nupkg
@@ -138,10 +138,10 @@ namespace NuGet.Packaging
                 // * Foo.1.2.0.0.nupkg
                 // To achieve this, we would look for files named 1.2*.nupkg if both build and revision are 0 and
                 // 1.2.3*.nupkg if only the revision is set to 0.
-                string partialName = version.Version.Build < 1 ?
-                                        String.Join(".", packageId, version.Version.Major, version.Version.Minor) :
-                                        String.Join(".", packageId, version.Version.Major, version.Version.Minor, version.Version.Build);
-                string partialManifestName = partialName + "*" + PackagingCoreConstants.NuspecExtension;
+                var partialName = version.Version.Build < 1 ?
+                    String.Join(".", packageId, version.Version.Major, version.Version.Minor) :
+                    String.Join(".", packageId, version.Version.Major, version.Version.Minor, version.Version.Build);
+                var partialManifestName = partialName + "*" + PackagingCoreConstants.NuspecExtension;
                 partialName += "*" + PackagingCoreConstants.NupkgExtension;
 
                 // Partial names would result is gathering package with matching major and minor but different build and revision. 
@@ -157,12 +157,13 @@ namespace NuGet.Packaging
         public static string GetInstalledPackageFilePath(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver)
         {
             var packageLookupPaths = GetPackageLookupPaths(packageIdentity, packagePathResolver);
-            if(packageLookupPaths.Any())
+            if (packageLookupPaths.Any())
             {
                 // TODO: Not handling nuspec-only scenarios
-                foreach(var packageLookupPath in packageLookupPaths)
+                foreach (var packageLookupPath in packageLookupPaths)
                 {
-                    if(packageLookupPath.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase) && 
+                    if (packageLookupPath.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)
+                        &&
                         File.Exists(packageLookupPath))
                     {
                         // This is an installed package lookup path which matches the packageIdentity for the given packagePathResolver
@@ -191,7 +192,8 @@ namespace NuGet.Packaging
             }
 
             // if the path is empty, we want to return the original string instead of a single trailing character.
-            if (path.Length == 0 || path[path.Length - 1] == trailingCharacter)
+            if (path.Length == 0
+                || path[path.Length - 1] == trailingCharacter)
             {
                 return path;
             }

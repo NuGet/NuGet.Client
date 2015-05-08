@@ -1,8 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.ApiApps
 {
@@ -11,7 +14,7 @@ namespace NuGet.Protocol.ApiApps
         internal static int GetIntOrZero(JObject json, string propertyName)
         {
             JToken token = null;
-            int x = 0;
+            var x = 0;
 
             if (json.TryGetValue(propertyName, out token))
             {
@@ -38,7 +41,7 @@ namespace NuGet.Protocol.ApiApps
         {
             Uri uri = null;
 
-            string s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(json, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {
@@ -50,9 +53,9 @@ namespace NuGet.Protocol.ApiApps
 
         internal static Guid GetGuidOrEmpty(JObject json, string propertyName)
         {
-            Guid guid = Guid.Empty;
+            var guid = Guid.Empty;
 
-            string s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(json, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {
@@ -69,7 +72,7 @@ namespace NuGet.Protocol.ApiApps
 
             if (json.TryGetValue(propertyName, out token))
             {
-                JArray array = token as JArray;
+                var array = token as JArray;
 
                 if (array != null)
                 {
@@ -84,7 +87,7 @@ namespace NuGet.Protocol.ApiApps
         {
             NuGetVersion version = null;
 
-            string s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(json, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {

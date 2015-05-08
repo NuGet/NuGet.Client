@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.ContentModel
@@ -30,7 +33,8 @@ namespace NuGet.ContentModel
         public SelectionCriteriaEntry Entry { get; }
         public SelectionCriteriaBuilder Builder { get; }
 
-        internal SelectionCriteriaEntryBuilder(SelectionCriteriaBuilder builder, SelectionCriteriaEntry entry) : base(builder.Properties)
+        internal SelectionCriteriaEntryBuilder(SelectionCriteriaBuilder builder, SelectionCriteriaEntry entry)
+            : base(builder.Properties)
         {
             Builder = builder;
             Entry = entry;
@@ -81,18 +85,12 @@ namespace NuGet.ContentModel
 
         public override SelectionCriteriaEntryBuilder Add
         {
-            get
-            {
-                return Builder.Add;
-            }
+            get { return Builder.Add; }
         }
 
         public override SelectionCriteria Criteria
         {
-            get
-            {
-                return Builder.Criteria;
-            }
+            get { return Builder.Criteria; }
         }
     }
 }

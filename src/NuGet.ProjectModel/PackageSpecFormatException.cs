@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -6,15 +9,16 @@ namespace NuGet.ProjectModel
 {
     public sealed class PackageSpecFormatException : Exception
     {
-        public PackageSpecFormatException(string message) :
-            base(message)
+        public PackageSpecFormatException(string message)
+            :
+                base(message)
         {
         }
 
-        public PackageSpecFormatException(string message, Exception innerException) :
-            base(message, innerException)
+        public PackageSpecFormatException(string message, Exception innerException)
+            :
+                base(message, innerException)
         {
-
         }
 
         public string Path { get; private set; }
@@ -34,10 +38,10 @@ namespace NuGet.ProjectModel
             var lineInfo = (IJsonLineInfo)value;
 
             return new PackageSpecFormatException(exception.Message, exception)
-            {
-                Path = path
-            }
-            .WithLineInfo(lineInfo);
+                {
+                    Path = path
+                }
+                .WithLineInfo(lineInfo);
         }
 
         public static PackageSpecFormatException Create(string message, JToken value, string path)
@@ -45,20 +49,20 @@ namespace NuGet.ProjectModel
             var lineInfo = (IJsonLineInfo)value;
 
             return new PackageSpecFormatException(message)
-            {
-                Path = path
-            }
-            .WithLineInfo(lineInfo);
+                {
+                    Path = path
+                }
+                .WithLineInfo(lineInfo);
         }
 
         internal static PackageSpecFormatException Create(JsonReaderException exception, string path)
         {
             return new PackageSpecFormatException(exception.Message, exception)
-            {
-                Path = path,
-                Column = exception.LinePosition,
-                Line = exception.LineNumber
-            };
+                {
+                    Path = path,
+                    Column = exception.LinePosition,
+                    Line = exception.LineNumber
+                };
         }
     }
 }

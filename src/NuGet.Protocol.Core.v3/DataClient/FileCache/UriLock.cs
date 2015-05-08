@@ -1,11 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
@@ -21,7 +20,7 @@ namespace NuGet.Protocol.Core.v3.Data
         private readonly Guid _guid;
         private readonly CancellationToken _cancellationToken;
 
-        public UriLock(Uri uri, CancellationToken cancellationToken, int msWait=100)
+        public UriLock(Uri uri, CancellationToken cancellationToken, int msWait = 100)
         {
             _uri = uri;
             _msWait = msWait;
@@ -33,7 +32,8 @@ namespace NuGet.Protocol.Core.v3.Data
 
         private void GetLock()
         {
-            while (!_cancellationToken.IsCancellationRequested && !_locks.TryAdd(_uri, _guid))
+            while (!_cancellationToken.IsCancellationRequested
+                   && !_locks.TryAdd(_uri, _guid))
             {
                 // spin lock
                 Thread.Sleep(_msWait);

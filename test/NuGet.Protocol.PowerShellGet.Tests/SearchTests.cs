@@ -1,24 +1,23 @@
-﻿using NuGet.Protocol.Core.Types;
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using NuGet.Protocol.PowerShellGet;
-using NuGet.Protocol.Core.v3;
-using System.Collections.Generic;
-using System.Net.Http;
-using Newtonsoft.Json.Linq;
-using System.Threading;
-using Test.Utility;
-using System.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace PowerShellGet.Tests
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
+using Test.Utility;
+using Xunit;
+
+namespace NuGet.Protocol.PowerShellGet.Tests
 {
     public class SearchTests
     {
         [Fact]
         public async Task PowerShellSearchResource_WithPSMetadata()
         {
-            Dictionary<string, string> responses = new Dictionary<string, string>();
+            var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexJson);
             responses.Add("https://api-v3search-0.nuget.org/query?q=test&skip=0&take=10&prerelease=false", JsonData.ExamplePSMetadata);
 
@@ -61,7 +60,7 @@ namespace PowerShellGet.Tests
         [Fact]
         public async Task PowerShellSearchResource_WithoutPSMetadata()
         {
-            Dictionary<string, string> responses = new Dictionary<string, string>();
+            var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexJson);
             responses.Add("https://api-v3search-0.nuget.org/query?q=test&skip=0&take=10&prerelease=false", JsonData.NonPSMetadata);
 

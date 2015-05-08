@@ -1,14 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
     /// <summary>
-    /// CompactEntityReader makes an attempt at understanding the expanded entity and RDF concepts from the compacted form 
+    /// CompactEntityReader makes an attempt at understanding the expanded entity and RDF concepts from the
+    /// compacted form
     /// for scenarios where the graph is not available, or simple answers are needed.
     /// </summary>
     internal class CompactEntityReader
@@ -20,7 +22,6 @@ namespace NuGet.Protocol.Core.v3.Data
         public CompactEntityReader(JObject entityJson)
             : this(entityJson, null, null)
         {
-
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace NuGet.Protocol.Core.v3.Data
         /// </summary>
         public bool? HasProperties(IEnumerable<string> desiredProperties)
         {
-            HashSet<string> jsonProps = new HashSet<string>(_entityJson.Properties().Select(p => p.Name));
+            var jsonProps = new HashSet<string>(_entityJson.Properties().Select(p => p.Name));
             return jsonProps.IsSupersetOf(desiredProperties);
         }
 
@@ -122,7 +123,7 @@ namespace NuGet.Protocol.Core.v3.Data
 
         private static string RemoveVocab(Uri uri, string vocab)
         {
-            string s = uri.AbsoluteUri;
+            var s = uri.AbsoluteUri;
 
             if (s.StartsWith(vocab, StringComparison.Ordinal))
             {

@@ -1,10 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Packaging.Core
 {
@@ -32,7 +33,8 @@ namespace NuGet.Packaging.Core
 
         public static string UnescapePath(string path)
         {
-            if (path != null && path.IndexOf('%') > -1)
+            if (path != null
+                && path.IndexOf('%') > -1)
             {
                 return Uri.UnescapeDataString(path);
             }

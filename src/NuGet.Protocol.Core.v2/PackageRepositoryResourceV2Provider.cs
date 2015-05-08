@@ -1,12 +1,11 @@
-﻿using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v2
 {
@@ -34,7 +33,7 @@ namespace NuGet.Protocol.Core.v2
                 IPackageRepository repo = null;
 
                 // check if the source passed in contains the repository
-                V2PackageSource v2Source = source.PackageSource as V2PackageSource;
+                var v2Source = source.PackageSource as V2PackageSource;
 
                 if (v2Source != null)
                 {

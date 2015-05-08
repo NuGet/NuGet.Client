@@ -1,10 +1,8 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Versioning.Test
 {
@@ -17,7 +15,7 @@ namespace NuGet.Versioning.Test
 
         public int GetHashCode(SemanticVersion obj)
         {
-            NuGetVersion version = obj as NuGetVersion;
+            var version = obj as NuGetVersion;
 
             return String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}-{3}GIT{4}",
                 version.Major, version.Minor, version.Patch, version.Release, GetCommitFromMetadata(version.Metadata)).GetHashCode();
@@ -25,14 +23,16 @@ namespace NuGet.Versioning.Test
 
         public int Compare(SemanticVersion x, SemanticVersion y)
         {
-            NuGetVersion versionX = x as NuGetVersion;
-            NuGetVersion versionY = y as NuGetVersion;
+            var versionX = x as NuGetVersion;
+            var versionY = y as NuGetVersion;
 
             // compare without metadata
-            int result = VersionComparer.VersionRelease.Compare(x, y);
+            var result = VersionComparer.VersionRelease.Compare(x, y);
 
             if (result != 0)
+            {
                 return result;
+            }
 
             // compare git commits, form: buildmachine-gitcommit
             return GitCommitOrder(GetCommitFromMetadata(versionX.Metadata)).CompareTo(GitCommitOrder(GetCommitFromMetadata(versionY.Metadata)));

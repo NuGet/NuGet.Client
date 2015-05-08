@@ -1,10 +1,13 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Resolver
 {
@@ -15,16 +18,14 @@ namespace NuGet.Resolver
         public ResolverPackage(string id)
             : this(id, null)
         {
-
         }
 
         public ResolverPackage(string id, NuGetVersion version)
             : this(id, version, Enumerable.Empty<PackageDependency>())
         {
-
         }
 
-        public ResolverPackage(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies, bool absent=false)
+        public ResolverPackage(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies, bool absent = false)
             : base(id, version, dependencies)
         {
             Debug.Assert(!Absent || (version == null && dependencies == null), "Invalid absent package");
@@ -35,19 +36,19 @@ namespace NuGet.Resolver
         public ResolverPackage(PackageDependencyInfo info, bool absent)
             : this(info.Id, info.Version, info.Dependencies, absent)
         {
-
         }
 
         /// <summary>
         /// A package identity and its dependencies.
         /// </summary>
         /// <param name="identity"></param>
-        /// <param name="dependencies">Dependencies from the relevant target framework group. This group should be selected based on the 
-        /// project target framework.</param>
+        /// <param name="dependencies">
+        /// Dependencies from the relevant target framework group. This group should be selected based on the
+        /// project target framework.
+        /// </param>
         public ResolverPackage(PackageIdentity identity, IEnumerable<PackageDependency> dependencies)
             : this(identity.Id, identity.Version, dependencies)
         {
-
         }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace NuGet.Resolver
 
         public bool Equals(ResolverPackage other)
         {
-            if (Object.ReferenceEquals(other, null))
+            if (ReferenceEquals(other, null))
             {
                 return false;
             }
@@ -95,7 +96,7 @@ namespace NuGet.Resolver
 
         public override int GetHashCode()
         {
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddObject(Absent);
             combiner.AddObject(base.GetHashCode());
@@ -105,7 +106,7 @@ namespace NuGet.Resolver
 
         public override bool Equals(object obj)
         {
-            ResolverPackage other = obj as ResolverPackage;
+            var other = obj as ResolverPackage;
 
             if (other != null)
             {

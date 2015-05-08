@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,11 +15,11 @@ namespace NuGet.CommandLine
     {
         private readonly ILogger _log;
 
-        const string Native = "\x1b[31mnative\x1b[39m";
-        const string Runtime = "\x1b[35mruntime\x1b[39m";
-        const string Compile = "\x1b[32mcompile\x1b[39m";
-        const string Framework = "\x1b[34mframework\x1b[39m";
-        const string Nothing = "\x1b[33mnothing\x1b[39m";
+        private const string Native = "\x1b[31mnative\x1b[39m";
+        private const string Runtime = "\x1b[35mruntime\x1b[39m";
+        private const string Compile = "\x1b[32mcompile\x1b[39m";
+        private const string Framework = "\x1b[34mframework\x1b[39m";
+        private const string Nothing = "\x1b[33mnothing\x1b[39m";
 
         public DiagnosticCommands(ILogger log)
         {
@@ -157,7 +160,7 @@ namespace NuGet.CommandLine
                 _log.LogInformation($"Target: {target.TargetFramework} {target.RuntimeIdentifier}");
                 foreach (var lib in target.Libraries)
                 {
-                    string provides = string.Empty;
+                    var provides = string.Empty;
                     if (lib.NativeLibraries.Any())
                     {
                         provides += Native + ",";

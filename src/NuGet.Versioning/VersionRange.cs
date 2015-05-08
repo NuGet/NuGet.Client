@@ -1,5 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Versioning
@@ -19,7 +21,6 @@ namespace NuGet.Versioning
         public VersionRange(NuGetVersion minVersion)
             : this(minVersion, null)
         {
-
         }
 
         /// <summary>
@@ -29,7 +30,6 @@ namespace NuGet.Versioning
         public VersionRange(NuGetVersion minVersion, FloatRange floatRange)
             : this(minVersion, true, null, false, null, floatRange)
         {
-
         }
 
         /// <summary>
@@ -38,7 +38,6 @@ namespace NuGet.Versioning
         public VersionRange(VersionRange range, FloatRange floatRange)
             : this(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, range.IncludePrerelease, floatRange)
         {
-
         }
 
         /// <summary>
@@ -52,7 +51,7 @@ namespace NuGet.Versioning
         /// <param name="floatRange">The floating range subset used to find the best version match.</param>
         /// <param name="originalString">The original string being parsed to this object.</param>
         public VersionRange(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false, bool? includePrerelease = null, FloatRange floatRange =null, string originalString = null)
+            bool includeMaxVersion = false, bool? includePrerelease = null, FloatRange floatRange = null, string originalString = null)
             : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion, includePrerelease)
         {
             _floatRange = floatRange;
@@ -64,10 +63,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool IsFloating
         {
-            get
-            {
-                return Float != null && Float.FloatBehavior != NuGetVersionFloatBehavior.None;
-            }
+            get { return Float != null && Float.FloatBehavior != NuGetVersionFloatBehavior.None; }
         }
 
         /// <summary>
@@ -75,10 +71,7 @@ namespace NuGet.Versioning
         /// </summary>
         public FloatRange Float
         {
-            get
-            {
-                return _floatRange;
-            }
+            get { return _floatRange; }
         }
 
         /// <summary>
@@ -86,10 +79,7 @@ namespace NuGet.Versioning
         /// </summary>
         public string OriginalString
         {
-            get
-            {
-                return _originalString;
-            }
+            get { return _originalString; }
         }
 
         /// <summary>
@@ -123,7 +113,8 @@ namespace NuGet.Versioning
         {
             string formattedString = null;
 
-            if (formatProvider == null || !TryFormatter(format, formatProvider, out formattedString))
+            if (formatProvider == null
+                || !TryFormatter(format, formatProvider, out formattedString))
             {
                 formattedString = ToString();
             }
@@ -136,12 +127,12 @@ namespace NuGet.Versioning
         /// </summary>
         protected bool TryFormatter(string format, IFormatProvider formatProvider, out string formattedString)
         {
-            bool formatted = false;
+            var formatted = false;
             formattedString = null;
 
             if (formatProvider != null)
             {
-                ICustomFormatter formatter = formatProvider.GetFormat(this.GetType()) as ICustomFormatter;
+                var formatter = formatProvider.GetFormat(this.GetType()) as ICustomFormatter;
                 if (formatter != null)
                 {
                     formatted = true;
@@ -169,7 +160,7 @@ namespace NuGet.Versioning
 
             if (versions != null)
             {
-                foreach (NuGetVersion version in versions)
+                foreach (var version in versions)
                 {
                     if (IsBetter(bestMatch, version))
                     {
@@ -186,13 +177,13 @@ namespace NuGet.Versioning
         /// </summary>
         public bool IsBetter(NuGetVersion current, NuGetVersion considering)
         {
-            if (Object.ReferenceEquals(current, considering))
+            if (ReferenceEquals(current, considering))
             {
                 return false;
             }
 
             // null checks
-            if (Object.ReferenceEquals(considering, null))
+            if (ReferenceEquals(considering, null))
             {
                 return false;
             }
@@ -203,7 +194,7 @@ namespace NuGet.Versioning
                 return false;
             }
 
-            if (Object.ReferenceEquals(current, null))
+            if (ReferenceEquals(current, null))
             {
                 return true;
             }
@@ -211,8 +202,8 @@ namespace NuGet.Versioning
             if (IsFloating)
             {
                 // check if either version is in the floating range
-                bool curInRange = _floatRange.Satisfies(current);
-                bool conInRange = _floatRange.Satisfies(considering);
+                var curInRange = _floatRange.Satisfies(current);
+                var conInRange = _floatRange.Satisfies(considering);
 
                 if (curInRange && !conInRange)
                 {
@@ -232,8 +223,8 @@ namespace NuGet.Versioning
                 else
                 {
                     // neither are in range
-                    bool curToLower = current < _floatRange.MinVersion;
-                    bool conToLower = considering < _floatRange.MinVersion;
+                    var curToLower = current < _floatRange.MinVersion;
+                    var conToLower = considering < _floatRange.MinVersion;
 
                     if (curToLower && !conToLower)
                     {
@@ -245,7 +236,8 @@ namespace NuGet.Versioning
                         // favor the version above the range
                         return false;
                     }
-                    else if (!curToLower && !conToLower)
+                    else if (!curToLower
+                             && !conToLower)
                     {
                         // favor the lower version if we are above the range
                         return current > considering;

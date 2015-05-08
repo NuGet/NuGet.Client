@@ -1,7 +1,9 @@
-﻿using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v2;
 using NuGet.Protocol.Core.v3;
 
@@ -32,12 +34,12 @@ namespace NuGet.Protocol.VisualStudio
             yield return new Lazy<INuGetResourceProvider>(() => new UISearchResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new UISearchResourceV3Provider());
 
-            foreach (Lazy<INuGetResourceProvider> provider in Repository.Provider.GetCoreV2())
+            foreach (var provider in Repository.Provider.GetCoreV2())
             {
                 yield return provider;
             }
 
-            foreach (Lazy<INuGetResourceProvider> provider in Repository.Provider.GetCoreV3())
+            foreach (var provider in Repository.Provider.GetCoreV3())
             {
                 yield return provider;
             }

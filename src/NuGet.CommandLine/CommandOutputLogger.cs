@@ -1,4 +1,7 @@
-﻿using Microsoft.Framework.Runtime.Common.CommandLine;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.Framework.Runtime.Common.CommandLine;
 using NuGet.Logging;
 
 namespace NuGet.CommandLine
@@ -23,7 +26,6 @@ namespace NuGet.CommandLine
 
         public void LogError(string data)
         {
-
             LogInternal(Error, data);
         }
 
@@ -50,15 +52,20 @@ namespace NuGet.CommandLine
                 switch (logLevel)
                 {
                     case Debug:
-                        caption = "\x1b[35mdebug\x1b[39m"; break;
+                        caption = "\x1b[35mdebug\x1b[39m";
+                        break;
                     case Information:
-                        caption = "\x1b[32minfo \x1b[39m"; break;
+                        caption = "\x1b[32minfo \x1b[39m";
+                        break;
                     case Warning:
-                        caption = "\x1b[33mwarn \x1b[39m"; break;
+                        caption = "\x1b[33mwarn \x1b[39m";
+                        break;
                     case Error:
-                        caption = "\x1b[31merror\x1b[39m"; break;
+                        caption = "\x1b[31merror\x1b[39m";
+                        break;
                     case Verbose:
-                        caption = "\x1b[35mtrace\x1b[39m"; break;
+                        caption = "\x1b[35mtrace\x1b[39m";
+                        break;
                 }
             }
             else

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,8 +41,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         {
                             var nuspecStream = new MemoryStream((int)entry.Length);
 #if DNXCORE50
-                            // System.IO.Compression.DeflateStream throws exception when multiple
-                            // async readers/writers are working on a single instance of it
+    // System.IO.Compression.DeflateStream throws exception when multiple
+    // async readers/writers are working on a single instance of it
                             entryStream.CopyTo(nuspecStream);
 #else
                             await entryStream.CopyToAsync(nuspecStream);

@@ -1,4 +1,7 @@
-﻿namespace NuGet.Common
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace NuGet.Common
 {
     /// <summary>
     /// Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations
@@ -52,15 +55,14 @@
         /// </summary>
         internal static int GetHashCode(params object[] objects)
         {
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
-            foreach (object obj in objects)
+            foreach (var obj in objects)
             {
                 combiner.AddObject(obj);
             }
 
             return combiner.CombinedHash;
-
         }
     }
 }

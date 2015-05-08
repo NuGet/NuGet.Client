@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace NuGet.Configuration
 {
@@ -34,11 +37,7 @@ namespace NuGet.Configuration
 
         public string Description { get; set; }
 
-        public bool IsPersistable
-        {
-            get;
-            private set;
-        }
+        public bool IsPersistable { get; private set; }
 
         /// <summary>
         /// Gets or sets the protocol version of the source. Defaults to 2.
@@ -52,20 +51,22 @@ namespace NuGet.Configuration
                 if (!_isHttp.HasValue)
                 {
                     _isHttp = Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                    Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+                              Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
                 }
 
                 return _isHttp.Value;
             }
         }
 
-        public PackageSource(string source) :
-            this(source, source, isEnabled: true)
+        public PackageSource(string source)
+            :
+                this(source, source, isEnabled: true)
         {
         }
 
-        public PackageSource(string source, string name) :
-            this(source, name, isEnabled: true)
+        public PackageSource(string source, string name)
+            :
+                this(source, name, isEnabled: true)
         {
         }
 
@@ -107,7 +108,7 @@ namespace NuGet.Configuration
             }
 
             return Name.Equals(other.Name, StringComparison.CurrentCultureIgnoreCase) &&
-                Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
+                   Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -132,14 +133,14 @@ namespace NuGet.Configuration
 
         public PackageSource Clone()
         {
-            return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable) 
-                { 
+            return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
+                {
                     Description = Description,
-                    UserName = UserName, 
-                    Password = Password, 
-                    IsPasswordClearText = IsPasswordClearText, 
-                IsMachineWide = IsMachineWide,
-                ProtocolVersion = ProtocolVersion
+                    UserName = UserName,
+                    Password = Password,
+                    IsPasswordClearText = IsPasswordClearText,
+                    IsMachineWide = IsMachineWide,
+                    ProtocolVersion = ProtocolVersion
                 };
         }
     }

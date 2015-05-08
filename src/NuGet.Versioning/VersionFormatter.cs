@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -14,7 +17,7 @@ namespace NuGet.Versioning
             }
 
             string formatted = null;
-            Type argType = arg.GetType();
+            var argType = arg.GetType();
 
             if (argType == typeof(IFormattable))
             {
@@ -22,7 +25,7 @@ namespace NuGet.Versioning
             }
             else if (!String.IsNullOrEmpty(format))
             {
-                SemanticVersion version = arg as SemanticVersion;
+                var version = arg as SemanticVersion;
 
                 if (version != null)
                 {
@@ -33,11 +36,11 @@ namespace NuGet.Versioning
                     }
                     else
                     {
-                        StringBuilder sb = new StringBuilder(format.Length);
+                        var sb = new StringBuilder(format.Length);
 
-                        for (int i = 0; i < format.Length; i++)
+                        for (var i = 0; i < format.Length; i++)
                         {
-                            string s = Format(format[i], version);
+                            var s = Format(format[i], version);
 
                             if (s == null)
                             {
@@ -71,7 +74,7 @@ namespace NuGet.Versioning
 
         private static string GetNormalizedString(SemanticVersion version)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             sb.Append(Format('V', version));
 
@@ -118,7 +121,7 @@ namespace NuGet.Versioning
                     s = String.Format(CultureInfo.InvariantCulture, "{0}", version.Patch);
                     break;
                 case 'r':
-                    NuGetVersion nuGetVersion = version as NuGetVersion;
+                    var nuGetVersion = version as NuGetVersion;
                     s = String.Format(CultureInfo.InvariantCulture, "{0}", nuGetVersion != null && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
                     break;
             }
@@ -128,10 +131,10 @@ namespace NuGet.Versioning
 
         private static string FormatVersion(SemanticVersion version)
         {
-            NuGetVersion nuGetVersion = version as NuGetVersion;
-            bool legacy = nuGetVersion != null && nuGetVersion.IsLegacyVersion;
+            var nuGetVersion = version as NuGetVersion;
+            var legacy = nuGetVersion != null && nuGetVersion.IsLegacyVersion;
 
-            return String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}{3}", version.Major, version.Minor, version.Patch, 
+            return String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}{3}", version.Major, version.Minor, version.Patch,
                 legacy ? String.Format(CultureInfo.InvariantCulture, ".{0}", nuGetVersion.Version.Revision) : null);
         }
     }

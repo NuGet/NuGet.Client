@@ -1,12 +1,11 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Packaging
 {
@@ -20,7 +19,6 @@ namespace NuGet.Packaging
         public PackageFolderReader(string folderPath)
             : this(new DirectoryInfo(folderPath))
         {
-
         }
 
         public PackageFolderReader(DirectoryInfo folder)
@@ -33,7 +31,7 @@ namespace NuGet.Packaging
         /// </summary>
         public override Stream GetNuspec()
         {
-            FileInfo nuspecFile = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            var nuspecFile = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
 
             if (nuspecFile == null)
             {
@@ -48,7 +46,7 @@ namespace NuGet.Packaging
         /// </summary>
         public override Stream GetStream(string path)
         {
-            FileInfo file = new FileInfo(Path.Combine(_root.FullName, path));
+            var file = new FileInfo(Path.Combine(_root.FullName, path));
 
             if (!file.FullName.StartsWith(_root.FullName, StringComparison.OrdinalIgnoreCase))
             {
@@ -61,9 +59,9 @@ namespace NuGet.Packaging
 
         public override IEnumerable<string> GetFiles()
         {
-            DirectoryInfo searchFolder = new DirectoryInfo(_root.FullName);
+            var searchFolder = new DirectoryInfo(_root.FullName);
 
-            foreach (FileInfo file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
+            foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
             {
                 yield return GetRelativePath(_root, file);
             }
@@ -74,11 +72,11 @@ namespace NuGet.Packaging
         // TODO: add support for NuGet.ContentModel here
         protected override IEnumerable<string> GetFiles(string folder)
         {
-            DirectoryInfo searchFolder = new DirectoryInfo(Path.Combine(_root.FullName, folder));
+            var searchFolder = new DirectoryInfo(Path.Combine(_root.FullName, folder));
 
             if (searchFolder.Exists)
             {
-                foreach (FileInfo file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
+                foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
                 {
                     yield return GetRelativePath(_root, file);
                 }
@@ -92,11 +90,12 @@ namespace NuGet.Packaging
         /// </summary>
         private static string GetRelativePath(DirectoryInfo root, FileInfo file)
         {
-            Stack<DirectoryInfo> parents = new Stack<DirectoryInfo>();
+            var parents = new Stack<DirectoryInfo>();
 
-            DirectoryInfo parent = file.Directory;
+            var parent = file.Directory;
 
-            while (parent != null && !StringComparer.OrdinalIgnoreCase.Equals(parent.FullName, root.FullName))
+            while (parent != null
+                   && !StringComparer.OrdinalIgnoreCase.Equals(parent.FullName, root.FullName))
             {
                 parents.Push(parent);
                 parent = parent.Parent;
@@ -108,7 +107,7 @@ namespace NuGet.Packaging
                 throw new FileNotFoundException(file.FullName);
             }
 
-            IEnumerable<string> parts = parents.Select(d => d.Name).Concat(new string[] { file.Name });
+            var parts = parents.Select(d => d.Name).Concat(new string[] { file.Name });
 
             return String.Join("/", parts);
         }

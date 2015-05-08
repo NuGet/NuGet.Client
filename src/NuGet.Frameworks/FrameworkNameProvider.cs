@@ -1,10 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -17,6 +18,7 @@ namespace NuGet.Frameworks
         /// This includes self mappings.
         /// </summary>
         private Dictionary<string, string> _identifierSynonyms;
+
         private Dictionary<string, string> _identifierToShortName;
         private Dictionary<string, string> _profilesToShortName;
         private Dictionary<string, string> _identifierShortToLong;
@@ -131,11 +133,11 @@ namespace NuGet.Frameworks
 
         public string GetVersionString(Version version)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             if (version != null)
             {
-                Stack<int> versionParts = new Stack<int>();
+                var versionParts = new Stack<int>();
 
                 versionParts.Push(version.Major > 0 ? version.Major : 0);
                 versionParts.Push(version.Minor > 0 ? version.Minor : 0);
@@ -143,10 +145,11 @@ namespace NuGet.Frameworks
                 versionParts.Push(version.Revision > 0 ? version.Revision : 0);
 
                 // if any parts of the version are over 9 we need to use decimals
-                bool useDecimals = versionParts.Any(x => x > 9);
+                var useDecimals = versionParts.Any(x => x > 9);
 
                 // remove all trailing zeros
-                while (versionParts.Count > 0 && versionParts.Peek() <= 0)
+                while (versionParts.Count > 0
+                       && versionParts.Peek() <= 0)
                 {
                     versionParts.Pop();
                 }
@@ -159,14 +162,14 @@ namespace NuGet.Frameworks
                     // during the parse
                     if (useDecimals)
                     {
-                         if (sb.Length > 0)
-                         {
-                             sb.Insert(0, ".");
-                         }
-                         else if (versionParts.Count == 1)
-                         {
-                             sb.Append(".0");
-                         }
+                        if (sb.Length > 0)
+                        {
+                            sb.Insert(0, ".");
+                        }
+                        else if (versionParts.Count == 1)
+                        {
+                            sb.Append(".0");
+                        }
                     }
 
                     sb.Insert(0, versionParts.Pop());
@@ -185,7 +188,7 @@ namespace NuGet.Frameworks
 
             profileNumber = -1;
 
-            HashSet<NuGetFramework> input = new HashSet<NuGetFramework>(supportedFrameworks, NuGetFramework.Comparer);
+            var input = new HashSet<NuGetFramework>(supportedFrameworks, NuGetFramework.Comparer);
 
             foreach (var pair in _portableFrameworks)
             {
@@ -193,15 +196,15 @@ namespace NuGet.Frameworks
                 // if we knew which frameworks were optional in the input we could rule out the lesser ones also
                 if (pair.Value.Count <= input.Count)
                 {
-                    List<NuGetFramework> reduced = new List<NuGetFramework>();
+                    var reduced = new List<NuGetFramework>();
                     foreach (var curFw in supportedFrameworks)
                     {
-                        bool isOptional = false;
+                        var isOptional = false;
 
                         foreach (var optional in GetOptionalFrameworks(pair.Key))
                         {
                             // TODO: profile check? Is the version check correct here?
-                            if (NuGetFramework.FrameworkNameComparer.Equals(optional, curFw) 
+                            if (NuGetFramework.FrameworkNameComparer.Equals(optional, curFw)
                                 && StringComparer.OrdinalIgnoreCase.Equals(optional.Profile, curFw.Profile)
                                 && curFw.Version >= optional.Version)
                             {
@@ -238,10 +241,10 @@ namespace NuGet.Frameworks
         {
             if (frameworks.Any())
             {
-                NuGetFramework current = frameworks.First();
-                NuGetFramework[] remaining = frameworks.Skip(1).ToArray();
+                var current = frameworks.First();
+                var remaining = frameworks.Skip(1).ToArray();
 
-                HashSet<NuGetFramework> equalFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                var equalFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
                 // include ourselves
                 equalFrameworks.Add(current);
 
@@ -293,7 +296,7 @@ namespace NuGet.Frameworks
 
         public bool TryGetPortableFrameworks(int profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
         {
-            List<NuGetFramework> result = new List<NuGetFramework>();
+            var result = new List<NuGetFramework>();
             HashSet<NuGetFramework> tmpFrameworks = null;
             if (_portableFrameworks.TryGetValue(profile, out tmpFrameworks))
             {
@@ -330,7 +333,7 @@ namespace NuGet.Frameworks
 
             Debug.Assert(shortNames.Length > 0);
 
-            List<NuGetFramework> result = new List<NuGetFramework>();
+            var result = new List<NuGetFramework>();
             foreach (var name in shortNames)
             {
                 result.Add(NuGetFramework.Parse(name, this));
@@ -345,10 +348,11 @@ namespace NuGet.Frameworks
             // attempt to parse the profile for a number
             if (profile.StartsWith("Profile", StringComparison.OrdinalIgnoreCase))
             {
-                string trimmed = profile.Substring(7, profile.Length - 7);
+                var trimmed = profile.Substring(7, profile.Length - 7);
 
-                int profileNum = -1;
-                if (Int32.TryParse(trimmed, out profileNum) && TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
+                var profileNum = -1;
+                if (Int32.TryParse(trimmed, out profileNum)
+                    && TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
                 {
                     return true;
                 }
@@ -365,7 +369,7 @@ namespace NuGet.Frameworks
 
         public bool TryGetEquivalentFrameworks(NuGetFramework framework, out IEnumerable<NuGetFramework> frameworks)
         {
-            HashSet<NuGetFramework> result = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var result = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
 
             // add in all framework aliases
             HashSet<NuGetFramework> eqFrameworks = null;
@@ -411,14 +415,14 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException("range");
             }
 
-            HashSet<NuGetFramework> relevant = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var relevant = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
 
             foreach (var framework in _equivalentFrameworks.Keys.Where(f => range.Satisfies(f)))
             {
                 relevant.Add(framework);
             }
 
-            HashSet<NuGetFramework> results = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var results = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
 
             foreach (var framework in relevant)
             {
@@ -440,7 +444,7 @@ namespace NuGet.Frameworks
         {
             if (mappings != null)
             {
-                foreach (IFrameworkMappings mapping in mappings)
+                foreach (var mapping in mappings)
                 {
                     // eq profiles
                     AddEquivalentProfiles(mapping.EquivalentProfiles);
@@ -518,11 +522,11 @@ namespace NuGet.Frameworks
         {
             if (mappings != null)
             {
-                foreach (FrameworkSpecificMapping profileMapping in mappings)
+                foreach (var profileMapping in mappings)
                 {
-                    string frameworkIdentifier = profileMapping.FrameworkIdentifier;
-                    string profile1 = profileMapping.Mapping.Key;
-                    string profile2 = profileMapping.Mapping.Value;
+                    var frameworkIdentifier = profileMapping.FrameworkIdentifier;
+                    var profile1 = profileMapping.Mapping.Key;
+                    var profile2 = profileMapping.Mapping.Value;
 
                     Dictionary<string, HashSet<string>> profileMappings = null;
 
@@ -606,8 +610,8 @@ namespace NuGet.Frameworks
             {
                 foreach (var pair in mappings)
                 {
-                    string shortName = pair.Value;
-                    string longName = pair.Key;
+                    var shortName = pair.Value;
+                    var longName = pair.Key;
 
                     if (!_identifierSynonyms.ContainsKey(pair.Value))
                     {
@@ -678,7 +682,6 @@ namespace NuGet.Frameworks
                 }
             }
         }
-
 
         public bool TryGetCompatibilityMappings(NuGetFramework framework, out IEnumerable<FrameworkRange> supportedFrameworkRanges)
         {

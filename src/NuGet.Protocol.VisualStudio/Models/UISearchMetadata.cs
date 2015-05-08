@@ -1,7 +1,10 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -12,6 +15,7 @@ namespace NuGet.Protocol.VisualStudio
             Version = version;
             DownloadCount = downloadCount;
         }
+
         public NuGetVersion Version { get; private set; }
 
         public int? DownloadCount { get; private set; }
@@ -43,7 +47,5 @@ namespace NuGet.Protocol.VisualStudio
         public UIPackageMetadata LatestPackageMetadata { get; private set; }
 
         public string Title { get; private set; }
-
     }
 }
-

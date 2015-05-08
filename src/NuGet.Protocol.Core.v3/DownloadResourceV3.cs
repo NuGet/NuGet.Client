@@ -1,15 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -44,7 +42,8 @@ namespace NuGet.Protocol.Core.v3
 
             var blob = await _regResource.GetPackageMetadata(identity, token);
 
-            if (blob != null && blob["packageContent"] != null)
+            if (blob != null
+                && blob["packageContent"] != null)
             {
                 downloadUri = new Uri(blob["packageContent"].ToString());
             }
@@ -56,7 +55,7 @@ namespace NuGet.Protocol.Core.v3
         {
             Stream stream = null;
 
-            Uri uri = await GetDownloadUrl(identity, token);
+            var uri = await GetDownloadUrl(identity, token);
 
             if (uri != null)
             {

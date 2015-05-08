@@ -1,6 +1,9 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -23,7 +26,6 @@ namespace NuGet.Protocol.Core.Types
         /// All versions of the package
         /// </summary>
         public IEnumerable<NuGetVersion> AllVersions { get; private set; }
-
 
         public SimpleSearchMetadata(PackageIdentity identity, string description, IEnumerable<NuGetVersion> allVersions)
         {

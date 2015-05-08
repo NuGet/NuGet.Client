@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -38,13 +41,13 @@ namespace NuGet.Versioning
         /// <summary>
         /// The version string is either a simple version or an arithmetic range
         /// e.g.
-        ///      1.0         --> 1.0 ≤ x
-        ///      (,1.0]      --> x ≤ 1.0
-        ///      (,1.0)      --> x &lt; 1.0
-        ///      [1.0]       --> x == 1.0
-        ///      (1.0,)      --> 1.0 &lt; x
-        ///      (1.0, 2.0)   --> 1.0 &lt; x &lt; 2.0
-        ///      [1.0, 2.0]   --> 1.0 ≤ x ≤ 2.0
+        /// 1.0         --> 1.0 ≤ x
+        /// (,1.0]      --> x ≤ 1.0
+        /// (,1.0)      --> x &lt; 1.0
+        /// [1.0]       --> x == 1.0
+        /// (1.0,)      --> 1.0 &lt; x
+        /// (1.0, 2.0)   --> 1.0 &lt; x &lt; 2.0
+        /// [1.0, 2.0]   --> 1.0 ≤ x ≤ 2.0
         /// </summary>
         public static VersionRange Parse(string value)
         {
@@ -61,7 +64,7 @@ namespace NuGet.Versioning
             {
                 throw new ArgumentException(
                     String.Format(CultureInfo.CurrentCulture,
-                     Resources.Invalidvalue, value));
+                        Resources.Invalidvalue, value));
             }
 
             return versionInfo;
@@ -89,10 +92,12 @@ namespace NuGet.Versioning
 
             var trimmedValue = value.Trim();
 
-            char[] charArray = trimmedValue.ToCharArray();
+            var charArray = trimmedValue.ToCharArray();
 
             // * is the only range below 3 chars
-            if (allowFloating && charArray.Length == 1 && charArray[0] == '*')
+            if (allowFloating
+                && charArray.Length == 1
+                && charArray[0] == '*')
             {
                 versionRange = new VersionRange(null, true, null, true, false, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: value);
                 return true;
@@ -106,13 +111,14 @@ namespace NuGet.Versioning
 
             string minVersionString = null;
             string maxVersionString = null;
-            bool isMinInclusive = false;
-            bool isMaxInclusive = false;
+            var isMinInclusive = false;
+            var isMaxInclusive = false;
             NuGetVersion minVersion = null;
             NuGetVersion maxVersion = null;
             FloatRange floatRange = null;
 
-            if (charArray[0] == '(' || charArray[0] == '[')
+            if (charArray[0] == '('
+                || charArray[0] == '[')
             {
                 // The first character must be [ to (
                 switch (charArray[0])
@@ -144,7 +150,7 @@ namespace NuGet.Versioning
                 trimmedValue = trimmedValue.Substring(1, trimmedValue.Length - 2);
 
                 // Split by comma, and make sure we don't get more than two pieces
-                string[] parts = trimmedValue.Split(',');
+                var parts = trimmedValue.Split(',');
                 if (parts.Length > 2)
                 {
                     return false;
@@ -174,7 +180,8 @@ namespace NuGet.Versioning
                 if (allowFloating && minVersionString.Contains("*"))
                 {
                     // single floating version
-                    if (FloatRange.TryParse(minVersionString, out floatRange) && floatRange.HasMinVersion)
+                    if (FloatRange.TryParse(minVersionString, out floatRange)
+                        && floatRange.HasMinVersion)
                     {
                         minVersion = floatRange.MinVersion;
                     }
@@ -208,16 +215,15 @@ namespace NuGet.Versioning
             // Successful parse!
             versionRange = new VersionRange(
                 minVersion: minVersion,
-                includeMinVersion: isMinInclusive, 
+                includeMinVersion: isMinInclusive,
                 maxVersion: maxVersion,
-                includeMaxVersion: isMaxInclusive, 
+                includeMaxVersion: isMaxInclusive,
                 includePrerelease: null,
                 floatRange: floatRange,
                 originalString: value);
 
             return true;
         }
-
 
         /// <summary>
         /// Returns the smallest range that includes all given versions.
@@ -227,13 +233,12 @@ namespace NuGet.Versioning
             return Combine(versions, VersionComparer.Default);
         }
 
-
         /// <summary>
         /// Returns the smallest range that includes all given versions.
         /// </summary>
         public static VersionRange Combine(IEnumerable<NuGetVersion> versions, IVersionComparer comparer)
         {
-            VersionRange result = VersionRange.None;
+            var result = None;
 
             if (versions.Any())
             {
@@ -269,7 +274,7 @@ namespace NuGet.Versioning
             }
 
             // Default to None for empty lists
-            VersionRange result = VersionRange.None;
+            var result = None;
 
             // Remove zero width ranges. Ex: (1.0.0, 1.0.0)
             // This includes VersionRange.None and any other ranges that satisfy zero versions
@@ -277,19 +282,19 @@ namespace NuGet.Versioning
 
             if (ranges.Any())
             {
-                VersionRangeComparer rangeComparer = new VersionRangeComparer(comparer);
+                var rangeComparer = new VersionRangeComparer(comparer);
 
                 // start with the first range in the list
                 var first = ranges.First();
 
-                NuGetVersion lowest = first.MinVersion;
-                NuGetVersion highest = first.MaxVersion;
-                bool includePre = first.IncludePrerelease;
+                var lowest = first.MinVersion;
+                var highest = first.MaxVersion;
+                var includePre = first.IncludePrerelease;
 
                 // To keep things consistent set min/max inclusive to false when there is no boundary
                 // It is possible to denote an inclusive range with no bounds, but it has no useful meaning for combine
-                bool includeLowest = first.IsMinInclusive && first.HasLowerBound;
-                bool includeHighest = first.IsMaxInclusive && first.HasUpperBound;
+                var includeLowest = first.IsMinInclusive && first.HasLowerBound;
+                var includeHighest = first.IsMaxInclusive && first.HasUpperBound;
 
                 // expand the range to inclue all other ranges
                 foreach (var range in ranges.Skip(1))
@@ -302,7 +307,7 @@ namespace NuGet.Versioning
                     {
                         if (range.HasLowerBound)
                         {
-                            int lowerCompare = comparer.Compare(range.MinVersion, lowest);
+                            var lowerCompare = comparer.Compare(range.MinVersion, lowest);
 
                             if (lowerCompare < 0)
                             {
@@ -330,7 +335,7 @@ namespace NuGet.Versioning
                     {
                         if (range.HasUpperBound)
                         {
-                            int higherCompare = comparer.Compare(range.MaxVersion, highest);
+                            var higherCompare = comparer.Compare(range.MaxVersion, highest);
 
                             if (higherCompare > 0)
                             {
@@ -362,17 +367,17 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// Verify the range has an actual width. 
+        /// Verify the range has an actual width.
         /// Ex: no version can satisfy (3.0.0, 3.0.0)
         /// </summary>
         private static bool HasValidRange(VersionRange range)
         {
             // Verify that if both bounds exist, and neither are included, that the versions are not the same
             return !range.HasUpperBound
-                || !range.HasLowerBound
-                || range.IsMaxInclusive
-                || range.IsMinInclusive
-                || range.MinVersion != range.MaxVersion;
+                   || !range.HasLowerBound
+                   || range.IsMaxInclusive
+                   || range.IsMinInclusive
+                   || range.MinVersion != range.MaxVersion;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,8 +18,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     public class RemoteV3FindPackageByIdResource : FindPackageByIdResource
     {
         private readonly SemaphoreSlim _dependencyInfoSemaphore = new SemaphoreSlim(initialCount: 1);
+
         private readonly Dictionary<string, Task<IEnumerable<RemoteSourceDependencyInfo>>> _packageVersionsCache =
             new Dictionary<string, Task<IEnumerable<RemoteSourceDependencyInfo>>>(StringComparer.OrdinalIgnoreCase);
+
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
         private readonly HttpSource _httpSource;
 
@@ -37,10 +39,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public override ILogger Logger
         {
-            get
-            {
-                return base.Logger;
-            }
+            get { return base.Logger; }
             set
             {
                 base.Logger = value;
@@ -50,10 +49,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public override bool NoCache
         {
-            get
-            {
-                return base.NoCache;
-            }
+            get { return base.NoCache; }
             set
             {
                 base.NoCache = value;
@@ -146,7 +142,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 {
                     _dependencyInfoSemaphore.Release();
                 }
-
             }
         }
 
@@ -172,16 +167,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
             return await ConcurrencyUtilities.ExecuteWithFileLocked(result.TempFileName, _ =>
-            {
-                return Task.FromResult(
-                    new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete));
-            });
+                {
+                    return Task.FromResult(
+                        new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
+                            FileShare.ReadWrite | FileShare.Delete));
+                });
         }
 
         private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(RemoteSourceDependencyInfo package, CancellationToken cancellationToken)
         {
-            for (int retry = 0; retry != 3; ++retry)
+            for (var retry = 0; retry != 3; ++retry)
             {
                 try
                 {
@@ -192,16 +187,15 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         cancellationToken))
                     {
                         return new NupkgEntry
-                        {
-                            TempFileName = data.CacheFileName
-                        };
+                            {
+                                TempFileName = data.CacheFileName
+                            };
                     }
                 }
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
                     Logger.LogInformation(message.Yellow().Bold());
-
                 }
                 catch (Exception ex) when (retry == 2)
                 {

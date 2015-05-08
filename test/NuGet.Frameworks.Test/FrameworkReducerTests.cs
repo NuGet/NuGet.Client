@@ -1,11 +1,10 @@
-﻿using NuGet.Frameworks;
-using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Frameworks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Test
 {
@@ -29,14 +28,14 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse(projectFramework);
 
             List<NuGetFramework> frameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("net20"),
-                NuGetFramework.Parse("net35"),
-                NuGetFramework.Parse("net40"),
-                NuGetFramework.Parse("net45"),
-                NuGetFramework.Parse("portable-net40+wp80+win8+wpa81+sl5"),
-                NuGetFramework.Parse("portable-net45+wp80+win8+wpa81+aspnetcore50")
-            };
+                {
+                    NuGetFramework.Parse("net20"),
+                    NuGetFramework.Parse("net35"),
+                    NuGetFramework.Parse("net40"),
+                    NuGetFramework.Parse("net45"),
+                    NuGetFramework.Parse("portable-net40+wp80+win8+wpa81+sl5"),
+                    NuGetFramework.Parse("portable-net45+wp80+win8+wpa81+aspnetcore50")
+                };
 
             // Act
             var result = reducer.GetNearest(project, frameworks);
@@ -66,19 +65,19 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse(projectFramework);
 
             List<NuGetFramework> frameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("aspnet50"),
-                NuGetFramework.Parse("aspnetcore50"),
-                NuGetFramework.Parse("MonoAndroid"),
-                NuGetFramework.Parse("MonoTouch"),
-                NuGetFramework.Parse("net40"),
-                NuGetFramework.Parse("portable-windows8%2Bnet40%2Bwp8%2Bsl5%2BMonoAndroid%2BMonoTouch"),
-                NuGetFramework.Parse("portable-windows8%2Bnet40%2Bwp8%2Bwpa81%2Bsl5%2BMonoAndroid%2BMonoTouch"),
-                NuGetFramework.Parse("sl5"),
-                NuGetFramework.Parse("windows81"),
-                NuGetFramework.Parse("wpa81"),
-                NuGetFramework.Parse("Xamarin.iOS10")
-            };
+                {
+                    NuGetFramework.Parse("aspnet50"),
+                    NuGetFramework.Parse("aspnetcore50"),
+                    NuGetFramework.Parse("MonoAndroid"),
+                    NuGetFramework.Parse("MonoTouch"),
+                    NuGetFramework.Parse("net40"),
+                    NuGetFramework.Parse("portable-windows8%2Bnet40%2Bwp8%2Bsl5%2BMonoAndroid%2BMonoTouch"),
+                    NuGetFramework.Parse("portable-windows8%2Bnet40%2Bwp8%2Bwpa81%2Bsl5%2BMonoAndroid%2BMonoTouch"),
+                    NuGetFramework.Parse("sl5"),
+                    NuGetFramework.Parse("windows81"),
+                    NuGetFramework.Parse("wpa81"),
+                    NuGetFramework.Parse("Xamarin.iOS10")
+                };
 
             // Act
             var result = reducer.GetNearest(project, frameworks);
@@ -86,7 +85,6 @@ namespace NuGet.Test
             // Assert
             Assert.Equal(expectedFramework, result.GetShortFolderName());
         }
-
 
         [Fact]
         public void FrameworkReducer_GetNearestDuplicatePCL()
@@ -205,10 +203,10 @@ namespace NuGet.Test
             var fw2 = FrameworkConstants.CommonFrameworks.Win8;
 
             var packageFrameworks = new List<NuGetFramework>()
-            {
-                fw1,
-                fw2
-            };
+                {
+                    fw1,
+                    fw2
+                };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -226,12 +224,12 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse("portable-net45+sl5+monotouch+monoandroid");
 
             var packageFrameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("portable-net45+sl5"),
-                NuGetFramework.Parse("portable-net40+sl5+monotouch"),
-                NuGetFramework.Parse("portable-net40+sl4+monotouch+monoandroid"),
-                NuGetFramework.Parse("portable-net40+sl4+monotouch+monoandroid+wp71"),
-            };
+                {
+                    NuGetFramework.Parse("portable-net45+sl5"),
+                    NuGetFramework.Parse("portable-net40+sl5+monotouch"),
+                    NuGetFramework.Parse("portable-net40+sl4+monotouch+monoandroid"),
+                    NuGetFramework.Parse("portable-net40+sl4+monotouch+monoandroid+wp71"),
+                };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -247,11 +245,11 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse("portable-net45+win81");
 
             var packageFrameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("portable-net45+win8"),
-                NuGetFramework.Parse("portable-net40+win8"),
-                NuGetFramework.Parse("portable-net40+win81"),
-            };
+                {
+                    NuGetFramework.Parse("portable-net45+win8"),
+                    NuGetFramework.Parse("portable-net40+win8"),
+                    NuGetFramework.Parse("portable-net40+win81"),
+                };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -269,11 +267,11 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse("portable-net45+win81");
 
             var packageFrameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("portable-net40+win81+sl5"),
-                NuGetFramework.Parse("portable-net45+win8+sl5"),
-                NuGetFramework.Parse("portable-net45+win81+wpa81+monotouch+monoandroid"),
-            };
+                {
+                    NuGetFramework.Parse("portable-net40+win81+sl5"),
+                    NuGetFramework.Parse("portable-net45+win8+sl5"),
+                    NuGetFramework.Parse("portable-net45+win81+wpa81+monotouch+monoandroid"),
+                };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -289,12 +287,12 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse("win9");
 
             var packageFrameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("portable-net45+win8"),
-                NuGetFramework.Parse("portable-net45+win82"),
-                NuGetFramework.Parse("portable-net45+win81"),
-                NuGetFramework.Parse("portable-net45+win91"),
-            };
+                {
+                    NuGetFramework.Parse("portable-net45+win8"),
+                    NuGetFramework.Parse("portable-net45+win82"),
+                    NuGetFramework.Parse("portable-net45+win81"),
+                    NuGetFramework.Parse("portable-net45+win91"),
+                };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -304,8 +302,6 @@ namespace NuGet.Test
             Assert.Equal(packageFrameworks[1], nearest);
         }
 
-
-
         [Fact]
         public void FrameworkReducer_GetNearestNonPCLtoPCLBasedOnOtherVersions()
         {
@@ -313,13 +309,13 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse("win8");
 
             var packageFrameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("portable-net45+win8+wpa81"),
-                NuGetFramework.Parse("portable-net45+win8+wpa82"),
-                NuGetFramework.Parse("portable-net45+win8+wpa9"),
-                NuGetFramework.Parse("portable-net45+win8+wpa10.0"),
-                NuGetFramework.Parse("portable-net45+win8+wpa11.0+sl5")
-            };
+                {
+                    NuGetFramework.Parse("portable-net45+win8+wpa81"),
+                    NuGetFramework.Parse("portable-net45+win8+wpa82"),
+                    NuGetFramework.Parse("portable-net45+win8+wpa9"),
+                    NuGetFramework.Parse("portable-net45+win8+wpa10.0"),
+                    NuGetFramework.Parse("portable-net45+win8+wpa11.0+sl5")
+                };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -339,11 +335,11 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse("win8");
 
             var packageFrameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("portable-net45+win8+sl6"),
-                NuGetFramework.Parse("portable-net45+win8+dnxcore50"),
-                NuGetFramework.Parse("portable-net45+win8+native"),
-            };
+                {
+                    NuGetFramework.Parse("portable-net45+win8+sl6"),
+                    NuGetFramework.Parse("portable-net45+win8+dnxcore50"),
+                    NuGetFramework.Parse("portable-net45+win8+native"),
+                };
 
             FrameworkReducer reducer = new FrameworkReducer();
 
@@ -355,7 +351,6 @@ namespace NuGet.Test
             // should always come back from this compare.
             Assert.Equal(packageFrameworks[1], nearest);
         }
-
 
         [Fact]
         public void FrameworkReducer_GetNearestChooseFrameworkName()
@@ -407,7 +402,6 @@ namespace NuGet.Test
 
             Assert.Equal(framework1, result);
         }
-
 
         [Fact]
         public void FrameworkReducer_ReduceUpEquivalent()
@@ -547,7 +541,6 @@ namespace NuGet.Test
 
             Assert.Equal(wp7, result.Single());
         }
-
 
         [Fact]
         public void FrameworkReducer_ReduceUpwardsNonSingle()
@@ -715,11 +708,11 @@ namespace NuGet.Test
             FrameworkReducer reducer = new FrameworkReducer();
 
             List<NuGetFramework> frameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse("net40"),
-                NuGetFramework.Parse("portable-net45+wp8+win8+wpa"),
-                NuGetFramework.Parse("sl4")
-            };
+                {
+                    NuGetFramework.Parse("net40"),
+                    NuGetFramework.Parse("portable-net45+wp8+win8+wpa"),
+                    NuGetFramework.Parse("sl4")
+                };
 
             NuGetFramework projectFramework = NuGetFramework.Parse("net45");
 
@@ -749,9 +742,9 @@ namespace NuGet.Test
             FrameworkReducer reducer = new FrameworkReducer();
 
             List<NuGetFramework> frameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse(framework),
-            };
+                {
+                    NuGetFramework.Parse(framework),
+                };
 
             NuGetFramework projectFramework = NuGetFramework.Parse(project);
 
@@ -769,9 +762,9 @@ namespace NuGet.Test
             FrameworkReducer reducer = new FrameworkReducer();
 
             List<NuGetFramework> frameworks = new List<NuGetFramework>()
-            {
-                NuGetFramework.Parse(framework),
-            };
+                {
+                    NuGetFramework.Parse(framework),
+                };
 
             NuGetFramework projectFramework = NuGetFramework.Parse(project);
 

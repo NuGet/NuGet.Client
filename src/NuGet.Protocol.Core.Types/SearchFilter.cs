@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +18,6 @@ namespace NuGet.Protocol.Core.Types
         public SearchFilter()
             : this(Enumerable.Empty<string>(), false, false)
         {
-
         }
 
         /// <summary>
@@ -27,7 +29,6 @@ namespace NuGet.Protocol.Core.Types
         public SearchFilter(IEnumerable<string> supportedFrameworks, bool includePrerelease, bool includeDelisted)
             : this(supportedFrameworks, includePrerelease, includeDelisted, Enumerable.Empty<string>())
         {
-
         }
 
         /// <summary>

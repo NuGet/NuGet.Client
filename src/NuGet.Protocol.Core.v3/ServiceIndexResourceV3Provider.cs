@@ -1,15 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -17,7 +15,6 @@ namespace NuGet.Protocol.Core.v3
     /// Retrieves and caches service index.json files
     /// ServiceIndexResourceV3 stores the json, all work is done in the provider
     /// </summary>
-    
     public class ServiceIndexResourceV3Provider : ResourceProvider
     {
         private readonly ConcurrentDictionary<string, ServiceIndexResourceV3> _cache;
@@ -33,7 +30,7 @@ namespace NuGet.Protocol.Core.v3
         {
             ServiceIndexResourceV3 index = null;
 
-            string url = source.PackageSource.Source;
+            var url = source.PackageSource.Source;
 
             // the file type can easily rule out if we need to request the url
             if (url.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -43,9 +40,9 @@ namespace NuGet.Protocol.Core.v3
                 {
                     var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                    DataClient client = new DataClient(messageHandlerResource.MessageHandler);
+                    var client = new DataClient(messageHandlerResource.MessageHandler);
 
-                    JObject json = await client.GetJObjectAsync(new Uri(url), token);
+                    var json = await client.GetJObjectAsync(new Uri(url), token);
 
                     if (json != null)
                     {
@@ -53,7 +50,8 @@ namespace NuGet.Protocol.Core.v3
                         // in strict SemVer format
                         SemanticVersion version = null;
                         var status = json.Value<string>("version");
-                        if (status != null && SemanticVersion.TryParse(status, out version))
+                        if (status != null
+                            && SemanticVersion.TryParse(status, out version))
                         {
                             if (version.Major == 3)
                             {

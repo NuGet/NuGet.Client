@@ -1,7 +1,10 @@
-﻿using NuGet.Configuration;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -9,18 +12,12 @@ namespace NuGet.Protocol.Core.Types
     {
         public static RepositoryFactory Factory
         {
-            get
-            {
-                return new Repository.RepositoryFactory();
-            }
+            get { return new RepositoryFactory(); }
         }
 
         public static ProviderFactory Provider
         {
-            get
-            {
-                return new Repository.ProviderFactory();
-            }
+            get { return new ProviderFactory(); }
         }
 
         public class RepositoryFactory
@@ -32,7 +29,6 @@ namespace NuGet.Protocol.Core.Types
         {
             // Methods are added by extension
         }
-
 
         /// <summary>
         /// Create the default source repository provider
@@ -74,7 +70,7 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException("resourceProviders");
             }
 
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(NullSettings.Instance, sources, Enumerable.Empty<PackageSource>());
+            var sourceProvider = new PackageSourceProvider(NullSettings.Instance, sources, Enumerable.Empty<PackageSource>());
 
             return new SourceRepositoryProvider(sourceProvider, CreateLazy(resourceProviders));
         }

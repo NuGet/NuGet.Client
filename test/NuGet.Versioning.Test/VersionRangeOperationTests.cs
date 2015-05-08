@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using Xunit;
 
 namespace NuGet.Versioning.Test
 {
     public class VersionRangeSetTests
     {
-
         [Theory]
         [InlineData("[1.0.0, )", "[1.0.0, )")]
         [InlineData("[1.0.0, )", "[1.0.1, )")]
@@ -155,10 +157,13 @@ namespace NuGet.Versioning.Test
         public void VersionRangeSet_RemoveEmptyRanges()
         {
             // Arrange
-            var ranges = new List<VersionRange>() { VersionRange.None,
-                VersionRange.Parse("(5.0.0, 5.0.0)"),
-                VersionRange.Parse("(3.0.0-alpha, 3.0.0-alpha)"),
-                VersionRange.Parse("[1.0.0, 2.0.0]") };
+            var ranges = new List<VersionRange>()
+                {
+                    VersionRange.None,
+                    VersionRange.Parse("(5.0.0, 5.0.0)"),
+                    VersionRange.Parse("(3.0.0-alpha, 3.0.0-alpha)"),
+                    VersionRange.Parse("[1.0.0, 2.0.0]")
+                };
 
             // Act
             var combined = VersionRange.Combine(ranges);
@@ -172,8 +177,11 @@ namespace NuGet.Versioning.Test
         public void VersionRangeSet_SpecialCaseRangeCombine_All()
         {
             // Arrange
-            var ranges = new List<VersionRange>() { VersionRange.AllStable, VersionRange.All,
-                VersionRange.AllFloating, VersionRange.AllStableFloating, VersionRange.None };
+            var ranges = new List<VersionRange>()
+                {
+                    VersionRange.AllStable, VersionRange.All,
+                    VersionRange.AllFloating, VersionRange.AllStableFloating, VersionRange.None
+                };
 
             // Act
             var combined = VersionRange.Combine(ranges);
@@ -218,13 +226,13 @@ namespace NuGet.Versioning.Test
         {
             // Arrange 
             var ranges = new List<VersionRange>()
-            {
-                VersionRange.Parse("[1.0.0]"),
-                VersionRange.Parse("[2.0.0]"),
-                VersionRange.Parse("[3.0.0]"),
-                VersionRange.Parse("[4.0.0-beta-1]"),
-                VersionRange.Parse("[5.0.1-rc4]"),
-            };
+                {
+                    VersionRange.Parse("[1.0.0]"),
+                    VersionRange.Parse("[2.0.0]"),
+                    VersionRange.Parse("[3.0.0]"),
+                    VersionRange.Parse("[4.0.0-beta-1]"),
+                    VersionRange.Parse("[5.0.1-rc4]"),
+                };
 
             // Act
             var combined = VersionRange.Combine(ranges);

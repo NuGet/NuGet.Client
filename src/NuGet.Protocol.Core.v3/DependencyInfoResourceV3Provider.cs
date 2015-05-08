@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -14,7 +17,6 @@ namespace NuGet.Protocol.Core.v3
         public DependencyInfoResourceV3Provider()
             : base(typeof(DependencyInfoResource), nameof(DependencyInfoResourceV3Provider), "DependencyInfoResourceV2Provider")
         {
-
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -25,7 +27,7 @@ namespace NuGet.Protocol.Core.v3
             {
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                DataClient client = new DataClient(messageHandlerResource.MessageHandler);
+                var client = new DataClient(messageHandlerResource.MessageHandler);
 
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
 

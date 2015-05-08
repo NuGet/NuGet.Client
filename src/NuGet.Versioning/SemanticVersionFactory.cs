@@ -1,7 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace NuGet.Versioning
 {
@@ -21,7 +24,6 @@ namespace NuGet.Versioning
             return ver;
         }
 
-
         /// <summary>
         /// Parse a version string
         /// </summary>
@@ -34,13 +36,14 @@ namespace NuGet.Versioning
             {
                 Version systemVersion = null;
 
-                Tuple<string, string[], string> sections = ParseSections(value);
+                var sections = ParseSections(value);
 
                 // null indicates the string did not meet the rules
-                if (sections != null && Version.TryParse(sections.Item1, out systemVersion))
+                if (sections != null
+                    && Version.TryParse(sections.Item1, out systemVersion))
                 {
                     // validate the version string
-                    string[] parts = sections.Item1.Split('.');
+                    var parts = sections.Item1.Split('.');
 
                     if (parts.Length != 3)
                     {
@@ -58,22 +61,24 @@ namespace NuGet.Versioning
                     }
 
                     // labels
-                    if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s, false)))
+                    if (sections.Item2 != null
+                        && !sections.Item2.All(s => IsValidPart(s, false)))
                     {
                         return false;
                     }
 
                     // build metadata
-                    if (sections.Item3 != null && !IsValid(sections.Item3, true))
+                    if (sections.Item3 != null
+                        && !IsValid(sections.Item3, true))
                     {
                         return false;
                     }
 
-                    Version ver = NormalizeVersionValue(systemVersion);
+                    var ver = NormalizeVersionValue(systemVersion);
 
                     version = new SemanticVersion(version: ver,
-                                                releaseLabels: sections.Item2,
-                                                metadata: sections.Item3 ?? string.Empty);
+                        releaseLabels: sections.Item2,
+                        metadata: sections.Item3 ?? string.Empty);
 
                     return true;
                 }
@@ -84,7 +89,7 @@ namespace NuGet.Versioning
 
         internal static bool IsLetterOrDigitOrDash(char c)
         {
-            int x = (int)c;
+            var x = (int)c;
 
             // "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
             return (x >= 48 && x <= 57) || (x >= 65 && x <= 90) || (x >= 97 && x <= 122) || x == 45;
@@ -102,7 +107,7 @@ namespace NuGet.Versioning
 
         internal static bool IsValidPart(char[] chars, bool allowLeadingZeros)
         {
-            bool result = true;
+            var result = true;
 
             if (chars.Length == 0)
             {
@@ -112,7 +117,10 @@ namespace NuGet.Versioning
 
             // 0 is fine, but 00 is not. 
             // 0A counts as an alpha numeric string where zeros are not counted
-            if (!allowLeadingZeros && chars.Length > 1 && chars[0] == '0' && chars.All(c => Char.IsDigit(c)))
+            if (!allowLeadingZeros
+                && chars.Length > 1
+                && chars[0] == '0'
+                && chars.All(c => Char.IsDigit(c)))
             {
                 // no leading zeros in labels allowed
                 result = false;
@@ -128,7 +136,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parse the version string into version/release/build
         /// The goal of this code is to take the most direct and optimized path
-        /// to parsing and validating a semver. Regex would be much cleaner, but 
+        /// to parsing and validating a semver. Regex would be much cleaner, but
         /// due to the number of versions created in NuGet Regex is too slow.
         /// </summary>
         internal static Tuple<string, string[], string> ParseSections(string value)
@@ -137,21 +145,23 @@ namespace NuGet.Versioning
             string[] releaseLabels = null;
             string buildMetadata = null;
 
-            int dashPos = -1;
-            int plusPos = -1;
+            var dashPos = -1;
+            var plusPos = -1;
 
-            char[] chars = value.ToCharArray();
+            var chars = value.ToCharArray();
 
-            bool end = false;
-            for (int i = 0; i < chars.Length; i++)
+            var end = false;
+            for (var i = 0; i < chars.Length; i++)
             {
                 end = (i == chars.Length - 1);
 
                 if (dashPos < 0)
                 {
-                    if (end || chars[i] == '-' || chars[i] == '+')
+                    if (end
+                        || chars[i] == '-'
+                        || chars[i] == '+')
                     {
-                        int endPos = i + (end ? 1 : 0);
+                        var endPos = i + (end ? 1 : 0);
                         versionString = value.Substring(0, endPos);
 
                         dashPos = i;
@@ -166,9 +176,9 @@ namespace NuGet.Versioning
                 {
                     if (end || chars[i] == '+')
                     {
-                        int start = dashPos + 1;
-                        int endPos = i + (end ? 1 : 0);
-                        string releaseLabel = value.Substring(start, endPos - start);
+                        var start = dashPos + 1;
+                        var endPos = i + (end ? 1 : 0);
+                        var releaseLabel = value.Substring(start, endPos - start);
 
                         releaseLabels = releaseLabel.Split('.');
 
@@ -177,8 +187,8 @@ namespace NuGet.Versioning
                 }
                 else if (end)
                 {
-                    int start = plusPos + 1;
-                    int endPos = i + (end ? 1 : 0);
+                    var start = plusPos + 1;
+                    var endPos = i + (end ? 1 : 0);
                     buildMetadata = value.Substring(start, endPos - start);
                 }
             }
@@ -188,15 +198,16 @@ namespace NuGet.Versioning
 
         internal static Version NormalizeVersionValue(Version version)
         {
-            Version normalized = version;
+            var normalized = version;
 
-            if (version.Build < 0 || version.Revision < 0)
+            if (version.Build < 0
+                || version.Revision < 0)
             {
                 normalized = new Version(
-                               version.Major,
-                               version.Minor,
-                               Math.Max(version.Build, 0),
-                               Math.Max(version.Revision, 0));
+                    version.Major,
+                    version.Minor,
+                    Math.Max(version.Build, 0),
+                    Math.Max(version.Revision, 0));
             }
 
             return normalized;

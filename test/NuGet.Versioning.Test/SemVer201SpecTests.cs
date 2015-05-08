@@ -1,11 +1,7 @@
-﻿using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Versioning.Test
 {
@@ -31,7 +27,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(version, out semVer);
+            var valid = SemanticVersion.TryParse(version, out semVer);
 
             // Assert
             Assert.Equal(expected, valid);
@@ -46,7 +42,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.False(valid);
@@ -63,7 +59,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.False(valid);
@@ -78,7 +74,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.True(valid);
@@ -97,7 +93,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.True(valid);
@@ -113,7 +109,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.False(valid);
@@ -129,7 +125,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.False(valid);
@@ -145,7 +141,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.False(valid);
@@ -161,7 +157,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.True(valid);
@@ -181,7 +177,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.True(valid);
@@ -196,7 +192,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.False(valid);
@@ -211,7 +207,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.False(valid);
@@ -227,7 +223,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.True(valid);
@@ -240,7 +236,7 @@ namespace NuGet.Versioning.Test
         {
             // Arrange & act
             SemanticVersion semVer = null;
-            bool valid = SemanticVersion.TryParse(versionString, out semVer);
+            var valid = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
             Assert.True(valid);

@@ -1,13 +1,13 @@
-﻿using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Core.v3
 
                     var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                    DataClient client = new DataClient(messageHandlerResource.MessageHandler);
+                    var client = new DataClient(messageHandlerResource.MessageHandler);
 
                     curResource = new DownloadResourceV3(client, registrationResource);
 

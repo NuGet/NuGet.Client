@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,10 +76,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
 
                 var handler = new HttpClientHandler
-                {
-                    Proxy = webProxy,
-                    UseProxy = true
-                };
+                    {
+                        Proxy = webProxy,
+                        UseProxy = true
+                    };
                 _client = new HttpClient(handler);
 #else
                 if (!string.IsNullOrEmpty(proxyUriBuilder.UserName))
@@ -124,7 +124,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             {
                 var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(_userName + ":" + _password));
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", token);
-            };
+            }
+            ;
 
 #if DNXCORE50
             if (_proxyUserName != null)
@@ -158,54 +159,54 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // 1) Delete the old file. 2) Create a new file with the same name.
             // To prevent race condition among multiple processes, here we use a lock to make the update atomic.
             await ConcurrencyUtilities.ExecuteWithFileLocked(result.CacheFileName, async _ =>
-            {
-                using (var stream = new FileStream(
-                    newFile,
-                    FileMode.Create,
-                    FileAccess.ReadWrite,
-                    FileShare.ReadWrite | FileShare.Delete,
-                    BufferSize,
-                    useAsync: true))
                 {
-                    await response.Content.CopyToAsync(stream);
-                    await stream.FlushAsync(cancellationToken);
-                }
-
-                if (File.Exists(result.CacheFileName))
-                {
-                    // Process B can perform deletion on an opened file if the file is opened by process A
-                    // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
-                    // This special feature can cause race condition, so we never delete an opened file.
-                    if (!IsFileAlreadyOpen(result.CacheFileName))
-                    {
-                        File.Delete(result.CacheFileName);
-                    }
-                }
-
-                // If the destination file doesn't exist, we can safely perform moving operation.
-                // Otherwise, moving operation will fail.
-                if (!File.Exists(result.CacheFileName))
-                {
-                    File.Move(
+                    using (var stream = new FileStream(
                         newFile,
-                        result.CacheFileName);
-                }
+                        FileMode.Create,
+                        FileAccess.ReadWrite,
+                        FileShare.ReadWrite | FileShare.Delete,
+                        BufferSize,
+                        useAsync: true))
+                    {
+                        await response.Content.CopyToAsync(stream);
+                        await stream.FlushAsync(cancellationToken);
+                    }
 
-                // Even the file deletion operation above succeeds but the file is not actually deleted,
-                // we can still safely read it because it means that some other process just updated it
-                // and we don't need to update it with the same content again.
-                result.Stream = new FileStream(
-                    result.CacheFileName,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read | FileShare.Delete,
-                    BufferSize,
-                    useAsync: true);
+                    if (File.Exists(result.CacheFileName))
+                    {
+                        // Process B can perform deletion on an opened file if the file is opened by process A
+                        // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
+                        // This special feature can cause race condition, so we never delete an opened file.
+                        if (!IsFileAlreadyOpen(result.CacheFileName))
+                        {
+                            File.Delete(result.CacheFileName);
+                        }
+                    }
 
-                return 0;
-            });
+                    // If the destination file doesn't exist, we can safely perform moving operation.
+                    // Otherwise, moving operation will fail.
+                    if (!File.Exists(result.CacheFileName))
+                    {
+                        File.Move(
+                            newFile,
+                            result.CacheFileName);
+                    }
 
-            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, 
+                    // Even the file deletion operation above succeeds but the file is not actually deleted,
+                    // we can still safely read it because it means that some other process just updated it
+                    // and we don't need to update it with the same content again.
+                    result.Stream = new FileStream(
+                        result.CacheFileName,
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.Read | FileShare.Delete,
+                        BufferSize,
+                        useAsync: true);
+
+                    return 0;
+                });
+
+            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
                 "  {1} {0} {2}ms", uri, response.StatusCode.ToString().Green(), sw.ElapsedMilliseconds.ToString().Bold()));
 
             return result;
@@ -224,7 +225,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var cacheFolder = Path.Combine(localAppDataFolder, "nuget", "v3-cache", baseFolderName);
             var cacheFile = Path.Combine(cacheFolder, baseFileName);
 
-            if (!Directory.Exists(cacheFolder) && !cacheAgeLimit.Equals(TimeSpan.Zero))
+            if (!Directory.Exists(cacheFolder)
+                && !cacheAgeLimit.Equals(TimeSpan.Zero))
             {
                 Directory.CreateDirectory(cacheFolder);
             }
@@ -232,34 +234,34 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
             return await ConcurrencyUtilities.ExecuteWithFileLocked(cacheFile, _ =>
-            {
-                if (File.Exists(cacheFile))
                 {
-                    var fileInfo = new FileInfo(cacheFile);
-                    var age = DateTime.UtcNow.Subtract(fileInfo.LastWriteTimeUtc);
-                    if (age < cacheAgeLimit)
+                    if (File.Exists(cacheFile))
                     {
-                        var stream = new FileStream(
-                            cacheFile,
-                            FileMode.Open,
-                            FileAccess.Read,
-                            FileShare.Read | FileShare.Delete,
-                            BufferSize,
-                            useAsync: true);
+                        var fileInfo = new FileInfo(cacheFile);
+                        var age = DateTime.UtcNow.Subtract(fileInfo.LastWriteTimeUtc);
+                        if (age < cacheAgeLimit)
+                        {
+                            var stream = new FileStream(
+                                cacheFile,
+                                FileMode.Open,
+                                FileAccess.Read,
+                                FileShare.Read | FileShare.Delete,
+                                BufferSize,
+                                useAsync: true);
 
-                        return Task.FromResult(new HttpSourceResult
+                            return Task.FromResult(new HttpSourceResult
+                                {
+                                    CacheFileName = cacheFile,
+                                    Stream = stream,
+                                });
+                        }
+                    }
+
+                    return Task.FromResult(new HttpSourceResult
                         {
                             CacheFileName = cacheFile,
-                            Stream = stream,
                         });
-                    }
-                }
-
-                return Task.FromResult(new HttpSourceResult
-                {
-                    CacheFileName = cacheFile,
                 });
-            });
         }
 
         private static string ComputeHash(string value)
@@ -279,7 +281,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
             var invalid = Path.GetInvalidFileNameChars();
             return new string(
-                    value.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray()
+                value.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray()
                 )
                 .Replace("__", "_")
                 .Replace("__", "_");

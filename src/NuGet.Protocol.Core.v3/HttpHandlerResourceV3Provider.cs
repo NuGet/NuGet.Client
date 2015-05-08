@@ -1,14 +1,14 @@
-﻿using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -19,7 +19,6 @@ namespace NuGet.Protocol.Core.v3
         public HttpHandlerResourceV3Provider()
             : base(typeof(HttpHandlerResource), "HttpHandlerResourceV3Provider", NuGetResourceProviderPositions.Last)
         {
-
         }
 
         public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -27,8 +26,8 @@ namespace NuGet.Protocol.Core.v3
             HttpHandlerResourceV3 curResource = null;
 
 #if !DNXCORE50
-			// Everyone gets a dataclient
-			var HttpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
+            // Everyone gets a dataclient
+            var HttpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
             curResource = new HttpHandlerResourceV3(HttpHandler);
 #endif
 
@@ -36,17 +35,21 @@ namespace NuGet.Protocol.Core.v3
         }
 
 #if !DNXCORE50
-		private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource) 
+        private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource)
         {
-            Uri uri = new Uri(packageSource.Source);
+            var uri = new Uri(packageSource.Source);
             var proxy = ProxyCache.Instance.GetProxy(uri);
             var credential = CredentialStore.Instance.GetCredentials(uri);
 
-            if (proxy != null && proxy.Credentials == null) {
+            if (proxy != null
+                && proxy.Credentials == null)
+            {
                 proxy.Credentials = CredentialCache.DefaultCredentials;
             }
 
-            if (credential == null && !String.IsNullOrEmpty(packageSource.UserName) && !String.IsNullOrEmpty(packageSource.Password)) 
+            if (credential == null
+                && !String.IsNullOrEmpty(packageSource.UserName)
+                && !String.IsNullOrEmpty(packageSource.Password))
             {
                 var cache = new CredentialCache();
                 foreach (var scheme in _authenticationSchemes)
@@ -56,19 +59,27 @@ namespace NuGet.Protocol.Core.v3
                 credential = cache;
             }
 
-            if (proxy == null && credential == null) return null;
+            if (proxy == null
+                && credential == null)
+            {
+                return null;
+            }
             else
             {
-                if(proxy != null) ProxyCache.Instance.Add(proxy);
-                if (credential != null) CredentialStore.Instance.Add(uri, credential);
-                return new WebRequestHandler()
+                if (proxy != null)
                 {
-                    Proxy = proxy,
-                    Credentials = credential
-                };
+                    ProxyCache.Instance.Add(proxy);
+                }
+                if (credential != null)
+                {
+                    CredentialStore.Instance.Add(uri, credential);
+                }
+                return new WebRequestHandler()
+                    {
+                        Proxy = proxy,
+                        Credentials = credential
+                    };
             }
-
-
         }
 #endif
     }

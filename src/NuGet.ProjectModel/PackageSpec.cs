@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using NuGet.LibraryModel;
-using NuGet.Versioning;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
     /// Represents the specification of a package that can be built.
     /// </summary>
-    public class PackageSpec 
+    public class PackageSpec
     {
         public static readonly string PackageSpecFileName = "project.json";
 
@@ -29,10 +29,7 @@ namespace NuGet.ProjectModel
 
         public string BaseDirectory
         {
-            get
-            {
-                return Path.GetDirectoryName(FilePath);
-            }
+            get { return Path.GetDirectoryName(FilePath); }
         }
 
         public string Name { get; set; }
@@ -75,4 +72,3 @@ namespace NuGet.ProjectModel
         public JObject Properties { get; }
     }
 }
-

@@ -1,8 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -18,10 +18,9 @@ namespace NuGet.Frameworks
 
         public CompatibilityTable(IEnumerable<NuGetFramework> frameworks)
             : this(frameworks,
-            DefaultFrameworkNameProvider.Instance,
-            DefaultCompatibilityProvider.Instance)
+                DefaultFrameworkNameProvider.Instance,
+                DefaultCompatibilityProvider.Instance)
         {
-
         }
 
         public CompatibilityTable(IEnumerable<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
@@ -70,12 +69,12 @@ namespace NuGet.Frameworks
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> GetTable(IEnumerable<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
         {
             // get the distinct set of frameworks, ignoring all special frameworks like Any, and Unsupported
-            HashSet<NuGetFramework> input = new HashSet<NuGetFramework>(frameworks.Where(f => f.IsSpecificFramework), NuGetFramework.Comparer);
-            Dictionary<NuGetFramework, HashSet<NuGetFramework>> table = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
+            var input = new HashSet<NuGetFramework>(frameworks.Where(f => f.IsSpecificFramework), NuGetFramework.Comparer);
+            var table = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
 
             foreach (var framework in input)
             {
-                HashSet<NuGetFramework> compatFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                var compatFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
                 table.Add(framework, compatFrameworks);
 
                 foreach (var testFramework in input)

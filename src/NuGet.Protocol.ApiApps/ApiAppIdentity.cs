@@ -1,7 +1,10 @@
-﻿using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Globalization;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol.ApiApps
 {
@@ -23,10 +26,7 @@ namespace NuGet.Protocol.ApiApps
         /// </summary>
         public string Namespace
         {
-            get
-            {
-                return _packageNamespace;
-            }
+            get { return _packageNamespace; }
         }
 
         public bool Equals(ApiAppIdentity other)
@@ -36,7 +36,7 @@ namespace NuGet.Protocol.ApiApps
 
         public override bool Equals(object obj)
         {
-            ApiAppIdentity other = obj as ApiAppIdentity;
+            var other = obj as ApiAppIdentity;
 
             if (other != null)
             {

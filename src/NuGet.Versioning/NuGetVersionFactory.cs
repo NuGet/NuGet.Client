@@ -1,8 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Linq;
+using System.Text;
 
 namespace NuGet.Versioning
 {
@@ -11,7 +14,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Creates a NuGetVersion from a string representing the semantic version.
         /// </summary>
-        public static new NuGetVersion Parse(string value)
+        public new static NuGetVersion Parse(string value)
         {
             if (String.IsNullOrEmpty(value))
             {
@@ -28,7 +31,8 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// Parses a version string using loose semantic versioning rules that allows 2-4 version components followed by an optional special version.
+        /// Parses a version string using loose semantic versioning rules that allows 2-4 version components followed
+        /// by an optional special version.
         /// </summary>
         public static bool TryParse(string value, out NuGetVersion version)
         {
@@ -39,12 +43,13 @@ namespace NuGet.Versioning
                 Version systemVersion = null;
 
                 // trim the value before passing it in since we not strict here
-                Tuple<string, string[], string> sections = ParseSections(value.Trim());
+                var sections = ParseSections(value.Trim());
 
                 // null indicates the string did not meet the rules
-                if (sections != null && !string.IsNullOrEmpty(sections.Item1))
+                if (sections != null
+                    && !string.IsNullOrEmpty(sections.Item1))
                 {
-                    string versionPart = sections.Item1;
+                    var versionPart = sections.Item1;
 
                     if (versionPart.IndexOf('.') < 0)
                     {
@@ -55,20 +60,22 @@ namespace NuGet.Versioning
                     if (Version.TryParse(versionPart, out systemVersion))
                     {
                         // labels
-                        if (sections.Item2 != null && !sections.Item2.All(s => IsValidPart(s, false)))
+                        if (sections.Item2 != null
+                            && !sections.Item2.All(s => IsValidPart(s, false)))
                         {
                             return false;
                         }
 
                         // build metadata
-                        if (sections.Item3 != null && !IsValid(sections.Item3, true))
+                        if (sections.Item3 != null
+                            && !IsValid(sections.Item3, true))
                         {
                             return false;
                         }
 
-                        Version ver = NormalizeVersionValue(systemVersion);
+                        var ver = NormalizeVersionValue(systemVersion);
 
-                        string originalVersion = value;
+                        var originalVersion = value;
 
                         if (originalVersion.IndexOf(' ') > -1)
                         {
@@ -76,9 +83,9 @@ namespace NuGet.Versioning
                         }
 
                         version = new NuGetVersion(version: ver,
-                                                    releaseLabels: sections.Item2,
-                                                    metadata: sections.Item3 ?? string.Empty,
-                                                    originalVersion: originalVersion);
+                            releaseLabels: sections.Item2,
+                            metadata: sections.Item3 ?? string.Empty,
+                            originalVersion: originalVersion);
 
                         return true;
                     }
@@ -96,7 +103,7 @@ namespace NuGet.Versioning
             version = null;
 
             SemanticVersion semVer = null;
-            if (SemanticVersion.TryParse(value, out semVer))
+            if (TryParse(value, out semVer))
             {
                 version = new NuGetVersion(semVer.Major, semVer.Minor, semVer.Patch, 0, semVer.ReleaseLabels, semVer.Metadata);
             }
@@ -109,7 +116,7 @@ namespace NuGet.Versioning
         /// </summary>
         private static string GetLegacyString(Version version, IEnumerable<string> releaseLabels, string metadata)
         {
-            StringBuilder sb = new StringBuilder(version.ToString());
+            var sb = new StringBuilder(version.ToString());
 
             if (releaseLabels != null)
             {

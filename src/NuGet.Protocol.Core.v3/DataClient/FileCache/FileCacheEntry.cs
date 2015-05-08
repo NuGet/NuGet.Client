@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
@@ -23,19 +23,16 @@ namespace NuGet.Protocol.Core.v3.Data
 
         public Uri Uri
         {
-            get
-            {
-                return _uri;
-            }
+            get { return _uri; }
         }
 
-        public async virtual Task<Stream> GetStream()
+        public virtual async Task<Stream> GetStream()
         {
             await Task.Delay(1);
             throw new NotImplementedException();
         }
 
-        public async virtual Task<JObject> GetJObject()
+        public virtual async Task<JObject> GetJObject()
         {
             await Task.Delay(1);
             throw new NotImplementedException();

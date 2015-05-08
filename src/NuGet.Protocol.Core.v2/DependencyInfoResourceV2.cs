@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,7 +25,7 @@ namespace NuGet.Protocol.Core.v2
         private readonly FrameworkReducer _frameworkReducer = new FrameworkReducer();
 
         // cache for full ranges
-        private readonly ConcurrentDictionary<string, List<PackageDependencyInfo>> _cache 
+        private readonly ConcurrentDictionary<string, List<PackageDependencyInfo>> _cache
             = new ConcurrentDictionary<string, List<PackageDependencyInfo>>(StringComparer.OrdinalIgnoreCase);
 
         // cache for single versions
@@ -37,7 +40,6 @@ namespace NuGet.Protocol.Core.v2
         public DependencyInfoResourceV2(V2Resource resource)
             : this(resource.V2Client)
         {
-
         }
 
         /// <summary>
@@ -46,7 +48,10 @@ namespace NuGet.Protocol.Core.v2
         /// <param name="package">package id and version</param>
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
-        /// <returns>Returns dependency info for the given package if it exists. If the package is not found null is returned.</returns>
+        /// <returns>
+        /// Returns dependency info for the given package if it exists. If the package is not found null is
+        /// returned.
+        /// </returns>
         public override Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
         {
             if (package == null)
@@ -87,7 +92,7 @@ namespace NuGet.Protocol.Core.v2
                     catch (Exception ex)
                     {
                         // Wrap exceptions coming from the server with a user friendly message
-                        string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, V2Client.Source);
+                        var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, V2Client.Source);
 
                         throw new NuGetProtocolException(error, ex);
                     }
@@ -103,7 +108,10 @@ namespace NuGet.Protocol.Core.v2
         /// <param name="package">package id and version</param>
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
-        /// <returns>Returns dependency info for the given package if it exists. If the package is not found null is returned.</returns>
+        /// <returns>
+        /// Returns dependency info for the given package if it exists. If the package is not found null is
+        /// returned.
+        /// </returns>
         public override Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
         {
             if (packageId == null)
@@ -135,7 +143,7 @@ namespace NuGet.Protocol.Core.v2
                 catch (Exception ex)
                 {
                     // Wrap exceptions coming from the server with a user friendly message
-                    string error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, V2Client.Source);
+                    var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, V2Client.Source);
 
                     throw new NuGetProtocolException(error, ex);
                 }
@@ -145,17 +153,18 @@ namespace NuGet.Protocol.Core.v2
         }
 
         /// <summary>
-        ///  Convert a V2 IPackage into a V3 PackageDependencyInfo
+        /// Convert a V2 IPackage into a V3 PackageDependencyInfo
         /// </summary>
         private PackageDependencyInfo CreateDependencyInfo(IPackage packageVersion, NuGetFramework projectFramework)
         {
-            IEnumerable<V3PackageDependency> deps = Enumerable.Empty<V3PackageDependency>();
+            var deps = Enumerable.Empty<V3PackageDependency>();
 
-            PackageIdentity identity = new PackageIdentity(packageVersion.Id, NuGetVersion.Parse(packageVersion.Version.ToString()));
-            if (packageVersion.DependencySets != null && packageVersion.DependencySets.Any())
+            var identity = new PackageIdentity(packageVersion.Id, NuGetVersion.Parse(packageVersion.Version.ToString()));
+            if (packageVersion.DependencySets != null
+                && packageVersion.DependencySets.Any())
             {
                 // Take only the dependency group valid for the project TFM
-                NuGetFramework nearestFramework = _frameworkReducer.GetNearest(projectFramework, packageVersion.DependencySets.Select(GetFramework));
+                var nearestFramework = _frameworkReducer.GetNearest(projectFramework, packageVersion.DependencySets.Select(GetFramework));
 
                 if (nearestFramework != null)
                 {
@@ -170,7 +179,7 @@ namespace NuGet.Protocol.Core.v2
 
         private static NuGetFramework GetFramework(PackageDependencySet dependencySet)
         {
-            NuGetFramework fxName = NuGetFramework.AnyFramework;
+            var fxName = NuGetFramework.AnyFramework;
             if (dependencySet.TargetFramework != null)
             {
                 fxName = NuGetFramework.Parse(dependencySet.TargetFramework.FullName);
@@ -181,8 +190,8 @@ namespace NuGet.Protocol.Core.v2
 
         private static V3PackageDependency GetPackageDependency(PackageDependency dependency)
         {
-            string id = dependency.Id;
-            VersionRange versionRange = dependency.VersionSpec == null ? null : VersionRange.Parse(dependency.VersionSpec.ToString());
+            var id = dependency.Id;
+            var versionRange = dependency.VersionSpec == null ? null : VersionRange.Parse(dependency.VersionSpec.ToString());
             return new V3PackageDependency(id, versionRange);
         }
     }

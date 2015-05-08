@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
@@ -14,31 +17,46 @@ namespace NuGet.LibraryModel
         public override string ToString()
         {
             var output = Name;
-            if(VersionRange != null)
+            if (VersionRange != null)
             {
                 output += " " + VersionRange.ToString();
             }
-            if(!string.IsNullOrEmpty(TypeConstraint))
+            if (!string.IsNullOrEmpty(TypeConstraint))
             {
                 output = TypeConstraint + "/" + output;
             }
-            return output; 
+            return output;
         }
 
         public bool Equals(LibraryRange other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
             return string.Equals(Name, other.Name) &&
-                Equals(VersionRange, other.VersionRange) &&
-                Equals(TypeConstraint, other.TypeConstraint);
+                   Equals(VersionRange, other.VersionRange) &&
+                   Equals(TypeConstraint, other.TypeConstraint);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
             return Equals((LibraryRange)obj);
         }
 
@@ -47,8 +65,8 @@ namespace NuGet.LibraryModel
             unchecked
             {
                 return ((Name != null ? Name.GetHashCode() : 0) * 397) ^
-                    (VersionRange != null ? VersionRange.GetHashCode() : 0) ^
-                    (TypeConstraint != null ? TypeConstraint.GetHashCode() : 0);
+                       (VersionRange != null ? VersionRange.GetHashCode() : 0) ^
+                       (TypeConstraint != null ? TypeConstraint.GetHashCode() : 0);
             }
         }
 

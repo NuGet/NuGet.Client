@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
-using System.Text;
 using NuGet.Common;
 
 namespace NuGet.Versioning
@@ -18,13 +19,11 @@ namespace NuGet.Versioning
         public FloatRange(NuGetVersionFloatBehavior floatBehavior)
             : this(floatBehavior, null, null)
         {
-
         }
 
         public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion)
             : this(floatBehavior, minVersion, null)
         {
-
         }
 
         /// <summary>
@@ -39,7 +38,9 @@ namespace NuGet.Versioning
             _minVersion = minVersion;
             _releasePrefix = releasePrefix;
 
-            if (_releasePrefix == null && minVersion != null && minVersion.IsPrerelease)
+            if (_releasePrefix == null
+                && minVersion != null
+                && minVersion.IsPrerelease)
             {
                 // use the actual label if one was not given
                 _releasePrefix = minVersion.Release;
@@ -51,10 +52,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool HasMinVersion
         {
-            get
-            {
-                return _minVersion != null;
-            }
+            get { return _minVersion != null; }
         }
 
         /// <summary>
@@ -62,10 +60,7 @@ namespace NuGet.Versioning
         /// </summary>
         public NuGetVersion MinVersion
         {
-            get
-            {
-                return _minVersion;
-            }
+            get { return _minVersion; }
         }
 
         /// <summary>
@@ -73,10 +68,7 @@ namespace NuGet.Versioning
         /// </summary>
         public NuGetVersionFloatBehavior FloatBehavior
         {
-            get
-            {
-                return _floatBehavior;
-            }
+            get { return _floatBehavior; }
         }
 
         /// <summary>
@@ -94,7 +86,8 @@ namespace NuGet.Versioning
                 return true;
             }
 
-            if (_floatBehavior == NuGetVersionFloatBehavior.Major && !version.IsPrerelease)
+            if (_floatBehavior == NuGetVersionFloatBehavior.Major
+                && !version.IsPrerelease)
             {
                 return true;
             }
@@ -106,26 +99,26 @@ namespace NuGet.Versioning
                 {
                     // allow the stable version to match
                     return VersionComparer.Version.Equals(_minVersion, version)
-                        && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
-                        || !version.IsPrerelease);
+                           && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
+                               || !version.IsPrerelease);
                 }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.Revision)
                 {
                     return _minVersion.Major == version.Major
-                                && _minVersion.Minor == version.Minor
-                                && _minVersion.Patch == version.Patch
-                                && !version.IsPrerelease;
+                           && _minVersion.Minor == version.Minor
+                           && _minVersion.Patch == version.Patch
+                           && !version.IsPrerelease;
                 }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.Patch)
                 {
                     return _minVersion.Major == version.Major
-                                && _minVersion.Minor == version.Minor
-                                && !version.IsPrerelease;
+                           && _minVersion.Minor == version.Minor
+                           && !version.IsPrerelease;
                 }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.Minor)
                 {
                     return _minVersion.Major == version.Major
-                                && !version.IsPrerelease;
+                           && !version.IsPrerelease;
                 }
             }
 
@@ -153,12 +146,13 @@ namespace NuGet.Versioning
 
             if (versionString != null)
             {
-                int starPos = versionString.IndexOf('*');
+                var starPos = versionString.IndexOf('*');
 
-                string actualVersion = versionString;
+                var actualVersion = versionString;
                 string releasePrefix = null;
 
-                if (versionString.Length == 1 && starPos == 0)
+                if (versionString.Length == 1
+                    && starPos == 0)
                 {
                     range = new FloatRange(NuGetVersionFloatBehavior.Major, new NuGetVersion(new Version(0, 0)));
                 }
@@ -173,7 +167,7 @@ namespace NuGet.Versioning
                         // replace the * with a 0
                         actualVersion += "0";
 
-                        int versionParts = actualVersion.Split('.').Length;
+                        var versionParts = actualVersion.Split('.').Length;
 
                         if (versionParts == 2)
                         {
@@ -203,7 +197,7 @@ namespace NuGet.Versioning
                                 // the behavior will have to account for this
                                 actualVersion += "-";
                             }
-                            else if(actualVersion.EndsWith("."))
+                            else if (actualVersion.EndsWith("."))
                             {
                                 // ending with a . is not allowed
                                 // TODO: solve this better
@@ -239,7 +233,7 @@ namespace NuGet.Versioning
         /// </summary>
         public override string ToString()
         {
-            string result = string.Empty;
+            var result = string.Empty;
             switch (_floatBehavior)
             {
                 case NuGetVersionFloatBehavior.None:
@@ -273,13 +267,13 @@ namespace NuGet.Versioning
 
         public bool Equals(FloatRange other)
         {
-            return FloatBehavior == other.FloatBehavior 
-                && VersionComparer.Default.Equals(MinVersion, other.MinVersion);
+            return FloatBehavior == other.FloatBehavior
+                   && VersionComparer.Default.Equals(MinVersion, other.MinVersion);
         }
 
         public override int GetHashCode()
         {
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddObject(FloatBehavior);
             combiner.AddObject(MinVersion);

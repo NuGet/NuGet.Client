@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Protocol.Core.v3.Data;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -22,11 +24,11 @@ namespace NuGet.Protocol.Core.v3
 
             if (serviceIndex != null)
             {
-                Uri baseUrl = serviceIndex[ServiceTypes.RegistrationsBaseUrl].FirstOrDefault();
+                var baseUrl = serviceIndex[ServiceTypes.RegistrationsBaseUrl].FirstOrDefault();
 
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                DataClient client = new DataClient(messageHandlerResource.MessageHandler);
+                var client = new DataClient(messageHandlerResource.MessageHandler);
 
                 // construct a new resource
                 regResource = new RegistrationResourceV3(client, baseUrl);

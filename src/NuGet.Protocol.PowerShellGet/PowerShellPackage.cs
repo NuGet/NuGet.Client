@@ -1,8 +1,8 @@
-﻿using NuGet.Packaging.Core;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using NuGet.Versioning;
-using System;
 
 namespace NuGet.Protocol.PowerShellGet
 {
@@ -23,10 +23,7 @@ namespace NuGet.Protocol.PowerShellGet
         /// </summary>
         public ServerPackageMetadata ServerPackage
         {
-            get
-            {
-                return _serverPackage;
-            }
+            get { return _serverPackage; }
         }
 
         /// <summary>
@@ -34,10 +31,7 @@ namespace NuGet.Protocol.PowerShellGet
         /// </summary>
         public PSPackageMetadata PowerShellMetadata
         {
-            get
-            {
-                return _powershellMetadata;
-            }
+            get { return _powershellMetadata; }
         }
     }
 }

@@ -1,9 +1,8 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -22,10 +21,10 @@ namespace NuGet.DependencyResolver
         public GraphNode<Library> Walk(string name, NuGetVersion version, NuGetFramework framework)
         {
             var key = new LibraryRange
-            {
-                Name = name,
-                VersionRange = new VersionRange(version)
-            };
+                {
+                    Name = name,
+                    VersionRange = new VersionRange(version)
+                };
 
             var root = new GraphNode<Library>(key);
 
@@ -34,55 +33,55 @@ namespace NuGet.DependencyResolver
             // Recurse through dependencies optimistically, asking resolvers for dependencies
             // based on best match of each encountered dependency
             root.ForEach(node =>
-            {
-                node.Item = Resolve(resolvedItems, node.Key, framework);
-                if (node.Item == null)
                 {
-                    node.Disposition = Disposition.Rejected;
-                    return;
-                }
-
-                foreach (var dependency in node.Item.Data.Dependencies)
-                {
-                    // determine if a child dependency is eclipsed by
-                    // a reference on the line leading to this point. this
-                    // prevents cyclical dependencies, and also implements the
-                    // "nearest wins" rule.
-
-                    var eclipsed = false;
-                    for (var scanNode = node;
-                         scanNode != null && !eclipsed;
-                         scanNode = scanNode.OuterNode)
+                    node.Item = Resolve(resolvedItems, node.Key, framework);
+                    if (node.Item == null)
                     {
-                        eclipsed |= scanNode.Key.IsEclipsedBy(dependency.LibraryRange);
+                        node.Disposition = Disposition.Rejected;
+                        return;
+                    }
 
-                        if (eclipsed)
-                        {
-                            throw new InvalidOperationException(string.Format("Circular dependency detected {0}.", GetChain(node, dependency)));
-                        }
+                    foreach (var dependency in node.Item.Data.Dependencies)
+                    {
+                        // determine if a child dependency is eclipsed by
+                        // a reference on the line leading to this point. this
+                        // prevents cyclical dependencies, and also implements the
+                        // "nearest wins" rule.
 
-                        foreach (var sideNode in scanNode.InnerNodes)
+                        var eclipsed = false;
+                        for (var scanNode = node;
+                            scanNode != null && !eclipsed;
+                            scanNode = scanNode.OuterNode)
                         {
-                            eclipsed |= sideNode.Key.IsEclipsedBy(dependency.LibraryRange);
+                            eclipsed |= scanNode.Key.IsEclipsedBy(dependency.LibraryRange);
 
                             if (eclipsed)
                             {
-                                break;
+                                throw new InvalidOperationException(string.Format("Circular dependency detected {0}.", GetChain(node, dependency)));
+                            }
+
+                            foreach (var sideNode in scanNode.InnerNodes)
+                            {
+                                eclipsed |= sideNode.Key.IsEclipsedBy(dependency.LibraryRange);
+
+                                if (eclipsed)
+                                {
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    if (!eclipsed)
-                    {
-                        var innerNode = new GraphNode<Library>(dependency.LibraryRange)
+                        if (!eclipsed)
                         {
-                            OuterNode = node
-                        };
+                            var innerNode = new GraphNode<Library>(dependency.LibraryRange)
+                                {
+                                    OuterNode = node
+                                };
 
-                        node.InnerNodes.Add(innerNode);
+                            node.InnerNodes.Add(innerNode);
+                        }
                     }
-                }
-            });
+                });
 
             return root;
         }
@@ -141,9 +140,9 @@ namespace NuGet.DependencyResolver
             }
 
             item = new GraphItem<Library>(hit.Identity)
-            {
-                Data = hit
-            };
+                {
+                    Data = hit
+                };
 
             resolvedItems[library] = item;
             resolvedItems[hit.Identity] = item;

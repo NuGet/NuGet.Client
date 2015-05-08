@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,10 +53,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public override ILogger Logger
         {
-            get
-            {
-                return base.Logger;
-            }
+            get { return base.Logger; }
             set
             {
                 base.Logger = value;
@@ -66,10 +63,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public override bool NoCache
         {
-            get
-            {
-                return base.NoCache;
-            }
+            get { return base.NoCache; }
             set
             {
                 base.NoCache = value;
@@ -178,11 +172,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                                 // Example of what this looks like in the odata feed:
                                 // <link rel="next" href="{nextLink}" />
                                 var nextUri = (from e in doc.Root.Elements(_xnameLink)
-                                               let attr = e.Attribute("rel")
-                                               where attr != null && string.Equals(attr.Value, "next", StringComparison.OrdinalIgnoreCase)
-                                               select e.Attribute("href") into nextLink
-                                               where nextLink != null
-                                               select nextLink.Value).FirstOrDefault();
+                                    let attr = e.Attribute("rel")
+                                    where attr != null && string.Equals(attr.Value, "next", StringComparison.OrdinalIgnoreCase)
+                                    select e.Attribute("href")
+                                    into nextLink
+                                    where nextLink != null
+                                    select nextLink.Value).FirstOrDefault();
 
                                 // Stop if there's nothing else to GET
                                 if (string.IsNullOrEmpty(nextUri))
@@ -240,21 +235,22 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             if (publishElement != null)
             {
                 DateTime publishDate;
-                if (DateTime.TryParse(publishElement.Value, out publishDate) && (publishDate == _unlistedPublishedTime))
+                if (DateTime.TryParse(publishElement.Value, out publishDate)
+                    && (publishDate == _unlistedPublishedTime))
                 {
                     return null;
                 }
             }
 
             return new PackageInfo
-            {
-                // If 'Id' element exist, use its value as accurate package Id
-                // Otherwise, use the value of 'title' if it exist
-                // Use the given Id as final fallback if all elements above don't exist
-                Id = idElement?.Value ?? titleElement?.Value ?? id,
-                Version = NuGetVersion.Parse(properties.Element(_xnameVersion).Value),
-                ContentUri = element.Element(_xnameContent).Attribute("src").Value,
-            };
+                {
+                    // If 'Id' element exist, use its value as accurate package Id
+                    // Otherwise, use the value of 'title' if it exist
+                    // Use the given Id as final fallback if all elements above don't exist
+                    Id = idElement?.Value ?? titleElement?.Value ?? id,
+                    Version = NuGetVersion.Parse(properties.Element(_xnameVersion).Value),
+                    ContentUri = element.Element(_xnameContent).Attribute("src").Value,
+                };
         }
 
         private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
@@ -277,16 +273,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
             return await ConcurrencyUtilities.ExecuteWithFileLocked(result.TempFileName, _ =>
-            {
-                return Task.FromResult(
-                    new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete));
-            });
+                {
+                    return Task.FromResult(
+                        new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
+                            FileShare.ReadWrite | FileShare.Delete));
+                });
         }
 
         private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(PackageInfo package, CancellationToken cancellationToken)
         {
-            for (int retry = 0; retry != 3; ++retry)
+            for (var retry = 0; retry != 3; ++retry)
             {
                 try
                 {
@@ -297,9 +293,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         cancellationToken))
                     {
                         return new NupkgEntry
-                        {
-                            TempFileName = data.CacheFileName
-                        };
+                            {
+                                TempFileName = data.CacheFileName
+                            };
                     }
                 }
                 catch (Exception ex)

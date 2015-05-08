@@ -1,10 +1,9 @@
-﻿using NuGet.Configuration;
-using NuGet.Packaging.Core;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -22,7 +21,8 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="complete">0.0 - 1.0</param>
         public PackageProgressEventArgs(PackageIdentity identity, PackageSource source, double complete)
         {
-            if (complete < 0 || complete > 1)
+            if (complete < 0
+                || complete > 1)
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -39,18 +39,12 @@ namespace NuGet.Protocol.Core.Types
 
         public PackageIdentity PackageIdentity
         {
-            get
-            {
-                return _identity;
-            }
+            get { return _identity; }
         }
 
         public PackageSource PackageSource
         {
-            get
-            {
-                return _source;
-            }
+            get { return _source; }
         }
 
         /// <summary>
@@ -58,10 +52,7 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public double Complete
         {
-            get
-            {
-                return _complete;
-            }
+            get { return _complete; }
         }
 
         /// <summary>
@@ -69,18 +60,12 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public bool IsComplete
         {
-            get
-            {
-                return _complete == 1;
-            }
+            get { return _complete == 1; }
         }
 
         public bool HasPackageSource
         {
-            get
-            {
-                return PackageSource != null;
-            }
+            get { return PackageSource != null; }
         }
     }
 }

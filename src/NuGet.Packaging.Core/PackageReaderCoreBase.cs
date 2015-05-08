@@ -1,12 +1,11 @@
-﻿using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
 {
@@ -20,7 +19,6 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public PackageReaderCoreBase()
         {
-
         }
 
         public virtual PackageIdentity GetIdentity()
@@ -39,7 +37,7 @@ namespace NuGet.Packaging.Core
 
         public virtual Stream GetNuspec()
         {
-            string path = GetFiles().Where(f => f.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            var path = GetFiles().Where(f => f.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
             if (String.IsNullOrEmpty(path))
             {
@@ -52,14 +50,13 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Internal low level nuspec reader
         /// </summary>
-        /// <remarks>This should be overriden and the higher level nuspec reader returned to avoid parsing
-        /// the nuspec multiple times</remarks>
+        /// <remarks>
+        /// This should be overriden and the higher level nuspec reader returned to avoid parsing
+        /// the nuspec multiple times
+        /// </remarks>
         protected virtual NuspecCoreReaderBase NuspecCore
         {
-            get
-            {
-                return new NuspecCoreReader(GetNuspec());
-            }
+            get { return new NuspecCoreReader(GetNuspec()); }
         }
 
         protected virtual void Dispose(bool disposing)

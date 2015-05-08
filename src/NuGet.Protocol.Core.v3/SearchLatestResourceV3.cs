@@ -1,16 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -26,18 +25,18 @@ namespace NuGet.Protocol.Core.v3
 
         public override async Task<IEnumerable<ServerPackageMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
-            List<ServerPackageMetadata> results = new List<ServerPackageMetadata>();
+            var results = new List<ServerPackageMetadata>();
 
             var searchResultJsonObjects = await _searchResource.Search(searchTerm, filters, skip, take, cancellationToken);
 
-            foreach (JObject package in searchResultJsonObjects)
+            foreach (var package in searchResultJsonObjects)
             {
                 // TODO: verify this parsing is needed
-                string id = package.Value<string>(Properties.PackageId);
-                NuGetVersion version = NuGetVersion.Parse(package.Value<string>(Properties.Version));
-                PackageIdentity topPackage = new PackageIdentity(id, version);
-                Uri iconUrl = GetUri(package, Properties.IconUrl);
-                string summary = package.Value<string>(Properties.Summary);
+                var id = package.Value<string>(Properties.PackageId);
+                var version = NuGetVersion.Parse(package.Value<string>(Properties.Version));
+                var topPackage = new PackageIdentity(id, version);
+                var iconUrl = GetUri(package, Properties.IconUrl);
+                var summary = package.Value<string>(Properties.Summary);
 
                 if (string.IsNullOrWhiteSpace(summary))
                 {
@@ -57,14 +56,14 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         private static string GetField(JObject json, string property)
         {
-            JToken value = json[property];
+            var value = json[property];
 
             if (value == null)
             {
                 return string.Empty;
             }
 
-            JArray array = value as JArray;
+            var array = value as JArray;
 
             if (array != null)
             {
@@ -76,7 +75,7 @@ namespace NuGet.Protocol.Core.v3
 
         private static int GetInt(JObject json, string property)
         {
-            JToken value = json[property];
+            var value = json[property];
 
             if (value == null)
             {
@@ -88,7 +87,7 @@ namespace NuGet.Protocol.Core.v3
 
         private static DateTimeOffset? GetDateTime(JObject json, string property)
         {
-            JToken value = json[property];
+            var value = json[property];
 
             if (value == null)
             {
@@ -98,14 +97,13 @@ namespace NuGet.Protocol.Core.v3
             return value.ToObject<DateTimeOffset>();
         }
 
-
         private Uri GetUri(JObject json, string property)
         {
             if (json[property] == null)
             {
                 return null;
             }
-            string str = json[property].ToString();
+            var str = json[property].ToString();
             if (String.IsNullOrEmpty(str))
             {
                 return null;

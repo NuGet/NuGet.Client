@@ -1,13 +1,14 @@
-﻿using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
@@ -32,28 +33,26 @@ namespace NuGet.Packaging
         public NuspecReader(Stream stream)
             : base(stream)
         {
-
         }
 
         public NuspecReader(XDocument xml)
             : base(xml)
         {
-
         }
 
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups()
         {
-            string ns = MetadataNode.GetDefaultNamespace().NamespaceName;
+            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
 
-            bool groupFound = false;
+            var groupFound = false;
 
             foreach (var depGroup in MetadataNode.Elements(XName.Get(Dependencies, ns)).Elements(XName.Get(Group, ns)))
             {
                 groupFound = true;
 
-                string groupFramework = GetAttributeValue(depGroup, TargetFramework);
+                var groupFramework = GetAttributeValue(depGroup, TargetFramework);
 
-                List<PackageDependency> packages = new List<PackageDependency>();
+                var packages = new List<PackageDependency>();
 
                 foreach (var depNode in depGroup.Elements(XName.Get(Dependency, ns)))
                 {
@@ -111,17 +110,17 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetReferenceGroups()
         {
-            string ns = MetadataNode.GetDefaultNamespace().NamespaceName;
+            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
 
-            bool groupFound = false;
+            var groupFound = false;
 
             foreach (var group in MetadataNode.Elements(XName.Get(References, ns)).Elements(XName.Get(Group, ns)))
             {
                 groupFound = true;
 
-                string groupFramework = GetAttributeValue(group, TargetFramework);
+                var groupFramework = GetAttributeValue(group, TargetFramework);
 
-                string[] items = group.Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
+                var items = group.Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
                 yield return new FrameworkSpecificGroup(groupFramework, items);
             }
@@ -129,7 +128,7 @@ namespace NuGet.Packaging
             // pre-2.5 flat list of references, this should only be used if there are no groups
             if (!groupFound)
             {
-                string[] items = MetadataNode.Elements(XName.Get(References, ns))
+                var items = MetadataNode.Elements(XName.Get(References, ns))
                     .Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
                 if (items.Length > 0)
@@ -145,7 +144,7 @@ namespace NuGet.Packaging
         {
             var results = new List<FrameworkSpecificGroup>();
 
-            string ns = Xml.Root.GetDefaultNamespace().NamespaceName;
+            var ns = Xml.Root.GetDefaultNamespace().NamespaceName;
 
             var groups = new Dictionary<NuGetFramework, HashSet<string>>(new NuGetFrameworkFullComparer());
 
@@ -153,7 +152,7 @@ namespace NuGet.Packaging
                 .GroupBy(n => GetAttributeValue(n, TargetFramework)))
             {
                 // Framework references may have multiple comma delimited frameworks
-                List<NuGetFramework> frameworks = new List<NuGetFramework>();
+                var frameworks = new List<NuGetFramework>();
 
                 // Empty frameworks go under Any
                 if (String.IsNullOrEmpty(group.Key))
@@ -202,7 +201,7 @@ namespace NuGet.Packaging
 
         private static string GetAttributeValue(XElement element, string attributeName)
         {
-            XAttribute attribute = element.Attribute(XName.Get(attributeName));
+            var attribute = element.Attribute(XName.Get(attributeName));
             return attribute == null ? null : attribute.Value;
         }
     }

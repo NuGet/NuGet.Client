@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -15,7 +18,7 @@ using NuGet.Versioning;
 namespace NuGet.Protocol.VisualStudio
 {
     public class UIMetadataResourceV3 : UIMetadataResource
-    {   
+    {
         private readonly RegistrationResourceV3 _regResource;
         private readonly ReportAbuseResourceV3 _reportAbuseResource;
         private readonly DataClient _client;
@@ -30,7 +33,7 @@ namespace NuGet.Protocol.VisualStudio
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(IEnumerable<PackageIdentity> packages, CancellationToken token)
         {
-            List<UIPackageMetadata> results = new List<UIPackageMetadata>();
+            var results = new List<UIPackageMetadata>();
 
             // group by id to optimize
             foreach (var group in packages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
@@ -38,9 +41,9 @@ namespace NuGet.Protocol.VisualStudio
                 var versions = group.OrderBy(e => e.Version, VersionComparer.VersionRelease);
 
                 // find the range of versions we need
-                VersionRange range = new VersionRange(versions.First().Version, true, versions.Last().Version, true, true);
+                var range = new VersionRange(versions.First().Version, true, versions.Last().Version, true, true);
 
-                IEnumerable<JObject> metadataList = await _regResource.GetPackageMetadata(group.Key, range, true, true, token);
+                var metadataList = await _regResource.GetPackageMetadata(group.Key, range, true, true, token);
 
                 results.AddRange(metadataList.Select(item => ParseMetadata(item)));
             }
@@ -50,13 +53,13 @@ namespace NuGet.Protocol.VisualStudio
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            IEnumerable<JObject> metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, token);
+            var metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, token);
             return metadataList.Select(item => ParseMetadata(item));
         }
 
         public UIPackageMetadata ParseMetadata(JObject metadata)
         {
-            NuGetVersion version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
+            var version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
             DateTimeOffset? published = null;
             var publishedToken = metadata[Properties.Published];
             if (publishedToken != null)
@@ -79,25 +82,25 @@ namespace NuGet.Protocol.VisualStudio
             else
             {
                 downloadCountValue = null;
-            }            
-            
-            string id = metadata.Value<string>(Properties.PackageId);
-            string title = metadata.Value<string>(Properties.Title);
-            string summary = metadata.Value<string>(Properties.Summary);
-            string description = metadata.Value<string>(Properties.Description);
-            string authors = GetField(metadata, Properties.Authors);
-            string owners = GetField(metadata, Properties.Owners);
-            Uri iconUrl = GetUri(metadata, Properties.IconUrl);
-            Uri licenseUrl = GetUri(metadata, Properties.LicenseUrl);
-            Uri projectUrl = GetUri(metadata, Properties.ProjectUrl);
-            string tags = GetField(metadata, Properties.Tags);
-            IEnumerable<PackageDependencyGroup> dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
-            bool requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
+            }
 
-            Uri reportAbuseUrl =
+            var id = metadata.Value<string>(Properties.PackageId);
+            var title = metadata.Value<string>(Properties.Title);
+            var summary = metadata.Value<string>(Properties.Summary);
+            var description = metadata.Value<string>(Properties.Description);
+            var authors = GetField(metadata, Properties.Authors);
+            var owners = GetField(metadata, Properties.Owners);
+            var iconUrl = GetUri(metadata, Properties.IconUrl);
+            var licenseUrl = GetUri(metadata, Properties.LicenseUrl);
+            var projectUrl = GetUri(metadata, Properties.ProjectUrl);
+            var tags = GetField(metadata, Properties.Tags);
+            var dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
+            var requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
+
+            var reportAbuseUrl =
                 _reportAbuseResource != null ?
-                _reportAbuseResource.GetReportAbuseUrl(id, version) :
-                null;
+                    _reportAbuseResource.GetReportAbuseUrl(id, version) :
+                    null;
 
             if (String.IsNullOrEmpty(title))
             {
@@ -107,19 +110,19 @@ namespace NuGet.Protocol.VisualStudio
 
             return new UIPackageMetadata(
                 new PackageIdentity(id, version),
-                title, 
-                summary, 
-                description, 
-                authors, 
+                title,
+                summary,
+                description,
+                authors,
                 owners,
-                iconUrl, 
-                licenseUrl, 
-                projectUrl, 
+                iconUrl,
+                licenseUrl,
+                projectUrl,
                 reportAbuseUrl,
-                tags, 
-                published, 
-                dependencySets, 
-                requireLicenseAcceptance, 
+                tags,
+                published,
+                dependencySets,
+                requireLicenseAcceptance,
                 downloadCountValue);
         }
 
@@ -128,14 +131,14 @@ namespace NuGet.Protocol.VisualStudio
         /// </summary>
         private static string GetField(JObject json, string property)
         {
-            JToken value = json[property];
+            var value = json[property];
 
             if (value == null)
             {
                 return string.Empty;
             }
 
-            JArray array = value as JArray;
+            var array = value as JArray;
 
             if (array != null)
             {
@@ -151,7 +154,7 @@ namespace NuGet.Protocol.VisualStudio
             {
                 return null;
             }
-            string str = json[property].ToString();
+            var str = json[property].ToString();
             if (String.IsNullOrEmpty(str))
             {
                 return null;
@@ -163,7 +166,7 @@ namespace NuGet.Protocol.VisualStudio
         {
             var fxName = set.Value<string>(Properties.TargetFramework);
 
-            NuGetFramework framework = NuGetFramework.AnyFramework;
+            var framework = NuGetFramework.AnyFramework;
 
             if (!String.IsNullOrEmpty(fxName))
             {
@@ -175,10 +178,10 @@ namespace NuGet.Protocol.VisualStudio
                 (set.Value<JArray>(Properties.Dependencies) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependency((JObject)obj)));
         }
 
-        private static NuGet.Packaging.Core.PackageDependency LoadDependency(JObject dep)
+        private static Packaging.Core.PackageDependency LoadDependency(JObject dep)
         {
             var ver = dep.Value<string>(Properties.Range);
-            return new NuGet.Packaging.Core.PackageDependency(
+            return new Packaging.Core.PackageDependency(
                 dep.Value<string>(Properties.PackageId),
                 String.IsNullOrEmpty(ver) ? null : VersionRange.Parse(ver));
         }

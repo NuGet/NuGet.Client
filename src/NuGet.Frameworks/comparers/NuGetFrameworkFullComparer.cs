@@ -1,8 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Frameworks
 {
@@ -13,31 +13,32 @@ namespace NuGet.Frameworks
     {
         public bool Equals(NuGetFramework x, NuGetFramework y)
         {
-            if (Object.ReferenceEquals(x, y))
+            if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+            if (ReferenceEquals(x, null)
+                || ReferenceEquals(y, null))
             {
                 return false;
             }
 
             return x.Version == y.Version
-                && StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
-                && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile)
-                && StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform)
-                && x.PlatformVersion == y.PlatformVersion;
+                   && StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
+                   && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile)
+                   && StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform)
+                   && x.PlatformVersion == y.PlatformVersion;
         }
 
         public int GetHashCode(NuGetFramework obj)
         {
-            if (Object.ReferenceEquals(obj, null))
+            if (ReferenceEquals(obj, null))
             {
                 return 0;
             }
 
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddStringIgnoreCase(obj.Framework);
             combiner.AddObject(obj.Version);

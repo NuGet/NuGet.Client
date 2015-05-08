@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using Xunit;
 
@@ -108,8 +111,8 @@ namespace NuGet.Versioning.Test
         public void ParseVersionRangeParts(string minString, string maxString, bool minInc, bool maxInc)
         {
             // Arrange
-            NuGetVersion min = NuGetVersion.Parse(minString);
-            NuGetVersion max = NuGetVersion.Parse(maxString);
+            var min = NuGetVersion.Parse(minString);
+            var max = NuGetVersion.Parse(maxString);
 
             // Act
             var versionInfo = new VersionRange(min, minInc, max, maxInc);
@@ -131,8 +134,8 @@ namespace NuGet.Versioning.Test
         public void ParseVersionRangeToStringReParse(string minString, string maxString, bool minInc, bool maxInc)
         {
             // Arrange
-            NuGetVersion min = NuGetVersion.Parse(minString);
-            NuGetVersion max = NuGetVersion.Parse(maxString);
+            var min = NuGetVersion.Parse(minString);
+            var max = NuGetVersion.Parse(maxString);
 
             // Act
             var original = new VersionRange(min, minInc, max, maxInc);
@@ -370,7 +373,7 @@ namespace NuGet.Versioning.Test
         {
             // Act
             VersionRange versionInfo;
-            bool parsed = VersionRange.TryParse("   [-1, 2]  ", out versionInfo);
+            var parsed = VersionRange.TryParse("   [-1, 2]  ", out versionInfo);
 
             Assert.False(parsed);
             Assert.Null(versionInfo);
@@ -475,8 +478,8 @@ namespace NuGet.Versioning.Test
         {
             // Arrange
             var versionRange = VersionRange.Parse(range);
-            string actual = String.Format("{0}", versionRange);
-            string expected = versionRange.ToString();
+            var actual = String.Format("{0}", versionRange);
+            var expected = versionRange.ToString();
 
             // Assert
             Assert.Equal(expected, actual);
@@ -505,8 +508,8 @@ namespace NuGet.Versioning.Test
         {
             // Arrange
             var versionRange = VersionRange.Parse(range);
-            string actual = String.Format(CultureInfo.InvariantCulture, "{0}", versionRange);
-            string expected = versionRange.ToString();
+            var actual = String.Format(CultureInfo.InvariantCulture, "{0}", versionRange);
+            var expected = versionRange.ToString();
 
             // Assert
             Assert.Equal(expected, actual);

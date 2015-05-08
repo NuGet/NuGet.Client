@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -14,9 +17,10 @@ namespace NuGet.Client
     public class ManagedCodeConventions
     {
         private static readonly ContentPropertyDefinition TfmProperty = new ContentPropertyDefinition(PropertyNames.TargetFrameworkMoniker,
-            table: new Dictionary<string, object>() {
-                { "any", new NuGetFramework(FrameworkConstants.SpecialIdentifiers.Any, FrameworkConstants.EmptyVersion) }
-            },
+            table: new Dictionary<string, object>()
+                {
+                    { "any", new NuGetFramework(FrameworkConstants.SpecialIdentifiers.Any, FrameworkConstants.EmptyVersion) }
+                },
             parser: TargetFrameworkName_Parser,
             compatibilityTest: TargetFrameworkName_CompatibilityTest);
 
@@ -56,10 +60,11 @@ namespace NuGet.Client
             }
             else
             {
-                string criteriaRid = criteria as string;
-                string availableRid = available as string;
+                var criteriaRid = criteria as string;
+                var availableRid = available as string;
 
-                if (criteriaRid != null && availableRid != null)
+                if (criteriaRid != null
+                    && availableRid != null)
                 {
                     return _runtimeGraph.AreCompatible(criteriaRid, availableRid);
                 }
@@ -84,14 +89,17 @@ namespace NuGet.Client
             var criteriaFrameworkName = criteria as NuGetFramework;
             var availableFrameworkName = available as NuGetFramework;
 
-            if (criteriaFrameworkName != null && availableFrameworkName != null)
+            if (criteriaFrameworkName != null
+                && availableFrameworkName != null)
             {
                 // We only consider 'any' matches when the criteria explicitly asks for them
-                if (criteriaFrameworkName.IsAny && availableFrameworkName.IsAny)
+                if (criteriaFrameworkName.IsAny
+                    && availableFrameworkName.IsAny)
                 {
                     return true;
                 }
-                else if (criteriaFrameworkName.IsAny || availableFrameworkName.IsAny)
+                else if (criteriaFrameworkName.IsAny
+                         || availableFrameworkName.IsAny)
                 {
                     // Otherwise, ignore 'any' framework values
                     return false;
@@ -105,9 +113,9 @@ namespace NuGet.Client
         private static Version NormalizeVersion(Version version)
         {
             return new Version(version.Major,
-                               version.Minor,
-                               Math.Max(version.Build, 0),
-                               Math.Max(version.Revision, 0));
+                version.Minor,
+                Math.Max(version.Build, 0),
+                Math.Max(version.Revision, 0));
         }
 
         public class ManagedCodeCriteria
@@ -167,40 +175,41 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        "runtimes/{rid}/lib/{tfm}/{any?}",
-                        "lib/{tfm}/{any?}",
-                        new PatternDefinition("lib/{assembly?}", defaults: new Dictionary<string, object>
-                        {
-                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
-                        })
-                    },
+                            "runtimes/{rid}/lib/{tfm}/{any?}",
+                            "lib/{tfm}/{any?}",
+                            new PatternDefinition("lib/{assembly?}", defaults: new Dictionary<string, object>
+                                {
+                                    { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                                })
+                        },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "runtimes/{rid}/lib/{tfm}/{assembly}",
-                        "lib/{tfm}/{assembly}",
-                        new PatternDefinition("lib/{assembly}", defaults: new Dictionary<string, object>
-                        {
-                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
-                        })
-                    });
+                            "runtimes/{rid}/lib/{tfm}/{assembly}",
+                            "lib/{tfm}/{assembly}",
+                            new PatternDefinition("lib/{assembly}", defaults: new Dictionary<string, object>
+                                {
+                                    { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                                })
+                        });
 
                 CompileAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
-                    {
-                        "ref/{tfm}/{any?}",
-                    },
-                    pathPatterns: new PatternDefinition[] {
-                        "ref/{tfm}/{assembly}",
-                    });
+                        {
+                            "ref/{tfm}/{any?}",
+                        },
+                    pathPatterns: new PatternDefinition[]
+                        {
+                            "ref/{tfm}/{assembly}",
+                        });
 
                 NativeLibraries = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
-                    {
-                        "runtimes/{rid}/native/{any?}",
-                        "native/{any?}",
-                    },
+                        {
+                            "runtimes/{rid}/native/{any?}",
+                            "native/{any?}",
+                        },
                     pathPatterns: new PatternDefinition[]
                     {
                         "runtimes/{rid}/native/{any}",

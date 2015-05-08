@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,7 @@ namespace NuGet.Common
             return filePath.Replace(Path.DirectorySeparatorChar, '_');
         }
 
-        internal async static Task<T> ExecuteWithFileLocked<T>(string filePath, Func<bool, Task<T>> action)
+        internal static async Task<T> ExecuteWithFileLocked<T>(string filePath, Func<bool, Task<T>> action)
         {
             var createdNew = false;
             var fileLock = new Semaphore(initialCount: 0, maximumCount: 1, name: FilePathToLockName(filePath),

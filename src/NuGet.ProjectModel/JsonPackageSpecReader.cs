@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,8 +10,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Versioning;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -137,7 +140,6 @@ namespace NuGet.ProjectModel
                 {
                     if (string.IsNullOrEmpty(dependency.Key))
                     {
-
                         throw PackageSpecFormatException.Create(
                             "Unable to resolve dependency ''.",
                             dependency.Value,
@@ -153,7 +155,7 @@ namespace NuGet.ProjectModel
                     var dependencyTypeValue = LibraryDependencyType.Default;
 
                     string dependencyVersionValue = null;
-                    JToken dependencyVersionToken = dependencyValue;
+                    var dependencyVersionToken = dependencyValue;
 
                     if (dependencyValue.Type == JTokenType.String)
                     {
@@ -164,7 +166,8 @@ namespace NuGet.ProjectModel
                         if (dependencyValue.Type == JTokenType.Object)
                         {
                             dependencyVersionToken = dependencyValue["version"];
-                            if (dependencyVersionToken != null && dependencyVersionToken.Type == JTokenType.String)
+                            if (dependencyVersionToken != null
+                                && dependencyVersionToken.Type == JTokenType.String)
                             {
                                 dependencyVersionValue = dependencyVersionToken.Value<string>();
                             }
@@ -195,15 +198,15 @@ namespace NuGet.ProjectModel
                     }
 
                     results.Add(new LibraryDependency()
-                    {
-                        LibraryRange = new LibraryRange()
                         {
-                            Name = dependency.Key,
-                            TypeConstraint = isGacOrFrameworkReference ? LibraryTypes.Reference : null,
-                            VersionRange = dependencyVersionRange,
-                        },
-                        Type = dependencyTypeValue
-                    });
+                            LibraryRange = new LibraryRange()
+                                {
+                                    Name = dependency.Key,
+                                    TypeConstraint = isGacOrFrameworkReference ? LibraryTypes.Reference : null,
+                                    VersionRange = dependencyVersionRange,
+                                },
+                            Type = dependencyTypeValue
+                        });
                 }
             }
         }
@@ -219,9 +222,9 @@ namespace NuGet.ProjectModel
             else if (token.Type == JTokenType.String)
             {
                 values = new[]
-                {
-                    token.Value<string>()
-                };
+                    {
+                        token.Value<string>()
+                    };
             }
             else
             {
@@ -275,10 +278,10 @@ namespace NuGet.ProjectModel
             }
 
             var targetFrameworkInformation = new TargetFrameworkInformation
-            {
-                FrameworkName = frameworkName,
-                Dependencies = new List<LibraryDependency>()
-            };
+                {
+                    FrameworkName = frameworkName,
+                    Dependencies = new List<LibraryDependency>()
+                };
 
             var properties = targetFramework.Value.Value<JObject>();
 
@@ -298,7 +301,6 @@ namespace NuGet.ProjectModel
                 isGacOrFrameworkReference: true);
 
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
-
 
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
 

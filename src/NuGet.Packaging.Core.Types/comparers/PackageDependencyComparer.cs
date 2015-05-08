@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Versioning;
@@ -10,9 +13,8 @@ namespace NuGet.Packaging.Core
         private readonly IVersionRangeComparer _versionRangeComparer;
 
         public PackageDependencyComparer()
-            :this (VersionRangeComparer.Default)
+            : this(VersionRangeComparer.Default)
         {
-
         }
 
         public PackageDependencyComparer(IVersionRangeComparer versionRangeComparer)
@@ -33,17 +35,18 @@ namespace NuGet.Packaging.Core
 
         public bool Equals(PackageDependency x, PackageDependency y)
         {
-            if (Object.ReferenceEquals(x, y))
+            if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+            if (ReferenceEquals(x, null)
+                || ReferenceEquals(y, null))
             {
                 return false;
             }
 
-            bool result = StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
+            var result = StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
 
             if (result)
             {
@@ -55,7 +58,7 @@ namespace NuGet.Packaging.Core
 
         public int GetHashCode(PackageDependency obj)
         {
-            if (Object.ReferenceEquals(obj, null))
+            if (ReferenceEquals(obj, null))
             {
                 return 0;
             }
@@ -65,7 +68,8 @@ namespace NuGet.Packaging.Core
             combiner.AddObject(obj.Id.ToUpperInvariant());
 
             // Treat null ranges and the All range as the same thing here
-            if (obj.VersionRange != null && !obj.VersionRange.Equals(VersionRange.All))
+            if (obj.VersionRange != null
+                && !obj.VersionRange.Equals(VersionRange.All))
             {
                 combiner.AddObject(_versionRangeComparer.GetHashCode(obj.VersionRange));
             }

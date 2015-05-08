@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace NuGet.Versioning
 {
@@ -24,7 +27,8 @@ namespace NuGet.Versioning
         {
             string formattedString = null;
 
-            if (formatProvider == null || !TryFormatter(format, formatProvider, out formattedString))
+            if (formatProvider == null
+                || !TryFormatter(format, formatProvider, out formattedString))
             {
                 formattedString = ToString();
             }
@@ -34,12 +38,12 @@ namespace NuGet.Versioning
 
         protected bool TryFormatter(string format, IFormatProvider formatProvider, out string formattedString)
         {
-            bool formatted = false;
+            var formatted = false;
             formattedString = null;
 
             if (formatProvider != null)
             {
-                ICustomFormatter formatter = formatProvider.GetFormat(this.GetType()) as ICustomFormatter;
+                var formatter = formatProvider.GetFormat(this.GetType()) as ICustomFormatter;
                 if (formatter != null)
                 {
                     formatted = true;
@@ -88,7 +92,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual int CompareTo(SemanticVersion other, VersionComparison versionComparison)
         {
-            VersionComparer comparer = new VersionComparer(versionComparison);
+            var comparer = new VersionComparer(versionComparison);
             return comparer.Compare(this, other);
         }
 
@@ -109,7 +113,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// <
+        ///     <
         /// </summary>
         public static bool operator <(SemanticVersion version1, SemanticVersion version2)
         {
@@ -117,7 +121,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// <=
+        ///     <=
         /// </summary>
         public static bool operator <=(SemanticVersion version1, SemanticVersion version2)
         {

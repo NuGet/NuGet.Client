@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using NuGet.Common;
 
 namespace NuGet.Versioning
@@ -16,7 +19,6 @@ namespace NuGet.Versioning
         public VersionRangeComparer()
             : this(new VersionComparer(VersionComparison.Default))
         {
-
         }
 
         /// <summary>
@@ -25,7 +27,6 @@ namespace NuGet.Versioning
         public VersionRangeComparer(VersionComparison versionComparison)
             : this(new VersionComparer(versionComparison))
         {
-
         }
 
         /// <summary>
@@ -46,10 +47,7 @@ namespace NuGet.Versioning
         /// </summary>
         public static IVersionRangeComparer Default
         {
-            get
-            {
-                return new VersionRangeComparer(VersionComparison.Default);
-            }
+            get { return new VersionRangeComparer(VersionComparison.Default); }
         }
 
         /// <summary>
@@ -57,10 +55,7 @@ namespace NuGet.Versioning
         /// </summary>
         public static IVersionRangeComparer VersionRelease
         {
-            get
-            {
-                return new VersionRangeComparer(VersionComparison.VersionRelease);
-            }
+            get { return new VersionRangeComparer(VersionComparison.VersionRelease); }
         }
 
         /// <summary>
@@ -70,20 +65,21 @@ namespace NuGet.Versioning
         public bool Equals(VersionRangeBase x, VersionRangeBase y)
         {
             // same object
-            if (Object.ReferenceEquals(x, y))
+            if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
             // null checks
-            if (Object.ReferenceEquals(y, null) || Object.ReferenceEquals(x, null))
+            if (ReferenceEquals(y, null)
+                || ReferenceEquals(x, null))
             {
                 return false;
             }
 
             return x.IncludePrerelease == y.IncludePrerelease && x.IsMinInclusive == y.IsMinInclusive &&
-                y.IsMaxInclusive == x.IsMaxInclusive && _versionComparer.Equals(y.MinVersion, x.MinVersion)
-                && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
+                   y.IsMaxInclusive == x.IsMaxInclusive && _versionComparer.Equals(y.MinVersion, x.MinVersion)
+                   && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
         }
 
         /// <summary>
@@ -92,12 +88,12 @@ namespace NuGet.Versioning
         /// </summary>
         public int GetHashCode(VersionRangeBase obj)
         {
-            if (Object.ReferenceEquals(obj, null))
+            if (ReferenceEquals(obj, null))
             {
                 return 0;
             }
 
-            HashCodeCombiner combiner = new HashCodeCombiner();
+            var combiner = new HashCodeCombiner();
 
             combiner.AddObject(obj.IncludePrerelease);
             combiner.AddObject(obj.IsMinInclusive);

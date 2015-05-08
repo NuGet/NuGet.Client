@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace NuGet.DependencyResolver
 
         public bool SupportsType(string libraryType)
         {
-            return string.IsNullOrEmpty(libraryType) || 
+            return string.IsNullOrEmpty(libraryType) ||
                    string.Equals(libraryType, LibraryTypes.Package);
         }
 
@@ -44,18 +44,17 @@ namespace NuGet.DependencyResolver
                 }
 
                 var description = new Library
-                {
-                    LibraryRange = libraryRange,
-                    Identity = new LibraryIdentity
                     {
-                        Name = package.Id,
-                        Version = package.Version,
-                        Type = LibraryTypes.Package
-                    },
-                    Path = package.ManifestPath,
-                    Dependencies = GetDependencies(nuspecReader, targetFramework)
-                };
-
+                        LibraryRange = libraryRange,
+                        Identity = new LibraryIdentity
+                            {
+                                Name = package.Id,
+                                Version = package.Version,
+                                Type = LibraryTypes.Package
+                            },
+                        Path = package.ManifestPath,
+                        Dependencies = GetDependencies(nuspecReader, targetFramework)
+                    };
 
                 description.Items["package"] = package;
                 description.Items["metadata"] = nuspecReader;
@@ -69,19 +68,19 @@ namespace NuGet.DependencyResolver
         private IEnumerable<LibraryDependency> GetDependencies(NuspecReader nuspecReader, NuGetFramework targetFramework)
         {
             var dependencies = NuGetFrameworkUtility.GetNearest(nuspecReader.GetDependencyGroups(),
-                                                      targetFramework,
-                                                      item => item.TargetFramework);
+                targetFramework,
+                item => item.TargetFramework);
 
             var frameworkAssemblies = NuGetFrameworkUtility.GetNearest(nuspecReader.GetFrameworkReferenceGroups(),
-                                                             targetFramework,
-                                                             item => item.TargetFramework);
+                targetFramework,
+                item => item.TargetFramework);
 
             return GetDependencies(targetFramework, dependencies, frameworkAssemblies);
         }
 
         private static IList<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
-                                                                PackageDependencyGroup dependencies,
-                                                                FrameworkSpecificGroup frameworkAssemblies)
+            PackageDependencyGroup dependencies,
+            FrameworkSpecificGroup frameworkAssemblies)
         {
             var libraryDependencies = new List<LibraryDependency>();
 
@@ -90,13 +89,13 @@ namespace NuGet.DependencyResolver
                 foreach (var d in dependencies.Packages)
                 {
                     libraryDependencies.Add(new LibraryDependency
-                    {
-                        LibraryRange = new LibraryRange
                         {
-                            Name = d.Id,
-                            VersionRange = d.VersionRange
-                        }
-                    });
+                            LibraryRange = new LibraryRange
+                                {
+                                    Name = d.Id,
+                                    VersionRange = d.VersionRange
+                                }
+                        });
                 }
             }
 
@@ -105,7 +104,8 @@ namespace NuGet.DependencyResolver
                 return libraryDependencies;
             }
 
-            if (frameworkAssemblies.TargetFramework.AnyPlatform && !targetFramework.IsDesktop())
+            if (frameworkAssemblies.TargetFramework.AnyPlatform
+                && !targetFramework.IsDesktop())
             {
                 // REVIEW: This isn't 100% correct since none *can* mean 
                 // any in theory, but in practice it means .NET full reference assembly
@@ -120,13 +120,13 @@ namespace NuGet.DependencyResolver
             foreach (var name in frameworkAssemblies.Items)
             {
                 libraryDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
                     {
-                        Name = name,
-                        TypeConstraint = LibraryTypes.Reference
-                    }
-                });
+                        LibraryRange = new LibraryRange
+                            {
+                                Name = name,
+                                TypeConstraint = LibraryTypes.Reference
+                            }
+                    });
             }
 
             return libraryDependencies;
@@ -142,9 +142,9 @@ namespace NuGet.DependencyResolver
         public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
         {
             return new[]
-            {
-                Path.Combine(_repository.RepositoryRoot, "{name}", "{version}", "{name}.nuspec")
-            };
+                {
+                    Path.Combine(_repository.RepositoryRoot, "{name}", "{version}", "{name}.nuspec")
+                };
         }
     }
 }

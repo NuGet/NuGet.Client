@@ -1,11 +1,8 @@
-﻿using NuGet.Frameworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Frameworks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Test
 {
@@ -54,7 +51,6 @@ namespace NuGet.Test
             // verify that this was a one way mapping
             Assert.False(compat.IsCompatible(framework2, framework1));
         }
-
 
         [Theory]
         [InlineData("portable-net45+win8+monoandroid", "portable-net45+win8+wp8+monoandroid")]
@@ -107,7 +103,5 @@ namespace NuGet.Test
             // verify that this was a one way mapping
             Assert.True(compat.IsCompatible(framework2, framework1));
         }
-
-
     }
 }

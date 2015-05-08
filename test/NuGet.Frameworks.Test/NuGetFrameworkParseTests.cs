@@ -1,11 +1,8 @@
-﻿using NuGet.Frameworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Frameworks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Test
 {
@@ -82,7 +79,6 @@ namespace NuGet.Test
             Assert.Equal("portable-net45+win8+wp8+wpa81", framework.GetShortFolderName());
         }
 
-
         [Fact]
         public void NuGetFramework_PortableWithOptional()
         {
@@ -141,7 +137,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData(".NETFramework,Version=v4.5",".NETFramework,Version=v4.5")]
+        [InlineData(".NETFramework,Version=v4.5", ".NETFramework,Version=v4.5")]
         [InlineData("NETFramework,Version=v4.5", ".NETFramework,Version=v4.5")]
         [InlineData(".NETPortable,Version=v0.0,Profile=Profile7", ".NETPortable,Version=v0.0,Profile=Profile7")]
         [InlineData("Portable,Version=v0.0,Profile=Profile7", ".NETPortable,Version=v0.0,Profile=Profile7")]

@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Configuration;
 
 namespace NuGet.Configuration
 {
@@ -29,8 +29,10 @@ namespace NuGet.Configuration
 
         // TODO: Make this internal again
         /// <summary>
-        /// An internal constructor MAINLY INTENDED FOR TESTING THE CLASS. But, the product code is only expected to use the static Instance property
-        /// Only catches FileNotFoundException. Will throw all exceptions including other IOExceptions and XmlExceptions for invalid xml and so on
+        /// An internal constructor MAINLY INTENDED FOR TESTING THE CLASS. But, the product code is only expected to
+        /// use the static Instance property
+        /// Only catches FileNotFoundException. Will throw all exceptions including other IOExceptions and
+        /// XmlExceptions for invalid xml and so on
         /// </summary>
         /// <param name="directory">The directory that has the NuGetDefaults.Config</param>
         /// <param name="configFile">Name of the NuGetDefaults.Config</param>
@@ -38,7 +40,7 @@ namespace NuGet.Configuration
         {
             try
             {
-                if (System.IO.File.Exists(Path.Combine(directory, configFile)))
+                if (File.Exists(Path.Combine(directory, configFile)))
                 {
                     _settingsManager = new Settings(directory, configFile);
                 }
@@ -53,10 +55,7 @@ namespace NuGet.Configuration
 
         public static ConfigurationDefaults Instance
         {
-            get
-            {
-                return _instance;
-            }
+            get { return _instance; }
         }
 
         public IEnumerable<PackageSource> DefaultPackageSources
@@ -66,8 +65,8 @@ namespace NuGet.Configuration
                 if (_defaultPackageSources == null)
                 {
                     _defaultPackageSources = new List<PackageSource>();
-                    IList<SettingValue> disabledPackageSources = _settingsManager.GetSettingValues(ConfigurationContants.DisabledPackageSources);
-                    IList<SettingValue> packageSources = _settingsManager.GetSettingValues(ConfigurationContants.PackageSources);
+                    var disabledPackageSources = _settingsManager.GetSettingValues(ConfigurationContants.DisabledPackageSources);
+                    var packageSources = _settingsManager.GetSettingValues(ConfigurationContants.PackageSources);
 
                     foreach (var settingValue in packageSources)
                     {
@@ -86,7 +85,8 @@ namespace NuGet.Configuration
         {
             get
             {
-                if (_defaultPushSource == null && !_defaultPackageSourceInitialized)
+                if (_defaultPushSource == null
+                    && !_defaultPackageSourceInitialized)
                 {
                     _defaultPackageSourceInitialized = true;
                     _defaultPushSource = _settingsManager.GetValue(ConfigurationContants.Config, ConfigurationContants.DefaultPushSource);
@@ -97,10 +97,7 @@ namespace NuGet.Configuration
 
         public string DefaultPackageRestoreConsent
         {
-            get
-            {
-                return _settingsManager.GetValue(ConfigurationContants.PackageRestore, ConfigurationContants.enabled);
-            }
+            get { return _settingsManager.GetValue(ConfigurationContants.PackageRestore, ConfigurationContants.enabled); }
         }
     }
 }

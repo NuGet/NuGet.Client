@@ -1,20 +1,21 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3
 {
     public class RawSearchResourceV3 : INuGetResource
     {
-
         private readonly DataClient _client;
         private readonly Uri[] _searchEndpoints;
 
@@ -37,12 +38,12 @@ namespace NuGet.Protocol.Core.v3
 
         public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
-            for (int i = 0; i < _searchEndpoints.Length; i++)
+            for (var i = 0; i < _searchEndpoints.Length; i++)
             {
                 var endpoint = _searchEndpoints[i];
 
                 var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
-                string queryString =
+                var queryString =
                     "q=" + searchTerm +
                     "&skip=" + skip.ToString() +
                     "&take=" + take.ToString() +
@@ -52,20 +53,22 @@ namespace NuGet.Protocol.Core.v3
                     queryString += "&includeDelisted=true";
                 }
 
-                if (filters.SupportedFrameworks != null && filters.SupportedFrameworks.Any())
+                if (filters.SupportedFrameworks != null
+                    && filters.SupportedFrameworks.Any())
                 {
-                    string frameworks =
+                    var frameworks =
                         String.Join("&",
                             filters.SupportedFrameworks.Select(
                                 fx => "supportedFramework=" + fx.ToString()));
                     queryString += "&" + frameworks;
                 }
 
-                if (filters.PackageTypes != null && filters.PackageTypes.Any())
+                if (filters.PackageTypes != null
+                    && filters.PackageTypes.Any())
                 {
-                    string types = String.Join("&",
-                            filters.PackageTypes.Select(
-                                s => "packageTypeFilter=" + s));
+                    var types = String.Join("&",
+                        filters.PackageTypes.Select(
+                            s => "packageTypeFilter=" + s));
                     queryString += "&" + types;
                 }
 
@@ -75,7 +78,7 @@ namespace NuGet.Protocol.Core.v3
                 {
                     try
                     {
-                        JObject searchJson = await _client.GetJObjectAsync(queryUrl.Uri, cancellationToken);
+                        var searchJson = await _client.GetJObjectAsync(queryUrl.Uri, cancellationToken);
 
                         if (searchJson != null)
                         {

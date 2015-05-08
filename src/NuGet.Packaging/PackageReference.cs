@@ -1,12 +1,11 @@
-﻿using NuGet.Frameworks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Globalization;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Packaging
 {
@@ -28,7 +27,6 @@ namespace NuGet.Packaging
         public PackageReference(PackageIdentity identity, NuGetFramework targetFramework)
             : this(identity, targetFramework, true)
         {
-
         }
 
         /// <summary>
@@ -37,7 +35,6 @@ namespace NuGet.Packaging
         public PackageReference(PackageIdentity identity, NuGetFramework targetFramework, bool userInstalled)
             : this(identity, targetFramework, userInstalled, false, false)
         {
-
         }
 
         /// <summary>
@@ -46,7 +43,6 @@ namespace NuGet.Packaging
         public PackageReference(PackageIdentity identity, NuGetFramework targetFramework, bool userInstalled, bool developmentDependency, bool requireReinstallation)
             : this(identity, targetFramework, userInstalled, developmentDependency, requireReinstallation, null)
         {
-
         }
 
         /// <summary>
@@ -73,10 +69,7 @@ namespace NuGet.Packaging
         /// </summary>
         public PackageIdentity PackageIdentity
         {
-            get
-            {
-                return _identity;
-            }
+            get { return _identity; }
         }
 
         /// <summary>
@@ -85,10 +78,7 @@ namespace NuGet.Packaging
         /// <remarks>This is null if unbounded</remarks>
         public VersionRange AllowedVersions
         {
-            get
-            {
-                return _allowedVersions;
-            }
+            get { return _allowedVersions; }
         }
 
         /// <summary>
@@ -96,10 +86,7 @@ namespace NuGet.Packaging
         /// </summary>
         public bool HasAllowedVersions
         {
-            get
-            {
-                return _allowedVersions != null;
-            }
+            get { return _allowedVersions != null; }
         }
 
         /// <summary>
@@ -107,10 +94,7 @@ namespace NuGet.Packaging
         /// </summary>
         public NuGetFramework TargetFramework
         {
-            get
-            {
-                return _targetFramework;
-            }
+            get { return _targetFramework; }
         }
 
         /// <summary>
@@ -118,10 +102,7 @@ namespace NuGet.Packaging
         /// </summary>
         public bool IsDevelopmentDependency
         {
-            get
-            {
-                return _developmentDependency;
-            }
+            get { return _developmentDependency; }
         }
 
         /// <summary>
@@ -130,10 +111,7 @@ namespace NuGet.Packaging
         /// </summary>
         public bool IsUserInstalled
         {
-            get
-            {
-                return _userInstalled;
-            }
+            get { return _userInstalled; }
         }
 
         /// <summary>
@@ -141,10 +119,7 @@ namespace NuGet.Packaging
         /// </summary>
         public bool RequireReinstallation
         {
-            get
-            {
-                return _requireReinstallation;
-            }
+            get { return _requireReinstallation; }
         }
 
         /// <summary>

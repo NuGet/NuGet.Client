@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -27,10 +30,10 @@ namespace NuGet.Test.Utility
                 stream.Write(data, 0, data.Length);
             }
         }
-        
+
         public static void ExtractAll(this ZipArchive archive, string targetPath)
         {
-            foreach (ZipArchiveEntry entry in archive.Entries)
+            foreach (var entry in archive.Entries)
             {
                 var entryFullName = entry.FullName;
                 if (entryFullName.StartsWith("/", StringComparison.Ordinal))
@@ -40,13 +43,12 @@ namespace NuGet.Test.Utility
 
                 entryFullName = Uri.UnescapeDataString(entryFullName.Replace('/', Path.DirectorySeparatorChar));
 
-
                 var targetFile = Path.Combine(targetPath, entryFullName);
                 if (!targetFile.StartsWith(targetPath, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
-                
+
                 if (Path.GetFileName(targetFile).Length == 0)
                 {
                     Directory.CreateDirectory(targetFile);

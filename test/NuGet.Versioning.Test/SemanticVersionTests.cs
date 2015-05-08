@@ -1,4 +1,7 @@
-﻿using Xunit;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Xunit;
 
 namespace NuGet.Versioning.Test
 {
@@ -88,7 +91,7 @@ namespace NuGet.Versioning.Test
         {
             // Act 
             SemanticVersion semanticVersion;
-            bool result = SemanticVersion.TryParse(version, out semanticVersion);
+            var result = SemanticVersion.TryParse(version, out semanticVersion);
 
             // Assert
             Assert.False(result);

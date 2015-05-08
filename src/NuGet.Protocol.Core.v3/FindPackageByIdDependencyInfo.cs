@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
@@ -12,7 +15,7 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         /// <param name="identity">package identity</param>
         /// <param name="dependencyGroups">package dependency groups</param>
-        /// <param name="frameworkReferenceGroups">Sequence of <see cref="FrameworkSpecificGroup"/>s.</param>
+        /// <param name="frameworkReferenceGroups">Sequence of <see cref="FrameworkSpecificGroup" />s.</param>
         public FindPackageByIdDependencyInfo(
             IEnumerable<PackageDependencyGroup> dependencyGroups,
             IEnumerable<FrameworkSpecificGroup> frameworkReferenceGroups)

@@ -1,7 +1,10 @@
-﻿using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol.PowerShellGet
@@ -13,7 +16,7 @@ namespace NuGet.Protocol.PowerShellGet
             return Repository.CreateSource(Repository.Provider.GetPowerShell(), source);
         }
 
-        public static SourceRepository GetPowerShell(this Repository.RepositoryFactory factory, Configuration.PackageSource source)
+        public static SourceRepository GetPowerShell(this Repository.RepositoryFactory factory, PackageSource source)
         {
             return Repository.CreateSource(Repository.Provider.GetPowerShell(), source);
         }
@@ -25,7 +28,7 @@ namespace NuGet.Protocol.PowerShellGet
         {
             yield return new Lazy<INuGetResourceProvider>(() => new PowerShellSearchResourceProvider());
 
-            foreach (Lazy<INuGetResourceProvider> provider in Repository.Provider.GetCoreV3())
+            foreach (var provider in Repository.Provider.GetCoreV3())
             {
                 yield return provider;
             }

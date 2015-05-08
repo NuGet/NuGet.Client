@@ -1,4 +1,7 @@
-﻿using NuGet.Frameworks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Frameworks;
 using Xunit;
 
 namespace NuGet.Test
@@ -68,7 +71,6 @@ namespace NuGet.Test
 
             Assert.True(compat.IsCompatible(framework2, framework1));
         }
-
 
         [Theory]
         [InlineData("net45", "net45-full")]
