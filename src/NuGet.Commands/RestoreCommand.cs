@@ -84,10 +84,14 @@ namespace NuGet.Commands
             // Resolve dependency graphs
             var frameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
             var graphs = new List<RestoreTargetGraph>();
+            var frameworkTasks = new List<Task<RestoreTargetGraph>>();
+
             foreach (var framework in frameworks)
             {
-                graphs.Add(await WalkDependencies(projectRange, framework, remoteWalker, context));
+                frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context));
             }
+
+            graphs.AddRange(await Task.WhenAll(frameworkTasks));
 
             if (graphs.Any(g => g.InConflict))
             {
@@ -104,9 +108,14 @@ namespace NuGet.Commands
             var runtimeGraphs = new List<RestoreTargetGraph>();
             if (request.Project.RuntimeGraph.Runtimes.Count > 0)
             {
+                var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
                 foreach (var graph in graphs)
                 {
-                    var runtimeSpecificGraphs = await WalkRuntimeDependencies(projectRange, graph, request.Project.RuntimeGraph, remoteWalker, context, localRepository);
+                    runtimeTasks.Add(WalkRuntimeDependencies(projectRange, graph, request.Project.RuntimeGraph, remoteWalker, context, localRepository));
+                }
+
+                foreach (var runtimeSpecificGraphs in await Task.WhenAll(runtimeTasks))
+                {
                     runtimeGraphs.AddRange(runtimeSpecificGraphs);
                 }
 
@@ -370,7 +379,7 @@ namespace NuGet.Commands
             return RestoreTargetGraph.Create(inConflict, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
         }
 
-        private async Task<List<RestoreTargetGraph>> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository)
+        private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository)
         {
             // Load runtime specs
             _log.LogVerbose("Scanning packages for runtime.json files...");
@@ -393,13 +402,14 @@ namespace NuGet.Commands
                 }
             });
 
-            var resultGraphs = new List<RestoreTargetGraph>();
+            var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in projectRuntimeGraph.Runtimes.Keys)
             {
                 _log.LogInformation($"Restoring packages for {graph.Framework} on {runtimeName}");
-                resultGraphs.Add(await WalkDependencies(projectRange, graph.Framework, runtimeName, runtimeGraph, walker, context));
+                resultGraphs.Add(WalkDependencies(projectRange, graph.Framework, runtimeName, runtimeGraph, walker, context));
             }
-            return resultGraphs;
+
+            return Task.WhenAll(resultGraphs);
         }
 
         private RuntimeGraph LoadRuntimeGraph(LocalPackageInfo package)
@@ -407,7 +417,7 @@ namespace NuGet.Commands
             var runtimeGraphFile = Path.Combine(package.ExpandedPath, RuntimeGraph.RuntimeGraphFileName);
             if (File.Exists(runtimeGraphFile))
             {
-                using (var stream = new FileStream(runtimeGraphFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var stream = File.OpenRead(runtimeGraphFile))
                 {
                     return JsonRuntimeFormat.ReadRuntimeGraph(stream);
                 }
