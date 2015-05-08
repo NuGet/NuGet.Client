@@ -314,9 +314,23 @@ namespace NuGet.DependencyResolver
             }
 
             RemoteMatch bestMatch = null;
-            var matches = await Task.WhenAll(tasks);
-            foreach (var match in matches)
+            
+            while (tasks.Count > 0)
             {
+                var task = await Task.WhenAny(tasks);
+                tasks.Remove(task);
+                var match = await task;
+                
+                // If we found an exact match then use it.
+                // This allows us to shortcircuit slow feeds even if there's an exact match
+                if (!libraryRange.VersionRange.IsFloating &&
+                    match != null &&
+                    match.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
+                {
+                    return match;
+                }
+                
+                // Otherwise just find the best out of the matches
                 if (libraryRange.VersionRange.IsBetter(
                     current: bestMatch?.Library?.Version,
                     considering: match?.Library?.Version))
@@ -324,7 +338,7 @@ namespace NuGet.DependencyResolver
                     bestMatch = match;
                 }
             }
-
+            
             return bestMatch;
         }
     }
