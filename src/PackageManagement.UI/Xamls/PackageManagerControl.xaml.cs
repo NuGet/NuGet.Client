@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -518,7 +517,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private void SearchPackageInActivePackageSource(string searchText)
         {
-            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 var filterItem = _filter.SelectedItem as FilterItem;
                 Filter filter = filterItem != null ?
@@ -544,7 +543,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await UpdateDetailPaneAsync();
             });
@@ -664,7 +663,7 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<NuGetProject> projects,
             IEnumerable<VersionInfo> allVersions)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 var latestStableVersion = allVersions
                     .Where(p => !p.Version.IsPrerelease)

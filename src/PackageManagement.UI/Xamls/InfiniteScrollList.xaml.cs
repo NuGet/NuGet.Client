@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
@@ -245,7 +244,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 if (_loadingStatusIndicator.Status != LoadingStatus.Ready)
                 {
@@ -263,7 +262,7 @@ namespace NuGet.PackageManagement.UI
 
         private void RetryButtonClicked(object sender, RoutedEventArgs e)
         {
-            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await LoadAsync();
             });

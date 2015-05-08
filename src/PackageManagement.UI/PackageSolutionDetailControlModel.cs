@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 
@@ -63,7 +62,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private PackageReference GetInstalledPackage(NuGetProject project, string id)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
                 var installedPackage = installedPackages

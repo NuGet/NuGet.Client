@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.Reflection;
+using System.Threading;
 using System.Windows;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -43,6 +44,12 @@ namespace StandaloneUI
         private void CreatePackageManagerControl()
         {
             _container = Initialize();
+
+            // This method is called from MainWindow's constructor. Current thread is the main thread
+            var mainThread = Thread.CurrentThread;
+            var synchronizationContext = SynchronizationContext.Current;
+
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(mainThread, synchronizationContext);
 
             this.Title = "NuGet Standalone UI";
             Height = 800;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
@@ -65,7 +64,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return ThreadHelper.JoinableTaskFactory.Run(async delegate
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     List<NuGet.Packaging.PackageReference> installedPackages = new List<Packaging.PackageReference>();
                     foreach (var project in _nugetProjects)

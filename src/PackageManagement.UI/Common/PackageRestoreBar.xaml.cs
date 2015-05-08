@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.UI
 
             if (_packageRestoreManager != null)
             {
-                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     var solutionDirectory = _solutionManager.SolutionDirectory;
                     // when the control is first loaded, check for missing packages
@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.UI
         private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
             ShowProgressUI();
-            ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await RestorePackagesAsync();
             });

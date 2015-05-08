@@ -215,6 +215,7 @@
     <Compile Include="UserInterfaceService\NuGetUIFactory.cs" />
     <Compile Include="UserInterfaceService\NuGetUIProjectContext.cs" />
     <Compile Include="UserSettings.cs" />
+    <Compile Include="Utility\NuGetUIThreadHelper.cs" />
     <Compile Include="VersionForDisplay.cs" />
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">
