@@ -1327,7 +1327,7 @@
           <maml:para>
             Description
             ------------------------------------------------------------------
-            Returns a reference to every project in the solution.
+            Returns a reference to every project in the solution. The order of the projects returned is not deterministic.
           </maml:para>
           <maml:para></maml:para>
           <maml:para></maml:para>

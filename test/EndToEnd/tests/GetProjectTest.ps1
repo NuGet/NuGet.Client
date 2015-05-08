@@ -7,7 +7,7 @@ function Test-ProjectNameReturnsUniqueName {
      $p2 = New-ConsoleApplication 'ProjectA'
 
      # Act
-     $projectUniqueNames = @(Get-Project -All | Select-Object -ExpandProperty ProjectName)
+     $projectUniqueNames = @(Get-Project -All | Select-Object -ExpandProperty ProjectName | Sort-Object)
 
      # Assert
      Assert-True ($projectUniqueNames.Count -eq 3)
