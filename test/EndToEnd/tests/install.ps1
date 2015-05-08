@@ -416,6 +416,8 @@ function Test-InstallPackageWithNestedReferences {
     Assert-Reference $p CommonServiceLocator.NinjectAdapter
 }
 
+# In NuGet 3.0, adding references from sub folders is supported.
+# For example, lib\x86\assembly.dll needs to be added, and x86 is not a valid framework.
 function Test-InstallPackageWithUnsupportedReference {
     param(
         $context
@@ -425,11 +427,11 @@ function Test-InstallPackageWithUnsupportedReference {
     $p = New-ClassLibrary
     
     # Act
-    Assert-Throws { Install-Package PackageWithUnsupportedReferences -Source $context.RepositoryRoot } "Could not install package 'PackageWithUnsupportedReferences 1.0'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.5', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
+    Install-Package PackageWithUnsupportedReferences -Source $context.RepositoryRoot
 
     # Assert    
-    Assert-Null (Get-ProjectPackage $p PackageWithUnsupportedReferences)
-    Assert-Null (Get-SolutionPackage PackageWithUnsupportedReferences)
+    Assert-NotNull (Get-ProjectPackage $p PackageWithUnsupportedReferences)
+    Assert-NotNull (Get-SolutionPackage PackageWithUnsupportedReferences)
 }
 
 function Test-InstallPackageWithExeReference {
