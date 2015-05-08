@@ -34,8 +34,15 @@ namespace NuGet.Protocol.Core.v2
             return Task.Run(() =>
             {
                 SemanticVersion version = SemanticVersion.Parse(identity.Version.ToString());
-                var package = V2Client.FindPackage(identity.Id, version);
-                return package == null ? null : package.GetStream();
+                try
+                {
+                    var package = V2Client.FindPackage(identity.Id, version);
+                    return package == null ? null : package.GetStream();
+                }
+                catch (Exception ex)
+                {
+                    throw new NuGetProtocolException(Strings.FormatProtocol_FailedToDownloadPackage(identity, V2Client.Source), ex);
+                }                
             });
         }
     }

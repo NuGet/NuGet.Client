@@ -4,12 +4,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -85,7 +88,21 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                 using (var stream = nupkgInfo.OpenRead())
                 {
                     var packageReader = new PackageReader(stream);
-                    var reader = new NuspecReader(packageReader.GetNuspec());
+                    NuspecReader reader;
+                    try
+                    {
+                        reader = new NuspecReader(packageReader.GetNuspec());
+                    }
+                    catch (XmlException ex)
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, nupkgInfo.Name, _source);
+                        throw new NuGetProtocolException(message, ex);
+                    }
+                    catch (PackagingException ex)
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, nupkgInfo.Name, _source);
+                        throw new NuGetProtocolException(message, ex);
+                    }
 
                     if (string.Equals(reader.GetId(), id, StringComparison.Ordinal))
                     {

@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Core.Types;
+using Newtonsoft.Json;
 #if !DNXCORE50
 using System.Net.Cache;
 
@@ -102,19 +104,13 @@ namespace NuGet.Protocol.Core.v3.Data
         public async Task<JObject> GetJObjectAsync(Uri address, CancellationToken token)
         {
             var response = await GetAsync(address, token);
+            response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
 
             return await Task.Run(() =>
                 {
-                    try
-                    {
-                        return JObject.Parse(json);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception(string.Format(CultureInfo.InvariantCulture, "GetJObjectAsync({0})", address), e);
-                    }
+                    return JObject.Parse(json);
                 });
         }
 

@@ -144,6 +144,9 @@
   <data name="ProjectInstallationTarget_ProjectIsNotTargetted" xml:space="preserve">
     <value>The project '{0}' is not one of the projects targetted by this object.</value>
   </data>
+  <data name="Protocol_FailedToDownloadPackage" xml:space="preserve">
+    <value>An error occurred while downloading package '{0}' from source '{1}'.</value>
+  </data>
   <data name="Protocol_IndexMissingResourcesNode" xml:space="preserve">
     <value>Service index document is missing the 'resources' property.</value>
   </data>

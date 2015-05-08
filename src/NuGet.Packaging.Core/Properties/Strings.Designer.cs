@@ -11,6 +11,22 @@ namespace NuGet.Packaging.Core
             = new ResourceManager("NuGet.Packaging.Core.Strings", typeof(Strings).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Nuspec file does not contain the '{0}' node.
+        /// </summary>
+        internal static string MissingMetadataNode
+        {
+            get { return GetString("MissingMetadataNode"); }
+        }
+
+        /// <summary>
+        /// Nuspec file does not contain the '{0}' node.
+        /// </summary>
+        internal static string FormatMissingMetadataNode(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MissingMetadataNode"), p0);
+        }
+
+        /// <summary>
         /// Nuspec file does not exist in package '{0}'
         /// </summary>
         internal static string MissingNuspec

@@ -95,8 +95,7 @@ namespace NuGet.Packaging.Core
 
                     if (_metadataNode == null)
                     {
-                        // TODO: add a resource string for this
-                        throw new InvalidOperationException();
+                        throw new PackagingException(Strings.FormatMissingMetadataNode(Metadata));
                     }
                 }
 

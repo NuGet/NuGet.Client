@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
@@ -42,7 +45,20 @@ namespace NuGet.Protocol.Core.v3
 
                     var client = new DataClient(messageHandlerResource.MessageHandler);
 
-                    var json = await client.GetJObjectAsync(new Uri(url), token);
+                    JObject json;
+                    
+                    try
+                    {
+                        json = await client.GetJObjectAsync(new Uri(url), token);
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        throw new NuGetProtocolException(Strings.FormatProtocol_MalformedMetadataError(url), ex);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        throw new NuGetProtocolException(Strings.FormatProtocol_BadSource(url), ex);
+                    }
 
                     if (json != null)
                     {

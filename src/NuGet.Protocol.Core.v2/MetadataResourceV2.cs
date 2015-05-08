@@ -71,11 +71,18 @@ namespace NuGet.Protocol.Core.v2
         {
             token.ThrowIfCancellationRequested();
 
-            return await Task.Run(() =>
-                // year check workaround for p.Listed showing as False for online packages
-                V2Client.FindPackagesById(packageId).Where(p => includeUnlisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
-                    .Select(p => V2Utilities.SafeToNuGetVer(p.Version))
-                    .Where(v => includePrerelease || !v.IsPrerelease).ToArray());
+            try
+            {
+                return await Task.Run(() =>
+                    // year check workaround for p.Listed showing as False for online packages
+                    V2Client.FindPackagesById(packageId).Where(p => includeUnlisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
+                        .Select(p => V2Utilities.SafeToNuGetVer(p.Version))
+                        .Where(v => includePrerelease || !v.IsPrerelease).ToArray());
+            }
+            catch (Exception ex)
+            {
+                throw new NuGetProtocolException(Strings.FormatProtocol_PackageMetadataError(packageId, V2Client.Source), ex);
+            }
         }
 
         public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)

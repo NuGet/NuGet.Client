@@ -59,6 +59,22 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
+        /// Argument cannot be null or empty.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// Argument cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+        {
+            return GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
         /// The download URL for {0} '{1}' is invalid.
         /// </summary>
         internal static string DownloadActionHandler_InvalidDownloadUrl
@@ -235,6 +251,22 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
+        /// Failed to retrieve metadata from source '{0}'.
+        /// </summary>
+        internal static string Protocol_BadSource
+        {
+            get { return GetString("Protocol_BadSource"); }
+        }
+
+        /// <summary>
+        /// Failed to retrieve metadata from source '{0}'.
+        /// </summary>
+        internal static string FormatProtocol_BadSource(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_BadSource"), p0);
+        }
+
+        /// <summary>
         /// Service index document is missing the 'resources' property.
         /// </summary>
         internal static string Protocol_IndexMissingResourcesNode
@@ -248,6 +280,22 @@ namespace NuGet.Protocol.Core.v3
         internal static string FormatProtocol_IndexMissingResourcesNode()
         {
             return GetString("Protocol_IndexMissingResourcesNode");
+        }
+
+        /// <summary>
+        /// Metadata could not be loaded from the source '{0}'.
+        /// </summary>
+        internal static string Protocol_MalformedMetadataError
+        {
+            get { return GetString("Protocol_MalformedMetadataError"); }
+        }
+
+        /// <summary>
+        /// Metadata could not be loaded from the source '{0}'.
+        /// </summary>
+        internal static string FormatProtocol_MalformedMetadataError(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_MalformedMetadataError"), p0);
         }
 
         /// <summary>

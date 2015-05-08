@@ -8,7 +8,7 @@ namespace NuGet.Configuration
     internal static class Resources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("NuGet.Configuration.NuGet.Configuration.Resources", typeof(NuGet.Configuration.Resources).GetTypeInfo().Assembly);
+            = new ResourceManager("NuGet.Configuration.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
         /// Value cannot be null or empty string.

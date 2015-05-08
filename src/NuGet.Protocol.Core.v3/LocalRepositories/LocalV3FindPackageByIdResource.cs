@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -65,6 +66,11 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
                         throw new NuGetProtocolException(message, ex);
                     }
+                    catch (PackagingException ex)
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+                        throw new NuGetProtocolException(message, ex);
+                    }
 
                     dependencyInfo = GetDependencyInfo(nuspecReader);
                 }
@@ -115,10 +121,10 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                     }
 
                     packages.Add(new PackageInfo
-                        {
-                            Path = versionDir.FullName,
-                            NuGetVersion = version
-                        });
+                    {
+                        Path = versionDir.FullName,
+                        NuGetVersion = version
+                    });
                 }
             }
 

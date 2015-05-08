@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -25,7 +26,6 @@ namespace NuGet.Protocol.Core.v3
         private readonly ConcurrentDictionary<Uri, JObject> _cache;
 
         private readonly HttpClient _client;
-        private readonly Uri _baseUrl;
 
         private static readonly VersionRange AllVersions = VersionRange.All;
 
@@ -42,9 +42,14 @@ namespace NuGet.Protocol.Core.v3
             }
 
             _client = client;
-            _baseUrl = baseUrl;
+            BaseUri = baseUrl;
             _cache = new ConcurrentDictionary<Uri, JObject>();
         }
+
+        /// <summary>
+        /// Gets the <see cref="Uri"/> for the source backing this resource.
+        /// </summary>
+        public Uri BaseUri { get; }
 
         /// <summary>
         /// Constructs the URI of a registration index blob
@@ -57,7 +62,7 @@ namespace NuGet.Protocol.Core.v3
             }
 
             return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json",
-                _baseUrl.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
+                BaseUri.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
         }
 
         /// <summary>
@@ -65,10 +70,14 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public virtual Uri GetUri(string id, NuGetVersion version)
         {
-            if (String.IsNullOrEmpty(id)
-                || version == null)
+            if (String.IsNullOrEmpty(id))
             {
-                throw new InvalidOperationException();
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
             }
 
             return GetUri(new PackageIdentity(id, version));
@@ -86,7 +95,7 @@ namespace NuGet.Protocol.Core.v3
                 throw new InvalidOperationException();
             }
 
-            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", _baseUrl.AbsoluteUri.TrimEnd('/'),
+            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", BaseUri.AbsoluteUri.TrimEnd('/'),
                 package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));
         }
 

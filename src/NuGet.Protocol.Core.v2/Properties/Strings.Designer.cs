@@ -155,6 +155,22 @@ namespace NuGet.Protocol.Core.v2
         }
 
         /// <summary>
+        /// An error occurred while downloading package '{0}' from source '{1}'.
+        /// </summary>
+        internal static string Protocol_FailedToDownloadPackage
+        {
+            get { return GetString("Protocol_FailedToDownloadPackage"); }
+        }
+
+        /// <summary>
+        /// An error occurred while downloading package '{0}' from source '{1}'.
+        /// </summary>
+        internal static string FormatProtocol_FailedToDownloadPackage(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_FailedToDownloadPackage"), p0, p1);
+        }
+
+        /// <summary>
         /// Service index document is missing the 'resources' property.
         /// </summary>
         internal static string Protocol_IndexMissingResourcesNode

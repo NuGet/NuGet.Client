@@ -126,6 +126,9 @@
   <data name="ActionResolver_UnsupportedDependencyBehavior" xml:space="preserve">
     <value>Unsupported Dependency Behavior '{0}'.</value>
   </data>
+  <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
   <data name="DownloadActionHandler_InvalidDownloadUrl" xml:space="preserve">
     <value>The download URL for {0} '{1}' is invalid.</value>
   </data>
@@ -159,8 +162,14 @@
   <data name="ProjectInstallationTarget_ProjectIsNotTargetted" xml:space="preserve">
     <value>The project '{0}' is not one of the projects targetted by this object.</value>
   </data>
+  <data name="Protocol_BadSource" xml:space="preserve">
+    <value>Failed to retrieve metadata from source '{0}'.</value>
+  </data>
   <data name="Protocol_IndexMissingResourcesNode" xml:space="preserve">
     <value>Service index document is missing the 'resources' property.</value>
+  </data>
+  <data name="Protocol_MalformedMetadataError" xml:space="preserve">
+    <value>Metadata could not be loaded from the source '{0}'.</value>
   </data>
   <data name="Protocol_MissingRegistrationBase" xml:space="preserve">
     <value>The source does not have a Registration Base Url defined!</value>

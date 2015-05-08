@@ -146,7 +146,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                 try
                 {
-                    var uri = _baseUri + "FindPackagesById()?Id='" + id + "'";
+                    var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
                     var results = new List<PackageInfo>();
                     var page = 1;
                     while (true)
@@ -198,28 +198,25 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                     return results;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when(retry < 2)
                 {
-                    if (retry == 2)
-                    {
-                        // Fail silently by returning empty result list
-                        if (IgnoreFailure)
-                        {
-                            _ignored = true;
-                            Logger.LogInformation(
-                                string.Format("Failed to retrieve information from remote source '{0}'",
-                                    _baseUri).Yellow().Bold());
-                            return new List<PackageInfo>();
-                        }
+                    Logger.LogInformation(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id).Yellow().Bold());
+                }
+                catch (Exception ex) when(retry == 2)
+                {
+                    // Fail silently by returning empty result list
+                    var message = Strings.FormatLog_FailedToRetrievePackage(_baseUri);
 
-                        Logger.LogError(string.Format("Error: FindPackagesById: {1}\r\n  {0}",
-                            ex.Message, id).Red().Bold());
-                        throw;
-                    }
-                    else
+                    if (IgnoreFailure)
                     {
-                        Logger.LogInformation(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id).Yellow().Bold());
+                        _ignored = true;
+                        Logger.LogWarning(message.Yellow().Bold());
+                        return Enumerable.Empty<PackageInfo>();
                     }
+
+                    Logger.LogError(message.Red().Bold() + Environment.NewLine + ex.Message);
+
+                    throw new NuGetProtocolException(message, ex);
                 }
             }
             return null;

@@ -49,8 +49,16 @@ namespace NuGet.Protocol.Core.v3
 
             foreach (var id in packageIds)
             {
-                var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, token);
-                var allVersions = catalogEntries.Select(p => NuGetVersion.Parse(p["version"].ToString()));
+                IEnumerable<NuGetVersion> allVersions;
+                try
+                {
+                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, token);
+                    allVersions = catalogEntries.Select(p => NuGetVersion.Parse(p["version"].ToString()));
+                }
+                catch (Exception ex)
+                {
+                    throw new NuGetProtocolException(Strings.FormatProtocol_PackageMetadataError(id, _regResource.BaseUri), ex);
+                }
 
                 // find the latest
                 var latest = allVersions.OrderByDescending(p => p, VersionComparer.VersionRelease).FirstOrDefault();

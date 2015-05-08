@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.Data;
@@ -76,24 +76,28 @@ namespace NuGet.Protocol.Core.v3
 
                 if (!cancellationToken.IsCancellationRequested)
                 {
+
+                    JObject searchJson = null;
                     try
                     {
-                        var searchJson = await _client.GetJObjectAsync(queryUrl.Uri, cancellationToken);
-
-                        if (searchJson != null)
-                        {
-                            return searchJson;
-                        }
+                        searchJson = await _client.GetJObjectAsync(queryUrl.Uri, cancellationToken);
                     }
-                    catch (Exception)
+                    catch when (i < _searchEndpoints.Length - 1)
                     {
-                        Debug.Fail("Search failed");
+                        // Ignore all failures until the last endpoint
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        throw new NuGetProtocolException(Strings.FormatProtocol_MalformedMetadataError(queryUrl.Uri), ex);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        throw new NuGetProtocolException(Strings.FormatProtocol_BadSource(queryUrl.Uri), ex);
+                    }
 
-                        if (i == _searchEndpoints.Length - 1)
-                        {
-                            // throw on the last one
-                            throw;
-                        }
+                    if (searchJson != null)
+                    {
+                        return searchJson;
                     }
                 }
             }

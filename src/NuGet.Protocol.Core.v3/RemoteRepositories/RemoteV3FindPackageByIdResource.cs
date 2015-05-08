@@ -203,6 +203,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     Logger.LogError(message.Red().Bold());
                 }
             }
+
             return null;
         }
 

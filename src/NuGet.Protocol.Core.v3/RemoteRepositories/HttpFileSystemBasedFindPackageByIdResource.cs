@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -198,17 +199,17 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
+                    var message = Strings.FormatLog_FailedToRetrievePackage(baseUri);
                     if (IgnoreFailure)
                     {
                         _ignored = true;
-                        Logger.LogWarning(Strings.FormatLog_FailedToRetrievePackage(baseUri).Yellow().Bold());
+                        Logger.LogWarning(message.Yellow().Bold());
                         return Enumerable.Empty<PackageInfo>();
                     }
 
-                    var message = Strings.FormatLog_FailedToRetrievePackage(baseUri).Red().Bold() +
-                                  Environment.NewLine + ex.Message;
-                    Logger.LogError(message);
-                    throw;
+                    Logger.LogError(message.Red().Bold() + Environment.NewLine + ex.Message);
+
+                    throw new NuGetProtocolException(message, ex);
                 }
             }
 
