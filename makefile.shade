@@ -5,3 +5,10 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 
 use-standard-lifecycle
 k-standard-goals
+
+#repo-initialize
+    exec program='cmd' commandline='/C dnu restore --parallel' if='!IsMono' workingdir="${Path.Combine(Directory.GetCurrentDirectory(), "src")}"
+    exec program='dnu' commandline='restore' if='IsMono' workingdir="${Path.Combine(Directory.GetCurrentDirectory(), "src")}"
+
+    exec program='cmd' commandline='/C dnu restore --parallel' if='!IsMono' workingdir="${Path.Combine(Directory.GetCurrentDirectory(), "test")}"
+    exec program='dnu' commandline='restore' if='IsMono' workingdir="${Path.Combine(Directory.GetCurrentDirectory(), "test")}"
