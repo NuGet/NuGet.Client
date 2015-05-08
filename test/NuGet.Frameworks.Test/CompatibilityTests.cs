@@ -1,12 +1,5 @@
 ﻿using NuGet.Frameworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.Test
 {
@@ -199,6 +192,8 @@ namespace NuGet.Test
         [Theory]
         [InlineData("win8", "win")]
         [InlineData("wpa", "wpa81")]
+        [InlineData("netcore45", "win8")]
+        [InlineData("netcore451", "win81")]
         public void Compatibility_EqualMappings(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);
