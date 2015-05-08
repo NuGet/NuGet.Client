@@ -1336,7 +1336,7 @@ function Test-InstallPackageInvokeInstallScriptWhenProjectNameHasBrakets {
     Remove-Variable InstallPackageMessages -Scope Global
 }
 
-function Test-SinglePackageInstallIntoSingleProjectWhenSolutionPathHasComma {
+function SinglePackageInstallIntoSingleProjectWhenSolutionPathHasComma {
     # Arrange
     New-Solution "Tom , Jerry"
     $project = New-ConsoleApplication

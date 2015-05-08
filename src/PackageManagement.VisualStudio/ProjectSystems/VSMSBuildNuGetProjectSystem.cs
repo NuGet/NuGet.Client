@@ -1,14 +1,13 @@
-﻿using Microsoft.CSharp.RuntimeBinder;
-#if VS14
-#endif
-using Microsoft.VisualStudio.Shell;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
@@ -18,7 +17,6 @@ using EnvDTEProperty = EnvDTE.Property;
 using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
 using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectItem;
 using Task = System.Threading.Tasks.Task;
-using System.Diagnostics;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -329,35 +327,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Get the full path to the reference
                     string fullPath = Path.Combine(ProjectFullPath, referencePath);
 
-                    string assemblyPath = fullPath;
-                    bool usedTempFile = false;
-
-                    // There is a bug in Visual Studio whereby if the fullPath contains a comma, 
-                    // then calling Project.Object.References.Add() on it will throw a COM exception.
-                    // To work around it, we copy the assembly into temp folder and add reference to the copied assembly
-                    if (fullPath.Contains(","))
-                    {
-                        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(fullPath));
-                        File.Copy(fullPath, tempFile, true);
-                        assemblyPath = tempFile;
-                        usedTempFile = true;
-                    }
-
                     // Add a reference to the project
-                    dynamic reference = EnvDTEProjectUtility.GetReferences(EnvDTEProject).Add(assemblyPath);
-
-                    // if we copied the assembly to temp folder earlier, delete it now since we no longer need it.
-                    if (usedTempFile)
-                    {
-                        try
-                        {
-                            File.Delete(assemblyPath);
-                        }
-                        catch
-                        {
-                            // don't care if we fail to delete a temp file
-                        }
-                    }
+                    dynamic reference = EnvDTEProjectUtility.GetReferences(EnvDTEProject).Add(fullPath);
 
                     if (reference != null)
                     {
