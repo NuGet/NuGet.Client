@@ -36,7 +36,7 @@ namespace NuGet.Protocol.Core.v3
             _client = client;
         }
 
-        public override async Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
+        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
         {
             Uri downloadUri = null;
 
@@ -51,18 +51,15 @@ namespace NuGet.Protocol.Core.v3
             return downloadUri;
         }
 
-        public override async Task<Stream> GetStream(PackageIdentity identity, CancellationToken token)
+        public override async Task<Stream> GetStreamAsync(PackageIdentity identity, CancellationToken token)
         {
-            Stream stream = null;
-
-            var uri = await GetDownloadUrl(identity, token);
-
-            if (uri != null)
+            if (identity == null)
             {
-                stream = await _client.GetStreamAsync(uri);
+                throw new ArgumentNullException(nameof(identity));
             }
-
-            return stream;
+            
+            Uri uri = await GetDownloadUrl(identity, token);
+            return uri == null ? null : await _client.GetStreamAsync(uri);
         }
     }
 }
