@@ -11,8 +11,6 @@ using Xunit;
 
 namespace NuGet.DependencyResolver.Core.Tests
 {
-    // This project can output the Class library as a NuGet Package.
-    // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class ResolverFacts
     {
         [Fact]
@@ -49,6 +47,8 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             Assert.NotNull(result.Item.Data.Match);
             Assert.NotNull(result.Item.Data.Match.Library);
+            Assert.Equal("A", result.Item.Data.Match.Library.Name);
+            Assert.Equal(new NuGetVersion("1.0.0"), result.Item.Data.Match.Library.Version);
             Assert.Equal(fastProvider, result.Item.Data.Match.Provider);
         }
 
@@ -86,6 +86,8 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             Assert.NotNull(result.Item.Data.Match);
             Assert.NotNull(result.Item.Data.Match.Library);
+            Assert.Equal("A", result.Item.Data.Match.Library.Name);
+            Assert.Equal(new NuGetVersion("1.0.0"), result.Item.Data.Match.Library.Version);
             Assert.Equal(slowProvider, result.Item.Data.Match.Provider);
         }
 
