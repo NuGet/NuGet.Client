@@ -141,6 +141,9 @@
   <data name="NoProjectSelected" xml:space="preserve">
     <value>No project is selected for this operation.</value>
   </data>
+  <data name="NoSupportedProjectsInSolution" xml:space="preserve">
+    <value>No projects supported by NuGet in the solution.</value>
+  </data>
   <data name="NothingToRestore" xml:space="preserve">
     <value>All packages are already installed and there is nothing to restore.</value>
   </data>

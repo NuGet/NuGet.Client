@@ -133,6 +133,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No projects supported by NuGet in the solution..
+        /// </summary>
+        internal static string NoSupportedProjectsInSolution {
+            get {
+                return ResourceManager.GetString("NoSupportedProjectsInSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All packages are already installed and there is nothing to restore..
         /// </summary>
         internal static string NothingToRestore {
