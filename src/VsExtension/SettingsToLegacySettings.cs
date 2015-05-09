@@ -59,11 +59,25 @@ namespace NuGetVSExtension
             _settings.SetValue(section, key, value);
         }
 
-        public void SetValues(string section, IList<KeyValuePair<string, string>> values)
+        public void SetValues(string section, IList<SettingValue> values)
         {
-            _settings.SetValues(section,
-                values.Select(v => new NuGet.Configuration.SettingValue(v.Key, v.Value, isMachineWide: false))
-                    .ToList());
+            _settings.SetValues(section, values.Select(Convert).ToList());
+        }
+
+        public void UpdateSections(string section, IList<SettingValue> values)
+        {
+            _settings.UpdateSections(section, values.Select(Convert).ToList());
+        }
+
+        private static NuGet.Configuration.SettingValue Convert(SettingValue settingValue)
+        {
+            var converted = new NuGet.Configuration.SettingValue(settingValue.Value, settingValue.Key, isMachineWide: false);
+            foreach (var additionalData in settingValue.AdditionalData)
+            {
+                converted.AdditionalData.Add(additionalData);
+            }
+
+            return converted;
         }
     }
 }
