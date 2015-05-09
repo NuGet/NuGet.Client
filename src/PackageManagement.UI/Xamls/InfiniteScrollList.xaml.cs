@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,12 +18,13 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class InfiniteScrollList : UserControl
     {
-        private readonly LoadingStatusIndicator _loadingStatusIndicator;
+        private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
 
         public event SelectionChangedEventHandler SelectionChanged;
 
         private CancellationTokenSource _cts;
+        private ILoader _loader;
 
         private int _startIndex;
 
@@ -48,15 +47,11 @@ namespace NuGet.PackageManagement.UI
                 PackageItemStyle.Setters.Add(setter);
             }
 
-            _loadingStatusIndicator = new LoadingStatusIndicator();
-            Items = new ObservableCollection<object>();
             _list.ItemsSource = Items;
             _startIndex = 0;
         }
 
-        public ObservableCollection<object> Items { get; }
-
-        private ILoader _loader;
+        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
         // Load items using the specified loader
         public async Task LoadAsync(ILoader loader)
@@ -117,8 +112,8 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 // run Loader.LoadItems in background thread. Otherwise if the
-                // source if V2, the UI can get blocked a little bit.
-                var r = await Task.Run(async () => await _loader.LoadItemsAsync(_startIndex, _cts.Token));
+                // source if V2, the UI can get blocked.
+                var r = await Task.Run(async () => await _loader.LoadItemsAsync(_startIndex, token));
 
                 // multiple loads may occur at the same time
                 if (!token.IsCancellationRequested
@@ -134,37 +129,41 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+            }
             catch (Exception ex)
             {
-                // only display errors if this is still relevant
                 if (!token.IsCancellationRequested)
                 {
+                    // only display errors if this is still relevant
                     var message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Resx.Resources.Text_ErrorOccurred,
-                        ex);
+                            CultureInfo.CurrentCulture,
+                            Resx.Resources.Text_ErrorOccurred,
+                            ex);
+
                     _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
                     _loadingStatusIndicator.ErrorMessage = message;
                 }
             }
         }
 
-        private void UpdatePackageList(LoadResult r)
+        private void UpdatePackageList(LoadResult loadResult)
         {
             // remove the loading status indicator if it's in the list
-            if (Items[Items.Count - 1] == _loadingStatusIndicator)
+            if (Items.Count > 0 && Items[Items.Count - 1] == _loadingStatusIndicator)
             {
                 Items.RemoveAt(Items.Count - 1);
             }
 
             // add newly loaded items
-            foreach (var obj in r.Items)
+            foreach (var package in loadResult.Items)
             {
-                Items.Add(obj);
+                Items.Add(package);
             }
 
             // update loading status indicator
-            if (!r.HasMoreItems)
+            if (!loadResult.HasMoreItems)
             {
                 if (Items.Count == 0)
                 {
@@ -177,7 +176,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _startIndex = r.NextStartIndex;
+                _startIndex = loadResult.NextStartIndex;
                 _loadingStatusIndicator.Status = LoadingStatus.Ready;
             }
 
@@ -258,101 +257,6 @@ namespace NuGet.PackageManagement.UI
         private void RetryButtonClicked(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => { return LoadAsync(); });
-        }
-    }
-
-    public class LoadResult
-    {
-        public IEnumerable Items { get; set; }
-
-        public bool HasMoreItems { get; set; }
-
-        public int NextStartIndex { get; set; }
-    }
-
-    public interface ILoader
-    {
-        // The second value tells us whether there are more items to load
-        Task<LoadResult> LoadItemsAsync(int startIndex, CancellationToken ct);
-
-        string LoadingMessage { get; }
-    }
-
-    public enum LoadingStatus
-    {
-        Ready,
-        Loading,
-        NoMoreItems,
-        NoItemsFound,
-        ErrorOccured
-    }
-
-    internal class LoadingStatusIndicator : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private LoadingStatus _status;
-
-        private string _errorMessage;
-
-        public LoadingStatus Status
-        {
-            get { return _status; }
-            set
-            {
-                _status = value;
-                OnPropertyChanged("Status");
-            }
-        }
-
-        private string _loadingMessage;
-
-        public string LoadingMessage
-        {
-            get { return _loadingMessage; }
-            set
-            {
-                if (_loadingMessage != value)
-                {
-                    _loadingMessage = value;
-                    OnPropertyChanged("LoadingMessage");
-                }
-            }
-        }
-
-        public string ErrorMessage
-        {
-            get { return _errorMessage; }
-            set
-            {
-                if (_errorMessage != value)
-                {
-                    _errorMessage = value;
-                    OnPropertyChanged("ErrorMessage");
-                }
-            }
-        }
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                var e = new PropertyChangedEventArgs(propertyName);
-                PropertyChanged(this, e);
-            }
-        }
-    }
-
-    internal class InfiniteScrollListItemStyleSelector : StyleSelector
-    {
-        public override Style SelectStyle(object item, DependencyObject container)
-        {
-            if (item is LoadingStatusIndicator)
-            {
-                return InfiniteScrollList.LoadingStatusIndicatorStyle;
-            }
-
-            return InfiniteScrollList.PackageItemStyle;
         }
     }
 }

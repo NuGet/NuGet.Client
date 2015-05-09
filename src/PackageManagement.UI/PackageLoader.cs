@@ -17,21 +17,6 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageLoaderOption
-    {
-        public PackageLoaderOption(
-            Filter filter,
-            bool includePrerelease)
-        {
-            Filter = filter;
-            IncludePrerelease = includePrerelease;
-        }
-
-        public Filter Filter { get; }
-
-        public bool IncludePrerelease { get; }
-    }
-
     internal class PackageLoader : ILoader
     {
         private readonly SourceRepository _sourceRepository;
@@ -47,8 +32,6 @@ namespace NuGet.PackageManagement.UI
         private readonly PackageLoaderOption _option;
 
         private readonly string _searchText;
-
-        private const int _pageSize = 10;
 
         // Copied from file Constants.cs in NuGet.Core:
         // This is temporary until we fix the gallery to have proper first class support for this.
@@ -83,13 +66,11 @@ namespace NuGet.PackageManagement.UI
 
         public string LoadingMessage { get; }
 
-        private async Task<IEnumerable<UISearchMetadata>> SearchAsync(int startIndex, CancellationToken ct)
+        private async Task<SearchResult> SearchAsync(int startIndex, CancellationToken ct)
         {
-            var results = new List<UISearchMetadata>();
-
             if (_sourceRepository == null)
             {
-                return results;
+                return SearchResult.Empty;
             }
 
             if (_option.Filter == Filter.Installed)
@@ -107,20 +88,36 @@ namespace NuGet.PackageManagement.UI
             // search in source
             if (searchResource == null)
             {
-                return Enumerable.Empty<UISearchMetadata>();
+                return SearchResult.Empty;
             }
-            var searchFilter = new SearchFilter();
-            searchFilter.IncludePrerelease = _option.IncludePrerelease;
-            searchFilter.SupportedFrameworks = GetSupportedFrameworks();
+            else
+            {
+                var searchFilter = new SearchFilter();
+                searchFilter.IncludePrerelease = _option.IncludePrerelease;
+                searchFilter.SupportedFrameworks = GetSupportedFrameworks();
 
-            results.AddRange(await searchResource.Search(
-                _searchText,
-                searchFilter,
-                startIndex,
-                _pageSize,
-                ct));
+                var searchResults = await searchResource.Search(
+                    _searchText,
+                    searchFilter,
+                    startIndex,
+                    _option.PageSize + 1,
+                    ct);
 
-            return results;
+                var items = searchResults.ToList();
+
+                var hasMoreItems = items.Count > _option.PageSize;
+
+                if (hasMoreItems)
+                {
+                    items.RemoveAt(items.Count - 1);
+                }
+
+                return new SearchResult
+                {
+                    Items = items,
+                    HasMoreItems = hasMoreItems,
+                };
+            }
         }
 
         // Returns the list of frameworks that we need to pass to the server during search
@@ -223,13 +220,14 @@ namespace NuGet.PackageManagement.UI
             return installedPackages.Values;
         }
 
-        private async Task<IEnumerable<UISearchMetadata>> SearchInstalledAsync(int startIndex, CancellationToken ct)
+        private async Task<SearchResult> SearchInstalledAsync(int startIndex, CancellationToken cancellationToken)
         {
-            var installedPackages = (await GetInstalledPackagesAsync(latest: true, token: ct))
+            var installedPackages = (await GetInstalledPackagesAsync(latest: true, token: cancellationToken))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
                 .Skip(startIndex)
-                .Take(_pageSize);
+                .Take(_option.PageSize + 1)
+                .ToArray();
 
             var results = new List<UISearchMetadata>();
             var localResource = await _packageManager.PackagesFolderSourceRepository
@@ -237,79 +235,110 @@ namespace NuGet.PackageManagement.UI
 
             var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
             var tasks = new List<Task<UISearchMetadata>>();
-            foreach (var identity in installedPackages)
+
+            for (int i = 0; i < installedPackages.Length; i++)
             {
-                var task = Task.Run(
-                    async () =>
-                        {
-                            UIPackageMetadata packageMetadata = null;
-                            if (localResource != null)
-                            {
-                                // try get metadata from local resource
-                                var localMetadata = await localResource.GetMetadata(identity.Id,
-                                    includePrerelease: true,
-                                    includeUnlisted: true,
-                                    token: ct);
-                                packageMetadata = localMetadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
-                            }
+                var packageIdentity = installedPackages[i];
 
-                            var metadata = await metadataResource.GetMetadata(
-                                identity.Id,
-                                _option.IncludePrerelease,
-                                false,
-                                ct);
-                            if (packageMetadata == null)
-                            {
-                                // package metadata can't be found in local resource. Try find it in remote resource.
-                                packageMetadata = metadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
-                            }
-
-                            var summary = string.Empty;
-                            var title = identity.Id;
-                            if (packageMetadata != null)
-                            {
-                                summary = packageMetadata.Summary;
-                                if (string.IsNullOrEmpty(summary))
-                                {
-                                    summary = packageMetadata.Description;
-                                }
-                                if (!string.IsNullOrEmpty(packageMetadata.Title))
-                                {
-                                    title = packageMetadata.Title;
-                                }
-                            }
-
-                            var versions = metadata.OrderByDescending(m => m.Identity.Version)
-                                .Select(m => new VersionInfo(m.Identity.Version, m.DownloadCount));
-                            return new UISearchMetadata(
-                                identity,
-                                title: title,
-                                summary: summary,
-                                iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
-                                versions: versions,
-                                latestPackageMetadata: packageMetadata);
-                        });
-                tasks.Add(task);
+                tasks.Add(
+                    Task.Run(() =>
+                        GetPackageMetadataAsync(cancellationToken,
+                                                localResource,
+                                                metadataResource,
+                                                packageIdentity)));
             }
 
-            await Task.WhenAll(tasks.ToArray());
+            await Task.WhenAll(tasks);
+
             foreach (var task in tasks)
             {
                 results.Add(task.Result);
             }
 
-            return results;
+            return new SearchResult
+            {
+                Items = results,
+                HasMoreItems = installedPackages.Length > _option.PageSize,
+            };
+        }
+
+        private async Task<UISearchMetadata> GetPackageMetadataAsync(CancellationToken ct,
+                                                               UIMetadataResource localResource,
+                                                               UIMetadataResource metadataResource,
+                                                               PackageIdentity identity)
+        {
+            UIPackageMetadata packageMetadata = null;
+            if (localResource != null)
+            {
+                // try get metadata from local resource
+                var localMetadata = await localResource.GetMetadata(identity.Id,
+                includePrerelease: true,
+                includeUnlisted: true,
+                token: ct);
+                packageMetadata = localMetadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
+            }
+
+            var metadata = await metadataResource.GetMetadata(
+                identity.Id,
+                _option.IncludePrerelease,
+                false,
+                ct);
+
+            if (packageMetadata == null)
+            {
+                // package metadata can't be found in local resource. Try find it in remote resource.
+                packageMetadata = metadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
+            }
+
+            string summary = string.Empty;
+            string title = identity.Id;
+            if (packageMetadata != null)
+            {
+                summary = packageMetadata.Summary;
+                if (String.IsNullOrEmpty(summary))
+                {
+                    summary = packageMetadata.Description;
+                }
+                if (!string.IsNullOrEmpty(packageMetadata.Title))
+                {
+                    title = packageMetadata.Title;
+                }
+            }
+
+            var versions = metadata.OrderByDescending(m => m.Identity.Version)
+                .Select(m => new VersionInfo(m.Identity.Version, m.DownloadCount));
+
+            return new UISearchMetadata(
+                identity,
+                title: title,
+                summary: summary,
+                iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
+                versions: versions,
+                latestPackageMetadata: packageMetadata);
         }
 
         // Search in installed packages that have updates available
-        private async Task<IEnumerable<UISearchMetadata>> SearchUpdatesAsync(int startIndex, CancellationToken ct)
+        private async Task<SearchResult> SearchUpdatesAsync(int startIndex, CancellationToken ct)
         {
             if (_packagesWithUpdates == null)
             {
                 await CreatePackagesWithUpdatesAsync(ct);
             }
 
-            return _packagesWithUpdates.Skip(startIndex).Take(_pageSize);
+            var items = _packagesWithUpdates.Skip(startIndex).Take(_option.PageSize + 1).ToList();
+
+            var hasMoreItems = items.Count > _option.PageSize + startIndex;
+
+            if (hasMoreItems)
+            {
+                items.RemoveAt(items.Count - 1);
+            }
+
+            return new SearchResult
+            {
+                Items = items,
+                HasMoreItems = hasMoreItems,
+            };
         }
 
         // Creates the list of installed packages that have updates available
@@ -317,6 +346,7 @@ namespace NuGet.PackageManagement.UI
         {
             _packagesWithUpdates = new List<UISearchMetadata>();
             var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+
             if (metadataResource == null)
             {
                 return;
@@ -354,13 +384,17 @@ namespace NuGet.PackageManagement.UI
             ct.ThrowIfCancellationRequested();
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
-            var packages = new List<SearchResultPackageMetadata>();
+
+            List<SearchResultPackageMetadata> packages = new List<SearchResultPackageMetadata>();
+
             var results = await SearchAsync(startIndex, ct);
-            var resultCount = 0;
-            foreach (var package in results)
+
+            int resultCount = 0;
+
+            foreach (var package in results.Items)
             {
                 ct.ThrowIfCancellationRequested();
-                ++resultCount;
+                resultCount++;
 
                 var searchResultPackage = new SearchResultPackageMetadata(_sourceRepository);
                 searchResultPackage.Id = package.Identity.Id;
@@ -384,17 +418,14 @@ namespace NuGet.PackageManagement.UI
                 searchResultPackage.Status = CalculatePackageStatus(searchResultPackage);
 
                 // filter out prerelease version when needed.
-                if (searchResultPackage.Version.IsPrerelease
-                    &&
-                    !_option.IncludePrerelease
-                    &&
+                if (searchResultPackage.Version.IsPrerelease &&
+                    !_option.IncludePrerelease &&
                     searchResultPackage.Status == PackageStatus.NotInstalled)
                 {
                     continue;
                 }
 
-                if (_option.Filter == Filter.UpdatesAvailable
-                    &&
+                if (_option.Filter == Filter.UpdatesAvailable &&
                     searchResultPackage.Status != PackageStatus.UpdateAvailable)
                 {
                     continue;
@@ -406,12 +437,12 @@ namespace NuGet.PackageManagement.UI
 
             ct.ThrowIfCancellationRequested();
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
-            return new LoadResult
-                {
-                    Items = packages,
-                    HasMoreItems = resultCount != 0,
-                    NextStartIndex = startIndex + resultCount
-                };
+            return new LoadResult()
+            {
+                Items = packages,
+                HasMoreItems = results.HasMoreItems,
+                NextStartIndex = startIndex + resultCount
+            };
         }
 
         // Returns the package status for the searchPackageResult

@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI
         public UserSettings()
         {
             IncludePrerelease = true;
-            SelectedFilter = Filter.All;
+            SelectedFilter = Filter.Installed;
         }
 
         public string SourceRepository { get; set; }

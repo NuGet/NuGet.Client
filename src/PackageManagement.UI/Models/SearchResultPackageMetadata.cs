@@ -10,15 +10,11 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    public enum PackageStatus
+    public class SearchResultPackageMetadata : INotifyPropertyChanged
     {
-        NotInstalled,
-        Installed,
-        UpdateAvailable
-    }
+        private PackageStatus _status;
+        private readonly SourceRepository _source;
 
-    internal class SearchResultPackageMetadata : INotifyPropertyChanged
-    {
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
@@ -27,19 +23,21 @@ namespace NuGet.PackageManagement.UI
 
         public string Summary { get; set; }
 
-        private PackageStatus _status;
-
         public PackageStatus Status
         {
             get { return _status; }
+
             set
             {
-                if (_status != value)
-                {
-                    _status = value;
-                }
-                OnPropertyChanged("Status");
+                _status = value;
+
+                OnPropertyChanged(nameof(Status));
             }
+        }
+
+        public SearchResultPackageMetadata(SourceRepository source)
+        {
+            _source = source;
         }
 
         public Uri IconUrl { get; set; }
@@ -53,13 +51,6 @@ namespace NuGet.PackageManagement.UI
                 var e = new PropertyChangedEventArgs(propertyName);
                 PropertyChanged(this, e);
             }
-        }
-
-        private SourceRepository _source;
-
-        public SearchResultPackageMetadata(SourceRepository source)
-        {
-            _source = source;
         }
 
         public override string ToString()

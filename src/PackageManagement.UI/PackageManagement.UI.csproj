@@ -179,7 +179,15 @@
     <Compile Include="FileConflictActionOptionItem.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="FilterItem.cs" />
+    <Compile Include="ILoader.cs" />
+    <Compile Include="InfiniteScrollListItemStyleSelector.cs" />
+    <Compile Include="LoadingStatus.cs" />
+    <Compile Include="LoadingStatusIndicator.cs" />
+    <Compile Include="LoadResult.cs" />
+    <Compile Include="Models\PackageStatus.cs" />
+    <Compile Include="Models\SearchResult.cs" />
     <Compile Include="PackageInstallationInfo.cs" />
+    <Compile Include="PackageLoaderOptions.cs" />
     <Compile Include="PackageSolutionDetailControlModel.cs" />
     <Compile Include="UserInterfaceService\INuGetUI.cs" />
     <Compile Include="Models\PackageLicenseInfo.cs" />

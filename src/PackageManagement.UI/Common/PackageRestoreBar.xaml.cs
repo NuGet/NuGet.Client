@@ -57,11 +57,12 @@ namespace NuGet.PackageManagement.UI
             if (_packageRestoreManager != null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
-                    {
-                        var solutionDirectory = _solutionManager.SolutionDirectory;
-                        // when the control is first loaded, check for missing packages
-                        return _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                    });
+                {
+                    var solutionDirectory = _solutionManager.SolutionDirectory;
+
+                    // when the control is first loaded, check for missing packages
+                    return _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                });
             }
         }
 

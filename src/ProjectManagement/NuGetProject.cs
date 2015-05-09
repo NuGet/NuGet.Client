@@ -22,7 +22,7 @@ namespace NuGet.ProjectManagement
         {
             if (metadata == null)
             {
-                throw new ArgumentNullException("metadata");
+                throw new ArgumentNullException(nameof(metadata));
             }
             InternalMetadata = metadata;
         }
