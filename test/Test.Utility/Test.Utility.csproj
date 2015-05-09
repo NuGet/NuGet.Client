@@ -51,7 +51,7 @@
       <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Core">
-      <HintPath>..\..\packages\NuGet.Core.2.8.6-beta-01\lib\net40-client\NuGet.Core.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Core.2.8.6-beta-02\lib\net40-client\NuGet.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Frameworks">
