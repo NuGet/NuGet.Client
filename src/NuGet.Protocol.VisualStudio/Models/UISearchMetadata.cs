@@ -3,30 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace NuGet.Protocol.VisualStudio
 {
-    public class VersionInfo
-    {
-        public VersionInfo(NuGetVersion version, int? downloadCount)
-        {
-            Version = version;
-            DownloadCount = downloadCount;
-        }
-
-        public NuGetVersion Version { get; private set; }
-
-        public int? DownloadCount { get; private set; }
-    }
-
     /// <summary>
     /// Model for Search results displayed by Visual Studio Package Manager dialog UI.
     /// </summary>
-    public sealed class UISearchMetadata
+    public class UISearchMetadata
     {
-        public UISearchMetadata(PackageIdentity identity, string title, string summary, Uri iconUrl, IEnumerable<VersionInfo> versions, UIPackageMetadata latestPackageMetadata)
+        public UISearchMetadata(PackageIdentity identity,
+                                string title,
+                                string summary, Uri iconUrl,
+                                Lazy<Task<IEnumerable<VersionInfo>>> versions,
+                                UIPackageMetadata latestPackageMetadata)
         {
             Identity = identity;
             Title = title;
@@ -36,16 +27,16 @@ namespace NuGet.Protocol.VisualStudio
             LatestPackageMetadata = latestPackageMetadata;
         }
 
-        public PackageIdentity Identity { get; private set; }
+        public PackageIdentity Identity { get; }
 
-        public string Summary { get; private set; }
+        public string Summary { get; }
 
-        public Uri IconUrl { get; private set; }
+        public Uri IconUrl { get; }
 
-        public IEnumerable<VersionInfo> Versions { get; private set; }
+        public Lazy<Task<IEnumerable<VersionInfo>>> Versions { get; }
 
-        public UIPackageMetadata LatestPackageMetadata { get; private set; }
+        public UIPackageMetadata LatestPackageMetadata { get; }
 
-        public string Title { get; private set; }
+        public string Title { get; }
     }
 }

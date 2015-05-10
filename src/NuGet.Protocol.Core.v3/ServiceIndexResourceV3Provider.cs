@@ -23,7 +23,9 @@ namespace NuGet.Protocol.Core.v3
         private readonly ConcurrentDictionary<string, ServiceIndexResourceV3> _cache;
 
         public ServiceIndexResourceV3Provider()
-            : base(typeof(ServiceIndexResourceV3), "ServiceIndexResourceV3Provider", NuGetResourceProviderPositions.Last)
+            : base(typeof(ServiceIndexResourceV3),
+                  nameof(ServiceIndexResourceV3Provider),
+                  NuGetResourceProviderPositions.Last)
         {
             _cache = new ConcurrentDictionary<string, ServiceIndexResourceV3>();
         }

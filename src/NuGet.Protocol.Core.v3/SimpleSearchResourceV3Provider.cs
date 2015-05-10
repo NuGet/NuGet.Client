@@ -17,7 +17,9 @@ namespace NuGet.Protocol.Core.v3
         /// Default constructor
         /// </summary>
         public SimpleSearchResourceV3Provider()
-            : base(typeof(SimpleSearchResource), "SimpleSearchResourceV3Provider", "SimpleSearchResourceV2Provider")
+            : base(typeof(SimpleSearchResource),
+                  nameof(SimpleSearchResourceV3Provider),
+                  "SimpleSearchResourceV2Provider")
         {
         }
 

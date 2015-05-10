@@ -12,7 +12,9 @@ namespace NuGet.Protocol.PowerShellGet
     public class PowerShellSearchResourceProvider : ResourceProvider
     {
         public PowerShellSearchResourceProvider()
-            : base(typeof(PowerShellSearchResource), "PowerShellSearchResource", NuGetResourceProviderPositions.Last)
+            : base(typeof(PowerShellSearchResource),
+                  nameof(PowerShellSearchResource),
+                  NuGetResourceProviderPositions.Last)
         {
         }
 

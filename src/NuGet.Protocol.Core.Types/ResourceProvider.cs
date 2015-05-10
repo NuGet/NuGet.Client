@@ -41,22 +41,22 @@ namespace NuGet.Protocol.Core.Types
         {
             if (resourceType == null)
             {
-                throw new ArgumentNullException("resourceType");
+                throw new ArgumentNullException(nameof(resourceType));
             }
 
             if (name == null)
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             if (before == null)
             {
-                throw new ArgumentNullException("before");
+                throw new ArgumentNullException(nameof(before));
             }
 
             if (after == null)
             {
-                throw new ArgumentNullException("after");
+                throw new ArgumentNullException(nameof(after));
             }
 
             _resourceType = resourceType;

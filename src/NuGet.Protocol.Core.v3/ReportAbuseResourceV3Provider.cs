@@ -11,7 +11,9 @@ namespace NuGet.Protocol.Core.v3
     public class ReportAbuseResourceV3Provider : ResourceProvider
     {
         public ReportAbuseResourceV3Provider()
-            : base(typeof(ReportAbuseResourceV3), "ReportAbuseResourceV3", NuGetResourceProviderPositions.Last)
+            : base(typeof(ReportAbuseResourceV3),
+                  nameof(ReportAbuseResourceV3),
+                  NuGetResourceProviderPositions.Last)
         {
         }
 

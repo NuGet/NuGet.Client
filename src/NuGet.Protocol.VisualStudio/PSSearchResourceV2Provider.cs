@@ -19,10 +19,12 @@ namespace NuGet.Protocol.VisualStudio
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             PSSearchResource resource = null;
-            var uiSearchResource = await source.GetResourceAsync<UISearchResource>(token);
-            if (uiSearchResource != null)
+            var v2repo = await GetRepository(source, token);
+
+            var searchResource = await source.GetResourceAsync<UISearchResource>(token);
+            if (searchResource != null)
             {
-                resource = new PowerShellSearchResourceV2(uiSearchResource);
+                resource = new PowerShellSearchResourceV2(v2repo);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

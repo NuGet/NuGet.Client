@@ -14,7 +14,7 @@ namespace NuGet.Protocol.VisualStudio
 {
     public class UISearchResourceV2 : UISearchResource
     {
-        private readonly IPackageRepository V2Client;
+        private IPackageRepository V2Client { get; }
 
         public UISearchResourceV2(V2Resource resource)
         {
@@ -28,98 +28,105 @@ namespace NuGet.Protocol.VisualStudio
 
         public override async Task<IEnumerable<UISearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
-            return await GetSearchResultsForVisualStudioUI(searchTerm, filters, skip, take, cancellationToken);
+            return await GetSearchResultsForVisualStudioUIAsync(searchTerm, filters, skip, take, cancellationToken);
         }
 
-        private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUI(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
-        {
-            return await Task.Run(async () =>
-                {
-                    var query = V2Client.Search(
-                        searchTerm,
-                        filters.SupportedFrameworks,
-                        filters.IncludePrerelease);
-
-                    // V2 sometimes requires that we also use an OData filter for 
-                    // latest /latest prerelease version
-                    if (filters.IncludePrerelease)
-                    {
-                        query = query.Where(p => p.IsAbsoluteLatestVersion);
-                    }
-                    else
-                    {
-                        query = query.Where(p => p.IsLatestVersion);
-                    }
-                    query = query.OrderByDescending(p => p.DownloadCount)
-                        .ThenBy(p => p.Id);
-
-                    // Some V2 sources, e.g. NuGet.Server, local repository, the result contains all 
-                    // versions of each package. So we need to group the result by Id.
-                    var collapsedQuery = query.AsEnumerable().AsCollapsed();
-
-                    // execute the query
-                    var allPackages = collapsedQuery
-                        .Skip(skip)
-                        .Take(take)
-                        .ToList();
-
-                    // fetch version info in parallel
-                    var tasks = new Queue<Task<UISearchMetadata>>();
-                    foreach (var p in allPackages)
-                    {
-                        tasks.Enqueue(CreatePackageSearchResult(p, filters, cancellationToken));
-                    }
-
-                    var results = new List<UISearchMetadata>();
-                    while (tasks.Count > 0)
-                    {
-                        var metadata = await tasks.Dequeue();
-                        results.Add(metadata);
-                    }
-
-                    return results;
-                });
-        }
-
-        private async Task<UISearchMetadata> CreatePackageSearchResult(IPackage package, SearchFilter filters, CancellationToken cancellationToken)
+        private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUIAsync(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
             return await Task.Run(() =>
+            {
+                var query = V2Client.Search(
+                    searchTerm,
+                    filters.SupportedFrameworks,
+                    filters.IncludePrerelease);
+
+                // V2 sometimes requires that we also use an OData filter for 
+                // latest /latest prerelease version
+                if (filters.IncludePrerelease)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    query = query.Where(p => p.IsAbsoluteLatestVersion);
+                }
+                else
+                {
+                    query = query.Where(p => p.IsLatestVersion);
+                }
+                query = query.OrderByDescending(p => p.DownloadCount)
+                    .ThenBy(p => p.Id);
 
-                    // apply the filters to the version list returned
-                    var versions = V2Client.FindPackagesById(package.Id)
-                        .Where(p => filters.IncludeDelisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
-                        .Where(v => filters.IncludePrerelease || String.IsNullOrEmpty(v.Version.SpecialVersion)).ToArray();
+                // Some V2 sources, e.g. NuGet.Server, local repository, the result contains all 
+                // versions of each package. So we need to group the result by Id.
+                var collapsedQuery = query.AsEnumerable().AsCollapsed();
 
-                    if (!versions.Any())
-                    {
-                        versions = new[] { package };
-                    }
+                // execute the query
+                var allPackages = collapsedQuery
+                    .Skip(skip)
+                    .Take(take)
+                    .ToList();
 
-                    var id = package.Id;
-                    var version = V2Utilities.SafeToNuGetVer(package.Version);
-                    var title = package.Title;
-                    var summary = package.Summary;
+                var results = new List<UISearchMetadata>();
 
-                    var nuGetVersions = versions.Select(p =>
-                        new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount));
+                foreach (var package in allPackages)
+                {
+                    results.Add(CreatePackageSearchResult(package, filters, cancellationToken));
+                }
 
-                    if (String.IsNullOrWhiteSpace(summary))
-                    {
-                        summary = package.Description;
-                    }
+                return results;
+            });
+        }
 
-                    if (String.IsNullOrEmpty(title))
-                    {
-                        title = id;
-                    }
+        private UISearchMetadata CreatePackageSearchResult(IPackage package, SearchFilter filters, CancellationToken cancellationToken)
+        {
+            var id = package.Id;
+            var version = V2Utilities.SafeToNuGetVer(package.Version);
+            var title = package.Title;
+            var summary = package.Summary;
 
-                    var iconUrl = package.IconUrl;
-                    var identity = new PackageIdentity(id, version);
-                    var searchMetaData = new UISearchMetadata(identity, title, summary, iconUrl, nuGetVersions, UIMetadataResourceV2.GetVisualStudioUIPackageMetadata(package));
-                    return searchMetaData;
-                });
+            if (string.IsNullOrWhiteSpace(summary))
+            {
+                summary = package.Description;
+            }
+
+            if (string.IsNullOrEmpty(title))
+            {
+                title = id;
+            }
+
+            var iconUrl = package.IconUrl;
+            var identity = new PackageIdentity(id, version);
+
+            var versions = new Lazy<Task<IEnumerable<VersionInfo>>>(() => GetVersionInfoAsync(package, filters, cancellationToken));
+
+            var searchMetaData = new UISearchMetadata(identity,
+                                                      title,
+                                                      summary,
+                                                      iconUrl,
+                                                      versions,
+                                                      UIMetadataResourceV2.GetVisualStudioUIPackageMetadata(package));
+
+            return searchMetaData;
+        }
+
+        public Task<IEnumerable<VersionInfo>> GetVersionInfoAsync(IPackage package, SearchFilter filters, CancellationToken cancellationToken)
+        {
+            return Task.Run(() =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // apply the filters to the version list returned
+                var versions = V2Client.FindPackagesById(package.Id)
+                    .Where(p => filters.IncludeDelisted || !p.Published.HasValue || p.Published.Value.Year > 1901)
+                    .Where(v => filters.IncludePrerelease || string.IsNullOrEmpty(v.Version.SpecialVersion)).ToArray();
+
+                if (!versions.Any())
+                {
+                    versions = new[] { package };
+                }
+
+                var nuGetVersions = versions.Select(p =>
+                    new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount));
+
+                return nuGetVersions;
+            });
         }
     }
 }

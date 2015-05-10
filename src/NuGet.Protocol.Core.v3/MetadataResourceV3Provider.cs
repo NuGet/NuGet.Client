@@ -12,7 +12,9 @@ namespace NuGet.Protocol.Core.v3
     public class MetadataResourceV3Provider : ResourceProvider
     {
         public MetadataResourceV3Provider()
-            : base(typeof(MetadataResource), "MetadataResourceV3Provider", "MetadataResourceV2Provider")
+            : base(typeof(MetadataResource),
+                  nameof(MetadataResourceV3Provider),
+                  "MetadataResourceV2Provider")
         {
         }
 

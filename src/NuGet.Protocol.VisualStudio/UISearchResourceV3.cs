@@ -28,39 +28,74 @@ namespace NuGet.Protocol.VisualStudio
 
         public override async Task<IEnumerable<UISearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
         {
-            var visualStudioUISearchResults = new List<UISearchMetadata>();
+            var searchResults = new List<UISearchMetadata>();
 
             var searchResultJsonObjects = await _searchResource.Search(searchTerm, filters, skip, take, cancellationToken);
 
             foreach (var searchResultJson in searchResultJsonObjects)
             {
-                visualStudioUISearchResults.Add(await GetVisualStudioUISearchResult(searchResultJson, filters.IncludePrerelease, cancellationToken));
+                searchResults.Add(await GetSearchResult(searchResultJson, filters.IncludePrerelease, cancellationToken));
             }
 
-            return visualStudioUISearchResults;
+            return searchResults;
         }
 
-        private async Task<UISearchMetadata> GetVisualStudioUISearchResult(JObject package, bool includePrerelease, CancellationToken token)
+        private async Task<UISearchMetadata> GetSearchResult(JObject jObject, bool includePrerelease, CancellationToken token)
         {
-            var id = package.Value<string>(Properties.PackageId);
-            var version = NuGetVersion.Parse(package.Value<string>(Properties.Version));
+            var id = jObject.Value<string>(Properties.PackageId);
+            var version = NuGetVersion.Parse(jObject.Value<string>(Properties.Version));
             var topPackage = new PackageIdentity(id, version);
-            var iconUrl = GetUri(package, Properties.IconUrl);
-            var summary = package.Value<string>(Properties.Summary);
+            var iconUrl = jObject.GetUri(Properties.IconUrl);
+            var summary = jObject.Value<string>(Properties.Summary);
             if (string.IsNullOrWhiteSpace(summary))
             {
                 // summary is empty. Use its description instead.
-                summary = package.Value<string>(Properties.Description);
+                summary = jObject.Value<string>(Properties.Description);
             }
 
-            var title = package.Value<string>(Properties.Title);
-            if (String.IsNullOrEmpty(title))
+            var title = jObject.Value<string>(Properties.Title);
+            if (string.IsNullOrEmpty(title))
             {
                 // Use the id instead of the title when no title exists.
                 title = id;
             }
 
             // get other versions
+            var versionList = GetLazyVersionList(jObject, includePrerelease, version);
+
+            // retrieve metadata for the top package
+            UIPackageMetadata metadata = null;
+
+            var v3MetadataResult = _metadataResource as UIMetadataResourceV3;
+
+            // for v3 just parse the data from the search results
+            if (v3MetadataResult != null)
+            {
+                metadata = v3MetadataResult.ParseMetadata(jObject);
+            }
+
+            // if we do not have a v3 metadata resource, request it using whatever is available
+            if (metadata == null)
+            {
+                metadata = await _metadataResource.GetMetadata(topPackage, token);
+            }
+
+            var searchResult = new UISearchMetadata(topPackage, title, summary, iconUrl, versionList, metadata);
+            return searchResult;
+        }
+
+        private static Lazy<Task<IEnumerable<VersionInfo>>> GetLazyVersionList(JObject package, bool includePrerelease, NuGetVersion version)
+        {
+            return new Lazy<Task<IEnumerable<VersionInfo>>>( () =>
+            {
+                var versionList = GetVersionList(package, includePrerelease, version);
+
+                return Task.FromResult(versionList);
+            });
+        }
+
+        private static IEnumerable<VersionInfo> GetVersionList(JObject package, bool includePrerelease, NuGetVersion version)
+        {
             var versionList = new List<VersionInfo>();
             var versions = package.Value<JArray>(Properties.Versions);
             if (versions != null)
@@ -90,84 +125,7 @@ namespace NuGet.Protocol.VisualStudio
                 versionList.Add(new VersionInfo(version, 0));
             }
 
-            // retrieve metadata for the top package
-            UIPackageMetadata metadata = null;
-            var v3metadataRes = _metadataResource as UIMetadataResourceV3;
-
-            // for v3 just parse the data from the search results
-            if (v3metadataRes != null)
-            {
-                metadata = v3metadataRes.ParseMetadata(package);
-            }
-
-            // if we do not have a v3 metadata resource, request it using whatever is available
-            if (metadata == null)
-            {
-                metadata = await _metadataResource.GetMetadata(topPackage, token);
-            }
-
-            var searchResult = new UISearchMetadata(topPackage, title, summary, iconUrl, versionList, metadata);
-            return searchResult;
-        }
-
-        /// <summary>
-        /// Returns a field value or the empty string. Arrays will become comma delimited strings.
-        /// </summary>
-        private static string GetField(JObject json, string property)
-        {
-            var value = json[property];
-
-            if (value == null)
-            {
-                return string.Empty;
-            }
-
-            var array = value as JArray;
-
-            if (array != null)
-            {
-                return String.Join(", ", array.Select(e => e.ToString()));
-            }
-
-            return value.ToString();
-        }
-
-        private static int GetInt(JObject json, string property)
-        {
-            var value = json[property];
-
-            if (value == null)
-            {
-                return 0;
-            }
-
-            return value.ToObject<int>();
-        }
-
-        private static DateTimeOffset? GetDateTime(JObject json, string property)
-        {
-            var value = json[property];
-
-            if (value == null)
-            {
-                return null;
-            }
-
-            return value.ToObject<DateTimeOffset>();
-        }
-
-        private Uri GetUri(JObject json, string property)
-        {
-            if (json[property] == null)
-            {
-                return null;
-            }
-            var str = json[property].ToString();
-            if (String.IsNullOrEmpty(str))
-            {
-                return null;
-            }
-            return new Uri(str);
+            return versionList;
         }
     }
 }

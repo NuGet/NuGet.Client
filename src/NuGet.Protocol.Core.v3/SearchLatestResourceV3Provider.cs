@@ -19,7 +19,9 @@ namespace NuGet.Protocol.Core.v3
         }
 
         public SearchLatestResourceV3Provider(DataClient client)
-            : base(typeof(SearchLatestResource), "SearchLatestResourceV3Provider", "SearchLatestResourceV2Provider")
+            : base(typeof(SearchLatestResource),
+                  nameof(SearchLatestResourceV3Provider),
+                  "SearchLatestResourceV2Provider")
         {
             _client = client;
         }

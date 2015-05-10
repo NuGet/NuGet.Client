@@ -10,17 +10,17 @@ using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.VisualStudio
 {
-    public class UISearchResourceV3Provider : ResourceProvider
+    public class SearchResourceV3Provider : ResourceProvider
     {
         private readonly DataClient _client;
 
-        public UISearchResourceV3Provider()
+        public SearchResourceV3Provider()
             : this(new DataClient())
         {
         }
 
-        public UISearchResourceV3Provider(DataClient client)
-            : base(typeof(UISearchResource), "UISearchResourceV3Provider", "UISearchResourceV2Provider")
+        public SearchResourceV3Provider(DataClient client)
+            : base(typeof(UISearchResource), nameof(SearchResourceV3Provider), "SearchResourceV2Provider")
         {
             _client = client;
         }

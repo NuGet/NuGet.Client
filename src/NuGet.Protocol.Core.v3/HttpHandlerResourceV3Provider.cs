@@ -17,7 +17,9 @@ namespace NuGet.Protocol.Core.v3
         private static readonly string[] _authenticationSchemes = new[] { "Basic", "NTLM", "Negotiate" };
 
         public HttpHandlerResourceV3Provider()
-            : base(typeof(HttpHandlerResource), "HttpHandlerResourceV3Provider", NuGetResourceProviderPositions.Last)
+            : base(typeof(HttpHandlerResource),
+                  nameof(HttpHandlerResourceV3Provider),
+                  NuGetResourceProviderPositions.Last)
         {
         }
 

@@ -13,7 +13,9 @@ namespace NuGet.Protocol.Core.v3
     public class RegistrationResourceV3Provider : ResourceProvider
     {
         public RegistrationResourceV3Provider()
-            : base(typeof(RegistrationResourceV3), "RegistrationResourceV3", NuGetResourceProviderPositions.Last)
+            : base(typeof(RegistrationResourceV3),
+                  nameof(RegistrationResourceV3),
+                  NuGetResourceProviderPositions.Last)
         {
         }
 

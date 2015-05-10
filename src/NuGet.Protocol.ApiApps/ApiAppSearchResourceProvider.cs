@@ -13,7 +13,7 @@ namespace NuGet.Protocol.ApiApps
     public class ApiAppSearchResourceProvider : ResourceProvider
     {
         public ApiAppSearchResourceProvider()
-            : base(typeof(ApiAppSearchResource), "ApiAppSearchResource", NuGetResourceProviderPositions.Last)
+            : base(typeof(ApiAppSearchResource), nameof(ApiAppSearchResource), NuGetResourceProviderPositions.Last)
         {
         }
 

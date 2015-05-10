@@ -12,7 +12,9 @@ namespace NuGet.Protocol.Core.v3
     public class RawSearchResourceV3Provider : ResourceProvider
     {
         public RawSearchResourceV3Provider()
-            : base(typeof(RawSearchResourceV3), "RawSearchResourceV3", NuGetResourceProviderPositions.Last)
+            : base(typeof(RawSearchResourceV3),
+                  nameof(RawSearchResourceV3),
+                  NuGetResourceProviderPositions.Last)
         {
         }
 

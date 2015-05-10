@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Core.v3
         private readonly ConcurrentDictionary<PackageSource, DownloadResource> _cache;
 
         public DownloadResourceV3Provider()
-            : base(typeof(DownloadResource), "DownloadResourceV3Provider", "DownloadResourceV2Provider")
+            : base(typeof(DownloadResource), nameof(DownloadResourceV3Provider), "DownloadResourceV2Provider")
         {
             _cache = new ConcurrentDictionary<PackageSource, DownloadResource>();
         }
