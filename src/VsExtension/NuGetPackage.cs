@@ -869,6 +869,7 @@ namespace NuGetVSExtension
             }
         }
 
+        // For PowerShell, it's okay to query from the worker thread.
         private void BeforeQueryStatusForPowerConsole(object sender, EventArgs args)
         {
             OleMenuCommand command = (OleMenuCommand)sender;
@@ -877,23 +878,25 @@ namespace NuGetVSExtension
 
         private void BeforeQueryStatusForAddPackageDialog(object sender, EventArgs args)
         {
-            OleMenuCommand command = (OleMenuCommand)sender;
-            command.Visible = IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
-            command.Enabled = !ConsoleStatus.IsBusy;
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                OleMenuCommand command = (OleMenuCommand)sender;
+                command.Visible = IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+                command.Enabled = !ConsoleStatus.IsBusy;
+            });
         }
 
         private void BeforeQueryStatusForAddPackageForSolutionDialog(object sender, EventArgs args)
         {
-            OleMenuCommand command = (OleMenuCommand)sender;
-            command.Visible = IsSolutionExistsAndNotDebuggingAndNotBuilding();
-            // disable the dialog menu if the console is busy executing a command;
-            command.Enabled = !ConsoleStatus.IsBusy;
-        }
-
-        private void QueryStatusForVisualizer(object sender, EventArgs args)
-        {
-            OleMenuCommand command = (OleMenuCommand)sender;
-            command.Visible = SolutionManager.IsSolutionOpen && IsVisualizerSupported;
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                OleMenuCommand command = (OleMenuCommand)sender;
+                command.Visible = IsSolutionExistsAndNotDebuggingAndNotBuilding();
+                // disable the dialog menu if the console is busy executing a command;
+                command.Enabled = !ConsoleStatus.IsBusy;
+            });
         }
 
         private bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
