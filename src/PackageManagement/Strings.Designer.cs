@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempting to gather dependencies information for package &apos;{0}&apos; with respect to project targeting &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Attempting to gather dependencies information for package &apos;{0}&apos; with respect to project &apos;{1}&apos;, targeting &apos;{2}&apos;.
         /// </summary>
         internal static string AttemptingToGatherDependencyInfo {
             get {
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempting to gather dependencies information for multiple packages with respect to project targeting &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Attempting to gather dependencies information for multiple packages with respect to project &apos;{0}&apos;, targeting &apos;{1}&apos;.
         /// </summary>
         internal static string AttemptingToGatherDependencyInfoForMultiplePackages {
             get {

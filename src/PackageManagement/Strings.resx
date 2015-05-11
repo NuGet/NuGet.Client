@@ -121,7 +121,7 @@
     <value>Another NuGetProject with the same name '{0}' exists in solution</value>
   </data>
   <data name="AttemptingToGatherDependencyInfo" xml:space="preserve">
-    <value>Attempting to gather dependencies information for package '{0}' with respect to project targeting '{1}'</value>
+    <value>Attempting to gather dependencies information for package '{0}' with respect to project '{1}', targeting '{2}'</value>
   </data>
   <data name="AttemptingToResolveDependencies" xml:space="preserve">
     <value>Attempting to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
@@ -199,7 +199,7 @@
     <value>Unable to find version '{1}' of package '{0}'.</value>
   </data>
   <data name="AttemptingToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
-    <value>Attempting to gather dependencies information for multiple packages with respect to project targeting '{0}'</value>
+    <value>Attempting to gather dependencies information for multiple packages with respect to project '{0}', targeting '{1}'</value>
   </data>
   <data name="AttemptingToResolveDependenciesForMultiplePackages" xml:space="preserve">
     <value>Attempting to resolve dependencies for multiple packages</value>

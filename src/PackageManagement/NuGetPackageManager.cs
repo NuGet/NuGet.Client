@@ -283,8 +283,9 @@ namespace NuGet.PackageManagement
                 var contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
 
                 // Step-1 : Get metadata resources using gatherer
+                var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
                     packageIdsToInstall,
                     Enumerable.Empty<PackageIdentity>(),
@@ -408,8 +409,9 @@ namespace NuGet.PackageManagement
                 var contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
 
                 // Step-1 : Get metadata resources using gatherer
+                var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, targetFramework);
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
                     packagesToInstall,
                     oldListOfInstalledPackages,
@@ -662,8 +664,9 @@ namespace NuGet.PackageManagement
                     packageTargetsForResolver.Add(packageIdentity);
 
                     // Step-1 : Get metadata resources using gatherer
+                    var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                     var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, targetFramework);
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, targetFramework);
 
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
 
@@ -955,8 +958,9 @@ namespace NuGet.PackageManagement
 
             // Step-1 : Get the metadata resources from "packages" folder or custom repository path
             var packageIdentity = packageReference.PackageIdentity;
+            var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             var packageReferenceTargetFramework = packageReference.TargetFramework;
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, packageReferenceTargetFramework);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, packageReferenceTargetFramework);
 
             // TODO: IncludePrerelease is a big question mark
             var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
