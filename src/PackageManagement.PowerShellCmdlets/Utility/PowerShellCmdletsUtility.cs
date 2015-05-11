@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             NuGetVersion nVersion;
             if (version == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(version));
             }
             bool success = NuGetVersion.TryParse(version, out nVersion);
             if (!success)
@@ -170,52 +170,55 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         public static PackageIdentity GetUpdateForPackageByDependencyEnum(SourceRepository sourceRepository, PackageIdentity identity, NuGetProject project, DependencyBehavior updateVersion, bool includePrerelease)
         {
-            IEnumerable<NuGetVersion> allVersions = GetAllVersionsForPackageId(sourceRepository, identity.Id, project, includePrerelease);
-            PackageIdentity packageUpdate = null;
-            NuGetVersion nVersion = null;
+            IEnumerable<NuGetVersion> allVersions = GetAllVersionsForPackageId(sourceRepository, identity.Id, project, includePrerelease)
+                ?? Enumerable.Empty<NuGetVersion>();
+
+            if (!allVersions.Any())
+            {
+                return null;
+            }
+
+            allVersions = allVersions.Where(p => p > identity.Version).OrderByDescending(v => v);
+
+            NuGetVersion version = null;
 
             try
             {
                 // Find all versions that are higher than the package's current version
-                allVersions = allVersions.Where(p => p > identity.Version).OrderByDescending(v => v);
-                if (allVersions != null
-                    && allVersions.Any())
+                if (updateVersion == DependencyBehavior.Lowest)
                 {
-                    if (updateVersion == DependencyBehavior.Lowest)
-                    {
-                        nVersion = allVersions.LastOrDefault();
-                    }
-                    else if (updateVersion == DependencyBehavior.Highest)
-                    {
-                        nVersion = allVersions.FirstOrDefault();
-                    }
-                    else if (updateVersion == DependencyBehavior.HighestPatch)
-                    {
-                        var groups = from p in allVersions
-                            group p by new { p.Version.Major, p.Version.Minor }
-                            into g
-                            orderby g.Key.Major, g.Key.Minor
-                            select g;
-                        nVersion = (from p in groups.First()
-                            orderby p.Version descending
-                            select p).FirstOrDefault();
-                    }
-                    else if (updateVersion == DependencyBehavior.HighestMinor)
-                    {
-                        var groups = from p in allVersions
-                            group p by new { p.Version.Major }
-                            into g
-                            orderby g.Key.Major
-                            select g;
-                        nVersion = (from p in groups.First()
-                            orderby p.Version descending
-                            select p).FirstOrDefault();
-                    }
+                    version = allVersions.LastOrDefault();
+                }
+                else if (updateVersion == DependencyBehavior.Highest)
+                {
+                    version = allVersions.FirstOrDefault();
+                }
+                else if (updateVersion == DependencyBehavior.HighestPatch)
+                {
+                    var groups = from p in allVersions
+                        group p by new { p.Version.Major, p.Version.Minor }
+                        into g
+                        orderby g.Key.Major, g.Key.Minor
+                        select g;
+                    version = (from p in groups.First()
+                        orderby p.Version descending
+                        select p).FirstOrDefault();
+                }
+                else if (updateVersion == DependencyBehavior.HighestMinor)
+                {
+                    var groups = from p in allVersions
+                        group p by new { p.Version.Major }
+                        into g
+                        orderby g.Key.Major
+                        select g;
+                    version = (from p in groups.First()
+                        orderby p.Version descending
+                        select p).FirstOrDefault();
                 }
 
-                if (nVersion != null)
+                if (version != null)
                 {
-                    packageUpdate = new PackageIdentity(identity.Id, nVersion);
+                    return new PackageIdentity(identity.Id, version);
                 }
             }
             catch (Exception ex)
@@ -225,7 +228,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         Resources.Cmdlets_ErrorFindingUpdateVersion, identity.Id, ex.Message));
             }
 
-            return packageUpdate;
+            return null;
         }
     }
 }

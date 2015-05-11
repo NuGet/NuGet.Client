@@ -754,6 +754,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProjectItem != null;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         private static EnvDTEProjectItem GetProjectItem(EnvDTEProjectItems envDTEProjectItems, string name, IEnumerable<string> allowedItemKinds)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
@@ -1084,7 +1085,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (envDTEProject != null
                 && envDTEProject.FullName != null)
             {
-                var vcx = new VcxProject(envDTEProject.FullName);
+                new VcxProject(envDTEProject.FullName);
             }
             return isClr;
         }
@@ -1203,11 +1204,10 @@ namespace NuGet.PackageManagement.VisualStudio
                    ProjectCollection.GlobalProjectCollection.LoadProject(project.FullName);
         }
 
-        internal static void Save(EnvDTEProject project, string projectFullPath)
+        internal static void Save(EnvDTEProject project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var fullPath = FileSystemUtility.GetFullPath(projectFullPath, project.FullName);
             FileSystemUtility.MakeWriteable(project.FullName);
             project.Save();
         }

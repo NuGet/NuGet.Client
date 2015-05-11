@@ -11,7 +11,7 @@ using NuGet.Protocol.Core.Types;
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IPackageRestoreManager))]
-    internal class VSPackageRestoreManager : PackageRestoreManager
+    public class VSPackageRestoreManager : PackageRestoreManager
     {
         private ISolutionManager SolutionManager { get; }
 

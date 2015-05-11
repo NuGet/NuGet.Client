@@ -11,6 +11,7 @@
     <RootNamespace>NuGet.VisualStudio12</RootNamespace>
     <AssemblyName>NuGet.VisualStudio12</AssemblyName>
     <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <DefineConstants Condition="$(VisualStudioVersion) == '12'">$(DefineConstants);VS12</DefineConstants>
   </PropertyGroup>
   <ItemGroup>

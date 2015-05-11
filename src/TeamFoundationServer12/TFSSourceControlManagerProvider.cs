@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using EnvDTE80;
@@ -43,17 +44,16 @@ namespace NuGet.TeamFoundationServer
         {
             if (sourceControlBindings == null)
             {
-                throw new ArgumentNullException("sourceControlBindings");
+                throw new ArgumentNullException(nameof(sourceControlBindings));
             }
-            SourceControlBindings = sourceControlBindings;
             TfsTeamProjectCollection projectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri(sourceControlBindings.ServerName));
             var versionControl = projectCollection.GetService<VersionControlServer>();
             PrivateWorkspace = versionControl.TryGetWorkspace(sourceControlBindings.LocalBinding);
         }
 
-        private SourceControlBindings SourceControlBindings { get; set; }
         private Workspace PrivateWorkspace { get; set; }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000")]
         public override Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
             // See if there are any pending changes for this file
@@ -99,7 +99,7 @@ namespace NuGet.TeamFoundationServer
                 filesToAdd.Add(Path.GetDirectoryName(fullPath));
             }
 
-            ProcessAddFiles(filesToAdd, root, nuGetProjectContext);
+            ProcessAddFiles(filesToAdd, root);
 
             if (filesToAdd.Any())
             {
@@ -107,7 +107,7 @@ namespace NuGet.TeamFoundationServer
             }
         }
 
-        private void ProcessAddFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
+        private void ProcessAddFiles(IEnumerable<string> fullPaths, string root)
         {
             if (!fullPaths.Any()
                 || String.IsNullOrEmpty(root))

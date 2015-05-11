@@ -330,7 +330,7 @@ namespace NuGet.VisualStudio
 
                         // create one refresh file for each assembly reference, as per required by Website projects
                         // projectSystem.CreateRefreshFile(assemblyPath);
-                        RefreshFileUtility.CreateRefreshFile(projectSystem, sourcePath, context);
+                        RefreshFileUtility.CreateRefreshFile(projectSystem, sourcePath);
                     }
                 }
             }

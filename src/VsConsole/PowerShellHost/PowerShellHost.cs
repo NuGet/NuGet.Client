@@ -621,7 +621,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return GetDisplayName(nuGetProject, solutionManager);
         }
 
-        private string GetDisplayName(NuGetProject nuGetProject, VSSolutionManager solutionManager)
+        private static string GetDisplayName(NuGetProject nuGetProject, VSSolutionManager solutionManager)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -711,6 +711,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void Dispose()
         {
+            _initScriptsLock.Dispose();
             if (Runspace != null)
             {
                 Runspace.Dispose();

@@ -113,15 +113,5 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             SolutionSettings.UpdateSections(section, values);
         }
-
-        public string GetDecryptedValue(string section, string key, bool isPath = false)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetEncryptedValue(string section, string key, string value)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

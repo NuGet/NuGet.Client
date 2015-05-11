@@ -45,7 +45,7 @@ namespace NuGetConsole.Implementation.Console
             TabExpansionTimeout = GetTabExpansionTimeout();
         }
 
-        private int GetTabExpansionTimeout()
+        private static int GetTabExpansionTimeout()
         {
             try
             {

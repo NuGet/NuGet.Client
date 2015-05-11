@@ -132,24 +132,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetServiceProviderFromDTE(dte);
         }
 
-        /// <summary>
-        /// Internal test hook for adding services
-        /// </summary>
-        internal static IDictionary<Type, object> TestServiceCache { private get; set; }
-
         private static object QueryService(_DTE dte, Type serviceType)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
-
-            // internal test hook for unit tests
-            if (TestServiceCache != null)
-            {
-                object testService = null;
-                if (TestServiceCache.TryGetValue(serviceType, out testService))
-                {
-                    return testService;
-                }
-            }
 
             Guid guidService = serviceType.GUID;
             Guid riid = guidService;

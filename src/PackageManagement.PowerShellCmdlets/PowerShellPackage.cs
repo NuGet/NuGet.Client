@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// Represent the view of packages by Id and Versions
     /// </summary>
-    internal class PowerShellPackage : IPowerShellPackage
+    public class PowerShellPackage : IPowerShellPackage
     {
         public string Id { get; set; }
 
@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// Represent the view of packages installed to project(s)
     /// </summary>
-    internal class PowerShellInstalledPackage : IPowerShellPackage
+    public class PowerShellInstalledPackage : IPowerShellPackage
     {
         public string Id { get; set; }
 
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// Represent packages found from the remote package source
     /// </summary>
-    internal class PowerShellRemotePackage : IPowerShellPackage
+    public class PowerShellRemotePackage : IPowerShellPackage
     {
         public string Id { get; set; }
 
@@ -130,7 +130,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// <summary>
     /// Represent package updates found from the remote package source
     /// </summary>
-    internal class PowerShellUpdatePackage : IPowerShellPackage
+    public class PowerShellUpdatePackage : IPowerShellPackage
     {
         public string Id { get; set; }
 

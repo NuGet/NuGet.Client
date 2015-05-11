@@ -157,12 +157,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return _sourceFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
-        public override void RemoveImport(string targetPath)
+        public override void RemoveImport(string targetFullPath)
         {
             // Web sites are not msbuild based and do not support imports.
         }
 
-        public override void AddImport(string targetPath, ImportLocation location)
+        public override void AddImport(string targetFullPath, ImportLocation location)
         {
             // Web sites are not msbuild based and do not support imports.
         }

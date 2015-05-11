@@ -25,11 +25,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _dte = dte;
         }
 
-        public Task OpenFile(string filePath)
+        public Task OpenFile(string fullPath)
         {
-            if (filePath == null)
+            if (fullPath == null)
             {
-                throw new ArgumentNullException("filePath");
+                throw new ArgumentNullException(nameof(fullPath));
             }
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -37,9 +37,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     if (_dte.ItemOperations != null
-                        && File.Exists(filePath))
+                        && File.Exists(fullPath))
                     {
-                        Window window = _dte.ItemOperations.OpenFile(filePath);
+                        Window window = _dte.ItemOperations.OpenFile(fullPath);
                         return Task.FromResult(0);
                     }
 

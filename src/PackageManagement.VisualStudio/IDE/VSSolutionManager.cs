@@ -504,7 +504,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (envDTEProject == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(envDTEProject));
             }
 
             List<Project> dependents;

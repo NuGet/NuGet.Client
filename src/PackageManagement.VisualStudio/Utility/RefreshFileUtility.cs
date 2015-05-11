@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NuGet.ProjectManagement;
@@ -20,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Adds the file to the DTE project system</remarks>
         /// <param name="projectSystem">the web site project system where this will be added</param>
         /// <param name="assemblyPath">The path to the assembly being added</param>
-        public static void CreateRefreshFile(WebSiteProjectSystem projectSystem, string assemblyPath, INuGetProjectContext nuGetProjectContext)
+        public static void CreateRefreshFile(VSMSBuildNuGetProjectSystem projectSystem, string assemblyPath)
         {
             if (projectSystem == null)
             {
@@ -32,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException("assemblyPath");
             }
 
-            string refreshFilePath = CreateRefreshFilePath(projectSystem.ProjectFullPath, assemblyPath);
+            string refreshFilePath = CreateRefreshFilePath(assemblyPath);
 
             if (!FileSystemUtility.FileExists(projectSystem.ProjectFullPath, refreshFilePath))
             {
@@ -55,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Creates the full path of the .refresh file
         /// </summary>
-        public static string CreateRefreshFilePath(string root, string assemblyPath)
+        public static string CreateRefreshFilePath(string assemblyPath)
         {
             string referenceName = Path.GetFileName(assemblyPath);
             return Path.Combine("bin", referenceName + RefreshFileExtension);
@@ -81,7 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="assemblyPath">The relative path to the assembly being added</param>
         public static void CreateRefreshFile(string root, string assemblyPath, IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem)
         {
-            string refreshFilePath = CreateRefreshFilePath(root, assemblyPath);
+            string refreshFilePath = CreateRefreshFilePath(assemblyPath);
 
             if (!FileSystemUtility.FileExists(root, refreshFilePath))
             {
@@ -111,6 +112,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 select resolvedPath;
         }
 
+
+        [SuppressMessage("Microsoft.Usage", "CA2202")]
         private static string SafeResolveRefreshPath(string root, string file)
         {
             string relativePath;

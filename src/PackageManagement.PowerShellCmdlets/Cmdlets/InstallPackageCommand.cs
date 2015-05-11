@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -85,7 +86,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                blockingCollection.Add(new ExecutionCompleteMessage());
+                BlockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 
@@ -105,7 +106,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                blockingCollection.Add(new ExecutionCompleteMessage());
+                BlockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 
@@ -117,11 +118,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (!string.IsNullOrEmpty(Id))
             {
-                if (Id.ToLowerInvariant().EndsWith(Constants.PackageReferenceFile))
+                if (Id.EndsWith(Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromPackagesConfig = true;
                 }
-                else if (Id.ToLowerInvariant().EndsWith(Constants.PackageExtension))
+                else if (Id.EndsWith(Constants.PackageExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromDirectPackagePath = true;
                     if (UriHelper.IsHttpSource(Id))
@@ -184,6 +185,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Return list of package identities parsed from packages.config
         /// </summary>
         /// <returns></returns>
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         private IEnumerable<PackageIdentity> CreatePackageIdentitiesFromPackagesConfig()
         {
             IEnumerable<PackageIdentity> identities = Enumerable.Empty<PackageIdentity>();
@@ -191,7 +193,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 // Example: install-package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
-                if (Id.ToLowerInvariant().StartsWith("http"))
+                if (UriHelper.IsHttpSource(Id))
                 {
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Id);
                     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -239,6 +241,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Return package identity parsed from path to .nupkg file
         /// </summary>
         /// <returns></returns>
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         private IEnumerable<PackageIdentity> CreatePackageIdentityFromNupkgPath()
         {
             PackageIdentity identity = null;
@@ -251,15 +254,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
                     if (identity != null)
                     {
-                        DirectoryInfo info = Directory.CreateDirectory(Source);
+                        Directory.CreateDirectory(Source);
                         string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
 
-                        HttpClient client = new HttpClient();
-                        Stream downloadStream = client.GetStreamAsync(Id).Result;
-                        using (var targetPackageStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write))
+                        using (HttpClient client = new HttpClient())
                         {
-                            downloadStream.CopyToAsync(targetPackageStream).Wait();
+                            using (Stream downloadStream = client.GetStreamAsync(Id).Result)
+                            using (var targetPackageStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write))
+                            {
+                                downloadStream.CopyToAsync(targetPackageStream).Wait();
+                            }
                         }
+                            
                     }
                 }
                 else

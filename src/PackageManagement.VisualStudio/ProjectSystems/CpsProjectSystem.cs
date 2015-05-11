@@ -28,12 +28,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Native & JS projects don't know about GAC
         }
 
-        public override void AddImport(string targetPath, ImportLocation location)
+        public override void AddImport(string targetFullPath, ImportLocation location)
         {
             // For VS 2012 or above, the operation has to be done inside the Writer lock
-            if (String.IsNullOrEmpty(targetPath))
+            if (String.IsNullOrEmpty(targetFullPath))
             {
-                throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "targetPath");
+                throw new ArgumentNullException(nameof(targetFullPath));
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
-                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetPath);
+                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
                     await AddImportStatementForVS2013Async(location, relativeTargetPath);
                 });
         }
@@ -57,14 +57,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 buildProject => MicrosoftBuildEvaluationProjectUtility.AddImportStatement(buildProject, relativeTargetPath, location));
 
             // notify the project system of the change
-            UpdateImportStamp(EnvDTEProject, isCpsProjectSystem: true);
+            UpdateImportStamp(EnvDTEProject);
         }
 
-        public override void RemoveImport(string targetPath)
+        public override void RemoveImport(string targetFullPath)
         {
-            if (String.IsNullOrEmpty(targetPath))
+            if (String.IsNullOrEmpty(targetFullPath))
             {
-                throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "targetPath");
+                throw new ArgumentNullException(nameof(targetFullPath), CommonResources.Argument_Cannot_Be_Null_Or_Empty);
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
                     // For VS 2012 or above, the operation has to be done inside the Writer lock
-                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetPath);
+                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
                     await RemoveImportStatementForVS2013Async(relativeTargetPath);
                 });
         }
@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 buildProject => MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(buildProject, relativeTargetPath));
 
             // notify the project system of the change
-            UpdateImportStamp(EnvDTEProject, isCpsProjectSystem: false);
+            UpdateImportStamp(EnvDTEProject);
         }
     }
 }

@@ -114,8 +114,6 @@ namespace NuGetConsole
         {
             Start();
 
-            var f = _outputWindow as IVsWindowFrame;
-
             _outputWindowPane.Activate();
             _outputWindowPane.Clear();
         }

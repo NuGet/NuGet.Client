@@ -10,7 +10,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
-    internal class PSPathUtility
+    internal static class PSPathUtility
     {
         /// <summary>
         /// Translate a PSPath into a System.IO.* friendly Win32 path.

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -12,7 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public VcxProject(string fullname)
         {
-            vcxFile = Loader.Instance.LoadXml(fullname);
+            vcxFile = XDocument.Load(fullname);
         }
 
         public bool HasClrSupport()
@@ -25,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (overrideitems.Any())
             {
                 var useNativeNuget = overrideitems.First().Value;
-                if (useNativeNuget.ToLower() == "true")
+                if (string.Equals(useNativeNuget, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -33,24 +34,9 @@ namespace NuGet.PackageManagement.VisualStudio
             if (clritems.Any())
             {
                 var clr = clritems.First();
-                return clr.Value.ToLower() == "true";
+                return string.Equals(clr.Value, "true", StringComparison.OrdinalIgnoreCase);
             }
             return false;
-        }
-    }
-
-    public class Loader
-    {
-        static Loader()
-        {
-            Instance = new Loader();
-        }
-
-        public static Loader Instance { get; set; }
-
-        public XDocument LoadXml(string filename)
-        {
-            return XDocument.Load(filename);
         }
     }
 }

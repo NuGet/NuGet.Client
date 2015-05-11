@@ -6,7 +6,7 @@ using EnvDTE;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal class VSVersionHelper
+    internal static class VSVersionHelper
     {
         internal static string GetSKU()
         {

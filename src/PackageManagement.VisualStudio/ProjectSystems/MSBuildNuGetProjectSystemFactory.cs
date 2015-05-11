@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (envDTEProject == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(envDTEProject));
             }
 
             if (String.IsNullOrEmpty(envDTEProject.FullName))
@@ -44,7 +44,8 @@ namespace NuGet.PackageManagement.VisualStudio
 #if VS14
             if (EnvDTEProjectUtility.SupportsINuGetProjectSystem(envDTEProject))
             {
-                throw new InvalidOperationException("Does not support INuGetProjectSystem");
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, typeof(IMSBuildNuGetProjectSystem).FullName));
             }
 #endif
 

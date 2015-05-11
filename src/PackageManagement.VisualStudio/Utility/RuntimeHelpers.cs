@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -166,6 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="assemblyName">The name of the assembly to be loaded.</param>
         /// <returns>The loaded Assembly instance.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2001")]
         internal static Assembly LoadAssemblySmart(string assemblyName)
         {
             Assembly executingAssembly = Assembly.GetExecutingAssembly();

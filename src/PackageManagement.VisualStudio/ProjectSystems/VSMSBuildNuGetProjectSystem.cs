@@ -208,7 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullPath = Path.Combine(ProjectFullPath, path);
             if (!File.Exists(fullPath))
             {
-                throw new ArgumentNullException(String.Format(Strings.PathToExistingFileNotPresent, fullPath, ProjectName));
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Strings.PathToExistingFileNotPresent, fullPath, ProjectName));
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -306,10 +306,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
                     EnvDTEProjectUtility.AddImportStatement(EnvDTEProject, relativeTargetPath, location);
-                    EnvDTEProjectUtility.Save(EnvDTEProject, ProjectFullPath);
+                    EnvDTEProjectUtility.Save(EnvDTEProject);
 
                     // notify the project system of the change
-                    UpdateImportStamp(EnvDTEProject, isCpsProjectSystem: false);
+                    UpdateImportStamp(EnvDTEProject);
                 });
         }
 
@@ -478,10 +478,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
                     EnvDTEProjectUtility.RemoveImportStatement(EnvDTEProject, relativeTargetPath);
 
-                    EnvDTEProjectUtility.Save(EnvDTEProject, ProjectFullPath);
+                    EnvDTEProjectUtility.Save(EnvDTEProject);
 
                     // notify the project system of the change
-                    UpdateImportStamp(EnvDTEProject, isCpsProjectSystem: false);
+                    UpdateImportStamp(EnvDTEProject);
                 });
         }
 
@@ -643,7 +643,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// of date.
         /// The value does not matter, it just needs to change.
         /// </summary>
-        protected static void UpdateImportStamp(EnvDTEProject envDTEProject, bool isCpsProjectSystem)
+        protected static void UpdateImportStamp(EnvDTEProject envDTEProject)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -654,7 +654,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 string stamp = Guid.NewGuid().ToString().Split('-')[0];
                 try
                 {
-                    int r1 = propStore.SetPropertyValue(NuGetImportStamp, string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE, stamp);
+                    propStore.SetPropertyValue(NuGetImportStamp, string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE, stamp);
                 }
                 catch (Exception ex1)
                 {
@@ -665,7 +665,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // which causes unnecessary source control pending changes. 
                 try
                 {
-                    int r2 = propStore.RemoveProperty(NuGetImportStamp, string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE);
+                    propStore.RemoveProperty(NuGetImportStamp, string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE);
                 }
                 catch (Exception ex2)
                 {

@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(ParameterSetName = "All")]
         public SwitchParameter Reinstall { get; set; }
 
-        public List<NuGetProject> Projects;
+        private List<NuGetProject> Projects { get; set; }
 
         public bool IsVersionEnum { get; set; }
 
@@ -99,7 +99,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         private void PerformPackageUpdatesOrReinstalls()
         {
-            var token = CancellationToken.None;
             // Update-Package without ID specified
             if (!_idSpecified)
             {
@@ -132,7 +131,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                blockingCollection.Add(new ExecutionCompleteMessage());
+                BlockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 
@@ -161,7 +160,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                blockingCollection.Add(new ExecutionCompleteMessage());
+                BlockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 

@@ -3,7 +3,7 @@
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal class NativeMethods
+    internal static class NativeMethods
     {
         public const int IDCANCEL = 2;
         public const int IDYES = 6;

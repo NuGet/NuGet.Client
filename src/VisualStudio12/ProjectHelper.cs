@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -88,6 +89,7 @@ namespace NuGet.VisualStudio12
             return context != null ? context.UnconfiguredProject : null;
         }
 #else
+        [SuppressMessage("Microsoft.Usage", "CA1801")]
         public static Task DoWorkInWriterLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
             return Task.FromResult(0);

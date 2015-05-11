@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -316,6 +317,7 @@ namespace NuGetConsole.Implementation.Console
                 return Tuple.Create(false, false);
             }
 
+            [SuppressMessage("Microsoft.Globalization", "CA1303")]
             protected void PromptNewLine()
             {
                 WpfConsole.Write(WpfConsole.Host.Prompt + (char)32); // 32 is the space

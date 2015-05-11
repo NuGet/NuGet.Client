@@ -37,11 +37,6 @@ namespace NuGet.Options
         private bool _initialized;
         private Size _checkBoxSize;
 
-        //public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
-        //    : this(ServiceLocator.GetInstance<IPackageSourceProvider>(), serviceProvider)
-        //{
-        //}
-
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
             : this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
         {
@@ -231,12 +226,11 @@ namespace NuGet.Options
             }
 
             // find the enabled package source 
-            var updatedActiveSource = packageSources.Find(p => p.IsEnabled);
             return true;
         }
 
         // Returns true if there are no changes between existingSources and packageSources.
-        private bool SourcesChanged(List<PackageSource> existingSources, List<PackageSource> packageSources)
+        private static bool SourcesChanged(List<PackageSource> existingSources, List<PackageSource> packageSources)
         {
             if (existingSources.Count != packageSources.Count)
             {

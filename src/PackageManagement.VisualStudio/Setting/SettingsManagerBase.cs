@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _settingsManager = new SettingsManagerWrapper(serviceProvider);
         }
 
-        protected bool ReadBool(string settingsRoot, string property, bool defaultValue = false)
+        protected bool ReadBoolean(string settingsRoot, string property, bool defaultValue = false)
         {
             var userSettingsStore = _settingsManager.GetReadOnlySettingsStore();
             if (userSettingsStore != null
@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return defaultValue;
         }
 
-        protected void WriteBool(string settingsRoot, string property, bool value)
+        protected void WriteBoolean(string settingsRoot, string property, bool value)
         {
             IWritableSettingsStore userSettingsStore = GetWritableSettingsStore(settingsRoot);
             if (userSettingsStore != null)

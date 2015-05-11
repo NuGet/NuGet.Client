@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -42,12 +42,10 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string NuGetSolutionSettingsFolder = ".nuget";
 
         // HResults
+        [SuppressMessage("Microsoft.Naming", "CA1707")]
         public const int S_OK = 0;
 
         //Settings
         internal const string ConfigSetting = "config";
-
-        //
-        public static readonly Guid GUID_VSStandardCommandSet97;
     }
 }

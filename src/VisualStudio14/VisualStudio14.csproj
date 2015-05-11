@@ -14,6 +14,7 @@
     <RootNamespace>NuGet.VisualStudio14</RootNamespace>
     <AssemblyName>NuGet.VisualStudio14</AssemblyName>
     <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <DefineConstants Condition="$(VisualStudioVersion) == '14'">$(DefineConstants);VS14</DefineConstants>
   </PropertyGroup>
   <ItemGroup>

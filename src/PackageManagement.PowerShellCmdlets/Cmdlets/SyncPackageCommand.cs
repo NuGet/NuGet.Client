@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                blockingCollection.Add(new ExecutionCompleteMessage());
+                BlockingCollection.Add(new ExecutionCompleteMessage());
             }
         }
 

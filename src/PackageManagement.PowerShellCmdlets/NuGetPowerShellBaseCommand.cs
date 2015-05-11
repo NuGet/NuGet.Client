@@ -28,6 +28,8 @@ using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
+        Justification = "Disposing _blockingCollection is problematic since it continues to be used after the cmdlet has been disposed.")]
     /// <summary>
     /// This command process the specified package against the specified project.
     /// </summary>
@@ -35,13 +37,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         #region Members
 
+        private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
+        private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
         private readonly ISourceRepositoryProvider _resourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         // TODO: Hook up DownloadResource.Progress event
         private readonly IHttpClientEvents _httpClientEvents;
         private ProgressRecordCollection _progressRecordCache;
         private Exception _scriptException;
-        private bool _overwriteAll, _ignoreAll;
+        private bool _overwriteAll;
+        private bool _ignoreAll;
         internal const string PowerConsoleHostName = "Package Manager Host";
         internal const string ActivePackageSourceKey = "activePackageSource";
         internal const string SyncModeKey = "IsSyncMode";
@@ -49,7 +54,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         #endregion
 
-        public NuGetPowerShellBaseCommand()
+        protected NuGetPowerShellBaseCommand()
         {
             _resourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             ConfigSettings = ServiceLocator.GetInstance<ISettings>();
@@ -160,13 +165,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         #endregion
 
-        internal void Execute()
-        {
-            BeginProcessing();
-            ProcessRecord();
-            EndProcessing();
-        }
-
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to display friendly message to the console.")]
         protected override sealed void ProcessRecord()
         {
@@ -236,7 +234,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 throw new ArgumentNullException("source");
             }
 
-            UriFormatException uriException = null;
             PackageSource packageSource = new PackageSource(source);
             SourceRepository repository = _resourceRepositoryProvider.CreateRepository(packageSource);
             PSSearchResource resource = repository.GetResource<PSSearchResource>();
@@ -261,28 +258,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
             }
 
-            try
+            var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
+            // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null. 
+            PSSearchResource newResource = repository.GetResource<PSSearchResource>();
+            if (newResource == null)
             {
-                var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
-                // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null. 
-                PSSearchResource newResource = repository.GetResource<PSSearchResource>();
-                if (newResource == null)
-                {
-                    // Try to create Uri again to throw UriFormat exception for invalid source input.
-                    Uri sourceUri = new Uri(source);
-                }
-                return sourceRepo;
+                // Try to create Uri again to throw UriFormat exception for invalid source input.
+                new Uri(source);
             }
-            catch (Exception ex)
-            {
-                // if this is not a valid relative path either, 
-                // we rethrow the UriFormatException that we caught earlier.
-                if (uriException != null)
-                {
-                    throw uriException;
-                }
-                throw ex;
-            }
+            return sourceRepo;
         }
 
         /// <summary>
@@ -406,8 +390,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var pattern = new WildcardPattern(projectName, WildcardOptions.IgnoreCase);
 
                 var matches = from s in allValidProjectNames
-                    where pattern.IsMatch(s)
-                    select VsSolutionManager.GetNuGetProject(s);
+                              where pattern.IsMatch(s)
+                              select VsSolutionManager.GetNuGetProject(s);
 
                 int count = 0;
                 foreach (var project in matches)
@@ -570,6 +554,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Log preview nuget project actions on PowerShell console.
         /// </summary>
         /// <param name="actions"></param>
+        [SuppressMessage("Microsoft.Globalization", "CA1303")]
         protected void PreviewNuGetPackageActions(IEnumerable<NuGetProjectAction> actions)
         {
             if (actions == null
@@ -581,7 +566,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (NuGetProjectAction action in actions)
                 {
-                    Log(MessageLevel.Info, string.Format(CultureInfo.InvariantCulture, "{0} {1}", action.NuGetProjectActionType, action.PackageIdentity));
+                    Log(MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
                 }
             }
         }
@@ -852,7 +837,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public void Log(MessageLevel level, string message, params object[] args)
         {
             string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
-            blockingCollection.Add(new LogMessage(level, formattedMessage));
+            BlockingCollection.Add(new LogMessage(level, formattedMessage));
         }
 
         /// <summary>
@@ -891,20 +876,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 while (true)
                 {
-                    var message = blockingCollection.Take();
+                    var message = BlockingCollection.Take();
                     if (message is ExecutionCompleteMessage)
                     {
                         break;
                     }
-                    if (message is ScriptMessage)
+
+                    var scriptMessage = message as ScriptMessage;
+                    if (scriptMessage != null)
                     {
-                        ScriptMessage scriptMessage = message as ScriptMessage;
                         ExecutePSScriptInternal(scriptMessage.ScriptPath);
+                        continue;
                     }
-                    else if (message is LogMessage)
+
+                    var logMessage = message as LogMessage;
+                    if (logMessage != null)
                     {
-                        LogMessage logMessage = message as LogMessage;
                         LogCore(logMessage.Level, logMessage.Content);
+                        continue;
                     }
                 }
             }
@@ -918,6 +907,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Execute PowerShell script internally by PowerShell execution thread.
         /// </summary>
         /// <param name="path"></param>
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         public void ExecutePSScriptInternal(string path)
         {
             try
@@ -942,13 +932,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             finally
             {
-                scriptEndSemaphore.Release();
+                ScriptEndSemaphore.Release();
             }
         }
 
-        protected BlockingCollection<Message> blockingCollection = new BlockingCollection<Message>();
+        protected BlockingCollection<Message> BlockingCollection => _blockingCollection;
 
-        protected Semaphore scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
+        protected Semaphore ScriptEndSemaphore => _scriptEndSemaphore;
 
         #endregion
 
@@ -963,9 +953,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public void ExecutePSScript(string scriptPath, bool throwOnFailure)
         {
-            blockingCollection.Add(new ScriptMessage(scriptPath));
+            BlockingCollection.Add(new ScriptMessage(scriptPath));
 
-            WaitHandle.WaitAny(new WaitHandle[] { scriptEndSemaphore });
+            WaitHandle.WaitAny(new WaitHandle[] { ScriptEndSemaphore });
 
             if (_scriptException != null)
             {

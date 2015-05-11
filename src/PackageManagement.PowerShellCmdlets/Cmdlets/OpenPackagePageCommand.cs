@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
@@ -46,6 +47,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         protected override void ProcessRecordCore()
         {
             Preprocess();
@@ -65,7 +67,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     .OrderByDescending(v => v.Identity.Version)
                     .FirstOrDefault();
             }
-            catch (Exception)
+            catch
             {
             }
 

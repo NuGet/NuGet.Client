@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual bool CollapseVersions { get; set; }
 
-        public List<NuGetProject> Projects { get; set; }
+        public List<NuGetProject> Projects { get; private set; }
 
         private void Preprocess()
         {

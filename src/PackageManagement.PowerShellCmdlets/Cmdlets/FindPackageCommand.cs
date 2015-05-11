@@ -4,6 +4,7 @@
 extern alias Legacy;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading.Tasks;
@@ -191,6 +192,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="autoCompleteResource"></param>
         /// <param name="id"></param>
         /// <returns></returns>
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         private IPowerShellPackage GetIPowerShellPackageFromRemoteSource(PSAutoCompleteResource autoCompleteResource, string id)
         {
             IEnumerable<NuGetVersion> versions = Enumerable.Empty<NuGetVersion>();
@@ -199,7 +201,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Task<IEnumerable<NuGetVersion>> versionTask = autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Token);
                 versions = versionTask.Result;
             }
-            catch (Exception)
+            catch
             {
             }
 

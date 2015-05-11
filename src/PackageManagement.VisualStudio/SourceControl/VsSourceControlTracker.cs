@@ -13,7 +13,7 @@ using NuGet.ProjectManagement;
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IVsSourceControlTracker))]
-    internal class VsSourceControlTracker : IVsSourceControlTracker
+    public class VsSourceControlTracker : IVsSourceControlTracker
     {
         private readonly TrackProjectDocumentEventListener _projectDocumentListener;
         private readonly IVsTrackProjectDocuments2 _projectTracker;
