@@ -30,12 +30,10 @@ namespace NuGet.Protocol.VisualStudio
 
         public override Task<IEnumerable<string>> IdStartsWith(string packageIdPrefix, bool includePrerelease, CancellationToken token)
         {
-            //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
-            var lrepo = V2Client as LocalPackageRepository;
             IEnumerable<string> result;
-            if (lrepo != null)
+            if (IsLocalSource())
             {
-                result = GetPackageIdsFromLocalPackageRepository(lrepo, packageIdPrefix, true);
+                result = GetPackageIdsFromLocalPackageRepository(V2Client, packageIdPrefix, true);
             }
             else
             {
@@ -47,12 +45,10 @@ namespace NuGet.Protocol.VisualStudio
 
         public override Task<IEnumerable<NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, CancellationToken token)
         {
-            //*TODOs:In existing JsonApiCommandBase the validation done to find if the source is local or not is "IsHttpSource()"... Which one is better to use ?
             IEnumerable<NuGetVersion> result;
-            var lrepo = V2Client as LocalPackageRepository;
-            if (lrepo != null)
+            if (IsLocalSource())
             {
-                result = GetPackageVersionsFromLocalPackageRepository(lrepo, packageId, versionPrefix, includePrerelease);
+                result = GetPackageVersionsFromLocalPackageRepository(V2Client, packageId, versionPrefix, includePrerelease);
             }
             else
             {
@@ -127,6 +123,12 @@ namespace NuGet.Protocol.VisualStudio
                 stream.Seek(0, SeekOrigin.Begin);
                 return jsonSerializer.ReadObject(stream) as string[];
             }
+        }
+
+        private bool IsLocalSource()
+        {
+            var packageSource = new Configuration.PackageSource(V2Client.Source);
+            return !packageSource.IsHttp;
         }
     }
 }
