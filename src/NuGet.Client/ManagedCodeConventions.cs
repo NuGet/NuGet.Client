@@ -216,7 +216,7 @@ namespace NuGet.Client
                         "native/{any}",
                     });
 
-                ResourceAssemblies = ResourceAssemblies = new PatternSet(
+                ResourceAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
