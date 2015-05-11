@@ -158,7 +158,11 @@ function Test-GetInstalledPackagesMVCTemplate
     Assert-AreEqual 3.0.1 $packages[29].VersionString
 }
 #>
-function Test-VsPackageInstallerEvents {
+
+# Disable the test in NuGet V3, as the underlying threading has changed. 
+# Now VsPackageInstallerEvent and PackageManager is doing work using the worker thread, which does not have a PowerShell runspace associated with it.
+# And runspace cannot be shared by the threads.
+function VsPackageInstallerEvents {
     param(
         $context
     )
