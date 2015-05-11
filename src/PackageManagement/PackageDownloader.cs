@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException("Download resource not found");
             }
 
-            var downloadStream = await downloadResource.GetStream(packageIdentity, token);
+            var downloadStream = await downloadResource.GetStreamAsync(packageIdentity, token);
             if (downloadStream == null)
             {
                 throw new InvalidOperationException("Download stream is null");
