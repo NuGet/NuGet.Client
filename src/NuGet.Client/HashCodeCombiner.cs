@@ -1,8 +1,5 @@
-﻿// Copied from ﻿https://aspnetwebstack.codeplex.com/SourceControl/latest#src/Common/HashCodeCombiner.cs
-// Used under the Apache 2 License: https://aspnetwebstack.codeplex.com/SourceControl/latest#License.txt
-
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using System.Collections;
 
 namespace NuGet.Client /* Namespace changed from original to avoid requring using statements */
