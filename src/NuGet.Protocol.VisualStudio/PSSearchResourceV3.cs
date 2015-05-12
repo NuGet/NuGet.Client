@@ -14,16 +14,20 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol.VisualStudio
 {
-    public class PSSearchResourceV3 : PSSearchResource
+    public class PowerShellSearchResourceV3 : PSSearchResource
     {
         private readonly RawSearchResourceV3 _searchResource;
 
-        public PSSearchResourceV3(RawSearchResourceV3 searchResource)
+        public PowerShellSearchResourceV3(RawSearchResourceV3 searchResource)
         {
             _searchResource = searchResource;
         }
 
-        public override async Task<IEnumerable<PSSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<PSSearchMetadata>> Search(string searchTerm,
+                                                                         SearchFilter filters,
+                                                                         int skip,
+                                                                         int take,
+                                                                         CancellationToken cancellationToken)
         {
             var searchResults = new List<PSSearchMetadata>();
 

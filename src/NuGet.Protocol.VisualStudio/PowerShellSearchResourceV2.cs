@@ -22,12 +22,20 @@ namespace NuGet.Protocol.VisualStudio
             V2Client = resource.V2Client;
         }
 
-        public override async Task<IEnumerable<PSSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<PSSearchMetadata>> Search(string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            CancellationToken cancellationToken)
         {
             return await GetSearchResultsAsync(searchTerm, filters, skip, take, cancellationToken);
         }
 
-        private async Task<IEnumerable<PSSearchMetadata>> GetSearchResultsAsync(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        private async Task<IEnumerable<PSSearchMetadata>> GetSearchResultsAsync(string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            CancellationToken cancellationToken)
         {
             return await Task.Run(() =>
             {
@@ -83,7 +91,7 @@ namespace NuGet.Protocol.VisualStudio
             var iconUrl = package.IconUrl;
             var identity = new PackageIdentity(id, version);
 
-            var versions = new Lazy<Task<IEnumerable<NuGetVersion>>>(() => 
+            var versions = new Lazy<Task<IEnumerable<NuGetVersion>>>(() =>
                     GetVersionInfoAsync(package, filters, cancellationToken));
 
             var searchMetaData = new PSSearchMetadata(identity, versions, summary);
@@ -91,7 +99,9 @@ namespace NuGet.Protocol.VisualStudio
             return searchMetaData;
         }
 
-        public Task<IEnumerable<NuGetVersion>> GetVersionInfoAsync(IPackage package, SearchFilter filters, CancellationToken cancellationToken)
+        public Task<IEnumerable<NuGetVersion>> GetVersionInfoAsync(IPackage package,
+            SearchFilter filters,
+            CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {

@@ -26,12 +26,20 @@ namespace NuGet.Protocol.VisualStudio
             V2Client = repo;
         }
 
-        public override async Task<IEnumerable<UISearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<UISearchMetadata>> Search(string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            CancellationToken cancellationToken)
         {
             return await GetSearchResultsForVisualStudioUIAsync(searchTerm, filters, skip, take, cancellationToken);
         }
 
-        private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUIAsync(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        private async Task<IEnumerable<UISearchMetadata>> GetSearchResultsForVisualStudioUIAsync(string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            CancellationToken cancellationToken)
         {
             return await Task.Run(() =>
             {
@@ -74,7 +82,9 @@ namespace NuGet.Protocol.VisualStudio
             });
         }
 
-        private UISearchMetadata CreatePackageSearchResult(IPackage package, SearchFilter filters, CancellationToken cancellationToken)
+        private UISearchMetadata CreatePackageSearchResult(IPackage package,
+            SearchFilter filters,
+            CancellationToken cancellationToken)
         {
             var id = package.Id;
             var version = V2Utilities.SafeToNuGetVer(package.Version);
@@ -94,7 +104,8 @@ namespace NuGet.Protocol.VisualStudio
             var iconUrl = package.IconUrl;
             var identity = new PackageIdentity(id, version);
 
-            var versions = new Lazy<Task<IEnumerable<VersionInfo>>>(() => GetVersionInfoAsync(package, filters, cancellationToken));
+            var versions = new Lazy<Task<IEnumerable<VersionInfo>>>(() =>
+                GetVersionInfoAsync(package, filters, cancellationToken));
 
             var searchMetaData = new UISearchMetadata(identity,
                                                       title,
@@ -106,7 +117,9 @@ namespace NuGet.Protocol.VisualStudio
             return searchMetaData;
         }
 
-        public Task<IEnumerable<VersionInfo>> GetVersionInfoAsync(IPackage package, SearchFilter filters, CancellationToken cancellationToken)
+        public Task<IEnumerable<VersionInfo>> GetVersionInfoAsync(IPackage package,
+            SearchFilter filters,
+            CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {

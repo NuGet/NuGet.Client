@@ -26,7 +26,11 @@ namespace NuGet.Protocol.VisualStudio
             _metadataResource = metadataResource;
         }
 
-        public override async Task<IEnumerable<UISearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<UISearchMetadata>> Search(string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            CancellationToken cancellationToken)
         {
             var searchResults = new List<UISearchMetadata>();
 
@@ -84,14 +88,16 @@ namespace NuGet.Protocol.VisualStudio
             return searchResult;
         }
 
-        private static Lazy<Task<IEnumerable<VersionInfo>>> GetLazyVersionList(JObject package, bool includePrerelease, NuGetVersion version)
+        private static Lazy<Task<IEnumerable<VersionInfo>>> GetLazyVersionList(JObject package,
+            bool includePrerelease,
+            NuGetVersion version)
         {
-            return new Lazy<Task<IEnumerable<VersionInfo>>>( () =>
-            {
-                var versionList = GetVersionList(package, includePrerelease, version);
+            return new Lazy<Task<IEnumerable<VersionInfo>>>(() =>
+           {
+               var versionList = GetVersionList(package, includePrerelease, version);
 
-                return Task.FromResult(versionList);
-            });
+               return Task.FromResult(versionList);
+           });
         }
 
         private static IEnumerable<VersionInfo> GetVersionList(JObject package, bool includePrerelease, NuGetVersion version)

@@ -9,14 +9,15 @@ using NuGet.Protocol.Core.v2;
 
 namespace NuGet.Protocol.VisualStudio
 {
-    public class SearchResourceV2Provider : V2ResourceProvider
+    public class UISearchResourceV2Provider : V2ResourceProvider
     {
-        public SearchResourceV2Provider()
-            : base(typeof(UISearchResource), nameof(SearchResourceV2Provider), NuGetResourceProviderPositions.Last)
+        public UISearchResourceV2Provider()
+            : base(typeof(UISearchResource), nameof(UISearchResourceV2Provider), NuGetResourceProviderPositions.Last)
         {
         }
 
-        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source,
+                                                                          CancellationToken token)
         {
             UISearchResourceV2 resource = null;
 
