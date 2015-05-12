@@ -14,6 +14,257 @@ namespace NuGet.Resolver.Test
     public class ResolverTests
     {
         [Fact]
+        public void ResolveChooseBestMatchForDependencyBehavior()
+        {
+            // Arrange
+            var target = CreatePackage("A", "1.0", new Dictionary<string, string>() {
+                { "B", "1.0.0" },
+            });
+
+            var sourceRepository = new List<ResolverPackage>();
+            sourceRepository.Add(target);
+            sourceRepository.Add(CreatePackage("B", "4.0.0", new Dictionary<string, string>() { { "C", "2.0.0" } }));
+            sourceRepository.Add(CreatePackage("B", "2.0.0", new Dictionary<string, string>() { { "C", "2.0.0" } }));
+            sourceRepository.Add(CreatePackage("C", "4.0.0"));
+            sourceRepository.Add(CreatePackage("C", "3.0.0"));
+
+            string message = string.Empty;
+            var resolver = new PackageResolver();
+
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            // Act
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
+
+            // Assert
+            Assert.Equal(3, packages.Count());
+            Assert.Equal("1.0.0", packages["A"].Version.ToNormalizedString());
+            Assert.Equal("2.0.0", packages["B"].Version.ToNormalizedString());
+            Assert.Equal("3.0.0", packages["C"].Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public void ResolveDependencyForInstallPackageWithDependencyThatDoesntMeetExactVersionThrows()
+        {
+            // Arrange
+            var target = CreatePackage("A", "1.0", new Dictionary<string, string>() {
+                { "B", "[1.5]" },
+            });
+
+            var sourceRepository = new List<ResolverPackage>();
+            sourceRepository.Add(target);
+            sourceRepository.Add(CreatePackage("B", "1.4"));
+
+            string message = string.Empty;
+            var resolver = new PackageResolver();
+
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            // Act
+            try
+            {
+                var packages = resolver.Resolve(context, CancellationToken.None);
+            }
+            catch (NuGetResolverConstraintException ex)
+            {
+                message = ex.Message;
+            }
+
+            // Assert
+            Assert.Equal("Unable to resolve dependencies. 'B 1.4.0' is not compatible with 'A 1.0.0 constraint: B (= 1.5.0)'.", message);
+        }
+
+        [Fact]
+        public void ResolveDependenciesWithCircularReference()
+        {
+            // Arrange
+            var target = CreatePackage("A", "1.0", new Dictionary<string, string>() {
+                { "B", "1.0.0" },
+            });
+
+            var sourceRepository = new List<ResolverPackage>();
+            sourceRepository.Add(target);
+            sourceRepository.Add(CreatePackage("B", "1.0", new Dictionary<string, string>() {
+                { "A", "1.0.0" },
+            }));
+
+            string message = string.Empty;
+            var resolver = new PackageResolver();
+
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            // Act
+            try
+            {
+                var packages = resolver.Resolve(context, CancellationToken.None);
+            }
+            catch (NuGetResolverConstraintException ex)
+            {
+                message = ex.Message;
+            }
+
+            // Assert
+            Assert.Equal("Circular dependency detected 'A 1.0.0 => B 1.0.0 => A 1.0.0'.", message);
+        }
+
+        [Fact]
+        public void ResolveDependenciesForInstallPackageWithUnknownDependencyThrows()
+        {
+            // Arrange
+            var target = CreatePackage("A", "1.0", new Dictionary<string, string>() {
+                { "B", "1.0.0" },
+            });
+
+            var sourceRepository = new List<ResolverPackage>();
+            sourceRepository.Add(target);
+
+            string message = string.Empty;
+            var resolver = new PackageResolver();
+
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            // Act
+            try
+            {
+                var packages = resolver.Resolve(context, CancellationToken.None);
+            }
+            catch (NuGetResolverConstraintException ex)
+            {
+                message = ex.Message;
+            }
+
+            // Assert
+            Assert.Equal("Unable to resolve dependency 'B'.", message);
+        }
+
+        [Fact]
+        public void ResolveDependenciesForLargeSetWithFailure()
+        {
+            // Arrange
+            var target = CreatePackage("Package0", "1.0", new Dictionary<string, string>() {
+                { "Package1", "1.0.0" },
+                { "Package2", "1.0.0" },
+                { "Package3", "1.0.0" },
+                { "Package4", "1.0.0" },
+                { "Package5", "1.0.0" },
+                { "Package6", "1.0.0" },
+                { "Package7", "1.0.0" },
+                { "Package8", "1.0.0" },
+            });
+
+            var sourceRepository = new List<ResolverPackage>();
+            sourceRepository.Add(target);
+
+            // make lots of packages
+            for (int i = 0; i < 20; i++)
+            {
+                for (int j = 1; j < 10; j++)
+                {
+                    int next = j + 1;
+                    sourceRepository.Add(CreatePackage($"Package{j}", $"2.0.{i}", new Dictionary<string, string>() { { $"Package{next}", "1.0.0" } }));
+                }
+            }
+
+            string message = string.Empty;
+            var resolver = new PackageResolver();
+
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            // Act
+            try
+            {
+                var packages = resolver.Resolve(context, CancellationToken.None);
+            }
+            catch (NuGetResolverConstraintException ex)
+            {
+                message = ex.Message;
+            }
+
+            // Assert
+            Assert.Equal("Unable to resolve dependency 'Package10'.", message);
+        }
+
+        [Fact]
+        public void ResolveDependenciesForLargeSet()
+        {
+            // Arrange
+            var target = CreatePackage("Package0", "1.0", new Dictionary<string, string>() {
+                { "Package1", "1.0.0" },
+                { "Package2", "1.0.0" },
+                { "Package3", "1.0.0" },
+                { "Package4", "1.0.0" },
+                { "Package5", "1.0.0" },
+                { "Package6", "1.0.0" },
+                { "Package7", "1.0.0" },
+                { "Package8", "1.0.0" },
+            });
+
+            var sourceRepository = new List<ResolverPackage>();
+            sourceRepository.Add(target);
+
+            int next = -1;
+
+            // make lots of packages
+            for (int i = 0; i < 20; i++)
+            {
+                for (int j = 1; j < 10; j++)
+                {
+                    next = j + 1;
+                    sourceRepository.Add(CreatePackage($"Package{j}", $"2.0.{i}", new Dictionary<string, string>() { { $"Package{next}", "1.0.0" } }));
+                }
+            }
+
+            sourceRepository.Add(CreatePackage($"Package{next}", $"2.0.0"));
+
+            var resolver = new PackageResolver();
+
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            // Act
+            var packages = resolver.Resolve(context, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(11, packages.Count());
+        }
+
+        [Fact]
+        public void ResolveDependenciesForInstallDiamondDependencyGraphMissingPackage()
+        {
+            // Arrange
+            // A -> [B, C]
+            // B -> [D]
+            // C -> [D]
+            //    A
+            //   / \
+            //  B   C
+            //   \ /
+            //    D 
+            var target = CreatePackage("A", "1.0", new Dictionary<string, string>() { { "B", null }, { "C", null } });
+
+            var sourceRepository = new List<ResolverPackage>() {
+                target,
+                CreatePackage("B", "1.0", new Dictionary<string, string>() { { "D", null } }),
+                CreatePackage("C", "1.0", new Dictionary<string, string>() { { "D", null } }),
+            };
+
+            string message = string.Empty;
+            var resolver = new PackageResolver();
+
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            try
+            {
+                var packages = resolver.Resolve(context, CancellationToken.None);
+            }
+            catch (NuGetResolverConstraintException ex)
+            {
+                message = ex.Message;
+            }
+
+            Assert.Equal("Unable to resolve dependency 'D'.", message);
+        }
+
+        [Fact]
         public void Resolver_MissingPackage2()
         {
             // No version constraints for any dependency
@@ -37,8 +288,10 @@ namespace NuGet.Resolver.Test
                     packageOldB
                 };
 
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var packages = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, packageA, sourceRepository);
+
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count());
@@ -72,8 +325,10 @@ namespace NuGet.Resolver.Test
                     packageOldB
                 };
 
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var packages = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, packageA, sourceRepository);
+
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count());
@@ -96,8 +351,10 @@ namespace NuGet.Resolver.Test
                     CreatePackage("D", "1.0"),
                 };
 
-            var resolver = new PackageResolver(DependencyBehavior.Ignore);
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Ignore, target, sourceRepository);
+
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(1, packages.Count());
@@ -126,8 +383,10 @@ namespace NuGet.Resolver.Test
                     CreatePackage("D", "1.0"),
                 };
 
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
+
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count());
@@ -168,8 +427,10 @@ namespace NuGet.Resolver.Test
             sourceRepository.Add(packageE1);
 
             // Act
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var solution = resolver.Resolve(new ResolverPackage[] { packageA }, sourceRepository, CancellationToken.None).ToArray();
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, packageA, sourceRepository);
+
+            var solution = resolver.Resolve(context, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
 
             // Assert
@@ -226,8 +487,15 @@ namespace NuGet.Resolver.Test
             targets.AddRange(install.Select(e => e.PackageIdentity));
 
             // Act
-            var resolver = new PackageResolver(DependencyBehavior.HighestMinor);
-            var solution = resolver.Resolve(targets, sourceRepository, install, CancellationToken.None).ToArray();
+            var resolver = new PackageResolver();
+            var context = new PackageResolverContext(DependencyBehavior.HighestMinor,
+                new string[] { "A" },
+                install.Select(p => p.PackageIdentity.Id),
+                install,
+                targets,
+                sourceRepository);
+
+            var solution = resolver.Resolve(context, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
 
             // Assert
@@ -258,8 +526,10 @@ namespace NuGet.Resolver.Test
                 };
 
             // Act
-            var resolver = new PackageResolver(DependencyBehavior.HighestPatch);
-            var solution = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToArray();
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.HighestPatch, target, sourceRepository);
+
+            var solution = resolver.Resolve(context, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
 
             // Assert
@@ -293,9 +563,10 @@ namespace NuGet.Resolver.Test
                 };
 
             // Act
-            var resolver = new PackageResolver(DependencyBehavior.HighestMinor);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.HighestMinor, target, sourceRepository);
 
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count);
@@ -332,9 +603,10 @@ namespace NuGet.Resolver.Test
                 };
 
             // Act
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, sourceRepository);
 
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(2, packages.Count);
@@ -367,8 +639,10 @@ namespace NuGet.Resolver.Test
                 };
 
             // Act
-            var resolver = new PackageResolver(DependencyBehavior.HighestPatch);
-            var packages = resolver.Resolve(new ResolverPackage[] { target }, sourceRepository, CancellationToken.None).ToDictionary(p => p.Id);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.HighestPatch, target, sourceRepository);
+
+            var packages = resolver.Resolve(context, CancellationToken.None).ToDictionary(p => p.Id);
 
             // Assert
             Assert.Equal(4, packages.Count);
@@ -397,8 +671,9 @@ namespace NuGet.Resolver.Test
             possible.Add(dep3);
             possible.Add(target);
 
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var solution = resolver.Resolve(new ResolverPackage[] { target }, possible, CancellationToken.None).ToList();
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, possible);
+            var solution = resolver.Resolve(context, CancellationToken.None).ToList();
 
             Assert.Equal(2, solution.Count());
         }
@@ -411,9 +686,10 @@ namespace NuGet.Resolver.Test
             List<ResolverPackage> possible = new List<ResolverPackage>();
             possible.Add(target);
 
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, possible);
 
-            Assert.Throws<NuGetResolverConstraintException>(() => resolver.Resolve(new ResolverPackage[] { target }, possible, CancellationToken.None));
+            Assert.Throws<NuGetResolverConstraintException>(() => resolver.Resolve(context, CancellationToken.None));
         }
 
         private ResolverPackage CreatePackage(string id, string version, IDictionary<string, string> dependencies = null)
@@ -436,6 +712,26 @@ namespace NuGet.Resolver.Test
             }
 
             return new ResolverPackage(id, NuGetVersion.Parse(version), deps);
+        }
+
+        private static PackageResolverContext CreatePackageResolverContext(DependencyBehavior behavior,
+            PackageIdentity target,
+            IEnumerable<ResolverPackage> availablePackages)
+        {
+            var targets = new PackageIdentity[] { target };
+
+            return CreatePackageResolverContext(behavior, targets, availablePackages);
+        }
+
+        private static PackageResolverContext CreatePackageResolverContext(DependencyBehavior behavior,
+            IEnumerable<PackageIdentity> targets,
+            IEnumerable<ResolverPackage> availablePackages)
+        {
+            return new PackageResolverContext(behavior,
+                targets.Select(p => p.Id), Enumerable.Empty<string>(),
+                Enumerable.Empty<PackageReference>(),
+                targets,
+                availablePackages);
         }
     }
 }

@@ -211,6 +211,22 @@ namespace NuGet.Resolver.Test
         }
 
         [Fact]
+        public void ResolverSort_HighestForTarget()
+        {
+            HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();
+            var newPackages = new HashSet<string>() { "packageA" };
+
+            var comparer = new ResolverComparer(DependencyBehavior.Lowest, installed, newPackages);
+
+            var packages = new List<ResolverPackage>(VersionList.Select(e => new ResolverPackage("packageA", e)));
+
+            packages.Sort(comparer);
+
+            Assert.Equal("3.0.9", packages.First().Version.ToNormalizedString());
+            Assert.Equal("0.1.0", packages.Last().Version.ToNormalizedString());
+        }
+
+        [Fact]
         public void ResolverSort_HighestInstalled()
         {
             HashSet<PackageIdentity> installed = new HashSet<PackageIdentity>();

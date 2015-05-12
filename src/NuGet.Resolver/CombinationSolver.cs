@@ -78,13 +78,18 @@ namespace NuGet.Resolver
         /// Function supplied by the caller to determine whether two items are
         /// compatible or not.
         /// </param>
+        /// <param name="diagnosticOutput">
+        /// Used to provide partial solutions to be used for diagnostic messages.
+        /// </param>
         /// <returns>The 'best' solution (if one exists). Null otherwise.</returns>
         public IEnumerable<T> FindSolution(IEnumerable<IEnumerable<T>> groupedItems,
             IComparer<T> itemSorter,
-            Func<T, T, bool> shouldRejectPairFunc)
+            Func<T, T, bool> shouldRejectPairFunc,
+            Action<IEnumerable<T>> diagnosticOutput = null)
         {
             var consistent = true;
             var i = 0;
+            var highest = -1;
             this.prioritySorter = itemSorter;
             this.shouldRejectPair = shouldRejectPairFunc;
 
@@ -103,9 +108,19 @@ namespace NuGet.Resolver
             {
                 i = consistent ? MoveForward(i, ref consistent) : MoveBackward(i, ref consistent);
 
+                if (diagnosticOutput != null && i > highest)
+                {
+                    highest = i;
+
+                    // if a diagnostic hook was passed in give it each new best solution as it occurs
+                    // create a new list since this method reuses the solution array
+                    diagnosticOutput(new List<T>(solution));
+                }
+
                 if (i > solution.Length)
                 {
-                    throw new Exception("Evaluated past the end of the array.");
+                    Debug.Fail("Evaluated past the end of the array.");
+                    throw new NuGetResolverException(Strings.FatalError);
                 }
                 else if (i == solution.Length)
                 {
@@ -176,7 +191,8 @@ namespace NuGet.Resolver
             if (i < 0
                 || i >= solution.Length)
             {
-                throw new ArgumentException("MoveBackward called with invalid value for i.", "i");
+                Debug.Fail("MoveBackward called with invalid value for i.");
+                throw new NuGetResolverException(Strings.FatalError);
             }
 
             if (i == 0

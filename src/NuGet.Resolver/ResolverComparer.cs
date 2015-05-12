@@ -13,19 +13,19 @@ namespace NuGet.Resolver
     public class ResolverComparer : IComparer<ResolverPackage>
     {
         private readonly DependencyBehavior _dependencyBehavior;
-        private readonly HashSet<PackageIdentity> _installedPackages;
-        private readonly HashSet<string> _newPackageIds;
+        private readonly HashSet<PackageIdentity> _preferredVersions;
+        private readonly HashSet<string> _targetIds;
         private readonly IVersionComparer _versionComparer;
         private readonly PackageIdentityComparer _identityComparer;
         private readonly Dictionary<string, NuGetVersion> _installedVersions;
 
         public ResolverComparer(DependencyBehavior dependencyBehavior,
-            HashSet<PackageIdentity> installedPackages,
-            HashSet<string> newPackageIds)
+            HashSet<PackageIdentity> preferredVersions,
+            HashSet<string> targetIds)
         {
             _dependencyBehavior = dependencyBehavior;
-            _installedPackages = installedPackages;
-            _newPackageIds = newPackageIds;
+            _preferredVersions = preferredVersions;
+            _targetIds = targetIds;
             _versionComparer = VersionComparer.Default;
             _identityComparer = PackageIdentity.Comparer;
 
@@ -33,7 +33,7 @@ namespace NuGet.Resolver
 
             if (_installedVersions != null)
             {
-                foreach (var package in _installedPackages)
+                foreach (var package in _preferredVersions)
                 {
                     if (package.Version != null)
                     {
@@ -45,6 +45,11 @@ namespace NuGet.Resolver
 
         public int Compare(ResolverPackage x, ResolverPackage y)
         {
+            if (Object.ReferenceEquals(x, y))
+            {
+                return 0;
+            }
+
             Debug.Assert(string.Equals(x.Id, y.Id, StringComparison.OrdinalIgnoreCase));
 
             // The absent package comes first in the sort order
@@ -63,11 +68,11 @@ namespace NuGet.Resolver
                 return 0;
             }
 
-            if (_installedPackages != null)
+            if (_preferredVersions != null)
             {
                 //Already installed packages come next in the sort order.
-                var xInstalled = _installedPackages.Contains(x, _identityComparer);
-                var yInstalled = _installedPackages.Contains(y, _identityComparer);
+                var xInstalled = _preferredVersions.Contains(x, _identityComparer);
+                var yInstalled = _preferredVersions.Contains(y, _identityComparer);
 
                 if (xInstalled && !yInstalled)
                 {
@@ -86,7 +91,7 @@ namespace NuGet.Resolver
             var packageBehavior = _dependencyBehavior;
 
             // for new packages use the highest version
-            if (_newPackageIds.Contains(x.Id, StringComparer.OrdinalIgnoreCase))
+            if (_targetIds.Contains(x.Id, StringComparer.OrdinalIgnoreCase))
             {
                 packageBehavior = DependencyBehavior.Highest;
             }
@@ -102,8 +107,8 @@ namespace NuGet.Resolver
             // 2.1.0
             // 3.0.0
             // Order: 2.0.0, 2.1.0, 3.0.0, 1.1.0, 1.0.0
-            if (_dependencyBehavior != DependencyBehavior.Highest
-                && _dependencyBehavior != DependencyBehavior.Ignore)
+            if (packageBehavior != DependencyBehavior.Highest
+                && packageBehavior != DependencyBehavior.Ignore)
             {
                 NuGetVersion installedVersion = null;
                 if (_installedVersions.TryGetValue(x.Id, out installedVersion))
@@ -129,7 +134,7 @@ namespace NuGet.Resolver
             }
 
             // Normal 
-            switch (_dependencyBehavior)
+            switch (packageBehavior)
             {
                 case DependencyBehavior.Lowest:
                 {
@@ -163,7 +168,7 @@ namespace NuGet.Resolver
                         .ThenByDescending(p => p.Version.Patch).FirstOrDefault() == x ? -1 : 1;
                 }
                 default:
-                    throw new InvalidOperationException("Unknown DependencyBehavior value.");
+                    return _versionComparer.Compare(xv, yv);
             }
         }
     }

@@ -18,7 +18,7 @@ namespace NuGet.Resolver
         {
             if (compareImpl == null)
             {
-                throw new ArgumentNullException("compareImpl");
+                throw new ArgumentNullException(nameof(compareImpl));
             }
             this.compareImpl = compareImpl;
         }

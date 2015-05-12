@@ -117,10 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CircularDependencyDetected" xml:space="preserve">
+    <value>Circular dependency detected '{0}'.</value>
+  </data>
+  <data name="DependencyConstraint" xml:space="preserve">
+    <value>constraint</value>
+  </data>
+  <data name="FatalError" xml:space="preserve">
+    <value>A fatal error occured while resolving dependencies.</value>
+  </data>
   <data name="MissingDependencyInfo" xml:space="preserve">
-    <value>Missing dependency information for package: {0}</value>
+    <value>Unable to find package '{0}'. Existing packages must be restored before performing an install or update.</value>
   </data>
   <data name="NoSolution" xml:space="preserve">
-    <value>Unable to satisfy package dependency constraints.</value>
+    <value>Unable to resolve dependencies.</value>
+  </data>
+  <data name="PackagesConfigConstraint" xml:space="preserve">
+    <value>'{0}' has an additional constraint {1} defined in {2}.</value>
+  </data>
+  <data name="UnableToFindCompatibleVersion" xml:space="preserve">
+    <value>Unable to find a version of '{0}' that is compatible with {1}.</value>
+  </data>
+  <data name="UnableToResolveDependency" xml:space="preserve">
+    <value>Unable to resolve dependency '{0}'.</value>
+  </data>
+  <data name="UnknownDependencyBehavior" xml:space="preserve">
+    <value>Unknown DependencyBehavior value.</value>
+  </data>
+  <data name="VersionIsNotCompatible" xml:space="preserve">
+    <value>Unable to resolve dependencies. '{0}' is not compatible with {1}.</value>
   </data>
 </root>

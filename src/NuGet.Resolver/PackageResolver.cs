@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Resolver
@@ -14,98 +13,45 @@ namespace NuGet.Resolver
     /// <summary>
     /// A core package dependency resolver.
     /// </summary>
-    /// <remarks>Not thread safe (yet)</remarks>
-    public class PackageResolver : IPackageResolver
+    /// <remarks>Not thread safe</remarks>
+    public class PackageResolver
     {
-        private DependencyBehavior _dependencyBehavior;
-        private HashSet<PackageIdentity> _installedPackages;
-        private HashSet<string> _newPackageIds;
-
         /// <summary>
-        /// Core package resolver
+        /// Resolve a package closure
         /// </summary>
-        /// <param name="dependencyBehavior">Dependency version behavior</param>
-        public PackageResolver(DependencyBehavior dependencyBehavior)
+        public IEnumerable<PackageIdentity> Resolve(PackageResolverContext context, CancellationToken token)
         {
-            _dependencyBehavior = dependencyBehavior;
-        }
+            token.ThrowIfCancellationRequested();
 
-        public IEnumerable<PackageIdentity> Resolve(IEnumerable<PackageIdentity> targets, IEnumerable<PackageDependencyInfo> availablePackages, CancellationToken token)
-        {
-            return Resolve(targets, availablePackages, Enumerable.Empty<PackageReference>(), token);
-        }
-
-        public IEnumerable<PackageIdentity> Resolve(IEnumerable<string> targets, IEnumerable<PackageDependencyInfo> availablePackages, CancellationToken token)
-        {
-            return Resolve(targets, availablePackages, Enumerable.Empty<PackageReference>(), token);
-        }
-
-        public IEnumerable<PackageIdentity> Resolve(IEnumerable<string> targets, IEnumerable<PackageDependencyInfo> availablePackages, IEnumerable<PackageReference> installedPackages, CancellationToken token)
-        {
-            return Resolve(targets.Select(id => new PackageIdentity(id, null)), availablePackages, installedPackages, token);
-        }
-
-        public IEnumerable<PackageIdentity> Resolve(IEnumerable<PackageIdentity> targets, IEnumerable<PackageDependencyInfo> availablePackages, IEnumerable<PackageReference> installedPackages, CancellationToken token)
-        {
-            if (installedPackages != null)
+            if (context == null)
             {
-                _installedPackages = new HashSet<PackageIdentity>(installedPackages.Select(e => e.PackageIdentity), PackageIdentity.Comparer);
-            }
-
-            // find the list of new packages to add
-            _newPackageIds = new HashSet<string>(targets.Select(e => e.Id).Except(_installedPackages.Select(e => e.Id), StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
-
-            // validation 
-            foreach (var target in targets)
-            {
-                if (!availablePackages.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, target.Id)))
-                {
-                    throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentUICulture, Strings.MissingDependencyInfo, target.Id));
-                }
+                throw new ArgumentNullException(nameof(context));
             }
 
             // validation 
-            foreach (var installed in _installedPackages)
+            foreach (var requiredId in context.RequiredPackageIds)
             {
-                if (!availablePackages.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, installed.Id)))
+                if (!context.AvailablePackages.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, requiredId)))
                 {
-                    throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentUICulture, Strings.MissingDependencyInfo, installed.Id));
+                    throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentCulture, Strings.MissingDependencyInfo, requiredId));
                 }
             }
-
-            // TODO: this will be removed later when the interface changes
-            foreach (var installed in _installedPackages)
-            {
-                if (!targets.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, installed.Id)))
-                {
-                    throw new NuGetResolverInputException("Installed packages should be passed as targets");
-                }
-            }
-
-            // Solve
-            var solver = new CombinationSolver<ResolverPackage>();
-
-            var comparer = new ResolverComparer(_dependencyBehavior, _installedPackages, _newPackageIds);
-
-            var grouped = new List<List<ResolverPackage>>();
-
-            var packageComparer = PackageIdentity.Comparer;
-
-            var resolverPackages = new List<ResolverPackage>();
 
             // convert the available packages into ResolverPackages
-            foreach (var package in availablePackages)
+            var resolverPackages = new List<ResolverPackage>();
+
+            foreach (var package in context.AvailablePackages)
             {
                 IEnumerable<PackageDependency> dependencies = null;
 
                 // clear out the dependencies if the behavior is set to ignore
-                if (_dependencyBehavior == DependencyBehavior.Ignore)
+                if (context.DependencyBehavior == DependencyBehavior.Ignore)
                 {
                     dependencies = Enumerable.Empty<PackageDependency>();
                 }
                 else
                 {
-                    dependencies = package.Dependencies;
+                    dependencies = package.Dependencies ?? Enumerable.Empty<PackageDependency>();
                 }
 
                 resolverPackages.Add(new ResolverPackage(package.Id, package.Version, dependencies));
@@ -116,6 +62,7 @@ namespace NuGet.Resolver
 
             // Keep track of the ids we have added
             var groupsAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var grouped = new List<List<ResolverPackage>>();
 
             // group the packages by id
             foreach (var group in resolverPackages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
@@ -126,96 +73,78 @@ namespace NuGet.Resolver
 
                 // add an absent package for non-targets
                 // being absent allows the resolver to throw it out if it is not needed
-                if (!targets.Any(e => StringComparer.OrdinalIgnoreCase.Equals(e.Id, group.Key)))
+                if (!context.RequiredPackageIds.Contains(group.Key, StringComparer.OrdinalIgnoreCase))
                 {
-                    curSet.Add(new ResolverPackage(group.Key, null, null, true));
+                    curSet.Add(new ResolverPackage(id: group.Key, version: null, dependencies: null, absent: true));
                 }
 
                 grouped.Add(curSet);
             }
 
             // find all needed dependencies
-            var dependencyIds = resolverPackages.Where(e => e.Dependencies != null).SelectMany(e => e.Dependencies.Select(d => d.Id).Distinct(StringComparer.OrdinalIgnoreCase));
+            var dependencyIds = resolverPackages.Where(e => e.Dependencies != null)
+                .SelectMany(e => e.Dependencies.Select(d => d.Id).Distinct(StringComparer.OrdinalIgnoreCase));
 
-            foreach (var depId in dependencyIds)
+            foreach (string depId in dependencyIds)
             {
                 // packages which are unavailable need to be added as absent packages
                 // ex: if A -> B  and B is not found anywhere in the source repositories we add B as absent
                 if (!groupsAdded.Contains(depId))
                 {
-                    grouped.Add(new List<ResolverPackage>() { new ResolverPackage(depId, null, null, true) });
+                    groupsAdded.Add(depId);
+                    grouped.Add(new List<ResolverPackage>() { new ResolverPackage(id: depId, version: null, dependencies: null, absent: true) });
                 }
             }
 
-            var solution = solver.FindSolution(grouped, comparer, ShouldRejectPackagePair);
+            token.ThrowIfCancellationRequested();
 
+            // keep track of the best partial solution
+            var bestSolution = Enumerable.Empty<ResolverPackage>();
+
+            Action<IEnumerable<ResolverPackage>> diagnosticOutput = (partialSolution) =>
+            {
+                // store each solution as they pass through.
+                // the combination solver verifies that the last one returned is the best
+                bestSolution = partialSolution;
+            };
+
+            // Run solver
+            var solver = new CombinationSolver<ResolverPackage>();
+            var comparer = new ResolverComparer(context.DependencyBehavior, context.PreferredVersions, context.TargetIds);
+
+            var solution = solver.FindSolution(
+                groupedItems: grouped,
+                itemSorter: comparer,
+                shouldRejectPairFunc: ResolverUtility.ShouldRejectPackagePair,
+                diagnosticOutput: diagnosticOutput);
+
+            // check if a solution was found
             if (solution != null)
             {
                 var nonAbsentCandidates = solution.Where(c => !c.Absent);
 
                 if (nonAbsentCandidates.Any())
                 {
-                    var sortedSolution = TopologicalSort(nonAbsentCandidates);
+                    var circularReferences = ResolverUtility.FindCircularDependency(solution);
+
+                    if (circularReferences.Any())
+                    {
+                        // the resolver is able to handle circular dependencies, however we should throw here to keep these from happening
+                        throw new NuGetResolverConstraintException(
+                            String.Format(CultureInfo.CurrentCulture, Strings.CircularDependencyDetected,
+                            String.Join(" => ", circularReferences.Select(package => $"{package.Id} {package.Version.ToNormalizedString()}"))));
+                    }
+
+                    // solution found!
+                    var sortedSolution = ResolverUtility.TopologicalSort(nonAbsentCandidates);
 
                     return sortedSolution.ToArray();
                 }
             }
 
-            // no solution found
-            throw new NuGetResolverConstraintException(Strings.NoSolution);
-        }
-
-        private IEnumerable<ResolverPackage> TopologicalSort(IEnumerable<ResolverPackage> nodes)
-        {
-            var result = new List<ResolverPackage>();
-
-            var dependsOn = new Func<ResolverPackage, ResolverPackage, bool>((x, y) => { return x.FindDependencyRange(y.Id) != null; });
-
-            var dependenciesAreSatisfied = new Func<ResolverPackage, bool>(node =>
-                {
-                    var dependencies = node.Dependencies;
-                    return dependencies == null || !dependencies.Any() ||
-                           dependencies.All(d => result.Any(r => StringComparer.OrdinalIgnoreCase.Equals(r.Id, d.Id)));
-                });
-
-            var satisfiedNodes = new HashSet<ResolverPackage>(nodes.Where(n => dependenciesAreSatisfied(n)));
-            while (satisfiedNodes.Any())
-            {
-                //Pick any element from the set. Remove it, and add it to the result list.
-                var node = satisfiedNodes.OrderBy(p => p.Id, StringComparer.OrdinalIgnoreCase).First();
-                satisfiedNodes.Remove(node);
-                result.Add(node);
-
-                // Find unprocessed nodes that depended on the node we just added to the result.
-                // If all of its dependencies are now satisfied, add it to the set of nodes to process.
-                var newlySatisfiedNodes = nodes.Except(result)
-                    .Where(n => dependsOn(n, node))
-                    .Where(n => dependenciesAreSatisfied(n));
-
-                foreach (var cur in newlySatisfiedNodes)
-                {
-                    satisfiedNodes.Add(cur);
-                }
-            }
-
-            return result;
-        }
-
-        private static bool ShouldRejectPackagePair(ResolverPackage p1, ResolverPackage p2)
-        {
-            var p1ToP2Dependency = p1.FindDependencyRange(p2.Id);
-            if (p1ToP2Dependency != null)
-            {
-                return p2.Absent || !p1ToP2Dependency.Satisfies(p2.Version);
-            }
-
-            var p2ToP1Dependency = p2.FindDependencyRange(p1.Id);
-            if (p2ToP1Dependency != null)
-            {
-                return p1.Absent || !p2ToP1Dependency.Satisfies(p1.Version);
-            }
-
-            return false;
+            // no solution was found, throw an error with a diagnostic message
+            var message = ResolverUtility.GetDiagnosticMessage(bestSolution, context.AvailablePackages, context.PackagesConfig, context.TargetIds);
+            throw new NuGetResolverConstraintException(message);
         }
     }
 }

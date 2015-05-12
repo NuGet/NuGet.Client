@@ -13,7 +13,10 @@ namespace NuGet.Resolver
 {
     public class ResolverPackage : PackageDependencyInfo, IEquatable<ResolverPackage>
     {
-        public bool Absent { get; set; }
+        /// <summary>
+        /// An absent package represents that the package is not needed in the solution.
+        /// </summary>
+        public bool Absent { get; }
 
         public ResolverPackage(string id)
             : this(id, null)
@@ -62,7 +65,7 @@ namespace NuGet.Resolver
 
             Debug.Assert(Dependencies.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).Count() < 2, "Duplicate dependencies");
 
-            var dependency = Dependencies.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).SingleOrDefault();
+            var dependency = Dependencies.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).FirstOrDefault();
 
             if (dependency != null)
             {
