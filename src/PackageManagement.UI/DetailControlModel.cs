@@ -19,19 +19,23 @@ namespace NuGet.PackageManagement.UI
     /// The base class of PackageDetailControlModel and PackageSolutionDetailControlModel.
     /// When user selects an action, this triggers version list update.
     /// </summary>
-    internal abstract class DetailControlModel : INotifyPropertyChanged
+    public abstract class DetailControlModel : INotifyPropertyChanged
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected IEnumerable<NuGetProject> _nugetProjects;
 
         // all versions of the _searchResultPackage
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected List<NuGetVersion> _allPackages;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected SearchResultPackageMetadata _searchResultPackage;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected Filter _filter;
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
-        public DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
+        protected DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
         {
             _nugetProjects = nugetProjects;
             _options = new Options();
@@ -240,6 +244,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected List<VersionForDisplay> _versions;
 
         public List<VersionForDisplay> Versions
@@ -365,6 +370,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public IUIBrushes UIBrushes
         {
             get { return null; }

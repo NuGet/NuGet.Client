@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly NuGetProject[] _projects;
 
-        public NuGetUIContextBase(
+        protected NuGetUIContextBase(
             ISourceRepositoryProvider sourceProvider,
             ISolutionManager solutionManager,
             NuGetPackageManager packageManager,
@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.UI
             get { return _projects; }
         }
 
-        public abstract void AddSettings(string key, UserSettings obj);
+        public abstract void AddSettings(string key, UserSettings settings);
 
         public abstract UserSettings GetSettings(string key);
 

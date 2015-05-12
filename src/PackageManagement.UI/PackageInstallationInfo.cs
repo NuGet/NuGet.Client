@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 
@@ -102,14 +103,26 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                DisplayText = string.Format("{0} ({1})", _name,
+                DisplayText = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", _name,
                     Version.ToNormalizedString());
             }
         }
 
         public int CompareTo(PackageInstallationInfo other)
         {
-            return _name.CompareTo(other._name);
+            return string.Compare(_name, other._name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as PackageInstallationInfo;
+
+            return other != null && string.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(_name);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

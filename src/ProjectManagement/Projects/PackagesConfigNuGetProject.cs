@@ -61,6 +61,7 @@ namespace NuGet.ProjectManagement
             PackagesProjectNameConfigPath = Path.Combine(folderPath, "packages." + projectName + ".config");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
@@ -107,6 +108,7 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(true);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (packageIdentity == null)

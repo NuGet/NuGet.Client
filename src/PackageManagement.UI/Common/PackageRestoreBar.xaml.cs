@@ -125,6 +125,7 @@ namespace NuGet.PackageManagement.UI
             StatusMessage.Text = UI.Resources.PackageRestoreProgressMessage;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Windows.Controls.TextBlock.set_Text(System.String)")]
         private void ShowErrorUI(string error)
         {
             // re-enable the Restore button to allow users to try again

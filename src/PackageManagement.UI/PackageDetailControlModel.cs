@@ -13,7 +13,7 @@ using NuGet.Versioning;
 namespace NuGet.PackageManagement.UI
 {
     // used to manage packages in one project.
-    internal class PackageDetailControlModel : DetailControlModel
+    public class PackageDetailControlModel : DetailControlModel
     {
         public PackageDetailControlModel(
             IEnumerable<NuGetProject> nugetProjects)

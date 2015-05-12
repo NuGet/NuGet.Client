@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement
             {
                 token.ThrowIfCancellationRequested();
 
-                return await RestoreCoreAsync(project, projectContext, additionalSources, token);
+                return await RestoreCoreAsync(project, projectContext, additionalSources);
             }
             finally
             {
@@ -58,8 +58,7 @@ namespace NuGet.PackageManagement
 
         private static async Task<RestoreResult> RestoreCoreAsync(BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
-            IEnumerable<string> sources,
-            CancellationToken token)
+            IEnumerable<string> sources)
         {
             var file = new FileInfo(project.JsonConfigPath);
 

@@ -7,7 +7,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageDependencyMetadata
+    public class PackageDependencyMetadata
     {
         public PackageDependencyMetadata()
         {

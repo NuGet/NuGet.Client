@@ -39,7 +39,7 @@ namespace NuGet.ProjectManagement
                 return 1;
             }
 
-            return y.CompareTo(x);
+            return string.Compare(y, x, StringComparison.OrdinalIgnoreCase);
         }
     }
 
@@ -125,20 +125,6 @@ namespace NuGet.ProjectManagement
         public void AddBindingRedirects()
         {
             MSBuildNuGetProjectSystem.AddBindingRedirects();
-        }
-
-        private static IMSBuildNuGetProjectContext GetMSBuildNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
-        {
-            if (nuGetProjectContext != null)
-            {
-                var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-                if (msBuildNuGetProjectContext != null)
-                {
-                    return msBuildNuGetProjectContext;
-                }
-            }
-
-            return null;
         }
 
         private static bool IsBindingRedirectsDisabled(INuGetProjectContext nuGetProjectContext)
@@ -537,11 +523,6 @@ namespace NuGet.ProjectManagement
                 MSBuildNuGetProjectSystem.AddBindingRedirects();
             }
             return base.PostProcessAsync(nuGetProjectContext, token);
-        }
-
-        private static string GetTargetFrameworkLogString(NuGetFramework targetFramework)
-        {
-            return (targetFramework == null || targetFramework == NuGetFramework.AnyFramework) ? Strings.Debug_TargetFrameworkInfo_NotFrameworkSpecific : string.Empty;
         }
 
         private static bool IsAssemblyReference(string filePath)

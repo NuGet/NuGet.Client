@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class LoadingStatusIndicator : INotifyPropertyChanged
+    public class LoadingStatusIndicator : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

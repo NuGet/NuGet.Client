@@ -183,6 +183,9 @@
   <data name="Debug_TargetFrameworkInfo_PowershellScripts" xml:space="preserve">
     <value>&gt;&gt; PowerShell scripts are being executed from '{0}'{1}</value>
   </data>
+  <data name="DependencyDoesNotHaveValidVersion" xml:space="preserve">
+    <value>Dependency '{0}' has invalid version specification.</value>
+  </data>
   <data name="FileConflictMessage" xml:space="preserve">
     <value>File '{0}' already exists in project '{1}'. Do you want to overwrite it?</value>
   </data>

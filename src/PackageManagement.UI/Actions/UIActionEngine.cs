@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private PackageIdentity GetDirectInstall(IEnumerable<NuGetProjectAction> nuGetProjectActions,
+        private static PackageIdentity GetDirectInstall(IEnumerable<NuGetProjectAction> nuGetProjectActions,
             UserAction userAction,
             ICommonOperations commonOperations)
         {
@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Convert NuGetProjectActions into PreviewResult types
         /// </summary>
-        protected IEnumerable<PreviewResult> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
+        protected static IEnumerable<PreviewResult> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
         {
             var results = new List<PreviewResult>();
             var actionsByProject = projectActions.GroupBy(action => action.Item1);
@@ -328,7 +328,7 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        private async Task<UIPackageMetadata> GetPackageMetadataAsync(
+        private static async Task<UIPackageMetadata> GetPackageMetadataAsync(
             IEnumerable<SourceRepository> sources,
             PackageIdentity package,
             CancellationToken token)

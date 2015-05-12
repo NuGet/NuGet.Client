@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
-        private bool PromptForLicenseAcceptanceImpl(
+        private static bool PromptForLicenseAcceptanceImpl(
             IEnumerable<PackageLicenseInfo> packages)
         {
             var licenseWindow = new LicenseAcceptanceWindow
@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI
                     DataContext = packages
                 };
 
-            using (NuGetEventTrigger.Instance.TriggerEventBeginEnd(
+            using (NuGetEventTrigger.TriggerEventBeginEnd(
                 NuGetEvent.LicenseWindowBegin,
                 NuGetEvent.LicenseWindowEnd))
             {
@@ -233,10 +233,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageIdentity SelectedPackage
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public PackageIdentity SelectedPackage { get; set; }
 
         public void RefreshPackageStatus()
         {

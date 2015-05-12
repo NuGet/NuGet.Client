@@ -1605,7 +1605,7 @@ namespace NuGet.Test
 
             // Main Assert
             var installedPackagesInDependencyOrder = (await nuGetPackageManager.GetInstalledPackagesInDependencyOrder
-                (msBuildNuGetProject, testNuGetProjectContext, token)).ToList();
+                (msBuildNuGetProject, token)).ToList();
             Assert.Equal(7, installedPackagesInDependencyOrder.Count);
             for (var i = 0; i < 7; i++)
             {

@@ -13,7 +13,7 @@ namespace NuGet.ProjectManagement
 {
     public static class FileSystemUtility
     {
-        public static void MakeWriteable(string fullPath)
+        public static void MakeWritable(string fullPath)
         {
             if (File.Exists(fullPath))
             {
@@ -109,7 +109,7 @@ namespace NuGet.ProjectManagement
             if (string.IsNullOrEmpty(fullPath)
                 || string.IsNullOrEmpty(Path.GetFileName(fullPath)))
             {
-                throw new ArgumentException("fullPath");
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
             }
             // MakeWriteable(fullPath); SourceControlManager will do that
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
@@ -126,9 +126,9 @@ namespace NuGet.ProjectManagement
             if (string.IsNullOrEmpty(fullPath)
                 || string.IsNullOrEmpty(Path.GetFileName(fullPath)))
             {
-                throw new ArgumentException("fullPath");
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
             }
-            MakeWriteable(fullPath);
+            MakeWritable(fullPath);
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
             return File.Create(fullPath);
         }
@@ -186,7 +186,7 @@ namespace NuGet.ProjectManagement
 
             try
             {
-                MakeWriteable(fullPath);
+                MakeWritable(fullPath);
                 var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
                 if (sourceControlManager != null)
                 {
@@ -222,7 +222,7 @@ namespace NuGet.ProjectManagement
                 {
                     if (ContentEquals(packageFile.Item1, packageFile.Item2.Open))
                     {
-                        MakeWriteable(packageFile.Item1);
+                        MakeWritable(packageFile.Item1);
                         filesToDelete.Add(packageFile.Item1);
                     }
                     else

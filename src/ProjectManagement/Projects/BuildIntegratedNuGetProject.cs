@@ -88,7 +88,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             var dependency = new PackageDependency(packageIdentity.Id, new VersionRange(packageIdentity.Version));
 
-            return await AddDependency(dependency, nuGetProjectContext, token);
+            return await AddDependency(dependency, token);
         }
 
         /// <summary>
@@ -104,8 +104,8 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// Install a package using the global packages folder.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
         public async Task<bool> AddDependency(PackageDependency dependency,
-            INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             var json = await GetJsonAsync();
@@ -120,6 +120,7 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// Uninstall a package from the config file.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
         public async Task<bool> RemoveDependency(string packageId,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
@@ -141,6 +142,7 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// Add non-build time items such as content, install.ps1, and targets.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
         public async Task<bool> InstallPackageContentAsync(PackageIdentity identity, Stream packageStream, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var changesMade = false;
@@ -208,7 +210,8 @@ namespace NuGet.ProjectManagement.Projects
             return await Task.FromResult(changesMade);
         }
 
-        public async Task<bool> UninstallPackageContentAsync(PackageIdentity identity, Stream packageStream, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+        public Task<bool> UninstallPackageContentAsync(Stream packageStream)
         {
             var changesMade = false;
 
@@ -232,7 +235,7 @@ namespace NuGet.ProjectManagement.Projects
                     FileTransformers);
             }
 
-            return await Task.FromResult(changesMade);
+            return Task.FromResult(changesMade);
         }
 
         /// <summary>

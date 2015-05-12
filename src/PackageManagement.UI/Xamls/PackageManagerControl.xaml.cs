@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool IsUILegalDisclaimerSuppressed()
+        private static bool IsUILegalDisclaimerSuppressed()
         {
             try
             {
@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        protected DependencyBehavior GetDependencyBehaviorFromConfig(
+        protected static DependencyBehavior GetDependencyBehaviorFromConfig(
             ISettings nugetSettings)
         {
             var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");

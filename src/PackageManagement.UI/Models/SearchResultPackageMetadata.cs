@@ -13,8 +13,6 @@ namespace NuGet.PackageManagement.UI
     public class SearchResultPackageMetadata : INotifyPropertyChanged
     {
         private PackageStatus _status;
-        private readonly SourceRepository _source;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
@@ -37,8 +35,10 @@ namespace NuGet.PackageManagement.UI
 
         public SearchResultPackageMetadata(SourceRepository source)
         {
-            _source = source;
+            Source = source;
         }
+
+        public SourceRepository Source { get; }
 
         public Uri IconUrl { get; set; }
 

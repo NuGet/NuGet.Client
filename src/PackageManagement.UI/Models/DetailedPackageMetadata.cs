@@ -9,7 +9,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class DetailedPackageMetadata
+    public class DetailedPackageMetadata
     {
         public DetailedPackageMetadata()
         {

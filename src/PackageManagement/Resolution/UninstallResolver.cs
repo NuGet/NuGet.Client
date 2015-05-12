@@ -50,12 +50,12 @@ namespace NuGet.PackageManagement
         public static ICollection<PackageIdentity> GetPackagesToBeUninstalled(PackageIdentity packageIdentity, IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable,
             IEnumerable<PackageIdentity> installedPackages, UninstallationContext uninstallationContext)
         {
-            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict;
-            var dependentsDict = GetPackageDependents(dependencyInfoEnumerable, installedPackages, out dependenciesDict);
+            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDictionary;
+            var dependentsDictionary = GetPackageDependents(dependencyInfoEnumerable, installedPackages, out dependenciesDictionary);
             var packagesMarkedForUninstall =
-                MarkPackagesToBeUninstalled(packageIdentity, dependenciesDict, dependentsDict, uninstallationContext);
+                MarkPackagesToBeUninstalled(packageIdentity, dependenciesDictionary, uninstallationContext);
 
-            CheckIfPackageCanBeUninstalled(packageIdentity, dependenciesDict, dependentsDict, uninstallationContext, packagesMarkedForUninstall);
+            CheckIfPackageCanBeUninstalled(packageIdentity, dependenciesDictionary, dependentsDictionary, uninstallationContext, packagesMarkedForUninstall);
             return packagesMarkedForUninstall;
         }
 
@@ -97,7 +97,6 @@ namespace NuGet.PackageManagement
 
         private static HashSet<PackageIdentity> MarkPackagesToBeUninstalled(PackageIdentity packageIdentity,
             IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDict,
-            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependentsDict,
             UninstallationContext uninstallationContext)
         {
             var breathFirstSearchQueue = new Queue<PackageIdentity>();

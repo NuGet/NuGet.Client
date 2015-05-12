@@ -10,6 +10,7 @@ namespace NuGet.PackageManagement.UI
 {
     public static class NuGetUIThreadHelper
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public static void SetCustomJoinableTaskFactory(Thread mainThread, SynchronizationContext synchronizationContext)
         {
             // If ThreadHelper.JoinableTaskFactory is not null, do not allow a custom JoinableTaskFactory to be set here

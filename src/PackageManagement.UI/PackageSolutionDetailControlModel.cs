@@ -11,7 +11,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageSolutionDetailControlModel : DetailControlModel
+    public class PackageSolutionDetailControlModel : DetailControlModel
     {
         // list of projects to be displayed in the UI
 
@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private PackageReference GetInstalledPackage(NuGetProject project, string id)
+        private static PackageReference GetInstalledPackage(NuGetProject project, string id)
         {
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
@@ -135,7 +135,7 @@ namespace NuGet.PackageManagement.UI
                 Projects.Any(i => i.Selected);
         }
 
-        private bool IsInstalled(NuGetProject project, string id)
+        private static bool IsInstalled(NuGetProject project, string id)
         {
             var packageReference = GetInstalledPackage(project, id);
             return packageReference != null;

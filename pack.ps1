@@ -7,7 +7,8 @@ param (
     [switch]$SkipTests,
     [string]$PFXPath,
     [switch]$DelaySign,
-    [string]$Version
+    [Parameter(Mandatory=$true)][string]$Version,
+    [string]$MsbuildParameters = ''
 )
 
 # build the specified project to create the nupkg
@@ -68,7 +69,8 @@ function Build()
 
 	$env:NUGET_PUSH_TARGET="$PushTarget"
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
-    & msbuild "build\build.msbuild" "/p:Configuration=$Configuration"
+    
+    & msbuild "build\build.msbuild" "/p:Configuration=$Configuration" /p:EnableCodeAnalysis=true /m /v:M $msbuildParameters
 	if ($lastexitcode -ne 0) 
 	{		
 	  	throw "Build failed"
@@ -81,7 +83,7 @@ Pack "src\PackageManagement\PackageManagement.csproj" "NuGet.PackageManagement" 
 Pack "src\PackageManagement.UI\PackageManagement.UI.csproj" "NuGet.PackageManagement.UI" $false
 
 # copy packages to $PushTarget if $PushTarget is a directory
-if (Test-Path $PushTarget)
+if ($PushTarget -and (Test-Path $PushTarget))
 {
 	Copy-Item "nupkgs\*.nupkg" $PushTarget
 }

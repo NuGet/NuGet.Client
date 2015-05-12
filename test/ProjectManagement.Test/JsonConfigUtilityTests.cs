@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
@@ -12,6 +13,88 @@ namespace ProjectManagement.Test
 {
     public class JsonConfigUtilityTests
     {
+        [Fact]
+        public void GetDependencies_ParsesIdAndVersion()
+        {
+            // Arrange
+            var json = JObject.Parse(
+@"
+{
+    ""dependencies"": { 
+         ""PackageA"": ""1.0.0"", 
+         ""PackageC"": { ""type"": ""build"", version: ""2.0.0-beta2"" }
+    }
+}");
+
+            // Act
+            var dependencies = JsonConfigUtility.GetDependencies(json).ToList();
+
+            // Assert
+            Assert.Equal(2, dependencies.Count);
+            Assert.Equal("PackageA", dependencies[0].Id);
+            Assert.Equal(VersionRange.Parse("1.0.0"), dependencies[0].VersionRange);
+
+            Assert.Equal("PackageC", dependencies[1].Id);
+            Assert.Equal(VersionRange.Parse("2.0.0-beta2"), dependencies[1].VersionRange);
+        }
+
+        [Fact]
+        public void GetDependencies_ThrowsIfValueIsNotAValidStringOrObject()
+        {
+            // Arrange
+            var json = JObject.Parse(
+@"
+{
+    ""dependencies"": { 
+         ""PackageA"": 1
+    }
+}");
+
+            // Act and Assert
+            var ex = Assert.Throws<FormatException>(() => JsonConfigUtility.GetDependencies(json).ToList());
+
+            // Assert
+            Assert.Equal("Dependency '\"PackageA\": 1' has invalid version specification.", ex.Message);
+        }
+
+        [Fact]
+        public void GetDependencies_ThrowsIfVersionIsAnEmptyString()
+        {
+            // Arrange
+            var json = JObject.Parse(
+@"
+{
+    ""dependencies"": { 
+         ""PackageA"": """"
+    }
+}");
+
+            // Act and Assert
+            var ex = Assert.Throws<FormatException>(() => JsonConfigUtility.GetDependencies(json).ToList());
+
+            // Assert
+            Assert.Equal("Dependency '\"PackageA\": \"\"' has invalid version specification.", ex.Message);
+        }
+
+        [Fact]
+        public void GetDependencies_ThrowsIfObjectDoesNotHaveVersionProperty()
+        {
+            // Arrange
+            var json = JObject.Parse(
+@"
+{
+    ""dependencies"": { 
+         ""PackageA"": { ""type"": ""build"" }
+    }
+}");
+
+            // Act and Assert
+            var ex = Assert.Throws<FormatException>(() => JsonConfigUtility.GetDependencies(json).ToList());
+
+            // Assert
+            Assert.Equal($"Dependency '{json["dependencies"].First}' has invalid version specification.", ex.Message);
+        }
+
         [Fact]
         public void JsonConfigUtility_GetTargetFramework()
         {

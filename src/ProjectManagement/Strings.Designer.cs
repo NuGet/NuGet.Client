@@ -259,6 +259,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dependency &apos;{0}&apos; has invalid version specification..
+        /// </summary>
+        public static string DependencyDoesNotHaveValidVersion {
+            get {
+                return ResourceManager.GetString("DependencyDoesNotHaveValidVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File &apos;{0}&apos; already exists in project &apos;{1}&apos;. Do you want to overwrite it?.
         /// </summary>
         public static string FileConflictMessage {

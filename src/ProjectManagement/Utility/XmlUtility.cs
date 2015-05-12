@@ -93,7 +93,6 @@ namespace NuGet.ProjectManagement
 
         public static XDocument CreateDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
         {
-            var fullPath = Path.Combine(root, path);
             var document = new XDocument(new XElement(rootName));
             // Add it to the file system
             FileSystemUtility.AddFile(root, path, document.Save, nuGetProjectContext);

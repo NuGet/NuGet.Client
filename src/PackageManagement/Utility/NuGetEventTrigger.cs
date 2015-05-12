@@ -19,8 +19,6 @@ namespace NuGet.PackageManagement
             Justification = "The type is immutable.")]
         public static readonly NuGetEventTrigger Instance = new NuGetEventTrigger();
 
-        public delegate void TriggerEventMethod(int id);
-
         private readonly TriggerEventMethod _triggerEventMethod;
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "By design, we want to move on if any error occured.")]
@@ -68,7 +66,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        public IDisposable TriggerEventBeginEnd(int beginId, int endId)
+        public static IDisposable TriggerEventBeginEnd(int beginId, int endId)
         {
             return new EventTriggerBeginEnd(beginId, endId);
         }

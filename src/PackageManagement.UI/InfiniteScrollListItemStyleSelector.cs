@@ -6,7 +6,7 @@ using System.Windows.Controls;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class InfiniteScrollListItemStyleSelector : StyleSelector
+    public class InfiniteScrollListItemStyleSelector : StyleSelector
     {
         public override Style SelectStyle(object item, DependencyObject container)
         {

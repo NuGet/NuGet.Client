@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Resources;
+using System.Runtime.InteropServices;
 
 // Project-specific attributes
 
@@ -17,6 +18,7 @@ using System.Resources;
 [assembly: AssemblyCopyright("Copyright .NET Foundation. All rights reserved.")]
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: CLSCompliant(false)]
+[assembly: ComVisible(false)]
 
 // When built on the build server, the NuGet release version is specified by the build.
 // When built locally, the NuGet release version is the values specified in this file.

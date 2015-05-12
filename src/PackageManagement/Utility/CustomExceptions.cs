@@ -5,6 +5,7 @@ using System;
 
 namespace NuGet.PackageManagement
 {
+    [Serializable]
     public class PackageAlreadyInstalledException : Exception
     {
         public PackageAlreadyInstalledException(string message)
@@ -13,6 +14,7 @@ namespace NuGet.PackageManagement
         }
     }
 
+    [Serializable]
     public class NuGetVersionNotSatisfiedException : Exception
     {
         public NuGetVersionNotSatisfiedException(string message)

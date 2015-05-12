@@ -109,7 +109,7 @@ namespace ProjectManagement.Test
 
                 // Act
                 await buildIntegratedProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
-                await buildIntegratedProject.UninstallPackageContentAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                await buildIntegratedProject.UninstallPackageContentAsync(packageStream);
             }
 
             // Assert

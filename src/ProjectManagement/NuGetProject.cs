@@ -27,7 +27,7 @@ namespace NuGet.ProjectManagement
             InternalMetadata = metadata;
         }
 
-        protected IDictionary<string, object> InternalMetadata { get; set; }
+        protected IDictionary<string, object> InternalMetadata { get; }
 
         public IReadOnlyDictionary<string, object> Metadata
         {

@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement.UI
                 Name = "Unknown Project";
             }
 
+            Target = target;
             Added = added;
             Deleted = deleted;
             Updated = updated;

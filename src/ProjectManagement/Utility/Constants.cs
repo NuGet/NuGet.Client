@@ -70,6 +70,11 @@ namespace NuGet.ProjectManagement
         public const string ResourceAssemblyExtension = ".resources.dll";
 
         public static readonly Version NuGetVersion = typeof(PackageIdentity).Assembly.GetName().Version;
+
+        [SuppressMessage(
+            "Microsoft.Security",
+            "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
+            Justification = "The type is immutable.")]
         public static readonly SemanticVersion NuGetSemanticVersion = new SemanticVersion(NuGetVersion.Major, NuGetVersion.Minor, NuGetVersion.Build);
     }
 }

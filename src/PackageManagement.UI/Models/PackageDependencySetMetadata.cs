@@ -8,7 +8,7 @@ using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageDependencySetMetadata
+    public class PackageDependencySetMetadata
     {
         public PackageDependencySetMetadata(PackageDependencyGroup dependencyGroup)
         {

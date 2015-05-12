@@ -99,11 +99,6 @@ namespace NuGet.ProjectManagement
 
                 foreach (var zipArchiveEntry in zipArchiveEntryList)
                 {
-                    if (zipArchiveEntry == null)
-                    {
-                        throw new ArgumentNullException("zipArchiveEntry");
-                    }
-
                     if (IsEmptyFolder(zipArchiveEntry.FullName))
                     {
                         continue;
@@ -144,6 +139,7 @@ namespace NuGet.ProjectManagement
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         internal static void DeleteFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
             ZipArchive zipArchive,
             IEnumerable<string> otherPackagesPath,

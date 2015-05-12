@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -37,20 +38,26 @@ namespace NuGet.ProjectManagement
         public static PackageDependency ParseDependency(JToken dependencyToken)
         {
             var property = dependencyToken as JProperty;
-
+            
             var id = property.Name;
 
-            VersionRange range = null;
-
-            if (dependencyToken.Type == JTokenType.Property)
+            string version = null;
+            if (property.Value.Type == JTokenType.String)
             {
-                range = VersionRange.Parse(((JProperty)dependencyToken).Value.ToString());
+                version = (string)property.Value;
             }
-            else
+            else if (property.Value.Type == JTokenType.Object)
             {
-                range = VersionRange.Parse(((JProperty)dependencyToken["version"]).Value.ToString());
+                version = (string)property.Value["version"];
+            }
+            
+            if (string.IsNullOrEmpty(version))
+            {
+                throw new FormatException(
+                    string.Format(CultureInfo.CurrentUICulture, Strings.DependencyDoesNotHaveValidVersion, dependencyToken.ToString()));
             }
 
+            var range = VersionRange.Parse(version);
             return new PackageDependency(id, range);
         }
 

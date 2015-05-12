@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement
 
     public class ProductUpdateAvailableEventArgs : EventArgs
     {
-        internal ProductUpdateAvailableEventArgs(Version currentVersion, Version newVersion)
+        public ProductUpdateAvailableEventArgs(Version currentVersion, Version newVersion)
         {
             CurrentVersion = currentVersion;
             NewVersion = newVersion;

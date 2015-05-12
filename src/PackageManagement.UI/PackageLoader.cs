@@ -33,11 +33,6 @@ namespace NuGet.PackageManagement.UI
 
         private readonly string _searchText;
 
-        // Copied from file Constants.cs in NuGet.Core:
-        // This is temporary until we fix the gallery to have proper first class support for this.
-        // The magic unpublished date is 1900-01-01T00:00:00
-        public static readonly DateTimeOffset Unpublished = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8));
-
         // The list of packages that have updates available
         private List<UISearchMetadata> _packagesWithUpdates;
 

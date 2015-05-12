@@ -473,7 +473,7 @@ namespace NuGet.PackageManagement
                 }
 
                 var packagesInDependencyOrder = (await GetInstalledPackagesInDependencyOrder(nuGetProject,
-                    nuGetProjectContext, token)).Reverse();
+                    token)).Reverse();
 
                 foreach (var package in packagesInDependencyOrder)
                 {
@@ -519,7 +519,6 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <remarks>Packages with unresolved dependencies are NOT returned since they are not valid.</remarks>
         public async Task<IEnumerable<PackageIdentity>> GetInstalledPackagesInDependencyOrder(NuGetProject nuGetProject,
-            INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
@@ -538,7 +537,7 @@ namespace NuGet.PackageManagement
         }
 
         // TODO: Convert this to a generic GetProjectActions and use it from Install methods too
-        private List<NuGetProjectAction> GetProjectActionsForUpdate(IEnumerable<PackageIdentity> newListOfInstalledPackages,
+        private static List<NuGetProjectAction> GetProjectActionsForUpdate(IEnumerable<PackageIdentity> newListOfInstalledPackages,
             IEnumerable<PackageIdentity> oldListOfInstalledPackages,
             IEnumerable<SourceDependencyInfo> availablePackageDependencyInfoWithSourceSet,
             INuGetProjectContext nuGetProjectContext)
@@ -567,7 +566,7 @@ namespace NuGet.PackageManagement
                 if (sourceDepInfo == null)
                 {
                     // this really should never happen
-                    throw new InvalidOperationException(string.Format(Strings.PackageNotFound, newPackageToInstall));
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentUICulture, Strings.PackageNotFound, newPackageToInstall));
                 }
 
                 nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
@@ -1141,7 +1140,7 @@ namespace NuGet.PackageManagement
                 {
                     var dependency = new PackageDependency(action.PackageIdentity.Id, new VersionRange(action.PackageIdentity.Version));
 
-                    await buildIntegratedProject.AddDependency(dependency, nuGetProjectContext, token);
+                    await buildIntegratedProject.AddDependency(dependency, token);
                 }
                 else if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                 {
@@ -1187,7 +1186,7 @@ namespace NuGet.PackageManagement
                 {
                     var stream = File.OpenRead(nupkgPath);
 
-                    await buildIntegratedProject.UninstallPackageContentAsync(uninstalledPackage, stream, nuGetProjectContext, token);
+                    await buildIntegratedProject.UninstallPackageContentAsync(stream);
                 }
                 else
                 {
@@ -1245,7 +1244,7 @@ namespace NuGet.PackageManagement
                 if (File.Exists(packagePath))
                 {
                     var readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);
-                    if (File.Exists(readmeFilePath))
+                    if (File.Exists(readmeFilePath) && !token.IsCancellationRequested)
                     {
                         return executionContext.OpenFile(readmeFilePath);
                     }
@@ -1296,7 +1295,7 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
-        private Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
+        private static Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback

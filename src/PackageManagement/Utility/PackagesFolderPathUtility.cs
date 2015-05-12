@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement
         {
             if (solutionManager == null)
             {
-                throw new ArgumentNullException("solutionManager");
+                throw new ArgumentNullException(nameof(solutionManager));
             }
 
             // If the solution directory is unavailable then throw an exception
@@ -34,12 +34,12 @@ namespace NuGet.PackageManagement
         {
             if (string.IsNullOrEmpty(solutionDirectory))
             {
-                throw new ArgumentException(string.Format(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, solutionDirectory));
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(solutionDirectory));
             }
 
             if (settings == null)
             {
-                throw new ArgumentNullException("settings");
+                throw new ArgumentNullException(nameof(settings));
             }
 
             var path = SettingsUtility.GetRepositoryPath(settings);

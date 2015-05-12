@@ -28,8 +28,6 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
         {
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
             var nupkgName = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", identity.Id, identity.Version.ToNormalizedString());
 
             return Path.Combine(GetGlobalPackagesFolder(), identity.Id, identity.Version.ToNormalizedString(), nupkgName);
