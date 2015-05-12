@@ -68,8 +68,7 @@ namespace NuGet.Protocol.VisualStudio
         {
             var parsed = ParsePackageMetadataV2.Parse(package);
 
-            // TODO: fetch this
-            Uri reportAbuse = null;
+            Uri reportAbuse = package.ReportAbuseUrl;
             var tags = String.Join(" ", parsed.Tags);
             var authors = String.Join(" ", parsed.Authors);
             var owners = String.Join(" ", parsed.Owners);
