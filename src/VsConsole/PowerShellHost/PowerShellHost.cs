@@ -333,6 +333,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         if (installedRefs != null
                             && installedRefs.Any())
                         {
+                            // This will be an empty list if packages have not been restored
                             IEnumerable<PackageIdentity> installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, new EmptyNuGetProjectContext(), CancellationToken.None);
                             sortedPackages.AddRange(installedPackages);
                         }
@@ -351,17 +352,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 }
                 catch (Exception ex)
                 {
-                    // When Packages folder is not present, NuGetResolverInputException will be thrown
-                    // as resolving DependencyInfo requires the presence of Packages folder.
-                    if (ex.InnerException is NuGetResolverInputException)
-                    {
-                        // Silently fail.
-                    }
-                    else
-                    {
-                        // if execution of Init scripts fails, do not let it crash our console
-                        ReportError(ex);
-                    }
+                    // if execution of Init scripts fails, do not let it crash our console
+                    ReportError(ex);
 
                     ExceptionHelper.WriteToActivityLog(ex);
                 }
