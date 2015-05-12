@@ -323,6 +323,7 @@ function Test-SubTreeUpdateWithConflict {
     
     # Arrange
     $p = New-ClassLibrary
+    $gt = [char]0x2265
     
     # Act
     $p | Install-Package A -Source $context.RepositoryPath
@@ -333,7 +334,7 @@ function Test-SubTreeUpdateWithConflict {
     Assert-Package $p D 1.0
     Assert-Package $p G 1.0
 
-    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Updating 'C 1.0' to 'C 2.0' failed. Unable to find a version of 'G' that is compatible with 'C 2.0'."
+    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependencies. 'C 2.0.0' is not compatible with 'A 1.0.0 constraint: C ($gt 1.0.0)', 'G 1.0.0 constraint: C (= 1.0.0)'."
     Assert-Null (Get-ProjectPackage $p C 2.0)
     Assert-Null (Get-SolutionPackage C 2.0)
     Assert-Package $p A 1.0
@@ -622,10 +623,10 @@ function Test-UpdateScenariosWithConstraints {
     Add-PackageConstraint $p3 E "[1.0]"
      
     # Act
-    Update-Package A -Source $context.RepositoryPath
     $gt = [char]0x2265
-    Assert-Throws { Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependency 'D ($gt 2.0)'.'D' has an additional constraint (= 1.0) defined in packages.config."
-    Assert-Throws { Update-Package F -Source $context.RepositoryPath } "Updating 'F 1.0' to 'F 2.0' failed. Unable to find a version of 'E' that is compatible with 'F 2.0'."
+    Assert-Throws { Update-Package A -Source $context.RepositoryPath } "Unable to resolve 'A'. An additional constraint '($gt 1.0.0 && < 2.0.0)' defined in packages.config prevents this operation."
+    Assert-Throws { Update-Package C -Source $context.RepositoryPath } "Unable to find a version of 'D' that is compatible with 'C 2.0.0 constraint: D ($gt 2.0.0)'. 'D' has an additional constraint (= 1.0.0) defined in packages.config."
+    Assert-Throws { Update-Package F -Source $context.RepositoryPath } "Unable to resolve dependencies. 'F 2.0.0' is not compatible with 'E 1.0.0 constraint: F (= 1.0.0)'."
 
     # Assert
     Assert-Package $p1 A 1.0
@@ -797,7 +798,7 @@ function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
     $p1 | Install-Package A -Version 1.0 -Source $context.RepositoryPath
 
     # Act
-    Assert-Throws { Update-Package B -Source $context.RepositoryPath } "Updating 'B 1.0' to 'B 2.0' failed. Unable to find a version of 'A' that is compatible with 'B 2.0'."
+    Assert-Throws { Update-Package B -Source $context.RepositoryPath } "Already referencing a newer version of 'A'.."
 }
 
 function Test-UpdatePackageThrowsWhenSourceIsInvalid {
@@ -967,7 +968,7 @@ function Test-UpdatePackageDoesNotConsiderPrereleasePackagesForUpdateIfFlagIsNot
     Assert-Package $p PreReleaseTestPackage 1.0.0
 }
 
-function Test-UpdatePackageDoesNothingIfNewVersionLessThanInstalledPrereleaseVersion {
+function Test-UpdatePackageFailsIfNewVersionLessThanInstalledPrereleaseVersion {
      param(
         $context
     )
@@ -978,7 +979,7 @@ function Test-UpdatePackageDoesNothingIfNewVersionLessThanInstalledPrereleaseVer
     # Act
     $p | Install-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0.1-a -Prerelease
     Assert-Package $p 'PreReleaseTestPackage' 1.0.1-a
-    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage
+    Assert-Throws { $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage } "Already referencing a newer version of 'PreReleaseTestPackage'.."
 
     # Assert
     Assert-Package $p PreReleaseTestPackage 1.0.1-a
