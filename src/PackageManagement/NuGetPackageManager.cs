@@ -310,15 +310,23 @@ namespace NuGet.PackageManagement
                         projectInstalledPackageReferences.Select(p => p.PackageIdentity));
                 }
 
+                // Verify that the target is allowed by packages.config
+                ResolverGather.ThrowIfVersionIsDisallowedByPackagesConfig(packageIdsToInstall, projectInstalledPackageReferences, prunedAvailablePackages);
+
                 // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                 prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
-                // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
-                // TODO: Consider using IPackageResolver once it is extensible
-                var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
+                // Step-2 : Call PackageResolver.Resolve to get new list of installed packages
+                var packageResolver = new PackageResolver();
+                var packageResolverContext = new PackageResolverContext(resolutionContext.DependencyBehavior,
+                    packageIdsToInstall,
+                    packageTargetIdsForResolver,
+                    projectInstalledPackageReferences,
+                    Enumerable.Empty<PackageIdentity>(),
+                    prunedAvailablePackages);
+
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
-                var newListOfInstalledPackages = packageResolver.Resolve(packageTargetIdsForResolver, prunedAvailablePackages,
-                    Enumerable.Empty<PackageReference>(), token);
+                var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
                 if (newListOfInstalledPackages == null)
                 {
                     throw new InvalidOperationException(Strings.UnableToResolveDependencyInfoForMultiplePackages);
@@ -440,20 +448,25 @@ namespace NuGet.PackageManagement
                     prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, packageTargetsForResolver);
                 }
 
-                // TODO: prune down level packages?
+                // Verify that the target is allowed by packages.config
+                ResolverGather.ThrowIfVersionIsDisallowedByPackagesConfig(packagesToInstall.Select(p => p.Id), projectInstalledPackageReferences, prunedAvailablePackages);
 
                 // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                 prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
                 // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages                
-                // TODO: Consider using IPackageResolver once it is extensible
-                var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
 
-                var newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver,
-                    prunedAvailablePackages,
+                var packageResolver = new PackageResolver();
+
+                var packageResolverContext = new PackageResolverContext(resolutionContext.DependencyBehavior,
+                    packagesToInstall.Select(p => p.Id),
+                    packageTargetsForResolver.Select(package => package.Id),
                     projectInstalledPackageReferences,
-                    token);
+                    packageTargetsForResolver,
+                    prunedAvailablePackages);
+
+                var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
                 if (newListOfInstalledPackages == null)
                 {
                     throw new InvalidOperationException(Strings.UnableToResolveDependencyInfoForMultiplePackages);
@@ -501,6 +514,10 @@ namespace NuGet.PackageManagement
             return nuGetProjectActions;
         }
 
+        /// <summary>
+        /// Returns all installed packages in order of dependency. Packages with no dependencies come first.
+        /// </summary>
+        /// <remarks>Packages with unresolved dependencies are NOT returned since they are not valid.</remarks>
         public async Task<IEnumerable<PackageIdentity>> GetInstalledPackagesInDependencyOrder(NuGetProject nuGetProject,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
@@ -511,8 +528,13 @@ namespace NuGet.PackageManagement
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
                 targetFramework);
 
-            var packageResolver = new PackageResolver(DependencyBehavior.Lowest);
-            return packageResolver.Resolve(installedPackageIdentities, dependencyInfoFromPackagesFolder, installedPackages, token);
+            var resolverPackages = dependencyInfoFromPackagesFolder.Select(package =>
+                    new ResolverPackage(package.Id, package.Version, package.Dependencies));
+
+            // Use the resolver sort to find the order. Packages with no dependencies 
+            // come first, then each package that has satisfied dependencies. 
+            // Packages with missing dependencies will not be returned.
+            return ResolverUtility.TopologicalSort(resolverPackages);
         }
 
         // TODO: Convert this to a generic GetProjectActions and use it from Install methods too
@@ -698,15 +720,13 @@ namespace NuGet.PackageManagement
                         prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, packageTargetsForResolver);
                     }
 
+                    // Verify that the target is allowed by packages.config
+                    ResolverGather.ThrowIfVersionIsDisallowedByPackagesConfig(packageIdentity.Id, projectInstalledPackageReferences, prunedAvailablePackages);
+
                     // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                     prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
-                    // TODO: prune down level packages?
-
-                    // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
-                    // TODO: Consider using IPackageResolver once it is extensible
-                    var packageResolver = new PackageResolver(resolutionContext.DependencyBehavior);
-                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
+                    // Step-2 : Call PackageResolver.Resolve to get new list of installed packages
 
                     // Note: resolver prefers installed package versions if the satisfy the dependency version constraints
                     // So, since we want an exact version of a package, create a new list of installed packages where the packageIdentity being installed
@@ -715,10 +735,18 @@ namespace NuGet.PackageManagement
                         !pr.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)));
                     preferredPackageReferences.Add(new PackageReference(packageIdentity, targetFramework));
 
-                    var newListOfInstalledPackages = packageResolver.Resolve(packageTargetsForResolver,
-                        prunedAvailablePackages,
-                        preferredPackageReferences,
-                        token);
+                    var packageResolverContext = new PackageResolverContext(resolutionContext.DependencyBehavior,
+                        new string[] { packageIdentity.Id },
+                        oldListOfInstalledPackages.Select(package => package.Id),
+                        projectInstalledPackageReferences,
+                        preferredPackageReferences.Select(package => package.PackageIdentity),
+                        prunedAvailablePackages);
+
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
+
+                    var packageResolver = new PackageResolver();
+
+                    var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
                     if (newListOfInstalledPackages == null)
                     {
                         throw new InvalidOperationException(string.Format(Strings.UnableToResolveDependencyInfo, packageIdentity, resolutionContext.DependencyBehavior));

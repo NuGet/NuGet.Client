@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement", "src\PackageManagement\PackageManagement.csproj", "{1CB46687-B482-4F64-869A-ED5280BADEB4}"
 EndProject
@@ -12,8 +12,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Utility", "test\Test.Utility\Test.Utility.csproj", "{8010A76A-CB15-4484-8F9B-D523FBC34DFA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagement", "src\ProjectManagement\ProjectManagement.csproj", "{FCD39E83-D8DE-4401-AB12-D824AC2FE07B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResolverTestApp", "test\ResolverTestApp\ResolverTestApp.csproj", "{A967469C-6E80-4226-B124-AEB764F0CCD8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagement.Test", "test\ProjectManagement.Test\ProjectManagement.Test.csproj", "{B3DC228A-78F5-437E-B206-7CB6B3FF1323}"
 EndProject
@@ -43,10 +41,6 @@ Global
 		{FCD39E83-D8DE-4401-AB12-D824AC2FE07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCD39E83-D8DE-4401-AB12-D824AC2FE07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCD39E83-D8DE-4401-AB12-D824AC2FE07B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A967469C-6E80-4226-B124-AEB764F0CCD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A967469C-6E80-4226-B124-AEB764F0CCD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A967469C-6E80-4226-B124-AEB764F0CCD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A967469C-6E80-4226-B124-AEB764F0CCD8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B3DC228A-78F5-437E-B206-7CB6B3FF1323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B3DC228A-78F5-437E-B206-7CB6B3FF1323}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3DC228A-78F5-437E-B206-7CB6B3FF1323}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -66,7 +60,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{2556DEB2-A9E8-4FA0-82AD-C34488BA9365} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 		{8010A76A-CB15-4484-8F9B-D523FBC34DFA} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
-		{A967469C-6E80-4226-B124-AEB764F0CCD8} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 		{B3DC228A-78F5-437E-B206-7CB6B3FF1323} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 		{114FD278-477D-4292-82AA-7F8A5FC0BA08} = {61CCE4FA-3608-4372-ACA5-D79E1924BA17}
 	EndGlobalSection

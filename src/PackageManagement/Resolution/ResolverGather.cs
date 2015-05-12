@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -356,6 +358,55 @@ namespace NuGet.PackageManagement
 
             var modifiedPackageDependencyInfo = new PackageDependencyInfo(new PackageIdentity(package.Id, package.Version), modifiedPackageDependencies);
             return new SourceDependencyInfo(modifiedPackageDependencyInfo, source);
+        }
+
+        /// <summary>
+        /// Throw if packages.config contains an AllowedVersions entry for the target, 
+        /// and no packages outside of that range have been found.
+        /// </summary>
+        /// <param name="target">target package id</param>
+        /// <param name="packagesConfig">entries from packages.config</param>
+        /// <param name="availablePackages">gathered packages</param>
+        public static void ThrowIfVersionIsDisallowedByPackagesConfig(string target,
+            IEnumerable<PackageReference> packagesConfig,
+            IEnumerable<PackageDependencyInfo> availablePackages)
+        {
+            ThrowIfVersionIsDisallowedByPackagesConfig(new string[] { target }, packagesConfig, availablePackages);
+        }
+
+        /// <summary>
+        /// Throw if packages.config contains an AllowedVersions entry for the target, 
+        /// and no packages outside of that range have been found.
+        /// </summary>
+        /// <param name="targets">target package ids</param>
+        /// <param name="packagesConfig">entries from packages.config</param>
+        /// <param name="availablePackages">gathered packages</param>
+        public static void ThrowIfVersionIsDisallowedByPackagesConfig(IEnumerable<string> targets,
+            IEnumerable<PackageReference> packagesConfig,
+            IEnumerable<PackageDependencyInfo> availablePackages)
+        {
+            foreach (var target in targets)
+            {
+                var configEntry = packagesConfig.FirstOrDefault(reference => reference.HasAllowedVersions
+                    && StringComparer.OrdinalIgnoreCase.Equals(target, reference.PackageIdentity.Id));
+
+                if (configEntry != null)
+                {
+                    var packagesForId = availablePackages.Where(package => StringComparer.OrdinalIgnoreCase.Equals(target, package.Id));
+
+                    // check if package versions exist, but none satisfy the allowed range
+                    if (packagesForId.Any() && !packagesForId.Any(package => configEntry.AllowedVersions.Satisfies(package.Version)))
+                    {
+                        // Unable to resolve '{0}'. An additional constraint {1} defined in {2} prevents this operation.
+                        throw new InvalidOperationException(
+                            String.Format(CultureInfo.CurrentCulture,
+                                Strings.PackagesConfigAllowedVersionConflict,
+                                target,
+                                configEntry.AllowedVersions.PrettyPrint(),
+                                "packages.config"));
+                    }
+                }
+            }
         }
     }
 }

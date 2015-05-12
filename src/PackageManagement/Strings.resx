@@ -240,4 +240,7 @@
   <data name="BuildIntegratedPackageRestoreFailed" xml:space="preserve">
     <value>Package restore completed with errors. Check the build output window for details.</value>
   </data>
+  <data name="PackagesConfigAllowedVersionConflict" xml:space="preserve">
+    <value>Unable to resolve '{0}'. An additional constraint '{1}' defined in {2} prevents this operation.</value>
+  </data>
 </root>

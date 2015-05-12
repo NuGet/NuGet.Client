@@ -250,6 +250,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to resolve &apos;{0}&apos;. An additional constraint &apos;{1}&apos; defined in {2} prevents this operation..
+        /// </summary>
+        internal static string PackagesConfigAllowedVersionConflict {
+            get {
+                return ResourceManager.GetString("PackagesConfigAllowedVersionConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Packages could not be installed.
         /// </summary>
         internal static string PackagesCouldNotBeInstalled {
