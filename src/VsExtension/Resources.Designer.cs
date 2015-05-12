@@ -253,6 +253,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}.
+        /// </summary>
+        internal static string ProjectUpgradeAndRetargetErrorMessage {
+            get {
+                return ResourceManager.GetString("ProjectUpgradeAndRetargetErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restored NuGet package {0}..
         /// </summary>
         internal static string RestoredPackage {

@@ -183,6 +183,9 @@ Missing packages: {0}</value>
     <value>Restoring NuGet packages...
 To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
   </data>
+  <data name="ProjectUpgradeAndRetargetErrorMessage" xml:space="preserve">
+    <value>Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}</value>
+  </data>
   <data name="RestoredPackage" xml:space="preserve">
     <value>Restored NuGet package {0}.</value>
   </data>

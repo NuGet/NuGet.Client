@@ -633,12 +633,12 @@ function Get-ErrorTasks {
     $allItemsInErrorListWindow = $errorList.Object.ErrorItems
 
     $errorTasks = @()
-    for($i=1; $i -le $allItemsInErrorListWindow.Count; $i++)
+    for($i=0; $i -lt $allItemsInErrorListWindow.Count; $i++)
     {
-        $currentErrorLevel = [EnvDTE80.vsBuildErrorLevel]($allItemsInErrorListWindow.Item($i).ErrorLevel)
+        $currentErrorLevel = [EnvDTE80.vsBuildErrorLevel]($allItemsInErrorListWindow[$i].ErrorLevel)
         if($currentErrorLevel -eq $vsBuildErrorLevel)
         {
-            $errorTasks += $allItemsInErrorListWindow.Item($i)
+            $errorTasks += $allItemsInErrorListWindow[$i]
         }
     }
 

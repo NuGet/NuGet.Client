@@ -255,6 +255,7 @@
     <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\PathHelper.cs" />
     <Compile Include="Utility\PathValidator.cs" />
+    <Compile Include="Utility\ProjectRetargetingUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />
     <Compile Include="Utility\SettingsHelper.cs" />

@@ -256,7 +256,7 @@ namespace NuGetVSExtension
 
                             WriteLine(VerbosityLevel.Quiet, message);
                             ActivityLog.LogError(LogEntrySource, message);
-                            ShowError(_errorListProvider, TaskErrorCategory.Error,
+                            MessageHelper.ShowError(_errorListProvider, TaskErrorCategory.Error,
                                 TaskPriority.High, message, hierarchyItem: null);
                             WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
                         }
@@ -342,7 +342,7 @@ namespace NuGetVSExtension
                 var errorText = String.Format(CultureInfo.CurrentCulture,
                     Resources.PackageNotRestoredBecauseOfNoConsent,
                     String.Join(", ", missingPackages.Select(p => p.ToString())));
-                ShowError(_errorListProvider, TaskErrorCategory.Error, TaskPriority.High, errorText, hierarchyItem: null);
+                MessageHelper.ShowError(_errorListProvider, TaskErrorCategory.Error, TaskPriority.High, errorText, hierarchyItem: null);
             }
         }
 
@@ -457,19 +457,6 @@ namespace NuGetVSExtension
                 return (int)value;
             }
             return 0;
-        }
-
-        private static void ShowError(ErrorListProvider errorListProvider, TaskErrorCategory errorCategory, TaskPriority priority, string errorText, IVsHierarchy hierarchyItem)
-        {
-            ErrorTask retargetErrorTask = new ErrorTask();
-            retargetErrorTask.Text = errorText;
-            retargetErrorTask.ErrorCategory = errorCategory;
-            retargetErrorTask.Category = TaskCategory.BuildCompile;
-            retargetErrorTask.Priority = priority;
-            retargetErrorTask.HierarchyItem = hierarchyItem;
-            errorListProvider.Tasks.Add(retargetErrorTask);
-            errorListProvider.BringToFront();
-            errorListProvider.ForceShowErrors();
         }
 
         /// <summary>

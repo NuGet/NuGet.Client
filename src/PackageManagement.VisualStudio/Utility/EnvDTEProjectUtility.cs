@@ -19,8 +19,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
-using VsWebSite;
 using VSLangProj;
+using VsWebSite;
 using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItem = EnvDTE.ProjectItem;
@@ -194,11 +194,75 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(NuGetVSConstants.VsProjectItemKindSolutionFolder, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsUnloaded(EnvDTEProject envDTEProject)
+        public static bool IsUnloaded(EnvDTEProject envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             return NuGetVSConstants.UnloadedProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static EnvDTEProject GetActiveProject(IVsMonitorSelection vsMonitorSelection)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IntPtr ppHier = IntPtr.Zero;
+            uint pitemid;
+            IVsMultiItemSelect ppMIS;
+            IntPtr ppSC = IntPtr.Zero;
+
+            try
+            {
+                vsMonitorSelection.GetCurrentSelection(out ppHier, out pitemid, out ppMIS, out ppSC);
+
+                if (ppHier == IntPtr.Zero)
+                {
+                    return null;
+                }
+
+                // multiple items are selected.
+                if (pitemid == (uint)VSConstants.VSITEMID.Selection)
+                {
+                    return null;
+                }
+
+                IVsHierarchy hierarchy = Marshal.GetTypedObjectForIUnknown(ppHier, typeof(IVsHierarchy)) as IVsHierarchy;
+                if (hierarchy != null)
+                {
+                    object project;
+                    if (hierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out project) >= 0)
+                    {
+                        return project as EnvDTEProject;
+                    }
+                }
+
+                return null;
+            }
+            finally
+            {
+                if (ppHier != IntPtr.Zero)
+                {
+                    Marshal.Release(ppHier);
+                }
+                if (ppSC != IntPtr.Zero)
+                {
+                    Marshal.Release(ppSC);
+                }
+            }
+        }
+
+        public static NuGetProject GetNuGetProject(EnvDTEProject project, ISolutionManager solutionManager)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Debug.Assert(project != null);
+            Debug.Assert(solutionManager != null);
+
+            var nuGetProject = solutionManager.GetNuGetProject(project.Name);
+            if (nuGetProject == null)
+            {
+                nuGetProject = solutionManager.GetNuGetProject(project.UniqueName);
+            }
+            return nuGetProject;
         }
 
         private static T GetPropertyValue<T>(EnvDTEProject envDTEProject, string propertyName)
@@ -497,9 +561,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetFramework.UnsupportedFramework;
         }
 
-        private static string GetTargetFrameworkString(EnvDTEProject envDTEProject)
+        public static string GetTargetFrameworkString(EnvDTEProject envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (envDTEProject == null)
             {

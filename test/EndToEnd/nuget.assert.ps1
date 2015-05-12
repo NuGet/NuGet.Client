@@ -75,6 +75,21 @@ function Get-InstalledPackageReferencesFromProject {
     return $result
 }
 
+function Get-ProjectPackageReferences {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+	$packagesConfigNuGetProject = Get-PackagesConfigNuGetProject $Project
+	$packageReferences = @()
+
+	if ($packagesConfigNuGetProject)
+	{   
+		$packageReferences = Get-InstalledPackageReferencesFromProject($packagesConfigNuGetProject)
+	}
+    return $packageReferences
+}
 
 function Get-ProjectPackage {
     param(

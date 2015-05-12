@@ -26,7 +26,6 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
-using NuGetVSExtension.Utilities;
 using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using PackageSourceProvider = Legacy::NuGet.PackageSourceProvider;
@@ -55,10 +54,8 @@ namespace NuGetVSExtension
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
-    // Don't auto load on project retargeting and upgrade events from this VS package
-    // They get loaded on visual studio open
-    //[ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
-    //[ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string)]
     [FontAndColorsRegistration(
         "Package Manager Console",
         NuGetConsole.Implementation.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
@@ -259,6 +256,8 @@ namespace NuGetVSExtension
         }
 
         private OnBuildPackageRestorer OnBuildPackageRestorer { get; set; }
+        private ProjectRetargetingHandler ProjectRetargetingHandler { get; set; }
+        private ProjectUpgradeHandler ProjectUpgradeHandler { get; set; }
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -316,6 +315,8 @@ namespace NuGetVSExtension
             //       Exported IPackageRestoreManager is used by UI manual restore, Powershell manual restore and by VS extensibility package restore
             // var packageRestoreManagerForOnBuildPackageRestorer = new PackageRestoreManager(SourceRepositoryProvider, Settings, SolutionManager);
             OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this, SourceRepositoryProvider);
+            ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
+            ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
 
             var vsSourceControlTracker = VSSourceControlTracker;
 
@@ -644,11 +645,11 @@ namespace NuGetVSExtension
                 var searchText = GetSearchText(parameterString);
 
                 // *** temp code            
-                Project project = VsUtility.GetActiveProject(VsMonitorSelection);
+                Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
 
                 if (project != null
                     &&
-                    !VsUtility.IsUnloaded(project)
+                    !EnvDTEProjectUtility.IsUnloaded(project)
                     &&
                     EnvDTEProjectUtility.IsSupported(project))
                 {
@@ -968,8 +969,8 @@ namespace NuGetVSExtension
         {
             get
             {
-                Project project = VsUtility.GetActiveProject(VsMonitorSelection);
-                return project != null && !VsUtility.IsUnloaded(project)
+                Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
+                return project != null && !EnvDTEProjectUtility.IsUnloaded(project)
                        && EnvDTEProjectUtility.IsSupported(project);
             }
         }

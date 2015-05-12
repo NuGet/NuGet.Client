@@ -66,5 +66,25 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             return (result == NativeMethods.IDYES);
         }
+
+        public static void ShowError(ErrorListProvider errorListProvider, TaskErrorCategory errorCategory, TaskPriority priority, string errorText, IVsHierarchy hierarchyItem)
+        {
+            ErrorTask errorTask = new ErrorTask();
+            errorTask.Text = errorText;
+            errorTask.ErrorCategory = errorCategory;
+            errorTask.Category = TaskCategory.BuildCompile;
+            errorTask.Priority = priority;
+            errorTask.HierarchyItem = hierarchyItem;
+            errorListProvider.Tasks.Add(errorTask);
+            errorListProvider.BringToFront();
+            errorListProvider.ForceShowErrors();
+        }
+
+        internal class NativeMethods
+        {
+            public const int IDCANCEL = 2;
+            public const int IDYES = 6;
+            public const int IDNO = 7;
+        }
     }
 }
