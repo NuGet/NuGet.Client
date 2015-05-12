@@ -29,16 +29,21 @@ namespace NuGet.Packaging
         {
         }
 
+        /// <summary>
+        /// Packages.config reader
+        /// </summary>
+        /// <param name="frameworkMappings">Additional target framework mappings for parsing target frameworks</param>
+        /// <param name="xml">Packages.config XML</param>
         public PackagesConfigReader(IFrameworkNameProvider frameworkMappings, XDocument xml)
         {
             if (xml == null)
             {
-                throw new ArgumentNullException("xml");
+                throw new ArgumentNullException(nameof(xml));
             }
 
             if (frameworkMappings == null)
             {
-                throw new ArgumentNullException("frameworkMappings");
+                throw new ArgumentNullException(nameof(frameworkMappings));
             }
 
             _doc = xml;
@@ -74,7 +79,12 @@ namespace NuGet.Packaging
         {
             if (stream == null)
             {
-                throw new ArgumentNullException("stream");
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            if (frameworkMappings == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkMappings));
             }
 
             _frameworkMappings = frameworkMappings;

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -18,28 +19,64 @@ namespace NuGet.Packaging
     public class NuspecReader : NuspecCoreReaderBase
     {
         // node names
-        protected const string Dependencies = "dependencies";
-        protected const string Group = "group";
-        protected const string TargetFramework = "targetFramework";
-        protected const string Dependency = "dependency";
-        protected const string References = "references";
-        protected const string Reference = "reference";
-        protected const string File = "file";
-        protected const string FrameworkAssemblies = "frameworkAssemblies";
-        protected const string FrameworkAssembly = "frameworkAssembly";
-        protected const string AssemblyName = "assemblyName";
-        protected const string Language = "language";
+        private const string Dependencies = "dependencies";
+        private const string Group = "group";
+        private const string TargetFramework = "targetFramework";
+        private const string Dependency = "dependency";
+        private const string References = "references";
+        private const string Reference = "reference";
+        private const string File = "file";
+        private const string FrameworkAssemblies = "frameworkAssemblies";
+        private const string FrameworkAssembly = "frameworkAssembly";
+        private const string AssemblyName = "assemblyName";
+        private const string Language = "language";
+        private readonly IFrameworkNameProvider _frameworkProvider;
 
+        /// <summary>
+        /// Nuspec file reader
+        /// </summary>
+        /// <param name="stream">Nuspec file stream.</param>
         public NuspecReader(Stream stream)
+            : this(stream, DefaultFrameworkNameProvider.Instance)
+        {
+
+        }
+
+        /// <summary>
+        /// Nuspec file reader
+        /// </summary>
+        /// <param name="xml">Nuspec file xml data.</param>
+        public NuspecReader(XDocument xml)
+            : this(xml, DefaultFrameworkNameProvider.Instance)
+        {
+
+        }
+
+        /// <summary>
+        /// Nuspec file reader
+        /// </summary>
+        /// <param name="stream">Nuspec file stream.</param>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        public NuspecReader(Stream stream, IFrameworkNameProvider frameworkProvider)
             : base(stream)
         {
+            _frameworkProvider = frameworkProvider;
         }
 
-        public NuspecReader(XDocument xml)
+        /// <summary>
+        /// Nuspec file reader
+        /// </summary>
+        /// <param name="xml">Nuspec file xml data.</param>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        public NuspecReader(XDocument xml, IFrameworkNameProvider frameworkProvider)
             : base(xml)
         {
+            _frameworkProvider = frameworkProvider;
         }
 
+        /// <summary>
+        /// Read package dependencies for all frameworks
+        /// </summary>
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups()
         {
             var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
@@ -62,16 +99,17 @@ namespace NuGet.Packaging
 
                     if (!String.IsNullOrEmpty(rangeNode))
                     {
-                        if (!VersionRange.TryParse(rangeNode, out range))
-                        {
-                            // TODO: error handling
-                        }
+                        VersionRange.TryParse(rangeNode, out range);
+
+                        Debug.Assert(range != null, "Unable to parse range: " + rangeNode);
                     }
 
                     packages.Add(new PackageDependency(GetAttributeValue(depNode, Id), range));
                 }
 
-                yield return new PackageDependencyGroup(groupFramework, packages);
+                var framework = String.IsNullOrEmpty(groupFramework) ? NuGetFramework.AnyFramework : NuGetFramework.Parse(groupFramework, _frameworkProvider);
+
+                yield return new PackageDependencyGroup(framework, packages);
             }
 
             // legacy behavior
@@ -90,10 +128,9 @@ namespace NuGet.Packaging
 
                     if (!String.IsNullOrEmpty(rangeNode))
                     {
-                        if (!VersionRange.TryParse(rangeNode, out range))
-                        {
-                            // TODO: error handling
-                        }
+                        VersionRange.TryParse(rangeNode, out range);
+
+                        Debug.Assert(range != null, "Unable to parse range: " + rangeNode);
                     }
 
                     packages.Add(new PackageDependency(GetAttributeValue(depNode, Id), range));
@@ -108,6 +145,9 @@ namespace NuGet.Packaging
             yield break;
         }
 
+        /// <summary>
+        /// Reference item groups
+        /// </summary>
         public IEnumerable<FrameworkSpecificGroup> GetReferenceGroups()
         {
             var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
@@ -122,7 +162,9 @@ namespace NuGet.Packaging
 
                 var items = group.Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
-                yield return new FrameworkSpecificGroup(groupFramework, items);
+                var framework = String.IsNullOrEmpty(groupFramework) ? NuGetFramework.AnyFramework : NuGetFramework.Parse(groupFramework, _frameworkProvider);
+
+                yield return new FrameworkSpecificGroup(framework, items);
             }
 
             // pre-2.5 flat list of references, this should only be used if there are no groups
@@ -140,6 +182,9 @@ namespace NuGet.Packaging
             yield break;
         }
 
+        /// <summary>
+        /// Framework reference groups
+        /// </summary>
         public IEnumerable<FrameworkSpecificGroup> GetFrameworkReferenceGroups()
         {
             var results = new List<FrameworkSpecificGroup>();
@@ -163,7 +208,10 @@ namespace NuGet.Packaging
                 {
                     foreach (var fwString in group.Key.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        frameworks.Add(NuGetFramework.Parse(fwString.Trim()));
+                        if (!String.IsNullOrEmpty(fwString))
+                        {
+                            frameworks.Add(NuGetFramework.Parse(fwString.Trim(), _frameworkProvider));
+                        }
                     }
                 }
 
@@ -193,6 +241,9 @@ namespace NuGet.Packaging
             return results;
         }
 
+        /// <summary>
+        /// Package language
+        /// </summary>
         public string GetLanguage()
         {
             var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();

@@ -18,10 +18,38 @@ namespace NuGet.Packaging
     public abstract class PackageReaderBase : PackageReaderCoreBase
     {
         private NuspecReader _nuspec;
+        private readonly IFrameworkNameProvider _frameworkProvider;
+        private readonly IFrameworkCompatibilityProvider _compatibilityProvider;
 
-        public PackageReaderBase()
+        /// <summary>
+        /// Core package reader
+        /// </summary>
+        /// <param name="frameworkProvider">framework mapping provider</param>
+        public PackageReaderBase(IFrameworkNameProvider frameworkProvider)
+            : this(frameworkProvider, new CompatibilityProvider(frameworkProvider))
+        {
+        }
+
+        /// <summary>
+        /// Core package reader
+        /// </summary>
+        /// <param name="frameworkProvider">framework mapping provider</param>
+        /// <param name="compatibilityProvider">framework compatibility provider</param>
+        public PackageReaderBase(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : base()
         {
+            if (frameworkProvider == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkProvider));
+            }
+
+            if (compatibilityProvider == null)
+            {
+                throw new ArgumentNullException(nameof(compatibilityProvider));
+            }
+
+            _frameworkProvider = frameworkProvider;
+            _compatibilityProvider = compatibilityProvider;
         }
 
         /// <summary>
@@ -161,7 +189,11 @@ namespace NuGet.Packaging
                 foreach (var fileGroup in fileGroups)
                 {
                     // check for a matching reference group to use for filtering
-                    var referenceGroup = referenceGroups.Where(g => g.TargetFramework.Equals(fileGroup.TargetFramework)).FirstOrDefault();
+                    var referenceGroup = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(
+                                                                           items: referenceGroups, 
+                                                                           framework: fileGroup.TargetFramework,
+                                                                           frameworkMappings: _frameworkProvider,
+                                                                           compatibilityProvider: _compatibilityProvider);
 
                     if (referenceGroup == null)
                     {
@@ -255,9 +287,6 @@ namespace NuGet.Packaging
         /// <summary>
         /// Return property values for the given key. Case-sensitive.
         /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
         private static IEnumerable<string> GetPropertyValues(IEnumerable<KeyValuePair<string, string>> properties, string key)
         {
             if (properties == null)
@@ -278,7 +307,7 @@ namespace NuGet.Packaging
             return path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
         }
 
-        private static NuGetFramework GetFrameworkFromPath(string path, bool allowSubFolders = false)
+        private NuGetFramework GetFrameworkFromPath(string path, bool allowSubFolders = false)
         {
             var framework = NuGetFramework.AnyFramework;
 
@@ -290,7 +319,7 @@ namespace NuGet.Packaging
             {
                 var folderName = parts[1];
 
-                var parsedFramework = NuGetFramework.ParseFolder(folderName);
+                var parsedFramework = NuGetFramework.ParseFolder(folderName, _frameworkProvider);
 
                 if (parsedFramework.IsSpecificFramework)
                 {

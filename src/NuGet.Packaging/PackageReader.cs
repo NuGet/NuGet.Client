@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
@@ -17,21 +18,69 @@ namespace NuGet.Packaging
     {
         private readonly ZipArchive _zip;
 
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="stream">Nupkg data stream.</param>
         public PackageReader(Stream stream)
+            : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="stream">Nupkg data stream.</param>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
+        public PackageReader(Stream stream, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : this(stream, false)
         {
         }
 
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="stream">Nupkg data stream.</param>
+        /// <param name="leaveStreamOpen">If true the nupkg stream will not be closed by the zip reader.</param>
         public PackageReader(Stream stream, bool leaveStreamOpen)
-            : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen))
+            : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
         }
 
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="stream">Nupkg data stream.</param>
+        /// <param name="leaveStreamOpen">leave nupkg stream open</param>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
+        public PackageReader(Stream stream, bool leaveStreamOpen, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+            : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), frameworkProvider, compatibilityProvider)
+        {
+        }
+
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="zipArchive">ZipArchive containing the nupkg data.</param>
         public PackageReader(ZipArchive zipArchive)
+            : this(zipArchive, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="zipArchive">ZipArchive containing the nupkg data.</param>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
+        public PackageReader(ZipArchive zipArchive, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+            : base(frameworkProvider, compatibilityProvider)
         {
             if (zipArchive == null)
             {
-                throw new ArgumentNullException("zipArchive");
+                throw new ArgumentNullException(nameof(zipArchive));
             }
 
             _zip = zipArchive;

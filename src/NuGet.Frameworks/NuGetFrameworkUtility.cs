@@ -9,24 +9,106 @@ namespace NuGet.Frameworks
 {
     public static class NuGetFrameworkUtility
     {
+        /// <summary>
+        /// Find the most compatible group based on target framework
+        /// </summary>
+        /// <param name="items">framework specific groups or items</param>
+        /// <param name="framework">project target framework</param>
+        /// <param name="selector">retrieves the framework from the group</param>
         public static T GetNearest<T>(IEnumerable<T> items, NuGetFramework framework, Func<T, NuGetFramework> selector) where T : class
         {
-            var reducer = new FrameworkReducer();
-            var comparer = new NuGetFrameworkFullComparer();
+            return GetNearest<T>(items, framework, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance, selector);
+        }
 
-            var frameworkLookup = items.ToDictionary(item => selector(item));
-
-            var nearest = reducer.GetNearest(framework, frameworkLookup.Keys) ??
-                          frameworkLookup.Where(f => comparer.Equals(f.Key, NuGetFramework.AnyFramework))
-                              .Select(f => f.Key)
-                              .FirstOrDefault();
-
-            if (nearest == null)
+        /// <summary>
+        /// Find the most compatible group based on target framework
+        /// </summary>
+        /// <param name="items">framework specific groups or items</param>
+        /// <param name="framework">project target framework</param>
+        /// <param name="selector">retrieves the framework from the group</param>
+        /// <param name="frameworkMappings">framework mappings</param>
+        public static T GetNearest<T>(IEnumerable<T> items,
+            NuGetFramework framework,
+            IFrameworkNameProvider frameworkMappings,
+            IFrameworkCompatibilityProvider compatibilityProvider,
+            Func<T, NuGetFramework> selector) where T : class
+        {
+            if (framework == null)
             {
-                return null;
+                throw new ArgumentNullException(nameof(framework));
             }
 
-            return frameworkLookup[nearest];
+            if (frameworkMappings == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkMappings));
+            }
+
+            if (compatibilityProvider == null)
+            {
+                throw new ArgumentNullException(nameof(compatibilityProvider));
+            }
+
+            if (items != null)
+            {
+                var reducer = new FrameworkReducer(frameworkMappings, compatibilityProvider);
+
+                var mostCompatibleFramework = reducer.GetNearest(framework, items.Select(selector));
+                if (mostCompatibleFramework != null)
+                {
+                    return items.FirstOrDefault(item => NuGetFramework.Comparer.Equals(selector(item), mostCompatibleFramework));
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Find the most compatible group based on target framework
+        /// </summary>
+        /// <param name="items">framework specific groups or items</param>
+        /// <param name="framework">project target framework</param>
+        public static T GetNearest<T>(IEnumerable<T> items, NuGetFramework framework) where T : IFrameworkSpecific
+        {
+            return GetNearest<T>(items, framework, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance);
+        }
+
+        /// <summary>
+        /// Find the most compatible group based on target framework
+        /// </summary>
+        /// <param name="items">framework specific groups or items</param>
+        /// <param name="framework">project target framework</param>
+        public static T GetNearest<T>(IEnumerable<T> items,
+                                        NuGetFramework framework,
+                                        IFrameworkNameProvider frameworkMappings,
+                                        IFrameworkCompatibilityProvider compatibilityProvider) where T : IFrameworkSpecific
+        {
+            if (framework == null)
+            {
+                throw new ArgumentNullException(nameof(framework));
+            }
+
+            if (frameworkMappings == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkMappings));
+            }
+
+            if (compatibilityProvider == null)
+            {
+                throw new ArgumentNullException(nameof(compatibilityProvider));
+            }
+
+            if (items != null)
+            {
+                var reducer = new FrameworkReducer(frameworkMappings, compatibilityProvider);
+
+                var mostCompatibleFramework = reducer.GetNearest(framework, items.Select(item => item.TargetFramework));
+                if (mostCompatibleFramework != null)
+                {
+                    return items.FirstOrDefault(item => NuGetFramework.Comparer.Equals(item.TargetFramework, mostCompatibleFramework));
+                }
+            }
+
+            return default(T);
         }
     }
 }

@@ -18,36 +18,21 @@ namespace NuGet.Packaging
         private readonly NuGetFramework _targetFramework;
         private readonly string[] _items;
 
-        public FrameworkSpecificGroup(string targetFramework, IEnumerable<string> items)
-        {
-            if (items == null)
-            {
-                throw new ArgumentNullException("items");
-            }
-
-            if (String.IsNullOrEmpty(targetFramework))
-            {
-                _targetFramework = NuGetFramework.AnyFramework;
-            }
-            else
-            {
-                _targetFramework = NuGetFramework.Parse(targetFramework);
-            }
-
-            // Remove empty folder markers here
-            _items = items.Where(item => !item.EndsWith(EmptyFolder, StringComparison.Ordinal)).ToArray();
-        }
-
+        /// <summary>
+        /// Framework specific group
+        /// </summary>
+        /// <param name="targetFramework">group target framework</param>
+        /// <param name="items">group items</param>
         public FrameworkSpecificGroup(NuGetFramework targetFramework, IEnumerable<string> items)
         {
             if (targetFramework == null)
             {
-                throw new ArgumentNullException("framework");
+                throw new ArgumentNullException(nameof(targetFramework));
             }
 
             if (items == null)
             {
-                throw new ArgumentNullException("items");
+                throw new ArgumentNullException(nameof(items));
             }
 
             _targetFramework = targetFramework;

@@ -11,6 +11,28 @@ namespace NuGet.Packaging.Test
     public class PackageReaderTests
     {
         [Fact]
+        public void PackageReader_RespectReferencesAccordingToDifferentFrameworks()
+        {
+            // Copy of the InstallPackageRespectReferencesAccordingToDifferentFrameworks functional test
+
+            // Arrange
+            var zip = TestPackages.GetZip(TestPackages.GetNearestReferenceFilteringPackage());
+            var reader = new PackageReader(zip);
+
+            // Act
+            var references = reader.GetReferenceItems();
+            var netResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("net45"));
+            var slResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("sl5"));
+
+            // Assert
+            Assert.Equal(2, netResult.Items.Count());
+            Assert.Equal(1, slResult.Items.Count());
+            Assert.Equal("lib/sl40/a.dll", slResult.Items.First());
+            Assert.Equal("lib/net40/one.dll", netResult.Items.First());
+            Assert.Equal("lib/net40/three.dll", netResult.Items.Skip(1).First());
+        }
+
+        [Fact]
         public void PackageReader_LegacyFolders()
         {
             // Verify legacy folder names such as 40 and 35 parse to frameworks

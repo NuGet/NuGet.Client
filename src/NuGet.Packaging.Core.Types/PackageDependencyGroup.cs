@@ -19,35 +19,21 @@ namespace NuGet.Packaging
         private readonly NuGetFramework _targetFramework;
         private readonly IEnumerable<PackageDependency> _packages;
 
-        public PackageDependencyGroup(string targetFramework, IEnumerable<PackageDependency> packages)
-        {
-            if (packages == null)
-            {
-                throw new ArgumentNullException("packages");
-            }
-
-            if (String.IsNullOrEmpty(targetFramework))
-            {
-                _targetFramework = NuGetFramework.AnyFramework;
-            }
-            else
-            {
-                _targetFramework = NuGetFramework.Parse(targetFramework);
-            }
-
-            _packages = packages;
-        }
-
+        /// <summary>
+        /// Dependency group
+        /// </summary>
+        /// <param name="targetFramework">target framework</param>
+        /// <param name="packages">dependant packages</param>
         public PackageDependencyGroup(NuGetFramework targetFramework, IEnumerable<PackageDependency> packages)
         {
             if (targetFramework == null)
             {
-                throw new ArgumentNullException("targetFramework");
+                throw new ArgumentNullException(nameof(targetFramework));
             }
 
             if (packages == null)
             {
-                throw new ArgumentNullException("packages");
+                throw new ArgumentNullException(nameof(packages));
             }
 
             _targetFramework = targetFramework;

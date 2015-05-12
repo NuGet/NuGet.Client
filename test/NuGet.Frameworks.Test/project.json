@@ -1,18 +1,19 @@
 ﻿{
-    "version": "3.0.0-*",
-    "dependencies": {
-        "NuGet.Frameworks": "3.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  "version": "3.0.0-*",
+  "dependencies": {
+    "NuGet.Frameworks": "3.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*",
+    "NuGet.Packaging": "3.0.0-*"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Collections": ""
+      }
     },
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Collections": ""
-            }
-        },
-        "dnxcore50": { }
-    }
+    "dnxcore50": { }
+  }
 }

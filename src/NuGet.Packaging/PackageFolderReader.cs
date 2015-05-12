@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging
 {
@@ -16,12 +17,42 @@ namespace NuGet.Packaging
     {
         private readonly DirectoryInfo _root;
 
+        /// <summary>
+        /// Package folder reader
+        /// </summary>
         public PackageFolderReader(string folderPath)
-            : this(new DirectoryInfo(folderPath))
+            : this(folderPath, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
         }
 
+        /// <summary>
+        /// Package folder reader
+        /// </summary>
+        /// <param name="folder">root directory of an extracted nupkg</param>
         public PackageFolderReader(DirectoryInfo folder)
+            : this(folder, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Package folder reader
+        /// </summary>
+        /// <param name="folderPath">root directory of an extracted nupkg</param>
+        /// <param name="frameworkProvider">framework mappings</param>
+        /// <param name="compatibilityProvider">framework compatibility provider</param>
+        public PackageFolderReader(string folderPath, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+            : this(new DirectoryInfo(folderPath), frameworkProvider, compatibilityProvider)
+        {
+        }
+
+        /// <summary>
+        /// Package folder reader
+        /// </summary>
+        /// <param name="folder">root directory of an extracted nupkg</param>
+        /// <param name="frameworkProvider">framework mappings</param>
+        /// <param name="compatibilityProvider">framework compatibility provider</param>
+        public PackageFolderReader(DirectoryInfo folder, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+            : base(frameworkProvider, compatibilityProvider)
         {
             _root = folder;
         }
