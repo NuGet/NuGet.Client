@@ -22,21 +22,16 @@ function Test-OpenPackagePageOpenLicenseUrlIfLicenseParameterIsSet {
     Assert-AreEqual 'http://bing.com' $p.OriginalString
 }
 
+# Work around server bug https://github.com/NuGet/NuGetGallery/issues/2476, where V2 report Abuse Url is not correct.
+# TODO: Remove the replace code when server bug is fixed.
 function Test-OpenPackagePageOpenReportAbuseUrlIfReportAbuseParameterIsSet {
     # Act
     $p = Open-PackagePage elmah -Report -WhatIf -PassThru -Version 1.1
-
-	if ($SourceNuGet.Contains('api/v2'))
-    {
-		$expectedString = $SourceNuGet.Replace('/api/v2', '') + '/Package/ReportAbuse/elmah/1.1.0'
-	}
-	else 
-	{
-		$expectedString = 'https://www.nuget.org/packages/elmah/1.1.0/ReportAbuse'
-	}
+	$reportAbuseUrl = $p.OriginalString.Replace('package/ReportAbuse/elmah/1.1.0', 'packages/elmah/1.1.0/ReportAbuse')
+	$expectedString = 'https://www.nuget.org/packages/elmah/1.1.0/ReportAbuse'
     
     # Assert
-    Assert-AreEqual $expectedString $p.OriginalString
+    Assert-AreEqual $expectedString $reportAbuseUrl
 }
 
 function Test-OpenPackagePageFailsIfIdIsSetToTheWrongValue {
