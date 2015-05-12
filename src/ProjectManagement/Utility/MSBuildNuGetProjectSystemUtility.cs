@@ -22,8 +22,7 @@ namespace NuGet.ProjectManagement
             var mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => i.TargetFramework));
             if (mostCompatibleFramework != null)
             {
-                var mostCompatibleGroups = itemGroups.Where(i => i.TargetFramework.Equals(mostCompatibleFramework));
-                var mostCompatibleGroup = mostCompatibleGroups.SingleOrDefault();
+                var mostCompatibleGroup = itemGroups.FirstOrDefault(i => i.TargetFramework.Equals(mostCompatibleFramework));
                 if (IsValid(mostCompatibleGroup))
                 {
                     mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
