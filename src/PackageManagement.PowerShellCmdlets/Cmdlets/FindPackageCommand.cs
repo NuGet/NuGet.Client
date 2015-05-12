@@ -21,7 +21,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [OutputType(typeof(IPowerShellPackage))]
     public class FindPackageCommand : NuGetPowerShellBaseCommand
     {
-        private const int MaxReturnedPackages = 30;
+        // NOTE: Number of packages returned by api.nuget.org is static and is 20
+        // Display the same number of results with other endpoints, such as nuget.org/api/v2, as well
+        private const int MaxReturnedPackages = 20;
 
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0)]
         public string Id { get; set; }

@@ -288,7 +288,10 @@ function Test-TabExpansionForVersionForUninstallPackage {
     $suggestion = TabExpansion "Uninstall-Package elmah -Version "
 
     # Assert
-    Assert-AreEqual '1.1.0' $suggestion
+    $expectedVersion = New-Object NuGet.Versioning.NuGetVersion("1.1.0")
+    $actualVersion = New-Object NuGet.Versioning.NuGetVersion($suggestion)
+
+    Assert-AreEqual $expectedVersion $actualVersion
 }
 
 function Test-TabExpansionForProjectsReturnsBothUniqueNamesAndSafeNames {

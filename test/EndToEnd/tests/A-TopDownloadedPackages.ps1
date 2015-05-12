@@ -66,7 +66,7 @@ $projectSystemNames = (
     #'New-JavaScriptApplication' # At least 35 out of the 53 packages in the list cannot be installed on this project type
     )
 
-function Test-InstallPackageOnProjectSystem
+function InstallPackageOnProjectSystem
 {
     param(
         $context,
