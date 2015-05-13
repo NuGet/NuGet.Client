@@ -97,26 +97,89 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackagesConfigReader_BadMinClientVersion()
         {
-            var reader = new PackagesConfigReader(BadPackagesConf1);
+            var doc = XDocument.Parse(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages minClientVersion=""abc"">
+  <package id=""test"" version=""1.0"" />
+</packages>");
+            var reader = new PackagesConfigReader(doc);
 
-            Assert.Throws<PackagesConfigReaderException>(() => reader.GetMinClientVersion());
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetMinClientVersion());
+            Assert.Equal(ex.Message, "Invalid minClientVersion: 'abc'");
         }
 
         [Fact]
         public void PackagesConfigReader_BadId()
         {
-            var reader = new PackagesConfigReader(BadPackagesConf1);
+            var doc = XDocument.Parse(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id="""" />
+</packages>");
+            var reader = new PackagesConfigReader(doc);
 
-            Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+            Assert.Equal(ex.Message, "Null or empty package id");
         }
 
-        private static XDocument BadPackagesConf1
+        [Fact]
+        public void PackagesConfigReader_EmptyVersion()
         {
-            get { return XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8""?>
-                                <packages minClientVersion=""abc"">
-                                    <package version=""6.0.4"" targetFramework=""net45"" />
-                                    <package id=""TestPackage"" version=""1.0.0"" targetFramework=""net4"" />
-                                </packages>"); }
+            var doc = XDocument.Parse(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""test"" />
+</packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+            Assert.Equal(ex.Message, "Invalid package version for package id 'test': ''");
+        }
+
+        [Fact]
+        public void PackagesConfigReader_InvalidVersion()
+        {
+            var doc = XDocument.Parse(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""test"" version=""abc""/>
+</packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+            Assert.Equal(ex.Message, "Invalid package version for package id 'test': 'abc'");
+        }
+
+        [Fact]
+        public void PackagesConfigReader_InvalidAllowedVersions()
+        {
+            var doc = XDocument.Parse(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""test"" version=""1.0"" allowedVersions=""xyz""/>
+</packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+            Assert.Equal(ex.Message, "Invalid allowedVersions for package id 'test': 'xyz'");
+        }
+
+        [Fact]
+        public void PackagesConfigReader_DuplicateEntries()
+        {
+            var doc = XDocument.Parse(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""test1"" version=""1.0""/>
+  <package id=""test1"" version=""1.0""/>
+
+  <package id=""test2"" version=""1.0""/>
+  <package id=""test2"" version=""1.0""/>
+</packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+            Assert.Equal(ex.Message, "There are duplicate packages: test1, test2");
         }
     }
 }

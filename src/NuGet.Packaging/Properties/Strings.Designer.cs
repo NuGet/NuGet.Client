@@ -51,9 +51,49 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
+        /// Null or empty package id
+        /// </summary>
+        internal static string ErrorNullOrEmptyPackageId
+        {
+            get { return GetString("ErrorNullOrEmptyPackageId"); }
+        }
+
+        /// <summary>
+        /// Invalid package version for package id '{0}': '{1}'
+        /// </summary>
+        internal static string ErrorInvalidPackageVersion
+        {
+            get { return GetString("ErrorInvalidPackageVersion"); }
+        }
+
+        /// <summary>
+        /// Invalid allowedVersions for package id '{0}': '{1}'
+        /// </summary>
+        internal static string ErrorInvalidAllowedVersions
+        {
+            get { return GetString("ErrorInvalidAllowedVersions"); }
+        }
+
+        /// <summary>
+        /// There are duplicate packages: {0}
+        /// </summary>
+        internal static string ErrorDuplicatePackages
+        {
+            get { return GetString("ErrorDuplicatePackages"); }
+        }
+
+        /// <summary>
+        /// Invalid minClientVersion: '{0}'
+        /// </summary>
+        internal static string ErrorInvalidMinClientVersion
+        {
+            get { return GetString("ErrorInvalidMinClientVersion"); }
+        }
+
+        /// <summary>
         /// String argument '{0}' cannot be null or empty
         /// </summary>
-        internal static string FormatStringCannotBeNullOrEmpty(object p0)
+            internal static string FormatStringCannotBeNullOrEmpty(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("StringCannotBeNullOrEmpty"), p0);
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -112,7 +113,10 @@ namespace NuGet.Packaging
             }
             else if (!NuGetVersion.TryParse(node.Value, out version))
             {
-                throw new PackagesConfigReaderException("Invalid minClientVersion");
+                throw new PackagesConfigReaderException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorInvalidMinClientVersion,
+                    node.Value));
             }
 
             return version;
@@ -129,36 +133,46 @@ namespace NuGet.Packaging
             foreach (var package in _doc.Root.Elements(XName.Get("package")))
             {
                 string id = null;
-
                 if (!TryGetAttribute(package, "id", out id)
                     || String.IsNullOrEmpty(id))
                 {
-                    throw new PackagesConfigReaderException("Invalid package id");
+                    throw new PackagesConfigReaderException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ErrorNullOrEmptyPackageId));
                 }
 
                 string version = null;
-
                 if (!TryGetAttribute(package, "version", out version)
                     || String.IsNullOrEmpty(version))
                 {
-                    throw new PackagesConfigReaderException("Invalid package version");
+                    throw new PackagesConfigReaderException(string.Format(
+                       CultureInfo.CurrentCulture,
+                       Strings.ErrorInvalidPackageVersion,
+                       id,
+                       version));
                 }
 
                 NuGetVersion semver = null;
-
                 if (!NuGetVersion.TryParse(version, out semver))
                 {
-                    throw new PackagesConfigReaderException("Invalid package version");
+                    throw new PackagesConfigReaderException(string.Format(
+                       CultureInfo.CurrentCulture,
+                       Strings.ErrorInvalidPackageVersion,
+                       id,
+                       version));
                 }
 
                 string attributeValue = null;
-
                 VersionRange allowedVersions = null;
                 if (TryGetAttribute(package, "allowedVersions", out attributeValue))
                 {
                     if (!VersionRange.TryParse(attributeValue, out allowedVersions))
                     {
-                        throw new PackagesConfigReaderException("Invalid allowedVersions");
+                        throw new PackagesConfigReaderException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ErrorInvalidAllowedVersions,
+                            id,
+                            attributeValue));
                     }
                 }
 
@@ -175,6 +189,29 @@ namespace NuGet.Packaging
                 var entry = new PackageReference(new PackageIdentity(id, semver), targetFramework, userInstalled, developmentDependency, requireReinstallation, allowedVersions);
 
                 packages.Add(entry);
+            }
+
+            // check if there are duplicate entries
+            var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var duplicates = new List<string>();
+            foreach (var package in packages)
+            {
+                if (packageIds.Contains(package.PackageIdentity.Id))
+                {
+                    duplicates.Add(package.PackageIdentity.Id);
+                }
+                else
+                {
+                    packageIds.Add(package.PackageIdentity.Id);
+                }
+            }
+
+            if (duplicates.Count > 0)
+            {
+                throw new PackagesConfigReaderException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorDuplicatePackages,
+                    string.Join(", ", duplicates)));
             }
 
             return packages;

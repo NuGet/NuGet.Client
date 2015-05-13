@@ -117,6 +117,21 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ErrorDuplicatePackages" xml:space="preserve">
+    <value>There are duplicate packages: {0}</value>
+  </data>
+  <data name="ErrorInvalidAllowedVersions" xml:space="preserve">
+    <value>Invalid allowedVersions for package id '{0}': '{1}'</value>
+  </data>
+  <data name="ErrorInvalidMinClientVersion" xml:space="preserve">
+    <value>Invalid minClientVersion: '{0}'</value>
+  </data>
+  <data name="ErrorInvalidPackageVersion" xml:space="preserve">
+    <value>Invalid package version for package id '{0}': '{1}'</value>
+  </data>
+  <data name="ErrorNullOrEmptyPackageId" xml:space="preserve">
+    <value>Null or empty package id</value>
+  </data>
   <data name="MissingNuspec" xml:space="preserve">
     <value>Nuspec file does not exist in package '{0}'</value>
   </data>
