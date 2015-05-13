@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
@@ -22,11 +23,12 @@ namespace NuGet.PackageManagement.UI
             Debug.Assert(nugetProjects.Count() == 1);
         }
 
-        public override void SetCurrentPackage(
+        public async override Task SetCurrentPackage(
             SearchResultPackageMetadata searchResultPackage,
             Filter filter)
         {
-            base.SetCurrentPackage(searchResultPackage, filter);
+            await base.SetCurrentPackage(searchResultPackage, filter);
+
             UpdateInstalledVersion();
         }
 
@@ -69,7 +71,7 @@ namespace NuGet.PackageManagement.UI
         {
             return InstalledPackages.Any(i =>
                 StringComparer.OrdinalIgnoreCase.Equals(i.Id, Id) &&
-                i.Version < _allPackages.Max());
+                i.Version < _allPackageVersions.Max());
         }
 
         protected override bool CanInstall()
@@ -86,7 +88,7 @@ namespace NuGet.PackageManagement.UI
         {
             return InstalledPackages.Any(i =>
                 StringComparer.OrdinalIgnoreCase.Equals(i.Id, Id) &&
-                i.Version > _allPackages.Min());
+                i.Version > _allPackageVersions.Min());
         }
 
         protected override bool CanUpdate()
@@ -107,7 +109,7 @@ namespace NuGet.PackageManagement.UI
             var installedVersion = InstalledPackages.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).SingleOrDefault();
 
-            var allVersions = _allPackages.OrderByDescending(v => v);
+            var allVersions = _allPackageVersions.OrderByDescending(v => v);
             var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
             var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
 
@@ -170,7 +172,7 @@ namespace NuGet.PackageManagement.UI
 
             SelectVersion();
 
-            OnPropertyChanged("Versions");
+            OnPropertyChanged(nameof(Versions));
         }
 
         protected override void OnSelectedVersionChanged()
@@ -186,7 +188,7 @@ namespace NuGet.PackageManagement.UI
             private set
             {
                 _installedVersion = value;
-                OnPropertyChanged("InstalledVersion");
+                OnPropertyChanged(nameof(InstalledVersion));
             }
         }
 

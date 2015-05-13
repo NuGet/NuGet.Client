@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.UI
                         key.GetValue(SuppressUIDisclaimerRegistryName) as string;
                 return setting != null && setting != "0";
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }
@@ -550,9 +550,9 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageDetail.Visibility = Visibility.Visible;
                 var selectedFilter = _filter.SelectedItem as FilterItem;
-                _detailModel.SetCurrentPackage(
-                    selectedPackage,
-                    selectedFilter == null ? Filter.All : selectedFilter.Filter);
+                await _detailModel.SetCurrentPackage(selectedPackage,
+                                                     selectedFilter == null ? Filter.All : selectedFilter.Filter);
+
                 _packageDetail.DataContext = _detailModel;
                 _packageDetail.ScrollToHome();
 
@@ -571,6 +571,7 @@ namespace NuGet.PackageManagement.UI
                     packageSource.Name,
                     packageSource.Source);
             }
+
             return string.Format(
                 CultureInfo.CurrentCulture,
                 "{0} - {1} - {2}",
@@ -615,6 +616,8 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                var installedPackages = GetInstalledPackages(Model.Context.Projects);
+
                 // in this case, we only need to update PackageStatus of
                 // existing items in the package list
                 foreach (var item in _packageList.Items)
@@ -625,12 +628,28 @@ namespace NuGet.PackageManagement.UI
                         continue;
                     }
 
-                    package.Status = GetPackageStatus(
+                    package.StatusProvider = new  Lazy<Task<PackageStatus>>(async () => await GetPackageStatus(
                         package.Id,
-                        Model.Context.Projects,
-                        package.Versions);
+                        installedPackages,
+                        package.Versions));
                 }
             }
+        }
+
+        private static IReadOnlyList<PackageReference> GetInstalledPackages(IEnumerable<NuGetProject> projects)
+        {
+            var installedPackages = new List<PackageReference>();
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                foreach (var project in projects)
+                {
+                    var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                    installedPackages.AddRange(projectInstalledPackages);
+                }
+            });
+
+            return installedPackages;
         }
 
         /// <summary>
@@ -638,52 +657,45 @@ namespace NuGet.PackageManagement.UI
         /// the specified installation target.
         /// </summary>
         /// <param name="packageId">package id.</param>
-        /// <param name="projects">The installation target.</param>
+        /// <param name="installedPackages">All installed pacakges.</param>
         /// <param name="allVersions">List of all versions of the package.</param>
         /// <returns>The status of the package in the installation target.</returns>
-        public static PackageStatus GetPackageStatus(
+        private static async Task<PackageStatus> GetPackageStatus(
             string packageId,
-            IEnumerable<NuGetProject> projects,
-            IEnumerable<VersionInfo> allVersions)
+            IReadOnlyList<PackageReference> installedPackages,
+            Lazy<Task<IEnumerable<VersionInfo>>> allVersions)
         {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            var versions = await allVersions.Value;
+
+            var latestStableVersion = versions
+                .Where(p => !p.Version.IsPrerelease)
+                .Max(p => p.Version);
+
+            // Get the minimum version installed in any target project/solution
+            var minimumInstalledPackage = installedPackages
+                .Where(p => p != null)
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
+                .OrderBy(r => r.PackageIdentity.Version)
+                .FirstOrDefault();
+
+            PackageStatus status;
+            if (minimumInstalledPackage != null)
+            {
+                if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
                 {
-                    var latestStableVersion = allVersions
-                        .Where(p => !p.Version.IsPrerelease)
-                        .Max(p => p.Version);
-                    var installedPackages = new List<PackageReference>();
-                    foreach (var project in projects)
-                    {
-                        var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                        installedPackages.AddRange(projectInstalledPackages);
-                    }
+                    status = PackageStatus.UpdateAvailable;
+                }
+                else
+                {
+                    status = PackageStatus.Installed;
+                }
+            }
+            else
+            {
+                status = PackageStatus.NotInstalled;
+            }
 
-                    // Get the minimum version installed in any target project/solution
-                    var minimumInstalledPackage = installedPackages
-                        .Where(p => p != null)
-                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
-                        .OrderBy(r => r.PackageIdentity.Version)
-                        .FirstOrDefault();
-
-                    PackageStatus status;
-                    if (minimumInstalledPackage != null)
-                    {
-                        if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
-                        {
-                            status = PackageStatus.UpdateAvailable;
-                        }
-                        else
-                        {
-                            status = PackageStatus.Installed;
-                        }
-                    }
-                    else
-                    {
-                        status = PackageStatus.NotInstalled;
-                    }
-
-                    return status;
-                });
+            return status;
         }
 
         private void SearchControl_SearchStart(object sender, EventArgs e)
@@ -810,7 +822,7 @@ namespace NuGet.PackageManagement.UI
                 var key = Registry.CurrentUser.CreateSubKey(NuGetRegistryKey);
                 key.SetValue(SuppressUIDisclaimerRegistryName, "1", RegistryValueKind.String);
             }
-            catch (Exception)
+            catch
             {
             }
         }

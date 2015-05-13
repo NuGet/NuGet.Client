@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
@@ -21,13 +22,58 @@ namespace NuGet.PackageManagement.UI
 
         public string Summary { get; set; }
 
+        private bool StatusProviderRun { get; set; }
+
         public PackageStatus Status
         {
-            get { return _status; }
+            get
+            {
+                if (!StatusProviderRun)
+                {
+                    StatusProviderRun = true;
+
+                    Task.Run(async () =>
+                    {
+                        var status = await StatusProvider.Value;
+
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        Status = status;
+                    });
+                }
+
+                return _status;
+            }
+
+            private set
+            {
+                bool refresh = _status != value;
+                _status = value;
+
+                if (refresh)
+                {
+                    OnPropertyChanged(nameof(Status));
+                }
+            }
+        }
+
+        private Lazy<Task<PackageStatus>> _statusProvider;
+
+        public Lazy<Task<PackageStatus>> StatusProvider
+        {
+            get
+            {
+                return _statusProvider;
+            }
 
             set
             {
-                _status = value;
+                if (_statusProvider != value)
+                {
+                    StatusProviderRun = false;
+                }
+
+                _statusProvider = value;
 
                 OnPropertyChanged(nameof(Status));
             }
@@ -42,7 +88,7 @@ namespace NuGet.PackageManagement.UI
 
         public Uri IconUrl { get; set; }
 
-        public IEnumerable<VersionInfo> Versions { get; set; }
+        public Lazy<Task<IEnumerable<VersionInfo>>> Versions { get; set; }
 
         protected void OnPropertyChanged(string propertyName)
         {

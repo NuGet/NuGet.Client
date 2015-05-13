@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.UI
                      SelectedAction == Resources.Action_Update)
             {
                 _versions = new List<VersionForDisplay>();
-                var allVersions = _allPackages.OrderByDescending(v => v);
+                var allVersions = _allPackageVersions.OrderByDescending(v => v);
                 var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
                 var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
 
@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.UI
         protected override bool CanUpdate()
         {
             var canUpdateInProjects = _nugetProjects
-                .Any(project => { return IsInstalled(project, Id) && _allPackages.Count >= 2; });
+                .Any(project => { return IsInstalled(project, Id) && _allPackageVersions.Count >= 2; });
 
             return canUpdateInProjects;
         }

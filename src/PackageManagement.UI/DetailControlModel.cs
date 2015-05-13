@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
 
         // all versions of the _searchResultPackage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected List<NuGetVersion> _allPackages;
+        protected List<NuGetVersion> _allPackageVersions;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected SearchResultPackageMetadata _searchResultPackage;
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="searchResultPackage">The package to be displayed.</param>
         /// <param name="filter">The current filter. This will used to select the default action.</param>
-        public virtual void SetCurrentPackage(
+        public async virtual Task SetCurrentPackage(
             SearchResultPackageMetadata searchResultPackage,
             Filter filter)
         {
@@ -57,7 +57,9 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged("Id");
             OnPropertyChanged("IconUrl");
 
-            _allPackages = searchResultPackage.Versions.Select(v => v.Version).ToList();
+            var versions = await searchResultPackage.Versions.Value;
+
+            _allPackageVersions = versions.Select(v => v.Version).ToList();
             CreateActions();
         }
 
@@ -313,7 +315,9 @@ namespace NuGet.PackageManagement.UI
 
         public async Task LoadPackageMetadaAsync(UIMetadataResource metadataResource, CancellationToken token)
         {
-            var downloadCountDict = _searchResultPackage.Versions.ToDictionary(
+            var versions = await _searchResultPackage.Versions.Value;
+
+            var downloadCountDict = versions.ToDictionary(
                 v => v.Version,
                 v => v.DownloadCount);
 

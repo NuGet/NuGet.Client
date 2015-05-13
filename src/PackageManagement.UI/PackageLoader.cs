@@ -237,10 +237,10 @@ namespace NuGet.PackageManagement.UI
 
                 tasks.Add(
                     Task.Run(() =>
-                        GetPackageMetadataAsync(cancellationToken,
-                                                localResource,
+                        GetPackageMetadataAsync(localResource,
                                                 metadataResource,
-                                                packageIdentity)));
+                                                packageIdentity,
+                                                cancellationToken)));
             }
 
             await Task.WhenAll(tasks);
@@ -257,10 +257,10 @@ namespace NuGet.PackageManagement.UI
             };
         }
 
-        private async Task<UISearchMetadata> GetPackageMetadataAsync(CancellationToken ct,
-                                                               UIMetadataResource localResource,
-                                                               UIMetadataResource metadataResource,
-                                                               PackageIdentity identity)
+        private async Task<UISearchMetadata> GetPackageMetadataAsync(UIMetadataResource localResource,
+                                                                     UIMetadataResource metadataResource,
+                                                                     PackageIdentity identity,
+                                                                     CancellationToken cancellationToen)
         {
             UIPackageMetadata packageMetadata = null;
             if (localResource != null)
@@ -269,20 +269,20 @@ namespace NuGet.PackageManagement.UI
                 var localMetadata = await localResource.GetMetadata(identity.Id,
                 includePrerelease: true,
                 includeUnlisted: true,
-                token: ct);
+                token: cancellationToen);
                 packageMetadata = localMetadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
             }
 
-            var metadata = await metadataResource.GetMetadata(
+            var uiPackageMetaDatas = await metadataResource.GetMetadata(
                 identity.Id,
                 _option.IncludePrerelease,
                 false,
-                ct);
+                cancellationToen);
 
             if (packageMetadata == null)
             {
                 // package metadata can't be found in local resource. Try find it in remote resource.
-                packageMetadata = metadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
+                packageMetadata = uiPackageMetaDatas.FirstOrDefault(p => p.Identity.Version == identity.Version);
             }
 
             string summary = string.Empty;
@@ -290,7 +290,7 @@ namespace NuGet.PackageManagement.UI
             if (packageMetadata != null)
             {
                 summary = packageMetadata.Summary;
-                if (String.IsNullOrEmpty(summary))
+                if (string.IsNullOrEmpty(summary))
                 {
                     summary = packageMetadata.Description;
                 }
@@ -300,7 +300,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            var versions = metadata.OrderByDescending(m => m.Identity.Version)
+            var versions = uiPackageMetaDatas.OrderByDescending(m => m.Identity.Version)
                 .Select(m => new VersionInfo(m.Identity.Version, m.DownloadCount));
 
             return new UISearchMetadata(
@@ -308,7 +308,7 @@ namespace NuGet.PackageManagement.UI
                 title: title,
                 summary: summary,
                 iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
-                versions: versions,
+                versions: ToLazyTask(versions),
                 latestPackageMetadata: packageMetadata);
         }
 
@@ -350,6 +350,7 @@ namespace NuGet.PackageManagement.UI
             var installedPackages = (await GetInstalledPackagesAsync(latest: false, token: ct))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id);
+
             foreach (var package in installedPackages)
             {
                 // only release packages respect the prerel option
@@ -365,30 +366,34 @@ namespace NuGet.PackageManagement.UI
                         var allVersions = data
                             .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
                             .Select(e => new VersionInfo(e.Identity.Version, e.DownloadCount));
+
+                        var lazyVersions = ToLazyTask(allVersions);
+
                         var summary = string.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
+
                         var title = string.IsNullOrEmpty(highest.Title) ? highest.Identity.Id : highest.Title;
 
-                        _packagesWithUpdates.Add(new UISearchMetadata(highest.Identity, title, summary, highest.IconUrl, allVersions, highest));
+                        _packagesWithUpdates.Add(new UISearchMetadata(highest.Identity, title, summary, highest.IconUrl, lazyVersions, highest));
                     }
                 }
             }
         }
 
-        public async Task<LoadResult> LoadItemsAsync(int startIndex, CancellationToken ct)
+        public async Task<LoadResult> LoadItemsAsync(int startIndex, CancellationToken cancellationToken)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
             List<SearchResultPackageMetadata> packages = new List<SearchResultPackageMetadata>();
 
-            var results = await SearchAsync(startIndex, ct);
+            var results = await SearchAsync(startIndex, cancellationToken);
 
             int resultCount = 0;
 
             foreach (var package in results.Items)
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 resultCount++;
 
                 var searchResultPackage = new SearchResultPackageMetadata(_sourceRepository);
@@ -396,41 +401,54 @@ namespace NuGet.PackageManagement.UI
                 searchResultPackage.Version = package.Identity.Version;
                 searchResultPackage.IconUrl = package.IconUrl;
 
-                // get other versions
-                var versionList = package.Versions.ToList();
-                if (!_option.IncludePrerelease)
+                var versionList = new Lazy<Task<IEnumerable<VersionInfo>>>(async () =>
                 {
-                    // remove prerelease version if includePrelease is false
-                    versionList.RemoveAll(v => v.Version.IsPrerelease);
-                }
+                    var versions = await package.Versions.Value;
 
-                if (!versionList.Select(v => v.Version).Contains(searchResultPackage.Version))
-                {
-                    versionList.Add(new VersionInfo(searchResultPackage.Version, downloadCount: null));
-                }
+                    var filteredVersions = versions
+                            .Where(v => !v.Version.IsPrerelease || _option.IncludePrerelease)
+                            .ToList();
+
+                    if (!filteredVersions.Any(v => v.Version == searchResultPackage.Version))
+                    {
+                        filteredVersions.Add(new VersionInfo(searchResultPackage.Version, downloadCount: null));
+                    }
+
+                    return filteredVersions;
+                });
 
                 searchResultPackage.Versions = versionList;
-                searchResultPackage.Status = CalculatePackageStatus(searchResultPackage);
+
+                searchResultPackage.StatusProvider = new Lazy<Task<PackageStatus>>(
+                    () => CalculatePackageStatus(searchResultPackage.Id, versionList));
 
                 // filter out prerelease version when needed.
                 if (searchResultPackage.Version.IsPrerelease &&
-                    !_option.IncludePrerelease &&
-                    searchResultPackage.Status == PackageStatus.NotInstalled)
+                    !_option.IncludePrerelease)
                 {
-                    continue;
+                    var status = await searchResultPackage.StatusProvider.Value;
+
+                    if (status == PackageStatus.NotInstalled)
+                    {
+                        continue;
+                    }
                 }
 
-                if (_option.Filter == Filter.UpdatesAvailable &&
-                    searchResultPackage.Status != PackageStatus.UpdateAvailable)
+                if (_option.Filter == Filter.UpdatesAvailable)
                 {
-                    continue;
+                    var status = await searchResultPackage.StatusProvider.Value;
+
+                    if (status != PackageStatus.UpdateAvailable)
+                    {
+                        continue;
+                    }
                 }
 
                 searchResultPackage.Summary = package.Summary;
                 packages.Add(searchResultPackage);
             }
 
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
             return new LoadResult()
             {
@@ -441,16 +459,18 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Returns the package status for the searchPackageResult
-        private PackageStatus CalculatePackageStatus(SearchResultPackageMetadata searchPackageResult)
+        private async Task<PackageStatus> CalculatePackageStatus(string id, Lazy<Task<IEnumerable<VersionInfo>>> versions)
         {
-            if (_installedPackageIds.Contains(searchPackageResult.Id))
+            if (_installedPackageIds.Contains(id))
             {
-                var highestAvailableVersion = searchPackageResult.Versions
-                    .Select(v => v.Version)
-                    .Max();
+                var versionsUnwrapped = await versions.Value;
+
+                var highestAvailableVersion = versionsUnwrapped
+                                                .Select(v => v.Version)
+                                                .Max();
 
                 var highestInstalled = _installedPackages
-                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, searchPackageResult.Id))
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, id))
                     .OrderByDescending(p => p.Version, VersionComparer.Default)
                     .First();
 
@@ -484,6 +504,11 @@ namespace NuGet.PackageManagement.UI
                     _installedPackageIds.Add(package.PackageIdentity.Id);
                 }
             }
+        }
+
+        private static Lazy<Task<IEnumerable<VersionInfo>>> ToLazyTask(IEnumerable<VersionInfo> versions)
+        {
+            return new Lazy<Task<IEnumerable<VersionInfo>>>(() => Task.FromResult(versions));
         }
     }
 }
