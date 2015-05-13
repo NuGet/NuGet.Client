@@ -21,7 +21,7 @@ namespace NuGet.CommandLine
         public int Main(string[] args)
         {
 #if DEBUG
-            if(args.Contains("--debug"))
+            if (args.Contains("--debug"))
             {
                 args = args.Skip(1).ToArray();
                 System.Diagnostics.Debugger.Launch();
@@ -75,7 +75,7 @@ namespace NuGet.CommandLine
                             var packagesDir = packagesDirectory.HasValue() ?
                                 packagesDirectory.Value() :
                                 Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".dnx", "packages");
-                            _log.LogVerbose($"Using packages directory: {packagesDirectory}");
+                            _log.LogVerbose($"Using packages directory: {packagesDir}");
 
                             // Run the restore
                             var request = new RestoreRequest(

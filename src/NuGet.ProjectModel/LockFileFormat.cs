@@ -295,7 +295,7 @@ namespace NuGet.ProjectModel
 
         private LockFileItem ReadFileItem(string property, JToken json)
         {
-            var item = new LockFileItem { Path = property };
+            var item = new LockFileItem(property);
             foreach (var subProperty in json.OfType<JProperty>())
             {
                 item.Properties[subProperty.Name] = subProperty.Value.Value<string>();

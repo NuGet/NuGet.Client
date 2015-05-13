@@ -311,10 +311,19 @@ namespace NuGet.DependencyResolver
             var tasks = new List<Task<RemoteMatch>>();
             foreach (var provider in providers)
             {
-                Func<Task<RemoteMatch>> taskWrapper = async () => new RemoteMatch
+                Func<Task<RemoteMatch>> taskWrapper = async () =>
                 {
-                    Provider = provider,
-                    Library = await action(provider)
+                    var library = await action(provider);
+                    if (library != null)
+                    {
+                        return new RemoteMatch
+                        {
+                            Provider = provider,
+                            Library = await action(provider)
+                        };
+                    }
+
+                    return null;
                 };
 
                 tasks.Add(taskWrapper());

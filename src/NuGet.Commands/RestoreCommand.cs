@@ -78,11 +78,11 @@ namespace NuGet.Commands
             var remoteWalker = new RemoteDependencyWalker(context);
 
             var projectRange = new LibraryRange()
-                {
-                    Name = request.Project.Name,
-                    VersionRange = new VersionRange(request.Project.Version),
-                    TypeConstraint = LibraryTypes.Project
-                };
+            {
+                Name = request.Project.Name,
+                VersionRange = new VersionRange(request.Project.Version),
+                TypeConstraint = LibraryTypes.Project
+            };
 
             // Resolve dependency graphs
             var frameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
@@ -305,25 +305,25 @@ namespace NuGet.Commands
 
             if (compileGroup != null)
             {
-                lockFileLib.CompileTimeAssemblies = compileGroup.Items.Select(t => t.Path).Cast<LockFileItem>().ToList();
+                lockFileLib.CompileTimeAssemblies = compileGroup.Items.Select(t => new LockFileItem(t.Path)).ToList();
             }
 
             var runtimeGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.RuntimeAssemblies);
             if (runtimeGroup != null)
             {
-                lockFileLib.RuntimeAssemblies = runtimeGroup.Items.Select(p => p.Path).Cast<LockFileItem>().ToList();
+                lockFileLib.RuntimeAssemblies = runtimeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
             }
-            
+
             var resourceGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.ResourceAssemblies);
             if (resourceGroup != null)
             {
                 lockFileLib.ResourceAssemblies = resourceGroup.Items.Select(ToResourceLockFileItem).ToList();
-             }
+            }
 
             var nativeGroup = contentItems.FindBestItemGroup(nativeCriteria, targetGraph.Conventions.Patterns.NativeLibraries);
             if (nativeGroup != null)
             {
-                lockFileLib.NativeLibraries = nativeGroup.Items.Select(p => p.Path).Cast<LockFileItem>().ToList();
+                lockFileLib.NativeLibraries = nativeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
             }
 
             // COMPAT: Support lib/contract so older packages can be consumed
@@ -336,7 +336,7 @@ namespace NuGet.Commands
                 && !framework.IsDesktop())
             {
                 lockFileLib.CompileTimeAssemblies.Clear();
-                lockFileLib.CompileTimeAssemblies.Add(contractPath);
+                lockFileLib.CompileTimeAssemblies.Add(new LockFileItem(contractPath));
             }
 
             // Apply filters from the <references> node in the nuspec
@@ -344,17 +344,17 @@ namespace NuGet.Commands
             {
                 // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
                 // runtimes/* is unaffected (it doesn't start with lib/)
-                lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(p)).ToList();
-                lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(p)).ToList();
+                lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(p.Path)).ToList();
+                lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(p.Path)).ToList();
             }
 
             return lockFileLib;
         }
+
         private static LockFileItem ToResourceLockFileItem(ContentItem item)
         {
-            return new LockFileItem
+            return new LockFileItem(item.Path)
             {
-                Path = item.Path,
                 Properties =
                 {
                     { "locale", item.Properties["locale"].ToString()}
