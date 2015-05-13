@@ -54,10 +54,6 @@
       <ItemGroup>
         <Reference Include="Microsoft.VisualStudio.Shell.14.0, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
         <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-        <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
-          <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-          <Name>VisualStudio14</Name>
-        </ProjectReference>
       </ItemGroup>
     </When>
   </Choose>
@@ -81,54 +77,15 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="Microsoft.VisualStudio.TemplateWizardInterface, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
+    <Reference Include="Microsoft.VisualStudio.TemplateWizardInterface, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Threading, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.Web.XmlTransform">
       <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Configuration">
-      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Core">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Core.2.8.6-beta-02\lib\net40-client\NuGet.Core.dll</HintPath>
       <Aliases>Legacy</Aliases>
-    </Reference>
-    <Reference Include="NuGet.Frameworks">
-      <HintPath>..\..\packages\NuGet.Frameworks.3.0.0-beta\lib\net45\NuGet.Frameworks.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.PackageManagement">
-      <HintPath>..\..\packages\NuGet.PackageManagement.3.0.0-beta\lib\net45\NuGet.PackageManagement.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging">
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.Packaging.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.3.0.0-beta\lib\net45\NuGet.Packaging.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core.Types">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.Types.3.0.0-beta\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.ProjectManagement">
-      <HintPath>..\..\packages\NuGet.PackageManagement.3.0.0-beta\lib\net45\NuGet.ProjectManagement.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Protocol.Core.Types">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.Types.3.0.0-beta\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Protocol.Core.v2">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.v2.3.0.0-beta\lib\net45\NuGet.Protocol.Core.v2.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Resolver">
-      <HintPath>..\..\packages\NuGet.Resolver.3.0.0-beta\lib\net45\NuGet.Resolver.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Versioning">
-      <HintPath>..\..\packages\NuGet.Versioning.3.0.0-beta\lib\net45\NuGet.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Concurrent" />
@@ -156,20 +113,8 @@
     <Compile Include="..\..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CommonResources.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller2.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
-    <Compile Include="Extensibility\VsPackageMetadataComparer.cs" />
-    <Compile Include="Utility\PumpingJTF.cs" />
-    <Compile Include="Utility\VsHierarchyHelper.cs" />
-    <Compile Include="Utility\VsHierarchyItem.cs" />
-    <Compile Include="Extensibility\VsPackageInstallerEvents.cs" />
-    <Compile Include="Extensibility\VsPackageInstallerServices.cs" />
-    <Compile Include="Extensibility\VsPackageMetadata.cs" />
-    <Compile Include="Extensibility\VsPackageRestorer.cs" />
-    <Compile Include="Extensibility\VsPackageSourceProvider.cs" />
-    <Compile Include="Extensibility\VsPackageUninstaller.cs" />
-    <Compile Include="ExtensionManagerShim.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerEvents.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerServices.cs" />
@@ -177,51 +122,9 @@
     <Compile Include="Extensibility\IVsPackageRestorer.cs" />
     <Compile Include="Extensibility\IVsPackageUninstaller.cs" />
     <Compile Include="Extensibility\VsPackageEventHandler.cs" />
-    <Compile Include="Extensibility\VsPackageInstaller.cs" />
     <Compile Include="IRegistryKey.cs" />
     <Compile Include="IVsTemplateWizard.cs" />
-    <Compile Include="MessageHelper.cs" />
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="PackageManagementHelpers.cs" />
-    <Compile Include="PackageOperationEventArgs.cs" />
-    <Compile Include="PreinstalledPackageConfiguration.cs" />
-    <Compile Include="PreinstalledPackageInfo.cs" />
-    <Compile Include="PreinstalledPackageInstaller.cs" />
-    <Compile Include="PreinstalledRepositoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegistryKeyWrapper.cs" />
-    <Compile Include="Resources\VsResources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>VsResources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Utility\XmlUtility.cs" />
-    <Compile Include="VSAPIProjectContext.cs" />
-    <Compile Include="VsTemplateWizard.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CommonResources.resx">
-      <DependentUpon>CommonResources.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\VsResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>VsResources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
-      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>PackageManagement.VisualStudio</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
-      <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
-      <Name>Console.Types</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console\Console.csproj">
-      <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
-      <Name>Console</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

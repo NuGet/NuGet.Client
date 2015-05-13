@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.Shell;
-using NuGet.VisualStudio.Resources;
+using NuGet.VisualStudio.Implementation.Resources;
 
 namespace NuGet.VisualStudio
 {

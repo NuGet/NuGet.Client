@@ -19,9 +19,8 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
-using NuGet.VisualStudio.Resources;
+using NuGet.VisualStudio.Implementation.Resources;
 using IPackageRepository = Legacy::NuGet.IPackageRepository;
-using LegacyNuGet = NuGet;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio

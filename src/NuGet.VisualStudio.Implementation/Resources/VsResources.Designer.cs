@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.VisualStudio.Resources {
+namespace NuGet.VisualStudio.Implementation.Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace NuGet.VisualStudio.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.VisualStudio.Resources.VsResources", typeof(VsResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.VisualStudio.Implementation.Resources.VsResources", typeof(VsResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

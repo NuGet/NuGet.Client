@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using EnvDTE;
 using IPackageRepository = Legacy::NuGet.IPackageRepository;
-using LegacyNuGet = NuGet;
 
 namespace NuGet.VisualStudio
 {

@@ -16,8 +16,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio.Resources;
-using LegacyNuGet = NuGet;
+using NuGet.VisualStudio.Implementation.Resources;
 using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.VisualStudio

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22609.0
+VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.VisualStudio", "src\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
@@ -60,6 +60,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamFoundationServer14", "src\TeamFoundationServer14\TeamFoundationServer14.csproj", "{E961D080-F10B-4F11-BEA0-056509C086CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudioImplement", "src\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj", "{9623CF30-192C-4864-B419-29649169AE30}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -210,6 +212,16 @@ Global
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26DC17AC-A390-4515-A2C0-07A0950036C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Coverage|Any CPU.Build.0 = Release|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Mono Release|Any CPU.Build.0 = Release|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9623CF30-192C-4864-B419-29649169AE30}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

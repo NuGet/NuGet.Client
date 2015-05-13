@@ -11,7 +11,7 @@ using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v2;
-using NuGet.VisualStudio.Resources;
+using NuGet.VisualStudio.Implementation.Resources;
 using IPackageRepository = Legacy::NuGet.IPackageRepository;
 
 namespace NuGet.VisualStudio

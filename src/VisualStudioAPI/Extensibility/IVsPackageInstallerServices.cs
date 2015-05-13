@@ -5,7 +5,6 @@ extern alias Legacy;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using EnvDTE;
-using LegacyNuGet = NuGet;
 using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.VisualStudio
