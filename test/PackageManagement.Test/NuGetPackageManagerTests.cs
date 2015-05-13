@@ -112,6 +112,43 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task PackagesConfigNuGetProjectGetInstalledPackagesListInvalidXml()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var packageIdentity = NoDependencyLibPackages[0];
+
+            // Create pacakges.config that is an invalid xml
+            using (var w = new StreamWriter(File.Create(randomPackagesConfigPath)))
+            {
+                w.Write("abc");
+            }
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token);
+            });
+
+            Assert.True(ex.Message.StartsWith("An error occurred while reading file"));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
         public async Task TestPacManInstallPackageAlreadyInstalledException()
         {
             // Arrange

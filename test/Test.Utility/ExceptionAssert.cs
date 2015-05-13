@@ -8,12 +8,12 @@ namespace NuGet.Test
 {
     public static class ExceptionAssert
     {
-        public static void Throws<TException>(Assert.ThrowsDelegate act) where TException : Exception
+        public static void Throws<TException>(Action act) where TException : Exception
         {
             Throws<TException>(act, ex => { });
         }
 
-        public static void Throws<TException>(Assert.ThrowsDelegate act, Action<TException> condition) where TException : Exception
+        public static void Throws<TException>(Action act, Action<TException> condition) where TException : Exception
         {
             var ex = Record.Exception(act);
             Assert.NotNull(ex);
@@ -21,22 +21,22 @@ namespace NuGet.Test
             condition(tex);
         }
 
-        public static void Throws<TException>(Assert.ThrowsDelegate action, string expectedMessage) where TException : Exception
+        public static void Throws<TException>(Action action, string expectedMessage) where TException : Exception
         {
             Throws<TException>(action, ex => Assert.Equal(expectedMessage, ex.Message));
         }
 
-        public static void ThrowsArgNull(Assert.ThrowsDelegate act, string paramName)
+        public static void ThrowsArgNull(Action act, string paramName)
         {
             Throws<ArgumentNullException>(act, ex => Assert.Equal(paramName, ex.ParamName));
         }
 
-        public static void ThrowsArgNullOrEmpty(Assert.ThrowsDelegate act, string paramName)
+        public static void ThrowsArgNullOrEmpty(Action act, string paramName)
         {
             ThrowsArgumentException<ArgumentException>(act, paramName, "Value cannot be null or an empty string.");
         }
 
-        public static void ThrowsArgOutOfRange(Assert.ThrowsDelegate act, string paramName, object minimum, object maximum, bool equalAllowed)
+        public static void ThrowsArgOutOfRange(Action act, string paramName, object minimum, object maximum, bool equalAllowed)
         {
             ThrowsArgumentException<ArgumentOutOfRangeException>(act, paramName, BuildOutOfRangeMessage(paramName, minimum, maximum, equalAllowed));
         }
@@ -54,22 +54,22 @@ namespace NuGet.Test
             return string.Format("Argument_Must_Be_Between", minimum, maximum);
         }
 
-        public static void ThrowsArgumentException(Assert.ThrowsDelegate act, string message)
+        public static void ThrowsArgumentException(Action act, string message)
         {
             ThrowsArgumentException<ArgumentException>(act, message);
         }
 
-        public static void ThrowsArgumentException<TArgException>(Assert.ThrowsDelegate act, string message) where TArgException : ArgumentException
+        public static void ThrowsArgumentException<TArgException>(Action act, string message) where TArgException : ArgumentException
         {
             Throws<TArgException>(act, ex => Assert.Equal(message, ex.Message));
         }
 
-        public static void ThrowsArgumentException(Assert.ThrowsDelegate act, string paramName, string message)
+        public static void ThrowsArgumentException(Action act, string paramName, string message)
         {
             ThrowsArgumentException<ArgumentException>(act, paramName, message);
         }
 
-        public static void ThrowsArgumentException<TArgException>(Assert.ThrowsDelegate act, string paramName, string message) where TArgException : ArgumentException
+        public static void ThrowsArgumentException<TArgException>(Action act, string paramName, string message) where TArgException : ArgumentException
         {
             Throws<TArgException>(act, ex =>
                 {

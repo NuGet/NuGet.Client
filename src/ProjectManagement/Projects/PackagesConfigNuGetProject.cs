@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -176,8 +177,27 @@ namespace NuGet.ProjectManagement
             UpdateFullPath();
             if (File.Exists(FullPath))
             {
-                var reader = new PackagesConfigReader(XDocument.Load(FullPath));
-                return reader.GetPackages().ToList();
+                try
+                {
+                    var reader = new PackagesConfigReader(XDocument.Load(FullPath));
+                    return reader.GetPackages().ToList();
+                }
+                catch (Exception ex)
+                {
+                    if (ex is System.Xml.XmlException ||
+                        ex is PackagesConfigReaderException)
+                    {
+                        throw new InvalidOperationException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ErrorLoadingPackagesConfig,
+                            FullPath,
+                            ex.Message));
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
 
             return new List<PackageReference>();

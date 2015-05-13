@@ -268,6 +268,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while reading file &apos;{0}&apos;: {1}.
+        /// </summary>
+        public static string ErrorLoadingPackagesConfig {
+            get {
+                return ResourceManager.GetString("ErrorLoadingPackagesConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File &apos;{0}&apos; already exists in project &apos;{1}&apos;. Do you want to overwrite it?.
         /// </summary>
         public static string FileConflictMessage {
