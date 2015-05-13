@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -60,6 +61,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 var jsonConfigItem = project.ProjectItems.OfType<ProjectItem>()
                     .FirstOrDefault(pi => StringComparer.Ordinal.Equals(pi.Name, BuildIntegratedProjectUtility.ProjectConfigFileName))?.FileNames[0];
 
+                var projectUniqueName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
+
                 var childReferences = new List<string>();
 
                 // find all references in the project
@@ -67,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     if (childReference.SourceProject != null)
                     {
-                        string childName = childReference.SourceProject.UniqueName;
+                        var childName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
 
                         childReferences.Add(childName);
 
@@ -77,9 +80,26 @@ namespace NuGet.PackageManagement.VisualStudio
                             toProcess.Enqueue(childReference.SourceProject);
                         }
                     }
+                    else
+                    {
+                        // SDK references do not have a SourceProject or child references, 
+                        // but they can contain project.json files, and should be part of the closure
+                        var possibleSdkPath = childReference.Path;
+                        if (!String.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
+                        {
+                            var possibleProjectJson = Path.Combine(childReference.Path, BuildIntegratedProjectUtility.ProjectConfigFileName);
+                            if (File.Exists(possibleProjectJson))
+                            {
+                                childReferences.Add(possibleProjectJson);
+
+                                // add the sdk to the results here
+                                results.Add(new BuildIntegratedProjectReference(possibleProjectJson, possibleProjectJson, Enumerable.Empty<string>()));
+                            }
+                        }
+                    }
                 }
 
-                results.Add(new BuildIntegratedProjectReference(project.UniqueName, jsonConfigItem, childReferences));
+                results.Add(new BuildIntegratedProjectReference(projectUniqueName, jsonConfigItem, childReferences));
             }
 
             return results;
