@@ -436,13 +436,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <returns></returns>
         protected static async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
-            string filter, int skip, int take)
+            string filter,
+            int skip,
+            int take,
+            CancellationToken token)
         {
-            Dictionary<NuGetProject, IEnumerable<PackageReference>> installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
+            var installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
 
-            foreach (NuGetProject project in projects)
+            foreach (var project in projects)
             {
-                IEnumerable<PackageReference> packageRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                var packageRefs = await project.GetInstalledPackagesAsync(token);
                 // Filter the results by string
                 if (!string.IsNullOrEmpty(filter))
                 {
@@ -458,80 +461,47 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     packageRefs = packageRefs.Take(take);
                 }
+
                 installedPackages.Add(project, packageRefs);
             }
+
             return installedPackages;
         }
 
         /// <summary>
         /// Get list of packages from the remote package source. Used for Get-Package -ListAvailable.
         /// </summary>
-        /// <param name="packageId"></param>
-        /// <param name="targetFrameworks"></param>
-        /// <param name="includePrerelease"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
-        /// <returns></returns>
-        protected IEnumerable<PSSearchMetadata> GetPackagesFromRemoteSource(string packageId, IEnumerable<string> targetFrameworks,
-            bool includePrerelease, int skip, int take)
+        protected async Task<IEnumerable<PSSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId,
+            IEnumerable<string> targetFrameworks,
+            bool includePrerelease,
+            int skip,
+            int take)
         {
-            SearchFilter searchfilter = new SearchFilter();
+            var searchfilter = new SearchFilter();
             searchfilter.IncludePrerelease = includePrerelease;
             searchfilter.SupportedFrameworks = targetFrameworks;
             searchfilter.IncludeDelisted = false;
 
-            IEnumerable<PSSearchMetadata> packages = Enumerable.Empty<PSSearchMetadata>();
-            PSSearchResource resource = ActiveSourceRepository.GetResource<PSSearchResource>();
+            var packages = Enumerable.Empty<PSSearchMetadata>();
+
+            var resource = await ActiveSourceRepository.GetResourceAsync<PSSearchResource>();
+
             if (resource != null)
             {
-                Task<IEnumerable<PSSearchMetadata>> task = resource.Search(packageId, searchfilter, skip, take, CancellationToken.None);
-                packages = task.Result;
+                packages = await resource.Search(packageId, searchfilter, skip, take, Token);
             }
+
             return packages;
-        }
-
-        /// <summary>
-        /// Get list of package updates that are installed to a project. Used for Get-Package -Updates.
-        /// </summary>
-        /// <param name="installedPackages"></param>
-        /// <param name="targetFrameworks"></param>
-        /// <param name="includePrerelease"></param>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
-        /// <returns></returns>
-        protected Dictionary<PSSearchMetadata, NuGetVersion> GetPackageUpdatesFromRemoteSource(IEnumerable<PackageReference> installedPackages,
-            IEnumerable<string> targetFrameworks, bool includePrerelease, int skip = 0, int take = 30)
-        {
-            Dictionary<PSSearchMetadata, NuGetVersion> updates = new Dictionary<PSSearchMetadata, NuGetVersion>();
-
-            foreach (PackageReference package in installedPackages)
-            {
-                PSSearchMetadata metadata = GetPackagesFromRemoteSource(package.PackageIdentity.Id, targetFrameworks, includePrerelease, skip, take)
-                    .Where(p => string.Equals(p.Identity.Id, package.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if (metadata != null)
-                {
-                    updates.Add(metadata, package.PackageIdentity.Version);
-                }
-            }
-
-            return updates;
         }
 
         /// <summary>
         /// Get update identity for a package that is installed to a project. Used for Update-Package Id -Version.
         /// </summary>
-        /// <param name="installedPackage"></param>
-        /// <param name="project"></param>
-        /// <param name="includePrerelease"></param>
-        /// <param name="isSafe"></param>
-        /// <param name="version"></param>
-        /// <param name="isEnum"></param>
-        /// <param name="dependencyEnum"></param>
-        /// <returns></returns>
         protected PackageIdentity GetPackageUpdate(PackageReference installedPackage, NuGetProject project,
             bool includePrerelease, bool isSafe, string version = null, bool isEnum = false, DependencyBehavior dependencyEnum = DependencyBehavior.Lowest)
         {
             PackageIdentity identity = null;
+
             if (isSafe)
             {
                 identity = PowerShellCmdletsUtility.GetSafeUpdateForPackageIdentity(ActiveSourceRepository, installedPackage.PackageIdentity, project, includePrerelease, installedPackage.PackageIdentity.Version);

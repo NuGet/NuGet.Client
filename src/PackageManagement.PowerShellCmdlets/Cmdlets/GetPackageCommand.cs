@@ -9,11 +9,12 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
-using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
-using NuGet.Versioning;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -22,7 +23,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// current solution.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Package", DefaultParameterSetName = ParameterAttribute.AllParameterSets)]
-    [OutputType(typeof(IPowerShellPackage))]
+    [OutputType(typeof(PowerShellPackage))]
     public class GetPackageCommand : NuGetPowerShellBaseCommand
     {
         private const int DefaultFirstValue = 50;
@@ -53,6 +54,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public SwitchParameter AllVersions { get; set; }
 
         [Parameter(ParameterSetName = "Remote")]
+        [ValidateRange(0, Int32.MaxValue)]
         public int PageSize { get; set; }
 
         [Parameter]
@@ -109,7 +111,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 CheckForSolutionOpen();
 
-                Dictionary<NuGetProject, IEnumerable<PackageReference>> packagesToDisplay = GetInstalledPackages(Projects, Filter, Skip, First).Result;
+                var packagesToDisplay = ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    return await GetInstalledPackages(Projects, Filter, Skip, First, Token);
+                });
+
                 WriteInstalledPackages(packagesToDisplay);
             }
             else
@@ -132,7 +138,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Find avaiable packages from the current source and not taking targetframeworks into account. 
                 if (UseRemoteSourceOnly)
                 {
-                    IEnumerable<PSSearchMetadata> remotePackages = GetPackagesFromRemoteSource(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, Skip, First);
+                    var remotePackages = ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    {
+                        var result = await GetPackagesFromRemoteSourceAsync(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, Skip, First);
+                        return result;
+                    });
+
                     WritePackagesFromRemoteSource(remotePackages, true);
 
                     if (_enablePaging)
@@ -144,22 +155,91 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     CheckForSolutionOpen();
-
-                    foreach (NuGetProject project in Projects)
+                    ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        IEnumerable<string> frameworks = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project);
-                        IEnumerable<PackageReference> installedPackages = project.GetInstalledPackagesAsync(CancellationToken.None).Result;
-                        Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates = GetPackageUpdatesFromRemoteSource(installedPackages, frameworks, IncludePrerelease.IsPresent, Skip, First);
-                        WriteUpdatePackagesFromRemoteSource(remoteUpdates, project);
-                    }
+                        await WriteUpdatePackagesFromRemoteSourceAsyncInSolution();
+                    });
                 }
+            }
+        }
+
+        private async Task WriteUpdatePackagesFromRemoteSourceAsyncInSolution()
+        {
+            foreach (var project in Projects)
+            {
+                await WriteUpdatePackagesFromRemoteSourceAsync(project);
+            }
+        }
+
+        /// <summary>
+        /// Output package updates to current project(s) found from the current remote source
+        /// </summary>
+        /// <param name="packagesToDisplay"></param>
+        private async Task WriteUpdatePackagesFromRemoteSourceAsync(NuGetProject project)
+        {
+            var frameworks = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project);
+            var installedPackages = await project.GetInstalledPackagesAsync(Token);
+
+            VersionType versionType;
+            if (CollapseVersions)
+            {
+                versionType = VersionType.Latest;
+            }
+            else
+            {
+                versionType = VersionType.Updates;
+            }
+
+            var projectHasUpdates = false;
+            var packages = new List<PowerShellUpdatePackage>();
+
+            var metadataTasks = new List<Tuple<Task<PSSearchMetadata>, PackageReference>>();
+
+
+            foreach (var installedPackage in installedPackages)
+            {
+                var task = Task.Run<PSSearchMetadata>(async () =>
+               {
+                   var results = await GetPackagesFromRemoteSourceAsync(installedPackage.PackageIdentity.Id, frameworks, IncludePrerelease.IsPresent, Skip, First);
+                   var metadata = results.Where(p => string.Equals(p.Identity.Id, installedPackage.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                   return metadata;
+               });
+
+                metadataTasks.Add(Tuple.Create(task, installedPackage));
+            }
+
+            foreach (var task in metadataTasks)
+            {
+                var metadata = await task.Item1;
+
+                if (metadata != null)
+                {
+                    var package =
+                        PowerShellUpdatePackage.GetPowerShellPackageUpdateView(metadata, task.Item2.PackageIdentity.Version, versionType, project);
+
+                    projectHasUpdates = true;
+
+                    packages.Add(package);
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                    // This is expected, we are going to await on this inside the powershell call.
+                    Task.Run(() => package.AsyncLazyVersions.GetValueAsync());
+#pragma warning restore CS4014
+
+                    WriteObject(package);
+                }
+            }
+
+            if (!projectHasUpdates)
+            {
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
         }
 
         /// <summary>
         /// Output installed packages to the project(s)
         /// </summary>
-        /// <param name="dictionary"></param>
         private void WriteInstalledPackages(Dictionary<NuGetProject, IEnumerable<PackageReference>> dictionary)
         {
             // Get the PowerShellPackageWithProjectView
@@ -177,8 +257,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Output packages found from the current remote source
         /// </summary>
-        /// <param name="packages"></param>
-        /// <param name="outputWarning"></param>
         private void WritePackagesFromRemoteSource(IEnumerable<PSSearchMetadata> packages, bool outputWarning = false)
         {
             // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
@@ -187,12 +265,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             string message;
             if (CollapseVersions)
             {
-                versionType = VersionType.latest;
+                versionType = VersionType.Latest;
                 message = "Find-Package [-Id]";
             }
             else
             {
-                versionType = VersionType.all;
+                versionType = VersionType.All;
                 message = "Find-Package [-Id] -AllVersions";
             }
 
@@ -209,14 +287,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Output packages found from the current remote source with specified page size
         /// e.g. Get-Package -ListAvailable -PageSize 20
         /// </summary>
-        /// <param name="packagesToDisplay"></param>
         private void WriteMoreRemotePackagesWithPaging(IEnumerable<PSSearchMetadata> packagesToDisplay)
         {
             // Display more packages with paging
-            int pageNumber = 1;
+            var pageNumber = 1;
             while (true)
             {
-                packagesToDisplay = GetPackagesFromRemoteSource(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, pageNumber * PageSize, PageSize);
+                packagesToDisplay = ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    var result = await GetPackagesFromRemoteSourceAsync(Filter, Enumerable.Empty<string>(), IncludePrerelease.IsPresent,
+                        pageNumber * PageSize, PageSize);
+                    return result;
+                });
+
                 if (packagesToDisplay.Count() != 0)
                 {
                     // Prompt to user and if want to continue displaying more packages
@@ -235,27 +318,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        /// <summary>
-        /// Output package updates to current project(s) found from the current remote source
-        /// </summary>
-        /// <param name="packagesToDisplay"></param>
-        private void WriteUpdatePackagesFromRemoteSource(Dictionary<PSSearchMetadata, NuGetVersion> packagesToDisplay, NuGetProject project)
-        {
-            VersionType versionType;
-            if (CollapseVersions)
-            {
-                versionType = VersionType.latest;
-            }
-            else
-            {
-                versionType = VersionType.updates;
-            }
-            WritePackages(packagesToDisplay, versionType, project);
-        }
-
         private void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType)
         {
             var view = PowerShellRemotePackage.GetPowerShellPackageView(packages, versionType);
+
             if (view.Any())
             {
                 WriteObject(view, enumerateCollection: true);
@@ -263,29 +329,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 LogCore(MessageLevel.Info, Resources.Cmdlet_GetPackageNoPackageFound);
-            }
-        }
-
-        private void WritePackages(Dictionary<PSSearchMetadata, NuGetVersion> remoteUpdates, VersionType versionType, NuGetProject project)
-        {
-            List<PowerShellUpdatePackage> view = new List<PowerShellUpdatePackage>();
-            foreach (KeyValuePair<PSSearchMetadata, NuGetVersion> pair in remoteUpdates)
-            {
-                PowerShellUpdatePackage package = PowerShellUpdatePackage.GetPowerShellPackageUpdateView(pair.Key, pair.Value, versionType, project);
-                if (package.Versions != null
-                    && package.Versions.Any())
-                {
-                    view.Add(package);
-                }
-            }
-
-            if (view.Any())
-            {
-                WriteObject(view, enumerateCollection: true);
-            }
-            else
-            {
-                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
         }
 
@@ -299,7 +342,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_DisplayMorePackagesNoHelp)
                 };
 
-            int choice = Host.UI.PromptForChoice(string.Empty, Resources.Cmdlet_PrompToDisplayMorePackages, choices, defaultChoice: 1);
+            var choice = Host.UI.PromptForChoice(string.Empty, Resources.Cmdlet_PrompToDisplayMorePackages, choices, defaultChoice: 1);
 
             Debug.Assert(choice >= 0 && choice < 2);
             // Add a line after

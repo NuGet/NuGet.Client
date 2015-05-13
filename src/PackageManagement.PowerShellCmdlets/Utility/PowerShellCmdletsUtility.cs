@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -22,8 +21,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Parse the NuGetVersion from string
         /// </summary>
-        /// <param name="version"></param>
-        /// <returns></returns>
         public static NuGetVersion GetNuGetVersionFromString(string version)
         {
             NuGetVersion nVersion;
@@ -31,7 +28,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new ArgumentNullException(nameof(version));
             }
-            bool success = NuGetVersion.TryParse(version, out nVersion);
+            var success = NuGetVersion.TryParse(version, out nVersion);
             if (!success)
             {
                 throw new InvalidOperationException(
@@ -44,15 +41,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get project's target frameworks
         /// </summary>
-        /// <param name="project"></param>
-        /// <returns></returns>
         public static IEnumerable<string> GetProjectTargetFrameworks(NuGetProject project)
         {
-            List<string> frameworks = new List<string>();
-            NuGetFramework nugetFramework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            var frameworks = new List<string>();
+            var nugetFramework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
             if (nugetFramework != null)
             {
-                string framework = nugetFramework.ToString();
+                var framework = nugetFramework.ToString();
                 frameworks.Add(framework);
             }
             return frameworks;
@@ -61,29 +56,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get all versions for a specific package Id.
         /// </summary>
-        /// <param name="sourceRepository"></param>
-        /// <param name="packageId"></param>
-        /// <param name="project"></param>
-        /// <param name="includePrerelease"></param>
-        /// <returns></returns>
         public static IEnumerable<NuGetVersion> GetAllVersionsForPackageId(SourceRepository sourceRepository, string packageId, NuGetProject project, bool includePrerelease)
         {
-            IEnumerable<string> targetFrameworks = GetProjectTargetFrameworks(project);
-            SearchFilter searchfilter = new SearchFilter();
+            var targetFrameworks = GetProjectTargetFrameworks(project);
+            var searchfilter = new SearchFilter();
             searchfilter.IncludePrerelease = includePrerelease;
             searchfilter.SupportedFrameworks = targetFrameworks;
             searchfilter.IncludeDelisted = false;
-            PSSearchResource resource = sourceRepository.GetResource<PSSearchResource>();
+            var resource = sourceRepository.GetResource<PSSearchResource>();
             PSSearchMetadata result = null;
-            IEnumerable<NuGetVersion> allVersions = Enumerable.Empty<NuGetVersion>();
+            var allVersions = Enumerable.Empty<NuGetVersion>();
 
             try
             {
-                Task<IEnumerable<PSSearchMetadata>> task = resource.Search(packageId, searchfilter, 0, 30, CancellationToken.None);
+                var task = resource.Search(packageId, searchfilter, 0, 30, CancellationToken.None);
                 result = task.Result
                     .Where(p => string.Equals(p.Identity.Id, packageId, StringComparison.OrdinalIgnoreCase))
                     .FirstOrDefault();
-                allVersions = result.Versions;
+
+                allVersions = result.Versions.Value.Result;
             }
             catch (Exception)
             {
@@ -91,21 +82,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     || !allVersions.Any())
                 {
                     throw new InvalidOperationException(
-                        String.Format(CultureInfo.CurrentCulture,
+                        string.Format(CultureInfo.CurrentCulture,
                             Resources.UnknownPackage, packageId));
                 }
             }
-            return result.Versions;
+
+            return allVersions;
         }
 
         /// <summary>
         /// Return the latest version for package Id.
         /// </summary>
-        /// <param name="sourceRepository"></param>
-        /// <param name="packageId"></param>
-        /// <param name="project"></param>
-        /// <param name="includePrerelease"></param>
-        /// <returns></returns>
         public static NuGetVersion GetLastestVersionForPackageId(SourceRepository sourceRepository, string packageId, NuGetProject project, bool includePrerelease)
         {
             var versionList = GetAllVersionsForPackageId(sourceRepository, packageId, project, includePrerelease);
@@ -115,26 +102,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get safe update version for installed package identity. Used for Update-Package -Safe.
         /// </summary>
-        /// <param name="sourceRepository"></param>
-        /// <param name="identity"></param>
-        /// <param name="project"></param>
-        /// <param name="includePrerelease"></param>
-        /// <param name="nugetVersion"></param>
-        /// <returns></returns>
         public static PackageIdentity GetSafeUpdateForPackageIdentity(SourceRepository sourceRepository, PackageIdentity identity, NuGetProject project, bool includePrerelease, NuGetVersion nugetVersion)
         {
-            IEnumerable<NuGetVersion> allVersions = Enumerable.Empty<NuGetVersion>();
+            var allVersions = Enumerable.Empty<NuGetVersion>();
             var versionList = GetAllVersionsForPackageId(sourceRepository, identity.Id, project, includePrerelease);
             PackageIdentity safeUpdate = null;
 
             try
             {
-                VersionRange spec = GetSafeRange(nugetVersion, includePrerelease);
+                var spec = GetSafeRange(nugetVersion, includePrerelease);
                 allVersions = versionList.Where(p => p < spec.MaxVersion && p >= spec.MinVersion);
                 if (allVersions != null
                     && allVersions.Any())
                 {
-                    NuGetVersion version = allVersions.OrderByDescending(v => v).FirstOrDefault();
+                    var version = allVersions.OrderByDescending(v => v).FirstOrDefault();
                     safeUpdate = new PackageIdentity(identity.Id, version);
                 }
             }
@@ -153,8 +134,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         public static VersionRange GetSafeRange(NuGetVersion version, bool includePrerelease)
         {
-            SemanticVersion max = new SemanticVersion(version.Major, version.Minor + 1, 0);
-            NuGetVersion maxVersion = NuGetVersion.Parse(max.ToString());
+            var max = new SemanticVersion(version.Major, version.Minor + 1, 0);
+            var maxVersion = NuGetVersion.Parse(max.ToString());
             return new VersionRange(version, true, maxVersion, false, includePrerelease);
         }
 
@@ -162,15 +143,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the update version for Dependent package, based on the specification of Highest, HighestMinor,
         /// HighestPatch and Lowest.
         /// </summary>
-        /// <param name="sourceRepository"></param>
-        /// <param name="identity"></param>
-        /// <param name="project"></param>
-        /// <param name="updateVersion"></param>
-        /// <param name="includePrerelease"></param>
-        /// <returns></returns>
         public static PackageIdentity GetUpdateForPackageByDependencyEnum(SourceRepository sourceRepository, PackageIdentity identity, NuGetProject project, DependencyBehavior updateVersion, bool includePrerelease)
         {
-            IEnumerable<NuGetVersion> allVersions = GetAllVersionsForPackageId(sourceRepository, identity.Id, project, includePrerelease)
+            var allVersions = GetAllVersionsForPackageId(sourceRepository, identity.Id, project, includePrerelease)
                 ?? Enumerable.Empty<NuGetVersion>();
 
             if (!allVersions.Any())
@@ -196,24 +171,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else if (updateVersion == DependencyBehavior.HighestPatch)
                 {
                     var groups = from p in allVersions
-                        group p by new { p.Version.Major, p.Version.Minor }
+                                 group p by new { p.Version.Major, p.Version.Minor }
                         into g
-                        orderby g.Key.Major, g.Key.Minor
-                        select g;
+                                 orderby g.Key.Major, g.Key.Minor
+                                 select g;
                     version = (from p in groups.First()
-                        orderby p.Version descending
-                        select p).FirstOrDefault();
+                               orderby p.Version descending
+                               select p).FirstOrDefault();
                 }
                 else if (updateVersion == DependencyBehavior.HighestMinor)
                 {
                     var groups = from p in allVersions
-                        group p by new { p.Version.Major }
+                                 group p by new { p.Version.Major }
                         into g
-                        orderby g.Key.Major
-                        select g;
+                                 orderby g.Key.Major
+                                 select g;
                     version = (from p in groups.First()
-                        orderby p.Version descending
-                        select p).FirstOrDefault();
+                               orderby p.Version descending
+                               select p).FirstOrDefault();
                 }
 
                 if (version != null)

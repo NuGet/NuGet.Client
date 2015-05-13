@@ -2,7 +2,7 @@
 <Configuration>
   <ViewDefinitions>
     <View>
-      <Name>NuGet.IPowerShellPackage.Table</Name>
+      <Name>NuGet.PowerShellPackage.Table</Name>
       <ViewSelectedBy>
         <TypeName>NuGet.PackageManagement.PowerShellCmdlets.PowerShellPackage</TypeName>
       </ViewSelectedBy>
@@ -32,7 +32,7 @@
     </View>
 
     <View>
-      <Name>NuGet.IPowerShellPackage.Table</Name>
+      <Name>NuGet.PowerShellPackage.Table</Name>
       <ViewSelectedBy>
         <TypeName>NuGet.PackageManagement.PowerShellCmdlets.PowerShellInstalledPackage</TypeName>
       </ViewSelectedBy>
@@ -69,7 +69,7 @@
     </View>
 
     <View>
-      <Name>NuGet.IPowerShellPackage.Table</Name>
+      <Name>NuGet.PowerShellPackage.Table</Name>
       <ViewSelectedBy>
         <TypeName>NuGet.PackageManagement.PowerShellCmdlets.PowerShellRemotePackage</TypeName>
       </ViewSelectedBy>
@@ -106,7 +106,7 @@
     </View>
 
     <View>
-      <Name>NuGet.IPowerShellPackage.Table</Name>
+      <Name>NuGet.PowerShellPackage.Table</Name>
       <ViewSelectedBy>
         <TypeName>NuGet.PackageManagement.PowerShellCmdlets.PowerShellUpdatePackage</TypeName>
       </ViewSelectedBy>

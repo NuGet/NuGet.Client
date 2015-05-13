@@ -271,7 +271,7 @@ function Test-ZipPackageLoadsReleaseNotesAttribute {
 
     # Assert
 	# Starting NuGet 3.0, IPackage interface has been deprecated. 
-	# We are now returning IPowerShellPackage which does not contain a ReleaseNotes property. Hence updated the test.
+	# We are now returning PowerShellPackage which does not contain a ReleaseNotes property. Hence updated the test.
     Assert-AreEqual "ReleaseNotesPackage" $p.Id
 }
 

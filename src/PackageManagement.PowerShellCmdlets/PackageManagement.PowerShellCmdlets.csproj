@@ -162,12 +162,14 @@
     </Compile>
     <Compile Include="Cmdlets\AddBindingRedirectCommand.cs" />
     <Compile Include="Cmdlets\TabExpansionCommand.cs" />
-    <Compile Include="IPowerShellPackage.cs" />
     <Compile Include="PackageActionBaseCommand.cs" />
     <Compile Include="PowerShellExecutionMessage.cs" />
     <Compile Include="Cmdlets\FindPackageCommand.cs" />
     <Compile Include="Cmdlets\GetPackageCommand.cs" />
     <Compile Include="Cmdlets\GetProjectCommand.cs" />
+    <Compile Include="PowerShellInstalledPackage.cs" />
+    <Compile Include="PowerShellRemotePackage.cs" />
+    <Compile Include="PowerShellUpdatePackage.cs" />
     <Compile Include="Utility\IErrorHandler.cs" />
     <Compile Include="Utility\IHttpClientEvents.cs" />
     <Compile Include="Cmdlets\InstallPackageCommand.cs" />
@@ -188,6 +190,7 @@
     <Compile Include="Cmdlets\UpdatePackageCommand.cs" />
     <Compile Include="Utility\PSPathUtility.cs" />
     <Compile Include="Utility\WebRequestEventArgs.cs" />
+    <Compile Include="VersionType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
