@@ -10,6 +10,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using Legacy::NuGet;
 using Microsoft.VisualStudio;
@@ -513,23 +515,6 @@ namespace NuGetVSExtension
             return null;
         }
 
-        private void ShowDocWindow(Project project, string searchText)
-        {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
-            var windowFrame = FindExistingWindowFrame(project);
-            if (windowFrame == null)
-            {
-                windowFrame = CreateNewWindowFrame(project);
-            }
-
-            if (windowFrame != null)
-            {
-                Search(windowFrame, searchText);
-                windowFrame.Show();
-            }
-        }
-
         private static T GetProperty<T>(IVsHierarchy hier, __VSHPROPID propertyId)
         {
             object propertyValue;
@@ -540,7 +525,7 @@ namespace NuGetVSExtension
             return (T)propertyValue;
         }
 
-        private IVsWindowFrame CreateNewWindowFrame(Project project)
+        private async Task<IVsWindowFrame> CreateNewWindowFrameAsync(Project project)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -583,10 +568,10 @@ namespace NuGetVSExtension
             }
 
             // Create the doc window using the hiearchy & item id.
-            return CreateDocWindow(project, documentName, hier, itemId);
+            return await CreateDocWindowAsync(project, documentName, hier, itemId);
         }
 
-        private IVsWindowFrame CreateDocWindow(
+        private async Task<IVsWindowFrame> CreateDocWindowAsync(
             Project project,
             string documentName,
             IVsHierarchy hier,
@@ -598,6 +583,11 @@ namespace NuGetVSExtension
 
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             var nugetProject = solutionManager.GetNuGetProject(project.Name);
+
+            // load packages.config. This makes sure that an exception will get thrown if there
+            // are problems with packages.config, such as duplicate packages. When an exception
+            // is thrown, an error dialog will pop up and this doc window will not be created.
+            var installedPackages = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
             var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
             var uiContext = uiContextFactory.Create(this, new[] { nugetProject });
@@ -616,8 +606,7 @@ namespace NuGetVSExtension
             var caption = String.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Label_NuGetWindowCaption,
-                project.Name // **** myDoc.Target.Name);
-                );
+                project.Name);
 
             IVsWindowFrame windowFrame;
             IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
@@ -642,38 +631,51 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            string parameterString = null;
-            OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
-            if (null != args)
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                parameterString = args.InValue as string;
-            }
-            var searchText = GetSearchText(parameterString);
+                string parameterString = null;
+                OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
+                if (null != args)
+                {
+                    parameterString = args.InValue as string;
+                }
+                var searchText = GetSearchText(parameterString);
 
-            // *** temp code            
-            Project project = VsUtility.GetActiveProject(VsMonitorSelection);
+                // *** temp code            
+                Project project = VsUtility.GetActiveProject(VsMonitorSelection);
 
-            if (project != null
-                &&
-                !VsUtility.IsUnloaded(project)
-                &&
-                EnvDTEProjectUtility.IsSupported(project))
-            {
-                ShowDocWindow(project, searchText);
-            }
-            else
-            {
-                // show error message when no supported project is selected.
-                string projectName = project != null ? project.Name : String.Empty;
+                if (project != null
+                    &&
+                    !VsUtility.IsUnloaded(project)
+                    &&
+                    EnvDTEProjectUtility.IsSupported(project))
+                {
+                    var windowFrame = FindExistingWindowFrame(project);
+                    if (windowFrame == null)
+                    {
+                        windowFrame = await CreateNewWindowFrameAsync(project);
+                    }
 
-                string errorMessage = String.IsNullOrEmpty(projectName)
-                    ? Resources.NoProjectSelected
-                    : String.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, projectName);
+                    if (windowFrame != null)
+                    {
+                        Search(windowFrame, searchText);
+                        windowFrame.Show();
+                    }
+                }
+                else
+                {
+                    // show error message when no supported project is selected.
+                    string projectName = project != null ? project.Name : String.Empty;
 
-                MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
-            }
+                    string errorMessage = String.IsNullOrEmpty(projectName)
+                        ? Resources.NoProjectSelected
+                        : String.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, projectName);
+
+                    MessageHelper.ShowWarningMessage(errorMessage, Resources.ErrorDialogBoxTitle);
+                }
+            });
         }
 
         private IVsWindowFrame FindExistingSolutionWindowFrame()
@@ -747,7 +749,7 @@ namespace NuGetVSExtension
             _nugetSettings.WindowSettings[key] = obj;
         }
 
-        private IVsWindowFrame CreateDocWindowForSolution()
+        private async Task<IVsWindowFrame> CreateDocWindowForSolutionAsync()
         {
             IVsWindowFrame windowFrame = null;
             IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
@@ -765,6 +767,14 @@ namespace NuGetVSExtension
                 // For once, this message will be shown. Once the package is loaded, the menu will get disabled as appropriate
                 MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
                 return null;
+            }
+
+            // load packages.config. This makes sure that an exception will get thrown if there
+            // are problems with packages.config, such as duplicate packages. When an exception
+            // is thrown, an error dialog will pop up and this doc window will not be created.
+            foreach (var project in projects)
+            {
+                await project.GetInstalledPackagesAsync(CancellationToken.None);
             }
 
             var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
@@ -809,27 +819,32 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageForSolutionDialog(object sender, EventArgs e)
         {
-            var windowFrame = FindExistingSolutionWindowFrame();
-            if (windowFrame == null)
-            {
-                // Create the window frame
-                windowFrame = CreateDocWindowForSolution();
-            }
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (windowFrame != null)
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                // process search string
-                string parameterString = null;
-                OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
-                if (args != null)
+                var windowFrame = FindExistingSolutionWindowFrame();
+                if (windowFrame == null)
                 {
-                    parameterString = args.InValue as string;
+                    // Create the window frame
+                    windowFrame = await CreateDocWindowForSolutionAsync();
                 }
-                var searchText = GetSearchText(parameterString);
-                Search(windowFrame, searchText);
 
-                windowFrame.Show();
-            }
+                if (windowFrame != null)
+                {
+                    // process search string
+                    string parameterString = null;
+                    OleMenuCmdEventArgs args = e as OleMenuCmdEventArgs;
+                    if (args != null)
+                    {
+                        parameterString = args.InValue as string;
+                    }
+                    var searchText = GetSearchText(parameterString);
+                    Search(windowFrame, searchText);
+
+                    windowFrame.Show();
+                }
+            });
         }
 
         // Gets the package manager control hosted in the window frame.
