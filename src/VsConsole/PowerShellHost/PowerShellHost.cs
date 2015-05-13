@@ -334,7 +334,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             && installedRefs.Any())
                         {
                             // This will be an empty list if packages have not been restored
-                            IEnumerable<PackageIdentity> installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, new EmptyNuGetProjectContext(), CancellationToken.None);
+                            IEnumerable<PackageIdentity> installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, CancellationToken.None);
                             sortedPackages.AddRange(installedPackages);
                         }
                     }

@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (File.Exists(fullPath))
             {
-                FileSystemUtility.MakeWriteable(fullPath);
+                FileSystemUtility.MakeWritable(fullPath);
 
                 if (sourceControl != null
                     &&

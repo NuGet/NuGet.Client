@@ -1208,7 +1208,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            FileSystemUtility.MakeWriteable(project.FullName);
+            FileSystemUtility.MakeWritable(project.FullName);
             project.Save();
         }
 

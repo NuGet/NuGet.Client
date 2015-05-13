@@ -371,7 +371,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                         item.SetMetadataValue("Private", "True");
 
                                         // Save the project after we've modified it.
-                                        FileSystemUtility.MakeWriteable(EnvDTEProject.FullName);
+                                        FileSystemUtility.MakeWritable(EnvDTEProject.FullName);
                                         EnvDTEProject.Save();
                                     }
                                 }
