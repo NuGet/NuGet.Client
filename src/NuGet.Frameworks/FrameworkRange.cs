@@ -18,17 +18,17 @@ namespace NuGet.Frameworks
         {
             if (min == null)
             {
-                throw new ArgumentException("min");
+                throw new ArgumentNullException(nameof(min));
             }
 
             if (max == null)
             {
-                throw new ArgumentException("max");
+                throw new ArgumentNullException(nameof(max));
             }
 
             if (!SameExceptForVersion(min, max))
             {
-                throw new FrameworkException("Frameworks must have the same identifier, profile, and platform");
+                throw new FrameworkException(Strings.FrameworkMismatch);
             }
 
             _minFramework = min;
@@ -75,8 +75,7 @@ namespace NuGet.Frameworks
         private static bool SameExceptForVersion(NuGetFramework x, NuGetFramework y)
         {
             return StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
-                   && (StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile))
-                   && (StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform));
+                   && (StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile));
         }
 
         public override string ToString()

@@ -82,37 +82,6 @@ namespace NuGet.Frameworks
                 return result;
             }
 
-            result = StringComparer.OrdinalIgnoreCase.Compare(x.Platform, y.Platform);
-
-            if (result != 0)
-            {
-                return result;
-            }
-
-            // platform version may be null
-            if (x.PlatformVersion == null
-                && y.PlatformVersion != null)
-            {
-                return -1;
-            }
-
-            if (x.PlatformVersion != null
-                && y.PlatformVersion == null)
-            {
-                return 1;
-            }
-
-            if (x.PlatformVersion != null
-                && y.PlatformVersion != null)
-            {
-                result = x.PlatformVersion.CompareTo(y.PlatformVersion);
-
-                if (result != 0)
-                {
-                    return result;
-                }
-            }
-
             return 0;
         }
     }

@@ -26,9 +26,7 @@ namespace NuGet.Frameworks
 
             return x.Version == y.Version
                    && StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
-                   && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile)
-                   && StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform)
-                   && x.PlatformVersion == y.PlatformVersion;
+                   && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile);
         }
 
         public int GetHashCode(NuGetFramework obj)
@@ -43,8 +41,6 @@ namespace NuGet.Frameworks
             combiner.AddStringIgnoreCase(obj.Framework);
             combiner.AddObject(obj.Version);
             combiner.AddStringIgnoreCase(obj.Profile);
-            combiner.AddStringIgnoreCase(obj.Platform);
-            combiner.AddObject(obj.PlatformVersion);
 
             return combiner.CombinedHash;
         }

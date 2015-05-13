@@ -36,7 +36,7 @@ namespace NuGet.Test
 
             var results = frameworks.ToArray();
 
-            Assert.Equal(3, results.Length);
+            Assert.Equal(2, results.Length);
         }
 
         [Fact]

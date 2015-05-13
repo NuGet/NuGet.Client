@@ -180,24 +180,9 @@ namespace NuGet.Frameworks
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
             // compare the frameworks
-            if (NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+            return (NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
                 && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile)
-                && IsVersionCompatible(target, candidate))
-            {
-                // allow the other if it doesn't have a platform
-                if (candidate.AnyPlatform)
-                {
-                    return true;
-                }
-
-                // compare platforms
-                if (StringComparer.OrdinalIgnoreCase.Equals(target.Platform, candidate.Platform))
-                {
-                    return IsVersionCompatible(target.PlatformVersion, candidate.PlatformVersion);
-                }
-            }
-
-            return false;
+                && IsVersionCompatible(target, candidate));
         }
 
         private static bool IsVersionCompatible(NuGetFramework target, NuGetFramework candidate)

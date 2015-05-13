@@ -18,8 +18,6 @@ namespace NuGet.Frameworks
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
         private const string _portable = "portable";
-        private readonly string _platformIdentifier;
-        private readonly Version _platformVersion;
 
         public NuGetFramework(string framework)
             : this(framework, FrameworkConstants.EmptyVersion)
@@ -31,33 +29,21 @@ namespace NuGet.Frameworks
         {
         }
 
-        public NuGetFramework(string framework, Version version, string profile)
-            : this(framework, version, profile, null, null)
-        {
-        }
-
-        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string platformIdentifier, Version platformVersion)
-            : this(frameworkIdentifier, frameworkVersion, null, platformIdentifier, platformVersion)
-        {
-        }
-
-        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile, string platformIdentifier, Version platformVersion)
+        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
         {
             if (frameworkIdentifier == null)
             {
-                throw new ArgumentNullException("frameworkIdentifier");
+                throw new ArgumentNullException(nameof(frameworkIdentifier));
             }
 
             if (frameworkVersion == null)
             {
-                throw new ArgumentNullException("frameworkVersion");
+                throw new ArgumentNullException(nameof(frameworkVersion));
             }
 
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = frameworkProfile ?? string.Empty;
-            _platformIdentifier = platformIdentifier ?? string.Empty;
-            _platformVersion = platformVersion != null ? NormalizeVersion(platformVersion) : FrameworkConstants.EmptyVersion;
         }
 
         /// <summary>
@@ -90,24 +76,6 @@ namespace NuGet.Frameworks
         public string Profile
         {
             get { return _frameworkProfile; }
-        }
-
-        /// <summary>
-        /// Platform
-        /// Ex: Windows
-        /// </summary>
-        public string Platform
-        {
-            get { return _platformIdentifier; }
-        }
-
-        /// <summary>
-        /// Version of Platform
-        /// Ex: 8.1 for Windows 8.1
-        /// </summary>
-        public Version PlatformVersion
-        {
-            get { return _platformVersion; }
         }
 
         /// <summary>
@@ -170,7 +138,7 @@ namespace NuGet.Frameworks
 
                 if (String.IsNullOrEmpty(shortFramework))
                 {
-                    throw new FrameworkException("Invalid framework identifier");
+                    throw new FrameworkException(Strings.InvalidFrameworkIdentifier);
                 }
 
                 // add framework
@@ -210,7 +178,7 @@ namespace NuGet.Frameworks
                     }
                     else
                     {
-                        throw new FrameworkException("Invalid portable frameworks");
+                        throw new FrameworkException(Strings.InvalidPortableFrameworks);
                     }
                 }
                 else
@@ -282,14 +250,6 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
-        /// Framework agnostic check
-        /// </summary>
-        public bool AnyPlatform
-        {
-            get { return String.IsNullOrEmpty(Platform); }
-        }
-
-        /// <summary>
         /// True if this framework matches for all versions.
         /// Ex: net
         /// </summary>
@@ -342,14 +302,7 @@ namespace NuGet.Frameworks
 
         public override string ToString()
         {
-            var sb = new StringBuilder(DotNetFrameworkName);
-
-            if (!String.IsNullOrEmpty(Platform))
-            {
-                sb.Append(String.Format(CultureInfo.InvariantCulture, ", Platform={0}, PlatformVersion=v{1}", Platform, GetDisplayVersion(PlatformVersion)));
-            }
-
-            return sb.ToString();
+            return DotNetFrameworkName;
         }
 
         public bool Equals(NuGetFramework other)

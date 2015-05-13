@@ -89,5 +89,11 @@ namespace NuGet.Frameworks
         /// These will have the same version, but a different framework
         /// </summary>
         bool TryGetSubSetFrameworks(string frameworkIdentifier, out IEnumerable<string> subSetFrameworkIdentifiers);
+
+        /// <summary>
+        /// Attempts order and prefer one framework over the other based on framework preference rules.
+        /// </summary>
+        /// <returns>0 if no order can be determined, -1 if the first framework is preferred.</returns>
+        int CompareFrameworks(NuGetFramework x, NuGetFramework y);
     }
 }

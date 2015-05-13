@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -8,16 +9,56 @@ namespace NuGet.Test
 {
     public class CompatibilityTests
     {
+        [Fact]
+        public void Compatibility_UAPWinNonTPM()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("UAP10.0");
+            NuGetFramework windows = NuGetFramework.Parse("win");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.True(compat.IsCompatible(framework, windows));
+        }
+
         [Theory]
-        [InlineData("dnx46", "dnx451")]
-        [InlineData("dnx452", "dnx451")]
-        [InlineData("dnx452", "dnx")]
-        [InlineData("dnxcore", "core50")]
-        [InlineData("dnxcore", "core")]
-        [InlineData("net46", "core50")]
-        [InlineData("dnx46", "core50")]
-        [InlineData("aspnet50", "net40")]
-        public void Compatibility_SimpleOneWay(string fw1, string fw2)
+        [InlineData("dnxcore50", "UAP10.0")]
+        [InlineData("core50", "UAP10.0")]
+        [InlineData("core", "UAP10.0")]
+        [InlineData("core50", "UAP")]
+        [InlineData("native", "UAP")]
+        [InlineData("net46", "UAP")]
+        public void Compatibility_PlatformOneWayNeg(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.False(compat.IsCompatible(framework1, framework2));
+        }
+
+        [Theory]
+        [InlineData("UAP10.0", "netcore50")]
+        [InlineData("UAP10.0", "netcore45")]
+        [InlineData("UAP10.0", "winrt45")]
+        [InlineData("UAP10.0", "Core50")]
+        [InlineData("UAP10.0", "Core")]
+        [InlineData("UAP10.0", "Win81")]
+        [InlineData("UAP10.0", "Win8")]
+        [InlineData("UAP10.0", "Win")]
+        [InlineData("UAP10.0", "WPA81")]
+        [InlineData("UAP10.0", "WPA")]
+        [InlineData("UAP", "Win81")]
+        [InlineData("UAP", "Win8")]
+        [InlineData("UAP", "Win")]
+        [InlineData("UAP", "WPA81")]
+        [InlineData("UAP", "WPA")]
+        [InlineData("UAP11.0", "Win81")]
+        [InlineData("UAP11.0", "Win8")]
+        [InlineData("UAP11.0", "Win")]
+        [InlineData("UAP11.0", "WPA81")]
+        [InlineData("UAP11.0", "WPA")]
+        public void Compatibility_PlatformOneWay(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);
             var framework2 = NuGetFramework.Parse(fw2);
@@ -32,9 +73,76 @@ namespace NuGet.Test
         }
 
         [Theory]
+        [InlineData("dnx46", "dnx451")]
+        [InlineData("dnx452", "dnx451")]
+        [InlineData("dnx452", "dnx")]
+        [InlineData("dnxcore", "core50")]
+        [InlineData("dnxcore", "core")]
+        [InlineData("net46", "core50")]
+        [InlineData("dnx46", "core50")]
+        [InlineData("aspnet50", "net40")]
+        [InlineData("netcore50", "netcore45")]
+        [InlineData("netcore50", "core50")]
+        [InlineData("uap10.0", "portable-net45+win8")]
+        [InlineData("uap10.0", "portable-net45+win8+wpa81")]
+        [InlineData("uap10.0", "portable-net45+wpa81")]
+        [InlineData("uap10.0", "portable-net45+sl5+core50")]
+        [InlineData("uap10.0", "portable-net45+sl5+netcore50")]
+        [InlineData("uap10.0", "portable-net45+sl5+uap")]
+        [InlineData("netcore50", "netcore451")]
+        [InlineData("netcore50", "win81")]
+        [InlineData("netcore50", "win8")]
+        [InlineData("netcore50", "win")]
+        [InlineData("win81", "netcore")]
+        [InlineData("netcore451", "win8")]
+        public void Compatibility_SimpleOneWay(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // verify that compatibility is inferred across all the mappings
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // verify that this was a one way mapping
+            Assert.True(!compat.IsCompatible(framework2, framework1));
+        }
+
+        [InlineData("netcore451", "win81")]
+        [InlineData("netcore45", "win8")]
+        [InlineData("netcore", "win")]
+        [InlineData("win8", "win")]
+        [InlineData("win8", "netcore")]
+        [InlineData("win8", "netcore45")]
+        [InlineData("wpa", "wpa81")]
+        [InlineData("uap", "uap10.0")]
+        public void Compatibility_SimpleTwoWay(string fw1, string fw2)
+        {
+            var framework1 = NuGetFramework.Parse(fw1);
+            var framework2 = NuGetFramework.Parse(fw2);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // verify that compatibility is inferred across all the mappings
+            Assert.True(compat.IsCompatible(framework1, framework2));
+
+            // verify that this was a two way mapping
+            Assert.True(compat.IsCompatible(framework2, framework1));
+        }
+
+        [Theory]
         [InlineData("net45", "dnx451")]
         [InlineData("net45", "net46")]
         [InlineData("core50", "net4")]
+        [InlineData("win81", "netcore50")]
+        [InlineData("wpa81", "netcore50")]
+        [InlineData("uap10.0", "portable-net45+sl5+wp8")]
+        [InlineData("netcore451", "core")]
+        [InlineData("win8", "netcore451")]
+        [InlineData("netcore451", "core50")]
+        [InlineData("win81", "core50")]
+        [InlineData("wpa81", "core50")]
         public void Compatibility_SimpleNonCompat(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);
@@ -171,27 +279,6 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("win", "nfcore")]
-        [InlineData("win81", "nfcore")]
-        [InlineData("win8", "nfcore")]
-        [InlineData("win", "nfcore45")]
-        [InlineData("win", "nfcore4")]
-        [InlineData("win81", "nfcore4")]
-        public void Compatibility_Inferred(string fw1, string fw2)
-        {
-            var framework1 = NuGetFramework.Parse(fw1);
-            var framework2 = NuGetFramework.Parse(fw2);
-
-            var compat = DefaultCompatibilityProvider.Instance;
-
-            // verify that compatibility is inferred across all the mappings
-            Assert.True(compat.IsCompatible(framework1, framework2));
-
-            // verify that this was a one way mapping
-            Assert.True(!compat.IsCompatible(framework2, framework1));
-        }
-
-        [Theory]
         [InlineData("win8", "win")]
         [InlineData("wpa", "wpa81")]
         [InlineData("netcore45", "win8")]
@@ -214,7 +301,6 @@ namespace NuGet.Test
         [InlineData("dnx451", "net4")]
         [InlineData("dnx451", "net451")]
         [InlineData("dnx451", "net45")]
-        [InlineData("dnx451", "nfcore45")]
         public void Compatibility_OneWayMappings(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);

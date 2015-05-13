@@ -97,9 +97,6 @@ namespace NuGet.Test
             frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0, 0)));
             frameworks.Add(new NuGetFramework(".nETframework", new Version(4, 5, 0, 0), string.Empty));
 
-            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5), null, null, new Version(0, 0)));
-            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5), string.Empty, string.Empty, new Version(0, 0)));
-
             foreach (var fw1 in frameworks)
             {
                 foreach (var fw2 in frameworks)
@@ -122,9 +119,6 @@ namespace NuGet.Test
 
             frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0), null));
             frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0), string.Empty));
-
-            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0, 0), null, new Version(0, 0)));
-            frameworks.Add(new NuGetFramework(".NETFramework", new Version(4, 5, 0, 0), string.Empty));
 
             foreach (var fw1 in frameworks)
             {

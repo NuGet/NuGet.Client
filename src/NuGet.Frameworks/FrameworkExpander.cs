@@ -66,7 +66,7 @@ namespace NuGet.Frameworks
 
             // 0.0 through the current framework
             var frameworkRange = new FrameworkRange(
-                new NuGetFramework(framework.Framework, new Version(0, 0), framework.Profile, framework.Platform, framework.PlatformVersion),
+                new NuGetFramework(framework.Framework, new Version(0, 0), framework.Profile),
                 framework);
 
             IEnumerable<NuGetFramework> equivalent = null;
@@ -87,7 +87,7 @@ namespace NuGet.Frameworks
                     foreach (var subFramework in subSetFrameworks)
                     {
                         // clone the framework but use the sub framework instead
-                        yield return new NuGetFramework(subFramework, framework.Version, framework.Profile, framework.Platform, framework.PlatformVersion);
+                        yield return new NuGetFramework(subFramework, framework.Version, framework.Profile);
                     }
                 }
             }

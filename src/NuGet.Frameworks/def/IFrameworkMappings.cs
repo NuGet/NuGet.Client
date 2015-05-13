@@ -54,5 +54,13 @@ namespace NuGet.Frameworks
         /// Ex: .NETFramework -supports-> Native
         /// </summary>
         IEnumerable<OneWayCompatibilityMappingEntry> CompatibilityMappings { get; }
+
+        /// <summary>
+        /// Ordered list of framework identifiers. The first framework in the list will be preferred over other 
+        /// framework identifiers. This is enable better tie breaking in scenarios where legacy frameworks are 
+        /// equivalently compatible to a new framework.
+        /// Example: UAP10.0 -> win81, wpa81
+        /// </summary>
+        IEnumerable<string> FrameworkPrecedence { get; }
     }
 }

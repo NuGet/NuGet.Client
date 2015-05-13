@@ -126,8 +126,6 @@ namespace NuGet.Frameworks
                     }
                 }
 
-                Debug.Assert(reduced.Count() < 2, "Unable to find the nearest framework: " + String.Join(", ", reduced));
-
                 // if we have reduced down to a single framework, use that
                 if (reduced.Count() == 1)
                 {
@@ -137,10 +135,13 @@ namespace NuGet.Frameworks
                 // this should be a very rare occurrence
                 // at this point we are unable to decide between the remaining frameworks in any useful way
                 // just take the first one by rev alphabetical order if we can't narrow it down at all
-                if (nearest == null
-                    && reduced.Any())
+                if (nearest == null && reduced.Any())
                 {
-                    nearest = reduced.OrderByDescending(f => f, new NuGetFrameworkSorter()).ThenBy(f => f.GetHashCode()).First();
+                    // Sort by precedence rules, then by name in the case of a tie
+                    nearest = reduced.OrderBy(f => f, new FrameworkPrecedenceSorter(_mappings))
+                        .ThenByDescending(f => f, new NuGetFrameworkSorter())
+                        .ThenBy(f => f.GetHashCode())
+                        .First();
                 }
             }
 

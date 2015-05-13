@@ -11,6 +11,8 @@ namespace NuGet.Test
     public class FrameworkReducerTests
     {
         [Theory]
+        [InlineData("uap10.0", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
+        [InlineData("netcore50", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
         [InlineData("dnx452", "net45")]
         [InlineData("dnxcore50", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
         [InlineData("net20", "net2")]
@@ -28,20 +30,137 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse(projectFramework);
 
             List<NuGetFramework> frameworks = new List<NuGetFramework>()
-                {
-                    NuGetFramework.Parse("net20"),
-                    NuGetFramework.Parse("net35"),
-                    NuGetFramework.Parse("net40"),
-                    NuGetFramework.Parse("net45"),
-                    NuGetFramework.Parse("portable-net40+wp80+win8+wpa81+sl5"),
-                    NuGetFramework.Parse("portable-net45+wp80+win8+wpa81+aspnetcore50")
-                };
+            {
+                NuGetFramework.Parse("net20"),
+                NuGetFramework.Parse("net35"),
+                NuGetFramework.Parse("net40"),
+                NuGetFramework.Parse("net45"),
+                NuGetFramework.Parse("portable-net40+wp80+win8+wpa81+sl5"),
+                NuGetFramework.Parse("portable-net45+wp80+win8+wpa81+aspnetcore50")
+            };
 
             // Act
             var result = reducer.GetNearest(project, frameworks);
 
             // Assert
             Assert.Equal(expectedFramework, result.GetShortFolderName());
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestUAPTie()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var project = NuGetFramework.Parse("UAP10.0");
+
+            var win81 = NuGetFramework.Parse("win81");
+            var wpa81 = NuGetFramework.Parse("wpa81");
+            var native = NuGetFramework.Parse("native");
+            var netcore = NuGetFramework.Parse("netcore");
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { native, netcore, win81, net45, wpa81 };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(win81, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestUAPTie2()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var project = NuGetFramework.Parse("UAP10.0");
+
+            var win = NuGetFramework.Parse("win");
+            var wpa81 = NuGetFramework.Parse("wpa81");
+            var native = NuGetFramework.Parse("native");
+            var netcore = NuGetFramework.Parse("netcore");
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { native, netcore, win, net45, wpa81 };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(netcore, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestUAP()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var project = NuGetFramework.Parse("UAP10.0");
+
+            var win81 = NuGetFramework.Parse("win81");
+            var win = NuGetFramework.Parse("win");
+            var native = NuGetFramework.Parse("native");
+            var netcore = NuGetFramework.Parse("netcore");
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { native, netcore, win81, net45, win };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(win81, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestUAPCore()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var project = NuGetFramework.Parse("UAP10.0");
+
+            var native = NuGetFramework.Parse("native");
+            var core50 = NuGetFramework.Parse("core50");
+            var dnx451 = NuGetFramework.Parse("dnx451");
+            var dnxcore50 = NuGetFramework.Parse("dnxcore50");
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { native, core50, dnx451, dnxcore50, net45 };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(core50, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestUAPCore50()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var project = NuGetFramework.Parse("UAP10.0");
+
+            var core = NuGetFramework.Parse("core50");
+            var dnx451 = NuGetFramework.Parse("dnx451");
+            var dnxcore50 = NuGetFramework.Parse("dnxcore50");
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { core, dnx451, dnxcore50, net45 };
+
+            var result = reducer.GetNearest(project, all);
+
+            Assert.Equal(core, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestNetCore()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var win81 = NuGetFramework.Parse("win81");
+            var native = NuGetFramework.Parse("native");
+            var netcore = NuGetFramework.Parse("netcore");
+
+            var project = NuGetFramework.Parse("net451");
+
+            var all = new NuGetFramework[] { native, netcore };
+
+            var result = reducer.GetNearest(win81, all);
+
+            Assert.Equal(netcore, result);
         }
 
         [Theory]
@@ -120,24 +239,6 @@ namespace NuGet.Test
             var result = reducer.GetNearest(project, all);
 
             Assert.Equal(net40client, result);
-        }
-
-        [Fact]
-        public void FrameworkReducer_GetNearestNetCore()
-        {
-            FrameworkReducer reducer = new FrameworkReducer();
-
-            var win81 = NuGetFramework.Parse("win81");
-            var native = NuGetFramework.Parse("native");
-            var netcore = NuGetFramework.Parse("netcore");
-
-            var project = NuGetFramework.Parse("net451");
-
-            var all = new NuGetFramework[] { native, netcore };
-
-            var result = reducer.GetNearest(win81, all);
-
-            Assert.Equal(netcore, result);
         }
 
         [Fact]

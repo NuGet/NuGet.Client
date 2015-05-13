@@ -60,7 +60,6 @@ namespace NuGet.Frameworks
                     _identifierShortNames = new KeyValuePair<string, string>[]
                         {
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, "net"),
-                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, "nfcore"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetMicro, "netmf"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Silverlight, "sl"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Portable, "portable"),
@@ -83,8 +82,9 @@ namespace NuGet.Frameworks
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Dnx, "dnx"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.DnxCore, "dnxcore"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.CoreCLR, "core"),
-                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "netcore"), // legacy
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "netcore"), 
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
                         };
                 }
 
@@ -124,22 +124,15 @@ namespace NuGet.Frameworks
                 {
                     _equivalentFrameworks = new KeyValuePair<NuGetFramework, NuGetFramework>[]
                         {
+                            // UAP 0.0 <-> UAP 10.0
+                            new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, FrameworkConstants.EmptyVersion),
+                                                    FrameworkConstants.CommonFrameworks.UAP10),
+
                             // win <-> win8
                             new KeyValuePair<NuGetFramework, NuGetFramework>(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.EmptyVersion),
                                 FrameworkConstants.CommonFrameworks.Win8),
-
-                            // win8 <-> f:netcore45 p:win8
-                            new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                FrameworkConstants.CommonFrameworks.Win8,
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, new Version(4, 5, 0, 0),
-                                    FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 0, 0, 0))),
-
-                            // win81 <-> f:netcore451 p:win81
-                            new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                FrameworkConstants.CommonFrameworks.Win81,
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, new Version(4, 5, 1, 0),
-                                    FrameworkConstants.PlatformIdentifiers.Windows, new Version(8, 1, 0, 0))),
 
                             // win8 <-> netcore45
                             new KeyValuePair<NuGetFramework, NuGetFramework>(
@@ -270,9 +263,6 @@ namespace NuGet.Frameworks
                 {
                     _subSetFrameworks = new KeyValuePair<string, string>[]
                         {
-                            // .NETCore is a subset of the .NET framework
-                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetFrameworkCore, FrameworkConstants.FrameworkIdentifiers.Net),
-
                             // .NET is a subset of DNX
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.FrameworkIdentifiers.Dnx),
 
@@ -295,6 +285,38 @@ namespace NuGet.Frameworks
                 {
                     _compatibilityMappings = new OneWayCompatibilityMappingEntry[]
                         {
+                            // UAP supports Win81
+                            new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, FrameworkConstants.MaxVersion)),
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.EmptyVersion),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, new Version(8, 1, 0, 0)))),
+
+                            // UAP supports WPA81
+                            new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, FrameworkConstants.MaxVersion)),
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, FrameworkConstants.EmptyVersion),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, new Version(8, 1, 0, 0)))),
+
+                            // UAP supports NetCore50
+                            new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, FrameworkConstants.EmptyVersion),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, FrameworkConstants.MaxVersion)),
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.Version5),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.Version5))),
+
+                            // NetCore50 supports Core50
+                            new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(5, 0, 0, 0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.MaxVersion)),
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5))),
+
                             // Net46 supports Core50
                             new OneWayCompatibilityMappingEntry(new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 6, 0, 0)),
@@ -314,6 +336,27 @@ namespace NuGet.Frameworks
                 }
 
                 return _compatibilityMappings;
+            }
+        }
+
+        private static string[] _frameworkPrecedence;
+
+        public IEnumerable<string> FrameworkPrecedence
+        {
+            get
+            {
+                if (_frameworkPrecedence == null)
+                {
+                    _frameworkPrecedence = new string[]
+                    {
+                        FrameworkConstants.FrameworkIdentifiers.Net,
+                        FrameworkConstants.FrameworkIdentifiers.NetCore,
+                        FrameworkConstants.FrameworkIdentifiers.Windows,
+                        FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp,
+                    };
+                }
+
+                return _frameworkPrecedence;
             }
         }
 

@@ -17,28 +17,31 @@ namespace NuGet.Frameworks
         /// Ex: NET Framework -> .NET Framework
         /// This includes self mappings.
         /// </summary>
-        private Dictionary<string, string> _identifierSynonyms;
+        private readonly Dictionary<string, string> _identifierSynonyms;
 
-        private Dictionary<string, string> _identifierToShortName;
-        private Dictionary<string, string> _profilesToShortName;
-        private Dictionary<string, string> _identifierShortToLong;
-        private Dictionary<string, string> _profileShortToLong;
+        private readonly Dictionary<string, string> _identifierToShortName;
+        private readonly Dictionary<string, string> _profilesToShortName;
+        private readonly Dictionary<string, string> _identifierShortToLong;
+        private readonly Dictionary<string, string> _profileShortToLong;
 
         // profile -> supported frameworks, optional frameworks
-        private Dictionary<int, HashSet<NuGetFramework>> _portableFrameworks;
-        private Dictionary<int, HashSet<NuGetFramework>> _portableOptionalFrameworks;
+        private readonly Dictionary<int, HashSet<NuGetFramework>> _portableFrameworks;
+        private readonly Dictionary<int, HashSet<NuGetFramework>> _portableOptionalFrameworks;
 
         // equivalent frameworks
-        private Dictionary<NuGetFramework, HashSet<NuGetFramework>> _equivalentFrameworks;
+        private readonly Dictionary<NuGetFramework, HashSet<NuGetFramework>> _equivalentFrameworks;
 
         // equivalent profiles
-        private Dictionary<string, Dictionary<string, HashSet<string>>> _equivalentProfiles;
+        private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _equivalentProfiles;
 
         // all compatibility mappings
-        private HashSet<OneWayCompatibilityMappingEntry> _compatibilityMappings;
+        private readonly HashSet<OneWayCompatibilityMappingEntry> _compatibilityMappings;
 
         // subsets, net -> netcore
-        private Dictionary<string, HashSet<string>> _subSetFrameworks;
+        private readonly Dictionary<string, HashSet<string>> _subSetFrameworks;
+
+        // framework ordering
+        private readonly List<string> _frameworkPrecedence = new List<string>();
 
         public FrameworkNameProvider(IEnumerable<IFrameworkMappings> mappings, IEnumerable<IPortableFrameworkMappings> portableMappings)
         {
@@ -183,7 +186,7 @@ namespace NuGet.Frameworks
         {
             if (supportedFrameworks == null)
             {
-                throw new ArgumentNullException("supportedFrameworks");
+                throw new ArgumentNullException(nameof(supportedFrameworks));
             }
 
             profileNumber = -1;
@@ -326,7 +329,7 @@ namespace NuGet.Frameworks
         {
             if (shortPortableProfiles == null)
             {
-                throw new ArgumentNullException("shortPortableProfiles");
+                throw new ArgumentNullException(nameof(shortPortableProfiles));
             }
 
             var shortNames = shortPortableProfiles.Split(new char[] { '+' }, StringSplitOptions.RemoveEmptyEntries);
@@ -412,7 +415,7 @@ namespace NuGet.Frameworks
         {
             if (range == null)
             {
-                throw new ArgumentNullException("range");
+                throw new ArgumentNullException(nameof(range));
             }
 
             var relevant = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
@@ -466,6 +469,9 @@ namespace NuGet.Frameworks
 
                     // add subset frameworks
                     AddSubSetFrameworks(mapping.SubSetFrameworks);
+
+                    // add framework ordering rules
+                    AddFrameworkPrecedenceMappings(mapping.FrameworkPrecedence);
                 }
             }
         }
@@ -683,6 +689,12 @@ namespace NuGet.Frameworks
             }
         }
 
+        // Ordered lists of framework identifiers
+        public void AddFrameworkPrecedenceMappings(IEnumerable<string> mappings)
+        {
+            _frameworkPrecedence.AddRange(mappings);
+        }
+
         public bool TryGetCompatibilityMappings(NuGetFramework framework, out IEnumerable<FrameworkRange> supportedFrameworkRanges)
         {
             supportedFrameworkRanges = _compatibilityMappings.Where(m => m.TargetFrameworkRange.Satisfies(framework)).Select(m => m.SupportedFrameworkRange);
@@ -701,6 +713,29 @@ namespace NuGet.Frameworks
 
             subSetFrameworks = null;
             return false;
+        }
+
+        // Order the frameworks if rules exist, this is used to break ties between equally compatible frameworks
+        // EX: UAP -> Win81, WPA81
+        public int CompareFrameworks(NuGetFramework x, NuGetFramework y)
+        {
+            // Using the ordered list of frameworks choose the framework that matches first
+            if (!StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework))
+            {
+                foreach (string identifier in _frameworkPrecedence)
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(x.Framework, identifier))
+                    {
+                        return -1;
+                    }
+                    else if (StringComparer.OrdinalIgnoreCase.Equals(y.Framework, identifier))
+                    {
+                        return 1;
+                    }
+                }
+            }
+
+            return 0;
         }
     }
 }

@@ -141,6 +141,7 @@ namespace NuGet.Test
         [InlineData("NETFramework,Version=v4.5", ".NETFramework,Version=v4.5")]
         [InlineData(".NETPortable,Version=v0.0,Profile=Profile7", ".NETPortable,Version=v0.0,Profile=Profile7")]
         [InlineData("Portable,Version=v0.0,Profile=Profile7", ".NETPortable,Version=v0.0,Profile=Profile7")]
+        [InlineData("uap,Version=v10.0.10030.1", "UAP,Version=v10.0.10030.1")]
         public void NuGetFramework_ParseFullName(string input, string expected)
         {
             string actual = NuGetFramework.Parse(input).DotNetFrameworkName;
@@ -184,6 +185,7 @@ namespace NuGet.Test
         [InlineData("net", ".NETFramework,Version=v0.0")]
         [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
         [InlineData("net45-cf", ".NETFramework,Version=v4.5,Profile=CompactFramework")]
+        [InlineData("uap10.0", "UAP,Version=v10.0")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
             string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;

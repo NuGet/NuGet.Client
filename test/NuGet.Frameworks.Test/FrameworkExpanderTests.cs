@@ -11,6 +11,42 @@ namespace NuGet.Test
     public class FrameworkExpanderTests
     {
         [Fact]
+        public void FrameworkExpander_UAPWPA()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("UAP10.0");
+            NuGetFramework indirect = new NuGetFramework("WindowsPhoneApp", new Version(8, 1, 0, 0));
+
+            FrameworkExpander expander = new FrameworkExpander();
+            var expanded = expander.Expand(framework).ToArray();
+
+            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), String.Join("|", expanded.Select(e => e.ToString())));
+        }
+
+        [Fact]
+        public void FrameworkExpander_UAPWIN()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("UAP10.0");
+            NuGetFramework indirect = new NuGetFramework("Windows", new Version(8, 1, 0, 0));
+
+            FrameworkExpander expander = new FrameworkExpander();
+            var expanded = expander.Expand(framework).ToArray();
+
+            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), String.Join("|", expanded.Select(e => e.ToString())));
+        }
+
+        [Fact]
+        public void FrameworkExpander_UAP()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("UAP10.0");
+            NuGetFramework indirect = new NuGetFramework(".NETCore", new Version(5, 0, 0, 0));
+
+            FrameworkExpander expander = new FrameworkExpander();
+            var expanded = expander.Expand(framework).ToArray();
+
+            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), String.Join("|", expanded.Select(e => e.ToString())));
+        }
+
+        [Fact]
         public void FrameworkExpander_Indirect()
         {
             NuGetFramework framework = NuGetFramework.Parse("win9");
@@ -30,10 +66,9 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.Equal(3, expanded.Length);
+            Assert.Equal(2, expanded.Length);
             Assert.Equal(".NETFramework,Version=v4.5,Profile=Client", expanded[0].ToString());
             Assert.Equal(".NETFramework,Version=v4.5,Profile=Full", expanded[1].ToString());
-            Assert.Equal("NETFrameworkCore,Version=v4.5", expanded[2].ToString());
         }
 
         [Fact]
@@ -44,7 +79,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.Equal<int>(6, expanded.Length);
+            Assert.Equal<int>(5, expanded.Length);
         }
 
         [Fact]

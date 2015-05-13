@@ -12,6 +12,7 @@ namespace NuGet.Frameworks
         public static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
         public static readonly Version MaxVersion = new Version(Int32.MaxValue, 0, 0, 0);
         public static readonly Version Version5 = new Version(5, 0, 0, 0);
+        public static readonly Version Version10 = new Version(10, 0, 0, 0);
 
         public static class SpecialIdentifiers
         {
@@ -29,8 +30,7 @@ namespace NuGet.Frameworks
         public static class FrameworkIdentifiers
         {
             public const string Net = ".NETFramework";
-            public const string NetFrameworkCore = "NETFrameworkCore"; // the actual .NET Core
-            public const string NetCore = ".NETCore"; // deprecated
+            public const string NetCore = ".NETCore";
             public const string WinRT = "WinRT"; // deprecated
             public const string NetMicro = ".NETMicroFramework";
             public const string Portable = ".NETPortable";
@@ -54,6 +54,7 @@ namespace NuGet.Frameworks
             public const string XamarinPlayStationVita = "Xamarin.PlayStationVita";
             public const string XamarinXbox360 = "Xamarin.Xbox360";
             public const string XamarinXboxOne = "Xamarin.XboxOne";
+            public const string UAP = "UAP";
         }
 
         /// <summary>
@@ -98,10 +99,8 @@ namespace NuGet.Frameworks
 
             public static readonly NuGetFramework Core = new NuGetFramework(FrameworkIdentifiers.CoreCLR, EmptyVersion);
             public static readonly NuGetFramework Core50 = new NuGetFramework(FrameworkIdentifiers.CoreCLR, Version5);
-        }
 
-        // public const RegexOptions RegexFlags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
-        // public static readonly Regex FrameworkRegex = new Regex(@"^(?<Framework>[A-Za-z\.]+)(?<Version>([0-9]+)(\.([0-9]+))*)?(?<Profile>-([A-Za-z]+[0-9]*)+(\+[A-Za-z]+[0-9]*([0-9]+\.([0-9]+))*)*)?$", RegexFlags);
-        // public static readonly Regex ProfileNumberRegex = new Regex(@"^Profile(?<ProfileNumber>[0-9]+)$", RegexFlags);
+            public static readonly NuGetFramework UAP10 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, Version10);
+        }
     }
 }
