@@ -38,7 +38,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static string GetGlobalPackagesFolder()
         {
-            var path = Environment.GetEnvironmentVariable("NUGET_GLOBAL_PACKAGE_CACHE");
+            var path = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
 
             if (string.IsNullOrEmpty(path))
             {
