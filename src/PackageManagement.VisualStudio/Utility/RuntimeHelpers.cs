@@ -104,6 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio
             visitedProjects.Add(envDTEProjectUniqueName);
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "nuGetProjectContext")]
         public static async Task<IEnumerable<AssemblyBinding>> AddBindingRedirectsAsync(
             ISolutionManager solutionManager,
             EnvDTEProject envDTEProject,

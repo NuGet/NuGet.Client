@@ -332,7 +332,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        private async Task<IEnumerable<string>> GeneratePackageIdListForUpdate(NuGetProject project, CancellationToken token)
+        private static async Task<IEnumerable<string>> GeneratePackageIdListForUpdate(NuGetProject project, CancellationToken token)
         {
             IEnumerable<string> packageIds = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity.Id);
             return packageIds;

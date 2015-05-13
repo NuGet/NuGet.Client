@@ -435,7 +435,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the list of installed packages based on Filter, Skip and First parameters. Used for Get-Package.
         /// </summary>
         /// <returns></returns>
-        protected async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
+        protected static async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
             string filter, int skip, int take)
         {
             Dictionary<NuGetProject, IEnumerable<PackageReference>> installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
