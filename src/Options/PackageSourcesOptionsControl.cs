@@ -220,12 +220,23 @@ namespace NuGet.Options
             var packageSources = PackageSourcesListBox.Items.Cast<PackageSource>().ToList();
             packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSource>().ToList());
 
-            var existingSources = _packageSourceProvider.LoadPackageSources().ToList();
-            if (SourcesChanged(existingSources, packageSources))
+            try
             {
-                _packageSourceProvider.SavePackageSources(packageSources);
+                var existingSources = _packageSourceProvider.LoadPackageSources().ToList();
+                if (SourcesChanged(existingSources, packageSources))
+                {
+                    _packageSourceProvider.SavePackageSources(packageSources);
+                }
             }
-
+            catch(InvalidOperationException)
+            {
+                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
+            }
             // find the enabled package source 
             return true;
         }

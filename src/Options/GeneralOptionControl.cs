@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.Options
 {
@@ -32,24 +33,48 @@ namespace NuGet.Options
         {
             if (!_initialized)
             {
-                var packageRestoreConsent = new PackageRestoreConsent(_settings);
-                packageRestoreConsentCheckBox.Checked = packageRestoreConsent.IsGrantedInSettings;
-                packageRestoreAutomaticCheckBox.Checked = packageRestoreConsent.IsAutomatic;
-                packageRestoreAutomaticCheckBox.Enabled = packageRestoreConsentCheckBox.Checked;
-
+                try
+                {
+                    var packageRestoreConsent = new PackageRestoreConsent(_settings);
+                    packageRestoreConsentCheckBox.Checked = packageRestoreConsent.IsGrantedInSettings;
+                    packageRestoreAutomaticCheckBox.Checked = packageRestoreConsent.IsAutomatic;
+                    packageRestoreAutomaticCheckBox.Enabled = packageRestoreConsentCheckBox.Checked;
+                }
+                catch(InvalidOperationException)
+                {
+                    MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
+                }
                 checkForUpdate.Checked = _productUpdateSettings.ShouldCheckForUpdate;
             }
 
             _initialized = true;
         }
 
-        internal void OnApply()
+        internal bool OnApply()
         {
             _productUpdateSettings.ShouldCheckForUpdate = checkForUpdate.Checked;
 
-            var packageRestoreConsent = new PackageRestoreConsent(_settings);
-            packageRestoreConsent.IsGrantedInSettings = packageRestoreConsentCheckBox.Checked;
-            packageRestoreConsent.IsAutomatic = packageRestoreAutomaticCheckBox.Checked;
+            try
+            {
+                var packageRestoreConsent = new PackageRestoreConsent(_settings);
+                packageRestoreConsent.IsGrantedInSettings = packageRestoreConsentCheckBox.Checked;
+                packageRestoreConsent.IsAutomatic = packageRestoreAutomaticCheckBox.Checked;
+            }
+            catch (InvalidOperationException)
+            {
+                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
+                return false;
+            }
+            return true;
         }
 
         internal void OnClosed()

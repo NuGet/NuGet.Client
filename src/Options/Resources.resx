@@ -123,6 +123,15 @@
   <data name="BrowseFolderDialogSelectButton" xml:space="preserve">
     <value>Select</value>
   </data>
+  <data name="ErrorDialogBoxTitle" xml:space="preserve">
+    <value>Operation failed</value>
+  </data>
+  <data name="ShowError_ConfigInvalidOperation" xml:space="preserve">
+    <value>NuGet.Config is malformed, Please check NuGet.Config</value>
+  </data>
+  <data name="ShowError_ConfigUnauthorizedAccess" xml:space="preserve">
+    <value>Can not access NuGet.Config, Please check NuGet.Config</value>
+  </data>
   <data name="ShowInfo_ClearPackageCache" xml:space="preserve">
     <value>All packages have been cleared from the cache.</value>
   </data>

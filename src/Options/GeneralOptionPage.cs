@@ -44,7 +44,7 @@ namespace NuGet.Options
         protected override void OnApply(PageApplyEventArgs e)
         {
             base.OnApply(e);
-            GeneralControl.OnApply();
+            if(!GeneralControl.OnApply()) e.ApplyBehavior = ApplyKind.Cancel;
         }
 
         private GeneralOptionControl GeneralControl
