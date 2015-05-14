@@ -14,7 +14,6 @@ namespace NuGet.Protocol.Core.v2
     /// </summary>
     public class PackageRepositoryResourceV2Provider : ResourceProvider
     {
-        // TODO: make these weak references
         private readonly ConcurrentDictionary<Configuration.PackageSource, PackageRepositoryResourceV2> _cache;
 
         public PackageRepositoryResourceV2Provider()
@@ -23,8 +22,7 @@ namespace NuGet.Protocol.Core.v2
             _cache = new ConcurrentDictionary<Configuration.PackageSource, PackageRepositoryResourceV2>();
         }
 
-        // TODO: clean up
-        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             PackageRepositoryResourceV2 repoResource = null;
 
@@ -51,7 +49,7 @@ namespace NuGet.Protocol.Core.v2
                             repo = V2Utilities.GetV2SourceRepository(source.PackageSource);
                         }
                     }
-                    catch (Exception)
+                    catch
                     {
                         // *TODOs:Do tracing and throw apppropriate exception here.
                         repoResource = null;
@@ -69,7 +67,7 @@ namespace NuGet.Protocol.Core.v2
                 }
             }
 
-            return Tuple.Create<bool, INuGetResource>(repoResource != null, repoResource);
+            return Task.FromResult(Tuple.Create<bool, INuGetResource>(repoResource != null, repoResource));
         }
     }
 }
