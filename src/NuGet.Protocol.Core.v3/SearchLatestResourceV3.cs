@@ -51,52 +51,6 @@ namespace NuGet.Protocol.Core.v3
             return results;
         }
 
-        /// <summary>
-        /// Returns a field value or the empty string. Arrays will become comma delimited strings.
-        /// </summary>
-        private static string GetField(JObject json, string property)
-        {
-            var value = json[property];
-
-            if (value == null)
-            {
-                return string.Empty;
-            }
-
-            var array = value as JArray;
-
-            if (array != null)
-            {
-                return String.Join(", ", array.Select(e => e.ToString()));
-            }
-
-            return value.ToString();
-        }
-
-        private static int GetInt(JObject json, string property)
-        {
-            var value = json[property];
-
-            if (value == null)
-            {
-                return 0;
-            }
-
-            return value.ToObject<int>();
-        }
-
-        private static DateTimeOffset? GetDateTime(JObject json, string property)
-        {
-            var value = json[property];
-
-            if (value == null)
-            {
-                return null;
-            }
-
-            return value.ToObject<DateTimeOffset>();
-        }
-
         private Uri GetUri(JObject json, string property)
         {
             if (json[property] == null)

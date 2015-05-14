@@ -5,28 +5,28 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v2;
+using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol.VisualStudio
 {
-    public class PSSearchResourceV2Provider : V2ResourceProvider
+    public class PSSearchResourceV3Provider : ResourceProvider
     {
-        public PSSearchResourceV2Provider()
-            : base(typeof(PSSearchResource),
-                  nameof(PSSearchResourceV2Provider),
-                  NuGetResourceProviderPositions.Last)
+        public PSSearchResourceV3Provider()
+            : base(typeof(PSSearchResource), 
+                  nameof(PSSearchResourceV3Provider),
+                  NuGetResourceProviderPositions.First)
         {
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             PSSearchResource resource = null;
-            var v2repo = await GetRepository(source, token);
 
-            var searchResource = await source.GetResourceAsync<UISearchResource>(token);
+            var searchResource = await source.GetResourceAsync<RawSearchResourceV3>(token);
+
             if (searchResource != null)
             {
-                resource = new PowerShellSearchResourceV2(v2repo);
+                resource = new PowerShellSearchResourceV3(searchResource);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

@@ -59,20 +59,20 @@ namespace NuGet.RuntimeModel
                 EachProperty(json["runtimes"]).Select(ReadRuntimeDescription));
         }
 
-        private static void WriteRuntimeGraph(JObject json, RuntimeGraph runtimeGraph)
+        private static void WriteRuntimeGraph(JObject jObject, RuntimeGraph runtimeGraph)
         {
             var runtimes = new JObject();
-            json["runtimes"] = runtimes;
+            jObject["runtimes"] = runtimes;
             foreach (var x in runtimeGraph.Runtimes.Values)
             {
                 WriteRuntimeDescription(runtimes, x);
             }
         }
 
-        private static void WriteRuntimeDescription(JObject json, RuntimeDescription data)
+        private static void WriteRuntimeDescription(JObject jObject, RuntimeDescription data)
         {
             var value = new JObject();
-            json[data.RuntimeIdentifier] = value;
+            jObject[data.RuntimeIdentifier] = value;
             value["#import"] = new JArray(data.InheritedRuntimes.Select(x => new JValue(x)));
             foreach (var x in data.RuntimeDependencySets.Values)
             {
@@ -80,19 +80,19 @@ namespace NuGet.RuntimeModel
             }
         }
 
-        private static void WriteRuntimeDependencySet(JObject json, RuntimeDependencySet data)
+        private static void WriteRuntimeDependencySet(JObject jObject, RuntimeDependencySet data)
         {
             var value = new JObject();
-            json[data.Id] = value;
+            jObject[data.Id] = value;
             foreach (var x in data.Dependencies.Values)
             {
                 WritePackageDependency(value, x);
             }
         }
 
-        private static void WritePackageDependency(JObject json, RuntimePackageDependency data)
+        private static void WritePackageDependency(JObject jObject, RuntimePackageDependency data)
         {
-            json[data.Id] = new JValue(data.VersionRange.ToNormalizedString());
+            jObject[data.Id] = new JValue(data.VersionRange.ToNormalizedString());
         }
 
         private static RuntimeDescription ReadRuntimeDescription(KeyValuePair<string, JToken> json)

@@ -12,6 +12,28 @@ namespace NuGet.Protocol.VisualStudio
         /// <summary>
         /// Returns a field value or the empty string. Arrays will become comma delimited strings.
         /// </summary>
+        public static string GetString(this JObject json, string property)
+        {
+            var value = json[property];
+
+            if (value == null)
+            {
+                return string.Empty;
+            }
+
+            var array = value as JArray;
+
+            if (array != null)
+            {
+                return string.Empty;
+            }
+
+            return value.ToString();
+        }
+
+        /// <summary>
+        /// Returns a field value or the empty string. Arrays will become comma delimited strings.
+        /// </summary>
         public static string GetField(this JObject json, string property)
         {
             var value = json[property];
@@ -64,7 +86,7 @@ namespace NuGet.Protocol.VisualStudio
 
             var str = json[property].ToString();
 
-            if (String.IsNullOrEmpty(str))
+            if (string.IsNullOrEmpty(str))
             {
                 return null;
             }

@@ -67,11 +67,11 @@ namespace NuGet.Protocol.VisualStudio
                 var allPackages = collapsedQuery
                     .Skip(skip)
                     .Take(take)
-                    .ToList();
+                    .ToArray();
 
                 return allPackages
                     .Select(p => CreatePackageSearchResult(p, filters, cancellationToken))
-                    .ToList();
+                    .ToArray();
             });
         }
 

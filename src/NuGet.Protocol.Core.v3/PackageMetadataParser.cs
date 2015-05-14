@@ -60,9 +60,9 @@ namespace NuGet.Protocol.Core.v3
                 requireLicenseAcceptance, minClientVersion, downloadCount, downloadCountForVersion, owners, types);
         }
 
-        private static IEnumerable<string> GetFieldAsArray(JObject json, string property)
+        private static IEnumerable<string> GetFieldAsArray(JObject jObject, string property)
         {
-            var value = json[property];
+            var value = jObject[property];
 
             if (value == null)
             {
@@ -84,9 +84,9 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Returns a field value or the empty string. Arrays will become comma delimited strings.
         /// </summary>
-        private static string GetField(JObject json, string property)
+        private static string GetField(JObject jObject, string property)
         {
-            var value = json[property];
+            var value = jObject[property];
 
             if (value == null)
             {
@@ -103,13 +103,13 @@ namespace NuGet.Protocol.Core.v3
             return value.ToString();
         }
 
-        private static Uri GetUri(JObject json, string property)
+        private static Uri GetUri(JObject jObject, string property)
         {
-            if (json[property] == null)
+            if (jObject[property] == null)
             {
                 return null;
             }
-            var str = json[property].ToString();
+            var str = jObject[property].ToString();
             if (String.IsNullOrEmpty(str))
             {
                 return null;

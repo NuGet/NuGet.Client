@@ -28,6 +28,7 @@ namespace NuGet.Protocol.VisualStudio
         {
             yield return new Lazy<INuGetResourceProvider>(() => new PowerShellAutoCompleteResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new PSSearchResourceV2Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PSSearchResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new PSAutoCompleteResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV3Provider());

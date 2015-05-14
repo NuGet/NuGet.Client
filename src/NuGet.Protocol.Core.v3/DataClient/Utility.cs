@@ -216,11 +216,11 @@ namespace NuGet.Protocol.Core.v3.Data
             return GetEntityUri(token as JObject);
         }
 
-        public static Task<JToken> FindEntityInJson(Uri entity, JObject json)
+        public static Task<JToken> FindEntityInJson(Uri entity, JObject jObject)
         {
             var search = entity.AbsoluteUri;
 
-            var idNode = json.Descendants().Concat(json).Where(n =>
+            var idNode = jObject.Descendants().Concat(jObject).Where(n =>
                 {
                     var prop = n as JProperty;
 

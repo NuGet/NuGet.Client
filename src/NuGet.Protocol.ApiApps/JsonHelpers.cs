@@ -11,12 +11,12 @@ namespace NuGet.Protocol.ApiApps
 {
     internal static class JsonHelpers
     {
-        internal static int GetIntOrZero(JObject json, string propertyName)
+        internal static int GetIntOrZero(JObject jObject, string propertyName)
         {
             JToken token = null;
             var x = 0;
 
-            if (json.TryGetValue(propertyName, out token))
+            if (jObject.TryGetValue(propertyName, out token))
             {
                 Int32.TryParse(token.ToString(), out x);
             }
@@ -24,12 +24,12 @@ namespace NuGet.Protocol.ApiApps
             return x;
         }
 
-        internal static string GetStringOrNull(JObject json, string propertyName)
+        internal static string GetStringOrNull(JObject jObject, string propertyName)
         {
             JToken token = null;
             string s = null;
 
-            if (json.TryGetValue(propertyName, out token))
+            if (jObject.TryGetValue(propertyName, out token))
             {
                 s = token.ToString();
             }
@@ -37,13 +37,13 @@ namespace NuGet.Protocol.ApiApps
             return s;
         }
 
-        internal static Uri GetUriOrNull(JObject json, string propertyName)
+        internal static Uri GetUriOrNull(JObject jObject, string propertyName)
         {
             Uri uri = null;
 
-            var s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(jObject, propertyName);
 
-            if (!String.IsNullOrEmpty(s))
+            if (!string.IsNullOrEmpty(s))
             {
                 uri = new Uri(s);
             }
@@ -51,11 +51,11 @@ namespace NuGet.Protocol.ApiApps
             return uri;
         }
 
-        internal static Guid GetGuidOrEmpty(JObject json, string propertyName)
+        internal static Guid GetGuidOrEmpty(JObject jObject, string propertyName)
         {
             var guid = Guid.Empty;
 
-            var s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(jObject, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {
@@ -65,12 +65,12 @@ namespace NuGet.Protocol.ApiApps
             return guid;
         }
 
-        internal static IEnumerable<string> GetStringArray(JObject json, string propertyName)
+        internal static IEnumerable<string> GetStringArray(JObject jObject, string propertyName)
         {
             JToken token = null;
             IEnumerable<string> result = null;
 
-            if (json.TryGetValue(propertyName, out token))
+            if (jObject.TryGetValue(propertyName, out token))
             {
                 var array = token as JArray;
 
@@ -83,11 +83,11 @@ namespace NuGet.Protocol.ApiApps
             return result ?? Enumerable.Empty<string>();
         }
 
-        internal static NuGetVersion GetVersionOrNull(JObject json, string propertyName)
+        internal static NuGetVersion GetVersionOrNull(JObject jObject, string propertyName)
         {
             NuGetVersion version = null;
 
-            var s = GetStringOrNull(json, propertyName);
+            var s = GetStringOrNull(jObject, propertyName);
 
             if (!String.IsNullOrEmpty(s))
             {

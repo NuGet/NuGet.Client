@@ -41,26 +41,26 @@ namespace NuGet.Protocol.ApiApps
         /// <summary>
         /// Parse a json package entry from search into a ApiAppSearchPackage
         /// </summary>
-        private static ApiAppPackage Parse(JObject json)
+        private static ApiAppPackage Parse(JObject jObject)
         {
-            var id = JsonHelpers.GetStringOrNull(json, "id");
-            var version = JsonHelpers.GetVersionOrNull(json, "version");
-            var pkgNs = JsonHelpers.GetStringOrNull(json, "namespace");
+            var id = JsonHelpers.GetStringOrNull(jObject, "id");
+            var version = JsonHelpers.GetVersionOrNull(jObject, "version");
+            var pkgNs = JsonHelpers.GetStringOrNull(jObject, "namespace");
 
             var package = new ApiAppPackage(pkgNs, id, version)
                 {
-                    Authors = JsonHelpers.GetStringArray(json, "authors"),
-                    CatalogEntry = JsonHelpers.GetUriOrNull(json, "catalogEntry"),
-                    Description = JsonHelpers.GetStringOrNull(json, "description"),
+                    Authors = JsonHelpers.GetStringArray(jObject, "authors"),
+                    CatalogEntry = JsonHelpers.GetUriOrNull(jObject, "catalogEntry"),
+                    Description = JsonHelpers.GetStringOrNull(jObject, "description"),
                     DownloadCount = 0, // TODO: populate this
-                    PackageContent = JsonHelpers.GetUriOrNull(json, "packageContent"),
-                    PackageTypes = JsonHelpers.GetStringOrNull(json, "@type").Split(' '),
-                    Registration = JsonHelpers.GetUriOrNull(json, "registration"),
-                    Summary = JsonHelpers.GetStringOrNull(json, "summary"),
-                    Tags = JsonHelpers.GetStringArray(json, "tags"),
-                    TenantId = JsonHelpers.GetGuidOrEmpty(json, "tenantId"),
-                    Title = JsonHelpers.GetStringOrNull(json, "title") ?? id,
-                    Visibility = JsonHelpers.GetStringOrNull(json, "visibility")
+                    PackageContent = JsonHelpers.GetUriOrNull(jObject, "packageContent"),
+                    PackageTypes = JsonHelpers.GetStringOrNull(jObject, "@type").Split(' '),
+                    Registration = JsonHelpers.GetUriOrNull(jObject, "registration"),
+                    Summary = JsonHelpers.GetStringOrNull(jObject, "summary"),
+                    Tags = JsonHelpers.GetStringArray(jObject, "tags"),
+                    TenantId = JsonHelpers.GetGuidOrEmpty(jObject, "tenantId"),
+                    Title = JsonHelpers.GetStringOrNull(jObject, "title") ?? id,
+                    Visibility = JsonHelpers.GetStringOrNull(jObject, "visibility")
                 };
 
             return package;

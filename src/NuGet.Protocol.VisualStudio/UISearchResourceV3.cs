@@ -46,18 +46,20 @@ namespace NuGet.Protocol.VisualStudio
 
         private async Task<UISearchMetadata> GetSearchResult(JObject jObject, bool includePrerelease, CancellationToken token)
         {
-            var id = jObject.Value<string>(Properties.PackageId);
-            var version = NuGetVersion.Parse(jObject.Value<string>(Properties.Version));
+            var id = jObject.GetString(Properties.PackageId);
+            var version = NuGetVersion.Parse(jObject.GetString(Properties.Version));
+
             var topPackage = new PackageIdentity(id, version);
             var iconUrl = jObject.GetUri(Properties.IconUrl);
-            var summary = jObject.Value<string>(Properties.Summary);
+            var summary = jObject.GetString(Properties.Summary);
+
             if (string.IsNullOrWhiteSpace(summary))
             {
                 // summary is empty. Use its description instead.
-                summary = jObject.Value<string>(Properties.Description);
+                summary = jObject.GetString(Properties.Description);
             }
 
-            var title = jObject.Value<string>(Properties.Title);
+            var title = jObject.GetString(Properties.Title);
             if (string.IsNullOrEmpty(title))
             {
                 // Use the id instead of the title when no title exists.

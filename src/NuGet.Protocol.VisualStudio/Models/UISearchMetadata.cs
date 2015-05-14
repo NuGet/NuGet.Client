@@ -15,7 +15,8 @@ namespace NuGet.Protocol.VisualStudio
     {
         public UISearchMetadata(PackageIdentity identity,
                                 string title,
-                                string summary, Uri iconUrl,
+                                string summary,
+                                Uri iconUrl,
                                 Lazy<Task<IEnumerable<VersionInfo>>> versions,
                                 UIPackageMetadata latestPackageMetadata)
         {

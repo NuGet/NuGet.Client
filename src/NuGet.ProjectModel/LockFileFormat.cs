@@ -357,14 +357,14 @@ namespace NuGet.ProjectModel
             return WriteArray(items.Select(f => GetPathWithForwardSlashes(f)), writeItem);
         }
 
-        private IList<TItem> ReadObject<TItem>(JObject json, Func<string, JToken, TItem> readItem)
+        private IList<TItem> ReadObject<TItem>(JObject jObject, Func<string, JToken, TItem> readItem)
         {
-            if (json == null)
+            if (jObject == null)
             {
                 return new List<TItem>();
             }
             var items = new List<TItem>();
-            foreach (var child in json)
+            foreach (var child in jObject)
             {
                 items.Add(readItem(child.Key, child.Value));
             }
