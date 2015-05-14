@@ -477,13 +477,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
                     && framework.Version.Equals(Version.Parse("4.5.1.0")))
                 {
-                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.1"), framework.Profile, framework.Platform, framework.PlatformVersion);
+                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.1"), framework.Profile);
                 }
                 //if the framework is .net core 4.5 return 8.0
                 if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
                     && framework.Version.Equals(Version.Parse("4.5.0.0")))
                 {
-                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.0"), framework.Profile, framework.Platform, framework.PlatformVersion);
+                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.0"), framework.Profile);
                 }
                 return NuGetFramework.Parse(targetFrameworkMoniker);
             }
