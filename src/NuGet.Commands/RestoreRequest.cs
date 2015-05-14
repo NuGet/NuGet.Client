@@ -18,6 +18,7 @@ namespace NuGet.Commands
             Sources = sources.ToList().AsReadOnly();
             PackagesDirectory = packagesDirectory;
             ExternalProjects = new List<ExternalProjectReference>();
+            WriteMSBuildFiles = true;
         }
 
         /// <summary>
@@ -57,5 +58,10 @@ namespace NuGet.Commands
         /// If set, ignore the cache when downloading packages
         /// </summary>
         public bool NoCache { get; set; }
+
+        /// <summary>
+        /// If set, MSBuild files (.targets/.props) will be written for the project being restored
+        /// </summary>
+        public bool WriteMSBuildFiles { get; set; }
     }
 }

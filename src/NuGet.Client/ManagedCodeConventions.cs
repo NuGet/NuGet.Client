@@ -28,6 +28,7 @@ namespace NuGet.Client
 
         private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(PropertyNames.AnyValue);
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly, fileExtensions: new[] { ".dll" });
+        private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
 
         private RuntimeGraph _runtimeGraph;
 
@@ -44,6 +45,7 @@ namespace NuGet.Client
             props[AnyProperty.Name] = AnyProperty;
             props[AssemblyProperty.Name] = AssemblyProperty;
             props[LocaleProperty.Name] = LocaleProperty;
+            props[MSBuildProperty.Name] = MSBuildProperty;
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
@@ -185,6 +187,7 @@ namespace NuGet.Client
             public PatternSet CompileAssemblies { get; }
             public PatternSet NativeLibraries { get; }
             public PatternSet ResourceAssemblies { get; }
+            public PatternSet MSBuildFiles { get; }
 
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
@@ -245,6 +248,25 @@ namespace NuGet.Client
                         "runtimes/{rid}/lib/{tfm}/{locale}/{resources}",
                         "lib/{tfm}/{locale}/{resources}"
                     });
+
+                MSBuildFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        "build/{tfm}/{any?}",
+                        new PatternDefinition("build/{any?}", defaults: new Dictionary<string, object>
+                        {
+                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                        })
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        "build/{tfm}/{msbuild}",
+                        new PatternDefinition("build/{msbuild}", defaults: new Dictionary<string, object>
+                        {
+                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                        })
+                    });
             }
         }
 
@@ -255,6 +277,7 @@ namespace NuGet.Client
             public static readonly string AnyValue = "any";
             public static readonly string ManagedAssembly = "assembly";
             public static readonly string Locale = "locale";
+            public static readonly string MSBuild = "msbuild";
         }
     }
 }

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.DependencyResolver;
@@ -144,7 +146,101 @@ namespace NuGet.Commands
             var lockFileFormat = new LockFileFormat();
             lockFileFormat.Write(projectLockFilePath, lockFile);
 
+            // Generate Targets/Props files
+            WriteTargetsAndProps(request.Project, graphs, repository);
+
             return new RestoreResult(true, graphs, lockFile);
+        }
+
+        private void WriteTargetsAndProps(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
+        {
+            // TODO: Figure out which graphs to write targets/props for...
+            var graph = targetGraphs.FirstOrDefault();
+            if (graph == null)
+            {
+                return;
+            }
+
+            var pathResolver = new DefaultPackagePathResolver(repository.RepositoryRoot);
+
+            var targets = new List<string>();
+            var props = new List<string>();
+            foreach (var library in graph.Flattened.Distinct().OrderBy(g => g.Data.Match.Library))
+            {
+                var package = repository.FindPackagesById(library.Key.Name).FirstOrDefault(p => p.Version == library.Key.Version);
+                if (package != null)
+                {
+                    var criteria = graph.Conventions.Criteria.ForFramework(graph.Framework);
+                    var contentItemCollection = new ContentItemCollection();
+                    using (var nupkgStream = File.OpenRead(package.ZipPath))
+                    {
+                        var reader = new PackageReader(nupkgStream);
+                        contentItemCollection.Load(reader.GetFiles());
+                    }
+
+                    // Find MSBuild thingies
+                    var buildItems = contentItemCollection.FindBestItemGroup(criteria, graph.Conventions.Patterns.MSBuildFiles);
+                    if (buildItems != null)
+                    {
+                        // We need to additionally filter to items that are named "{packageId}.targets" and "{packageId}.props"
+                        // Filter by file name here and we'll filter by extension when we add things to the lists.
+                        var items = buildItems.Items
+                            .Where(item => Path.GetFileNameWithoutExtension(item.Path).Equals(package.Id, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+
+                        targets.AddRange(items
+                            .Select(c => c.Path)
+                            .Where(path => Path.GetExtension(path).Equals(".targets", StringComparison.OrdinalIgnoreCase))
+                            .Select(path => Path.Combine(pathResolver.GetPackageDirectory(package.Id, package.Version), path.Replace('/', Path.DirectorySeparatorChar))));
+                        props.AddRange(items
+                            .Select(c => c.Path)
+                            .Where(path => Path.GetExtension(path).Equals(".props", StringComparison.OrdinalIgnoreCase))
+                            .Select(path => Path.Combine(pathResolver.GetPackageDirectory(package.Id, package.Version), path.Replace('/', Path.DirectorySeparatorChar))));
+                    }
+                }
+            }
+
+            // Generate the files as needed
+            if(targets.Any())
+            {
+                var name = $"{project.Name}.targets";
+                var path = Path.Combine(project.BaseDirectory, name);
+                _log.LogInformation($"Generating MSBuild file {name}");
+
+                GenerateImportsFile(repository, path, targets); 
+            }
+            if(props.Any())
+            {
+                var name = $"{project.Name}.props";
+                var path = Path.Combine(project.BaseDirectory, name);
+                _log.LogInformation($"Generating MSBuild file {name}");
+
+                GenerateImportsFile(repository, path, props);
+            }
+        }
+
+        private void GenerateImportsFile(NuGetv3LocalRepository repository, string path, List<string> imports)
+        {
+            var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
+            var doc = new XDocument(
+                new XDeclaration("1.0", "utf-8", "no"),
+
+                new XElement(ns + "Project",
+                    new XAttribute("ToolsVersion", "14.0"),
+
+                    new XElement(ns + "PropertyGroup",
+                        new XAttribute("Condition", "'$(NuGetPackageRoot)' == ''"),
+
+                        new XElement(ns + "NuGetPackageRoot", repository.RepositoryRoot)),
+                    new XElement(ns + "ImportGroup", imports.Select(i =>
+                        new XElement(ns + "Import",
+                            new XAttribute("Project", Path.Combine("$(NuGetPackageRoot)", i)),
+                            new XAttribute("Condition", $"Exists('{Path.Combine("$(NuGetPackageRoot)", i)}')"))))));
+
+            using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            {
+                doc.Save(output);
+            }
         }
 
         private LockFile CreateLockFile(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)

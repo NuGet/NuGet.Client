@@ -1,0 +1,8 @@
+{
+	"dependencies": {
+		"Microsoft.Bcl.Build": "1.0.21"
+	},
+	"frameworks": {
+		"net45": {}
+	}
+}
