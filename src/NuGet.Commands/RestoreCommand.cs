@@ -159,13 +159,13 @@ namespace NuGet.Commands
         {
             // Get the runtime-independent graphs
             var tfmGraphs = targetGraphs.Where(g => string.IsNullOrEmpty(g.RuntimeIdentifier)).ToList();
-            if(tfmGraphs.Count > 1)
+            if (tfmGraphs.Count > 1)
             {
                 var name = $"{project.Name}.nuget.targets";
                 var path = Path.Combine(project.BaseDirectory, name);
                 _log.LogInformation($"Generating MSBuild file {name}");
 
-                GenerateMSBuildErrorFile(path); 
+                GenerateMSBuildErrorFile(path);
                 return;
             }
             var graph = tfmGraphs[0];
@@ -210,21 +210,31 @@ namespace NuGet.Commands
             }
 
             // Generate the files as needed
-            if(targets.Any())
-            {
-                var name = $"{project.Name}.nuget.targets";
-                var path = Path.Combine(project.BaseDirectory, name);
-                _log.LogInformation($"Generating MSBuild file {name}");
+            var targetsName = $"{project.Name}.nuget.targets";
+            var propsName = $"{project.Name}.nuget.props";
+            var targetsPath = Path.Combine(project.BaseDirectory, targetsName);
+            var propsPath = Path.Combine(project.BaseDirectory, propsName);
 
-                GenerateImportsFile(repository, path, targets); 
+            if (targets.Any())
+            {
+                _log.LogInformation($"Generating MSBuild file {targetsName}");
+
+                GenerateImportsFile(repository, targetsPath, targets);
             }
-            if(props.Any())
+            else if (File.Exists(targetsPath))
             {
-                var name = $"{project.Name}.nuget.props";
-                var path = Path.Combine(project.BaseDirectory, name);
-                _log.LogInformation($"Generating MSBuild file {name}");
+                File.Delete(targetsPath);
+            }
 
-                GenerateImportsFile(repository, path, props);
+            if (props.Any())
+            {
+                _log.LogInformation($"Generating MSBuild file {propsName}");
+
+                GenerateImportsFile(repository, propsPath, props);
+            }
+            else if (File.Exists(propsPath))
+            {
+                File.Delete(propsPath);
             }
         }
 
