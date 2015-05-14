@@ -23,6 +23,8 @@ namespace NuGet.Client
                 },
             parser: TargetFrameworkName_Parser,
             compatibilityTest: TargetFrameworkName_CompatibilityTest);
+        private static readonly ContentPropertyDefinition LocaleProperty = new ContentPropertyDefinition(PropertyNames.Locale,
+            parser: Locale_Parser);
 
         private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(PropertyNames.AnyValue);
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly, fileExtensions: new[] { ".dll" });
@@ -41,6 +43,7 @@ namespace NuGet.Client
             props[TfmProperty.Name] = TfmProperty;
             props[AnyProperty.Name] = AnyProperty;
             props[AssemblyProperty.Name] = AssemblyProperty;
+            props[LocaleProperty.Name] = LocaleProperty;
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
@@ -70,6 +73,20 @@ namespace NuGet.Client
                 }
                 return false;
             }
+        }
+
+        private static object Locale_Parser(string name)
+        {
+            if (name.Length == 2)
+            {
+                return name;
+            }
+            else if (name.Length >= 4 && name[2] == '-')
+            {
+                return name;
+            }
+
+            return null;
         }
 
         private static object TargetFrameworkName_Parser(string name)
@@ -229,15 +246,15 @@ namespace NuGet.Client
                         "lib/{tfm}/{locale}/{resources}"
                     });
             }
-    }
+        }
 
-    public static class PropertyNames
-    {
-        public static readonly string TargetFrameworkMoniker = "tfm";
-        public static readonly string RuntimeIdentifier = "rid";
-        public static readonly string AnyValue = "any";
-        public static readonly string ManagedAssembly = "assembly";
-
+        public static class PropertyNames
+        {
+            public static readonly string TargetFrameworkMoniker = "tfm";
+            public static readonly string RuntimeIdentifier = "rid";
+            public static readonly string AnyValue = "any";
+            public static readonly string ManagedAssembly = "assembly";
+            public static readonly string Locale = "locale";
+        }
     }
-}
 }
