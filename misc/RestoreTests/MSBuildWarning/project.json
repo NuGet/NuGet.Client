@@ -3,6 +3,7 @@
     "Microsoft.Bcl.Build": "1.0.21"
   },
   "frameworks": {
-    "net45": { }
+    "net45": { },
+    "core50": { }
   }
 }

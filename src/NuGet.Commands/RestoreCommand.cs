@@ -29,6 +29,9 @@ namespace NuGet.Commands
 {
     public class RestoreCommand
     {
+        // Temporary until we have RESX and loc
+        private const string MSBuildMultiTargetWarning = "Packages containing MSBuild targets and props files cannot be properly installed in projects targetting multiple frameworks. See https://docs.nuget.org/something for more information.";
+
         private readonly ILogger _log;
 
         public RestoreCommand(ILogger logger)
@@ -154,12 +157,18 @@ namespace NuGet.Commands
 
         private void WriteTargetsAndProps(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
         {
-            // TODO: Figure out which graphs to write targets/props for...
-            var graph = targetGraphs.FirstOrDefault();
-            if (graph == null)
+            // Get the runtime-independent graphs
+            var tfmGraphs = targetGraphs.Where(g => string.IsNullOrEmpty(g.RuntimeIdentifier)).ToList();
+            if(tfmGraphs.Count > 1)
             {
+                var name = $"{project.Name}.nuget.targets";
+                var path = Path.Combine(project.BaseDirectory, name);
+                _log.LogInformation($"Generating MSBuild file {name}");
+
+                GenerateMSBuildErrorFile(path); 
                 return;
             }
+            var graph = tfmGraphs[0];
 
             var pathResolver = new DefaultPackagePathResolver(repository.RepositoryRoot);
 
@@ -203,7 +212,7 @@ namespace NuGet.Commands
             // Generate the files as needed
             if(targets.Any())
             {
-                var name = $"{project.Name}.targets";
+                var name = $"{project.Name}.nuget.targets";
                 var path = Path.Combine(project.BaseDirectory, name);
                 _log.LogInformation($"Generating MSBuild file {name}");
 
@@ -211,11 +220,33 @@ namespace NuGet.Commands
             }
             if(props.Any())
             {
-                var name = $"{project.Name}.props";
+                var name = $"{project.Name}.nuget.props";
                 var path = Path.Combine(project.BaseDirectory, name);
                 _log.LogInformation($"Generating MSBuild file {name}");
 
                 GenerateImportsFile(repository, path, props);
+            }
+        }
+
+        private void GenerateMSBuildErrorFile(string path)
+        {
+            var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
+            var doc = new XDocument(
+                new XDeclaration("1.0", "utf-8", "no"),
+
+                new XElement(ns + "Project",
+                    new XAttribute("ToolsVersion", "14.0"),
+
+                    new XElement(ns + "Target",
+                        new XAttribute("Name", "EmitMSBuildWarning"),
+                        new XAttribute("BeforeTargets", "Build"),
+
+                        new XElement(ns + "Warning",
+                            new XAttribute("Text", MSBuildMultiTargetWarning)))));
+
+            using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            {
+                doc.Save(output);
             }
         }
 

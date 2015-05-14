@@ -1,3 +1,7 @@
+# NuGet Files
+*.nuget.targets
+*.nuget.props
+
 # Project K
 project.lock.json
 artifacts/
