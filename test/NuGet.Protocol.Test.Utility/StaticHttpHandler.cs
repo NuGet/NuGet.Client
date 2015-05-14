@@ -79,20 +79,25 @@ namespace Test.Utility
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            return SendAsyncPublic(request);  
+        }
+
+        public virtual Task<HttpResponseMessage> SendAsyncPublic(HttpRequestMessage request)
+        {
             var msg = new HttpResponseMessage(HttpStatusCode.OK);
 
-            string s = null;
-            if (_responses.TryGetValue(request.RequestUri.AbsoluteUri, out s))
+            string source;
+            if (_responses.TryGetValue(request.RequestUri.AbsoluteUri, out source))
             {
                 // TODO: allow s to be a status code to return
 
-                if (String.IsNullOrEmpty(s))
+                if (String.IsNullOrEmpty(source))
                 {
                     msg = new HttpResponseMessage(HttpStatusCode.NotFound);
                 }
                 else
                 {
-                    msg.Content = new TestContent(s);
+                    msg.Content = new TestContent(source);
                 }
             }
             else
