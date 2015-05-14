@@ -302,7 +302,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Prune the results down to only what we would allow to be installed
-                IEnumerable<SourceDependencyInfo> prunedAvailablePackages = availablePackageDependencyInfoWithSourceSet;
+                IEnumerable<SourcePackageDependencyInfo> prunedAvailablePackages = availablePackageDependencyInfoWithSourceSet;
 
                 if (!resolutionContext.IncludePrerelease)
                 {
@@ -435,7 +435,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Prune the results down to only what we would allow to be installed
-                IEnumerable<SourceDependencyInfo> prunedAvailablePackages = availablePackageDependencyInfoWithSourceSet;
+                IEnumerable<SourcePackageDependencyInfo> prunedAvailablePackages = availablePackageDependencyInfoWithSourceSet;
 
                 // Keep only the target package we are trying to install for that Id
                 foreach (var packageIdentity in packagesToInstall)
@@ -529,7 +529,7 @@ namespace NuGet.PackageManagement
 
             // dependencyInfoFromPackagesFolder can be null when NuGetProtocolException is thrown
             var resolverPackages = dependencyInfoFromPackagesFolder?.Select(package =>
-                    new ResolverPackage(package.Id, package.Version, package.Dependencies));
+                    new ResolverPackage(package.Id, package.Version, package.Dependencies, true, false));
 
             // Use the resolver sort to find the order. Packages with no dependencies 
             // come first, then each package that has satisfied dependencies. 
@@ -545,7 +545,7 @@ namespace NuGet.PackageManagement
         // TODO: Convert this to a generic GetProjectActions and use it from Install methods too
         private static List<NuGetProjectAction> GetProjectActionsForUpdate(IEnumerable<PackageIdentity> newListOfInstalledPackages,
             IEnumerable<PackageIdentity> oldListOfInstalledPackages,
-            IEnumerable<SourceDependencyInfo> availablePackageDependencyInfoWithSourceSet,
+            IEnumerable<SourcePackageDependencyInfo> availablePackageDependencyInfoWithSourceSet,
             INuGetProjectContext nuGetProjectContext)
         {
             // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject

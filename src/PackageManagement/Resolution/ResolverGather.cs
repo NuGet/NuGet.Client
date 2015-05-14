@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Gather dependency info for the install packages and the new targets.
         /// </summary>
-        public static async Task<HashSet<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
+        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
             IEnumerable<PackageIdentity> primaryTargets,
             IEnumerable<PackageIdentity> installedPackages,
             NuGetFramework targetFramework,
@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement
         /// <param name="primarySources">Primary source to search for the primary targets</param>
         /// <param name="allSources">Fallback sources</param>
         /// <param name="packagesFolderSource">Source for installed packages</param>
-        public static async Task<HashSet<SourceDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
+        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
             IEnumerable<string> primaryTargetIds,
             IEnumerable<PackageIdentity> primaryTargets,
             IEnumerable<PackageIdentity> installedPackages,
@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // get a distinct set of packages from all repos
-            var combinedResults = new HashSet<SourceDependencyInfo>(PackageIdentity.Comparer);
+            var combinedResults = new HashSet<SourcePackageDependencyInfo>(PackageIdentity.Comparer);
 
             // get the dependency info resources for each repo
             // primary and all may share the same resources
@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement
             }
 
             // find all packages that have already been installed
-            var installedInfo = new HashSet<SourceDependencyInfo>(PackageIdentity.Comparer);
+            var installedInfo = new HashSet<SourcePackageDependencyInfo>(PackageIdentity.Comparer);
 
             foreach (var installedPackage in installedPackages)
             {
@@ -178,8 +178,10 @@ namespace NuGet.PackageManagement
                 // Installed packages should exist, but if they do not an attempt will be made to find them in the sources.
                 if (packageInfo != null)
                 {
-                    installedInfo.Add(CreateSourceDependencyInfo(context, packagesFolderSource, packageInfo));
-                    combinedResults.Add(CreateSourceDependencyInfo(context, packagesFolderSource, packageInfo));
+                    packageInfo.SetIncludePrereleaseForDependencies();
+
+                    installedInfo.Add(packageInfo);
+                    combinedResults.Add(packageInfo);
                 }
             }
 
@@ -251,7 +253,7 @@ namespace NuGet.PackageManagement
         private static async Task GatherPackage(
             string packageId,
             NuGetVersion version,
-            HashSet<SourceDependencyInfo> packageCache,
+            HashSet<SourcePackageDependencyInfo> packageCache,
             List<Tuple<SourceRepository, DependencyInfoResource>> dependencyResources,
             NuGetFramework targetFramework,
             ResolutionContext context,
@@ -259,7 +261,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // results need to be kept in order
-            var results = new Queue<Task<IEnumerable<SourceDependencyInfo>>>();
+            var results = new Queue<Task<IEnumerable<SourcePackageDependencyInfo>>>();
 
             // resolve from each source
             foreach (var sourceTuple in dependencyResources)
@@ -291,7 +293,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Call the DependencyInfoResource safely
         /// </summary>
-        private static async Task<IEnumerable<SourceDependencyInfo>> GatherPackageCore(
+        private static async Task<IEnumerable<SourcePackageDependencyInfo>> GatherPackageCore(
             string packageId,
             NuGetVersion version,
             SourceRepository source,
@@ -303,7 +305,7 @@ namespace NuGet.PackageManagement
         {
             token.ThrowIfCancellationRequested();
 
-            var results = new List<SourceDependencyInfo>();
+            var results = new List<SourcePackageDependencyInfo>();
 
             try
             {
@@ -314,7 +316,10 @@ namespace NuGet.PackageManagement
                     var packages = await resource.ResolvePackages(packageId, targetFramework, token);
 
                     results.AddRange(packages.Select(package =>
-                        CreateSourceDependencyInfo(context, source, package)));
+                    {
+                        package.SetIncludePrereleaseForDependencies();
+                        return package;
+                    }));
                 }
                 else
                 {
@@ -323,7 +328,8 @@ namespace NuGet.PackageManagement
 
                     if (package != null)
                     {
-                        results.Add(CreateSourceDependencyInfo(context, source, package));
+                        package.SetIncludePrereleaseForDependencies();
+                        results.Add(package);
                     }
                 }
             }
@@ -338,26 +344,6 @@ namespace NuGet.PackageManagement
             }
 
             return results;
-        }
-
-        // Combine the soure and dependency info
-        private static SourceDependencyInfo CreateSourceDependencyInfo(ResolutionContext context, SourceRepository source, PackageDependencyInfo package)
-        {
-            // Set the includePrerelease on the version range on every single package dependency to context.IncludePreerelease
-            var packageDependencies = package.Dependencies;
-            var modifiedPackageDependencies = new List<PackageDependency>();
-            foreach (var packageDependency in packageDependencies)
-            {
-                var versionRange = packageDependency.VersionRange;
-                var modifiedVersionRange = new VersionRange(versionRange.MinVersion, versionRange.IsMinInclusive, versionRange.MaxVersion,
-                    versionRange.IsMaxInclusive, context.IncludePrerelease, versionRange.Float);
-
-                var modifiedPackageDependency = new PackageDependency(packageDependency.Id, modifiedVersionRange);
-                modifiedPackageDependencies.Add(modifiedPackageDependency);
-            }
-
-            var modifiedPackageDependencyInfo = new PackageDependencyInfo(new PackageIdentity(package.Id, package.Version), modifiedPackageDependencies);
-            return new SourceDependencyInfo(modifiedPackageDependencyInfo, source);
         }
 
         /// <summary>

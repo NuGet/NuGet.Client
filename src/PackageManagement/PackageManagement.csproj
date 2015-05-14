@@ -156,7 +156,6 @@
     <Compile Include="Context\PackageManagementContext.cs" />
     <Compile Include="Resolution\PrunePackageTree.cs" />
     <Compile Include="Resolution\ResolverGather.cs" />
-    <Compile Include="Resolution\SourceDependencyInfo.cs" />
     <Compile Include="Resolution\UninstallResolver.cs" />
     <Compile Include="Utility\CustomExceptions.cs" />
     <Compile Include="Utility\ExceptionUtility.cs" />

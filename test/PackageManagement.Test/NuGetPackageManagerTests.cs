@@ -14,6 +14,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using Test.Utility;
@@ -2857,6 +2858,167 @@ namespace NuGet.Test
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, packagesInPackagesConfig.Count);
             Assert.True(packagesInPackagesConfig.Where(p => p.PackageIdentity.Equals(sharpDXDXGIv263Package)).Any());
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallPackageUnlistedFromV3()
+        {
+            // Arrange
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, false, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(2, 0, 0), new PackageDependency[] { }, false, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(3, 0, 0), new PackageDependency[] { }, true, null),
+            };
+
+            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
+
+            var packageSource = new PackageSource("http://a");
+            var packageSourceProvider = new TestPackageSourceProvider(new PackageSource[] { packageSource });
+
+            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
+
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var target = "a";
+
+            // Pre-Assert
+            // Check that the packages.config file does not exist
+            Assert.False(File.Exists(randomPackagesConfigPath));
+            // Check that there are no packages returned by PackagesConfigProject
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(0, packagesInPackagesConfig.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Act
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, target,
+                new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            var result = nugetProjectActions.ToList();
+
+            var resultIdentities = result.Select(p => p.PackageIdentity);
+
+            Assert.True(resultIdentities.Contains(new PackageIdentity("a", new NuGetVersion(1, 0, 0))));
+            Assert.True(resultIdentities.Contains(new PackageIdentity("b", new NuGetVersion(3, 0, 0))));
+
+            //  and all the actions are Install
+            foreach (var nugetProjectAction in result)
+            {
+                Assert.Equal(nugetProjectAction.NuGetProjectActionType, NuGetProjectActionType.Install);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallPackageListedFromV3()
+        {
+            // Arrange
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(2, 0, 0), new PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(3, 0, 0), new PackageDependency[] { }, true, null),
+            };
+
+            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
+
+            var packageSource = new PackageSource("http://a");
+            var packageSourceProvider = new TestPackageSourceProvider(new PackageSource[] { packageSource });
+
+            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
+
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var target = "a";
+
+            // Act
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, target,
+                new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            var result = nugetProjectActions.ToList();
+
+            var resultIdentities = result.Select(p => p.PackageIdentity);
+
+            Assert.True(resultIdentities.Contains(new PackageIdentity("a", new NuGetVersion(2, 0, 0))));
+            Assert.True(resultIdentities.Contains(new PackageIdentity("b", new NuGetVersion(1, 0, 0))));
+
+            //  and all the actions are Install
+            foreach (var nugetProjectAction in result)
+            {
+                Assert.Equal(nugetProjectAction.NuGetProjectActionType, NuGetProjectActionType.Install);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallPackage571FromV3()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var target = new PackageIdentity("Umbraco", NuGetVersion.Parse("5.1.0.175"));
+
+            // Act
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, target,
+                new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            var result = nugetProjectActions.ToList();
+
+            var resultIdentities = result.Select(p => p.PackageIdentity);
+
+            Assert.True(resultIdentities.Contains(new PackageIdentity("Umbraco", new NuGetVersion("5.1.0.175"))));
+
+            //  and all the actions are Install
+            foreach (var nugetProjectAction in result)
+            {
+                Assert.Equal(nugetProjectAction.NuGetProjectActionType, NuGetProjectActionType.Install);
+            }
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);

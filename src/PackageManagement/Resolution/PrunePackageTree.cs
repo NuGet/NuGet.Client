@@ -7,6 +7,7 @@ using System.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -18,7 +19,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Remove all prerelease packages for stable targets
         /// </summary>
-        public static IEnumerable<SourceDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourceDependencyInfo> packages, IEnumerable<PackageIdentity> targets)
+        public static IEnumerable<SourcePackageDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> targets)
         {
             var result = packages;
 
@@ -34,7 +35,7 @@ namespace NuGet.PackageManagement
             return result;
         }
 
-        public static IEnumerable<SourceDependencyInfo> PruneDisallowedVersions(IEnumerable<SourceDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
+        public static IEnumerable<SourcePackageDependencyInfo> PruneDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
         {
             var result = packages;
             foreach (var packageReference in packageReferences)
@@ -48,7 +49,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Remove all versions of a package id from the list, except for the target version
         /// </summary>
-        public static IEnumerable<SourceDependencyInfo> RemoveAllVersionsForIdExcept(IEnumerable<SourceDependencyInfo> packages, PackageIdentity target)
+        public static IEnumerable<SourcePackageDependencyInfo> RemoveAllVersionsForIdExcept(IEnumerable<SourcePackageDependencyInfo> packages, PackageIdentity target)
         {
             var comparer = VersionComparer.VersionRelease;
 
@@ -59,7 +60,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Keep only stable versions of a package
         /// </summary>
-        public static IEnumerable<SourceDependencyInfo> RemoveAllPrereleaseVersionsForId(IEnumerable<SourceDependencyInfo> packages, string id)
+        public static IEnumerable<SourcePackageDependencyInfo> RemoveAllPrereleaseVersionsForId(IEnumerable<SourcePackageDependencyInfo> packages, string id)
         {
             return packages.Where(p => !StringComparer.OrdinalIgnoreCase.Equals(id, p.Id) ||
                                        (StringComparer.OrdinalIgnoreCase.Equals(id, p.Id) && !p.Version.IsPrerelease));
@@ -68,7 +69,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Clear out all versions less than the minimuim. This can be used to prevent downgrading
         /// </summary>
-        public static IEnumerable<SourceDependencyInfo> RemoveAllVersionsLessThan(IEnumerable<SourceDependencyInfo> packages, PackageIdentity minimum)
+        public static IEnumerable<SourcePackageDependencyInfo> RemoveAllVersionsLessThan(IEnumerable<SourcePackageDependencyInfo> packages, PackageIdentity minimum)
         {
             var comparer = VersionComparer.VersionRelease;
 
@@ -77,7 +78,7 @@ namespace NuGet.PackageManagement
         }
 
         // TODO: Consider removing elements from the collection and check if that is better in performance
-        public static IEnumerable<SourceDependencyInfo> RemoveDisallowedVersions(IEnumerable<SourceDependencyInfo> packages, PackageReference packageReference)
+        public static IEnumerable<SourcePackageDependencyInfo> RemoveDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, PackageReference packageReference)
         {
             if (packageReference.AllowedVersions != null)
             {
