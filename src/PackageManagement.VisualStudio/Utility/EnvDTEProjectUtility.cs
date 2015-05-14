@@ -55,6 +55,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetVSConstants.DeploymentProjectTypeGuid
             };
 
+        private static readonly HashSet<string> UnsupportedProjectCapabilities = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "SharedAssetsProject", // This is true for shared projects in universal apps
+            "FileSystemBasedCordovaProject",
+        };
+
         public const string WebConfig = "web.config";
         public const string AppConfig = "app.config";
         private const string BinFolder = "Bin";
@@ -178,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return true;
             }
 
-            return envDTEProject.Kind != null && SupportedProjectTypes.Contains(envDTEProject.Kind) && !IsSharedProject(envDTEProject);
+            return envDTEProject.Kind != null && SupportedProjectTypes.Contains(envDTEProject.Kind) && !HasUnsupportedProjectCapability(envDTEProject);
         }
 
         internal static bool IsSolutionFolder(EnvDTEProject envDTEProject)
@@ -1023,9 +1029,9 @@ namespace NuGet.PackageManagement.VisualStudio
             Regex matcher = filter.Equals("*.*", StringComparison.OrdinalIgnoreCase) ? null : GetFilterRegex(filter);
 
             return from EnvDTEProjectItem p in projectItems
-                where desiredKind.Equals(p.Kind, StringComparison.OrdinalIgnoreCase) &&
-                      (matcher == null || matcher.IsMatch(p.Name))
-                select p;
+                   where desiredKind.Equals(p.Kind, StringComparison.OrdinalIgnoreCase) &&
+                         (matcher == null || matcher.IsMatch(p.Name))
+                   select p;
         }
 
         private static Regex GetFilterRegex(string wildcard)
@@ -1122,16 +1128,23 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Check if the project has the SharedAssetsProject capability. This is true
-        /// for shared projects in universal apps.
+        /// Check if the project has an unsupported project capability, such as, "SharedAssetsProject"
         /// </summary>
-        private static bool IsSharedProject(EnvDTEProject envDTEProject)
+        private static bool HasUnsupportedProjectCapability(EnvDTEProject envDTEProject)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
             var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            return hier.IsCapabilityMatch("SharedAssetsProject");
+            foreach(var unsupportedProjectCapability in UnsupportedProjectCapabilities)
+            {
+                if(hier.IsCapabilityMatch(unsupportedProjectCapability))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static async Task<bool> IsBuildIntegrated(EnvDTEProject envDTEProject)
