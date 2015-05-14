@@ -25,7 +25,7 @@ namespace NuGetConsole.Implementation.Console
 {
     internal class WpfConsoleKeyProcessor : OleCommandFilter
     {
-        private const string PowershellConsoleKey = @"SOFTWARE\NuGet\PowershellConsole";
+        private const string PowershellConsoleKey = @"SOFTWARE\NuGet\PowerShellConsole";
         private const string TabExpansionTimeoutKey = @"TabExpansionTimeout"; // in seconds
         private const int DefaultTabExpansionTimeout = 3; // in seconds
         private readonly Lazy<IntPtr> _pKeybLayout = new Lazy<IntPtr>(() => NativeMethods.GetKeyboardLayout(0));
@@ -51,15 +51,23 @@ namespace NuGetConsole.Implementation.Console
             {
                 using (var key = Registry.CurrentUser.OpenSubKey(PowershellConsoleKey))
                 {
-                    // 'TabExpansionTimeout' key should be a DWORD, so, simply cast it to int
-                    // If the cast fails, log a message and move on
-                    int result = (int)key.GetValue(TabExpansionTimeoutKey, String.Empty, RegistryValueOptions.None);
-                    return result;
+                    if (key != null)
+                    {
+                        // 'TabExpansionTimeout' key should be a DWORD, so, simply cast it to int
+                        // If the cast fails, log a message and move on
+                        var value = key.GetValue(TabExpansionTimeoutKey, DefaultTabExpansionTimeout, RegistryValueOptions.None);
+
+                        if (value is int)
+                        {
+                            return Math.Min((int)value, 1);
+                        }
+                        else
+                        {
+                            ActivityLog.LogWarning(ExceptionHelper.LogEntrySource,
+                                string.Format(CultureInfo.CurrentCulture, Resources.RegistryKeyShouldBeDWORD, TabExpansionTimeoutKey));
+                        }
+                    }
                 }
-            }
-            catch (InvalidCastException)
-            {
-                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, String.Format(CultureInfo.CurrentCulture, Resources.RegistryKeyShouldBeDWORD, TabExpansionTimeoutKey));
             }
             catch (Exception ex)
             {
@@ -278,7 +286,7 @@ namespace NuGetConsole.Implementation.Console
                                     WpfTextView.Selection.Clear();
                                 }
                                 else if ((VSConstants.VSStd2KCmdID)nCmdID != VSConstants.VSStd2KCmdID.BOL)
-                                    // extend selection
+                                // extend selection
                                 {
                                     VirtualSnapshotPoint anchorPoint = WpfTextView.Selection.IsEmpty
                                         ? oldCaretPoint.TranslateTo(
