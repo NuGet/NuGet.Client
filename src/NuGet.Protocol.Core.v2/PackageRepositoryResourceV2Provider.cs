@@ -45,7 +45,7 @@ namespace NuGet.Protocol.Core.v2
                     try
                     {
                         // if it's not in cache, then check if it is V2.
-                        if (await V2Utilities.IsV2(source.PackageSource))
+                        if (V2Utilities.IsV2(source.PackageSource))
                         {
                             // Get a IPackageRepo object and add it to the cache.
                             repo = V2Utilities.GetV2SourceRepository(source.PackageSource);

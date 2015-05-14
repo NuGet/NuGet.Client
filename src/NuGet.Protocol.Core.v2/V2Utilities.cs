@@ -12,7 +12,7 @@ namespace NuGet.Protocol.Core.v2
 {
     public static class V2Utilities
     {
-        public static async Task<bool> IsV2(Configuration.PackageSource source)
+        public static bool IsV2(Configuration.PackageSource source)
         {
             var url = new Uri(source.Source);
 
@@ -22,7 +22,6 @@ namespace NuGet.Protocol.Core.v2
             {
                 return !File.Exists(url.LocalPath);
             }
-            var result = await GetContent(url);
 
             return true;
         }
@@ -49,14 +48,6 @@ namespace NuGet.Protocol.Core.v2
                     };
             }
             return repo;
-        }
-
-        public static async Task<string> GetContent(Uri address)
-        {
-            var client = new System.Net.Http.HttpClient(
-                new HttpClientHandler() { UseDefaultCredentials = true });
-            var response = await client.GetAsync(address);
-            return await response.Content.ReadAsStringAsync();
         }
 
         public static NuGetVersion SafeToNuGetVer(SemanticVersion semanticVersion)
