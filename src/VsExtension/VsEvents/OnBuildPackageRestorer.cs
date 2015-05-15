@@ -18,7 +18,6 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -140,36 +139,37 @@ namespace NuGetVSExtension
 
                 ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
+                        // Get the projects from the SolutionManager
+                        // Note that projects that are not supported by NuGet, will not show up in this list
                         var projects = SolutionManager.GetNuGetProjects().ToList();
 
-                        // Check legacy project types for missing packages
-                        if (!projects.Any(project => project is INuGetIntegratedProject))
+                        // Check if there are any projects that are not INuGetIntegratedProject, that is,
+                        // projects with packages.config. If so, perform package restore on them
+                        if (projects.Any(project => !(project is INuGetIntegratedProject)))
                         {
                             await RestorePackagesOrCheckForMissingPackagesAsync(solutionDirectory);
                         }
 
                         // Call DNU to restore for BuildIntegratedProjectSystem projects
-                        var buildEnabled = projects.Select(project => project as BuildIntegratedProjectSystem)
+                        var buildEnabledProjects = projects.Select(project => project as BuildIntegratedProjectSystem)
                             .Where(project => project != null);
-                        if (buildEnabled.Any())
+                        if (buildEnabledProjects.Any())
                         {
                             Action<string> logMessage = message =>
+                            {
+                                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                                 {
-                                    ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                                        {
-                                            // Switch to main thread to update the error list window or output window
-                                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                                            WriteLine(VerbosityLevel.Quiet, "{0}", message);
-                                        });
-                                };
+                                    // Switch to main thread to update the error list window or output window
+                                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                    WriteLine(VerbosityLevel.Quiet, "{0}", message);
+                                });
+                            };
 
                             var context = new LoggingProjectContext(logMessage);
-                            var packageSourceProvider = new PackageSourceProvider(new Settings(SolutionManager.SolutionDirectory));
-
                             var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
 
                             // Restore packages and create the lock file for each project
-                            foreach (var project in buildEnabled)
+                            foreach (var project in buildEnabledProjects)
                             {
                                 await BuildIntegratedRestoreUtility.RestoreAsync(project, context, enabledSources, CancellationToken.None);
                             }
@@ -278,14 +278,22 @@ namespace NuGetVSExtension
                 return;
             }
 
-            var missingPackagesInfo = await PackageRestoreManager.GetMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
+            var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
 
             if (IsConsentGranted())
             {
                 HasErrors = false;
                 Canceled = false;
                 CurrentCount = 0;
-                TotalCount = missingPackagesInfo.PackageReferences.Count;
+
+                if (!packages.Any())
+                {
+                    // Restore is not applicable, since, there is no project with installed packages, that is, packages.config
+                    return;
+                }
+
+                var missingPackagesList = packages.Where(p => p.IsMissing).ToList();
+                TotalCount = missingPackagesList.Count;
                 if (TotalCount > 0)
                 {
                     if (_outputOptOutMessage)
@@ -303,7 +311,7 @@ namespace NuGetVSExtension
                             Token = threadedWaitDialogSession.UserCancellationToken;
                             ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
 
-                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, missingPackagesInfo, Token);
+                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, Token);
 
                             WriteLine(canceled: Canceled, hasMissingPackages: true, hasErrors: HasErrors);
                         }
@@ -324,7 +332,7 @@ namespace NuGetVSExtension
                     initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
                         String.Empty, String.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
                 {
-                    CheckForMissingPackages(missingPackagesInfo.PackageReferences.Keys);
+                    CheckForMissingPackages(packages);
                 }
             }
 
@@ -335,7 +343,7 @@ namespace NuGetVSExtension
         /// Checks if there are missing packages that should be restored. If so, a warning will
         /// be added to the error list.
         /// </summary>
-        private void CheckForMissingPackages(IEnumerable<PackageReference> missingPackages)
+        private void CheckForMissingPackages(IEnumerable<PackageRestoreData> missingPackages)
         {
             if (missingPackages.Any())
             {
@@ -347,12 +355,12 @@ namespace NuGetVSExtension
         }
 
         private async Task RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
-            MissingPackagesInfo missingPackagesInfo,
+            IEnumerable<PackageRestoreData> packages,
             CancellationToken token)
         {
             await TaskScheduler.Default;
 
-            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, missingPackagesInfo, Token);
+            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, packages, Token);
         }
 
         /// <summary>

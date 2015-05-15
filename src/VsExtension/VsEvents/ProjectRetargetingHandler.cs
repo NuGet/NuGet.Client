@@ -130,12 +130,15 @@ namespace NuGetVSExtension
             foreach (Project project in solution.Projects)
             {
                 var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
-                var packageReferencesToBeReinstalled = ProjectRetargetingUtility.GetPackageReferencesMarkedForReinstallation(nuGetProject);
-                if (packageReferencesToBeReinstalled.Count > 0)
+                if (nuGetProject != null)
                 {
-                    Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                    var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
-                    ShowRetargetingErrorTask(packageReferencesToBeReinstalled.Select(p => p.PackageIdentity.Id), projectHierarchy, TaskErrorCategory.Warning, TaskPriority.Normal);
+                    var packageReferencesToBeReinstalled = ProjectRetargetingUtility.GetPackageReferencesMarkedForReinstallation(nuGetProject);
+                    if (packageReferencesToBeReinstalled.Count > 0)
+                    {
+                        Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
+                        var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                        ShowRetargetingErrorTask(packageReferencesToBeReinstalled.Select(p => p.PackageIdentity.Id), projectHierarchy, TaskErrorCategory.Warning, TaskPriority.Normal);
+                    }
                 }
             }
         }
@@ -234,7 +237,7 @@ namespace NuGetVSExtension
                         var project = _dte.Solution.Item(_platformRetargetingProject);
                         var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
 
-                        if (project != null)
+                        if (project != null && nuGetProject != null)
                         {
                             var frameworkName = EnvDTEProjectUtility.GetTargetFrameworkString(project);
                             if (NETCore451.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows81.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))

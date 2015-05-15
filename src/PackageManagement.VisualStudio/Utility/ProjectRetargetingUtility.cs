@@ -32,7 +32,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>List of package identities to be reinstalled</returns>
         public static async Task<IList<PackageIdentity>> GetPackagesToBeReinstalled(NuGetProject project)
         {
-            Debug.Assert(project != null);
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
 
             var sortedPackages = new List<PackageIdentity>();
             var installedRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
@@ -218,7 +221,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static IList<PackageReference> GetPackageReferencesMarkedForReinstallation(NuGetProject project)
         {
-            Debug.Assert(project != null);
+            if(project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
 
             var projectFullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
             var packagesConfigFullPath = Path.Combine(projectFullPath ?? String.Empty, NuGet.ProjectManagement.Constants.PackageReferenceFile);
