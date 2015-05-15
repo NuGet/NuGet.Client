@@ -63,20 +63,5 @@ namespace NuGet.Protocol.Core.Types
 
             return null;
         }
-
-        public async Task<bool> IsSatellitePackage(string packageId, CancellationToken token)
-        {
-            var results = await ArePackagesSatellite(new string[] { packageId }, token);
-            var result = results.SingleOrDefault();
-
-            if (!result.Equals(default(KeyValuePair<string, bool>)))
-            {
-                return result.Value;
-            }
-
-            return false;
-        }
-
-        public abstract Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, CancellationToken token);
     }
 }

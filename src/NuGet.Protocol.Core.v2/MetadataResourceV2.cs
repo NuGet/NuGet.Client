@@ -26,12 +26,7 @@ namespace NuGet.Protocol.Core.v2
         {
             V2Client = resource.V2Client;
         }
-
-        public override Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             var results = new List<KeyValuePair<string, NuGetVersion>>();

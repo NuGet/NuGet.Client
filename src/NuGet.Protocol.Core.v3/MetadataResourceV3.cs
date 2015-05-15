@@ -69,15 +69,6 @@ namespace NuGet.Protocol.Core.v3
             return results;
         }
 
-        /// <summary>
-        /// Not implemented yet
-        /// </summary>
-        public override async Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, CancellationToken token)
-        {
-            await Task.Delay(1);
-            throw new NotImplementedException();
-        }
-
         public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
         {
             // TODO: get the url and just check the headers?

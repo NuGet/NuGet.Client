@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
+using System.Diagnostics;
 
 namespace NuGet.Protocol
 {
@@ -24,7 +25,7 @@ namespace NuGet.Protocol
             if (serviceIndex != null)
             {
                 // TODO: fix this for resource templates
-                throw new NotImplementedException();
+                Debug.Assert(false, "Not Implemented");
 
                 //ResourceSelector resourceSelector = new ResourceSelector(source);
 

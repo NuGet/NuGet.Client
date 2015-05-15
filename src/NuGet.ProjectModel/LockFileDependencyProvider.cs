@@ -109,7 +109,7 @@ namespace NuGet.ProjectModel
         
         public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
         {
-            throw new NotImplementedException();
+            return Enumerable.Empty<string>();
         }
     }
 }
