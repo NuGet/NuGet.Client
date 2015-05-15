@@ -56,5 +56,7 @@ namespace NuGet.PackageManagement.UI
         public abstract UserSettings GetSettings(string key);
 
         public abstract void PersistSettings();
+
+        public abstract void ApplyShowPreviewSetting(bool show);
     }
 }

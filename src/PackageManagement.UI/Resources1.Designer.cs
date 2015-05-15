@@ -223,15 +223,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do not show this again.
-        /// </summary>
-        public static string Checkbox_DoNotShowThisAgain {
-            get {
-                return ResourceManager.GetString("Checkbox_DoNotShowThisAgain", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Force uninstall, even if there are dependencies on it.
         /// </summary>
         public static string Checkbox_ForceRemove {
@@ -331,11 +322,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Don&apos;t show again.
+        ///   Looks up a localized string similar to Do not show this again.
         /// </summary>
-        public static string DoNotRemindAgain {
+        public static string DoNotShowThisAgain {
             get {
-                return ResourceManager.GetString("DoNotRemindAgain", resourceCulture);
+                return ResourceManager.GetString("DoNotShowThisAgain", resourceCulture);
             }
         }
         

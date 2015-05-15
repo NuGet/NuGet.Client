@@ -11,7 +11,7 @@
             <Button Click="OnDeclineUpdateLinkClick" BorderBrush="#00FFFFFF" Background="#00FFFFFF" Margin="8,0,5,0" VerticalAlignment="Center" Width="16" Height="16" DockPanel.Dock="Right" ToolTip="{x:Static resx:Resources.IgnoreUpgrade}">
                 <Path Stretch="Fill" StrokeThickness="0.5" Stroke="#FF333333" Fill="#FF969696" Data="F1M2.28484E-07,1.33331L1.33333,0 4.00001,2.66669 6.66667,6.10352E-05 8,1.33331 5.33334,4 8,6.66669 6.66667,8 4,5.33331 1.33333,8 1.086E-07,6.66669 2.66667,4 2.28484E-07,1.33331z" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             </Button>
-            <Button DockPanel.Dock="Right" Content="{x:Static resx:Resources.DoNotRemindAgain}" Click="OnDeclineUpdateLinkClickNoRemind" Margin="10,0,0,0" Padding="5,2,5,2" />
+            <Button DockPanel.Dock="Right" Content="{x:Static resx:Resources.DoNotShowThisAgain}" Click="OnDeclineUpdateLinkClickNoRemind" Margin="10,0,0,0" Padding="5,2,5,2" />
 
             <TextBlock x:Name="StatusMessage" Text="{x:Static resx:Resources.AskForUpdateMessage}" DockPanel.Dock="Left" TextOptions.TextFormattingMode="Display" VerticalAlignment="Center" Margin="5,0,5,0" />
             <Button DockPanel.Dock="Left" Content="{x:Static resx:Resources.ShowDetails}" Click="OnUpdateLinkClick" Margin="5,0,0,0" Padding="8,2,8,2" />

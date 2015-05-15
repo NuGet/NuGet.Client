@@ -390,9 +390,6 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="AskForUpdateMessage" xml:space="preserve">
     <value>A new version of NuGet Package Manager is available.</value>
   </data>
-  <data name="DoNotRemindAgain" xml:space="preserve">
-    <value>Don't show again</value>
-  </data>
   <data name="IgnoreUpgrade" xml:space="preserve">
     <value>Ignore for now</value>
   </data>
@@ -411,7 +408,7 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Label_ReportAbuse" xml:space="preserve">
     <value>Report Abuse:</value>
   </data>
-  <data name="Checkbox_DoNotShowThisAgain" xml:space="preserve">
+  <data name="DoNotShowThisAgain" xml:space="preserve">
     <value>Do not show this again</value>
   </data>
   <data name="Action_Downgrade" xml:space="preserve">

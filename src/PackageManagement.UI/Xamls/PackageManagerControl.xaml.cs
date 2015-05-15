@@ -28,9 +28,6 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageManagerControl : UserControl, IVsWindowSearch
     {
-        private const string NuGetRegistryKey = @"Software\NuGet";
-        private const string SuppressUIDisclaimerRegistryName = "SuppressUILegalDisclaimer";
-
         private const int PageSize = 10;
 
         private readonly bool _initialized;
@@ -49,7 +46,7 @@ namespace NuGet.PackageManagement.UI
         private readonly Dispatcher _uiDispatcher;
 
         public PackageManagerModel Model { get; }
-       
+
         public PackageManagerControl(
             PackageManagerModel model,
             ISettings nugetSettings,
@@ -136,19 +133,7 @@ namespace NuGet.PackageManagement.UI
 
         private static bool IsUILegalDisclaimerSuppressed()
         {
-            try
-            {
-                var key = Registry.CurrentUser.OpenSubKey(NuGetRegistryKey);
-                var setting =
-                    key == null ?
-                        null :
-                        key.GetValue(SuppressUIDisclaimerRegistryName) as string;
-                return setting != null && setting != "0";
-            }
-            catch
-            {
-                return false;
-            }
+            return RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName);
         }
 
         protected static DependencyBehavior GetDependencyBehaviorFromConfig(
@@ -173,6 +158,11 @@ namespace NuGet.PackageManagement.UI
             {
                 _detailModel.Options.SelectedDependencyBehavior = selectedDependencyBehavior;
             }
+        }
+
+        public void ApplyShowPreviewSetting(bool show)
+        {
+            _detailModel.Options.ShowPreviewWindow = show;
         }
 
         private void ApplySettings(
@@ -310,7 +300,13 @@ namespace NuGet.PackageManagement.UI
 
         private UserSettings LoadSettings()
         {
-            return Model.Context.GetSettings(GetSettingsKey());
+            var settings = Model.Context.GetSettings(GetSettingsKey());
+            if (PreviewWindow.IsDoNotShowPreviewWindowEnabled())
+            {
+                settings.ShowPreviewWindow = false;
+            }
+
+            return settings;
         }
 
         /// <summary>
@@ -623,10 +619,10 @@ namespace NuGet.PackageManagement.UI
                         continue;
                     }
 
-                    package.StatusProvider = new  Lazy<Task<PackageStatus>>(async () => await GetPackageStatus(
-                        package.Id,
-                        installedPackages,
-                        package.Versions));
+                    package.StatusProvider = new Lazy<Task<PackageStatus>>(async () => await GetPackageStatus(
+                       package.Id,
+                       installedPackages,
+                       package.Versions));
                 }
             }
         }
@@ -811,15 +807,7 @@ namespace NuGet.PackageManagement.UI
         private void SuppressDisclaimerChecked(object sender, RoutedEventArgs e)
         {
             _legalDisclaimer.Visibility = Visibility.Collapsed;
-
-            try
-            {
-                var key = Registry.CurrentUser.CreateSubKey(NuGetRegistryKey);
-                key.SetValue(SuppressUIDisclaimerRegistryName, "1", RegistryValueKind.String);
-            }
-            catch
-            {
-            }
+            RegistrySettingUtility.SetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName, true);
         }
     }
 }

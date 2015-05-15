@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement.UI
 
             UIDispatcher.Invoke(() =>
                 {
-                    var w = new PreviewWindow();
+                    var w = new PreviewWindow(_context);
                     w.DataContext = new PreviewWindowModel(actions);
 
                     if (StandaloneSwitch.IsRunningStandalone

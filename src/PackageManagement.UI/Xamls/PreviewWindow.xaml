@@ -115,14 +115,25 @@
       Grid.Row="3"
       Background="{Binding ElementName=_self, Path=Background}">
       <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="auto"/>
         <ColumnDefinition />
         <ColumnDefinition
           Width="auto" />
         <ColumnDefinition
           Width="auto" />
       </Grid.ColumnDefinitions>
+      <CheckBox 
+        x:Name="_doNotShowCheckBox"
+        Grid.Column="0"
+        Margin="12"
+        MinWidth="180"
+        VerticalAlignment="Center"
+        Content="{x:Static resx:Resources.DoNotShowThisAgain}"
+        Checked="DoNotShowCheckBox_Checked"
+        Unchecked="DoNotShowCheckBox_Unchecked"
+        />      
       <Button
-        Grid.Column="1"
+        Grid.Column="2"
         MinWidth="86"
         MinHeight="24"
         Margin="0,12"
@@ -130,7 +141,7 @@
         Content="{x:Static resx:Resources.Button_OK}"
         Click="OkButtonClicked" />
       <Button
-        Grid.Column="2"
+        Grid.Column="3"
         MinWidth="86"
         MinHeight="24"
         Margin="6,12,12,12"

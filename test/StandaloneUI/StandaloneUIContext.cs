@@ -82,5 +82,10 @@ namespace StandaloneUI
             {
             }
         }
+
+        public override void ApplyShowPreviewSetting(bool show)
+        {
+            // no-op
+        }
     }
 }

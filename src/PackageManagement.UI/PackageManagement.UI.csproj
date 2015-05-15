@@ -171,6 +171,7 @@
       <DependentUpon>ProductUpdateBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Common\TriggerEventMethod.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
     <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
@@ -225,6 +226,7 @@
     <Compile Include="UserInterfaceService\NuGetUIProjectContext.cs" />
     <Compile Include="UserSettings.cs" />
     <Compile Include="Utility\NuGetUIThreadHelper.cs" />
+    <Compile Include="Utility\RegistrySettingUtility.cs" />
     <Compile Include="VersionForDisplay.cs" />
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">

@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class Options
+    public class Options : INotifyPropertyChanged
     {
         public Options()
         {
@@ -48,7 +49,23 @@ namespace NuGet.PackageManagement.UI
             get { return _fileConflicActions; }
         }
 
-        public FileConflictActionOptionItem SelectedFileConflictAction { get; set; }
+        private FileConflictActionOptionItem _selectedFileConflictAction;
+
+        public FileConflictActionOptionItem SelectedFileConflictAction
+        {
+            get
+            {
+                return _selectedFileConflictAction;
+            }
+            set
+            {
+                if (_selectedFileConflictAction != value)
+                {
+                    _selectedFileConflictAction = value;
+                    OnPropertyChanged(nameof(SelectedFileConflictAction));
+                }
+            }
+        }
 
         private DependencyBehaviorItem[] _dependencyBehaviors;
 
@@ -57,12 +74,87 @@ namespace NuGet.PackageManagement.UI
             get { return _dependencyBehaviors; }
         }
 
-        public DependencyBehaviorItem SelectedDependencyBehavior { get; set; }
+        private DependencyBehaviorItem _selectedDependencyBehavior;
 
-        public bool ShowPreviewWindow { get; set; }
+        public DependencyBehaviorItem SelectedDependencyBehavior
+        {
+            get
+            {
+                return _selectedDependencyBehavior;
+            }
+            set
+            {
+                if (_selectedDependencyBehavior != value)
+                {
+                    _selectedDependencyBehavior = value;
+                    OnPropertyChanged(nameof(SelectedDependencyBehavior));
+                }
+            }
+        }
 
-        public bool RemoveDependencies { get; set; }
+        private bool _showPreviewWindow;
 
-        public bool ForceRemove { get; set; }
+        public bool ShowPreviewWindow
+        {
+            get
+            {
+                return _showPreviewWindow;
+            }
+            set
+            {
+                if (_showPreviewWindow != value)
+                {
+                    _showPreviewWindow = value;
+                    OnPropertyChanged(nameof(ShowPreviewWindow));
+                }
+            }
+        }
+
+        private bool _removeDependencies;
+
+        public bool RemoveDependencies
+        {
+            get
+            {
+                return _removeDependencies;
+            }
+            set
+            {
+                if (_removeDependencies != value)
+                {
+                    _removeDependencies = value;
+                    OnPropertyChanged(nameof(RemoveDependencies));
+                }
+            }
+        }
+
+        private bool _forceRemove;
+
+        public bool ForceRemove
+        {
+            get
+            {
+                return _forceRemove;
+            }
+            set
+            {
+                if (_forceRemove != value)
+                {
+                    _forceRemove = value;
+                    OnPropertyChanged(nameof(ForceRemove));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
 }

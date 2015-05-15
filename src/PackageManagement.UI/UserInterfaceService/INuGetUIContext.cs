@@ -29,5 +29,13 @@ namespace NuGet.PackageManagement.UI
 
         // Persist settings 
         void PersistSettings();
+
+        /// <summary>
+        /// Apply the setting of wether to show preview window to all existing 
+        /// package manager windows after user changes it by checking/unchecking the 
+        /// checkbox on the preview window.
+        /// </summary>
+        /// <param name="show">The value of the setting.</param>
+        void ApplyShowPreviewSetting(bool show);
     }
 }
