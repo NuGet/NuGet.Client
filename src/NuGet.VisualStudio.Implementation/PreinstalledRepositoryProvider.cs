@@ -71,7 +71,12 @@ namespace NuGet.VisualStudio
 
         public IPackageSourceProvider PackageSourceProvider
         {
-            get { throw new NotImplementedException(); }
+            get
+            { 
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return null;
+            }
         }
 
         /// <summary>

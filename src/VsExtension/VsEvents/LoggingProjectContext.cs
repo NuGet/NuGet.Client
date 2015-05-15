@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
+using System.Diagnostics;
 
 namespace NuGetVSExtension
 {
@@ -27,29 +28,47 @@ namespace NuGetVSExtension
 
         public ExecutionContext ExecutionContext
         {
-            get { throw new NotImplementedException(); }
+            get
+            { 
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return null;
+            }
         }
 
         public PackageExtractionContext PackageExtractionContext
         {
-            get { throw new NotImplementedException(); }
+            get
+            { 
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return null;
+            }
 
-            set { throw new NotImplementedException(); }
+            set { Debug.Assert(false, "Not Implemented"); }
         }
 
         public ISourceControlManagerProvider SourceControlManagerProvider
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return null;
+            }
         }
 
         public void ReportError(string message)
         {
-            throw new NotImplementedException();
+            // no op
+            Debug.Assert(false, "Not Implemented");
         }
 
         public FileConflictAction ResolveFileConflict(string message)
         {
-            throw new NotImplementedException();
+            // no op
+            Debug.Assert(false, "Not Implemented");
+            return 0;
         }
     }
 }

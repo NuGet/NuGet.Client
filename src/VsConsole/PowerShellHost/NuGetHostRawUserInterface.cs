@@ -5,6 +5,7 @@ using System;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Windows.Input;
+using System.Diagnostics;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -35,24 +36,34 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public override Size BufferSize
         {
             get { return new Size(Console.ConsoleWidth, 0); }
-            set { throw new NotImplementedException(); }
+            set { Debug.Assert(false, "Not Implemented"); }
         }
 
         public override Coordinates CursorPosition
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get
+            { 
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return new Coordinates();
+            }
+            set { Debug.Assert(false, "Not Implemented"); }
         }
 
         public override int CursorSize
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get
+            { 
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return 0;
+            }
+            set { Debug.Assert(false, "Not Implemented"); }
         }
 
         public override void FlushInputBuffer()
         {
-            throw new NotImplementedException();
+            Debug.Assert(false, "Not Implemented");
         }
 
         public override ConsoleColor ForegroundColor
@@ -67,7 +78,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override BufferCell[,] GetBufferContents(Rectangle rectangle)
         {
-            throw new NotImplementedException();
+            // no op
+            Debug.Assert(false, "Not Implemented");
+            return new BufferCell[0, 0];
         }
 
         public override bool KeyAvailable
@@ -77,12 +90,21 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override Size MaxPhysicalWindowSize
         {
-            get { throw new NotImplementedException(); }
+            get {
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return new Size();
+            }
         }
 
         public override Size MaxWindowSize
         {
-            get { throw new NotImplementedException(); }
+            get
+            { 
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return new Size();
+            }
         }
 
         public override KeyInfo ReadKey(ReadKeyOptions options)
@@ -109,35 +131,45 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override void ScrollBufferContents(Rectangle source, Coordinates destination, Rectangle clip, BufferCell fill)
         {
-            throw new NotImplementedException();
+            Debug.Assert(false, "Not Implemented");
         }
 
         public override void SetBufferContents(Rectangle rectangle, BufferCell fill)
         {
-            throw new NotImplementedException();
+            Debug.Assert(false, "Not Implemented");
         }
 
         public override void SetBufferContents(Coordinates origin, BufferCell[,] contents)
         {
-            throw new NotImplementedException();
+            Debug.Assert(false, "Not Implemented");
         }
 
         public override Coordinates WindowPosition
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get
+            {  
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return new Coordinates();
+            }
+            set { Debug.Assert(false, "Not Implemented"); }
         }
 
         public override Size WindowSize
         {
             get { return new Size(Console.ConsoleWidth, 0); }
-            set { throw new NotImplementedException(); }
+            set { Debug.Assert(false, "Not Implemented"); }
         }
 
         public override string WindowTitle
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get
+            { 
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return null;
+            }
+            set { Debug.Assert(false, "Not Implemented"); }
         }
     }
 }
