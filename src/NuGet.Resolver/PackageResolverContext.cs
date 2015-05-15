@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Resolver
 {
@@ -25,7 +26,7 @@ namespace NuGet.Resolver
             IEnumerable<string> requiredPackageIds,
             IEnumerable<Packaging.PackageReference> packagesConfig,
             IEnumerable<PackageIdentity> preferredVersions,
-            IEnumerable<PackageDependencyInfo> availablePackages)
+            IEnumerable<SourcePackageDependencyInfo> availablePackages)
         {
             if (targetIds == null)
             {
@@ -69,7 +70,7 @@ namespace NuGet.Resolver
         /// <summary>
         /// New packages to install or update. These will prefer the highest version.
         /// </summary>
-        public HashSet<string> TargetIds;
+        public HashSet<string> TargetIds { get; }
 
         /// <summary>
         /// Existing packages that are required, and the target ids that are required.
@@ -92,7 +93,7 @@ namespace NuGet.Resolver
         /// <summary>
         /// All packages available to use in the solution.
         /// </summary>
-        public IEnumerable<PackageDependencyInfo> AvailablePackages { get; }
+        public IEnumerable<SourcePackageDependencyInfo> AvailablePackages { get; }
 
         /// <summary>
         /// Dependency behavior

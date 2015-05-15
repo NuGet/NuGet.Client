@@ -85,6 +85,16 @@ namespace NuGet.Resolver
                 }
             }
 
+            //Prefer listed packages over unlisted
+            if (x.Listed && !y.Listed)
+            {
+                return -1;
+            }
+            if (!x.Listed && y.Listed)
+            {
+                return 1;
+            }
+
             var xv = x.Version;
             var yv = y.Version;
 

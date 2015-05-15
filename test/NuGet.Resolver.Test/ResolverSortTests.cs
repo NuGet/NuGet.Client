@@ -6,6 +6,7 @@ using System.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.Resolver.Test
 {
@@ -337,6 +338,115 @@ namespace NuGet.Resolver.Test
 
             // take the highest downgrade
             Assert.Equal("1.3.2", packages.First().Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public void ResolverSort_Basic_PreferListed()
+        {
+            var packages = new List<ResolverPackage>
+            {
+                new ResolverPackage("A", NuGetVersion.Parse("3.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("1.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("2.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("5.0.0"), null, true, false),
+                new ResolverPackage("A", NuGetVersion.Parse("4.0.0"), null, true, false),
+            };
+
+            var preferredVersions = new HashSet<PackageIdentity>();
+            var targetIds = new HashSet<string>();
+
+            var comparer = new ResolverComparer(DependencyBehavior.Lowest, preferredVersions, targetIds);
+
+            packages.Sort(comparer);
+
+            Assert.Equal(packages[0].Version, NuGetVersion.Parse("4.0.0"));
+            Assert.Equal(packages[1].Version, NuGetVersion.Parse("5.0.0"));
+            Assert.Equal(packages[2].Version, NuGetVersion.Parse("1.0.0"));
+            Assert.Equal(packages[3].Version, NuGetVersion.Parse("2.0.0"));
+            Assert.Equal(packages[4].Version, NuGetVersion.Parse("3.0.0"));
+        }
+
+        [Fact]
+        public void ResolverSort_Absent_PreferListed()
+        {
+            var packages = new List<ResolverPackage>
+            {
+                new ResolverPackage("A", NuGetVersion.Parse("4.0.0"), null, true, false),
+                new ResolverPackage("A", NuGetVersion.Parse("1.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("2.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("6.0.0"), null, true, true),
+                new ResolverPackage("A", NuGetVersion.Parse("3.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("7.0.0"), null, true, false),
+                new ResolverPackage("A", NuGetVersion.Parse("5.0.0"), null, true, false),
+            };
+
+            var preferredVersions = new HashSet<PackageIdentity>();
+            ;
+
+            var targetIds = new HashSet<string>();
+
+            var comparer = new ResolverComparer(DependencyBehavior.Lowest, preferredVersions, targetIds);
+
+            packages.Sort(comparer);
+
+            int index = 0;
+
+            // absent - always top
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("6.0.0"));
+
+            // listed 
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("4.0.0"));
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("5.0.0"));
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("7.0.0"));
+
+            // otherwise lowest first
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("1.0.0"));
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("2.0.0"));
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("3.0.0"));
+        }
+
+        [Fact]
+        public void ResolverSort_Preferred_PreferListed()
+        {
+            var packages = new List<ResolverPackage>
+            {
+                new ResolverPackage("A", NuGetVersion.Parse("1.0.0"), null, true, false),
+                new ResolverPackage("A", NuGetVersion.Parse("2.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("3.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("4.0.0"), null, true, false),
+                new ResolverPackage("A", NuGetVersion.Parse("5.0.0"), null, false, false),
+                new ResolverPackage("A", NuGetVersion.Parse("6.0.0"), null, true, true),
+                new ResolverPackage("A", NuGetVersion.Parse("7.0.0"), null, true, false),
+            };
+
+            var preferredVersions = new HashSet<PackageIdentity>()
+            {
+                new PackageIdentity("A", NuGetVersion.Parse("7.0.0"))
+            }
+            ;
+
+            var targetIds = new HashSet<string>();
+
+            var comparer = new ResolverComparer(DependencyBehavior.Lowest, preferredVersions, targetIds);
+
+            packages.Sort(comparer);
+
+            int index = 0;
+
+            // absent - always top
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("6.0.0"));
+
+            // preferredVersion (aka installed) - always following absent
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("7.0.0"));
+
+            // closest - but still favoring listed
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("4.0.0"));
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("1.0.0"));
+
+            // unlisted
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("5.0.0"));
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("3.0.0"));
+            Assert.Equal(packages[index++].Version, NuGetVersion.Parse("2.0.0"));
         }
 
         private static List<NuGetVersion> VersionList = new List<NuGetVersion>()

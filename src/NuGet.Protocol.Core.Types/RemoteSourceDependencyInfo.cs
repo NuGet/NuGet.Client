@@ -24,6 +24,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="contentUri">The content uri for the dependency.</param>
         public RemoteSourceDependencyInfo(
             PackageIdentity identity,
+            bool listed,
             IEnumerable<PackageDependencyGroup> dependencyGroups,
             string contentUri)
         {
@@ -38,6 +39,7 @@ namespace NuGet.Protocol.Core.Types
             }
 
             Identity = identity;
+            Listed = listed;
             DependencyGroups = dependencyGroups.ToList();
             ContentUri = contentUri;
         }
@@ -46,6 +48,11 @@ namespace NuGet.Protocol.Core.Types
         /// Package identity
         /// </summary>
         public PackageIdentity Identity { get; }
+
+        /// <summary>
+        /// IsListed
+        /// </summary>
+        public bool Listed { get; }
 
         /// <summary>
         /// Package dependency groups

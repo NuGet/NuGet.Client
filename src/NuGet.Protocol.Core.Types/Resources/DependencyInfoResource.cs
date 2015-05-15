@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Core.Types
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public abstract Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package,
+        public abstract Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package,
             NuGetFramework projectFramework,
             CancellationToken token);
 
@@ -38,7 +38,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public abstract Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId,
+        public abstract Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId,
             NuGetFramework projectFramework,
             CancellationToken token);
 

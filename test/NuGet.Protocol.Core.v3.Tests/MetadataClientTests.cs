@@ -143,5 +143,54 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Assert
             Assert.Null(result);
         }
+
+        [Fact]
+        public async Task MetadataClient_ResolvePackageUnlisted()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("https://api.nuget.org/v3/registration0/unlistedpackagea/index.json", JsonData.UnlistedPackageARegistration);
+            responses.Add("https://api.nuget.org/v3/registration0/unlistedpackageb/index.json", JsonData.UnlistedPackageBRegistration);
+
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
+
+            var package = new PackageIdentity("unlistedpackagea", NuGetVersion.Parse("1.0.0"));
+
+            var projectFramework = NuGetFramework.Parse("net45");
+
+            // Act
+            var result = await resource.ResolvePackage(package, projectFramework, CancellationToken.None);
+
+            // Assert
+            Assert.False(result.Listed);
+        }
+
+        [Fact]
+        public async Task MetadataClient_ResolvePackageListed()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("https://api.nuget.org/v3/registration0/unlistedpackagea/index.json", JsonData.UnlistedPackageARegistration);
+            responses.Add("https://api.nuget.org/v3/registration0/unlistedpackageb/index.json", JsonData.UnlistedPackageBRegistration);
+            responses.Add("https://api.nuget.org/v3/registration0/unlistedpackagec/index.json", JsonData.UnlistedPackageCRegistration);
+
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+
+            var resource = await repo.GetResourceAsync<DependencyInfoResource>();
+
+            var package = new PackageIdentity("unlistedpackagec", NuGetVersion.Parse("1.0.0"));
+
+            var projectFramework = NuGetFramework.Parse("net45");
+
+            // Act
+            var result = await resource.ResolvePackage(package, projectFramework, CancellationToken.None);
+
+            // Assert
+            Assert.True(result.Listed);
+        }
     }
 }

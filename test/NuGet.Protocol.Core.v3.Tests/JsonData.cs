@@ -3572,5 +3572,340 @@ namespace NuGet.Protocol.Core.v3.Tests
 }";
 
         #endregion
+
+        #region UnlistedPackageA
+
+        public const string UnlistedPackageARegistration = @"{
+  ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackagea/index.json"",
+  ""@type"": [
+    ""catalog:CatalogRoot"",
+    ""PackageRegistration"",
+    ""catalog:Permalink""
+  ],
+  ""commitId"": ""7799da88-0c19-4a01-abc9-126eb2d78358"",
+  ""commitTimeStamp"": ""2015-05-12T17:01:38.5415156Z"",
+  ""count"": 1,
+  ""items"": [
+    {
+      ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackagea/index.json#page/1.0.0/1.0.0"",
+      ""@type"": ""catalog:CatalogPage"",
+      ""commitId"": ""7799da88-0c19-4a01-abc9-126eb2d78358"",
+      ""commitTimeStamp"": ""2015-05-12T17:01:38.5415156Z"",
+      ""count"": 1,
+      ""items"": [
+        {
+          ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackagea/1.0.0.json"",
+          ""@type"": ""Package"",
+          ""commitId"": ""7799da88-0c19-4a01-abc9-126eb2d78358"",
+          ""commitTimeStamp"": ""2015-05-12T17:01:38.5415156Z"",
+          ""catalogEntry"": {
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.05.12.16.56.10/unlistedpackagea.1.0.0.json"",
+            ""@type"": ""PackageDetails"",
+            ""authors"": ""bhuvak"",
+            ""dependencyGroups"": [
+              {
+                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.05.12.16.56.10/unlistedpackagea.1.0.0.json#dependencygroup"",
+                ""@type"": ""PackageDependencyGroup"",
+                ""dependencies"": [
+                  {
+                    ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.05.12.16.56.10/unlistedpackagea.1.0.0.json#dependencygroup/unlistedpackageb"",
+                    ""@type"": ""PackageDependency"",
+                    ""id"": ""UnlistedPackageB"",
+                    ""range"": ""[1.0.0, )"",
+                    ""registration"": ""https://api.nuget.org/v3/registration0/unlistedpackageb/index.json""
+                  }
+                ]
+              }
+            ],
+            ""description"": ""My package description."",
+            ""iconUrl"": """",
+            ""id"": ""UnlistedPackageA"",
+            ""language"": """",
+            ""licenseUrl"": """",
+            ""minClientVersion"": """",
+            ""projectUrl"": """",
+            ""published"": ""1900-01-01T00:00:00Z"",
+            ""listed"": false,
+            ""requireLicenseAcceptance"": false,
+            ""summary"": """",
+            ""tags"": [
+              """"
+            ],
+            ""title"": """",
+            ""version"": ""1.0.0""
+          },
+          ""packageContent"": ""https://api.nuget.org/packages/unlistedpackagea.1.0.0.nupkg"",
+          ""registration"": ""https://api.nuget.org/v3/registration0/unlistedpackagea/index.json""
+        }
+      ],
+      ""parent"": ""https://api.nuget.org/v3/registration0/unlistedpackagea/index.json"",
+      ""lower"": ""1.0.0"",
+      ""upper"": ""1.0.0""
+    }
+  ],
+  ""@context"": {
+    ""@vocab"": ""http://schema.nuget.org/schema#"",
+    ""catalog"": ""http://schema.nuget.org/catalog#"",
+    ""xsd"": ""http://www.w3.org/2001/XMLSchema#"",
+    ""items"": {
+      ""@id"": ""catalog:item"",
+      ""@container"": ""@set""
+    },
+    ""commitTimeStamp"": {
+      ""@id"": ""catalog:commitTimeStamp"",
+      ""@type"": ""xsd:dateTime""
+    },
+    ""commitId"": {
+      ""@id"": ""catalog:commitId""
+    },
+    ""count"": {
+      ""@id"": ""catalog:count""
+    },
+    ""parent"": {
+      ""@id"": ""catalog:parent"",
+      ""@type"": ""@id""
+    },
+    ""tags"": {
+      ""@container"": ""@set"",
+      ""@id"": ""tag""
+    },
+    ""packageTargetFrameworks"": {
+      ""@container"": ""@set"",
+      ""@id"": ""packageTargetFramework""
+    },
+    ""dependencyGroups"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependencyGroup""
+    },
+    ""dependencies"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependency""
+    },
+    ""packageContent"": {
+      ""@type"": ""@id""
+    },
+    ""published"": {
+      ""@type"": ""xsd:dateTime""
+    },
+    ""registration"": {
+      ""@type"": ""@id""
+    }
+  }
+}";
+
+        #endregion
+
+        #region UnlistedPackageB
+
+        public const string UnlistedPackageBRegistration = @"{
+  ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackageb/index.json"",
+  ""@type"": [
+    ""catalog:CatalogRoot"",
+    ""PackageRegistration"",
+    ""catalog:Permalink""
+  ],
+  ""commitId"": ""5eaff0e0-7c0d-4be2-809a-7956f7a859a7"",
+  ""commitTimeStamp"": ""2015-05-12T17:01:37.9000185Z"",
+  ""count"": 1,
+  ""items"": [
+    {
+      ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackageb/index.json#page/1.0.0/1.0.0"",
+      ""@type"": ""catalog:CatalogPage"",
+      ""commitId"": ""5eaff0e0-7c0d-4be2-809a-7956f7a859a7"",
+      ""commitTimeStamp"": ""2015-05-12T17:01:37.9000185Z"",
+      ""count"": 1,
+      ""items"": [
+        {
+          ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackageb/1.0.0.json"",
+          ""@type"": ""Package"",
+          ""commitId"": ""5eaff0e0-7c0d-4be2-809a-7956f7a859a7"",
+          ""commitTimeStamp"": ""2015-05-12T17:01:37.9000185Z"",
+          ""catalogEntry"": {
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.05.12.16.55.30/unlistedpackageb.1.0.0.json"",
+            ""@type"": ""PackageDetails"",
+            ""authors"": ""bhuvak"",
+            ""description"": ""My package description."",
+            ""iconUrl"": """",
+            ""id"": ""UnlistedPackageB"",
+            ""language"": """",
+            ""licenseUrl"": """",
+            ""minClientVersion"": """",
+            ""projectUrl"": """",
+            ""published"": ""1900-01-01T00:00:00Z"",
+            ""listed"": false,
+            ""requireLicenseAcceptance"": false,
+            ""summary"": """",
+            ""tags"": [
+              """"
+            ],
+            ""title"": """",
+            ""version"": ""1.0.0""
+          },
+          ""packageContent"": ""https://api.nuget.org/packages/unlistedpackageb.1.0.0.nupkg"",
+          ""registration"": ""https://api.nuget.org/v3/registration0/unlistedpackageb/index.json""
+        }
+      ],
+      ""parent"": ""https://api.nuget.org/v3/registration0/unlistedpackageb/index.json"",
+      ""lower"": ""1.0.0"",
+      ""upper"": ""1.0.0""
+    }
+  ],
+  ""@context"": {
+    ""@vocab"": ""http://schema.nuget.org/schema#"",
+    ""catalog"": ""http://schema.nuget.org/catalog#"",
+    ""xsd"": ""http://www.w3.org/2001/XMLSchema#"",
+    ""items"": {
+      ""@id"": ""catalog:item"",
+      ""@container"": ""@set""
+    },
+    ""commitTimeStamp"": {
+      ""@id"": ""catalog:commitTimeStamp"",
+      ""@type"": ""xsd:dateTime""
+    },
+    ""commitId"": {
+      ""@id"": ""catalog:commitId""
+    },
+    ""count"": {
+      ""@id"": ""catalog:count""
+    },
+    ""parent"": {
+      ""@id"": ""catalog:parent"",
+      ""@type"": ""@id""
+    },
+    ""tags"": {
+      ""@container"": ""@set"",
+      ""@id"": ""tag""
+    },
+    ""packageTargetFrameworks"": {
+      ""@container"": ""@set"",
+      ""@id"": ""packageTargetFramework""
+    },
+    ""dependencyGroups"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependencyGroup""
+    },
+    ""dependencies"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependency""
+    },
+    ""packageContent"": {
+      ""@type"": ""@id""
+    },
+    ""published"": {
+      ""@type"": ""xsd:dateTime""
+    },
+    ""registration"": {
+      ""@type"": ""@id""
+    }
+  }
+}";
+        #endregion
+
+        #region UnlistedPackageC
+
+        public const string UnlistedPackageCRegistration = @"{
+  ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackagec/index.json"",
+  ""@type"": [
+    ""catalog:CatalogRoot"",
+    ""PackageRegistration"",
+    ""catalog:Permalink""
+  ],
+  ""commitId"": ""5eaff0e0-7c0d-4be2-809a-7956f7a859a7"",
+  ""commitTimeStamp"": ""2015-05-12T17:01:37.9000185Z"",
+  ""count"": 1,
+  ""items"": [
+    {
+      ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackagec/index.json#page/1.0.0/1.0.0"",
+      ""@type"": ""catalog:CatalogPage"",
+      ""commitId"": ""5eaff0e0-7c0d-4be2-809a-7956f7a859a7"",
+      ""commitTimeStamp"": ""2015-05-12T17:01:37.9000185Z"",
+      ""count"": 1,
+      ""items"": [
+        {
+          ""@id"": ""https://api.nuget.org/v3/registration0/unlistedpackagec/1.0.0.json"",
+          ""@type"": ""Package"",
+          ""commitId"": ""5eaff0e0-7c0d-4be2-809a-7956f7a859a7"",
+          ""commitTimeStamp"": ""2015-05-12T17:01:37.9000185Z"",
+          ""catalogEntry"": {
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.05.12.16.55.30/unlistedpackagec.1.0.0.json"",
+            ""@type"": ""PackageDetails"",
+            ""authors"": ""bhuvak"",
+            ""description"": ""My package description."",
+            ""iconUrl"": """",
+            ""id"": ""UnlistedPackageC"",
+            ""language"": """",
+            ""licenseUrl"": """",
+            ""minClientVersion"": """",
+            ""projectUrl"": """",
+            ""published"": ""1967-05-29T19:30:00Z"",
+            ""listed"": true,
+            ""requireLicenseAcceptance"": false,
+            ""summary"": """",
+            ""tags"": [
+              """"
+            ],
+            ""title"": """",
+            ""version"": ""1.0.0""
+          },
+          ""packageContent"": ""https://api.nuget.org/packages/unlistedpackagec.1.0.0.nupkg"",
+          ""registration"": ""https://api.nuget.org/v3/registration0/unlistedpackagec/index.json""
+        }
+      ],
+      ""parent"": ""https://api.nuget.org/v3/registration0/unlistedpackagec/index.json"",
+      ""lower"": ""1.0.0"",
+      ""upper"": ""1.0.0""
+    }
+  ],
+  ""@context"": {
+    ""@vocab"": ""http://schema.nuget.org/schema#"",
+    ""catalog"": ""http://schema.nuget.org/catalog#"",
+    ""xsd"": ""http://www.w3.org/2001/XMLSchema#"",
+    ""items"": {
+      ""@id"": ""catalog:item"",
+      ""@container"": ""@set""
+    },
+    ""commitTimeStamp"": {
+      ""@id"": ""catalog:commitTimeStamp"",
+      ""@type"": ""xsd:dateTime""
+    },
+    ""commitId"": {
+      ""@id"": ""catalog:commitId""
+    },
+    ""count"": {
+      ""@id"": ""catalog:count""
+    },
+    ""parent"": {
+      ""@id"": ""catalog:parent"",
+      ""@type"": ""@id""
+    },
+    ""tags"": {
+      ""@container"": ""@set"",
+      ""@id"": ""tag""
+    },
+    ""packageTargetFrameworks"": {
+      ""@container"": ""@set"",
+      ""@id"": ""packageTargetFramework""
+    },
+    ""dependencyGroups"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependencyGroup""
+    },
+    ""dependencies"": {
+      ""@container"": ""@set"",
+      ""@id"": ""dependency""
+    },
+    ""packageContent"": {
+      ""@type"": ""@id""
+    },
+    ""published"": {
+      ""@type"": ""xsd:dateTime""
+    },
+    ""registration"": {
+      ""@type"": ""@id""
+    }
+  }
+}";
+        #endregion
+
     }
 }

@@ -392,22 +392,22 @@ namespace NuGet.Resolver.Test
         private static ResolverPackage CreatePackage(string id, string version, string dependencyId, string dependencyVersionRange)
         {
             return new ResolverPackage(id, NuGetVersion.Parse(version),
-                new NuGet.Packaging.Core.PackageDependency[] { new Packaging.Core.PackageDependency(dependencyId, VersionRange.Parse(dependencyVersionRange)) }, false);
+                new NuGet.Packaging.Core.PackageDependency[] { new Packaging.Core.PackageDependency(dependencyId, VersionRange.Parse(dependencyVersionRange)) }, true, false);
         }
 
         private static ResolverPackage CreatePackage(string id, string version)
         {
-            return new ResolverPackage(id, NuGetVersion.Parse(version), Enumerable.Empty<NuGet.Packaging.Core.PackageDependency>(), false);
+            return new ResolverPackage(id, NuGetVersion.Parse(version), Enumerable.Empty<NuGet.Packaging.Core.PackageDependency>(), true, false);
         }
 
         private static ResolverPackage CreatePackage(string id, string version, params NuGet.Packaging.Core.PackageDependency[] dependencies)
         {
-            return new ResolverPackage(id, NuGetVersion.Parse(version), dependencies, false);
+            return new ResolverPackage(id, NuGetVersion.Parse(version), dependencies, true, false);
         }
 
         private static ResolverPackage CreateAbsentPackage(string id)
         {
-            return new ResolverPackage(id, null, null, true);
+            return new ResolverPackage(id, null, null, true, true);
         }
 
         private static PackageReference CreateInstalledPackage(string id, string version)

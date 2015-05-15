@@ -54,7 +54,7 @@ namespace NuGet.Resolver
                     dependencies = package.Dependencies ?? Enumerable.Empty<PackageDependency>();
                 }
 
-                resolverPackages.Add(new ResolverPackage(package.Id, package.Version, dependencies));
+                resolverPackages.Add(new ResolverPackage(package.Id, package.Version, dependencies, package.Listed, false));
             }
 
             // Sort the packages to make this process as deterministic as possible
@@ -75,7 +75,7 @@ namespace NuGet.Resolver
                 // being absent allows the resolver to throw it out if it is not needed
                 if (!context.RequiredPackageIds.Contains(group.Key, StringComparer.OrdinalIgnoreCase))
                 {
-                    curSet.Add(new ResolverPackage(id: group.Key, version: null, dependencies: null, absent: true));
+                    curSet.Add(new ResolverPackage(id: group.Key, version: null, dependencies: null, listed: true, absent: true));
                 }
 
                 grouped.Add(curSet);
@@ -92,7 +92,7 @@ namespace NuGet.Resolver
                 if (!groupsAdded.Contains(depId))
                 {
                     groupsAdded.Add(depId);
-                    grouped.Add(new List<ResolverPackage>() { new ResolverPackage(id: depId, version: null, dependencies: null, absent: true) });
+                    grouped.Add(new List<ResolverPackage>() { new ResolverPackage(id: depId, version: null, dependencies: null, listed: true, absent: true) });
                 }
             }
 

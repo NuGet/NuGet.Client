@@ -659,7 +659,9 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency[]
                     {
                         new NuGet.Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(3, 0, 0), true))
-                    });
+                    },
+                true,
+                false);
 
             var dep1 = new ResolverPackage("b", new NuGetVersion(2, 0, 0));
             var dep2 = new ResolverPackage("b", new NuGetVersion(2, 5, 0));
@@ -681,7 +683,7 @@ namespace NuGet.Resolver.Test
         [Fact]
         public void Resolver_NoSolution()
         {
-            ResolverPackage target = new ResolverPackage("a", new NuGetVersion(1, 0, 0), new NuGet.Packaging.Core.PackageDependency[] { new NuGet.Packaging.Core.PackageDependency("b", null) });
+            ResolverPackage target = new ResolverPackage("a", new NuGetVersion(1, 0, 0), new NuGet.Packaging.Core.PackageDependency[] { new NuGet.Packaging.Core.PackageDependency("b", null) }, true, false);
 
             List<ResolverPackage> possible = new List<ResolverPackage>();
             possible.Add(target);
@@ -690,6 +692,116 @@ namespace NuGet.Resolver.Test
             var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, possible);
 
             Assert.Throws<NuGetResolverConstraintException>(() => resolver.Resolve(context, CancellationToken.None));
+        }
+
+        [Fact]
+        public void Resolver_Basic_Listed()
+        {
+            var a100 = new ResolverPackage("a", new NuGetVersion(1, 0, 0),
+                new NuGet.Packaging.Core.PackageDependency[]
+                    {
+                        new NuGet.Packaging.Core.PackageDependency("b", 
+                            new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(5, 0, 0), true))
+                    },
+                true,
+                false);
+
+            var b200 = new ResolverPackage("b", new NuGetVersion(2, 0, 0), null, false, false);
+            var b250 = new ResolverPackage("b", new NuGetVersion(2, 5, 0), null, false, false);
+            var b400 = new ResolverPackage("b", new NuGetVersion(4, 0, 0), null, true, false);
+            var b500 = new ResolverPackage("b", new NuGetVersion(5, 0, 0), null, true, false);
+            var b600 = new ResolverPackage("b", new NuGetVersion(6, 0, 0), null, true, false);
+
+            List<ResolverPackage> available = new List<ResolverPackage>();
+            available.Add(a100);
+            available.Add(b200);
+            available.Add(b250);
+            available.Add(b400);
+            available.Add(b500);
+            available.Add(b600);
+
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, a100, available);
+            var solution = resolver.Resolve(context, CancellationToken.None)
+                .OrderBy(pi => pi.Id)
+                .ToList();
+
+            //  the result includes "b" version "4.0.0" because it is the lowest listed dependency
+
+            Assert.Equal(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), solution[0], PackageIdentityComparer.Default);
+            Assert.Equal(new PackageIdentity("b", new NuGetVersion(4, 0, 0)), solution[1], PackageIdentityComparer.Default);
+        }
+
+        [Fact]
+        public void Resolver_Basic_AllListed()
+        {
+            var a100 = new ResolverPackage("a", new NuGetVersion(1, 0, 0),
+                new NuGet.Packaging.Core.PackageDependency[]
+                    {
+                        new NuGet.Packaging.Core.PackageDependency("b",
+                            new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(5, 0, 0), true))
+                    },
+                true,
+                false);
+
+            var b200 = new ResolverPackage("b", new NuGetVersion(2, 0, 0), null, true, false);
+            var b250 = new ResolverPackage("b", new NuGetVersion(2, 5, 0), null, true, false);
+            var b400 = new ResolverPackage("b", new NuGetVersion(4, 0, 0), null, true, false);
+            var b500 = new ResolverPackage("b", new NuGetVersion(5, 0, 0), null, true, false);
+            var b600 = new ResolverPackage("b", new NuGetVersion(6, 0, 0), null, true, false);
+
+            List<ResolverPackage> available = new List<ResolverPackage>();
+            available.Add(a100);
+            available.Add(b200);
+            available.Add(b250);
+            available.Add(b400);
+            available.Add(b500);
+            available.Add(b600);
+
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, a100, available);
+            var solution = resolver.Resolve(context, CancellationToken.None)
+                .OrderBy(pi => pi.Id)
+                .ToList();
+
+            Assert.Equal(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), solution[0], PackageIdentityComparer.Default);
+            Assert.Equal(new PackageIdentity("b", new NuGetVersion(2, 0, 0)), solution[1], PackageIdentityComparer.Default);
+        }
+
+        [Fact]
+        public void Resolver_Basic_AllUnlisted()
+        {
+            var a100 = new ResolverPackage("a", new NuGetVersion(1, 0, 0),
+                new NuGet.Packaging.Core.PackageDependency[]
+                    {
+                        new NuGet.Packaging.Core.PackageDependency("b",
+                            new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(5, 0, 0), true))
+                    },
+                false,
+                false);
+
+            var b200 = new ResolverPackage("b", new NuGetVersion(2, 0, 0), null, false, false);
+            var b250 = new ResolverPackage("b", new NuGetVersion(2, 5, 0), null, false, false);
+            var b400 = new ResolverPackage("b", new NuGetVersion(4, 0, 0), null, false, false);
+            var b500 = new ResolverPackage("b", new NuGetVersion(5, 0, 0), null, false, false);
+            var b600 = new ResolverPackage("b", new NuGetVersion(6, 0, 0), null, false, false);
+
+            List<ResolverPackage> available = new List<ResolverPackage>();
+            available.Add(a100);
+            available.Add(b200);
+            available.Add(b250);
+            available.Add(b400);
+            available.Add(b500);
+            available.Add(b600);
+
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, a100, available);
+            var solution = resolver.Resolve(context, CancellationToken.None)
+                .OrderBy(pi => pi.Id)
+                .ToList();
+
+            Assert.Equal(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), solution[0], PackageIdentityComparer.Default);
+            Assert.Equal(new PackageIdentity("b", new NuGetVersion(2, 0, 0)), solution[1], PackageIdentityComparer.Default);
         }
 
         private ResolverPackage CreatePackage(string id, string version, IDictionary<string, string> dependencies = null)
@@ -711,7 +823,7 @@ namespace NuGet.Resolver.Test
                 }
             }
 
-            return new ResolverPackage(id, NuGetVersion.Parse(version), deps);
+            return new ResolverPackage(id, NuGetVersion.Parse(version), deps, true, false);
         }
 
         private static PackageResolverContext CreatePackageResolverContext(DependencyBehavior behavior,

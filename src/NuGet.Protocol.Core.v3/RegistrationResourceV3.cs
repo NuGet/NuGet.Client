@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -13,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.DependencyInfo;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3
@@ -22,12 +24,7 @@ namespace NuGet.Protocol.Core.v3
     /// </summary>
     public class RegistrationResourceV3 : INuGetResource
     {
-        // cache all json retrieved in this resource, the resource *should* be thrown away after the operation is done
-        private readonly ConcurrentDictionary<Uri, JObject> _cache;
-
         private readonly HttpClient _client;
-
-        private static readonly VersionRange AllVersions = VersionRange.All;
 
         public RegistrationResourceV3(HttpClient client, Uri baseUrl)
         {
@@ -43,7 +40,6 @@ namespace NuGet.Protocol.Core.v3
 
             _client = client;
             BaseUri = baseUrl;
-            _cache = new ConcurrentDictionary<Uri, JObject>();
         }
 
         /// <summary>
@@ -114,7 +110,7 @@ namespace NuGet.Protocol.Core.v3
         /// <remarks>The inlined entries are potentially going away soon</remarks>
         public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            return await GetPackageMetadata(packageId, AllVersions, includePrerelease, includeUnlisted, token);
+            return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, token);
         }
 
         /// <summary>
@@ -125,77 +121,37 @@ namespace NuGet.Protocol.Core.v3
         {
             var results = new List<JObject>();
 
-            var entries = await GetPackageEntries(packageId, includeUnlisted, token);
+            var registrationUri = GetUri(packageId);
 
-            foreach (var entry in entries)
+            var ranges = await Utils.LoadRanges(_client, registrationUri, range, token);
+
+            foreach (var rangeObj in ranges)
             {
-                var catalogEntry = entry["catalogEntry"];
-
-                if (catalogEntry != null)
+                if (rangeObj == null)
                 {
-                    NuGetVersion version = null;
-
-                    if (catalogEntry["version"] != null
-                        && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
-                    {
-                        if (range.Satisfies(version)
-                            && (includePrerelease || !version.IsPrerelease))
-                        {
-                            if (catalogEntry["published"] != null)
-                            {
-                                var published = catalogEntry["published"].ToObject<DateTime>();
-
-                                if ((published != null && published.Year > 1901) || includeUnlisted)
-                                {
-                                    // add in the download url
-                                    if (entry["packageContent"] != null)
-                                    {
-                                        catalogEntry["packageContent"] = entry["packageContent"];
-                                    }
-
-                                    results.Add(entry["catalogEntry"] as JObject);
-                                }
-                            }
-                        }
-                    }
+                    throw new InvalidDataException(registrationUri.AbsoluteUri);
                 }
-            }
 
-            return results;
-        }
-
-        /// <summary>
-        /// Returns catalog:CatalogPage items
-        /// </summary>
-        public virtual async Task<IEnumerable<JObject>> GetPages(string packageId, CancellationToken token)
-        {
-            var results = new List<JObject>();
-
-            var indexJson = await GetIndex(packageId, token);
-
-            var items = indexJson["items"] as JArray;
-
-            if (items != null)
-            {
-                foreach (var item in items)
+                foreach (JObject packageObj in rangeObj["items"])
                 {
-                    if (item["@type"] != null
-                        && StringComparer.Ordinal.Equals(item["@type"].ToString(), "catalog:CatalogPage"))
+                    var catalogEntry = (JObject)packageObj["catalogEntry"];
+                    var version = NuGetVersion.Parse(catalogEntry["version"].ToString());
+
+                    var listedToken = catalogEntry["listed"];
+
+                    var listed = (listedToken != null) ? listedToken.Value<bool>() : true;
+
+                    if (range.Satisfies(version)
+                        && (includePrerelease || !version.IsPrerelease)
+                        && (includeUnlisted || listed))
                     {
-                        if (item["items"] != null)
+                        // add in the download url
+                        if (packageObj["packageContent"] != null)
                         {
-                            // normal inline page
-                            results.Add(item as JObject);
+                            catalogEntry["packageContent"] = packageObj["packageContent"];
                         }
-                        else
-                        {
-                            // fetch the page
-                            var url = item["@id"].ToString();
 
-                            var catalogPage = await GetJson(new Uri(url), token);
-
-                            results.Add(catalogPage);
-                        }
+                        results.Add(catalogEntry);
                     }
                 }
             }
@@ -206,69 +162,9 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Returns all index entries of type Package within the given range and filters
         /// </summary>
-        public virtual async Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, CancellationToken token)
+        public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, CancellationToken token)
         {
-            var results = new List<JObject>();
-
-            var pages = await GetPages(packageId, token);
-
-            foreach (var catalogPage in pages)
-            {
-                var array = catalogPage["items"] as JArray;
-
-                if (array != null)
-                {
-                    foreach (var item in array)
-                    {
-                        if (item["@type"] != null
-                            && StringComparer.Ordinal.Equals(item["@type"].ToString(), "Package"))
-                        {
-                            // TODO: listed check
-                            results.Add(item as JObject);
-                        }
-                    }
-                }
-            }
-
-            return results;
-        }
-
-        /// <summary>
-        /// Returns the index.json registration page for a package.
-        /// </summary>
-        public virtual async Task<JObject> GetIndex(string packageId, CancellationToken token)
-        {
-            var uri = GetUri(packageId);
-
-            return await GetJson(uri, token);
-        }
-
-        /// <summary>
-        /// Retrieve and cache json safely
-        /// </summary>
-        protected virtual async Task<JObject> GetJson(Uri uri, CancellationToken token)
-        {
-            JObject json = null;
-            if (!_cache.TryGetValue(uri, out json))
-            {
-                var response = await _client.GetAsync(uri, token);
-
-                // ignore missing blobs
-                if (response.IsSuccessStatusCode)
-                {
-                    // throw on bad files
-                    json = JObject.Parse(await response.Content.ReadAsStringAsync());
-                }
-                else
-                {
-                    // cache an empty object so we don't continually retry
-                    json = new JObject();
-                }
-
-                _cache.TryAdd(uri, json);
-            }
-
-            return json;
+            return GetPackageMetadata(packageId, VersionRange.All, true, includeUnlisted, token);
         }
     }
 }

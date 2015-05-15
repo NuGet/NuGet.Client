@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Core
     /// </remarks>
     public class PackageDependencyInfo : PackageIdentity, IEquatable<PackageDependencyInfo>
     {
-        private readonly PackageDependency[] _dependencies;
+        private PackageDependency[] _dependencies;
 
         public PackageDependencyInfo(string id, NuGetVersion version)
             : this(id, version, null)
@@ -48,6 +48,17 @@ namespace NuGet.Packaging.Core
         public IEnumerable<PackageDependency> Dependencies
         {
             get { return _dependencies; }
+        }
+
+        /// <summary>
+        /// sets every dependency to include the prerelease versions in its range
+        /// </summary>
+        public void SetIncludePrereleaseForDependencies()
+        {
+            foreach (var dependency in _dependencies)
+            {
+                dependency.SetIncludePrerelease();
+            }
         }
 
         public bool Equals(PackageDependencyInfo other)

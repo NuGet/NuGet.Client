@@ -11,6 +11,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
     internal class PackageInfo
     {
         public RegistrationInfo Registration { get; set; }
+        public bool Listed { get; set; }
         public NuGetVersion Version { get; set; }
         public Uri PackageContent { get; set; }
         public IList<DependencyInfo> Dependencies { get; private set; }

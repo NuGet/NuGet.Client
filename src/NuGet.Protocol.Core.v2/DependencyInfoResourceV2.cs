@@ -23,23 +23,18 @@ namespace NuGet.Protocol.Core.v2
     {
         private readonly IPackageRepository V2Client;
         private readonly FrameworkReducer _frameworkReducer = new FrameworkReducer();
+        private readonly SourceRepository _source;
 
-        // cache for full ranges
-        private readonly ConcurrentDictionary<string, List<PackageDependencyInfo>> _cache
-            = new ConcurrentDictionary<string, List<PackageDependencyInfo>>(StringComparer.OrdinalIgnoreCase);
+        //public DependencyInfoResourceV2(IPackageRepository repo)
+        //{
+        //    V2Client = repo;
+        //}
 
-        // cache for single versions
-        private readonly ConcurrentDictionary<PackageIdentity, PackageDependencyInfo> _singleVersionCache
-            = new ConcurrentDictionary<PackageIdentity, PackageDependencyInfo>(PackageIdentity.Comparer);
-
-        public DependencyInfoResourceV2(IPackageRepository repo)
+        public DependencyInfoResourceV2(V2Resource resource, SourceRepository source)
+        //    : this(resource.V2Client)
         {
-            V2Client = repo;
-        }
-
-        public DependencyInfoResourceV2(V2Resource resource)
-            : this(resource.V2Client)
-        {
+            V2Client = resource.V2Client;
+            _source = source;
         }
 
         /// <summary>
@@ -52,7 +47,7 @@ namespace NuGet.Protocol.Core.v2
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public override Task<PackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
+        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
         {
             if (package == null)
             {
@@ -64,7 +59,7 @@ namespace NuGet.Protocol.Core.v2
                 throw new ArgumentNullException(nameof(projectFramework));
             }
 
-            PackageDependencyInfo result = null;
+            SourcePackageDependencyInfo result = null;
 
             SemanticVersion legacyVersion;
 
@@ -72,30 +67,23 @@ namespace NuGet.Protocol.Core.v2
             // not be able to find it anyways and we should return null
             if (SemanticVersion.TryParse(package.Version.ToString(), out legacyVersion))
             {
-                // Attempt to find the version in the cache
-                if (!_singleVersionCache.TryGetValue(package, out result))
+                try
                 {
-                    try
+                    // Retrieve all packages
+                    var repoPackage = V2Client.FindPackage(package.Id, legacyVersion, allowPrereleaseVersions: true, allowUnlisted: true);
+
+                    if (repoPackage != null)
                     {
-                        // Retrieve all packages
-                        var repoPackage = V2Client.FindPackage(package.Id, legacyVersion);
-
-                        if (repoPackage != null)
-                        {
-                            // convert to v3 type
-                            result = CreateDependencyInfo(repoPackage, projectFramework);
-
-                            // Store the result in the cache, nulls should be saved also
-                            _singleVersionCache.TryAdd(package, result);
-                        }
+                        // convert to v3 type
+                        result = CreateDependencyInfo(repoPackage, projectFramework);
                     }
-                    catch (Exception ex)
-                    {
-                        // Wrap exceptions coming from the server with a user friendly message
-                        var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, V2Client.Source);
+                }
+                catch (Exception ex)
+                {
+                    // Wrap exceptions coming from the server with a user friendly message
+                    var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, V2Client.Source);
 
-                        throw new NuGetProtocolException(error, ex);
-                    }
+                    throw new NuGetProtocolException(error, ex);
                 }
             }
 
@@ -112,7 +100,7 @@ namespace NuGet.Protocol.Core.v2
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public override Task<IEnumerable<PackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
+        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
         {
             if (packageId == null)
             {
@@ -124,38 +112,31 @@ namespace NuGet.Protocol.Core.v2
                 throw new ArgumentNullException(nameof(projectFramework));
             }
 
-            List<PackageDependencyInfo> results;
+            List<SourcePackageDependencyInfo> results;
 
-            // Attempt to find the package id in the cache
-            if (!_cache.TryGetValue(packageId, out results))
+            try
             {
-                try
-                {
-                    // Retrieve all packages
-                    var repoPackages = V2Client.FindPackagesById(packageId);
+                // Retrieve all packages
+                var repoPackages = V2Client.FindPackagesById(packageId);
 
-                    // Convert from v2 to v3 types and enumerate the list to finish all server requests before returning
-                    results = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework)).ToList();
+                // Convert from v2 to v3 types and enumerate the list to finish all server requests before returning
+                results = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework)).ToList();
+            }
+            catch (Exception ex)
+            {
+                // Wrap exceptions coming from the server with a user friendly message
+                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, V2Client.Source);
 
-                    // Store results
-                    _cache.TryAdd(packageId, results);
-                }
-                catch (Exception ex)
-                {
-                    // Wrap exceptions coming from the server with a user friendly message
-                    var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, V2Client.Source);
-
-                    throw new NuGetProtocolException(error, ex);
-                }
+                throw new NuGetProtocolException(error, ex);
             }
 
-            return Task.FromResult<IEnumerable<PackageDependencyInfo>>(results);
+            return Task.FromResult<IEnumerable<SourcePackageDependencyInfo>>(results);
         }
 
         /// <summary>
         /// Convert a V2 IPackage into a V3 PackageDependencyInfo
         /// </summary>
-        private PackageDependencyInfo CreateDependencyInfo(IPackage packageVersion, NuGetFramework projectFramework)
+        private SourcePackageDependencyInfo CreateDependencyInfo(IPackage packageVersion, NuGetFramework projectFramework)
         {
             var deps = Enumerable.Empty<V3PackageDependency>();
 
@@ -174,7 +155,7 @@ namespace NuGet.Protocol.Core.v2
                 }
             }
 
-            return new PackageDependencyInfo(identity, deps);
+            return new SourcePackageDependencyInfo(identity, deps, packageVersion.Listed, _source);
         }
 
         private static NuGetFramework GetFramework(PackageDependencySet dependencySet)

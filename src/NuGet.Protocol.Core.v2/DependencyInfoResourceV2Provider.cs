@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Core.v2
 
             if (v2repo != null)
             {
-                DependencyInfoResourceV2 = new DependencyInfoResourceV2(v2repo);
+                DependencyInfoResourceV2 = new DependencyInfoResourceV2(v2repo, source);
             }
 
             return Tuple.Create<bool, INuGetResource>(DependencyInfoResourceV2 != null, DependencyInfoResourceV2);

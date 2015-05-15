@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Core
     public class PackageDependency : IEquatable<PackageDependency>
     {
         private readonly string _id;
-        private readonly VersionRange _versionRange;
+        private VersionRange _versionRange;
 
         public PackageDependency(string id)
             : this(id, VersionRange.All)
@@ -45,6 +45,15 @@ namespace NuGet.Packaging.Core
         public VersionRange VersionRange
         {
             get { return _versionRange; }
+        }
+
+        /// <summary>
+        /// Sets the version range to also include prerelease versions
+        /// </summary>
+        public void SetIncludePrerelease()
+        {
+            _versionRange = new VersionRange(_versionRange.MinVersion, _versionRange.IsMinInclusive, _versionRange.MaxVersion,
+                _versionRange.IsMaxInclusive, true, _versionRange.Float);
         }
 
         public bool Equals(PackageDependency other)

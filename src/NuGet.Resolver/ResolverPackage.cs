@@ -8,10 +8,11 @@ using System.Globalization;
 using System.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Resolver
 {
-    public class ResolverPackage : PackageDependencyInfo, IEquatable<ResolverPackage>
+    public class ResolverPackage : SourcePackageDependencyInfo, IEquatable<ResolverPackage>
     {
         /// <summary>
         /// An absent package represents that the package is not needed in the solution.
@@ -24,33 +25,20 @@ namespace NuGet.Resolver
         }
 
         public ResolverPackage(string id, NuGetVersion version)
-            : this(id, version, Enumerable.Empty<PackageDependency>())
+            : this(id, version, Enumerable.Empty<PackageDependency>(), true, false)
         {
         }
 
-        public ResolverPackage(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies, bool absent = false)
-            : base(id, version, dependencies)
+        public ResolverPackage(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies, bool listed, bool absent)
+            : base(id, version, dependencies, listed, null)
         {
             Debug.Assert(!Absent || (version == null && dependencies == null), "Invalid absent package");
 
             Absent = absent;
         }
 
-        public ResolverPackage(PackageDependencyInfo info, bool absent)
-            : this(info.Id, info.Version, info.Dependencies, absent)
-        {
-        }
-
-        /// <summary>
-        /// A package identity and its dependencies.
-        /// </summary>
-        /// <param name="identity"></param>
-        /// <param name="dependencies">
-        /// Dependencies from the relevant target framework group. This group should be selected based on the
-        /// project target framework.
-        /// </param>
-        public ResolverPackage(PackageIdentity identity, IEnumerable<PackageDependency> dependencies)
-            : this(identity.Id, identity.Version, dependencies)
+        public ResolverPackage(PackageDependencyInfo info, bool listed, bool absent)
+            : this(info.Id, info.Version, info.Dependencies, listed, absent)
         {
         }
 

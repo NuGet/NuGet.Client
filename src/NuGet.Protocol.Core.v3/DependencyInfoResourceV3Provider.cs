@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Core.v3
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
 
                 // construct a new resource
-                curResource = new DependencyInfoResourceV3(client, regResource, source.PackageSource);
+                curResource = new DependencyInfoResourceV3(client, regResource, source);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
