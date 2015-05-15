@@ -191,7 +191,8 @@ namespace NuGet.Options
 
         private void PackageSourcesListBox_GotFocus(object sender, EventArgs e)
         {
-            if (PackageSourcesListBox.SelectedItem == null)
+            if (PackageSourcesListBox.SelectedItem == null &&
+                _packageSources != null)
             {
                 PackageSourcesListBox.SelectedItem = (PackageSource)_packageSources.Current;
             }
