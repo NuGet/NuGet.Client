@@ -10,4 +10,4 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("9623cf30-192c-4864-b419-29649169ae30")]
 
-[assembly: ImportedFromTypeLib("NuGet.VisualStudioImplement")]
+[assembly: ImportedFromTypeLib("NuGet.VisualStudio.Implementation")]
