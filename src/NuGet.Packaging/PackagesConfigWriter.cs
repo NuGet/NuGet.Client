@@ -164,11 +164,6 @@ namespace NuGet.Packaging
                     node.Add(new XAttribute(XName.Get("requireReinstallation"), "true"));
                 }
 
-                if (entry.IsUserInstalled)
-                {
-                    node.Add(new XAttribute(XName.Get("userInstalled"), "true"));
-                }
-
                 packages.Add(node);
             }
 
