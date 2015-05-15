@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.VisualStudio.Shell.Interop;
+using System.Diagnostics;
+using NuGet.PackageManagement.UI;
 
-namespace NuGet.PackageManagement.UI
+namespace StandaloneUI
 {
     public sealed class SimpleSearchBox : TextBox, IVsWindowSearchHost
     {
@@ -86,12 +87,19 @@ namespace NuGet.PackageManagement.UI
 
             public uint GetTokens(uint dwMaxTokens, IVsSearchToken[] rgpSearchTokens)
             {
-                throw new NotImplementedException();
+                // no op
+                Debug.Assert(false, "Not Implemented");
+                return 0;
             }
 
             public uint ParseError
             {
-                get { throw new NotImplementedException(); }
+                get
+                { 
+                    // no op
+                    Debug.Assert(false, "Not Implemented");
+                    return 0;
+                }
             }
 
             public string SearchString { get; }

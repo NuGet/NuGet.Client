@@ -214,8 +214,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SimpleSearchBox.cs" />
-    <Compile Include="SimpleSearchBoxFactory.cs" />
     <Compile Include="StandaloneSwitch.cs" />
     <Compile Include="UserAction.cs" />
     <Compile Include="UserInterfaceService\INuGetUIContext.cs" />

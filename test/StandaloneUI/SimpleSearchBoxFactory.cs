@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace NuGet.PackageManagement.UI
+namespace StandaloneUI
 {
     public class SimpleSearchBoxFactory : IVsWindowSearchHostFactory
     {

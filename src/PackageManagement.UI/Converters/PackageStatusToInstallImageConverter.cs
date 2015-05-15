@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Diagnostics;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -24,7 +25,9 @@ namespace NuGet.PackageManagement.UI
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            // no op
+            Debug.Assert(false, "Not Implemented");
+            return null;
         }
     }
 
@@ -44,7 +47,9 @@ namespace NuGet.PackageManagement.UI
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            // no op
+            Debug.Assert(false, "Not Implemented");
+            return null;
         }
     }
 }
