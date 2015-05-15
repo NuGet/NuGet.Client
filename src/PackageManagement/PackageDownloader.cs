@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-    /// <summary>
+/// <summary>
     /// Abstracts the logic to get a package stream for a given package identity from a given source repository
     /// </summary>
     public static class PackageDownloader
@@ -37,13 +38,13 @@ namespace NuGet.PackageManagement
 
             if (downloadResource == null)
             {
-                throw new InvalidOperationException("Download resource not found");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
             var downloadStream = await downloadResource.GetStreamAsync(packageIdentity, token);
             if (downloadStream == null)
             {
-                throw new InvalidOperationException("Download stream is null");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadStreamNotAvailable, packageIdentity, sourceRepository.PackageSource.Source));
             }
 
             return downloadStream;

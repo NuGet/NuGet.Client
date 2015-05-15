@@ -243,4 +243,10 @@
   <data name="PackagesConfigAllowedVersionConflict" xml:space="preserve">
     <value>Unable to resolve '{0}'. An additional constraint '{1}' defined in {2} prevents this operation.</value>
   </data>
+  <data name="DownloadResourceNotFound" xml:space="preserve">
+    <value>Cannot download packages from '{0}'.</value>
+  </data>
+  <data name="DownloadStreamNotAvailable" xml:space="preserve">
+    <value>Package stream for '{0}' cannot be found at '{1}'.</value>
+  </data>
 </root>

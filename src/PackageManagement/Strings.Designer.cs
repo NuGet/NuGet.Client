@@ -115,6 +115,24 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot download packages from &apos;{0}&apos;..
+        /// </summary>
+        internal static string DownloadResourceNotFound {
+            get {
+                return ResourceManager.GetString("DownloadResourceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package stream for &apos;{0}&apos; cannot be found at &apos;{1}&apos;..
+        /// </summary>
+        internal static string DownloadStreamNotAvailable {
+            get {
+                return ResourceManager.GetString("DownloadStreamNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to from.
         /// </summary>
         internal static string From {
