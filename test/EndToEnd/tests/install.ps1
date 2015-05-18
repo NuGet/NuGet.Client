@@ -2815,6 +2815,51 @@ function Test-InstallPackagesNupkgLocal
     Assert-Package $p PackageWithFolder 1.0
 }
 
+function Test-InstallPackageMissingPackage {
+    # Arrange
+    # create project and install package
+    $proj = New-ClassLibrary
+    $proj | Install-Package Castle.Core -Version 1.2.0
+    Assert-Package $proj Castle.Core 1.2.0
+
+    # delete the packages folder
+    $packagesDir = Get-PackagesDir
+    RemoveDirectory $packagesDir
+    Assert-False (Test-Path $packagesDir)
+
+    # Act
+	Install-Package Castle.Core -Version 2.5.1
+
+    # Assert
+	Assert-Package $proj Castle.Core 2.5.1
+}
+
+function Test-InstallPackageMissingPackageNoConsent {
+    try {
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'false')
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'false')
+
+		# Arrange
+		# create project and install package
+		$proj = New-ClassLibrary
+		$proj | Install-Package PackageWithContentFile -Source $context.RepositoryRoot -Version 1.0.0.0
+		Assert-Package $proj PackageWithContentFile 1.0
+
+		# delete the packages folder
+		$packagesDir = Get-PackagesDir
+		RemoveDirectory $packagesDir
+		Assert-False (Test-Path $packagesDir)
+
+		# Act
+		# Assert
+		Assert-Throws { Install-Package PackageWithContentFile } "Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph. Restore the packages before performing any operations."
+	}
+    finally {
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'true')
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'true')
+    }
+}
+
 # Tests that Install-Package -Force and Install-Package -Force -WhatIf works.
 function Test-InstallPackageUsingForceSwitch
 {

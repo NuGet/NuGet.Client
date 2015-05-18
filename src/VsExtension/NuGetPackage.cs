@@ -93,8 +93,6 @@ namespace NuGetVSExtension
         private bool _powerConsoleCommandExecuting;
         private IMachineWideSettings _machineWideSettings;
 
-        private Dictionary<Project, int> _projectToToolWindowId;
-
         private NuGetUIProjectContext _uiProjectContext;
 
         private NuGetSettings _nugetSettings;
@@ -104,7 +102,6 @@ namespace NuGetVSExtension
         public NuGetPackage()
         {
             ServiceLocator.InitializePackageServiceProvider(this);
-            _projectToToolWindowId = new Dictionary<Project, int>();
             StandaloneSwitch.IsRunningStandalone = false;
             _nugetSettings = new NuGetSettings();
         }
@@ -322,8 +319,6 @@ namespace NuGetVSExtension
             OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this, SourceRepositoryProvider);
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
-
-            var vsSourceControlTracker = VSSourceControlTracker;
 
             LoadNuGetSettings();
         }

@@ -456,7 +456,7 @@ function Test-UpdatePackageAcceptsRelativePathSource {
     $p = New-ConsoleApplication
     Install-Package SkypePackage -Version 1.0 -Project $p.Name -Source $context.RepositoryRoot
     Assert-Package $p SkypePackage 1.0
-
+	
     $testPathName = Split-Path $context.TestRoot -Leaf
 
     cd $context.RepositoryRoot
@@ -501,11 +501,55 @@ function Test-UpdateProjectLevelPackageNotInstalledInAnyProject {
 
     # Act
     $p1 | Install-Package Ninject -Version 2.0.1.0
-    Remove-ProjectItem $p1 packages.config
-    
+    Remove-ProjectItem $p1 packages.config    
 
     # Assert
     Assert-Throws { Update-Package Ninject } "'Ninject' was not installed in any project. Update failed."
+}
+
+function Test-UpdatePackageMissingPackage {
+    # Arrange
+    # create project and install package
+    $proj = New-ClassLibrary
+    $proj | Install-Package Castle.Core -Version 1.2.0
+    Assert-Package $proj Castle.Core 1.2.0
+
+    # delete the packages folder
+    $packagesDir = Get-PackagesDir
+    RemoveDirectory $packagesDir
+    Assert-False (Test-Path $packagesDir)
+
+    # Act
+	Update-Package Castle.Core -Version 2.5.1
+	
+    # Assert
+	Assert-Package $proj Castle.Core 2.5.1
+}
+
+function Test-UpdatePackageMissingPackageNoConsent {
+	try {
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'false')
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'false')
+
+		# Arrange
+		# create project and install package
+		$proj = New-ClassLibrary
+		$proj | Install-Package TestUpdatePackage -Source $context.RepositoryRoot -Version 1.0.0.0
+		Assert-Package $proj TestUpdatePackage 1.0.0.0
+
+		# delete the packages folder
+		$packagesDir = Get-PackagesDir
+		RemoveDirectory $packagesDir
+		Assert-False (Test-Path $packagesDir)
+
+		# Act
+		# Assert
+		Assert-Throws { Update-Package TestUpdatePackage -Source $context.RepositoryRoot } "Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph. Restore the packages before performing any operations."
+    }
+    finally {
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'true')
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'true')
+    }
 }
 
 function Test-UpdatePackageInAllProjects {

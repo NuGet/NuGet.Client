@@ -16,15 +16,13 @@ namespace NuGet.VisualStudio
     [Export(typeof(IVsPackageRestorer))]
     public class VsPackageRestorer : IVsPackageRestorer
     {
-        private ISourceRepositoryProvider _sourceRepositoryProvider;
-        private ISettings _settings;
-        private ISolutionManager _solutionManager;
-        private IPackageRestoreManager _restoreManager;
+        private readonly ISettings _settings;
+        private readonly ISolutionManager _solutionManager;
+        private readonly IPackageRestoreManager _restoreManager;
 
         [ImportingConstructor]
-        public VsPackageRestorer(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager)
+        public VsPackageRestorer(ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager)
         {
-            _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
             _restoreManager = restoreManager;
@@ -41,7 +39,8 @@ namespace NuGet.VisualStudio
             try
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
-                ThreadHelper.JoinableTaskFactory.Run(async delegate { await _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None); });
+                ThreadHelper.JoinableTaskFactory.Run(() =>
+                    _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None));
             }
             catch (Exception ex)
             {

@@ -18,5 +18,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public const string TooManySpecFiles = "NuGetTooManySpecFiles";
         public const string NuspecFileNotFound = "NuGetNuspecFileNotFound";
         public const string CmdletUnhandledException = "NuGetCmdletUnhandledException";
+        public const string MissingPackages = "NuGetMissingPackages";
     }
 }

@@ -360,7 +360,7 @@ namespace NuGetVSExtension
         {
             await TaskScheduler.Default;
 
-            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, packages, Token);
+            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, packages, token);
         }
 
         /// <summary>
@@ -465,18 +465,6 @@ namespace NuGetVSExtension
                 return (int)value;
             }
             return 0;
-        }
-
-        /// <summary>
-        /// Gets the path to .nuget folder present in the solution
-        /// </summary>
-        /// <param name="solution">Solution from which .nuget folder's path is obtained</param>
-        private static string GetNuGetSolutionFolder(Solution solution)
-        {
-            Debug.Assert(solution != null);
-            string solutionFilePath = (string)solution.Properties.Item("Path").Value;
-            string solutionDirectory = Path.GetDirectoryName(solutionFilePath);
-            return Path.Combine(solutionDirectory, NuGetVSConstants.NuGetSolutionSettingsFolder);
         }
 
         public void Dispose()

@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -39,6 +40,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             CheckForSolutionOpen();
             GetNuGetProject(ProjectName);
+            ThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
         }
 
         protected override void ProcessRecordCore()

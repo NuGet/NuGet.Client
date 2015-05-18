@@ -56,6 +56,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UpdateActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
+            Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
         }
 
         protected override void ProcessRecordCore()

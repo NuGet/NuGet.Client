@@ -15,6 +15,7 @@ using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -62,6 +63,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             DTE = ServiceLocator.GetInstance<DTE>();
             SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
             _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
+            PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
 
             if (_commonOperations != null)
             {
@@ -83,6 +85,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Vs Solution Manager for PowerShell Cmdlets
         /// </summary>
         protected ISolutionManager VsSolutionManager { get; }
+
+        protected IPackageRestoreManager PackageRestoreManager { get; private set; }
 
         /// <summary>
         /// Package Source Provider
@@ -190,6 +194,35 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// NuGetPowerShellBaseCommand.
         /// </summary>
         protected abstract void ProcessRecordCore();
+
+        protected async Task CheckMissingPackagesAsync()
+        {
+            var solutionDirectory = VsSolutionManager.SolutionDirectory;
+
+            var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
+            if (packages.Any(p => p.IsMissing))
+            {
+                var packageRestoreConsent = new PackageRestoreConsent(ConfigSettings);
+                if (packageRestoreConsent.IsGranted)
+                {
+                    await TaskScheduler.Default;
+
+                    var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
+                        solutionDirectory, packages, Token);
+
+                    if (result.Restored)
+                    {
+                        return;
+                    }
+                }
+
+                ErrorHandler.HandleException(
+                    new InvalidOperationException(Resources.Cmdlet_MissingPackages),
+                    terminating: true,
+                    errorId: NuGetErrorId.MissingPackages,
+                    category: ErrorCategory.InvalidOperation);
+            }
+        }
 
         #region Cmdlets base APIs
 
