@@ -53,6 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetVSConstants.TDSProjectTypeGuid,
                 NuGetVSConstants.DxJsProjectTypeGuid,
                 NuGetVSConstants.DeploymentProjectTypeGuid,
+                NuGetVSConstants.CosmosProjectTypeGuid,
             };
 
         private static readonly HashSet<string> UnsupportedProjectCapabilities = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -97,6 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetVSConstants.SynergexProjectTypeGuid,
                 NuGetVSConstants.NomadForVisualStudioProjectTypeGuid,
                 NuGetVSConstants.DxJsProjectTypeGuid,
+                NuGetVSConstants.CosmosProjectTypeGuid,
             };
 
         private static readonly char[] PathSeparatorChars = { Path.DirectorySeparatorChar };

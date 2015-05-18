@@ -27,6 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string TDSItemTypeGuid = "{6877B9B0-CDF7-4ff2-BC09-9608387B37F2}";
         public const string DxJsProjectTypeGuid = "{1B19158F-E398-40A6-8E3B-350508E125F1}";
         public const string DeploymentProjectTypeGuid = "{151d2e53-a2c4-4d7d-83fe-d05416ebd58e}";
+        public const string CosmosProjectTypeGuid = "{471EC4BB-E47E-4229-A789-D1F5F83B52D4}";
 
         // Copied from EnvDTE.Constants since that type can't be embedded
         public const string VsProjectItemKindPhysicalFile = "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}";
