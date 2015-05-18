@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -49,39 +50,77 @@ namespace NuGet.CommandLine
                     restore.OnExecute(async () =>
                         {
                             // Figure out the project directory
+                            IEnumerable<string> externalProjects = null;
+
                             PackageSpec project;
-                            var projectDirectory = projectFile.Value ?? Path.GetFullPath(".");
-                            if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectDirectory), StringComparison.OrdinalIgnoreCase))
+                            var projectPath = Path.GetFullPath(projectFile.Value ?? ".");
+                            if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectPath), StringComparison.OrdinalIgnoreCase))
                             {
                                 _log.LogVerbose($"Reading project file {projectFile.Value}");
-                                projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectDirectory));
-                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectFile.Value), Path.GetFileName(projectDirectory), projectFile.Value);
+                                projectPath = Path.GetDirectoryName(projectPath);
+                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectFile.Value), Path.GetFileName(projectPath), projectFile.Value);
+                            }
+                            else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
+                            {
+#if DNXCORE50
+                                throw new NotSupportedException();
+#else
+                                externalProjects = MsBuildUtility.GetProjectReferences(projectPath);
+
+                                projectPath = Path.GetDirectoryName(Path.GetFullPath(projectPath));
+                                var packageSpecFile = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
+                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), Path.GetFileName(projectPath), projectFile.Value);
+                                _log.LogVerbose($"Reading project file {projectFile.Value}");
+#endif
                             }
                             else
                             {
-                                var file = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
+                                var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
                                 _log.LogVerbose($"Reading project file {file}");
-                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectDirectory), file);
+                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
                             }
                             _log.LogVerbose($"Loaded project {project.Name} from {project.FilePath}");
 
                             // Resolve the root directory
-                            var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectDirectory);
+                            var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
                             _log.LogVerbose($"Found project root directory: {rootDirectory}");
 
                             // Resolve the packages directory
-                            // TODO: Do this for real :) 
                             var packagesDir = packagesDirectory.HasValue() ?
                                 packagesDirectory.Value() :
-                                Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".dnx", "packages");
+                                Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
                             _log.LogVerbose($"Using packages directory: {packagesDir}");
 
-                            // Run the restore
+                            var packageSources = sources.Values.Select(s => new PackageSource(s));
+                            if (!packageSources.Any())
+                            {
+                                var settings = Settings.LoadDefaultSettings(projectPath,
+                                    configFileName: null,
+                                    machineWideSettings: null);
+                                var packageSourceProvider = new PackageSourceProvider(settings);
+                                packageSources = packageSourceProvider.LoadPackageSources();
+                            }
+
                             var request = new RestoreRequest(
                                 project,
-                                sources.Values.Select(s => new PackageSource(s)),
+                                packageSources,
                                 packagesDir);
+
+                            if (externalProjects != null)
+                            {
+                                foreach (var externalReference in externalProjects)
+                                {
+                                    request.ExternalProjects.Add(
+                                        new ExternalProjectReference(
+                                            externalReference,
+                                            Path.Combine(Path.GetDirectoryName(externalReference), PackageSpec.PackageSpecFileName),
+                                            projectReferences: Enumerable.Empty<string>()));
+                                }
+                            }
+
+
+                            // Run the restore
                             if (parallel.HasValue())
                             {
                                 int parallelDegree;
