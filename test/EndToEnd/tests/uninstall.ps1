@@ -615,8 +615,8 @@ function Test-UninstallSolutionPackageRemoveEntryFromProjectPackagesConfig
     Assert-AreEqual '<?xml version="1.0" encoding="utf-8"?>' $content[0]
     Assert-AreEqual '<packages>' $content[1]
     # Currently, when running NuGet api V2, we write the non-normalized version. So, replace 1.3.2.0 with 1.3.2. Related to bug: https://github.com/NuGet/Home/issues/577
-    Assert-AreEqual '  <package id="RazorGenerator.MsBuild" version="1.3.2" targetFramework="net45" userInstalled="true" />' $content[2].Replace("1.3.2.0", "1.3.2")
-    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net45" userInstalled="true" />' $content[3]
+    Assert-AreEqual '  <package id="RazorGenerator.MsBuild" version="1.3.2" targetFramework="net45" />' $content[2].Replace("1.3.2.0", "1.3.2")
+    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net45" />' $content[3]
     Assert-AreEqual '</packages>' $content[4]
 
     # Act
