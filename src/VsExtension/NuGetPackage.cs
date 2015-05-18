@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 extern alias Legacy;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -83,8 +84,10 @@ namespace NuGetVSExtension
         private ICommonOperations _commonOperations;
         private ISolutionManager _solutionManager;
         private ISourceRepositoryProvider _sourceRepositoryProvider;
+
         //*** private IDeleteOnRestartManager _deleteOnRestart;
         private OleMenuCommand _managePackageDialogCommand;
+
         private OleMenuCommand _managePackageForSolutionDialogCommand;
         private OleMenuCommandService _mcs;
         private bool _powerConsoleCommandExecuting;
@@ -256,7 +259,9 @@ namespace NuGetVSExtension
         }
 
         private OnBuildPackageRestorer OnBuildPackageRestorer { get; set; }
+
         private ProjectRetargetingHandler ProjectRetargetingHandler { get; set; }
+
         private ProjectUpgradeHandler ProjectUpgradeHandler { get; set; }
 
         /// <summary>
@@ -465,30 +470,11 @@ namespace NuGetVSExtension
             _dte.ItemOperations.OpenFile(outputFile); */
         }
 
-        private IEnumerable<IVsWindowFrame> EnumDocumentWindows(IVsUIShell uiShell)
-        {
-            IEnumWindowFrames ppenum;
-            int hr = uiShell.GetDocumentWindowEnum(out ppenum);
-            if (ppenum == null)
-            {
-                yield break;
-            }
-
-            IVsWindowFrame[] windowFrames = new IVsWindowFrame[1];
-            uint frameCount;
-            while (ppenum.Next(1, windowFrames, out frameCount) == VSConstants.S_OK
-                   &&
-                   frameCount == 1)
-            {
-                yield return windowFrames[0];
-            }
-        }
-
         private IVsWindowFrame FindExistingWindowFrame(
             Project project)
         {
             IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
-            foreach (var windowFrame in EnumDocumentWindows(uiShell))
+            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object docView;
                 int hr = windowFrame.GetProperty(
@@ -644,7 +630,7 @@ namespace NuGetVSExtension
                 }
                 var searchText = GetSearchText(parameterString);
 
-                // *** temp code            
+                // *** temp code
                 Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
 
                 if (project != null
@@ -682,13 +668,13 @@ namespace NuGetVSExtension
         private IVsWindowFrame FindExistingSolutionWindowFrame()
         {
             IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
-            foreach (var windowFrame in EnumDocumentWindows(uiShell))
+            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object property;
                 int hr = windowFrame.GetProperty(
                     (int)__VSFPROPID.VSFPROPID_DocData,
                     out property);
-                var packageManagerControl = GetPackageManagerControl(windowFrame);
+                var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 if (hr == VSConstants.S_OK
                     &&
                     property is IVsSolution
@@ -848,24 +834,6 @@ namespace NuGetVSExtension
             });
         }
 
-        // Gets the package manager control hosted in the window frame.
-        private PackageManagerControl GetPackageManagerControl(IVsWindowFrame windowFrame)
-        {
-            object property;
-            int hr = windowFrame.GetProperty(
-                (int)__VSFPROPID.VSFPROPID_DocView,
-                out property);
-
-            var windowPane = property as PackageManagerWindowPane;
-            if (windowPane == null)
-            {
-                return null;
-            }
-
-            var packageManagerControl = windowPane.Content as PackageManagerControl;
-            return packageManagerControl;
-        }
-
         /// <summary>
         /// Search for packages using the searchText.
         /// </summary>
@@ -878,7 +846,7 @@ namespace NuGetVSExtension
                 return;
             }
 
-            var packageManagerControl = GetPackageManagerControl(windowFrame);
+            var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
             if (packageManagerControl != null)
             {
                 packageManagerControl.Search(searchText);
@@ -1024,7 +992,7 @@ namespace NuGetVSExtension
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
             }
 
@@ -1047,7 +1015,7 @@ namespace NuGetVSExtension
                     serializer.Serialize(stream, _nugetSettings);
                 }
             }
-            catch (Exception)
+            catch
             {
             }
 
