@@ -159,7 +159,11 @@ namespace NuGet.ProjectModel
                 }
                 set
                 {
-                    _packageSpec = value;
+                    lock(_lockObj)
+                    {
+                        _initialized = true;
+                        _packageSpec = value;
+                    }
                 }
             }
         }
