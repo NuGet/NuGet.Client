@@ -29,9 +29,6 @@ namespace NuGet.Commands
 {
     public class RestoreCommand
     {
-        // Temporary until we have RESX and loc
-        private const string MSBuildMultiTargetWarning = "Packages containing MSBuild targets and props files cannot be properly installed in projects targetting multiple frameworks. See https://docs.nuget.org/something for more information.";
-
         private readonly ILogger _log;
 
         public RestoreCommand(ILogger logger)
@@ -252,7 +249,7 @@ namespace NuGet.Commands
                         new XAttribute("BeforeTargets", "Build"),
 
                         new XElement(ns + "Warning",
-                            new XAttribute("Text", MSBuildMultiTargetWarning)))));
+                            new XAttribute("Text", Strings.MSBuildWarning_MultiTarget)))));
 
             using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
             {

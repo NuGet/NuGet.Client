@@ -11,6 +11,86 @@ namespace NuGet.Packaging
             = new ResourceManager("NuGet.Packaging.Strings", typeof(Strings).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// There are duplicate packages: {0}
+        /// </summary>
+        internal static string ErrorDuplicatePackages
+        {
+            get { return GetString("ErrorDuplicatePackages"); }
+        }
+
+        /// <summary>
+        /// There are duplicate packages: {0}
+        /// </summary>
+        internal static string FormatErrorDuplicatePackages(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ErrorDuplicatePackages"), p0);
+        }
+
+        /// <summary>
+        /// Invalid allowedVersions for package id '{0}': '{1}'
+        /// </summary>
+        internal static string ErrorInvalidAllowedVersions
+        {
+            get { return GetString("ErrorInvalidAllowedVersions"); }
+        }
+
+        /// <summary>
+        /// Invalid allowedVersions for package id '{0}': '{1}'
+        /// </summary>
+        internal static string FormatErrorInvalidAllowedVersions(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ErrorInvalidAllowedVersions"), p0, p1);
+        }
+
+        /// <summary>
+        /// Invalid minClientVersion: '{0}'
+        /// </summary>
+        internal static string ErrorInvalidMinClientVersion
+        {
+            get { return GetString("ErrorInvalidMinClientVersion"); }
+        }
+
+        /// <summary>
+        /// Invalid minClientVersion: '{0}'
+        /// </summary>
+        internal static string FormatErrorInvalidMinClientVersion(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ErrorInvalidMinClientVersion"), p0);
+        }
+
+        /// <summary>
+        /// Invalid package version for package id '{0}': '{1}'
+        /// </summary>
+        internal static string ErrorInvalidPackageVersion
+        {
+            get { return GetString("ErrorInvalidPackageVersion"); }
+        }
+
+        /// <summary>
+        /// Invalid package version for package id '{0}': '{1}'
+        /// </summary>
+        internal static string FormatErrorInvalidPackageVersion(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ErrorInvalidPackageVersion"), p0, p1);
+        }
+
+        /// <summary>
+        /// Null or empty package id
+        /// </summary>
+        internal static string ErrorNullOrEmptyPackageId
+        {
+            get { return GetString("ErrorNullOrEmptyPackageId"); }
+        }
+
+        /// <summary>
+        /// Null or empty package id
+        /// </summary>
+        internal static string FormatErrorNullOrEmptyPackageId()
+        {
+            return GetString("ErrorNullOrEmptyPackageId");
+        }
+
+        /// <summary>
         /// Nuspec file does not exist in package '{0}'
         /// </summary>
         internal static string MissingNuspec
@@ -51,49 +131,9 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Null or empty package id
-        /// </summary>
-        internal static string ErrorNullOrEmptyPackageId
-        {
-            get { return GetString("ErrorNullOrEmptyPackageId"); }
-        }
-
-        /// <summary>
-        /// Invalid package version for package id '{0}': '{1}'
-        /// </summary>
-        internal static string ErrorInvalidPackageVersion
-        {
-            get { return GetString("ErrorInvalidPackageVersion"); }
-        }
-
-        /// <summary>
-        /// Invalid allowedVersions for package id '{0}': '{1}'
-        /// </summary>
-        internal static string ErrorInvalidAllowedVersions
-        {
-            get { return GetString("ErrorInvalidAllowedVersions"); }
-        }
-
-        /// <summary>
-        /// There are duplicate packages: {0}
-        /// </summary>
-        internal static string ErrorDuplicatePackages
-        {
-            get { return GetString("ErrorDuplicatePackages"); }
-        }
-
-        /// <summary>
-        /// Invalid minClientVersion: '{0}'
-        /// </summary>
-        internal static string ErrorInvalidMinClientVersion
-        {
-            get { return GetString("ErrorInvalidMinClientVersion"); }
-        }
-
-        /// <summary>
         /// String argument '{0}' cannot be null or empty
         /// </summary>
-            internal static string FormatStringCannotBeNullOrEmpty(object p0)
+        internal static string FormatStringCannotBeNullOrEmpty(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("StringCannotBeNullOrEmpty"), p0);
         }
