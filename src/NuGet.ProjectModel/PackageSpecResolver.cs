@@ -9,9 +9,24 @@ namespace NuGet.ProjectModel
 {
     public class PackageSpecResolver : IPackageSpecResolver
     {
+        private PackageSpec _rootProject;
         private HashSet<string> _searchPaths = new HashSet<string>();
         private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>();
         private GlobalSettings _globalSettings;
+
+        public PackageSpecResolver(PackageSpec packageSpec)
+        {
+            // Preload the cache with the package spec provided
+            _projects[packageSpec.Name] = new PackageSpecInformation()
+            {
+                Name = packageSpec.Name,
+                FullPath = packageSpec.FilePath,
+                PackageSpec = packageSpec
+            };
+
+            var rootPath = ResolveRootDirectory(packageSpec.FilePath);
+            Initialize(packageSpec.FilePath, rootPath);
+        }
 
         public PackageSpecResolver(string packageSpecPath)
         {
@@ -78,12 +93,16 @@ namespace NuGet.ProjectModel
                     // We INTENTIONALLY do not do an exists check here because it requires disk I/O
                     // Instead, we'll do an exists check when we try to resolve 
 
-                    // The name of the folder is the project
-                    _projects[projectDirectory.Name] = new PackageSpecInformation
+                    // Check if we've already added this, just in case it was pre-loaded into the cache
+                    if (!_projects.ContainsKey(projectDirectory.Name))
+                    {
+                        // The name of the folder is the project
+                        _projects[projectDirectory.Name] = new PackageSpecInformation
                         {
                             Name = projectDirectory.Name,
                             FullPath = projectFilePath
                         };
+                    }
                 }
             }
         }
@@ -137,6 +156,10 @@ namespace NuGet.ProjectModel
 
                             return project;
                         });
+                }
+                set
+                {
+                    _packageSpec = value;
                 }
             }
         }

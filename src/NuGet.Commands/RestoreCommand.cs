@@ -51,7 +51,7 @@ namespace NuGet.Commands
             _log.LogWarning("TODO: Read and use lock file");
 
             // Load repositories
-            var projectResolver = new PackageSpecResolver(request.Project.BaseDirectory);
+            var projectResolver = new PackageSpecResolver(request.Project);
             var nugetRepository = Repository.Factory.GetCoreV3(request.PackagesDirectory);
 
             var context = new RemoteWalkContext();
