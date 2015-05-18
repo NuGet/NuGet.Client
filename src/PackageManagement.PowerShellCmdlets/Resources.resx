@@ -291,4 +291,7 @@
   <data name="Cmdlets_NoProjectsToSyncPackage" xml:space="preserve">
     <value>There are no other projects to sync the package '{0}'.</value>
   </data>
+  <data name="Cmdlet_MissingPackages" xml:space="preserve">
+    <value>Some NuGet packages are missing from the solution. Restore the packages before performing any operations.</value>
+  </data>
 </root>
