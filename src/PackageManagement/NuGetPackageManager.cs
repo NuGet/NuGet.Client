@@ -527,13 +527,19 @@ namespace NuGet.PackageManagement
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
                 targetFramework);
 
-            var resolverPackages = dependencyInfoFromPackagesFolder.Select(package =>
+            // dependencyInfoFromPackagesFolder can be null when NuGetProtocolException is thrown
+            var resolverPackages = dependencyInfoFromPackagesFolder?.Select(package =>
                     new ResolverPackage(package.Id, package.Version, package.Dependencies));
 
             // Use the resolver sort to find the order. Packages with no dependencies 
             // come first, then each package that has satisfied dependencies. 
             // Packages with missing dependencies will not be returned.
-            return ResolverUtility.TopologicalSort(resolverPackages);
+            if (resolverPackages != null)
+            {
+                return ResolverUtility.TopologicalSort(resolverPackages);
+            }
+
+            return Enumerable.Empty<PackageIdentity>();
         }
 
         // TODO: Convert this to a generic GetProjectActions and use it from Install methods too
