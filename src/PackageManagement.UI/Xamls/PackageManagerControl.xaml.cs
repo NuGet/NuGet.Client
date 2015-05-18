@@ -49,12 +49,7 @@ namespace NuGet.PackageManagement.UI
         private readonly Dispatcher _uiDispatcher;
 
         public PackageManagerModel Model { get; }
-
-        public PackageManagerControl(PackageManagerModel model, ISettings nugetSettings)
-            : this(model, nugetSettings, new SimpleSearchBoxFactory())
-        {
-        }
-
+       
         public PackageManagerControl(
             PackageManagerModel model,
             ISettings nugetSettings,
