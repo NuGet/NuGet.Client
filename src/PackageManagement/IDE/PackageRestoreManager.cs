@@ -317,7 +317,7 @@ namespace NuGet.PackageManagement
         /// that dequeue from the ConcurrentQueue and perform package restore. So, this method should pre-populate the
         /// queue and must not enqueued to by other methods
         /// </summary>
-        private static async Task ThrottledPackageRestoreAsync(HashSet<PackageReference> packageReferences,
+        private static Task ThrottledPackageRestoreAsync(HashSet<PackageReference> packageReferences,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
@@ -328,8 +328,7 @@ namespace NuGet.PackageManagement
                 tasks.Add(Task.Run(() => PackageRestoreRunnerAsync(packageReferencesQueue, packageRestoreContext, nuGetProjectContext)));
             }
 
-            var task = Task.WhenAll(tasks).ConfigureAwait(false);
-            await task;
+            return Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -362,7 +361,7 @@ namespace NuGet.PackageManagement
         /// that dequeue from the ConcurrentQueue and perform copying of satellite files. So, this method should
         /// pre-populate the queue and must not enqueued to by other methods
         /// </summary>
-        private static async Task ThrottledCopySatelliteFilesAsync(HashSet<PackageReference> packageReferences,
+        private static Task ThrottledCopySatelliteFilesAsync(HashSet<PackageReference> packageReferences,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
@@ -373,8 +372,7 @@ namespace NuGet.PackageManagement
                 tasks.Add(Task.Run(() => CopySatelliteFilesRunnerAsync(packageReferencesQueue, packageRestoreContext, nuGetProjectContext)));
             }
 
-            var task = Task.WhenAll(tasks).ConfigureAwait(false);
-            await task;
+            return Task.WhenAll(tasks);
         }
 
         private static async Task<bool> RestorePackageAsync(PackageReference packageReference,

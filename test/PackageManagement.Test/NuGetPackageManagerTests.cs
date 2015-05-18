@@ -1594,9 +1594,20 @@ namespace NuGet.Test
             Assert.Equal(7, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.BindingRedirectsCallCount);
         }
+        
+        [Fact]
+        public Task TestPacManGetInstalledPackagesByDependencyOrder()
+        {
+            return TestPacManGetInstalledPackagesByDependencyOrder(deletePackages: false);
+        }
 
         [Fact]
-        public async Task TestPacManGetInstalledPackagesByDependencyOrder()
+        public Task TestPacManGetUnrestoredPackagesByDependencyOrder()
+        {
+            return TestPacManGetInstalledPackagesByDependencyOrder(deletePackages: true);
+        }
+
+        private async Task TestPacManGetInstalledPackagesByDependencyOrder(bool deletePackages)
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -1626,6 +1637,10 @@ namespace NuGet.Test
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
                 new ResolutionContext(), testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+            if (deletePackages)
+            {
+                Directory.Delete(packagesFolderPath, recursive: true);
+            }
 
             // Assert
             // Check that the packages.config file exists after the installation
@@ -1643,10 +1658,17 @@ namespace NuGet.Test
             // Main Assert
             var installedPackagesInDependencyOrder = (await nuGetPackageManager.GetInstalledPackagesInDependencyOrder
                 (msBuildNuGetProject, token)).ToList();
-            Assert.Equal(7, installedPackagesInDependencyOrder.Count);
-            for (var i = 0; i < 7; i++)
+            if (deletePackages)
             {
-                Assert.Equal(PackageWithDeepDependency[i], installedPackagesInDependencyOrder[i], PackageIdentity.Comparer);
+                Assert.Equal(0, installedPackagesInDependencyOrder.Count);
+            }
+            else
+            {
+                Assert.Equal(7, installedPackagesInDependencyOrder.Count);
+                for (var i = 0; i < 7; i++)
+                {
+                    Assert.Equal(PackageWithDeepDependency[i], installedPackagesInDependencyOrder[i], PackageIdentity.Comparer);
+                }
             }
 
             // Clean-up

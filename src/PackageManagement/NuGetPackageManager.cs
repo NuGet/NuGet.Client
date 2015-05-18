@@ -1015,7 +1015,11 @@ namespace NuGet.PackageManagement
 
                 foreach (var package in packageIdentities)
                 {
-                    results.Add(await dependencyInfoResource.ResolvePackage(package, nuGetFramework, CancellationToken.None));
+                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackage(package, nuGetFramework, CancellationToken.None);
+                    if (packageDependencyInfo != null)
+                    {
+                        results.Add(packageDependencyInfo);
+                    }
                 }
 
                 return results;

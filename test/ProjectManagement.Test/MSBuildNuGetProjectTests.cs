@@ -1379,7 +1379,6 @@ namespace ProjectManagement.Test
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
             var token = CancellationToken.None;
-            ;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1443,7 +1442,6 @@ namespace ProjectManagement.Test
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
             var token = CancellationToken.None;
-            ;
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var testNuGetProjectContext = new TestNuGetProjectContext();

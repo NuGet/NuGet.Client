@@ -21,8 +21,9 @@ namespace NuGet.PackageManagement
                 var packageIdentity = new PackageIdentity(dependencyInfo.Id, dependencyInfo.Version);
                 foreach (var dependency in dependencyInfo.Dependencies)
                 {
-                    var dependencyPackageIdentity = installedPackages.Where(i => dependency.Id.Equals(i.Id, StringComparison.OrdinalIgnoreCase)
-                                                                                 && dependency.VersionRange.Satisfies(i.Version)).FirstOrDefault();
+                    var dependencyPackageIdentity = installedPackages.Where(i =>
+                        dependency.Id.Equals(i.Id, StringComparison.OrdinalIgnoreCase)
+                        && dependency.VersionRange.Satisfies(i.Version)).FirstOrDefault();
                     if (dependencyPackageIdentity != null)
                     {
                         // Update the package dependents dictionary
