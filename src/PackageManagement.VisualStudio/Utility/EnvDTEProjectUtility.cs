@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetVSConstants.NomadForVisualStudioProjectTypeGuid,
                 NuGetVSConstants.TDSProjectTypeGuid,
                 NuGetVSConstants.DxJsProjectTypeGuid,
-                NuGetVSConstants.DeploymentProjectTypeGuid
+                NuGetVSConstants.DeploymentProjectTypeGuid,
             };
 
         private static readonly HashSet<string> UnsupportedProjectCapabilities = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -68,13 +68,13 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly Dictionary<string, string> KnownNestedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "web.debug.config", "web.config" },
-                { "web.release.config", "web.config" }
+                { "web.release.config", "web.config" },
             };
 
         private static readonly HashSet<string> UnsupportedProjectTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 NuGetVSConstants.LightSwitchProjectTypeGuid,
-                NuGetVSConstants.InstallShieldLimitedEditionTypeGuid
+                NuGetVSConstants.InstallShieldLimitedEditionTypeGuid,
             };
 
         private static readonly IEnumerable<string> FileKinds = new[] { NuGetVSConstants.VsProjectItemKindPhysicalFile, NuGetVSConstants.VsProjectItemKindSolutionItem };
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly string[] UnsupportedProjectTypesForAddingReferences =
             {
                 NuGetVSConstants.WixProjectTypeGuid,
-                NuGetVSConstants.CppProjectTypeGuid
+                NuGetVSConstants.CppProjectTypeGuid,
             };
 
         // List of project types that cannot have binding redirects added
@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetVSConstants.CppProjectTypeGuid,
                 NuGetVSConstants.SynergexProjectTypeGuid,
                 NuGetVSConstants.NomadForVisualStudioProjectTypeGuid,
-                NuGetVSConstants.DxJsProjectTypeGuid
+                NuGetVSConstants.DxJsProjectTypeGuid,
             };
 
         private static readonly char[] PathSeparatorChars = { Path.DirectorySeparatorChar };
