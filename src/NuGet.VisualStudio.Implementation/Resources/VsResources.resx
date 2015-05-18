@@ -117,131 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Debug_AddReference" xml:space="preserve">
-    <value>Added reference '{0}' to project '{1}'</value>
-  </data>
-  <data name="Debug_RemovedFile" xml:space="preserve">
-    <value>Removed file '{0}'</value>
-  </data>
-  <data name="Debug_RemovedFileFromFolder" xml:space="preserve">
-    <value>Removed file '{0}' from folder '{1}'</value>
-  </data>
-  <data name="Debug_RemovedFolder" xml:space="preserve">
-    <value>Removed folder '{0}'</value>
-  </data>
-  <data name="Debug_RemoveReference" xml:space="preserve">
-    <value>Removed reference '{0}' from project '{1}'</value>
-  </data>
-  <data name="DTE_InvalidProject" xml:space="preserve">
-    <value>The project is invalid</value>
-  </data>
-  <data name="DTE_ProjectUnsupported" xml:space="preserve">
-    <value>The project '{0}' is unsupported</value>
-  </data>
-  <data name="Debug_AddedFileToProject" xml:space="preserve">
-    <value>Added file '{0}' to project '{1}'</value>
-  </data>
-  <data name="PackageSource_Invalid" xml:space="preserve">
-    <value>The package source does not belong to the collection of available sources.</value>
-  </data>
-  <data name="Console_DisclaimerText" xml:space="preserve">
-    <value>Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages. Some packages may include dependencies which are governed by additional licenses. Follow the package source (feed) URL to determine any dependencies.</value>
-  </data>
-  <data name="Dialog_DisclaimerText" xml:space="preserve">
-    <value>Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages.</value>
-  </data>
-  <data name="PackageCannotBeRemovedBecauseItIsInUse" xml:space="preserve">
-    <value>'{0}' cannot be removed because it in use by '{1}'</value>
-  </data>
-  <data name="Console_InitializeHostFails" xml:space="preserve">
-    <value>Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</value>
-  </data>
-  <data name="SolutionDirectoryNotAvailable" xml:space="preserve">
-    <value>Unable to locate the solution directory. Please ensure that the solution has been saved.</value>
-  </data>
-  <data name="ErrorReadingFile" xml:space="preserve">
-    <value>Error reading '{0}'.</value>
-  </data>
-  <data name="NoActivePackageSource" xml:space="preserve">
-    <value>Unable to retrieve package list because no source was specified.</value>
-  </data>
-  <data name="ExecutingScript" xml:space="preserve">
-    <value>Executing script file '{0}'.</value>
-  </data>
-  <data name="Console_HelpText" xml:space="preserve">
-    <value>Type 'get-help NuGet' to see all available NuGet commands.</value>
-  </data>
-  <data name="UnableToFindPackageFromSource" xml:space="preserve">
-    <value>Unable to find package '{0}' version '{1}' from the source '{2}'.</value>
-  </data>
   <data name="UnknownPackage" xml:space="preserve">
     <value>Unable to find package '{0}'.</value>
-  </data>
-  <data name="NoUpdatesAvailable" xml:space="preserve">
-    <value>No updates available for '{0}'.</value>
-  </data>
-  <data name="ProjectNotSpecified" xml:space="preserve">
-    <value>No project was specified.</value>
-  </data>
-  <data name="UnknownPackageInProject" xml:space="preserve">
-    <value>Unable to find package '{0}' in '{1}'.</value>
-  </data>
-  <data name="AmbiguousProjectLevelUninstal" xml:space="preserve">
-    <value>Unable to find '{0}' in '{1}' and found multiple versions of '{0}' installed. Please specify a version.</value>
-  </data>
-  <data name="AmbiguousUninstall" xml:space="preserve">
-    <value>Found multiple versions of '{0}' installed. Please specify a version.</value>
-  </data>
-  <data name="AmbiguousUpdate" xml:space="preserve">
-    <value>Unable to update '{0}'. Found multiple versions installed.</value>
-  </data>
-  <data name="AggregateSourceName" xml:space="preserve">
-    <value>All</value>
-  </data>
-  <data name="NuGetOfficialSourceName" xml:space="preserve">
-    <value>nuget.org</value>
-  </data>
-  <data name="FailedToAddGacReference" xml:space="preserve">
-    <value>Failed to add reference to '{0}'. Please make sure that it is in the Global Assembly Cache.</value>
-  </data>
-  <data name="FailedToAddReference" xml:space="preserve">
-    <value>Failed to add reference to '{0}'.</value>
-  </data>
-  <data name="Log_PackageAlreadyInstalled" xml:space="preserve">
-    <value>'{0}' already installed.</value>
-  </data>
-  <data name="Warning_FailedToAddBindingRedirects" xml:space="preserve">
-    <value>Failed to generate binding redirects for '{0}'. {1}</value>
-  </data>
-  <data name="Warning_FileAlreadyExists" xml:space="preserve">
-    <value>'{0}' already exists. Skipping...</value>
-  </data>
-  <data name="AskForUpdateMessage" xml:space="preserve">
-    <value>A new version of NuGet Package Manager is available.</value>
-  </data>
-  <data name="ShowDetails" xml:space="preserve">
-    <value>Show Details</value>
-  </data>
-  <data name="DoNotRemindAgain" xml:space="preserve">
-    <value>Don't show again</value>
-  </data>
-  <data name="IgnoreUpgrade" xml:space="preserve">
-    <value>Ignore for now</value>
-  </data>
-  <data name="Warning_DirectoryNotEmpty" xml:space="preserve">
-    <value>Directory '{0}' is not empty. Skipping...</value>
-  </data>
-  <data name="Warning_RollingBack" xml:space="preserve">
-    <value>Install failed. Rolling back...</value>
-  </data>
-  <data name="PackageNotInstalledInAnyProject" xml:space="preserve">
-    <value>'{0}' was not installed in any project. Update failed.</value>
-  </data>
-  <data name="PackageUpdatedSuccessfully" xml:space="preserve">
-    <value>'{0}' updated successfully.</value>
-  </data>
-  <data name="OperationFailed" xml:space="preserve">
-    <value>Operation failed.</value>
   </data>
   <data name="TemplateWizard_ErrorDialogTitle" xml:space="preserve">
     <value>Package Installation Error</value>
@@ -267,40 +144,8 @@
   <data name="TemplateWizard_InvalidPackageElementAttributes" xml:space="preserve">
     <value>The project template lists one or more packages with missing, empty, or invalid values for the "id" or "version" attributes. Both attributes are required and must have valid values.</value>
   </data>
-  <data name="SolutionNotAvailable" xml:space="preserve">
-    <value>The current environment does not have a solution loaded.</value>
-  </data>
   <data name="PreinstalledPackages_ExtensionManagerError" xml:space="preserve">
     <value>Error accessing Extension Manager.</value>
-  </data>
-  <data name="DialogTitle" xml:space="preserve">
-    <value>NuGet Package Manager</value>
-  </data>
-  <data name="PackageRestoreCompleted" xml:space="preserve">
-    <value>Finished configuring this solution to restore NuGet packages on build.</value>
-  </data>
-  <data name="PackageRestoreWaitMessage" xml:space="preserve">
-    <value>Configuring the solution to restore NuGet packages on build...</value>
-  </data>
-  <data name="PackageRestoreErrorMessage" xml:space="preserve">
-    <value>An error occurred while configuring the solution to restore NuGet packages on build</value>
-  </data>
-  <data name="PackageRestoreDownloadPackageFailed" xml:space="preserve">
-    <value>Downloading package '{0}' failed.</value>
-  </data>
-  <data name="PackageRestoreConfirmation" xml:space="preserve">
-    <value>Do you want to configure this solution to download and restore missing NuGet packages during build? A .nuget folder will be added to the root of the solution that contains files that enable package restore.
-
-Packages installed into Website projects will not be restored during build. Consider converting those into Web application projects if necessary.</value>
-  </data>
-  <data name="AskForRestoreMessage" xml:space="preserve">
-    <value>Some NuGet packages are missing from this solution. Click to restore from your online package sources.</value>
-  </data>
-  <data name="RestoreButtonLabel" xml:space="preserve">
-    <value>_Restore</value>
-  </data>
-  <data name="PackageRestoreErrorTryAgain" xml:space="preserve">
-    <value>An error occurred while trying to restore packages:</value>
   </data>
   <data name="PreinstalledPackages_InvalidRegistryValue" xml:space="preserve">
     <value>The preinstalled packages have a reference to a missing Registry value. Could not find a Registry key with name '{0}' under '{1}'.</value>
@@ -311,83 +156,11 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="PreinstalledPackages_RegistryKeyError" xml:space="preserve">
     <value>The preinstalled packages are configured to use a Registry-provided package repository but there was an error accessing Registry key '{0}'.</value>
   </data>
-  <data name="VisualStudioExpressForWindows8SourceName" xml:space="preserve">
-    <value>Windows 8 Packages</value>
-  </data>
-  <data name="PackageRestoreProgressMessage" xml:space="preserve">
-    <value>Downloading missing packages...</value>
-  </data>
   <data name="PreinstalledPackages_VersionConflict" xml:space="preserve">
     <value>Attempting to install version '{1}' of '{0}' but the project already includes a different version. Skipping...</value>
   </data>
-  <data name="ReinstallProjectPackage" xml:space="preserve">
-    <value>Reinstalling '{0}' in project '{1}'.</value>
-  </data>
-  <data name="ReinstallSolutionPackage" xml:space="preserve">
-    <value>Reinstalling '{0}'.</value>
-  </data>
-  <data name="Warning_FailedToDeleteMarkedPackageDirectory" xml:space="preserve">
-    <value>Failed to remove package directory '{0}' that was marked for deletion on Visual Studio restart.</value>
-  </data>
-  <data name="Warning_FailedToMarkPackageDirectoryForDeletion" xml:space="preserve">
-    <value>Failed to mark package directory '{0}' for deletion on Visual Studio restart: {1}</value>
-  </data>
-  <data name="Warning_FailedToDeleteMarkedPackageDirectories" xml:space="preserve">
-    <value>Failed to remove package directories that were marked for deletion on Visual Studio restart: {0}</value>
-  </data>
-  <data name="RequestRestartToCompleteUninstall" xml:space="preserve">
-    <value>One or more packages could not be completely uninstalled: {0}. Restart Visual Studio to finish uninstall.</value>
-  </data>
-  <data name="RestartNow" xml:space="preserve">
-    <value>Restart Now</value>
-  </data>
-  <data name="PackageRestoreSkipForProject" xml:space="preserve">
-    <value>Skipped reinstalling package '{0}' in project '{1}' because the package does not exist in the package source.</value>
-  </data>
-  <data name="PackageRestoreSkipForSolution" xml:space="preserve">
-    <value>Skipped reinstalling package '{0}' because the package does not exist in the package source.</value>
-  </data>
-  <data name="FailedToRemoveReference" xml:space="preserve">
-    <value>Case insensitive search for reference '{0}', to be removed, returned more than 1 match. Request could not be performed.</value>
-  </data>
-  <data name="Warning_FailedToFindMatchForRemoveReference" xml:space="preserve">
-    <value>Failed to find match for removing reference '{0}'.</value>
-  </data>
-  <data name="Warning_NoExactMatchForReference" xml:space="preserve">
-    <value>No exact match found for removing reference '{0}'. Trying case-insensitive search...</value>
-  </data>
-  <data name="FileConflictTitle" xml:space="preserve">
-    <value>File Conflict</value>
-  </data>
-  <data name="Warning_PackageNotReferencedByAnyProject" xml:space="preserve">
-    <value>Package {0} of version {1} is not referenced by any project.</value>
-  </data>
-  <data name="Error_FailedToCreateParentFolder" xml:space="preserve">
-    <value>Failed to create parent folder for file '{0}' in project {1}.</value>
-  </data>
-  <data name="NuGetLegacyOfficialSourceName" xml:space="preserve">
-    <value>NuGet official package source</value>
-  </data>
   <data name="InvalidSemanticVersionString" xml:space="preserve">
     <value>The provided version string is not a valid semantic version.</value>
-  </data>
-  <data name="OutputConsolePaneName" xml:space="preserve">
-    <value>Package Manager</value>
-  </data>
-  <data name="NuGetSearchProvider_CategoryShortcut" xml:space="preserve">
-    <value>nuget</value>
-  </data>
-  <data name="NuGetSearchProvider_Description" xml:space="preserve">
-    <value>Search NuGet packages</value>
-  </data>
-  <data name="NuGetSearchProvider_DisplayText" xml:space="preserve">
-    <value>NuGet Packages</value>
-  </data>
-  <data name="NuGetSearchProvider_Name" xml:space="preserve">
-    <value>NuGet Search</value>
-  </data>
-  <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
-    <value>Search Online for NuGet Packages matching '{0}'</value>
   </data>
   <data name="InvalidPackageList" xml:space="preserve">
     <value>Package list contains invalid or duplicate entries.</value>
