@@ -28,8 +28,8 @@ namespace NuGet.Protocol.Core.Types
             Source = source;
         }
 
-        public bool Listed { get; private set; }
+        public bool Listed { get; }
 
-        public SourceRepository Source { get; private set; }
+        public SourceRepository Source { get; }
     }
 }

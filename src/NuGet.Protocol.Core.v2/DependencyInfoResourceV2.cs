@@ -25,13 +25,7 @@ namespace NuGet.Protocol.Core.v2
         private readonly FrameworkReducer _frameworkReducer = new FrameworkReducer();
         private readonly SourceRepository _source;
 
-        //public DependencyInfoResourceV2(IPackageRepository repo)
-        //{
-        //    V2Client = repo;
-        //}
-
         public DependencyInfoResourceV2(V2Resource resource, SourceRepository source)
-        //    : this(resource.V2Client)
         {
             V2Client = resource.V2Client;
             _source = source;
