@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement
         public const int DefaultMaxNumberOfParellelTasks = 4;
 
         public NuGetPackageManager PackageManager { get; }
-        public MissingPackagesInfo MissingPackagesInfo { get; }
+        public IEnumerable<PackageRestoreData> Packages { get; }
         public CancellationToken Token { get; }
         public EventHandler<PackageRestoredEventArgs> PackageRestoredEvent { get; }
         public EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent { get; }
@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement
         public bool WasRestored { get; private set; }
 
         public PackageRestoreContext(NuGetPackageManager nuGetPackageManager,
-            MissingPackagesInfo missingPackagesInfo,
+            IEnumerable<PackageRestoreData> packages,
             CancellationToken token,
             EventHandler<PackageRestoredEventArgs> packageRestoredEvent,
             EventHandler<PackageRestoreFailedEventArgs> packageRestoreFailedEvent,
@@ -40,9 +40,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetPackageManager));
             }
 
-            if (missingPackagesInfo == null)
+            if (packages == null)
             {
-                throw new ArgumentNullException(nameof(missingPackagesInfo));
+                throw new ArgumentNullException(nameof(packages));
             }
 
             if (maxNumberOfParallelTasks <= 0)
@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement
             }
 
             PackageManager = nuGetPackageManager;
-            MissingPackagesInfo = missingPackagesInfo;
+            Packages = packages;
             Token = token;
             PackageRestoredEvent = packageRestoredEvent;
             PackageRestoreFailedEvent = packageRestoreFailedEvent;
@@ -60,10 +60,10 @@ namespace NuGet.PackageManagement
         }
 
         public PackageRestoreContext(NuGetPackageManager nuGetPackageManager,
-            MissingPackagesInfo missingPackagesInfo,
+            IEnumerable<PackageRestoreData> packages,
             CancellationToken token)
             : this(nuGetPackageManager,
-                missingPackagesInfo,
+                packages,
                 token,
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: null,

@@ -145,7 +145,7 @@
     <Compile Include="Context\IDEExecutionContext.cs" />
     <Compile Include="Context\UninstallationContext.cs" />
     <Compile Include="IDE\ICommonOperations.cs" />
-    <Compile Include="IDE\MissingPackagesInfo.cs" />
+    <Compile Include="IDE\PackageRestoreData.cs" />
     <Compile Include="IDE\PackageRestoreContext.cs" />
     <Compile Include="IDE\PackageRestoreFailedEventArgs.cs" />
     <Compile Include="IDE\PackageRestoreResult.cs" />

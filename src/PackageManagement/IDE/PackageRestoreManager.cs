@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -87,8 +88,8 @@ namespace NuGet.PackageManagement
             var missing = false;
             if (!string.IsNullOrEmpty(solutionDirectory))
             {
-                var missingPackagesInfo = await GetMissingPackagesInSolutionAsync(solutionDirectory, token);
-                missing = missingPackagesInfo.PackageReferences.Any();
+                var packages = await GetPackagesInSolutionAsync(solutionDirectory, token);
+                missing = packages.Where(p => p.IsMissing).Any();
             }
 
             if (PackagesMissingStatusChanged != null)
@@ -104,45 +105,46 @@ namespace NuGet.PackageManagement
         /// Returns a read-only dictionary of missing package references and the corresponding project names on which
         /// each missing package is installed.
         /// </returns>
-        public async Task<MissingPackagesInfo> GetMissingPackagesInSolutionAsync(string solutionDirectory, CancellationToken token)
+        public async Task<IEnumerable<PackageRestoreData>> GetPackagesInSolutionAsync(string solutionDirectory, CancellationToken token)
         {
-            var packagesInfo = await GetPackagesInfoSolutionAsync(token);
-            var missingPackagesInfo = GetMissingPackages(solutionDirectory, packagesInfo);
-            return missingPackagesInfo;
+            var packageReferences = await GetPackagesReferencesDictionaryAsync(token);
+            var packages = GetPackages(solutionDirectory, packageReferences);
+            return packages;
         }
 
-        private MissingPackagesInfo GetMissingPackages(string solutionDirectory,
-            MissingPackagesInfo packagesInfo)
+        private IEnumerable<PackageRestoreData> GetPackages(string solutionDirectory,
+            Dictionary<PackageReference, List<string>> packageReferencesDictionary)
         {
             var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
-            var missingPackagesInfo = GetMissingPackages(nuGetPackageManager, packagesInfo);
-            return missingPackagesInfo;
+            var packages = GetPackages(nuGetPackageManager, packageReferencesDictionary);
+            return packages;
         }
 
-        private static MissingPackagesInfo GetMissingPackages(NuGetPackageManager nuGetPackageManager,
-            MissingPackagesInfo packagesInfo)
+        private static IEnumerable<PackageRestoreData> GetPackages(NuGetPackageManager nuGetPackageManager,
+            Dictionary<PackageReference, List<string>> packageReferencesDictionary)
         {
-            try
+            var packages = new List<PackageRestoreData>();
+
+            foreach (var packageReference in packageReferencesDictionary.Keys)
             {
-                var availablePackageReferences = packagesInfo.PackageReferences.Keys.Where(pr => nuGetPackageManager.PackageExistsInPackagesFolder(pr.PackageIdentity)).ToList();
-                foreach (var availablePackageReference in availablePackageReferences)
+                var isMissing = false;
+                if (!nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity))
                 {
-                    packagesInfo.InternalPackageReferences.Remove(availablePackageReference);
+                    isMissing = true;
                 }
 
-                // Removed the available packages from packagesInfo. So, it is the missingPackagesInfo
-                return packagesInfo;
+                var projectNames = packageReferencesDictionary[packageReference];
+
+                Debug.Assert(projectNames != null);
+                packages.Add(new PackageRestoreData(packageReference, projectNames, isMissing));
             }
-            catch (Exception)
-            {
-                // if an exception happens during the check, assume no missing packages and move on.
-                return MissingPackagesInfo.Empty;
-            }
+
+            return packages;
         }
 
-        public async Task<MissingPackagesInfo> GetPackagesInfoSolutionAsync(CancellationToken token)
+        private async Task<Dictionary<PackageReference, List<string>>> GetPackagesReferencesDictionaryAsync(CancellationToken token)
         {
-            var packageReferencesDict = new Dictionary<PackageReference, HashSet<string>>(new PackageReferenceComparer());
+            var packageReferencesDict = new Dictionary<PackageReference, List<string>>(new PackageReferenceComparer());
             foreach (var nuGetProject in SolutionManager.GetNuGetProjects())
             {
                 // skip project k projects and build aware projects
@@ -155,24 +157,17 @@ namespace NuGet.PackageManagement
                 var installedPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
                 foreach (var installedPackageReference in installedPackageReferences)
                 {
-                    HashSet<string> projectNames = null;
+                    List<string> projectNames = null;
                     if (!packageReferencesDict.TryGetValue(installedPackageReference, out projectNames))
                     {
-                        projectNames = new HashSet<string>();
+                        projectNames = new List<string>();
                         packageReferencesDict.Add(installedPackageReference, projectNames);
                     }
                     projectNames.Add(nuGetProjectName);
                 }
             }
 
-            var readOnlyPackageReferencesDict = new Dictionary<PackageReference, IReadOnlyCollection<string>>(new PackageReferenceComparer());
-            foreach (var item in packageReferencesDict)
-            {
-                readOnlyPackageReferencesDict.Add(item.Key, (IReadOnlyCollection<string>)item.Value);
-            }
-
-            var missingPackagesInfo = new MissingPackagesInfo(readOnlyPackageReferencesDict);
-            return missingPackagesInfo;
+            return packageReferencesDict;
         }
 
         /// <summary>
@@ -181,8 +176,16 @@ namespace NuGet.PackageManagement
         /// <returns></returns>
         public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory, CancellationToken token)
         {
-            var packageReferencesFromSolution = await GetPackagesInfoSolutionAsync(token);
-            return await RestoreMissingPackagesAsync(solutionDirectory, packageReferencesFromSolution, token);
+            var packageReferencesDictionary = await GetPackagesReferencesDictionaryAsync(token);
+
+            // When this method is called, the step to compute if a package is missing is implicit. Assume it is true
+            var packages = packageReferencesDictionary.Select(p =>
+            {
+                Debug.Assert(p.Value != null);
+                return new PackageRestoreData(p.Key, p.Value, isMissing: true);
+            });
+
+            return await RestoreMissingPackagesAsync(solutionDirectory, packages, token);
         }
 
         /// <summary>
@@ -196,30 +199,31 @@ namespace NuGet.PackageManagement
         {
             if (nuGetProject == null)
             {
-                throw new ArgumentNullException("nuGetProject");
+                throw new ArgumentNullException(nameof(nuGetProject));
             }
             var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
 
             var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-            IReadOnlyCollection<string> projectNames = new[] { nuGetProjectName };
-            var packageReferencesDict = installedPackages.ToDictionary(i => i, i => projectNames);
-            var missingPackagesInfo = new MissingPackagesInfo(packageReferencesDict);
+            var projectNames = new[] { nuGetProjectName };
 
-            return await RestoreMissingPackagesAsync(solutionDirectory, missingPackagesInfo, token);
+            // When this method is called, the step to compute if a package is missing is implicit. Assume it is true
+            var packages = installedPackages.Select(i => new PackageRestoreData(i, projectNames, isMissing: true));
+
+            return await RestoreMissingPackagesAsync(solutionDirectory, packages, token);
         }
 
         public virtual async Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
-            MissingPackagesInfo missingPackagesInfo,
+             IEnumerable<PackageRestoreData> packages,
             CancellationToken token)
         {
-            if (missingPackagesInfo == null)
+            if (packages == null)
             {
-                throw new ArgumentNullException(nameof(missingPackagesInfo));
+                throw new ArgumentNullException(nameof(packages));
             }
 
             var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
             var packageRestoreContext = new PackageRestoreContext(nuGetPackageManager,
-                missingPackagesInfo,
+                packages,
                 token,
                 PackageRestoredEvent,
                 PackageRestoreFailedEvent,
@@ -237,12 +241,12 @@ namespace NuGet.PackageManagement
         }
 
         public async Task<PackageRestoreResult> RestoreMissingPackagesAsync(NuGetPackageManager nuGetPackageManager,
-            MissingPackagesInfo missingPackagesInfo,
+            IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             var packageRestoreContext = new PackageRestoreContext(nuGetPackageManager,
-                missingPackagesInfo,
+                packages,
                 token,
                 PackageRestoredEvent,
                 PackageRestoreFailedEvent,
@@ -275,7 +279,8 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            if (!packageRestoreContext.MissingPackagesInfo.PackageReferences.Any())
+            var missingPackages = packageRestoreContext.Packages.Where(p => p.IsMissing).ToList();
+            if (!missingPackages.Any())
             {
                 return new PackageRestoreResult(false);
             }
@@ -283,7 +288,7 @@ namespace NuGet.PackageManagement
             // It is possible that the dictionary passed in may not have used the PackageReferenceComparer.
             // So, just to be sure, create a hashset with the keys from the dictionary using the PackageReferenceComparer
             // Now, we are guaranteed to not restore the same package more than once
-            var hashSetOfMissingPackageReferences = new HashSet<PackageReference>(packageRestoreContext.MissingPackagesInfo.PackageReferences.Keys, new PackageReferenceComparer());
+            var hashSetOfMissingPackageReferences = new HashSet<PackageReference>(missingPackages.Select(p => p.PackageReference), new PackageReferenceComparer());
 
             // Before starting to restore package, set the nuGetProjectContext such that satellite files are not copied yet
             // Satellite files will be copied as a post operation. This helps restore packages in parallel
@@ -400,12 +405,21 @@ namespace NuGet.PackageManagement
             if (exception != null)
             {
                 nuGetProjectContext.Log(MessageLevel.Warning, exception.ToString());
-                if (packageRestoreContext.PackageRestoreFailedEvent != null
-                    && packageRestoreContext.MissingPackagesInfo.PackageReferences.ContainsKey(packageReference))
+                if (packageRestoreContext.PackageRestoreFailedEvent != null)
                 {
-                    packageRestoreContext.PackageRestoreFailedEvent(null, new PackageRestoreFailedEventArgs(packageReference,
-                        exception,
-                        packageRestoreContext.MissingPackagesInfo.PackageReferences[packageReference]));
+                    var packageReferenceComparer = new PackageReferenceComparer();
+
+                    var packageRestoreData = packageRestoreContext.Packages
+                        .Where(p => packageReferenceComparer.Equals(p.PackageReference, packageReference))
+                        .SingleOrDefault();
+
+                    if (packageRestoreData != null)
+                    {
+                        Debug.Assert(packageRestoreData.ProjectNames != null);
+                        packageRestoreContext.PackageRestoreFailedEvent(null, new PackageRestoreFailedEventArgs(packageReference,
+                            exception,
+                            packageRestoreData.ProjectNames));
+                    }
                 }
             }
 

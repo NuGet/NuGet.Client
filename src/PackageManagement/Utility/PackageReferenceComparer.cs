@@ -13,6 +13,11 @@ namespace NuGet.PackageManagement
 
         public bool Equals(PackageReference x, PackageReference y)
         {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
             return _packageIdentityComparer.Equals(x.PackageIdentity, y.PackageIdentity);
         }
 

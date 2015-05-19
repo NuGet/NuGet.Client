@@ -11,23 +11,23 @@ namespace NuGet.PackageManagement
     {
         public PackageReference RestoreFailedPackageReference { get; private set; }
         public Exception Exception { get; private set; }
-        public IReadOnlyCollection<string> ProjectNames { get; private set; }
+        public IEnumerable<string> ProjectNames { get; private set; }
 
-        public PackageRestoreFailedEventArgs(PackageReference restoredFailedPackageReference, Exception exception, IReadOnlyCollection<string> projectNames)
+        public PackageRestoreFailedEventArgs(PackageReference restoredFailedPackageReference, Exception exception, IEnumerable<string> projectNames)
         {
             if (restoredFailedPackageReference == null)
             {
-                throw new ArgumentNullException("restoredFailedPackageReference");
+                throw new ArgumentNullException(nameof(restoredFailedPackageReference));
             }
 
             if (exception == null)
             {
-                throw new ArgumentNullException("exception");
+                throw new ArgumentNullException(nameof(exception));
             }
 
             if (projectNames == null)
             {
-                throw new ArgumentNullException("projectNames");
+                throw new ArgumentNullException(nameof(projectNames));
             }
 
             RestoreFailedPackageReference = restoredFailedPackageReference;

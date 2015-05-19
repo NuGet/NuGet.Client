@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,20 +17,21 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageRestoreBar : UserControl
     {
-        private readonly IPackageRestoreManager _packageRestoreManager;
-        private readonly ISolutionManager _solutionManager;
-        private readonly Dispatcher _uiDispatcher;
+        private IPackageRestoreManager PackageRestoreManager { get; }
+        private ISolutionManager SolutionManager { get; }
+        private Dispatcher UIDispatcher { get; }
+        private Exception RestoreException { get; set; }
 
         public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
         {
             InitializeComponent();
-            _uiDispatcher = Dispatcher.CurrentDispatcher;
-            _solutionManager = solutionManager;
-            _packageRestoreManager = packageRestoreManager;
+            UIDispatcher = Dispatcher.CurrentDispatcher;
+            SolutionManager = solutionManager;
+            PackageRestoreManager = packageRestoreManager;
 
-            if (_packageRestoreManager != null)
+            if (PackageRestoreManager != null)
             {
-                _packageRestoreManager.PackagesMissingStatusChanged += OnPackagesMissingStatusChanged;
+                PackageRestoreManager.PackagesMissingStatusChanged += OnPackagesMissingStatusChanged;
             }
 
             // Set DynamicResource binding in code 
@@ -43,9 +45,9 @@ namespace NuGet.PackageManagement.UI
 
         public void CleanUp()
         {
-            if (_packageRestoreManager != null)
+            if (PackageRestoreManager != null)
             {
-                _packageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
+                PackageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
             }
         }
 
@@ -54,14 +56,24 @@ namespace NuGet.PackageManagement.UI
             // Loaded should only fire once
             Loaded -= UserControl_Loaded;
 
-            if (_packageRestoreManager != null)
+            if (PackageRestoreManager != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
-                    var solutionDirectory = _solutionManager.SolutionDirectory;
+                    try
+                    {
+                        var solutionDirectory = SolutionManager.SolutionDirectory;
 
-                    // when the control is first loaded, check for missing packages
-                    return _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                        // when the control is first loaded, check for missing packages
+                        await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        // By default, restore bar is invisible. So, in case of failure of RaisePackagesMissingEventForSolutionAsync, assume it is needed
+                        UpdateRestoreBar(packagesMissing: true);
+                        var unwrappedException = ExceptionUtility.Unwrap(ex);
+                        ShowErrorUI(unwrappedException.Message);
+                    }
                 });
             }
         }
@@ -73,9 +85,9 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateRestoreBar(bool packagesMissing)
         {
-            if (!_uiDispatcher.CheckAccess())
+            if (!UIDispatcher.CheckAccess())
             {
-                _uiDispatcher.Invoke(
+                UIDispatcher.Invoke(
                     new Action<bool>(UpdateRestoreBar),
                     packagesMissing);
                 return;
@@ -98,17 +110,40 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
-                var solutionDirectory = _solutionManager.SolutionDirectory;
-                await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
-                // Check for missing packages again
-                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                PackageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
+                var solutionDirectory = SolutionManager.SolutionDirectory;
+                await PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
+
+                if (RestoreException == null)
+                {
+                    // when the control is first loaded, check for missing packages
+                    await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                }
+                else
+                {
+                    ShowErrorUI(RestoreException.Message);
+                }
             }
             catch (Exception ex)
             {
                 ShowErrorUI(ex.Message);
             }
+            finally
+            {
+                PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreFailedEvent;
+                RestoreException = null;
+            }
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
+        }
+
+        private void PackageRestoreFailedEvent(object sender, PackageRestoreFailedEventArgs e)
+        {
+            // We just store any one of the package restore failures and show it on the yellow bar
+            if(RestoreException == null)
+            {
+                RestoreException = e.Exception;
+            }
         }
 
         private void ResetUI()

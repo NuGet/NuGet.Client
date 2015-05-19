@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
@@ -43,13 +44,13 @@ namespace NuGet.PackageManagement
         event EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent;
 
         /// <summary>
-        /// Get the missing packages in the solution given the <paramref name="solutionDirectory"></paramref>.
+        /// Get the packages in the solution given the <paramref name="solutionDirectory"></paramref>.
         /// </summary>
         /// <returns>
-        /// Returns a read-only dictionary of missing package references and the corresponding project names on which
-        /// each missing package is installed.
+        /// Returns a list of package references and the corresponding project names on which
+        /// each package is installed, alongwith a bool which determines if the package is missing
         /// </returns>
-        Task<MissingPackagesInfo> GetMissingPackagesInSolutionAsync(string solutionDirectory, CancellationToken token);
+        Task<IEnumerable<PackageRestoreData>> GetPackagesInSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
         /// Checks the current solution if there is any package missing.
@@ -75,13 +76,13 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restores the package references if they are missing
         /// </summary>
-        /// <param name="missingPackagesInfo">
+        /// <param name="packages">
         /// This parameter is the list of package referneces mapped to the list of
         /// project names a package is installed on. This is most likely obtained by calling
-        /// GetMissingPackagesInSolutionAsync
+        /// GetPackagesInSolutionAsync
         /// </param>
         /// <remarks>
-        /// Best use case is when GetMissingPackagesInSolutionAsync was already called, the result can be used
+        /// Best use case is when GetPackagesInSolutionAsync was already called, the result can be used
         /// in this method
         /// </remarks>
         /// <returns>
@@ -89,7 +90,7 @@ namespace NuGet.PackageManagement
         /// list of project names.
         /// </returns>
         Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
-            MissingPackagesInfo missingPackagesInfo,
+            IEnumerable<PackageRestoreData> packages,
             CancellationToken token);
     }
 
