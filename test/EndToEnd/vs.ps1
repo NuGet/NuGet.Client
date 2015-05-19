@@ -458,6 +458,24 @@ function New-WindowsPhoneClassLibrary {
     }
 }
 
+function New-DNXClassLibrary
+{
+    param(
+        [string]$ProjectName,
+        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+    )
+
+    try 
+    {
+		$SolutionFolder | New-Project DNXClassLibrary $ProjectName
+    }
+    catch {
+        # If we're unable to create the project that means we probably don't have some SDK installed
+        # Signal to the runner that we want to skip this test        
+        throw "SKIP: $($_)"
+    }
+}
+
 function New-TextFile {
     $dte.ItemOperations.NewFile('General\Text File')
     $dte.ActiveDocument.Object("TextDocument")

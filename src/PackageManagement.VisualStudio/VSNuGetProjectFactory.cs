@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectK = GetProjectKProject(envDTEProject);
             if (projectK != null)
             {
-                result = new ProjectKNuGetProject(projectK, envDTEProject.Name, envDTEProject.UniqueName);
+                result = new ProjectKNuGetProject(projectK, envDTEProject.Name, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
             }
             else
             {
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (File.Exists(jsonConfig))
                 {
-                    result = new BuildIntegratedProjectSystem(jsonConfig, envDTEProject, msBuildNuGetProjectSystem, envDTEProject.Name, envDTEProject.UniqueName);
+                    result = new BuildIntegratedProjectSystem(jsonConfig, envDTEProject, msBuildNuGetProjectSystem, envDTEProject.Name, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
                 }
                 else
                 {
