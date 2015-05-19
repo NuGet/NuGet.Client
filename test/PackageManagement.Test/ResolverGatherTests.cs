@@ -23,8 +23,6 @@ namespace NuGet.Test
         public void ResolverGather_MissingPrimaryPackage()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
-
             var target = CreatePackage("a", "2.0.0");
             IEnumerable<PackageIdentity> targets = new[] { target };
 
@@ -57,7 +55,7 @@ namespace NuGet.Test
                 {
                     try
                     {
-                        ResolverGather.GatherPackageDependencyInfo(context, targets,
+                        ResolverGather.GatherPackageDependencyInfo(targets,
                             installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None).Wait();
                     }
                     catch (AggregateException ex)
@@ -71,7 +69,6 @@ namespace NuGet.Test
         public async Task ResolverGather_MissingPackageGatheredFromSource()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "2.0.0");
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -105,7 +102,7 @@ namespace NuGet.Test
                 };
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
@@ -122,7 +119,6 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyUnrelatedPackageIsIgnored()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "2.0.0");
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -157,7 +153,7 @@ namespace NuGet.Test
                 };
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
@@ -174,7 +170,6 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyParentDependencyIsExpanded()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("c", "2.0.0");
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -212,7 +207,7 @@ namespace NuGet.Test
                 };
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
@@ -229,7 +224,6 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyDependencyIsExpanded()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "2.0.0");
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -264,7 +258,7 @@ namespace NuGet.Test
                 };
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
@@ -282,7 +276,6 @@ namespace NuGet.Test
         public async Task ResolverGather_VerifyParentIsExpanded()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("b", "2.0.0");
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -317,7 +310,7 @@ namespace NuGet.Test
                 };
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
@@ -335,7 +328,6 @@ namespace NuGet.Test
         public async Task ResolverGather_ComplexGraphNeedingMultiplePasses()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = CreatePackage("a", "1.0.0");
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -398,7 +390,7 @@ namespace NuGet.Test
                 };
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
@@ -432,7 +424,6 @@ namespace NuGet.Test
         public async Task ResolverGather_Basic()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -469,7 +460,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 Enumerable.Empty<PackageIdentity>(), framework, repos, repos, repos[2], CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
@@ -490,7 +481,6 @@ namespace NuGet.Test
         public async Task ResolverGather_BasicGatherWithExtraPackages()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -527,7 +517,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, Enumerable.Empty<PackageIdentity>(),
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets, Enumerable.Empty<PackageIdentity>(),
                 framework, repos, repos, repos[2], CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
@@ -548,7 +538,6 @@ namespace NuGet.Test
         public async Task ResolverGather_GatherWithNotFoundPackages()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
 
             var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -584,7 +573,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets,
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
                 Enumerable.Empty<PackageIdentity>(), framework, repos, repos, repos[2], CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
@@ -603,8 +592,6 @@ namespace NuGet.Test
         public async Task ResolverGather_DependenciesSpreadAcrossRepos()
         {
             // Arrange
-            var context = new ResolutionContext(DependencyBehavior.Lowest, true);
-
             var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
 
@@ -644,7 +631,7 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new PackageSource("http://4"), providersPackagesFolder));
 
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(context, targets, Enumerable.Empty<PackageIdentity>(),
+            var results = await ResolverGather.GatherPackageDependencyInfo(targets, Enumerable.Empty<PackageIdentity>(),
                 framework, repos, repos, repos[3], CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();

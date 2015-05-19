@@ -286,7 +286,7 @@ namespace NuGet.PackageManagement
                 var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
-                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
+                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(
                     packageIdsToInstall,
                     Enumerable.Empty<PackageIdentity>(),
                     oldListOfInstalledPackages,
@@ -420,7 +420,7 @@ namespace NuGet.PackageManagement
                 var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
-                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
+                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(
                     packagesToInstall,
                     oldListOfInstalledPackages,
                     targetFramework,
@@ -699,9 +699,8 @@ namespace NuGet.PackageManagement
 
                     // If any targets are prerelease we should gather with prerelease on and filter afterwards
                     var includePrereleaseInGather = resolutionContext.IncludePrerelease || (packageTargetsForResolver.Any(p => (p.HasVersion && p.Version.IsPrerelease)));
-                    var contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
 
-                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(contextForGather,
+                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(
                         primaryPackages,
                         oldListOfInstalledPackages,
                         targetFramework,

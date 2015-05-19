@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Gather dependency info for the install packages and the new targets.
         /// </summary>
-        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
+        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(
             IEnumerable<PackageIdentity> primaryTargets,
             IEnumerable<PackageIdentity> installedPackages,
             NuGetFramework targetFramework,
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement
             SourceRepository packagesFolderSource,
             CancellationToken token)
         {
-            return await GatherPackageDependencyInfo(context, null, primaryTargets, installedPackages,
+            return await GatherPackageDependencyInfo(null, primaryTargets, installedPackages,
                 targetFramework, primarySources, allSources, packagesFolderSource, token);
         }
 
@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement
         /// <param name="primarySources">Primary source to search for the primary targets</param>
         /// <param name="allSources">Fallback sources</param>
         /// <param name="packagesFolderSource">Source for installed packages</param>
-        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(ResolutionContext context,
+        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(
             IEnumerable<string> primaryTargetIds,
             IEnumerable<PackageIdentity> primaryTargets,
             IEnumerable<PackageIdentity> installedPackages,
@@ -123,7 +123,6 @@ namespace NuGet.PackageManagement
                 await GatherPackage(primaryTarget.Id, primaryTarget.Version, combinedResults,
                     primaryDependencyResources,
                     targetFramework,
-                    context,
                     ignoreExceptions: false,
                     token: token);
             }
@@ -138,7 +137,6 @@ namespace NuGet.PackageManagement
                         packageCache: combinedResults,
                         dependencyResources: primaryDependencyResources,
                         targetFramework: targetFramework,
-                        context: context,
                         ignoreExceptions: false,
                         token: token);
                 }
@@ -239,7 +237,7 @@ namespace NuGet.PackageManagement
                         packageCache: combinedResults,
                         dependencyResources: allDependencyResources,
                         targetFramework: targetFramework,
-                        context: context, ignoreExceptions: true, token: token);
+                        ignoreExceptions: true, token: token);
                 }
             }
 
@@ -256,7 +254,6 @@ namespace NuGet.PackageManagement
             HashSet<SourcePackageDependencyInfo> packageCache,
             List<Tuple<SourceRepository, DependencyInfoResource>> dependencyResources,
             NuGetFramework targetFramework,
-            ResolutionContext context,
             bool ignoreExceptions,
             CancellationToken token)
         {
@@ -273,11 +270,10 @@ namespace NuGet.PackageManagement
                     packageCache.UnionWith(await results.Dequeue());
                 }
 
-                var source = sourceTuple.Item1;
                 var resolverRes = sourceTuple.Item2;
 
                 var task = Task.Run(async () => await GatherPackageCore(packageId, version,
-                    source, resolverRes, targetFramework, context, ignoreExceptions, token));
+                    resolverRes, targetFramework, ignoreExceptions, token));
 
                 results.Enqueue(task);
             }
@@ -296,10 +292,8 @@ namespace NuGet.PackageManagement
         private static async Task<IEnumerable<SourcePackageDependencyInfo>> GatherPackageCore(
             string packageId,
             NuGetVersion version,
-            SourceRepository source,
             DependencyInfoResource resource,
             NuGetFramework targetFramework,
-            ResolutionContext context,
             bool ignoreExceptions,
             CancellationToken token)
         {
