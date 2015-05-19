@@ -421,7 +421,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Author(s):.
+        ///   Looks up a localized string similar to Author(s): .
         /// </summary>
         public static string Label_Authors {
             get {
@@ -887,6 +887,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_ShowAll {
             get {
                 return ResourceManager.GetString("Text_ShowAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to View License.
+        /// </summary>
+        public static string Text_ViewLicense {
+            get {
+                return ResourceManager.GetString("Text_ViewLicense", resourceCulture);
             }
         }
         

@@ -35,7 +35,7 @@
                     <Run
               Text=" " />
                     <Run
-              Text="Authors: " />
+              Text="{x:Static resx:Resources.Label_Authors}" />
                     <Run
               Text="{Binding Authors, Mode=OneTime}" />
           </TextBlock>
@@ -47,7 +47,7 @@
               Style="{StaticResource HyperlinkStyle}"
               RequestNavigate="OnViewLicenseTermsRequestNavigate">
                         <Run
-                Text="View License" />
+                Text="{x:Static resx:Resources.Text_ViewLicense}" />
                     </Hyperlink>
           </TextBlock>
         </StackPanel>
