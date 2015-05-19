@@ -109,10 +109,9 @@ namespace NuGet.Resolver
             };
 
             // Run solver
-            var solver = new CombinationSolver<ResolverPackage>();
             var comparer = new ResolverComparer(context.DependencyBehavior, context.PreferredVersions, context.TargetIds);
 
-            var solution = solver.FindSolution(
+            var solution = CombinationSolver<ResolverPackage>.FindSolution(
                 groupedItems: grouped,
                 itemSorter: comparer,
                 shouldRejectPairFunc: ResolverUtility.ShouldRejectPackagePair,

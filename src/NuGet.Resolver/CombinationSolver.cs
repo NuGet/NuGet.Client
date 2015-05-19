@@ -18,14 +18,14 @@ namespace NuGet.Resolver
     /// <typeparam name="T">The type of item to evaluate.</typeparam>
     public class CombinationSolver<T>
     {
-        private T[] solution;
+        private readonly T[] _solution;
 
         /// <summary>
         /// The initial domains are the full/initial candidate sets we start with when
         /// attempting to discover a solution. They need to be stored and referred to
         /// as the algorithm executes to re-initialize the current/working domains.
         /// </summary>
-        private IList<IEnumerable<T>> initialDomains;
+        private readonly IList<IEnumerable<T>> _initialDomains;
 
         /// <summary>
         /// The current domains are initialized with the initial domains. As we progress
@@ -33,33 +33,54 @@ namespace NuGet.Resolver
         /// discover that an item cannot be part of the solution. If we need to backtrack,
         /// we may reset the current domain to the corresponding initial domain.
         /// </summary>
-        private List<HashSet<T>> currentDomains;
+        private readonly List<HashSet<T>> _currentDomains;
 
         /// <summary>
         /// The subset of past indexes where a conflict was found. Used to calculate the biggest and safest
         /// (i.e. not missing a better solution) jump we can make in MoveBackward.
         /// </summary>
-        private List<HashSet<int>> conflictSet;
+        private readonly List<HashSet<int>> _conflictSet;
 
         /// <summary>
         /// For each position, maintain a stack of past indexes that forward checked (and found/removed conflicts)
         /// from the position.
         /// </summary>
-        private List<Stack<int>> pastForwardChecking;
+        private readonly List<Stack<int>> _pastForwardChecking;
 
         /// <summary>
         /// For each position, maintain a stack of forward/future indexes where conflicts were found.
         /// </summary>
-        private List<Stack<int>> futureForwardChecking;
+        private readonly List<Stack<int>> _futureForwardChecking;
 
         /// <summary>
         /// For each position, maintain a Stack of sets of items that were 'reduced' from the domain. This allows us
         /// to restore the items back into the domain on future iterations in case we need to back up, etc...
         /// </summary>
-        private List<Stack<Stack<T>>> reductions;
+        private readonly List<Stack<Stack<T>>> _reductions;
 
-        private IComparer<T> prioritySorter;
-        private Func<T, T, bool> shouldRejectPair;
+        private readonly IComparer<T> _prioritySorter;
+        private readonly Func<T, T, bool> _shouldRejectPair;
+
+        private CombinationSolver(IEnumerable<IEnumerable<T>> groupedItems,
+            IComparer<T> itemSorter,
+            Func<T, T, bool> shouldRejectPairFunc)
+        {
+            _prioritySorter = itemSorter;
+            _shouldRejectPair = shouldRejectPairFunc;
+
+            var initialDomains = groupedItems.ToList();
+
+            _initialDomains = groupedItems.ToList();
+
+            // Initialize various arrays required for the algorithm to run.
+            _currentDomains = initialDomains.Select(d => new HashSet<T>(d)).ToList();
+            _conflictSet = initialDomains.Select(d => new HashSet<int>()).ToList();
+            _pastForwardChecking = initialDomains.Select(d => new Stack<int>()).ToList();
+            _futureForwardChecking = initialDomains.Select(d => new Stack<int>()).ToList();
+            _reductions = initialDomains.Select(d => new Stack<Stack<T>>()).ToList();
+
+            _solution = new T[initialDomains.Count];
+        }
 
         /// <summary>
         /// Entry point for the combination evalutation phase of the algorithm. The algorithm
@@ -82,27 +103,23 @@ namespace NuGet.Resolver
         /// Used to provide partial solutions to be used for diagnostic messages.
         /// </param>
         /// <returns>The 'best' solution (if one exists). Null otherwise.</returns>
-        public IEnumerable<T> FindSolution(IEnumerable<IEnumerable<T>> groupedItems,
+        public static IEnumerable<T> FindSolution(IEnumerable<IEnumerable<T>> groupedItems,
             IComparer<T> itemSorter,
             Func<T, T, bool> shouldRejectPairFunc,
-            Action<IEnumerable<T>> diagnosticOutput = null)
+            Action<IEnumerable<T>> diagnosticOutput)
+        {
+            var solver = new CombinationSolver<T>(groupedItems,
+                    itemSorter,
+                    shouldRejectPairFunc);
+
+            return solver.FindSolution(diagnosticOutput);
+        }
+
+        private IEnumerable<T> FindSolution(Action<IEnumerable<T>> diagnosticOutput)
         {
             var consistent = true;
             var i = 0;
             var highest = -1;
-            this.prioritySorter = itemSorter;
-            this.shouldRejectPair = shouldRejectPairFunc;
-
-            initialDomains = groupedItems.ToList();
-
-            //Initialize various arrays required for the algorithm to run.
-            currentDomains = initialDomains.Select(d => new HashSet<T>(d)).ToList();
-            conflictSet = initialDomains.Select(d => new HashSet<int>()).ToList();
-            pastForwardChecking = initialDomains.Select(d => new Stack<int>()).ToList();
-            futureForwardChecking = initialDomains.Select(d => new Stack<int>()).ToList();
-            reductions = initialDomains.Select(d => new Stack<Stack<T>>()).ToList();
-
-            solution = new T[initialDomains.Count];
 
             while (true)
             {
@@ -114,21 +131,22 @@ namespace NuGet.Resolver
 
                     // if a diagnostic hook was passed in give it each new best solution as it occurs
                     // create a new list since this method reuses the solution array
-                    diagnosticOutput(new List<T>(solution));
+                    diagnosticOutput(new List<T>(_solution));
                 }
 
-                if (i > solution.Length)
+                if (i > _solution.Length)
                 {
                     Debug.Fail("Evaluated past the end of the array.");
+
                     throw new NuGetResolverException(Strings.FatalError);
                 }
-                else if (i == solution.Length)
+                else if (i == _solution.Length)
                 {
-                    return solution;
+                    return _solution;
                 }
                 else if (i < 0)
                 {
-                    //Impossible (no solution)
+                    // Impossible (no solution)
                     return null;
                 }
             }
@@ -152,7 +170,7 @@ namespace NuGet.Resolver
             consistent = false;
 
             //Call ToList so we can potentially remove the currentItem from currentDomains[i] as we're iterating
-            foreach (var currentItem in currentDomains[i].OrderBy(x => x, prioritySorter).ToList())
+            foreach (var currentItem in _currentDomains[i].OrderBy(x => x, _prioritySorter).ToList())
             {
                 if (consistent)
                 {
@@ -160,16 +178,16 @@ namespace NuGet.Resolver
                 }
 
                 consistent = true;
-                solution[i] = currentItem;
+                _solution[i] = currentItem;
 
-                for (var j = i + 1; j < currentDomains.Count && consistent; j++)
+                for (var j = i + 1; j < _currentDomains.Count && consistent; j++)
                 {
                     consistent = CheckForward(i, j);
                     if (!consistent)
                     {
-                        currentDomains[i].Remove(currentItem);
+                        _currentDomains[i].Remove(currentItem);
                         UndoReductions(i);
-                        conflictSet[i].UnionWith(pastForwardChecking[j]);
+                        _conflictSet[i].UnionWith(_pastForwardChecking[j]);
                     }
                 }
             }
@@ -189,7 +207,7 @@ namespace NuGet.Resolver
         private int MoveBackward(int i, ref bool consistent)
         {
             if (i < 0
-                || i >= solution.Length)
+                || i >= _solution.Length)
             {
                 Debug.Fail("MoveBackward called with invalid value for i.");
                 throw new NuGetResolverException(Strings.FatalError);
@@ -205,19 +223,19 @@ namespace NuGet.Resolver
             var max = new Func<IEnumerable<int>, int>(enumerable => (enumerable == null || !enumerable.Any()) ? 0 : enumerable.Max());
 
             //h is the index we can *safely* move back to
-            var h = Math.Max(max(conflictSet[i]), max(pastForwardChecking[i]));
-            conflictSet[h] = new HashSet<int>(conflictSet[i].Union(pastForwardChecking[i]).Union(conflictSet[h]).Except(new[] { h }));
+            var h = Math.Max(max(_conflictSet[i]), max(_pastForwardChecking[i]));
+            _conflictSet[h] = new HashSet<int>(_conflictSet[i].Union(_pastForwardChecking[i]).Union(_conflictSet[h]).Except(new[] { h }));
 
             for (var j = i; j > h; j--)
             {
-                conflictSet[j].Clear();
+                _conflictSet[j].Clear();
                 UndoReductions(j);
                 UpdateCurrentDomain(j);
             }
 
             UndoReductions(h);
-            currentDomains[h].Remove(solution[h]);
-            consistent = currentDomains[h] != null && currentDomains[h].Any();
+            _currentDomains[h].Remove(_solution[h]);
+            consistent = _currentDomains[h] != null && _currentDomains[h].Any();
 
             return h;
         }
@@ -235,11 +253,11 @@ namespace NuGet.Resolver
         private bool CheckForward(int i, int j)
         {
             var reductionAgainstFutureDomain = new Stack<T>();
-            foreach (var itemInFutureDomain in currentDomains[j].OrderBy(x => x, prioritySorter))
+            foreach (var itemInFutureDomain in _currentDomains[j].OrderBy(x => x, _prioritySorter))
             {
-                solution[j] = itemInFutureDomain;
+                _solution[j] = itemInFutureDomain;
 
-                if (shouldRejectPair(solution[i], solution[j]))
+                if (_shouldRejectPair(_solution[i], _solution[j]))
                 {
                     reductionAgainstFutureDomain.Push(itemInFutureDomain);
                 }
@@ -248,19 +266,19 @@ namespace NuGet.Resolver
             if (reductionAgainstFutureDomain.Count > 0)
             {
                 //Remove the items from the future domain
-                currentDomains[j].ExceptWith(reductionAgainstFutureDomain);
+                _currentDomains[j].ExceptWith(reductionAgainstFutureDomain);
 
                 //Store the items we just removed as a 'reduction' against the future domain.
-                reductions[j].Push(reductionAgainstFutureDomain);
+                _reductions[j].Push(reductionAgainstFutureDomain);
 
                 //Record that we've done future forward checking/reduction from i=>j
-                futureForwardChecking[i].Push(j);
+                _futureForwardChecking[i].Push(j);
 
                 //Likewise in the past array, store that we've done forward checking/reduction from j=>i
-                pastForwardChecking[j].Push(i);
+                _pastForwardChecking[j].Push(i);
             }
 
-            return currentDomains[j].Count > 0;
+            return _currentDomains[j].Count > 0;
         }
 
         /// <summary>
@@ -269,16 +287,16 @@ namespace NuGet.Resolver
         /// <param name="i">The position to undo reductions from.</param>
         private void UndoReductions(int i)
         {
-            foreach (var j in futureForwardChecking[i])
+            foreach (var j in _futureForwardChecking[i])
             {
-                var reduction = reductions[j].Pop();
-                currentDomains[j].UnionWith(reduction);
+                var reduction = _reductions[j].Pop();
+                _currentDomains[j].UnionWith(reduction);
 
-                var pfc = pastForwardChecking[j].Pop();
+                var pfc = _pastForwardChecking[j].Pop();
                 Debug.Assert(i == pfc);
             }
 
-            futureForwardChecking[i].Clear();
+            _futureForwardChecking[i].Clear();
         }
 
         /// <summary>
@@ -290,12 +308,12 @@ namespace NuGet.Resolver
             // Initialize it to the original domain values. Since currentDomain[i] will be
             // manipulated throughout the algorithm, it is critical to create a *new* set at this
             // point to avoid having initialDomains[i] be tampered with.
-            currentDomains[i] = new HashSet<T>(initialDomains[i]);
+            _currentDomains[i] = new HashSet<T>(_initialDomains[i]);
 
             //Remove any current reduction items
-            foreach (var reduction in reductions[i])
+            foreach (var reduction in _reductions[i])
             {
-                currentDomains[i].ExceptWith(reduction);
+                _currentDomains[i].ExceptWith(reduction);
             }
         }
     }
