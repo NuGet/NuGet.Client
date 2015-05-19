@@ -237,16 +237,25 @@
   <data name="ParameterCannotBeZeroOrNegative" xml:space="preserve">
     <value>Parameter cannot be zero or negative</value>
   </data>
-  <data name="BuildIntegratedPackageRestoreFailed" xml:space="preserve">
-    <value>Package restore completed with errors. Check the build output window for details.</value>
-  </data>
   <data name="PackagesConfigAllowedVersionConflict" xml:space="preserve">
     <value>Unable to resolve '{0}'. An additional constraint '{1}' defined in {2} prevents this operation.</value>
+  </data>
+  <data name="RestoreFailedRollingBack" xml:space="preserve">
+    <value>Package restore failed. Rolling back package changes for '{0}'.</value>
   </data>
   <data name="DownloadResourceNotFound" xml:space="preserve">
     <value>Cannot download packages from '{0}'.</value>
   </data>
   <data name="DownloadStreamNotAvailable" xml:space="preserve">
     <value>Package stream for '{0}' cannot be found at '{1}'.</value>
+  </data>
+  <data name="BuildIntegratedPackageRestoreSucceeded" xml:space="preserve">
+    <value>Package restore completed successfully for '{0}'.</value>
+  </data>
+  <data name="BuildIntegratedPackageRestoreStarted" xml:space="preserve">
+    <value>Restoring packages for '{0}'.</value>
+  </data>
+  <data name="BuildIntegratedPackageRestoreFailed" xml:space="preserve">
+    <value>Package restore failed for '{0}'.</value>
   </data>
 </root>

@@ -4,7 +4,13 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using NuGet.Frameworks;
+using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectManagement
 {
@@ -24,13 +30,21 @@ namespace NuGet.ProjectManagement
         public const string ProjectLockFileName = "project.lock.json";
 
         /// <summary>
+        /// Get the root path of a package from the global folder.
+        /// </summary>
+        public static string GetPackagePathFromGlobalSource(PackageIdentity identity)
+        {
+            return Path.Combine(GetGlobalPackagesFolder(), identity.Id, identity.Version.ToNormalizedString());
+        }
+
+        /// <summary>
         /// nupkg path from the global cache folder
         /// </summary>
         public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
         {
             var nupkgName = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.nupkg", identity.Id, identity.Version.ToNormalizedString());
 
-            return Path.Combine(GetGlobalPackagesFolder(), identity.Id, identity.Version.ToNormalizedString(), nupkgName);
+            return Path.Combine(GetPackagePathFromGlobalSource(identity), nupkgName);
         }
 
         /// <summary>
@@ -56,6 +70,14 @@ namespace NuGet.ProjectManagement
         public static string GetLockFilePath(string configFilePath)
         {
             return Path.Combine(Path.GetDirectoryName(configFilePath), ProjectLockFileName);
+        }
+
+        /// <summary>
+        /// BuildIntegratedProjectReference -> ExternalProjectReference
+        /// </summary>
+        public static ExternalProjectReference ConvertProjectReference(BuildIntegratedProjectReference reference)
+        {
+            return new ExternalProjectReference(reference.Name, reference.PackageSpecPath, reference.ExternalProjectReferences);
         }
     }
 }

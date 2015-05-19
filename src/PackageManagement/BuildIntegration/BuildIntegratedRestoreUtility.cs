@@ -15,82 +15,80 @@ using NuGet.ProjectModel;
 namespace NuGet.PackageManagement
 {
     /// <summary>
-    /// Helper class for calling DNU restore
+    /// Helper class for calling the RestoreCommand
     /// </summary>
     public static class BuildIntegratedRestoreUtility
     {
-        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-
-        public static async Task RestoreForBuildAsync(
-            BuildIntegratedNuGetProject project,
-            INuGetProjectContext projectContext,
-            IEnumerable<string> additionalSources,
-            CancellationToken token)
-        {
-            await RestoreAsync(project, projectContext, additionalSources, token);
-        }
+        /// <summary>
+        /// Maximum number of threads to use during restore.
+        /// </summary>
+        public const int MaxRestoreThreads = 8;
 
         /// <summary>
         /// Restore a build integrated project and update the lock file
         /// </summary>
-        /// <param name="projectContext">Logging context</param>
-        /// <param name="additionalSources">repository sources</param>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
-            IEnumerable<string> additionalSources,
+            IEnumerable<string> sources,
             CancellationToken token)
         {
-            // Limit to only 1 restore at a time
-            await _semaphore.WaitAsync(token);
+            // Restore
+            var result = await RestoreAsync(project, project.PackageSpec, projectContext, sources, token);
 
-            try
-            {
-                token.ThrowIfCancellationRequested();
+            // Find the lock file path
+            var projectJson = new FileInfo(project.JsonConfigPath);
+            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJson.FullName);
 
-                return await RestoreCoreAsync(project, projectContext, additionalSources);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            // Throw before writing if this has been canceled
+            token.ThrowIfCancellationRequested();
+
+            // Write out the lock file
+            var lockFileFormat = new LockFileFormat();
+            lockFileFormat.Write(lockFilePath, result.LockFile);
+
+            return result;
         }
 
-        private static async Task<RestoreResult> RestoreCoreAsync(BuildIntegratedNuGetProject project,
+        /// <summary>
+        /// Restore without writing the lock file
+        /// </summary>
+        internal static async Task<RestoreResult> RestoreAsync(
+            BuildIntegratedNuGetProject project,
+            PackageSpec packageSpec,
             INuGetProjectContext projectContext,
-            IEnumerable<string> sources)
+            IEnumerable<string> sources,
+            CancellationToken token)
         {
-            var file = new FileInfo(project.JsonConfigPath);
-
-            PackageSpec spec;
-
-            using (var configStream = file.OpenRead())
-            {
-                spec = JsonPackageSpecReader.GetPackageSpec(configStream, project.ProjectName, project.JsonConfigPath);
-            }
+            // Restoring packages
+            projectContext.Log(MessageLevel.Info, Strings.BuildIntegratedPackageRestoreStarted, project.ProjectName);
 
             var packageSources = sources.Select(source => new PackageSource(source));
-            var request = new RestoreRequest(spec, packageSources, BuildIntegratedProjectUtility.GetGlobalPackagesFolder());
-
-            request.LockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(file.FullName);
-            request.MaxDegreeOfConcurrency = 4;
+            var request = new RestoreRequest(packageSpec, packageSources, BuildIntegratedProjectUtility.GetGlobalPackagesFolder());
+            request.MaxDegreeOfConcurrency = MaxRestoreThreads;
 
             // Find the full closure of project.json files and referenced projects
             var projectReferences = await project.GetProjectReferenceClosureAsync();
-            request.ExternalProjects = projectReferences.Select(reference => ConvertProjectReference(reference)).ToList();
+            request.ExternalProjects = projectReferences.Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference)).ToList();
+
+            token.ThrowIfCancellationRequested();
 
             var command = new RestoreCommand(new ProjectContextLogger(projectContext));
 
             // Execute the restore
-            return await command.ExecuteAsync(request);
-        }
+            var result = await command.ExecuteAsync(request);
 
-        /// <summary>
-        /// BuildIntegratedProjectReference -> ExternalProjectReference
-        /// </summary>
-        private static ExternalProjectReference ConvertProjectReference(BuildIntegratedProjectReference reference)
-        {
-            return new ExternalProjectReference(reference.Name, reference.PackageSpecPath, reference.ExternalProjectReferences);
+            // Report a final message with the Success result
+            if (result.Success)
+            {
+                projectContext.Log(MessageLevel.Info, Strings.BuildIntegratedPackageRestoreSucceeded, project.ProjectName);
+            }
+            else
+            {
+                projectContext.Log(MessageLevel.Info, Strings.BuildIntegratedPackageRestoreFailed, project.ProjectName);
+            }
+
+            return result;
         }
     }
 }

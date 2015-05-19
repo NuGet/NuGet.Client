@@ -34,7 +34,7 @@ namespace NuGet.Test
                     "https://www.nuget.org/api/v2/"
                 };
 
-            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
@@ -64,7 +64,7 @@ namespace NuGet.Test
                 var json = new JObject();
 
                 var frameworks = new JObject();
-                frameworks["netcore50"] = new JObject();
+                frameworks["uap10.0"] = new JObject();
 
                 json["frameworks"] = frameworks;
 

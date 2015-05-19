@@ -106,11 +106,29 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package restore completed with errors. Check the build output window for details..
+        ///   Looks up a localized string similar to Package restore failed for &apos;{0}&apos;..
         /// </summary>
         internal static string BuildIntegratedPackageRestoreFailed {
             get {
                 return ResourceManager.GetString("BuildIntegratedPackageRestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restoring packages for &apos;{0}&apos;..
+        /// </summary>
+        internal static string BuildIntegratedPackageRestoreStarted {
+            get {
+                return ResourceManager.GetString("BuildIntegratedPackageRestoreStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package restore completed successfully for &apos;{0}&apos;..
+        /// </summary>
+        internal static string BuildIntegratedPackageRestoreSucceeded {
+            get {
+                return ResourceManager.GetString("BuildIntegratedPackageRestoreSucceeded", resourceCulture);
             }
         }
         
@@ -345,6 +363,15 @@ namespace NuGet.PackageManagement {
         internal static string ResolvingActionsToUninstallPackage {
             get {
                 return ResourceManager.GetString("ResolvingActionsToUninstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package restore failed. Rolling back package changes for &apos;{0}&apos;..
+        /// </summary>
+        internal static string RestoreFailedRollingBack {
+            get {
+                return ResourceManager.GetString("RestoreFailedRollingBack", resourceCulture);
             }
         }
         

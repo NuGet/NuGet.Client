@@ -18,13 +18,13 @@ namespace ProjectManagement.Test
         {
             // Arrange
             var json = JObject.Parse(
-@"
-{
-    ""dependencies"": { 
-         ""PackageA"": ""1.0.0"", 
-         ""PackageC"": { ""type"": ""build"", version: ""2.0.0-beta2"" }
-    }
-}");
+                @"
+                {
+                    ""dependencies"": { 
+                            ""PackageA"": ""1.0.0"", 
+                            ""PackageC"": { ""type"": ""build"", version: ""2.0.0-beta2"" }
+                    }
+                }");
 
             // Act
             var dependencies = JsonConfigUtility.GetDependencies(json).ToList();
@@ -43,12 +43,12 @@ namespace ProjectManagement.Test
         {
             // Arrange
             var json = JObject.Parse(
-@"
-{
-    ""dependencies"": { 
-         ""PackageA"": 1
-    }
-}");
+                @"
+                {
+                    ""dependencies"": { 
+                         ""PackageA"": 1
+                    }
+                }");
 
             // Act and Assert
             var ex = Assert.Throws<FormatException>(() => JsonConfigUtility.GetDependencies(json).ToList());
@@ -62,12 +62,12 @@ namespace ProjectManagement.Test
         {
             // Arrange
             var json = JObject.Parse(
-@"
-{
-    ""dependencies"": { 
-         ""PackageA"": """"
-    }
-}");
+                @"
+                {
+                    ""dependencies"": { 
+                         ""PackageA"": """"
+                    }
+                }");
 
             // Act and Assert
             var ex = Assert.Throws<FormatException>(() => JsonConfigUtility.GetDependencies(json).ToList());
@@ -81,12 +81,12 @@ namespace ProjectManagement.Test
         {
             // Arrange
             var json = JObject.Parse(
-@"
-{
-    ""dependencies"": { 
-         ""PackageA"": { ""type"": ""build"" }
-    }
-}");
+                @"
+                {
+                    ""dependencies"": { 
+                         ""PackageA"": { ""type"": ""build"" }
+                    }
+                }");
 
             // Act and Assert
             var ex = Assert.Throws<FormatException>(() => JsonConfigUtility.GetDependencies(json).ToList());
@@ -138,20 +138,27 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void JsonConfigUtility_AddAndRemovePackage()
+        public void JsonConfigUtility_VerifyPackagesAreSortedInProjectJson()
         {
             // Arrange
             var json = BasicConfig;
 
             // Act
-            JsonConfigUtility.AddDependency(json, new PackageDependency("testpackage", VersionRange.Parse("1.0.0")));
-            JsonConfigUtility.RemoveDependency(json, "testpackage");
+            JsonConfigUtility.AddDependency(json, new PackageDependency("testpackageb", VersionRange.Parse("1.0.0")));
+            JsonConfigUtility.AddDependency(json, new PackageDependency("testpackageE", VersionRange.Parse("2.0.0")));
+            JsonConfigUtility.AddDependency(json, new PackageDependency("testpackageA", VersionRange.Parse("1.0.0")));
+            JsonConfigUtility.AddDependency(json, new PackageDependency("testpackaged", VersionRange.Parse("4.0.0")));
+            JsonConfigUtility.AddDependency(json, new PackageDependency("testpackageC", VersionRange.Parse("1.0.0")));
 
             JToken val = null;
             json.TryGetValue("dependencies", out val);
 
             // Assert
-            Assert.Equal(0, val.Count());
+            Assert.Equal("testpackageA", ((JProperty)json["dependencies"].Children().First()).Name);
+            Assert.Equal("testpackageb", ((JProperty)json["dependencies"].Children().Skip(1).First()).Name);
+            Assert.Equal("testpackageC", ((JProperty)json["dependencies"].Children().Skip(2).First()).Name);
+            Assert.Equal("testpackaged", ((JProperty)json["dependencies"].Children().Skip(3).First()).Name);
+            Assert.Equal("testpackageE", ((JProperty)json["dependencies"].Children().Skip(4).First()).Name);
         }
 
         private static JObject BasicConfig

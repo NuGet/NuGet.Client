@@ -13,12 +13,12 @@ using NuGet.Versioning;
 namespace NuGet.ProjectManagement
 {
     /// <summary>
-    /// nuget.json utils
+    /// project.json utils
     /// </summary>
     public static class JsonConfigUtility
     {
         /// <summary>
-        /// Read dependencies from a nuget.json file
+        /// Read dependencies from a project.json file
         /// </summary>
         public static IEnumerable<PackageDependency> GetDependencies(JObject json)
         {
@@ -38,7 +38,7 @@ namespace NuGet.ProjectManagement
         public static PackageDependency ParseDependency(JToken dependencyToken)
         {
             var property = dependencyToken as JProperty;
-            
+
             var id = property.Name;
 
             string version = null;
@@ -50,7 +50,7 @@ namespace NuGet.ProjectManagement
             {
                 version = (string)property.Value["version"];
             }
-            
+
             if (string.IsNullOrEmpty(version))
             {
                 throw new FormatException(
@@ -62,7 +62,28 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        /// Add a dependency to a nuget.json file
+        /// Add a dependency to a project.json file
+        /// </summary>
+        public static void AddDependency(JObject json, PackageIdentity package)
+        {
+            var range = VersionRange.All;
+
+            if (package.Version != null)
+            {
+                range = new VersionRange(
+                    minVersion: package.Version,
+                    includeMinVersion: true,
+                    maxVersion: null,
+                    includeMaxVersion: false);
+            }
+
+            var dependency = new PackageDependency(package.Id, range);
+
+            AddDependency(json, dependency);
+        }
+
+        /// <summary>
+        /// Add a dependency to a project.json file
         /// </summary>
         public static void AddDependency(JObject json, PackageDependency dependency)
         {
@@ -80,15 +101,19 @@ namespace NuGet.ProjectManagement
             if (dependencySet == null)
             {
                 dependencySet = new JObject();
-                json["dependencies"] = dependencySet;
             }
 
             var packageProperty = new JProperty(dependency.Id, dependency.VersionRange.MinVersion.ToNormalizedString());
             dependencySet.Add(packageProperty);
+
+            // order dependencies to reduce merge conflicts
+            dependencySet = SortProperties(dependencySet);
+
+            json["dependencies"] = dependencySet;
         }
 
         /// <summary>
-        /// Remove a dependency from a nuget.json file
+        /// Remove a dependency from a project.json file
         /// </summary>
         public static void RemoveDependency(JObject json, string packageId)
         {
@@ -128,6 +153,35 @@ namespace NuGet.ProjectManagement
             }
 
             return results;
+        }
+
+        /// <summary>
+        ///  Sort child properties
+        /// </summary>
+        private static JObject SortProperties(JObject parent)
+        {
+            var sortedParent = new JObject();
+
+            var sortedChildren = parent.Children().OrderByDescending(child => GetChildKey(child), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var child in sortedChildren)
+            {
+                sortedParent.AddFirst(child);
+            }
+
+            return sortedParent;
+        }
+
+        private static string GetChildKey(JToken token)
+        {
+            var property = token as JProperty;
+
+            if (property != null)
+            {
+                return property.Name;
+            }
+
+            return string.Empty;
         }
     }
 }

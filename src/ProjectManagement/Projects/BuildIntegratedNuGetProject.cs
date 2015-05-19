@@ -5,24 +5,23 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectManagement.Projects
 {
     /// <summary>
     /// A NuGet integrated MSBuild project.
-    /// These projects contain a nuget.json
+    /// These projects contain a project.json
     /// </summary>
     public class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject
     {
@@ -53,6 +52,8 @@ namespace NuGet.ProjectManagement.Projects
             }
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
+
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, msbuildProjectSystem.ProjectName);
 
             var supported = new List<FrameworkName>
                 {
@@ -140,110 +141,22 @@ namespace NuGet.ProjectManagement.Projects
         }
 
         /// <summary>
-        /// Add non-build time items such as content, install.ps1, and targets.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
-        public async Task<bool> InstallPackageContentAsync(PackageIdentity identity, Stream packageStream, INuGetProjectContext nuGetProjectContext, CancellationToken token)
-        {
-            var changesMade = false;
-
-            var zipArchive = new ZipArchive(packageStream);
-
-            var reader = new PackageReader(zipArchive);
-
-            var projectFramework = GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-
-            var compatibleContentFilesGroup =
-                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(projectFramework, reader.GetContentItems());
-            var compatibleBuildFileGroups =
-                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(projectFramework, reader.GetBuildItems());
-
-            var toolItemGroups = reader.GetToolItems();
-
-            var compatibleToolItemGroups =
-                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(projectFramework, toolItemGroups);
-
-            // Step-8.3: Add Content Files
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
-            {
-                changesMade = true;
-
-                MSBuildNuGetProjectSystemUtility.AddFiles(MSBuildNuGetProjectSystem,
-                    zipArchive, compatibleContentFilesGroup, FileTransformers);
-            }
-
-            // Step-8.4: Add Build imports
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleBuildFileGroups))
-            {
-                foreach (var buildImportFile in compatibleBuildFileGroups.Items)
-                {
-                    var fullImportFilePath = Path.Combine(Path.GetDirectoryName(BuildIntegratedProjectUtility.GetNupkgPathFromGlobalSource(identity)), buildImportFile);
-                    MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
-                        fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
-                }
-            }
-
-            // Step-12: Execute powershell script - install.ps1
-            var packageInstallPath = Path.GetDirectoryName(BuildIntegratedProjectUtility.GetNupkgPathFromGlobalSource(identity));
-            var anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
-            if (anyFrameworkToolsGroup != null)
-            {
-                var initPS1RelativePath = anyFrameworkToolsGroup.Items.Where(p =>
-                    p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(initPS1RelativePath))
-                {
-                    initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, initPS1RelativePath, zipArchive, this, throwOnFailure: true);
-                }
-            }
-
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemGroups))
-            {
-                var installPS1RelativePath = compatibleToolItemGroups.Items.Where(p =>
-                    p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if (!string.IsNullOrEmpty(installPS1RelativePath))
-                {
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this, throwOnFailure: true);
-                }
-            }
-
-            return await Task.FromResult(changesMade);
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        public Task<bool> UninstallPackageContentAsync(Stream packageStream)
-        {
-            var changesMade = false;
-
-            var zipArchive = new ZipArchive(packageStream);
-
-            var reader = new PackageReader(zipArchive);
-
-            var projectFramework = GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-
-            var compatibleContentFilesGroup =
-                MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(projectFramework, reader.GetContentItems());
-
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
-            {
-                changesMade = true;
-
-                MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
-                    zipArchive,
-                    Enumerable.Empty<string>(),
-                    compatibleContentFilesGroup,
-                    FileTransformers);
-            }
-
-            return Task.FromResult(changesMade);
-        }
-
-        /// <summary>
-        /// nuget.json path
+        /// project.json path
         /// </summary>
         public virtual string JsonConfigPath
         {
             get { return _jsonConfig.FullName; }
+        }
+
+        /// <summary>
+        /// Parsed project.json file
+        /// </summary>
+        public virtual PackageSpec PackageSpec
+        {
+            get
+            {
+                return JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(JsonConfigPath), ProjectName, JsonConfigPath);
+            }
         }
 
         /// <summary>
@@ -253,8 +166,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             get
             {
-                var file = new FileInfo(JsonConfigPath);
-                return file.Directory.Name;
+                return MSBuildNuGetProjectSystem.ProjectName;
             }
         }
 
@@ -285,25 +197,6 @@ namespace NuGet.ProjectManagement.Projects
             {
                 await writer.WriteAsync(json.ToString());
             }
-        }
-
-        private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
-            new Dictionary<FileTransformExtensions, IPackageFileTransformer>
-                {
-                    { new FileTransformExtensions(".transform", ".transform"), new XmlTransformer(GetConfigMappings()) },
-                    { new FileTransformExtensions(".pp", ".pp"), new Preprocessor() },
-                    { new FileTransformExtensions(".install.xdt", ".uninstall.xdt"), new XdtTransformer() }
-                };
-
-        private static IDictionary<XName, Action<XElement, XElement>> GetConfigMappings()
-        {
-            // REVIEW: This might be an edge case, but we're setting this rule for all xml files.
-            // If someone happens to do a transform where the xml file has a configSections node
-            // we will add it first. This is probably fine, but this is a config specific scenario
-            return new Dictionary<XName, Action<XElement, XElement>>
-                {
-                    { "configSections", (parent, element) => parent.AddFirst(element) }
-                };
         }
     }
 }
