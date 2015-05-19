@@ -9,7 +9,6 @@ namespace NuGet.ProjectModel
 {
     public class PackageSpecResolver : IPackageSpecResolver
     {
-        private PackageSpec _rootProject;
         private HashSet<string> _searchPaths = new HashSet<string>();
         private Dictionary<string, PackageSpecInformation> _projects = new Dictionary<string, PackageSpecInformation>();
         private GlobalSettings _globalSettings;
