@@ -123,8 +123,9 @@ namespace NuGet.PackageManagement.UI
                     UpdatePackageList(r);
 
                     // select the first item if none was selected before
-                    if (_list.SelectedIndex == -1
-                        && Items.Count > 1)
+                    if (_list.SelectedIndex == -1 && 
+                        Items.Count > 0 && 
+                        Items[0] != _loadingStatusIndicator)
                     {
                         _list.SelectedIndex = 0;
                     }

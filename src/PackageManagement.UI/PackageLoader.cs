@@ -25,6 +25,7 @@ namespace NuGet.PackageManagement.UI
 
         // The list of all installed packages. This variable is used for the package status calculation.
         private readonly HashSet<PackageIdentity> _installedPackages;
+
         private readonly HashSet<string> _installedPackageIds;
 
         private readonly NuGetPackageManager _packageManager;
@@ -63,20 +64,23 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<SearchResult> SearchAsync(int startIndex, CancellationToken ct)
         {
-            if (_sourceRepository == null)
-            {
-                return SearchResult.Empty;
-            }
-
             if (_option.Filter == Filter.Installed)
             {
                 // show only the installed packages
                 return await SearchInstalledAsync(startIndex, ct);
             }
+
+            // Search all / updates available cannot work without a source repo
+            if (_sourceRepository == null)
+            {
+                return SearchResult.Empty;
+            }
+
             if (_option.Filter == Filter.UpdatesAvailable)
             {
                 return await SearchUpdatesAsync(startIndex, ct);
             }
+
             // normal search
             var searchResource = await _sourceRepository.GetResourceAsync<UISearchResource>();
 
@@ -129,7 +133,7 @@ namespace NuGet.PackageManagement.UI
                     if (framework != null
                         && framework.IsAny)
                     {
-                        // One of the project's target framework is AnyFramework. In this case, 
+                        // One of the project's target framework is AnyFramework. In this case,
                         // we don't need to pass the framework filter to the server.
                         return Enumerable.Empty<string>();
                     }
@@ -228,9 +232,11 @@ namespace NuGet.PackageManagement.UI
             var localResource = await _packageManager.PackagesFolderSourceRepository
                 .GetResourceAsync<UIMetadataResource>();
 
-            var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+            var metadataResource =
+                _sourceRepository == null ?
+                null :
+                await _sourceRepository.GetResourceAsync<UIMetadataResource>();
             var tasks = new List<Task<UISearchMetadata>>();
-
             for (int i = 0; i < installedPackages.Length; i++)
             {
                 var packageIdentity = installedPackages[i];
@@ -257,32 +263,22 @@ namespace NuGet.PackageManagement.UI
             };
         }
 
-        private async Task<UISearchMetadata> GetPackageMetadataAsync(UIMetadataResource localResource,
-                                                                     UIMetadataResource metadataResource,
-                                                                     PackageIdentity identity,
-                                                                     CancellationToken cancellationToen)
+        // Gets the package metadata from the local resource when the remote source 
+        // is not available.
+        private static async Task<UISearchMetadata> GetPackageMetadataWhenRemoteSourceUnavailable(
+            UIMetadataResource localResource,
+            PackageIdentity identity,
+            CancellationToken cancellationToken)
         {
             UIPackageMetadata packageMetadata = null;
             if (localResource != null)
             {
-                // try get metadata from local resource
-                var localMetadata = await localResource.GetMetadata(identity.Id,
-                includePrerelease: true,
-                includeUnlisted: true,
-                token: cancellationToen);
+                var localMetadata = await localResource.GetMetadata(
+                    identity.Id,
+                    includePrerelease: true,
+                    includeUnlisted: true,
+                    token: cancellationToken);
                 packageMetadata = localMetadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
-            }
-
-            var uiPackageMetaDatas = await metadataResource.GetMetadata(
-                identity.Id,
-                _option.IncludePrerelease,
-                false,
-                cancellationToen);
-
-            if (packageMetadata == null)
-            {
-                // package metadata can't be found in local resource. Try find it in remote resource.
-                packageMetadata = uiPackageMetaDatas.FirstOrDefault(p => p.Identity.Version == identity.Version);
             }
 
             string summary = string.Empty;
@@ -300,8 +296,10 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            var versions = uiPackageMetaDatas.OrderByDescending(m => m.Identity.Version)
-                .Select(m => new VersionInfo(m.Identity.Version, m.DownloadCount));
+            var versions = new List<VersionInfo>
+            {
+                new VersionInfo(identity.Version, downloadCount: null)
+            };
 
             return new UISearchMetadata(
                 identity,
@@ -309,7 +307,85 @@ namespace NuGet.PackageManagement.UI
                 summary: summary,
                 iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
                 versions: ToLazyTask(versions),
+                latestPackageMetadata: null);
+        }
+
+        private async Task<UISearchMetadata> GetPackageMetadataFromMetadataResourceAsync(
+            UIMetadataResource metadataResource,
+            PackageIdentity identity,
+            CancellationToken cancellationToken)
+        {
+            var uiPackageMetadatas = await metadataResource.GetMetadata(
+                identity.Id,
+                _option.IncludePrerelease,
+                includeUnlisted: false,
+                token: cancellationToken);
+            var packageMetadata = uiPackageMetadatas.FirstOrDefault(p => p.Identity.Version == identity.Version);
+
+            string summary = string.Empty;
+            string title = identity.Id;
+            if (packageMetadata != null)
+            {
+                summary = packageMetadata.Summary;
+                if (string.IsNullOrEmpty(summary))
+                {
+                    summary = packageMetadata.Description;
+                }
+                if (!string.IsNullOrEmpty(packageMetadata.Title))
+                {
+                    title = packageMetadata.Title;
+                }
+            }
+
+            var versions = uiPackageMetadatas.OrderByDescending(m => m.Identity.Version)
+                .Select(m => new VersionInfo(m.Identity.Version, m.DownloadCount));
+            return new UISearchMetadata(
+                identity,
+                title: title,
+                summary: summary,
+                iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
+                versions: ToLazyTask(versions),
                 latestPackageMetadata: packageMetadata);
+        }
+
+        private async Task<UISearchMetadata> GetPackageMetadataAsync(
+            UIMetadataResource localResource,
+            UIMetadataResource metadataResource,
+            PackageIdentity identity,
+            CancellationToken cancellationToken)
+        {
+            if (metadataResource == null)
+            {
+                return await GetPackageMetadataWhenRemoteSourceUnavailable(
+                    localResource,
+                    identity,
+                    cancellationToken);
+            }
+
+            try
+            {
+                return await GetPackageMetadataFromMetadataResourceAsync(
+                    metadataResource,
+                    identity,
+                    cancellationToken);
+            }
+            catch
+            {
+                // The remote source is not available. In this case, if the user
+                // is searching for installed packages, NuGet should not fail but
+                // should use the local resource instead.
+                if (localResource != null)
+                {
+                    return await GetPackageMetadataWhenRemoteSourceUnavailable(
+                        localResource,
+                        identity,
+                        cancellationToken);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         // Search in installed packages that have updates available
