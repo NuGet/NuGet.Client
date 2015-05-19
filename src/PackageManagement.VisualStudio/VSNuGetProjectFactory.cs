@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (File.Exists(jsonConfig))
                 {
-                    result = new BuildIntegratedProjectSystem(jsonConfig, envDTEProject, msBuildNuGetProjectSystem, envDTEProject.Name, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
+                    result = new BuildIntegratedProjectSystem(jsonConfig, envDTEProject, msBuildNuGetProjectSystem, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
                 }
                 else
                 {

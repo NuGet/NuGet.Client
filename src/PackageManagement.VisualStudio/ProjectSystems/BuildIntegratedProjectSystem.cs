@@ -20,10 +20,9 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class BuildIntegratedProjectSystem : BuildIntegratedNuGetProject
     {
-        public BuildIntegratedProjectSystem(string jsonConfigPath, EnvDTEProject envDTEProject, IMSBuildNuGetProjectSystem msbuildProjectSystem, string projectName, string uniqueName)
+        public BuildIntegratedProjectSystem(string jsonConfigPath, EnvDTEProject envDTEProject, IMSBuildNuGetProjectSystem msbuildProjectSystem, string uniqueName)
             : base(jsonConfigPath, msbuildProjectSystem)
         {
-            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, projectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
 
             EnvDTEProject = envDTEProject;

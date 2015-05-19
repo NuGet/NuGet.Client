@@ -7,6 +7,23 @@ param([parameter(Mandatory = $true)]
 $ErrorActionPreference = "Stop"
 $FileKind = "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}"
 
+function New-UAPApplication 
+{
+    param(
+        [string]$ProjectName,
+        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+    )
+
+    if ($dte.Version -ge '14.0')
+    {
+        $SolutionFolder | New-Project UAPApp $ProjectName
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
+}
+
 function Get-SolutionDir {
     if($dte.Solution -and $dte.Solution.IsOpen) {
         return Split-Path $dte.Solution.FullName
@@ -126,10 +143,10 @@ function New-Project {
     # Set the focus back on the shell
     $window.SetFocus()
 
-	if ($TemplateName -eq 'JScriptVisualBasicLightSwitchProjectTemplate')
-	{
-		return
-	}
+    if ($TemplateName -eq 'JScriptVisualBasicLightSwitchProjectTemplate')
+    {
+        return
+    }
 
     if ($TemplateName -eq "EmptyWeb")
     {
@@ -208,7 +225,7 @@ function New-ClassLibrary {
 
 function New-LightSwitchApplication 
 {
-	param(
+    param(
         [string]$ProjectName,
         [parameter(ValueFromPipeline = $true)]$SolutionFolder
     )
@@ -242,6 +259,23 @@ function New-PortableLibrary
     }
 
     $project
+}
+
+function New-UAPApplication 
+{
+    param(
+        [string]$ProjectName,
+        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+    )
+
+    if ($dte.Version -ge '14.0')
+    {
+        $SolutionFolder | New-Project UAPApp $ProjectName
+    }
+    else
+    {
+        throw "SKIP: $($_)"
+    }
 }
 
 function New-JavaScriptApplication 
@@ -444,12 +478,12 @@ function New-WindowsPhoneClassLibrary {
     )
 
     try {
-	    if ($dte.Version -eq '14.0') {
-			$SolutionFolder | New-Project WindowsPhoneClassLibrary81 $ProjectName
-		}
-		else {
-			$SolutionFolder | New-Project WindowsPhoneClassLibrary $ProjectName
-		}
+        if ($dte.Version -eq '14.0') {
+            $SolutionFolder | New-Project WindowsPhoneClassLibrary81 $ProjectName
+        }
+        else {
+            $SolutionFolder | New-Project WindowsPhoneClassLibrary $ProjectName
+        }
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
@@ -607,12 +641,12 @@ function Get-ProjectName
     $projectName = $Project.Name
 
     if ($project.Type -eq 'Web Site' -and $project.Properties.Item("WebSiteType").Value -eq "0") 
-	{
-		# If this is a WebSite project and WebSiteType = 0, meaning it's configured to use Casini as opposed to IIS Express, 
-		# then $Project.Name will return the full path to the website directory. We don't want to use the full path, thus
-		# we extract the directory name out of it.
+    {
+        # If this is a WebSite project and WebSiteType = 0, meaning it's configured to use Casini as opposed to IIS Express, 
+        # then $Project.Name will return the full path to the website directory. We don't want to use the full path, thus
+        # we extract the directory name out of it.
 
-	    $projectName = Split-Path -Leaf $projectName
+        $projectName = Split-Path -Leaf $projectName
     }
     
     $projectName
@@ -806,13 +840,13 @@ function Enable-PackageRestore {
 }
 
 function Check-NuGetConfig {
-	# Create an empty NuGet.Config file if not exist. It will happen on machines with visual studio newly installed.
-	$nuGetConfigPath = Join-Path $env:AppData 'NuGet\NuGet.Config'
-	if (!(Test-Path $nuGetConfigPath))
-	{
-		$newFile = New-Item $nuGetConfigPath -ItemType File
-		'<?xml version="1.0" encoding="utf-8"?>
-		<configuration>
-		</configuration>' > $newFile
-	}
+    # Create an empty NuGet.Config file if not exist. It will happen on machines with visual studio newly installed.
+    $nuGetConfigPath = Join-Path $env:AppData 'NuGet\NuGet.Config'
+    if (!(Test-Path $nuGetConfigPath))
+    {
+        $newFile = New-Item $nuGetConfigPath -ItemType File
+        '<?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+        </configuration>' > $newFile
+    }
 }

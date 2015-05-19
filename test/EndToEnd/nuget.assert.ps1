@@ -1,5 +1,213 @@
 # Nuget specific assert helpers
 
+function Assert-ProjectJsonLockFileRuntimeAssembly {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$assembly
+    )
+
+    $lockFile = Get-ProjectJsonLockFile $Project
+
+    Assert-NotNull $lockFile
+
+    $found = $false
+
+    foreach ($target in $lockFile.Targets) {
+        
+        foreach ($library in $target.Libraries)
+        {
+            foreach ($runtimeAssembly in $library.RuntimeAssemblies)
+            {  
+                if ($runtimeAssembly.Path.Equals($assembly))
+                {
+                    $found = $true
+                }
+            }
+        }
+    }
+
+    Assert-True $found "Runtime assembly $assembly was not found in the lock file for $($Project.Name)"    
+}
+
+function Assert-ProjectJsonLockFilePackage {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Version
+    )
+
+    $lockFile = Get-ProjectJsonLockFile $Project
+
+    Assert-NotNull $lockFile
+
+    $found = $false
+
+    foreach ($library in $lockFile.Libraries) {
+        
+        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
+        {
+            if ($Version)
+            {
+                if ($library.Version.Equals([NuGet.Versioning.NuGetVersion]::Parse($Version)))
+                {
+                    $found = $true
+                }
+            }
+            else
+            {
+                $found = $true
+            }
+        }
+    }
+
+    Assert-True $found "Package $Id $Version was not found in the lock file for $($Project.Name)"    
+}
+
+function Assert-ProjectJsonLockFilePackageNotFound {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$Id
+    )
+
+    $lockFile = Get-ProjectJsonLockFile $Project
+
+    Assert-NotNull $lockFile
+
+    $found = $false
+
+    foreach ($library in $lockFile.Libraries) {
+        
+        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
+        {
+            $found = $true
+        }
+    }
+
+    Assert-False $found "Package $Id was found in the lock file for $($Project.Name)"    
+}
+
+function Assert-ProjectJsonDependency {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Range
+    )
+
+    $projectJson = Get-ProjectJsonPackageSpec $Project
+
+    Assert-NotNull $projectJson
+
+    $found = $false
+
+    foreach ($dependency in $projectJson.Dependencies) {
+        
+        $library = $dependency.LibraryRange
+
+        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
+        {
+            if ($Range)
+            {
+                if ($library.VersionRange.OriginalString.ToUpperInvariant().Equals($Range.ToUpperInvariant()))
+                {
+                    $found = $true
+                }
+            }
+            else
+            {
+                $found = $true
+            }
+        }
+    }
+
+    Assert-True $found "Package $Id $Range is not referenced in $($Project.Name)"    
+}
+
+function Assert-ProjectJsonDependencyNotFound {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$Id
+    )
+
+    $projectJson = Get-ProjectJsonPackageSpec $Project
+
+    Assert-NotNull $projectJson
+
+    $found = $false
+
+    foreach ($dependency in $projectJson.Dependencies) {
+        
+        $library = $dependency.LibraryRange
+
+        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
+        {
+            $found = $true
+        }
+    }
+
+    Assert-False $found "Package $Id is referenced in $($Project.Name)"    
+}
+
+function Get-ProjectJsonPackageSpec {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $dir = Split-Path -parent $Project.FullName
+
+    $projectJsonPath = Join-Path $dir "project.json"
+
+    Assert-PathExists $projectJsonPath "project.json file does not exist"
+
+    $stream = [IO.File]::ReadAllText($projectJsonPath)
+
+    return [NuGet.ProjectModel.JsonPackageSpecReader]::GetPackageSpec($stream, $Project.Name, $projectJsonPath)
+}
+
+function Get-ProjectJsonLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $dir = Split-Path -parent $Project.FullName
+
+    $projectJsonLockFilePath = Join-Path $dir "project.lock.json"
+
+    Assert-PathExists $projectJsonLockFilePath "project.lock.json file does not exist"
+
+    $lockFileFormat = New-Object 'NuGet.ProjectModel.LockFileFormat'
+
+    return $lockFileFormat.Read($projectJsonLockFilePath)
+}
+
+function Remove-ProjectJsonLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $dir = Split-Path -parent $Project.FullName
+
+    $projectJsonLockFilePath = Join-Path $dir "project.lock.json"
+
+    Assert-PathExists $projectJsonLockFilePath
+
+    Remove-Item $projectJsonLockFilePath
+
+    Assert-PathNotExists $projectJsonLockFilePath
+}
+
 function Get-SolutionPackage {
     param(
         [parameter(Mandatory = $true)]

@@ -171,7 +171,7 @@ namespace NuGetVSExtension
                             // Restore packages and create the lock file for each project
                             foreach (var project in buildEnabled)
                             {
-                                await BuildIntegratedRestoreUtility.RestoreForBuildAsync(project, context, enabledSources, CancellationToken.None);
+                                await BuildIntegratedRestoreUtility.RestoreAsync(project, context, enabledSources, CancellationToken.None);
                             }
                         }
                     });
