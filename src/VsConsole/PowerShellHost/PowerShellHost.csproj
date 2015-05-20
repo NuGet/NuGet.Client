@@ -35,7 +35,7 @@
     </Reference>
     <Reference Include="NuGet.Core">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\NuGet.Core.2.8.6-beta-01\lib\net45\NuGet.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\NuGet.Core.2.8.6-beta-02\lib\net40-client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Data">
       <HintPath>..\..\..\packages\NuGet.Protocol.3.0.0-beta\lib\net45\NuGet.Data.dll</HintPath>

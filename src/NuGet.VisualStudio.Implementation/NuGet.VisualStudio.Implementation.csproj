@@ -103,7 +103,7 @@
       <HintPath>..\..\packages\NuGet.ContentModel.3.0.0-beta\lib\net45\NuGet.ContentModel.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.60508.683, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core">
       <HintPath>..\..\packages\NuGet.Core.2.8.6-beta-02\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Private>True</Private>
       <Aliases>Legacy</Aliases>
