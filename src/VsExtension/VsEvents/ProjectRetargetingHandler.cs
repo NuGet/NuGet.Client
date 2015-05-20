@@ -53,7 +53,7 @@ namespace NuGetVSExtension
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
-            }       
+            }
 
             var vsTrackProjectRetargeting = serviceProvider.GetService(typeof(SVsTrackProjectRetargeting)) as IVsTrackProjectRetargeting;
             if (vsTrackProjectRetargeting != null)
@@ -235,23 +235,27 @@ namespace NuGetVSExtension
                     try
                     {
                         var project = _dte.Solution.Item(_platformRetargetingProject);
-                        var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
 
-                        if (project != null && nuGetProject != null)
+                        if (project != null)
                         {
-                            var frameworkName = EnvDTEProjectUtility.GetTargetFrameworkString(project);
-                            if (NETCore451.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows81.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
+                            var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
+
+                            if (nuGetProject != null)
                             {
-                                IList<PackageIdentity> packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(nuGetProject);
-                                if (packagesToBeReinstalled.Count > 0)
+                                var frameworkName = EnvDTEProjectUtility.GetTargetFrameworkString(project);
+                                if (NETCore451.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows81.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // By asserting that NuGet is in use, we are also asserting that NuGet.VisualStudio.dll is already loaded
-                                    // Hence, it is okay to call project.ToVsHierarchy()
-                                    Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                                    IVsHierarchy projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
-                                    ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
+                                    IList<PackageIdentity> packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(nuGetProject);
+                                    if (packagesToBeReinstalled.Count > 0)
+                                    {
+                                        // By asserting that NuGet is in use, we are also asserting that NuGet.VisualStudio.dll is already loaded
+                                        // Hence, it is okay to call project.ToVsHierarchy()
+                                        Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
+                                        IVsHierarchy projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                                        ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
+                                    }
+                                    ProjectRetargetingUtility.MarkPackagesForReinstallation(nuGetProject, packagesToBeReinstalled);
                                 }
-                                ProjectRetargetingUtility.MarkPackagesForReinstallation(nuGetProject, packagesToBeReinstalled);
                             }
                         }
                     }
@@ -270,15 +274,15 @@ namespace NuGetVSExtension
         public void Dispose()
         {
             // Nothing is initialized if _vsTrackProjectRetargeting is null. Check if it is not null
-            if(_vsTrackProjectRetargeting != null)
+            if (_vsTrackProjectRetargeting != null)
             {
                 _errorListProvider.Dispose();
-                if(_cookieProjectRetargeting != 0)
+                if (_cookieProjectRetargeting != 0)
                 {
                     _vsTrackProjectRetargeting.UnadviseTrackProjectRetargetingEvents(_cookieProjectRetargeting);
                 }
 
-                if(_cookieBatchRetargeting != 0)
+                if (_cookieBatchRetargeting != 0)
                 {
                     _vsTrackProjectRetargeting.UnadviseTrackBatchRetargetingEvents(_cookieBatchRetargeting);
                 }
