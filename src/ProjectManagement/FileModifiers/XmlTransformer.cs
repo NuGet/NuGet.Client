@@ -60,7 +60,7 @@ namespace NuGet.ProjectManagement
             using (var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath))
             {
                 var zipArchive = new ZipArchive(packageStream);
-                var zipArchivePackageEntry = zipArchive.GetEntry(packageFileInfo.ZipArchiveEntryFullName);
+                var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);
                 if (zipArchivePackageEntry == null)
                 {
                     throw new ArgumentException("internalZipFileInfo");

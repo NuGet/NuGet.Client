@@ -108,16 +108,14 @@ namespace NuGet.PackageManagement
         public async Task<IEnumerable<PackageRestoreData>> GetPackagesInSolutionAsync(string solutionDirectory, CancellationToken token)
         {
             var packageReferences = await GetPackagesReferencesDictionaryAsync(token);
-            var packages = GetPackages(solutionDirectory, packageReferences);
-            return packages;
+            return GetPackages(solutionDirectory, packageReferences);
         }
 
         private IEnumerable<PackageRestoreData> GetPackages(string solutionDirectory,
             Dictionary<PackageReference, List<string>> packageReferencesDictionary)
         {
             var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
-            var packages = GetPackages(nuGetPackageManager, packageReferencesDictionary);
-            return packages;
+            return GetPackages(nuGetPackageManager, packageReferencesDictionary);
         }
 
         private static IEnumerable<PackageRestoreData> GetPackages(NuGetPackageManager nuGetPackageManager,
@@ -212,7 +210,7 @@ namespace NuGet.PackageManagement
             return await RestoreMissingPackagesAsync(solutionDirectory, packages, token);
         }
 
-        public virtual async Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
+        public virtual Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
              IEnumerable<PackageRestoreData> packages,
             CancellationToken token)
         {
@@ -221,26 +219,20 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packages));
             }
 
-            var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
-            var packageRestoreContext = new PackageRestoreContext(nuGetPackageManager,
+            return RestoreMissingPackagesAsync(
+                GetNuGetPackageManager(solutionDirectory),
                 packages,
-                token,
-                PackageRestoredEvent,
-                PackageRestoreFailedEvent,
-                sourceRepositories: null,
-                maxNumberOfParallelTasks: PackageRestoreContext.DefaultMaxNumberOfParellelTasks);
-
-            return await RestoreMissingPackagesAsync(packageRestoreContext, SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext());
+                SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext(),
+                token);
         }
 
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)
         {
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, Settings);
-            var nuGetPackageManager = new NuGetPackageManager(SourceRepositoryProvider, packagesFolderPath);
-            return nuGetPackageManager;
+            return new NuGetPackageManager(SourceRepositoryProvider, packagesFolderPath);
         }
 
-        public async Task<PackageRestoreResult> RestoreMissingPackagesAsync(NuGetPackageManager nuGetPackageManager,
+        public Task<PackageRestoreResult> RestoreMissingPackagesAsync(NuGetPackageManager nuGetPackageManager,
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
@@ -253,7 +245,7 @@ namespace NuGet.PackageManagement
                 sourceRepositories: null,
                 maxNumberOfParallelTasks: PackageRestoreContext.DefaultMaxNumberOfParellelTasks);
 
-            return await RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext);
+            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext);
         }
 
         /// <summary>
@@ -308,8 +300,7 @@ namespace NuGet.PackageManagement
 
             await ThrottledCopySatelliteFilesAsync(hashSetOfMissingPackageReferences, packageRestoreContext, nuGetProjectContext);
 
-            var result = new PackageRestoreResult(packageRestoreContext.WasRestored);
-            return result;
+            return new PackageRestoreResult(packageRestoreContext.WasRestored);
         }
 
         /// <summary>

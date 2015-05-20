@@ -77,18 +77,18 @@ namespace NuGet.ProjectManagement
             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
-
-            // Content files are maintained with AltDirectorySeparatorChar
-            var packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.Select(i => PathUtility.ReplaceDirSeparatorWithAltDirSeparator(i)).ToList();
-
+            
+            var packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.ToList();
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
             {
-                var zipArchiveEntryList = packageItemListAsArchiveEntryNames.Select(i => zipArchive.GetEntry(i)).Where(i => i != null).ToList();
+                var zipArchiveEntryList = packageItemListAsArchiveEntryNames
+                    .Select(i => PathUtility.GetEntry(zipArchive, i))
+                    .Where(i => i != null).ToList();
                 try
                 {
                     var paths = zipArchiveEntryList.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
-                        GetEffectivePathForContentFile(packageTargetFramework, file.FullName)));
+                        GetEffectivePathForContentFile(packageTargetFramework, Uri.UnescapeDataString(file.FullName))));
                     paths = paths.Where(p => !string.IsNullOrEmpty(p));
                     msBuildNuGetProjectSystem.BeginProcessing(paths);
                 }
@@ -99,12 +99,13 @@ namespace NuGet.ProjectManagement
 
                 foreach (var zipArchiveEntry in zipArchiveEntryList)
                 {
-                    if (IsEmptyFolder(zipArchiveEntry.FullName))
+                    var zipPath = Uri.UnescapeDataString(zipArchiveEntry.FullName);
+                    if (IsEmptyFolder(zipPath))
                     {
                         continue;
                     }
 
-                    var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, zipArchiveEntry.FullName);
+                    var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, zipPath);
 
                     // Resolve the target path
                     IPackageFileTransformer installTransformer;
@@ -171,89 +172,82 @@ namespace NuGet.ProjectManagement
                     continue;
                 }
 
-                try
+                foreach (var file in directoryFiles)
                 {
-                    foreach (var file in directoryFiles)
+                    if (IsEmptyFolder(file))
                     {
-                        if (IsEmptyFolder(file))
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        // Resolve the path
-                        var path = ResolveTargetPath(msBuildNuGetProjectSystem,
-                            fileTransformers,
-                            fte => fte.UninstallExtension,
-                            GetEffectivePathForContentFile(packageTargetFramework, file),
-                            out transformer);
+                    // Resolve the path
+                    var path = ResolveTargetPath(msBuildNuGetProjectSystem,
+                        fileTransformers,
+                        fte => fte.UninstallExtension,
+                        GetEffectivePathForContentFile(packageTargetFramework, file),
+                        out transformer);
 
-                        if (msBuildNuGetProjectSystem.IsSupportedFile(path))
+                    if (msBuildNuGetProjectSystem.IsSupportedFile(path))
+                    {
+                        if (transformer != null)
                         {
-                            if (transformer != null)
+                            // TODO: use the framework from packages.config instead of the current framework
+                            // which may have changed during re-targeting
+                            var projectFramework = msBuildNuGetProjectSystem.TargetFramework;
+
+                            var matchingFiles = new List<InternalZipFileInfo>();
+                            foreach (var otherPackagePath in otherPackagesPath)
                             {
-                                // TODO: use the framework from packages.config instead of the current framework
-                                // which may have changed during re-targeting
-                                var projectFramework = msBuildNuGetProjectSystem.TargetFramework;
-
-                                var matchingFiles = new List<InternalZipFileInfo>();
-                                foreach (var otherPackagePath in otherPackagesPath)
+                                using (var otherPackageStream = File.OpenRead(otherPackagePath))
                                 {
-                                    using (var otherPackageStream = File.OpenRead(otherPackagePath))
-                                    {
-                                        var otherPackageZipArchive = new ZipArchive(otherPackageStream);
-                                        var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
+                                    var otherPackageZipArchive = new ZipArchive(otherPackageStream);
+                                    var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
 
-                                        // use the project framework to find the group that would have been installed
-                                        var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(projectFramework, otherPackageZipReader.GetContentItems(), altDirSeparator: true);
-                                        if (mostCompatibleContentFilesGroup != null
-                                            && IsValid(mostCompatibleContentFilesGroup))
+                                    // use the project framework to find the group that would have been installed
+                                    var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(projectFramework, otherPackageZipReader.GetContentItems(), altDirSeparator: true);
+                                    if (mostCompatibleContentFilesGroup != null
+                                        && IsValid(mostCompatibleContentFilesGroup))
+                                    {
+                                        foreach (var otherPackageItem in mostCompatibleContentFilesGroup.Items)
                                         {
-                                            foreach (var otherPackageItem in mostCompatibleContentFilesGroup.Items)
+                                            if (GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
+                                                .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase))
                                             {
-                                                if (GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
-                                                    .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase))
-                                                {
-                                                    matchingFiles.Add(new InternalZipFileInfo(otherPackagePath, otherPackageItem));
-                                                }
+                                                matchingFiles.Add(new InternalZipFileInfo(otherPackagePath, otherPackageItem));
                                             }
                                         }
                                     }
                                 }
-
-                                try
-                                {
-                                    var zipArchiveFileEntry = zipArchive.GetEntry(PathUtility.ReplaceDirSeparatorWithAltDirSeparator(file));
-                                    if (zipArchiveFileEntry != null)
-                                    {
-                                        transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
-                                }
                             }
-                            else
+
+                            try
                             {
-                                var zipArchiveFileEntry = zipArchive.GetEntry(PathUtility.ReplaceDirSeparatorWithAltDirSeparator(file));
+                                var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
                                 if (zipArchiveFileEntry != null)
                                 {
-                                    DeleteFileSafe(path, zipArchiveFileEntry.Open, msBuildNuGetProjectSystem);
+                                    transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
                                 }
+                            }
+                            catch (Exception e)
+                            {
+                                msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                            }
+                        }
+                        else
+                        {
+                            var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
+                            if (zipArchiveFileEntry != null)
+                            {
+                                DeleteFileSafe(path, zipArchiveFileEntry.Open, msBuildNuGetProjectSystem);
                             }
                         }
                     }
-
-                    // If the directory is empty then delete it
-                    if (!GetFilesSafe(msBuildNuGetProjectSystem, directory).Any()
-                        &&
-                        !GetDirectoriesSafe(msBuildNuGetProjectSystem, directory).Any())
-                    {
-                        DeleteDirectorySafe(msBuildNuGetProjectSystem, directory, recursive: false);
-                    }
                 }
-                finally
+
+                // If the directory is empty then delete it
+                if (!GetFilesSafe(msBuildNuGetProjectSystem, directory).Any()
+                    && !GetDirectoriesSafe(msBuildNuGetProjectSystem, directory).Any())
                 {
+                    DeleteDirectorySafe(msBuildNuGetProjectSystem, directory, recursive: false);
                 }
             }
         }

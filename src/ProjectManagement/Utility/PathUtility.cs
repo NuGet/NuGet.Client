@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 
 namespace NuGet.ProjectManagement
@@ -169,12 +170,21 @@ namespace NuGet.ProjectManagement
 
         public static string ReplaceAltDirSeparatorWithDirSeparator(string path)
         {
-            return Uri.UnescapeDataString(path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+            return path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         }
 
         public static string ReplaceDirSeparatorWithAltDirSeparator(string path)
         {
-            return Uri.UnescapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            return path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        }
+
+        public static ZipArchiveEntry GetEntry(ZipArchive archive, string path)
+        {
+            return archive.Entries.SingleOrDefault(
+                    z => string.Equals(
+                        Uri.UnescapeDataString(z.FullName),
+                        ReplaceDirSeparatorWithAltDirSeparator(path),
+                        StringComparison.OrdinalIgnoreCase));
         }
     }
 }

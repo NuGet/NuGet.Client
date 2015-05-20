@@ -307,7 +307,6 @@ namespace NuGet.ProjectManagement
             {
                 foreach (var frameworkReference in compatibleFrameworkReferencesGroup.Items)
                 {
-                    var frameworkReferenceName = Path.GetFileName(frameworkReference);
                     if (!MSBuildNuGetProjectSystem.ReferenceExists(frameworkReference))
                     {
                         MSBuildNuGetProjectSystem.AddFrameworkReference(frameworkReference);
@@ -413,8 +412,6 @@ namespace NuGet.ProjectManagement
                 // Step-3: Get the most compatible items groups for all items groups
                 var compatibleReferenceItemsGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, referenceItemGroups);
-                var compatibleFrameworkReferencesGroup =
-                    MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, frameworkReferenceGroups);
                 var compatibleContentFilesGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, contentFileGroups);
                 var compatibleBuildFilesGroup =
@@ -461,9 +458,11 @@ namespace NuGet.ProjectManagement
                 // Step-7.3: Remove content files
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
                 {
+                    var packagesPaths = (await GetInstalledPackagesAsync(token))
+                        .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity));
                     MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
                         zipArchive,
-                        (await GetInstalledPackagesAsync(token)).Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity)),
+                        packagesPaths,
                         compatibleContentFilesGroup,
                         FileTransformers);
                 }

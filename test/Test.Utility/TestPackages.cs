@@ -35,95 +35,83 @@ namespace Test.Utility
 
         public static FileInfo GetLegacyTestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("lib/test.dll", new byte[] { 0 });
-            zipFile.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
-            zipFile.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
-            zipFile.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "lib/test.dll",
+                    "lib/net40/test40.dll",
+                    "lib/net40/test40b.dll",
+                    "lib/net45/test45.dll"
+                });
         }
 
         public static FileInfo GetNet45TestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("tools/tool.exe", new byte[] { 0 });
-            zipFile.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "tools/tool.exe",
+                    "lib/net45/test45.dll"
+                });
         }
 
         public static FileInfo GetEmptyNet45TestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "lib/net45/"
+                });
+        }
 
-            zipFile.AddEntry("lib/net45/", new byte[] { 0 });
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+        public static FileInfo GetMixedPackage(string path, string baseName, string packageId, string packageVersion)
+        {
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "tools/" + baseName + ".exe",
+                    "lib/net45/" + baseName + ".dll",
+                    "Content/Scripts/" + baseName + ".js",
+                    "Content/"+ baseName + "/" + baseName + "." + baseName
+                });
         }
 
         public static FileInfo GetLegacyContentPackage(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("Content/", new byte[] { 0 });
-            zipFile.AddEntry("Content/Scripts/", new byte[] { 0 });
-            zipFile.AddEntry("Content/Scripts/test1.js", new byte[] { 0 });
-            zipFile.AddEntry("Content/Scripts/test2.js", new byte[] { 0 });
-            zipFile.AddEntry("Content/Scripts/test3.js", new byte[] { 0 });
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new []
+                {
+                    "Content/",
+                    "Content/Scripts/",
+                    "Content/Scripts/test1.js",
+                    "Content/Scripts/test2.js",
+                    "Content/Scripts/test3.js"
+                });
         }
 
         public static FileInfo GetPackageWithPPFiles(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("Content/", new byte[] { 0 });
-            zipFile.AddEntry("Content/Bar.cs.pp", new byte[] { 0 });
-            zipFile.AddEntry("Content/Foo.cs.pp", new byte[] { 0 });
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "Content/",
+                    "Content/Bar.cs.pp",
+                    "Content/Foo.cs.pp"
+                });
         }
 
         public static FileInfo GetContentPackageWithTargetFramework(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("Content/", new byte[] { 0 });
-            zipFile.AddEntry("Content/net45/", new byte[] { 0 });
-            zipFile.AddEntry("Content/net45/Scripts/", new byte[] { 0 });
-            zipFile.AddEntry("Content/net45/Scripts/net45test1.js", new byte[] { 0 });
-            zipFile.AddEntry("Content/net45/Scripts/net45test2.js", new byte[] { 0 });
-            zipFile.AddEntry("Content/net45/Scripts/net45test3.js", new byte[] { 0 });
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "Content/",
+                    "Content/net45/",
+                    "Content/net45/Scripts/",
+                    "Content/net45/Scripts/net45test1.js",
+                    "Content/net45/Scripts/net45test2.js",
+                    "Content/net45/Scripts/net45test3.js"
+                });
         }
 
         public static FileInfo GetPackageWithWebConfigTransform(string path, string packageId, string packageVersion, string webConfigTransformContent)
@@ -141,14 +129,11 @@ namespace Test.Utility
 
         public static FileInfo GetPackageWithBuildFiles(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("build/net45/" + packageId + ".targets", new byte[] { 0 });
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "build/net45/" + packageId + ".targets"
+                });
         }
 
         public static FileInfo GetPackageWithFrameworkReference(string path, string packageId = "packageA", string packageVersion = "2.0.3")
@@ -164,39 +149,27 @@ namespace Test.Utility
 
         public static FileInfo GetPackageWithPowershellScripts(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("tools/InIT.ps1", new byte[] { 0 });
-            zipFile.AddEntry("tools/net45/inSTAll.ps1", new byte[] { 0 });
-            zipFile.AddEntry("tools/net45/UNinSTAll.ps1", new byte[] { 0 });
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "tools/InIT.ps1",
+                    "tools/net45/inSTAll.ps1",
+                    "tools/net45/UNinSTAll.ps1"
+                });
         }
 
         public static FileInfo GetLegacySolutionLevelPackage(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("tools/tool.exe", new byte[] { 0 });
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "tools/tool.exe"
+                });
         }
 
         public static FileInfo GetInvalidPackage(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(path, packageId, packageVersion, new string[0]);
         }
 
         public static FileInfo GetEmptyPackageWithDependencies(string path, string packageId, string packageVersion)
@@ -216,6 +189,22 @@ namespace Test.Utility
             var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
 
             SetSimpleNuspec(zipFile, packageId, packageVersion, false, minClientVersion);
+            zipFile.Save();
+
+            return fileInfo;
+        }
+
+        private static FileInfo GeneratePackage(string path, string packageId, string packageVersion, string[] zipEntries)
+        {
+            ZipFile zipFile;
+            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+
+            foreach (var relativeFilePath in zipEntries)
+            {
+                zipFile.AddEntry(relativeFilePath, new byte[] { 0 });
+            }
+
+            SetSimpleNuspec(zipFile, packageId, packageVersion);
             zipFile.Save();
 
             return fileInfo;
