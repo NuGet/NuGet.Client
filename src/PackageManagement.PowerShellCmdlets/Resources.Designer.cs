@@ -241,7 +241,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some NuGet packages are missing from the solution. Restore the packages before performing any operations..
+        ///   Looks up a localized string similar to Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph. Restore the packages before performing any operations..
         /// </summary>
         internal static string Cmdlet_MissingPackages {
             get {
