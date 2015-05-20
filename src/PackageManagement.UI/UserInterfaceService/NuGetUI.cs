@@ -12,12 +12,15 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using Microsoft.VisualStudio.Shell;
+using System.Globalization;
 
 namespace NuGet.PackageManagement.UI
 {
     public class NuGetUI : INuGetUI
     {
         private readonly INuGetUIContext _context;
+        private const string LogEntrySource = "NuGet Package Manager";
 
         public NuGetUI(
             INuGetUIContext context,
@@ -288,19 +291,20 @@ namespace NuGet.PackageManagement.UI
 
         public void ShowError(Exception ex)
         {
-            if (ex is NuGetResolverConstraintException
-                ||
-                ex is PackageAlreadyInstalledException
-                ||
-                ex is NuGetVersionNotSatisfiedException
-                ||
-                ex is FrameworkException
-                ||
-                ex is PackagingException)
+            if (ex is NuGetResolverConstraintException ||
+                ex is PackageAlreadyInstalledException ||
+                ex is NuGetVersionNotSatisfiedException ||
+                ex is FrameworkException ||
+                ex is PackagingException || 
+                ex is InvalidOperationException)
             {
                 // for exceptions that are known to be normal error cases, just
                 // display the message.
                 ProgressWindow.Log(MessageLevel.Info, ex.Message);
+
+                // write to activity log
+                var message = string.Format(CultureInfo.CurrentCulture, ex.ToString());
+                ActivityLog.LogError(LogEntrySource, message);
             }
             else
             {
