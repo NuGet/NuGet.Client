@@ -6,6 +6,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Windows.Input;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -76,10 +77,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             set { }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1814:PreferJaggedArraysOverMultidimensional", Justification = "property will be not used")]
         public override BufferCell[,] GetBufferContents(Rectangle rectangle)
         {
             // no op
             Debug.Assert(false, "Not Implemented");
+
             return new BufferCell[0, 0];
         }
 
