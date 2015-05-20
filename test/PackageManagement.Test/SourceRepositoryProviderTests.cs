@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Configuration;
 using Test.Utility;
 using Xunit;
 
@@ -17,8 +16,8 @@ namespace NuGet.Test
         {
             // Arrange
             var localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var localPackageSource = new PackageSource(localAppDataPath);
-            var oldPackageSources = new List<PackageSource> { localPackageSource };
+            var localPackageSource = new Configuration.PackageSource(localAppDataPath);
+            var oldPackageSources = new List<Configuration.PackageSource> { localPackageSource };
             var packageSourceProvider = new TestPackageSourceProvider(oldPackageSources);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSourceProvider);
 
@@ -30,7 +29,7 @@ namespace NuGet.Test
             Assert.Equal(localAppDataPath, oldEffectivePackageSources[0].PackageSource.Source);
 
             // Main Act
-            var newPackageSources = new List<PackageSource> { TestSourceRepositoryUtility.V3PackageSource, localPackageSource };
+            var newPackageSources = new List<Configuration.PackageSource> { TestSourceRepositoryUtility.V3PackageSource, localPackageSource };
             packageSourceProvider.SavePackageSources(newPackageSources);
 
             var newEffectivePackageSources = sourceRepositoryProvider.GetRepositories().ToList();
@@ -46,8 +45,8 @@ namespace NuGet.Test
         {
             // Arrange
             var settingsPath = TestPackageSourceSettings.CreateAndGetSettingFilePath();
-            var settings = new Settings(settingsPath);
-            var packageSourceProvider = new PackageSourceProvider(settings);
+            var settings = new Configuration.Settings(settingsPath);
+            var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSourceProvider);
 
             // Act
@@ -58,7 +57,7 @@ namespace NuGet.Test
             Assert.Equal(TestSourceRepositoryUtility.V2PackageSource.Source, oldEffectivePackageSources[0].PackageSource.Source);
 
             // Main Act
-            var newPackageSources = new List<PackageSource>
+            var newPackageSources = new List<Configuration.PackageSource>
                 {
                     TestSourceRepositoryUtility.V3PackageSource,
                     TestSourceRepositoryUtility.V2PackageSource

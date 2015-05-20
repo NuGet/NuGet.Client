@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private static PackageReference GetInstalledPackage(NuGetProject project, string id)
+        private static Packaging.PackageReference GetInstalledPackage(NuGetProject project, string id)
         {
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {

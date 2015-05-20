@@ -432,17 +432,17 @@ namespace NuGet.Test
 
             var packagesA = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null),
-                    new SourcePackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null)
+                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                    new SourcePackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
             var packagesB = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null)
+                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
             var providersA = new List<Lazy<INuGetResourceProvider>>();
@@ -455,9 +455,9 @@ namespace NuGet.Test
             providersC.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(new List<SourcePackageDependencyInfo>())));
 
             var repos = new List<SourceRepository>();
-            repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
-            repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
-            repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://a"), providersA));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://b"), providersB));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://c"), providersC));
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(targets,
@@ -489,17 +489,17 @@ namespace NuGet.Test
 
             var packagesA = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null),
-                    new SourcePackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null)
+                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                    new SourcePackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
             var packagesB = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null)
+                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
             var providersC = new List<Lazy<INuGetResourceProvider>>();
@@ -512,9 +512,9 @@ namespace NuGet.Test
             providersB.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packagesB)));
 
             var repos = new List<SourceRepository>();
-            repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
-            repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
-            repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://a"), providersA));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://b"), providersB));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://c"), providersC));
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(targets, Enumerable.Empty<PackageIdentity>(),
@@ -546,16 +546,16 @@ namespace NuGet.Test
 
             var packagesA = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null),
-                    new SourcePackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null)
+                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("d", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                    new SourcePackageDependencyInfo("notpartofthis", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
             var packagesB = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
-                    new SourcePackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null)
+                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                    new SourcePackageDependencyInfo("notpartofthis2", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
             var providersA = new List<Lazy<INuGetResourceProvider>>();
@@ -568,9 +568,9 @@ namespace NuGet.Test
             providersC.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(new List<SourcePackageDependencyInfo>())));
 
             var repos = new List<SourceRepository>();
-            repos.Add(new SourceRepository(new PackageSource("http://a"), providersA));
-            repos.Add(new SourceRepository(new PackageSource("http://b"), providersB));
-            repos.Add(new SourceRepository(new PackageSource("http://c"), providersC));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://a"), providersA));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://b"), providersB));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://c"), providersC));
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(targets,
@@ -599,17 +599,17 @@ namespace NuGet.Test
 
             var packages1 = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new PackageDependency[] { }, true, null)
+                    new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
             var packages2 = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null)
+                    new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null)
                 };
 
             var packages3 = new List<SourcePackageDependencyInfo>
                 {
-                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null)
+                    new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null)
                 };
 
             var providers1 = new List<Lazy<INuGetResourceProvider>>();
@@ -625,10 +625,10 @@ namespace NuGet.Test
             providersPackagesFolder.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(new List<SourcePackageDependencyInfo>())));
 
             var repos = new List<SourceRepository>();
-            repos.Add(new SourceRepository(new PackageSource("http://1"), providers1));
-            repos.Add(new SourceRepository(new PackageSource("http://2"), providers2));
-            repos.Add(new SourceRepository(new PackageSource("http://3"), providers3));
-            repos.Add(new SourceRepository(new PackageSource("http://4"), providersPackagesFolder));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://1"), providers1));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://2"), providers2));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://3"), providers3));
+            repos.Add(new SourceRepository(new Configuration.PackageSource("http://4"), providersPackagesFolder));
 
             // Act
             var results = await ResolverGather.GatherPackageDependencyInfo(targets, Enumerable.Empty<PackageIdentity>(),
@@ -648,13 +648,13 @@ namespace NuGet.Test
             var providers = new List<Lazy<INuGetResourceProvider>>();
             providers.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
 
-            return new SourceRepository(new PackageSource(source), providers);
+            return new SourceRepository(new Configuration.PackageSource(source), providers);
         }
 
         private static SourcePackageDependencyInfo CreateDependencyInfo(string id, string version, params string[] dependencyIds)
         {
             return new SourcePackageDependencyInfo(CreatePackage(id, version),
-                dependencyIds.Select(depId => new PackageDependency(depId, new VersionRange(NuGetVersion.Parse("1.0.0")))), true, null);
+                dependencyIds.Select(depId => new Packaging.Core.PackageDependency(depId, new VersionRange(NuGetVersion.Parse("1.0.0")))), true, null);
         }
 
         private static PackageIdentity CreatePackage(string id, string version)

@@ -23,6 +23,8 @@ x64/
 !packages/*/build/
 
 .nuget/
+*.nuget.props
+*.nuget.targets
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -51,6 +53,7 @@ x64/
 *.pidb
 *.log
 *.scc
+project.lock.json
 
 # Visual C++ cache files
 ipch/

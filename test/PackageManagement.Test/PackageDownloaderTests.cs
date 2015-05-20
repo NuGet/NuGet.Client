@@ -5,14 +5,12 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
-using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
-namespace NuGet.Test
+namespace NuGet.PackageManagement
 {
     public class PackageDownloaderTests
     {
@@ -116,9 +114,9 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
             {
-                new PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
+                new Configuration.PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
                 TestSourceRepositoryUtility.V3PackageSource,
-                new PackageSource("http://blah.com"),
+                new Configuration.PackageSource("http://blah.com"),
             });
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
@@ -139,8 +137,8 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
             {
-                new PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
-                new PackageSource("http://blah.com"),
+                new Configuration.PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
+                new Configuration.PackageSource("http://blah.com"),
             });
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
@@ -158,7 +156,7 @@ namespace NuGet.Test
             {
                 TestSourceRepositoryUtility.V3PackageSource,
                 TestSourceRepositoryUtility.V3PackageSource,
-                new PackageSource("http://blah.com"),
+                new Configuration.PackageSource("http://blah.com"),
                 TestSourceRepositoryUtility.V2PackageSource,
                 TestSourceRepositoryUtility.V2PackageSource,
             });

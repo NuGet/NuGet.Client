@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props" Condition="Exists('..\..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" />
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PackagesPath>$(UserProfile)\.nuget\packages</PackagesPath>
+  </PropertyGroup>
+  <Import Project="$(PackagesPath)\xunit.core\2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props" Condition="Exists('$(PackagesPath)\xunit.core\2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,6 +15,7 @@
     <AssemblyName>PackageManagement.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <NuGetPackageImportStamp>f8b07943</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -33,83 +37,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ionic.Zip, Version=1.9.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Client, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Client.3.0.0-beta\lib\net45\NuGet.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Commands, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Commands.3.0.0-beta\lib\net45\NuGet.Commands.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Configuration">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.ContentModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.ContentModel.3.0.0-beta\lib\net45\NuGet.ContentModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.DependencyResolver, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.DependencyResolver.3.0.0-beta\lib\net45\NuGet.DependencyResolver.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.DependencyResolver.Core, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.DependencyResolver.Core.3.0.0-beta\lib\net45\NuGet.DependencyResolver.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Frameworks">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Frameworks.3.0.0-beta\lib\net45\NuGet.Frameworks.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.LibraryModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.LibraryModel.3.0.0-beta\lib\net45\NuGet.LibraryModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Packaging">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.Packaging.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.3.0.0-beta\lib\net45\NuGet.Packaging.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core.Types">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.Types.3.0.0-beta\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.ProjectModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.ProjectModel.3.0.0-beta\lib\net45\NuGet.ProjectModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Protocol.Core.Types">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.Types.3.0.0-beta\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Protocol.Core.v3, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.v3.3.0.0-beta\lib\net45\NuGet.Protocol.Core.v3.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Repositories, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Repositories.3.0.0-beta\lib\net45\NuGet.Repositories.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Resolver">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Resolver.3.0.0-beta\lib\net45\NuGet.Resolver.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.RuntimeModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.RuntimeModel.3.0.0-beta\lib\net45\NuGet.RuntimeModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Versioning">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Versioning.3.0.0-beta\lib\net45\NuGet.Versioning.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections" />
     <Reference Include="System.Collections.Concurrent" />
@@ -131,18 +58,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="xunit.assert, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="xunit.core, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xunit.extensibility.core.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildIntegratedTests.cs" />
@@ -159,7 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -179,11 +94,12 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\packages\NuGet.MsBuild.Integration\build\Microsoft.NuGet.targets" />
   <Import Project="..\..\build\test.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props'))" />
+    <Error Condition="!Exists('$(PackagesPath)\xunit.core\2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesPath)\xunit.core\2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props'))" />
   </Target>
 </Project>

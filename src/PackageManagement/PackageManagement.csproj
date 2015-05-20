@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
@@ -16,6 +16,8 @@
     <FileAlignment>512</FileAlignment>
     <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\NuGet.ruleset</CodeAnalysisRuleSet>
+    <RestoreNuGetPackages>true</RestoreNuGetPackages>
+    <PlatformTarget>$(Platform)</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,86 +40,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Client, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Client.3.0.0-beta\lib\net45\NuGet.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Commands, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Commands.3.0.0-beta\lib\net45\NuGet.Commands.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Configuration">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.ContentModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.ContentModel.3.0.0-beta\lib\net45\NuGet.ContentModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.DependencyResolver, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.DependencyResolver.3.0.0-beta\lib\net45\NuGet.DependencyResolver.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.DependencyResolver.Core, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.DependencyResolver.Core.3.0.0-beta\lib\net45\NuGet.DependencyResolver.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Frameworks">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Frameworks.3.0.0-beta\lib\net45\NuGet.Frameworks.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.LibraryModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.LibraryModel.3.0.0-beta\lib\net45\NuGet.LibraryModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Logging, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Logging.3.0.0-beta\lib\net45\NuGet.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Packaging">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.Packaging.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.3.0.0-beta\lib\net45\NuGet.Packaging.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core.Types">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.Types.3.0.0-beta\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.ProjectModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.ProjectModel.3.0.0-beta\lib\net45\NuGet.ProjectModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Protocol.Core.Types">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.Types.3.0.0-beta\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Protocol.Core.v3, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.v3.3.0.0-beta\lib\net45\NuGet.Protocol.Core.v3.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Repositories, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Repositories.3.0.0-beta\lib\net45\NuGet.Repositories.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Resolver">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Resolver.3.0.0-beta\lib\net45\NuGet.Resolver.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.RuntimeModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.RuntimeModel.3.0.0-beta\lib\net45\NuGet.RuntimeModel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Versioning">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Versioning.3.0.0-beta\lib\net45\NuGet.Versioning.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections" />
     <Reference Include="System.Collections.Concurrent" />
@@ -182,9 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
@@ -199,5 +119,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\packages\NuGet.MsBuild.Integration\build\Microsoft.NuGet.targets" />
   <Import Project="..\..\build\sign.targets" />
 </Project>

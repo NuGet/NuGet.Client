@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerControl(
             PackageManagerModel model,
-            ISettings nugetSettings,
+            Configuration.ISettings nugetSettings,
             IVsWindowSearchHostFactory searchFactory)
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -137,7 +137,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         protected static DependencyBehavior GetDependencyBehaviorFromConfig(
-            ISettings nugetSettings)
+            Configuration.ISettings nugetSettings)
         {
             var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
             DependencyBehavior behavior;
@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ApplySettings(
             UserSettings settings,
-            ISettings nugetSettings)
+            Configuration.ISettings nugetSettings)
         {
             if (settings == null)
             {
@@ -552,7 +552,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static string GetPackageSourceTooltip(PackageSource packageSource)
+        private static string GetPackageSourceTooltip(Configuration.PackageSource packageSource)
         {
             if (string.IsNullOrEmpty(packageSource.Description))
             {
@@ -627,9 +627,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static IReadOnlyList<PackageReference> GetInstalledPackages(IEnumerable<NuGetProject> projects)
+        private static IReadOnlyList<Packaging.PackageReference> GetInstalledPackages(IEnumerable<NuGetProject> projects)
         {
-            var installedPackages = new List<PackageReference>();
+            var installedPackages = new List<Packaging.PackageReference>();
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -653,7 +653,7 @@ namespace NuGet.PackageManagement.UI
         /// <returns>The status of the package in the installation target.</returns>
         private static async Task<PackageStatus> GetPackageStatus(
             string packageId,
-            IReadOnlyList<PackageReference> installedPackages,
+            IReadOnlyList<Packaging.PackageReference> installedPackages,
             Lazy<Task<IEnumerable<VersionInfo>>> allVersions)
         {
             var versions = await allVersions.Value;

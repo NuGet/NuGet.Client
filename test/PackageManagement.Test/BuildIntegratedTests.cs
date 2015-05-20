@@ -28,7 +28,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
-            var testSettings = new NullSettings();
+            var testSettings = new Configuration.NullSettings();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
@@ -67,7 +67,7 @@ namespace NuGet.Test
             var packageIdentity2 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
-            var testSettings = new NullSettings();
+            var testSettings = new Configuration.NullSettings();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
@@ -114,7 +114,7 @@ namespace NuGet.Test
             var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
-            var testSettings = new NullSettings();
+            var testSettings = new Configuration.NullSettings();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
@@ -156,7 +156,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
-            var testSettings = new NullSettings();
+            var testSettings = new Configuration.NullSettings();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
@@ -200,7 +200,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
-            var testSettings = new NullSettings();
+            var testSettings = new Configuration.NullSettings();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();

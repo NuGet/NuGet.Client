@@ -32,7 +32,7 @@ namespace NuGet.Test
         {
             // Arrange
             var testSolutionManager = new TestSolutionManager();
-            var testSettings = new NullSettings();
+            var testSettings = new Configuration.NullSettings();
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);

@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void Log(MessageLevel level, string message, params object[] args)
+        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
             _logger.Log(level, message, args);
         }

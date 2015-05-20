@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        var installedPackages = new List<PackageReference>();
+                        var installedPackages = new List<Packaging.PackageReference>();
                         foreach (var project in _nugetProjects)
                         {
                             var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);

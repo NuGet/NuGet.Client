@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
       <RootDir>$(MSBuildStartupDirectory)</RootDir>
 	  <CodeTaskFactoryDll Condition="'$(MSBuildToolsVersion)' != '14'">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</CodeTaskFactoryDll>
@@ -39,25 +39,36 @@
     </UsingTask>
 
     <Target Name="RestorePackages">
-        <ItemGroup>
-            <!-- Package sources used to restore packages. By default will used the registered sources under %APPDATA%\NuGet\NuGet.Config -->
-            <PackageSource Include="$(NUGET_PUSH_TARGET)" Condition="'$(NUGET_PUSH_TARGET)' != ''" />
-			      <PackageSource Include="https://www.nuget.org/api/v2" />
-            <PackageSource Include="https://www.myget.org/F/nugetbuild/" />
-        </ItemGroup>
         <PropertyGroup>
             <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
             <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
-            <RestoreCommand>$(NuGetExePath) restore -Source "@(PackageSource)" "@(SolutionFile)" -NonInteractive</RestoreCommand>
         </PropertyGroup>
         <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
         <Message Text="Restoring packages ... " Importance="high" />
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
-        <Exec Command="$(RestoreCommand)" LogStandardErrorAsError="true" />
-    </Target>
+        
+        <!-- Restore NuGet.CommandLine.Cmd -->
+        <Exec Command="$(NuGetExePath) install -Source https://www.myget.org/F/nugetbuild/api/v2 NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache" 
+              Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
+              
+        <!-- Restore MsBuid script -->
+        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -Source https://www.myget.org/F/nugetbuild/api/v2 -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre" 
+              Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
 
-    <Target Name="CheckForMultipleSolutions">
-      <Error Text="Multiple solutions exist in $(RepositoryRoot)!" Condition="'@(SolutionFile->Count())' &gt; 1" />
+        <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
+        <ItemGroup>
+            <SrcProjectsToRestore Include="$(RootDir)\src\ProjectManagement\*.csproj" />
+            <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement\*.csproj" />
+            <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement.UI\*.csproj" />
+
+            <TestProjectsToRestore Include="$(RootDir)\test\Test.Utility\*.csproj" />
+            <TestProjectsToRestore Include="$(RootDir)\test\ProjectManagement.Test\*.csproj" />
+            <TestProjectsToRestore Include="$(RootDir)\test\PackageManagement.Test\*.csproj" />
+            <TestProjectsToRestore Include="$(RootDir)\test\StandaloneUI\*.csproj" />
+        </ItemGroup>
+        
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore %(SrcProjectsToRestore.FullPath)"  />
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore %(TestProjectsToRestore.FullPath)"  />
     </Target>
 
     <ItemGroup>
@@ -88,8 +99,8 @@
       <PropertyGroup>
         <EnableCodeAnalysis Condition="'$(EnableCodeAnalysis)' == ''" >true</EnableCodeAnalysis>
       </PropertyGroup>
-      <MSBuild Projects="@(SolutionFile)" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis)" />
+      <MSBuild Projects="@(SolutionFile)" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis);PlatformTarget=AnyCPU" />
     </Target>
 
-    <Target Name="Build" DependsOnTargets="CheckForMultipleSolutions;RestorePackages;BuildSln;ReportFxCopResults;RunTests" />
+    <Target Name="Build" DependsOnTargets="RestorePackages;BuildSln;ReportFxCopResults;RunTests" />
 </Project>

@@ -52,7 +52,7 @@ namespace NuGet.Test
             }
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var testSettings = NullSettings.Instance;
+            var testSettings = Configuration.NullSettings.Instance;
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             // Act
@@ -87,7 +87,7 @@ namespace NuGet.Test
             var token = CancellationToken.None;
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var testSettings = NullSettings.Instance;
+            var testSettings = Configuration.NullSettings.Instance;
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             // Act
@@ -107,7 +107,7 @@ namespace NuGet.Test
             var packageIdentity = Packages[0];
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var testSettings = NullSettings.Instance;
+            var testSettings = Configuration.NullSettings.Instance;
             var resolutionContext = new ResolutionContext();
             var token = CancellationToken.None;
 
@@ -165,7 +165,7 @@ namespace NuGet.Test
             }
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var testSettings = NullSettings.Instance;
+            var testSettings = Configuration.NullSettings.Instance;
             var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var packagesMissingEventCount = 0;
@@ -205,7 +205,7 @@ namespace NuGet.Test
             var packageIdentity = Packages[0];
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var testSettings = NullSettings.Instance;
+            var testSettings = Configuration.NullSettings.Instance;
             var resolutionContext = new ResolutionContext();
             var token = CancellationToken.None;
 
@@ -249,7 +249,7 @@ namespace NuGet.Test
             var jQueryValidation = Packages[2];
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var testSettings = NullSettings.Instance;
+            var testSettings = Configuration.NullSettings.Instance;
             var resolutionContext = new ResolutionContext();
             var token = CancellationToken.None;
 
@@ -286,12 +286,12 @@ namespace NuGet.Test
             var restoredPackages = new List<PackageIdentity>();
             packageRestoreManager.PackageRestoredEvent += delegate(object sender, PackageRestoredEventArgs args) { restoredPackages.Add(args.Package); };
 
-            var restoreFailedPackages = new ConcurrentDictionary<PackageReference, IEnumerable<string>>(new PackageReferenceComparer());
+            var restoreFailedPackages = new ConcurrentDictionary<Packaging.PackageReference, IEnumerable<string>>(new PackageReferenceComparer());
             packageRestoreManager.PackageRestoreFailedEvent += delegate(object sender, PackageRestoreFailedEventArgs args)
             {
                 restoreFailedPackages.AddOrUpdate(args.RestoreFailedPackageReference,
                     args.ProjectNames,
-                    (PackageReference packageReference, IEnumerable<string> oldValue) => { return oldValue; });
+                    (Packaging.PackageReference packageReference, IEnumerable<string> oldValue) => { return oldValue; });
             };
 
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(jQueryValidation));

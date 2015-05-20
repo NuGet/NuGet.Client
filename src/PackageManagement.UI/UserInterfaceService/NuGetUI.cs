@@ -299,7 +299,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // for exceptions that are known to be normal error cases, just
                 // display the message.
-                ProgressWindow.Log(MessageLevel.Info, ex.Message);
+                ProgressWindow.Log(ProjectManagement.MessageLevel.Info, ex.Message);
 
                 // write to activity log
                 var message = string.Format(CultureInfo.CurrentCulture, ex.ToString());
@@ -307,7 +307,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                ProgressWindow.Log(MessageLevel.Error, ex.ToString());
+                ProgressWindow.Log(ProjectManagement.MessageLevel.Error, ex.ToString());
             }
 
             ProgressWindow.ReportError(ex.Message);

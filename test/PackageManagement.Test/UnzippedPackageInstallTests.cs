@@ -33,7 +33,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
-            var testSettings = new NullSettings();
+            var testSettings = new Configuration.NullSettings();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 

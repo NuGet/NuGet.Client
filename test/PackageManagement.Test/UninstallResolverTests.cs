@@ -21,12 +21,12 @@ namespace NuGet.Test
                 throw new ArgumentException("dependencies array length should be even");
             }
 
-            var dependencyList = new List<PackageDependency>();
+            var dependencyList = new List<Packaging.Core.PackageDependency>();
             if (dependencies != null)
             {
                 for (var i = 0; i < dependencies.Length; i += 2)
                 {
-                    var packageDependency = new PackageDependency(dependencies[i], VersionRange.Parse(dependencies[i + 1]));
+                    var packageDependency = new Packaging.Core.PackageDependency(dependencies[i], VersionRange.Parse(dependencies[i + 1]));
                     dependencyList.Add(packageDependency);
                 }
             }

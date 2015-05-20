@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -13,7 +12,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public PackageDependencyMetadata(PackageDependency serverData)
+        public PackageDependencyMetadata(Packaging.Core.PackageDependency serverData)
         {
             Id = serverData.Id;
             Range = serverData.VersionRange;

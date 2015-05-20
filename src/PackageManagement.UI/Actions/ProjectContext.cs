@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.UI
 {
     public sealed class ProjectContext : INuGetProjectContext
     {
-        public void Log(MessageLevel level, string message, params object[] args)
+        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
             // TODO: log to the console
         }

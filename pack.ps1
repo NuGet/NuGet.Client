@@ -70,7 +70,9 @@ function Build()
 	$env:NUGET_PUSH_TARGET="$PushTarget"
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
     
-    & msbuild "build\build.msbuild" "/p:Configuration=$Configuration" /p:EnableCodeAnalysis=true /m /v:M $msbuildParameters
+    $msbuildExe = "${env:ProgramFiles(x86)}\MSBuild\14.0\Bin\msbuild.exe"
+    
+    & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration" /p:EnableCodeAnalysis=true /m /v:M  /fl /flp:v=D $msbuildParameters
 	if ($lastexitcode -ne 0) 
 	{		
 	  	throw "Build failed"
