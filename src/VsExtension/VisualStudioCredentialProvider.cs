@@ -86,13 +86,17 @@ namespace NuGetVSExtension
 
             var newState = (uint)__VsWebProxyState.VsWebProxyState_NoCredentials;
             int result = 0;
-            ThreadHelper.Generic.Invoke(() =>
-                {
-                    result = _webProxyService.PrepareWebProxy(uri.OriginalString,
-                        (uint)oldState,
-                        out newState,
-                        fOkToPrompt: 1);
-                });
+
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                result = _webProxyService.PrepareWebProxy(uri.OriginalString,
+                    (uint)oldState,
+                    out newState,
+                    fOkToPrompt: 1);
+            });
+
             // If result is anything but 0 that most likely means that there was an error
             // so we will null out the DefaultWebProxy.Credentials so that we don't get
             // invalid credentials stored for subsequent requests.
