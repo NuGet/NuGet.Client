@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "framework", "framework", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83AEE32C-FFCC-43A6-898B-D7DF81774C25}"
 	ProjectSection(SolutionItems) = preProject
+		test\EndToEnd\tests\BuildIntegratedTest.ps1 = test\EndToEnd\tests\BuildIntegratedTest.ps1
 		test\EndToEnd\tests\FindPackageTest.ps1 = test\EndToEnd\tests\FindPackageTest.ps1
 		test\EndToEnd\tests\GetPackageTest.ps1 = test\EndToEnd\tests\GetPackageTest.ps1
 		test\EndToEnd\tests\GetProjectTest.ps1 = test\EndToEnd\tests\GetProjectTest.ps1
@@ -61,7 +62,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamFoundationServer14", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudioImplement", "src\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj", "{9623CF30-192C-4864-B419-29649169AE30}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Implementation", "src\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj", "{9623CF30-192C-4864-B419-29649169AE30}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
