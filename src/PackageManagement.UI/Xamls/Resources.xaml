@@ -15,7 +15,10 @@
     x:Key="PackageStatusToUpdateImageConverter" />
   <Tools:IconUrlToVisibilityConverter
     x:Key="IconUrlToVisibilityConverter" />
-
+  <Tools:NuGetFrameworkToStringConverter
+    x:Key="NuGetFrameworkToStringConverter" />
+  <Tools:NuGetFrameworkToVisibilityConverter 
+    x:Key="NuGetFrameworkToVisibilityConverter"/>
   <Tools:NullToVisibilityConverter
     x:Key="NullToVisibilityConverter" />
   <Tools:EnumerableToVisibilityConverter
