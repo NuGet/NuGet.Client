@@ -8,6 +8,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
+using System.IO;
 
 namespace NuGet.Resolver.Test
 {
@@ -802,6 +803,19 @@ namespace NuGet.Resolver.Test
 
             Assert.Equal(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), solution[0], PackageIdentityComparer.Default);
             Assert.Equal(new PackageIdentity("b", new NuGetVersion(2, 0, 0)), solution[1], PackageIdentityComparer.Default);
+        }
+
+        [Fact]
+        public void Resolver_Complex()
+        {
+            var target = new PackageIdentity("EntityFramework", NuGetVersion.Parse("7.0.0-beta4"));
+            var packages = ResolverData.CreateEntityFrameworkPackageGraph();
+
+            var resolver = new PackageResolver();
+            var context = CreatePackageResolverContext(DependencyBehavior.Lowest, target, packages);
+            var solution = resolver.Resolve(context, CancellationToken.None);
+
+            Assert.True(solution.Contains(target, PackageIdentityComparer.Default));
         }
 
         private ResolverPackage CreatePackage(string id, string version, IDictionary<string, string> dependencies = null)
