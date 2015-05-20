@@ -67,7 +67,7 @@
         <ColumnDefinition />
       </Grid.ColumnDefinitions>
 
-      <!-- Publisher(s) 
+      <!-- Publisher(s)
             <TextBlock
                         Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
                         Grid.Row="0" Grid.Column="0" FontWeight="Bold"
@@ -111,13 +111,12 @@
         Margin="8,8,0,0"
         Grid.Row="2"
         Grid.Column="1">
-                        <Hyperlink
+        <Hyperlink
           NavigateUri="{Binding Path=LicenseUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
-                            <Run
-            Text="{Binding Path=LicenseUrl}" />
-                        </Hyperlink>
+          <Run Text="{Binding Path=LicenseUrl}" />
+        </Hyperlink>
       </TextBlock>
 
       <!-- downloads -->
@@ -167,13 +166,12 @@
         Margin="8,8,0,0"
         Grid.Row="5"
         Grid.Column="1">
-                        <Hyperlink
+        <Hyperlink
           NavigateUri="{Binding Path=ProjectUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
-                            <Run
-            Text="{Binding Path=ProjectUrl}" />
-                        </Hyperlink>
+          <Run Text="{Binding Path=ProjectUrl}" />
+        </Hyperlink>
       </TextBlock>
 
       <!-- Report abuse Url -->
@@ -191,13 +189,12 @@
         Margin="8,8,0,0"
         Grid.Row="6"
         Grid.Column="1">
-                <Hyperlink
+        <Hyperlink
           NavigateUri="{Binding Path=ReportAbuseUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
-                    <Run
-            Text="{Binding Path=ReportAbuseUrl}" />
-                </Hyperlink>
+          <Run Text="{Binding Path=ReportAbuseUrl}" />
+        </Hyperlink>
       </TextBlock>
 
       <!-- Tags -->
@@ -237,9 +234,9 @@
               Orientation="Vertical"
               Margin="0,8,0,0">
               <TextBlock
-                Text="{Binding TargetFramework}"
+                Text="{Binding TargetFramework,Converter={StaticResource NuGetFrameworkToStringConverter}}"
                 FontWeight="Bold"
-                Visibility="{Binding TargetFramework,Converter={StaticResource NullToVisibilityConverter}}" />
+                Visibility="{Binding TargetFramework,Converter={StaticResource NuGetFrameworkToVisibilityConverter}}" />
               <ItemsControl
                 ItemsSource="{Binding Dependencies}"
                 IsTabStop="False">
