@@ -151,37 +151,34 @@ namespace NuGet.Resolver
             throw new NuGetResolverConstraintException(message);
         }
 
-
         /// <summary>
         /// Remove packages that can't possibly form part of a solution
         /// </summary>
-        public static IEnumerable<SourcePackageDependencyInfo> RemoveImpossiblePackages(IEnumerable<SourcePackageDependencyInfo> packages, ISet<string> mustKeep)
+        private static IEnumerable<SourcePackageDependencyInfo> RemoveImpossiblePackages(IEnumerable<SourcePackageDependencyInfo> packages, ISet<string> mustKeep)
         {
-            ICollection<SourcePackageDependencyInfo> before;
-            ICollection<SourcePackageDependencyInfo> after = new List<SourcePackageDependencyInfo>(packages);
-
-            var maxIterations = after.Count;
-            var iterations = 0;
+            List<SourcePackageDependencyInfo> before;
+            List<SourcePackageDependencyInfo> after = new List<SourcePackageDependencyInfo>(packages);
 
             do
             {
                 before = after;
                 after = InnerPruneImpossiblePackages(before, mustKeep);
-
-                if (++iterations > maxIterations)
-                {
-                    return after;
-                }
             }
             while (after.Count < before.Count);
 
             return after;
         }
 
-        private static ICollection<SourcePackageDependencyInfo> InnerPruneImpossiblePackages(ICollection<SourcePackageDependencyInfo> packages, ISet<string> mustKeep)
+        private static List<SourcePackageDependencyInfo> InnerPruneImpossiblePackages(List<SourcePackageDependencyInfo> packages, ISet<string> mustKeep)
         {
+            if (packages.Count == 0)
+            {
+                return packages;
+            }
+
             var dependencyRangesByPackageId = new Dictionary<string, IList<VersionRange>>(StringComparer.OrdinalIgnoreCase);
 
+            //  (1) Adds all package Ids including leaf nodes that have no dependencies
             foreach (var package in packages)
             {
                 if (!dependencyRangesByPackageId.ContainsKey(package.Id))
@@ -190,25 +187,20 @@ namespace NuGet.Resolver
                 }
             }
 
-            //  (1) create a look-up of every dependency that refers to a particular package Id
-
+            //  (2) Create a look-up of every dependency that refers to a particular package Id
             foreach (var package in packages)
             {
-                if (package.Dependencies != null)
+                foreach (var dependency in package?.Dependencies)
                 {
-                    foreach (var dependency in package.Dependencies)
+                    IList<VersionRange> dependencyVersionRanges;
+                    if (dependencyRangesByPackageId.TryGetValue(dependency.Id, out dependencyVersionRanges))
                     {
-                        IList<VersionRange> dependencyVersionRanges;
-                        if (dependencyRangesByPackageId.TryGetValue(dependency.Id, out dependencyVersionRanges))
-                        {
-                            dependencyVersionRanges.Add(dependency.VersionRange);
-                        }
+                        dependencyVersionRanges.Add(dependency.VersionRange);
                     }
                 }
             }
 
-            //  (2) per package Id combine all the dependency ranges into a wider 'worst-case' range
-
+            //  (3) Per package Id combine all the dependency ranges into a wider 'worst-case' range
             var dependencyByPackageId = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var item in dependencyRangesByPackageId)
@@ -216,8 +208,7 @@ namespace NuGet.Resolver
                 dependencyByPackageId.Add(item.Key, VersionRange.Combine(item.Value));
             }
 
-            //  (3) remove any packages that fall out side of the worst case range while making sure not to remove the packages we must keep
-
+            //  (4) Remove any packages that fall out side of the worst case range while making sure not to remove the packages we must keep
             var result = packages.Where(
                 package => dependencyByPackageId[package.Id].Satisfies(package.Version) || mustKeep.Contains(package.Id))
                 .ToList();

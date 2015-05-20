@@ -8,7 +8,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
-using System.IO;
 
 namespace NuGet.Resolver.Test
 {
