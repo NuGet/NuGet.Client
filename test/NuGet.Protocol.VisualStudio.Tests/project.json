@@ -1,0 +1,24 @@
+{
+    "version": "1.0.0-*",
+    "description": "",
+    "authors": [ "" ],
+    "tags": [ "" ],
+    "projectUrl": "",
+    "licenseUrl": "",
+
+    "dependencies": {
+        "NuGet.Protocol.VisualStudio": "3.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-beta5-10414",
+        "NuGet.Protocol.Test.Utility": "1.0.0-*"
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.ComponentModel.Composition": "4.0.0.0"
+            }
+        }
+    }
+}
