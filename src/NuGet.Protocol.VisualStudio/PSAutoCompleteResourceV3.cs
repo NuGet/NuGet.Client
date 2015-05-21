@@ -28,7 +28,10 @@ namespace NuGet.Protocol.VisualStudio
             _client = client;
         }
 
-        public override async Task<IEnumerable<string>> IdStartsWith(string packageIdPrefix, bool includePrerelease, CancellationToken token)
+        public override async Task<IEnumerable<string>> IdStartsWith(
+            string packageIdPrefix,
+            bool includePrerelease,
+            CancellationToken token)
         {
             var searchUrl = _serviceIndex[ServiceTypes.SearchAutocompleteService].FirstOrDefault();
 
@@ -45,7 +48,7 @@ namespace NuGet.Protocol.VisualStudio
             queryUrl.Query = queryString;
 
             var queryUri = queryUrl.Uri;
-            var results = await _client.GetJObjectAsync(queryUri);
+            var results = await _client.GetJObjectAsync(queryUri, token);
             token.ThrowIfCancellationRequested();
             if (results == null)
             {
@@ -70,7 +73,11 @@ namespace NuGet.Protocol.VisualStudio
             return outputs.Where(item => item.StartsWith(packageIdPrefix, StringComparison.OrdinalIgnoreCase));
         }
 
-        public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, CancellationToken token)
+        public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(
+            string packageId,
+            string versionPrefix,
+            bool includePrerelease,
+            CancellationToken token)
         {
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ? 
             var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, token);
