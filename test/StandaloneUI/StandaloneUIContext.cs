@@ -65,7 +65,7 @@ namespace StandaloneUI
             {
                 return settings;
             }
-            return null;
+            return new UserSettings();
         }
 
         public override void PersistSettings()

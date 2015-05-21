@@ -16,7 +16,10 @@ namespace NuGet.PackageManagement.UI
         public UserSettings()
         {
             IncludePrerelease = true;
-            SelectedFilter = Filter.Installed;
+            ShowPreviewWindow = true;
+            SelectedFilter = Filter.All;
+            DependencyBehavior = DependencyBehavior.Lowest;
+            FileConflictAction = FileConflictAction.PromptUser;
         }
 
         public string SourceRepository { get; set; }
