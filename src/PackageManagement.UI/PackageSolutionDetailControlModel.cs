@@ -13,14 +13,18 @@ namespace NuGet.PackageManagement.UI
 {
     public class PackageSolutionDetailControlModel : DetailControlModel
     {
-        // list of projects to be displayed in the UI
+        private readonly ISolutionManager _solutionManager;
 
-        private readonly List<PackageInstallationInfo> _allProjects;
+        // list of all projects in the solution.
+        private List<PackageInstallationInfo> _allProjects;
 
         // indicates that the model is updating the checkbox state. In this case,
         // the CheckAllProject() & UncheckAllProject() should be no-op.
         private bool _updatingCheckbox;
 
+        // list of projects to be displayed in the UI. This list is created
+        // from _allProjects based on the selected version and the status
+        // of the "Show All" checkbox.
         public List<PackageInstallationInfo> Projects { get; private set; }
 
         private bool _actionEnabled;
@@ -43,7 +47,7 @@ namespace NuGet.PackageManagement.UI
 
         protected override void OnSelectedVersionChanged()
         {
-            UpdateProjectList();
+            RefreshProjectList();
         }
 
         /// <summary>
@@ -111,22 +115,43 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged("Versions");
         }
 
-        public PackageSolutionDetailControlModel(IEnumerable<NuGetProject> projects)
+        public PackageSolutionDetailControlModel(
+            ISolutionManager solutionManager,
+            IEnumerable<NuGetProject> projects)
             :
                 base(projects)
         {
-            // create project list
+            _solutionManager = solutionManager;
+            _solutionManager.NuGetProjectAdded += (_, __) => RefreshProjectListAfterProjectAddedRemovedOrRenamed();
+            _solutionManager.NuGetProjectRemoved += (_, __) => RefreshProjectListAfterProjectAddedRemovedOrRenamed();
+            _solutionManager.NuGetProjectRenamed += (_, __) => RefreshProjectListAfterProjectAddedRemovedOrRenamed();
+
+            RefreshAllProjectList();
+        }
+
+        // Refresh the project list after a project is added/removed/renamed.
+        private void RefreshProjectListAfterProjectAddedRemovedOrRenamed()
+        {
+            _nugetProjects = _solutionManager.GetNuGetProjects();
+
+            RefreshAllProjectList();
+            RefreshProjectList();
+        }
+
+        // Refresh the _allProjects list.
+        private void RefreshAllProjectList()
+        {
             _allProjects = _nugetProjects.Select(p => new PackageInstallationInfo(p, null, true))
                 .ToList();
             _allProjects.Sort();
             _allProjects.ForEach(p =>
+            {
+                p.SelectedChanged += (sender, e) =>
                 {
-                    p.SelectedChanged += (sender, e) =>
-                        {
-                            UpdateActionEnabled();
-                            UpdateSelectCheckbox();
-                        };
-                });
+                    UpdateActionEnabled();
+                    UpdateSelectCheckbox();
+                };
+            });
         }
 
         private void UpdateActionEnabled()
@@ -190,7 +215,7 @@ namespace NuGet.PackageManagement.UI
             return installedVersions.Count() >= 2;
         }
 
-        private void UpdateProjectList()
+        private void RefreshProjectList()
         {
             // update properties of _allProject list
             _allProjects.ForEach(p =>
@@ -371,7 +396,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _showAll = value;
 
-                UpdateProjectList();
+                RefreshProjectList();
             }
         }
 
