@@ -257,8 +257,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private async Task PreviewAndExecuteUpdateActionsforSinglePackage(NuGetProject project)
         {
             var token = CancellationToken.None;
-            PackageReference installedPackage = (await project.GetInstalledPackagesAsync(token))
-                .Where(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            var installedPackage = (await project.GetInstalledPackagesAsync(token))
+                .FirstOrDefault(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase));
 
             if (installedPackage != null)
             {
@@ -334,8 +334,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private static async Task<IEnumerable<string>> GeneratePackageIdListForUpdate(NuGetProject project, CancellationToken token)
         {
-            IEnumerable<string> packageIds = (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity.Id);
-            return packageIds;
+            return (await project.GetInstalledPackagesAsync(token)).Select(v => v.PackageIdentity.Id);
         }
 
         /// <summary>

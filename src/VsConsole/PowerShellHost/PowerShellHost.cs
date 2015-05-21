@@ -24,7 +24,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
-using NuGet.Resolver;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -40,7 +39,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
         private readonly ICommonOperations _commonOperations;
         private const string ActivePackageSourceKey = "activePackageSource";
-        private const string PackageSourceKey = "packageSources";
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
         private const string DTEKey = "DTE";
@@ -97,21 +95,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             // check if active package source name is valid
             var activeSource = _sourceRepositories.FirstOrDefault(
-                repo => StringComparer.CurrentCultureIgnoreCase.Equals(repo.PackageSource.Name, _activePackageSource));
-            if (activeSource == null)
-            {
-                // the name can't be found. Use the first source as active source.
-                activeSource = _sourceRepositories.FirstOrDefault();
-            }
+                repo => StringComparer.CurrentCultureIgnoreCase.Equals(repo.PackageSource.Name, _activePackageSource))
+                               ?? _sourceRepositories.FirstOrDefault();
 
-            if (activeSource != null)
-            {
-                _activePackageSource = activeSource.PackageSource.Name;
-            }
-            else
-            {
-                _activePackageSource = null;
-            }
+            _activePackageSource = activeSource?.PackageSource.Name;
         }
 
         #region Properties
@@ -316,9 +303,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     // invoke init.ps1 files in the order of package dependency.
                     // if A -> B, we invoke B's init.ps1 before A's.
-                    IEnumerable<NuGetProject> projects = _solutionManager.GetNuGetProjects();
-                    NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
-                    List<PackageIdentity> sortedPackages = new List<PackageIdentity>();
+                    var projects = _solutionManager.GetNuGetProjects();
+                    var packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+                    var sortedPackages = new List<PackageIdentity>();
                     foreach (NuGetProject project in projects)
                     {
                         // Skip project K projects.
@@ -329,12 +316,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             continue;
                         }
 
-                        IEnumerable<PackageReference> installedRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                        var installedRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
                         if (installedRefs != null
                             && installedRefs.Any())
                         {
                             // This will be an empty list if packages have not been restored
-                            IEnumerable<PackageIdentity> installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, CancellationToken.None);
+                            var installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, CancellationToken.None);
                             sortedPackages.AddRange(installedPackages);
                         }
                     }
@@ -376,12 +363,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             if (console == null)
             {
-                throw new ArgumentNullException("console");
+                throw new ArgumentNullException(nameof(console));
             }
 
             if (command == null)
             {
-                throw new ArgumentNullException("command");
+                throw new ArgumentNullException(nameof(command));
             }
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
@@ -404,10 +391,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void Abort()
         {
-            if (ExecutingPipeline != null)
-            {
-                ExecutingPipeline.StopAsync();
-            }
+            ExecutingPipeline?.StopAsync();
             ComplexCommand.Clear();
         }
 
@@ -467,18 +451,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void WriteErrorLine(string message)
         {
-            if (ActiveConsole != null)
-            {
-                ActiveConsole.Write(message + Environment.NewLine, Colors.Red, null);
-            }
+            ActiveConsole?.Write(message + Environment.NewLine, Colors.Red, null);
         }
 
         private void WriteLine(string message = "")
         {
-            if (ActiveConsole != null)
-            {
-                ActiveConsole.WriteLine(message);
-            }
+            ActiveConsole?.WriteLine(message);
         }
 
         public string ActivePackageSource
@@ -488,8 +466,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 _activePackageSource = value;
                 var source = _sourceRepositories
-                    .Where(s => StringComparer.CurrentCultureIgnoreCase.Equals(_activePackageSource, s.PackageSource.Name))
-                    .FirstOrDefault();
+                    .FirstOrDefault(s =>
+                        StringComparer.CurrentCultureIgnoreCase.Equals(_activePackageSource, s.PackageSource.Name));
                 if (source != null)
                 {
                     _sourceRepositoryProvider.PackageSourceProvider.SaveActivePackageSource(source.PackageSource);
@@ -596,8 +574,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Debug.Assert(ThreadHelper.CheckAccess());
 
             List<string> projectNames = new List<string>();
-            VSSolutionManager solutionManager = (VSSolutionManager)_solutionManager;
-            foreach (NuGetProject nuGetProject in allProjects)
+            var solutionManager = (VSSolutionManager)_solutionManager;
+            foreach (var nuGetProject in allProjects)
             {
                 string displayName = GetDisplayName(nuGetProject, solutionManager);
                 projectNames.Add(displayName);
@@ -609,7 +587,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            VSSolutionManager solutionManager = (VSSolutionManager)_solutionManager;
+            var solutionManager = (VSSolutionManager)_solutionManager;
             return GetDisplayName(nuGetProject, solutionManager);
         }
 
@@ -617,8 +595,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            string safeName = solutionManager.GetNuGetProjectSafeName(nuGetProject);
-            Project project = solutionManager.GetDTEProject(safeName);
+            var safeName = solutionManager.GetNuGetProjectSafeName(nuGetProject);
+            var project = solutionManager.GetDTEProject(safeName);
             return EnvDTEProjectUtility.GetDisplayName(project);
         }
 
@@ -704,10 +682,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public void Dispose()
         {
             _initScriptsLock.Dispose();
-            if (Runspace != null)
-            {
-                Runspace.Dispose();
-            }
+            Runspace?.Dispose();
         }
 
         #endregion

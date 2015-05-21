@@ -451,10 +451,8 @@ namespace NuGet.PackageManagement.VisualStudio
             // for LightSwitch project, the main project is not added to _projectCache, but it is called on removal. 
             // in that case, projectName is null.
             if (envDTEProjectName != null
-                &&
-                envDTEProjectName.CustomUniqueName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase)
-                &&
-                !_nuGetAndEnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName))
+                && envDTEProjectName.CustomUniqueName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase)
+                && !_nuGetAndEnvDTEProjectCache.IsAmbiguous(envDTEProjectName.ShortName))
             {
                 DefaultNuGetProjectName = envDTEProjectName.ShortName;
             }
