@@ -278,5 +278,23 @@ namespace NuGetVSExtension {
                 return ResourceManager.GetString("RestoringPackages", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
+        /// </summary>
+        internal static string SolutionIsNotSaved {
+            get {
+                return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solution is not saved. Please save your solution and re-open solution before managing NuGet packages..
+        /// </summary>
+        internal static string SolutionIsNotSavedPromptReopen {
+            get {
+                return ResourceManager.GetString("SolutionIsNotSavedPromptReopen", resourceCulture);
+            }
+        }
     }
 }
