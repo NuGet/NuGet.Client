@@ -67,13 +67,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         {
             var catalogEntry = (JObject)packageObj["catalogEntry"];
 
-            var listed = true;
-            JToken listedValue;
-
-            if (catalogEntry.TryGetValue("listed", out listedValue))
-            {
-                listed = listedValue.Value<bool>();
-            }
+            var listed = catalogEntry.GetBoolean("listed") ?? true;
 
             var id = catalogEntry.Value<string>("id");
 
@@ -135,13 +129,13 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             foreach (var item in dependencies)
             {
                 var packageInfo = new PackageInfo
-                    {
-                        Listed = item.Listed,
-                        Version = item.Identity.Version,
-                        PackageContent = new Uri(item.ContentUri)
-                    };
+                {
+                    Listed = item.Listed,
+                    Version = item.Identity.Version,
+                    PackageContent = new Uri(item.ContentUri)
+                };
 
-                // only one target framework group will be used at install time, which means 
+                // only one target framework group will be used at install time, which means
                 // we can filter down to that group now by using the project target framework
                 var depFrameworks = item.DependencyGroups.Select(e => e.TargetFramework);
                 var targetFramework = frameworkReducer.GetNearest(projectTargetFramework, depFrameworks);
@@ -155,10 +149,10 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                         foreach (var dependency in dependencyGroup.Packages)
                         {
                             var dependencyInfo = new DependencyInfo
-                                {
-                                    Id = dependency.Id,
-                                    Range = dependency.VersionRange
-                                };
+                            {
+                                Id = dependency.Id,
+                                Range = dependency.VersionRange
+                            };
 
                             packageInfo.Dependencies.Add(dependencyInfo);
                         }

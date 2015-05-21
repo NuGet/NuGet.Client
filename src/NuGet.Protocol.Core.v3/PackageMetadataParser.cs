@@ -18,26 +18,25 @@ namespace NuGet.Protocol.Core.v3
         public static ServerPackageMetadata ParseMetadata(JObject metadata)
         {
             var version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
-            DateTimeOffset? published = null;
-            var publishedToken = metadata[Properties.Published];
-            if (publishedToken != null)
-            {
-                published = publishedToken.ToObject<DateTimeOffset>();
-            }
-
+            DateTimeOffset? published = metadata.GetDateTime(Properties.Published);
             var id = metadata.Value<string>(Properties.PackageId);
             var title = metadata.Value<string>(Properties.Title);
             var summary = metadata.Value<string>(Properties.Summary);
             var description = metadata.Value<string>(Properties.Description);
             var authors = GetFieldAsArray(metadata, Properties.Authors);
             var owners = GetFieldAsArray(metadata, Properties.Owners);
-            var iconUrl = GetUri(metadata, Properties.IconUrl);
-            var licenseUrl = GetUri(metadata, Properties.LicenseUrl);
-            var projectUrl = GetUri(metadata, Properties.ProjectUrl);
+            var iconUrl = metadata.GetUri(Properties.IconUrl);
+            var licenseUrl = metadata.GetUri(Properties.LicenseUrl);
+            var projectUrl = metadata.GetUri(Properties.ProjectUrl);
             var tags = GetFieldAsArray(metadata, Properties.Tags);
-            var dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
-            var requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
-            IEnumerable<string> types = metadata.Value<string>(Properties.Type).Split(' ');
+            var dependencySets = (metadata.GetJArray(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
+            var requireLicenseAcceptance = metadata.GetBoolean(
+                Properties.RequireLicenseAcceptance) ?? false;
+
+            var typeString = metadata.Value<string>(Properties.Type);
+            IEnumerable<string> types = typeString == null ?
+                Enumerable.Empty<string>() :
+                typeString.Split(' ');
 
             //Uri reportAbuseUrl =
             //    _reportAbuseResource != null ?
@@ -103,20 +102,6 @@ namespace NuGet.Protocol.Core.v3
             return value.ToString();
         }
 
-        private static Uri GetUri(JObject jObject, string property)
-        {
-            if (jObject[property] == null)
-            {
-                return null;
-            }
-            var str = jObject[property].ToString();
-            if (String.IsNullOrEmpty(str))
-            {
-                return null;
-            }
-            return new Uri(str);
-        }
-
         private static PackageDependencyGroup LoadDependencySet(JObject set)
         {
             var fxName = set.Value<string>(Properties.TargetFramework);
@@ -130,7 +115,7 @@ namespace NuGet.Protocol.Core.v3
             }
 
             return new PackageDependencyGroup(framework,
-                (set.Value<JArray>(Properties.Dependencies) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependency((JObject)obj)));
+                (set.GetJArray(Properties.Dependencies) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependency((JObject)obj)));
         }
 
         private static PackageDependency LoadDependency(JObject dep)

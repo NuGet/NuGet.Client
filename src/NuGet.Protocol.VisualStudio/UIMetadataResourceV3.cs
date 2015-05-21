@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,42 +59,21 @@ namespace NuGet.Protocol.VisualStudio
         public UIPackageMetadata ParseMetadata(JObject metadata)
         {
             var version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
-            DateTimeOffset? published = null;
-            var publishedToken = metadata[Properties.Published];
-            if (publishedToken != null)
-            {
-                published = publishedToken.ToObject<DateTimeOffset>();
-            }
-
-            var downloadCountString = metadata.Value<string>(Properties.DownloadCount);
-
-            int? downloadCountValue;
-            int downloadCount;
-            if (int.TryParse(
-                downloadCountString,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out downloadCount))
-            {
-                downloadCountValue = downloadCount;
-            }
-            else
-            {
-                downloadCountValue = null;
-            }
-
+            DateTimeOffset? published = metadata.GetDateTime(Properties.Published);
+            int? downloadCountValue = metadata.GetInt(Properties.DownloadCount);
             var id = metadata.Value<string>(Properties.PackageId);
             var title = metadata.Value<string>(Properties.Title);
             var summary = metadata.Value<string>(Properties.Summary);
             var description = metadata.Value<string>(Properties.Description);
             var authors = GetField(metadata, Properties.Authors);
             var owners = GetField(metadata, Properties.Owners);
-            var iconUrl = GetUri(metadata, Properties.IconUrl);
-            var licenseUrl = GetUri(metadata, Properties.LicenseUrl);
-            var projectUrl = GetUri(metadata, Properties.ProjectUrl);
+            var iconUrl = metadata.GetUri(Properties.IconUrl);
+            var licenseUrl = metadata.GetUri(Properties.LicenseUrl);
+            var projectUrl = metadata.GetUri(Properties.ProjectUrl);
             var tags = GetField(metadata, Properties.Tags);
-            var dependencySets = (metadata.Value<JArray>(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
-            var requireLicenseAcceptance = metadata[Properties.RequireLicenseAcceptance] == null ? false : metadata[Properties.RequireLicenseAcceptance].ToObject<bool>();
+            var dependencySets = (metadata.GetJArray(Properties.DependencyGroups) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependencySet((JObject)obj));
+            var requireLicenseAcceptance =
+                metadata.GetBoolean(Properties.RequireLicenseAcceptance) ?? false;
 
             var reportAbuseUrl =
                 _reportAbuseResource != null ?
@@ -148,20 +126,6 @@ namespace NuGet.Protocol.VisualStudio
             return value.ToString();
         }
 
-        private Uri GetUri(JObject json, string property)
-        {
-            if (json[property] == null)
-            {
-                return null;
-            }
-            var str = json[property].ToString();
-            if (String.IsNullOrEmpty(str))
-            {
-                return null;
-            }
-            return new Uri(str);
-        }
-
         private static PackageDependencyGroup LoadDependencySet(JObject set)
         {
             var fxName = set.Value<string>(Properties.TargetFramework);
@@ -175,7 +139,7 @@ namespace NuGet.Protocol.VisualStudio
             }
 
             return new PackageDependencyGroup(framework,
-                (set.Value<JArray>(Properties.Dependencies) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependency((JObject)obj)));
+                (set.GetJArray(Properties.Dependencies) ?? Enumerable.Empty<JToken>()).Select(obj => LoadDependency((JObject)obj)));
         }
 
         private static Packaging.Core.PackageDependency LoadDependency(JObject dep)

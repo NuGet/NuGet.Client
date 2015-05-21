@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -10,7 +9,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -136,10 +134,7 @@ namespace NuGet.Protocol.Core.v3
                 {
                     var catalogEntry = (JObject)packageObj["catalogEntry"];
                     var version = NuGetVersion.Parse(catalogEntry["version"].ToString());
-
-                    var listedToken = catalogEntry["listed"];
-
-                    var listed = (listedToken != null) ? listedToken.Value<bool>() : true;
+                    var listed = catalogEntry.GetBoolean("listed") ?? true;
 
                     if (range.Satisfies(version)
                         && (includePrerelease || !version.IsPrerelease)
