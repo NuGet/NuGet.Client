@@ -134,10 +134,6 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Execute the installs/uninstalls
         /// </summary>
-        /// <param name="actions"></param>
-        /// <param name="projectContext"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
         protected async Task ExecuteActionsAsync(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions,
             NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
         {
@@ -173,7 +169,8 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    var identitiesWithSameId = nuGetProjectActions.Where(n => n.PackageIdentity.Id.Equals(userAction)).ToList();
+                    var identitiesWithSameId = nuGetProjectActions.Where(
+                        n => n.PackageIdentity.Id.Equals(userAction.PackageId, StringComparison.OrdinalIgnoreCase)).ToList();
                     if (identitiesWithSameId.Count == 1)
                     {
                         directInstall = identitiesWithSameId[0].PackageIdentity;

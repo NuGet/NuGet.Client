@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Microsoft.VisualStudio.Shell;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
@@ -88,45 +88,52 @@ namespace NuGet.PackageManagement.UI
             if (!UIDispatcher.CheckAccess())
             {
                 UIDispatcher.Invoke(
-                    new Action<bool>(UpdateRestoreBar),
+                    (Action<bool>)UpdateRestoreBar,
                     packagesMissing);
                 return;
             }
 
-            RestoreBar.Visibility = packagesMissing ? Visibility.Visible : Visibility.Collapsed;
             if (packagesMissing)
             {
                 ResetUI();
+            }
+            else
+            {
+                RestoreBar.Visibility = Visibility.Collapsed;
             }
         }
 
         private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
-            ShowProgressUI();
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await RestorePackagesAsync(); });
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None));
         }
 
-        private async Task RestorePackagesAsync()
+        public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ShowProgressUI();
+
             try
             {
                 PackageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
                 var solutionDirectory = SolutionManager.SolutionDirectory;
-                await PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
+                await PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, token);
 
                 if (RestoreException == null)
                 {
                     // when the control is first loaded, check for missing packages
-                    await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                    await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
                 }
                 else
                 {
                     ShowErrorUI(RestoreException.Message);
+                    return false;
                 }
             }
             catch (Exception ex)
             {
                 ShowErrorUI(ex.Message);
+                return false;
             }
             finally
             {
@@ -135,6 +142,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
+            return true;
         }
 
         private void PackageRestoreFailedEvent(object sender, PackageRestoreFailedEventArgs e)
@@ -148,6 +156,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ResetUI()
         {
+            RestoreBar.Visibility = Visibility.Visible;
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
             StatusMessage.Text = UI.Resources.AskForRestoreMessage;
@@ -155,6 +164,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ShowProgressUI()
         {
+            RestoreBar.Visibility = Visibility.Visible;
             RestoreButton.Visibility = Visibility.Collapsed;
             ProgressBar.Visibility = Visibility.Visible;
             StatusMessage.Text = UI.Resources.PackageRestoreProgressMessage;

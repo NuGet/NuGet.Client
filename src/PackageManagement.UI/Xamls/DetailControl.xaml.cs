@@ -79,12 +79,16 @@ namespace NuGet.PackageManagement.UI
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                     try
                     {
-                        await Task.Run(() =>
-                            Control.Model.Context.UIActionEngine.PerformActionAsync(
-                                Control.Model.UIController,
-                                action,
-                                this,
-                                CancellationToken.None));
+                        var restoreSucceded = await Control.RestoreBar.UIRestorePackagesAsync(CancellationToken.None);
+                        if (restoreSucceded)
+                        {
+                            await Task.Run(() =>
+                                Control.Model.Context.UIActionEngine.PerformActionAsync(
+                                    Control.Model.UIController,
+                                    action,
+                                    this,
+                                    CancellationToken.None));
+                        }
                     }
                     finally
                     {

@@ -28,8 +28,6 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageManagerControl : UserControl, IVsWindowSearch
     {
-        private const int PageSize = 10;
-
         private readonly bool _initialized;
 
         // used to prevent starting new search when we update the package sources
@@ -105,6 +103,8 @@ namespace NuGet.PackageManagement.UI
                 _legalDisclaimer.Visibility = Visibility.Collapsed;
             }
         }
+
+        public PackageRestoreBar RestoreBar => _restoreBar;
 
         private void InitializeFilterList(UserSettings settings)
         {
