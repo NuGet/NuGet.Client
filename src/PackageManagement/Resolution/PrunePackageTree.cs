@@ -21,7 +21,10 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static IEnumerable<SourcePackageDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> targets)
         {
-            var allowed = new HashSet<string>(targets.Select(p => p.Id), StringComparer.OrdinalIgnoreCase);
+            var allowed = new HashSet<string>(targets
+                .Where(p => p.HasVersion && p.Version.IsPrerelease)
+                .Select(p => p.Id), 
+                StringComparer.OrdinalIgnoreCase);
 
             return packages.Where(p => !(p.HasVersion && p.Version.IsPrerelease) || allowed.Contains(p.Id));
         }
