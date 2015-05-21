@@ -11,7 +11,6 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.ProjectManagement
 {
@@ -32,7 +31,7 @@ namespace NuGet.ProjectManagement
         {
             if (root == null)
             {
-                throw new ArgumentNullException("root");
+                throw new ArgumentNullException(nameof(root));
             }
             Root = root;
             PackagePathResolver = new PackagePathResolver(root);
@@ -208,8 +207,7 @@ namespace NuGet.ProjectManagement
                 // If this is the last package delete the package directory
                 // If this is the last package delete the package directory
                 if (!FileSystemUtility.GetFiles(Root, string.Empty, "*.*").Any()
-                    &&
-                    !FileSystemUtility.GetDirectories(Root, string.Empty).Any())
+                    && !FileSystemUtility.GetDirectories(Root, string.Empty).Any())
                 {
                     FileSystemUtility.DeleteDirectorySafe(Root, recursive: false, nuGetProjectContext: nuGetProjectContext);
                 }

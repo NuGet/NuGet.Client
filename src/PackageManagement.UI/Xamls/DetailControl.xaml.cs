@@ -61,16 +61,13 @@ namespace NuGet.PackageManagement.UI
             return new UserAction(
                 action,
                 model.Id,
-                model.SelectedVersion != null ? model.SelectedVersion.Version : null);
+                model.SelectedVersion?.Version);
         }
 
         public void Refresh()
         {
             var model = DataContext as DetailControlModel;
-            if (model != null)
-            {
-                model.Refresh();
-            }
+            model?.Refresh();
         }
 
         private void ActionButtonClicked(object sender, RoutedEventArgs e)

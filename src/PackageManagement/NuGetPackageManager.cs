@@ -420,7 +420,6 @@ namespace NuGet.PackageManagement
             {
                 // If any targets are prerelease we should gather with prerelease on and filter afterwards
                 var includePrereleaseInGather = resolutionContext.IncludePrerelease || (packageTargetsForResolver.Any(p => (p.HasVersion && p.Version.IsPrerelease)));
-                var contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted);
 
                 // Step-1 : Get metadata resources using gatherer
                 var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
@@ -705,10 +704,7 @@ namespace NuGet.PackageManagement
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, targetFramework);
 
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
-
-                    // If any targets are prerelease we should gather with prerelease on and filter afterwards
-                    var includePrereleaseInGather = resolutionContext.IncludePrerelease || (packageTargetsForResolver.Any(p => (p.HasVersion && p.Version.IsPrerelease)));
-
+                    
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(
                         primaryPackages,
                         oldListOfInstalledPackages,
@@ -733,7 +729,7 @@ namespace NuGet.PackageManagement
                         prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(
                             prunedAvailablePackages, 
                             packageTargetsForResolver, 
-                            new PackageIdentity[] { packageIdentity });
+                            new [] { packageIdentity });
                     }
 
                     // Verify that the target is allowed by packages.config
@@ -776,8 +772,9 @@ namespace NuGet.PackageManagement
                     foreach (var oldInstalledPackage in oldListOfInstalledPackages)
                     {
                         var newPackageWithSameId = newListOfInstalledPackages
-                            .Where(np => oldInstalledPackage.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) &&
-                                         !oldInstalledPackage.Version.Equals(np.Version)).FirstOrDefault();
+                            .FirstOrDefault(np =>
+                                oldInstalledPackage.Id.Equals(np.Id, StringComparison.OrdinalIgnoreCase) &&
+                                !oldInstalledPackage.Version.Equals(np.Version));
 
                         if (newPackageWithSameId != null)
                         {
@@ -801,7 +798,7 @@ namespace NuGet.PackageManagement
                     foreach (var newPackageToInstall in newPackagesToInstall)
                     {
                         // find the package match based on identity
-                        var sourceDepInfo = prunedAvailablePackages.Where(p => comparer.Equals(p, newPackageToInstall)).SingleOrDefault();
+                        var sourceDepInfo = prunedAvailablePackages.SingleOrDefault(p => comparer.Equals(p, newPackageToInstall));
 
                         if (sourceDepInfo == null)
                         {
@@ -931,10 +928,8 @@ namespace NuGet.PackageManagement
 
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
             var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
-            var packageReference = installedPackages
-                .Where(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-            if (packageReference == null
-                || packageReference.PackageIdentity == null)
+            var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase));
+            if (packageReference?.PackageIdentity == null)
             {
                 throw new ArgumentException(string.Format(Strings.PackageToBeUninstalledCouldNotBeFound,
                     packageId, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
@@ -974,10 +969,8 @@ namespace NuGet.PackageManagement
 
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
             var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
-            var packageReference = installedPackages
-                .Where(pr => pr.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
-            if (packageReference == null
-                || packageReference.PackageIdentity == null)
+            var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Equals(packageIdentity));
+            if (packageReference?.PackageIdentity == null)
             {
                 throw new ArgumentException(string.Format(Strings.PackageToBeUninstalledCouldNotBeFound,
                     packageIdentity.Id, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
@@ -1015,7 +1008,7 @@ namespace NuGet.PackageManagement
             // Step-2 : Determine if the package can be uninstalled based on the metadata resources
             var packagesToBeUninstalled = UninstallResolver.GetPackagesToBeUninstalled(packageIdentity, dependencyInfoFromPackagesFolder, installedPackageIdentities, uninstallationContext);
 
-            var nuGetProjectActions = packagesToBeUninstalled.Select(p => NuGetProjectAction.CreateUninstallProjectAction(p));
+            var nuGetProjectActions = packagesToBeUninstalled.Select(NuGetProjectAction.CreateUninstallProjectAction);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
             return nuGetProjectActions;
@@ -1148,9 +1141,6 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
-            // Find the target framework
-            var projectFramework = buildIntegratedProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-
             // Find all sources used in the project actions
             var sources = new HashSet<string>(
                 nuGetProjectActions.Where(action => action.SourceRepository != null)

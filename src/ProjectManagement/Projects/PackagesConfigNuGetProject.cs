@@ -82,7 +82,8 @@ namespace NuGet.ProjectManagement
 
             var newPackageReference = new PackageReference(packageIdentity, TargetFramework);
             var installedPackagesList = GetInstalledPackagesList();
-            var packageReferenceWithSameId = installedPackagesList.Where(p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
+                p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
             if (packageReferenceWithSameId != null)
             {
                 if (packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))

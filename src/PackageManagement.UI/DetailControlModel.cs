@@ -267,8 +267,7 @@ namespace NuGet.PackageManagement.UI
 
                     DetailedPackageMetadata packageMetadata;
                     if (_metadataDict != null
-                        &&
-                        _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
+                        && _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
                     {
                         PackageMetadata = packageMetadata;
                     }
@@ -282,7 +281,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // Caculate the version to select among _versions and select it
+        // Calculate the version to select among _versions and select it
         protected void SelectVersion()
         {
             if (_versions.Count == 0)
@@ -351,8 +350,7 @@ namespace NuGet.PackageManagement.UI
 
             DetailedPackageMetadata p;
             if (SelectedVersion != null
-                &&
-                _metadataDict.TryGetValue(SelectedVersion.Version, out p))
+                && _metadataDict.TryGetValue(SelectedVersion.Version, out p))
             {
                 PackageMetadata = p;
             }

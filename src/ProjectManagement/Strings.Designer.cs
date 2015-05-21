@@ -178,7 +178,7 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Removed file &apos;{0}&apos; to folder &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Removed file &apos;{0}&apos; from folder &apos;{1}&apos;..
         /// </summary>
         public static string Debug_RemovedFileFromFolder {
             get {

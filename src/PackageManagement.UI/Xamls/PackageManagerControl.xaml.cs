@@ -391,7 +391,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!_uiDispatcher.CheckAccess())
             {
-                _uiDispatcher.Invoke(() => { UpdateAfterPackagesMissingStatusChanged(); });
+                _uiDispatcher.Invoke(UpdateAfterPackagesMissingStatusChanged);
 
                 return;
             }

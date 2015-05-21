@@ -63,8 +63,7 @@ namespace NuGet.PackageManagement.UI
 
         public void LaunchNuGetOptionsDialog()
         {
-            if (_context != null
-                && _context.OptionsPageActivator != null)
+            if (_context?.OptionsPageActivator != null)
             {
                 UIDispatcher.Invoke(() => { _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null); });
             }

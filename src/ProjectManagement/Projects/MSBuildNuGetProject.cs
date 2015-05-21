@@ -131,13 +131,13 @@ namespace NuGet.ProjectManagement
         private static bool IsBindingRedirectsDisabled(INuGetProjectContext nuGetProjectContext)
         {
             var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-            return msBuildNuGetProjectContext != null ? msBuildNuGetProjectContext.BindingRedirectsDisabled : false;
+            return msBuildNuGetProjectContext?.BindingRedirectsDisabled ?? false;
         }
 
         private static bool IsSkipAssemblyReferences(INuGetProjectContext nuGetProjectContext)
         {
             var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-            return msBuildNuGetProjectContext != null ? msBuildNuGetProjectContext.SkipAssemblyReferences : false;
+            return msBuildNuGetProjectContext?.SkipAssemblyReferences ?? false;
         }
 
         public override async Task<bool> InstallPackageAsync(
@@ -169,8 +169,8 @@ namespace NuGet.ProjectManagement
             // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
-            var packageReference = (await GetInstalledPackagesAsync(token)).Where(
-                p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
+            var packageReference = (await GetInstalledPackagesAsync(token))
+                .FirstOrDefault(p => p.PackageIdentity.Equals(packageIdentity));
             if (packageReference != null)
             {
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInProject,
@@ -348,15 +348,12 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
 
             // Step 11: Raise PackageReferenceAdded event
-            if (PackageReferenceAdded != null)
-            {
-                PackageReferenceAdded(this, packageEventArgs);
-            }
+            PackageReferenceAdded?.Invoke(this, packageEventArgs);
             PackageEventsProvider.Instance.NotifyReferenceAdded(packageEventArgs);
 
             // Step-12: Execute powershell script - install.ps1
             var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
-            var anyFrameworkToolsGroup = toolItemGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
+            var anyFrameworkToolsGroup = toolItemGroups.FirstOrDefault(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework));
             if (anyFrameworkToolsGroup != null)
             {
                 var initPS1RelativePath = anyFrameworkToolsGroup.Items.Where(p =>
@@ -370,8 +367,8 @@ namespace NuGet.ProjectManagement
 
             if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
             {
-                var installPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
-                    p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var installPS1RelativePath = compatibleToolItemsGroup.Items.FirstOrDefault(
+                    p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase));
                 if (!string.IsNullOrEmpty(installPS1RelativePath))
                 {
                     await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, installPS1RelativePath, this, throwOnFailure: true);
@@ -384,19 +381,19 @@ namespace NuGet.ProjectManagement
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             if (nuGetProjectContext == null)
             {
-                throw new ArgumentNullException("nuGetProjectContext");
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
             // Step-1: Check if the package already exists after setting the nuGetProjectContext
             MSBuildNuGetProjectSystem.SetNuGetProjectContext(nuGetProjectContext);
 
-            var packageReference = (await GetInstalledPackagesAsync(token)).Where(
-                p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
+            var packageReference = (await GetInstalledPackagesAsync(token))
+                .FirstOrDefault(p => p.PackageIdentity.Equals(packageIdentity));
             if (packageReference == null)
             {
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExistInProject,
@@ -414,7 +411,6 @@ namespace NuGet.ProjectManagement
                 var packageReader = new PackageReader(zipArchive);
 
                 var referenceItemGroups = packageReader.GetReferenceItems();
-                var frameworkReferenceGroups = packageReader.GetFrameworkItems();
                 var contentFileGroups = packageReader.GetContentItems();
                 var buildFileGroups = packageReader.GetBuildItems();
 
@@ -501,8 +497,8 @@ namespace NuGet.ProjectManagement
                     toolItemGroups);
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
                 {
-                    var uninstallPS1RelativePath = compatibleToolItemsGroup.Items.Where(p =>
-                        p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    var uninstallPS1RelativePath = compatibleToolItemsGroup.Items.FirstOrDefault(
+                        p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall, StringComparison.OrdinalIgnoreCase));
                     if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
                         var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);

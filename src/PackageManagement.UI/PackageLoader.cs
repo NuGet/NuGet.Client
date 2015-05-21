@@ -185,8 +185,7 @@ namespace NuGet.PackageManagement.UI
                 foreach (var package in (await project.GetInstalledPackagesAsync(token)))
                 {
                     if (!(project is INuGetIntegratedProject)
-                        &&
-                        !_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
+                        && !_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
                     {
                         continue;
                     }

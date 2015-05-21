@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement
             if (!string.IsNullOrEmpty(solutionDirectory))
             {
                 var packages = await GetPackagesInSolutionAsync(solutionDirectory, token);
-                missing = packages.Where(p => p.IsMissing).Any();
+                missing = packages.Any(p => p.IsMissing);
             }
 
             if (PackagesMissingStatusChanged != null)
@@ -211,7 +211,7 @@ namespace NuGet.PackageManagement
         }
 
         public virtual Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
-             IEnumerable<PackageRestoreData> packages,
+            IEnumerable<PackageRestoreData> packages,
             CancellationToken token)
         {
             if (packages == null)

@@ -144,8 +144,7 @@ namespace NuGet.PackageManagement.UI
             else if (SelectedAction == Resources.Action_Upgrade)
             {
                 if (latestStableVersion != null
-                    &&
-                    latestStableVersion != installedVersion.Version)
+                    && latestStableVersion != installedVersion.Version)
                 {
                     _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
 
