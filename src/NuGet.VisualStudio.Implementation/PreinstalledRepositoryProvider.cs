@@ -30,11 +30,19 @@ namespace NuGet.VisualStudio
             _provider = provider;
         }
 
-        public void AddFromRegistry(string keyName)
+        public void AddFromRegistry(string keyName, bool isPreUnzipped)
         {
             string path = GetRegistryRepositoryPath(keyName, null, _errorHandler);
 
-            PackageSource source = new PackageSource(path);
+            PackageSource source;
+            if (isPreUnzipped)
+            {
+                source = new V2PackageSource(path, () => new Legacy.NuGet.UnzippedPackageRepository(path));
+            }
+            else
+            {
+                source = new PackageSource(path);
+            }
 
             _repositories.Add(_provider.CreateRepository(source));
         }

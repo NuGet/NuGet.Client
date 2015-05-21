@@ -164,7 +164,7 @@ namespace NuGet.VisualStudio
                 {
                     // create a repository provider with only the registry repository
                     PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
-                    repoProvider.AddFromRegistry(keyName);
+                    repoProvider.AddFromRegistry(keyName, isPreUnzipped);
 
                     List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
 

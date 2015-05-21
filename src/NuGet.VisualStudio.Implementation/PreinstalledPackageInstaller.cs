@@ -23,7 +23,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Implementation.Resources;
 using IPackageRepository = Legacy::NuGet.IPackageRepository;
-using LocalPackageRepository = Legacy::NuGet.LocalPackageRepository;
+using LazyLocalPackageRepository = Legacy::NuGet.LazyLocalPackageRepository;
 using Task = System.Threading.Tasks.Task;
 using UnzippedPackageRepository = Legacy::NuGet.UnzippedPackageRepository;
 
@@ -175,7 +175,7 @@ namespace NuGet.VisualStudio
 
             IPackageRepository repository = configuration.IsPreunzipped
                 ? new UnzippedPackageRepository(repositoryPath)
-                : (IPackageRepository)new LocalPackageRepository(repositoryPath);
+                : (IPackageRepository)new LazyLocalPackageRepository(repositoryPath);
 
             PreinstalledRepositoryProvider repos = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
             repos.AddFromRepository(repository);
