@@ -105,13 +105,14 @@ namespace NuGet.Protocol.VisualStudio
         private static IEnumerable<VersionInfo> GetVersionList(JObject package, bool includePrerelease, NuGetVersion version)
         {
             var versionList = new List<VersionInfo>();
-            var versions = package.Value<JArray>(Properties.Versions);
+            var versions = package.GetJArray(Properties.Versions);
+
             if (versions != null)
             {
                 foreach (var v in versions)
                 {
                     var nugetVersion = NuGetVersion.Parse(v.Value<string>("version"));
-                    var count = v.Value<int>("downloads");
+                    var count = v.Value<int?>("downloads");
                     versionList.Add(new VersionInfo(nugetVersion, count));
                 }
             }

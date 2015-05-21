@@ -76,7 +76,6 @@ namespace NuGet.Protocol.Core.v3
 
                 if (!cancellationToken.IsCancellationRequested)
                 {
-
                     JObject searchJson = null;
                     try
                     {
@@ -110,7 +109,7 @@ namespace NuGet.Protocol.Core.v3
         {
             var results = await SearchPage(searchTerm, filters, skip, take, cancellationToken);
 
-            var data = results.Value<JArray>("data");
+            var data = results.GetJArray("data");
             if (data == null)
             {
                 return Enumerable.Empty<JObject>();
