@@ -3023,5 +3023,145 @@ namespace NuGet.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
         }
+
+        [Fact]
+        public async Task TestPacManInstallPackageEFFromV3()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var target = new PackageIdentity("EntityFramework", NuGetVersion.Parse("7.0.0-beta4"));
+
+            // Act
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                msBuildNuGetProject,
+                target,
+                new ResolutionContext(DependencyBehavior.Lowest, true, false),
+                new TestNuGetProjectContext(), 
+                sourceRepositoryProvider.GetRepositories().First(), 
+                null,
+                token);
+
+            var result = nugetProjectActions.ToList();
+
+            var resultIdentities = result.Select(p => p.PackageIdentity);
+
+            Assert.True(resultIdentities.Contains(target));
+
+            //  and all the actions are Install
+            foreach (var nugetProjectAction in result)
+            {
+                Assert.Equal(nugetProjectAction.NuGetProjectActionType, NuGetProjectActionType.Install);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallPackagePrereleaseDependenciesFromV2()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var target = new PackageIdentity("DependencyTestA", NuGetVersion.Parse("1.0.0"));
+
+            // Act
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                msBuildNuGetProject,
+                target,
+                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories().First(),
+                null,
+                token);
+
+            var result = nugetProjectActions.ToList();
+
+            var resultIdentities = result.Select(p => p.PackageIdentity);
+
+            Assert.True(resultIdentities.Contains(target));
+            Assert.True(resultIdentities.Contains(new PackageIdentity("DependencyTestB", NuGetVersion.Parse("1.0.0"))));
+
+            //  and all the actions are Install
+            foreach (var nugetProjectAction in result)
+            {
+                Assert.Equal(nugetProjectAction.NuGetProjectActionType, NuGetProjectActionType.Install);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallPackagePrereleaseDependenciesFromV2IncludePrerelease()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var target = new PackageIdentity("DependencyTestA", NuGetVersion.Parse("1.0.0"));
+
+            // Act
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                msBuildNuGetProject,
+                target,
+                new ResolutionContext(DependencyBehavior.Lowest, true, false),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories().First(),
+                null,
+                token);
+
+            var result = nugetProjectActions.ToList();
+
+            var resultIdentities = result.Select(p => p.PackageIdentity);
+
+            Assert.True(resultIdentities.Contains(target));
+            Assert.True(resultIdentities.Contains(new PackageIdentity("DependencyTestB", NuGetVersion.Parse("1.0.0-a"))));
+
+            //  and all the actions are Install
+            foreach (var nugetProjectAction in result)
+            {
+                Assert.Equal(nugetProjectAction.NuGetProjectActionType, NuGetProjectActionType.Install);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
     }
 }

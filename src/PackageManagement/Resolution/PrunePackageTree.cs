@@ -21,18 +21,9 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static IEnumerable<SourcePackageDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> targets)
         {
-            var result = packages;
+            var allowed = new HashSet<string>(targets.Select(p => p.Id), StringComparer.OrdinalIgnoreCase);
 
-            foreach (var group in targets.GroupBy(p => p.Id, StringComparer.OrdinalIgnoreCase))
-            {
-                // remove prerelease versions for targets that are non-prerelease themselves
-                if (!targets.Any(p => p.HasVersion && p.Version.IsPrerelease))
-                {
-                    result = RemoveAllPrereleaseVersionsForId(result, group.Key);
-                }
-            }
-
-            return result;
+            return packages.Where(p => !(p.HasVersion && p.Version.IsPrerelease) || allowed.Contains(p.Id));
         }
 
         public static IEnumerable<SourcePackageDependencyInfo> PruneDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
