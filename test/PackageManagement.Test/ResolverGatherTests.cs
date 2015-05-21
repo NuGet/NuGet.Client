@@ -805,10 +805,5 @@ namespace NuGet.Test
 
             return results;
         }
-
-        public override Task<IEnumerable<KeyValuePair<string, bool>>> ArePackagesSatellite(IEnumerable<string> packageId, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
