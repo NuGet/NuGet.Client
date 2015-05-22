@@ -14,6 +14,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -58,9 +59,18 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
         {
+            if (downloadResourceResult == null)
+            {
+                throw new ArgumentNullException(nameof(downloadResourceResult));
+            }
+
+            var packageStream = downloadResourceResult.PackageStream;
             if (!packageStream.CanSeek)
             {
                 throw new ArgumentException(ProjectManagement.Strings.PackageStreamShouldBeSeekable);
@@ -82,10 +92,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     IsCompatible(projectFramework, packageSupportedFrameworks)).ToArray();
             await _project.InstallPackageAsync(
                 new NuGetPackageMoniker
-                    {
-                        Id = packageIdentity.Id,
-                        Version = packageIdentity.Version.ToNormalizedString()
-                    },
+                {
+                    Id = packageIdentity.Id,
+                    Version = packageIdentity.Version.ToNormalizedString()
+                },
                 args,
                 logger: null,
                 progress: null,
@@ -100,10 +110,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var args = new Dictionary<string, object>();
             await _project.UninstallPackageAsync(
                 new NuGetPackageMoniker
-                    {
-                        Id = packageIdentity.Id,
-                        Version = packageIdentity.Version.ToNormalizedString()
-                    },
+                {
+                    Id = packageIdentity.Id,
+                    Version = packageIdentity.Version.ToNormalizedString()
+                },
                 args,
                 logger: null,
                 progress: null,

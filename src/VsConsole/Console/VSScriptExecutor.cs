@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
@@ -14,7 +13,6 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
@@ -41,17 +39,17 @@ namespace NuGetConsole
         [Import]
         public IOutputConsoleProvider OutputConsoleProvider { get; set; }
 
-        public async Task<bool> ExecuteAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, EnvDTEProject envDTEProject,
+        public async Task<bool> ExecuteAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, EnvDTEProject envDTEProject,
             NuGetProject nuGetProject, INuGetProjectContext nuGetProjectContext, bool throwOnFailure)
         {
             string scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            return await ExecuteCoreAsync(scriptFullPath, packageInstallPath, packageZipArchive, envDTEProject, nuGetProject, nuGetProjectContext, throwOnFailure);
+            return await ExecuteCoreAsync(packageIdentity, scriptFullPath, packageInstallPath, envDTEProject, nuGetProject, nuGetProjectContext, throwOnFailure);
         }
 
         private async Task<bool> ExecuteCoreAsync(
+            PackageIdentity packageIdentity,
             string fullScriptPath,
             string packageInstallPath,
-            ZipArchive packageZipArchive,
             EnvDTEProject envDTEProject,
             NuGetProject nuGetProject,
             INuGetProjectContext nuGetProjectContext,
@@ -59,7 +57,6 @@ namespace NuGetConsole
         {
             if (File.Exists(fullScriptPath))
             {
-                PackageIdentity packageIdentity = null;
                 ScriptPackage package = null;
                 if (envDTEProject != null)
                 {
@@ -68,8 +65,6 @@ namespace NuGetConsole
 
                     // targetFramework can be null for unknown project types
                     string shortFramework = targetFramework == null ? string.Empty : targetFramework.GetShortFolderName();
-                    var packageReader = new PackageReader(packageZipArchive);
-                    packageIdentity = packageReader.GetIdentity();
 
                     nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
                         envDTEProject.Name, shortFramework);

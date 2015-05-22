@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
@@ -718,11 +719,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion
 
-        public Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject, bool throwOnFailure)
+        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)
         {
             if (ScriptExecutor != null)
             {
-                return ScriptExecutor.ExecuteAsync(packageInstallPath, scriptRelativePath, packageZipArchive, EnvDTEProject, nuGetProject, NuGetProjectContext, throwOnFailure);
+                return ScriptExecutor.ExecuteAsync(identity, packageInstallPath, scriptRelativePath, EnvDTEProject, nuGetProject, NuGetProjectContext, throwOnFailure);
             }
             return Task.FromResult(false);
         }
