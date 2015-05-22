@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -24,7 +25,7 @@ namespace NuGet.Protocol.Core.v2
             V2Client = resource.V2Client;
         }
 
-        public override Task<Stream> GetStreamAsync(PackageIdentity identity, CancellationToken token)
+        public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, CancellationToken token)
         {
             if (identity == null)
             {
@@ -33,16 +34,32 @@ namespace NuGet.Protocol.Core.v2
 
             return Task.Run(() =>
             {
-                SemanticVersion version = SemanticVersion.Parse(identity.Version.ToString());
+                var version = SemanticVersion.Parse(identity.Version.ToString());
                 try
                 {
                     var package = V2Client.FindPackage(identity.Id, version);
-                    return package == null ? null : package.GetStream();
+
+                    if (package != null)
+                    {
+                        if (V2Client is UnzippedPackageRepository)
+                        {
+                            var packagePath = Path.Combine(V2Client.Source, identity.Id + "." + version);
+                            var directoryInfo = new DirectoryInfo(packagePath);
+                            if (directoryInfo.Exists)
+                            {
+                                return new DownloadResourceResult(package.GetStream(), new PackageFolderReader(directoryInfo));
+                            }
+                        }
+
+                        return new DownloadResourceResult(package.GetStream());
+                    }
+
+                    return null;
                 }
                 catch (Exception ex)
                 {
                     throw new NuGetProtocolException(Strings.FormatProtocol_FailedToDownloadPackage(identity, V2Client.Source), ex);
-                }                
+                }
             });
         }
     }

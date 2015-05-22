@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
@@ -14,7 +13,7 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public abstract class DownloadResource : INuGetResource
     {
-        public abstract Task<Stream> GetStreamAsync(PackageIdentity identity, CancellationToken token);
+        public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, CancellationToken token);
 
         public event EventHandler<PackageProgressEventArgs> Progress;
     }

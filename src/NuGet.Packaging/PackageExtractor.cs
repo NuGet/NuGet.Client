@@ -79,6 +79,98 @@ namespace NuGet.Packaging
             return filesAdded;
         }
 
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(
+            PackageReaderBase packageReader,
+            Stream packageStream,
+            PackageIdentity packageIdentity,
+            PackagePathResolver packagePathResolver,
+            PackageExtractionContext packageExtractionContext,
+            PackageSaveModes packageSaveMode,
+            CancellationToken token)
+        {
+            if (packageStream == null)
+            {
+                throw new ArgumentNullException(nameof(packageStream));
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (packagePathResolver == null)
+            {
+                throw new ArgumentNullException(nameof(packagePathResolver));
+            }
+
+            // TODO: Need to handle PackageSaveMode
+            // TODO: Support overwriting files also?
+            var nupkgStartPosition = packageStream.Position;
+            var filesAdded = new List<string>();
+
+            // default to non-legacy paths
+            var useLegacyPaths = packageExtractionContext == null ? false : packageExtractionContext.UseLegacyPackageInstallPath;
+
+            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+            var packageVersionFromNuspec = nuspecReader.GetVersion();
+
+            var packageDirectoryInfo = Directory.CreateDirectory(
+                packagePathResolver.GetInstallPath(
+                    new PackageIdentity(packageIdentity.Id, packageVersionFromNuspec), useLegacyPaths));
+            var packageDirectory = packageDirectoryInfo.FullName;
+
+            foreach (var file in packageReader.GetFiles().Where(file => PackageHelper.IsPackageFile(file, packageSaveMode)))
+            {
+                token.ThrowIfCancellationRequested();
+
+                var targetPath = Path.Combine(packageDirectory, file);
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+
+                using (var sourceStream = packageReader.GetStream(file))
+                using (var targetStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 1024, useAsync: true))
+                {
+                    await sourceStream.CopyToAsync(targetStream);
+                }
+
+                filesAdded.Add(file);
+            }
+
+            var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
+            if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
+            {
+                // During package extraction, nupkg is the last file to be created
+                // Since all the packages are already created, the package stream is likely positioned at its end
+                // Reset it to the nupkgStartPosition
+                if (packageStream.Position != 0)
+                {
+                    if (!packageStream.CanSeek)
+                    {
+                        throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
+                    }
+
+                    packageStream.Position = 0;
+
+                }
+
+                filesAdded.Add(await PackageHelper.CreatePackageFile(nupkgFilePath, packageStream, token));
+            }
+
+            // Now, copy satellite files unless requested to not copy them
+            if (packageExtractionContext == null || packageExtractionContext.CopySatelliteFiles)
+            {
+                PackageIdentity runtimeIdentity;
+                string packageLanguage;
+                var isSatellitePackage = PackageHelper.IsSatellitePackage(nuspecReader, out runtimeIdentity, out packageLanguage);
+
+                // Short-circuit this if the package is not a satellite package.
+                if (isSatellitePackage)
+                {
+                    filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentity, packagePathResolver, packageSaveMode, token));
+                }
+            }
+
+            return filesAdded;
+        }
         public static async Task<IEnumerable<string>> CopySatelliteFilesAsync(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {

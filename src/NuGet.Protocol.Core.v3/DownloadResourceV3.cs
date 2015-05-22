@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +19,6 @@ namespace NuGet.Protocol.Core.v3
         private readonly HttpClient _client;
 
         public DownloadResourceV3(HttpClient client, RegistrationResourceV3 regResource)
-            : base()
         {
             if (client == null)
             {
@@ -51,7 +49,7 @@ namespace NuGet.Protocol.Core.v3
             return downloadUri;
         }
 
-        public override async Task<Stream> GetStreamAsync(PackageIdentity identity, CancellationToken token)
+        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, CancellationToken token)
         {
             if (identity == null)
             {
@@ -59,7 +57,16 @@ namespace NuGet.Protocol.Core.v3
             }
             
             Uri uri = await GetDownloadUrl(identity, token);
-            return uri == null ? null : await _client.GetStreamAsync(uri);
+            if (uri != null)
+            {
+                var stream = await _client.GetStreamAsync(uri);
+                if (stream != null)
+                {
+                    return new DownloadResourceResult(stream);
+                }
+            }
+
+            return null;
         }
     }
 }
