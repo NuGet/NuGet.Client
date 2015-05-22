@@ -44,7 +44,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetVSConstants.VbProjectTypeGuid,
                 NuGetVSConstants.CppProjectTypeGuid,
                 NuGetVSConstants.JsProjectTypeGuid,
-                NuGetVSConstants.CpsProjectTypeGuid,
                 NuGetVSConstants.FsharpProjectTypeGuid,
                 NuGetVSConstants.NemerleProjectTypeGuid,
                 NuGetVSConstants.WixProjectTypeGuid,
@@ -186,7 +185,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 return true;
             }
 
+            if (IsTypicalCpsProject(envDTEProject))
+            {
+                return true;
+            }
+
             return envDTEProject.Kind != null && SupportedProjectTypes.Contains(envDTEProject.Kind) && !HasUnsupportedProjectCapability(envDTEProject);
+        }
+
+        private static bool IsTypicalCpsProject(EnvDTEProject envDTEProject)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Debug.Assert(envDTEProject != null);
+
+            var hierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+
+            return hierarchy.IsCapabilityMatch("CPS + AssemblyReferences + DeclaredSourceItems + UserSourceItems");
         }
 
         internal static bool IsSolutionFolder(EnvDTEProject envDTEProject)
@@ -641,10 +656,22 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return false;
             }
+
             int pFound;
             uint itemId;
-            int hr = vsProject.IsDocumentInProject(path, out pFound, new VSDOCUMENTPRIORITY[0], out itemId);
-            return ErrorHandler.Succeeded(hr) && pFound == 1;
+
+            if (IsTypicalCpsProject(envDTEProject))
+            {
+                // REVIEW: We want to revisit this after RTM - the code in this if statement should be applied to every project type.
+                // We're checking for VSDOCUMENTPRIORITY.DP_Standard here to see if the file is included in the project.
+                // Original check (outside of if) did not have this.
+                VSDOCUMENTPRIORITY[] priority = new VSDOCUMENTPRIORITY[1];
+                int hr = vsProject.IsDocumentInProject(path, out pFound, priority, out itemId);
+                return ErrorHandler.Succeeded(hr) && pFound == 1 && priority[0] >= VSDOCUMENTPRIORITY.DP_Standard;
+            }
+
+            int hres = vsProject.IsDocumentInProject(path, out pFound, new VSDOCUMENTPRIORITY[0], out itemId);
+            return ErrorHandler.Succeeded(hres) && pFound == 1;
         }
 
         // Get the ProjectItems for a folder path

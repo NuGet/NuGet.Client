@@ -15,7 +15,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string CppProjectTypeGuid = "{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}";
         public const string FsharpProjectTypeGuid = "{F2A71F9B-5D33-465A-A702-920D77279786}";
         public const string JsProjectTypeGuid = "{262852C6-CD72-467D-83FE-5EEB1973A190}";
-        public const string CpsProjectTypeGuid = "{13B669BE-BB05-4DDF-9536-439F39A36129}";
         public const string WixProjectTypeGuid = "{930C7802-8A8C-48F9-8165-68863BCCD9DD}";
         public const string LightSwitchProjectTypeGuid = "{ECD6D718-D1CF-4119-97F3-97C25A0DFBF9}";
         public const string NemerleProjectTypeGuid = "{edcc3b85-0bad-11db-bc1a-00112fde8b61}";
