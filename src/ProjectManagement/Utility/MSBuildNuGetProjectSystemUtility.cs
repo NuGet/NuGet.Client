@@ -72,7 +72,7 @@ namespace NuGet.ProjectManagement
         }
 
         internal static void AddFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
-            ZipArchive zipArchive,
+            PackageReaderBase packageReader,
             FrameworkSpecificGroup frameworkSpecificGroup,
             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
@@ -82,13 +82,10 @@ namespace NuGet.ProjectManagement
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
             {
-                var zipArchiveEntryList = packageItemListAsArchiveEntryNames
-                    .Select(i => PathUtility.GetEntry(zipArchive, i))
-                    .Where(i => i != null).ToList();
                 try
                 {
-                    var paths = zipArchiveEntryList.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
-                        GetEffectivePathForContentFile(packageTargetFramework, Uri.UnescapeDataString(file.FullName))));
+                    var paths = frameworkSpecificGroup.Items.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
+                        GetEffectivePathForContentFile(packageTargetFramework, file)));
                     paths = paths.Where(p => !string.IsNullOrEmpty(p));
                     msBuildNuGetProjectSystem.BeginProcessing(paths);
                 }
@@ -97,15 +94,14 @@ namespace NuGet.ProjectManagement
                     // Ignore all exceptions for now
                 }
 
-                foreach (var zipArchiveEntry in zipArchiveEntryList)
+                foreach (var file in frameworkSpecificGroup.Items)
                 {
-                    var zipPath = Uri.UnescapeDataString(zipArchiveEntry.FullName);
-                    if (IsEmptyFolder(zipPath))
+                    if (IsEmptyFolder(file))
                     {
                         continue;
                     }
 
-                    var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, zipPath);
+                    var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, file);
 
                     // Resolve the target path
                     IPackageFileTransformer installTransformer;
@@ -113,11 +109,12 @@ namespace NuGet.ProjectManagement
                         fileTransformers,
                         fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
 
+                    var packagePath = PathUtility.GetPackagePath(file);
                     if (msBuildNuGetProjectSystem.IsSupportedFile(path))
                     {
                         if (installTransformer != null)
                         {
-                            installTransformer.TransformFile(zipArchiveEntry, path, msBuildNuGetProjectSystem);
+                            installTransformer.TransformFile(() => packageReader.GetStream(packagePath), path, msBuildNuGetProjectSystem);
                         }
                         else
                         {
@@ -129,7 +126,7 @@ namespace NuGet.ProjectManagement
                             {
                                 continue;
                             }
-                            TryAddFile(msBuildNuGetProjectSystem, path, zipArchiveEntry.Open);
+                            TryAddFile(msBuildNuGetProjectSystem, path, () => packageReader.GetStream(packagePath));
                         }
                     }
                 }
@@ -224,7 +221,7 @@ namespace NuGet.ProjectManagement
                                 var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
                                 if (zipArchiveFileEntry != null)
                                 {
-                                    transformer.RevertFile(zipArchiveFileEntry, path, matchingFiles, msBuildNuGetProjectSystem);
+                                    transformer.RevertFile(zipArchiveFileEntry.Open, path, matchingFiles, msBuildNuGetProjectSystem);
                                 }
                             }
                             catch (Exception e)

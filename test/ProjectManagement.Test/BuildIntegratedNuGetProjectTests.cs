@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -37,7 +38,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyContentPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -78,7 +79,7 @@ namespace ProjectManagement.Test
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
             var packageFileInfo2 = TestPackages.GetLegacyContentPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
                 await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
@@ -122,7 +123,7 @@ namespace ProjectManagement.Test
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
             var packageFileInfo2 = TestPackages.GetLegacyContentPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
                 await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
@@ -149,6 +150,11 @@ namespace ProjectManagement.Test
             {
                 writer.Write(BasicConfig.ToString());
             }
+        }
+
+        private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
+        {
+            return new DownloadResourceResult(fileInfo.OpenRead());
         }
 
         private static JObject BasicConfig

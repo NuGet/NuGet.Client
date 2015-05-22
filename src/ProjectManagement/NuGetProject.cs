@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
 {
@@ -36,16 +36,19 @@ namespace NuGet.ProjectManagement
 
         // TODO: Consider adding CancellationToken here
         /// <summary>
-        /// This installs a package into the NuGetProject using the packageStream passed in
-        /// <param name="packageStream"></param>
+        /// This installs a package into the NuGetProject using the <see cref="Stream"/> passed in
+        /// <param name="downloadResourceResult"></param>
         /// should be seekable
         /// </summary>
         /// <returns>
         /// Returns false if the package was already present in the NuGetProject. On successful installation,
         /// returns true
         /// </returns>
-        public abstract Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token);
+        public abstract Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token);
 
         /// <summary>
         /// This uninstalls the package from the NuGetProject, if found

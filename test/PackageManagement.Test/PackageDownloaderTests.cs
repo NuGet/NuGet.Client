@@ -32,10 +32,7 @@ namespace NuGet.Test
             Exception exception = null;
             try
             {
-                using (var targetPackageStream = new MemoryStream())
-                {
-                    await PackageDownloader.GetPackageStreamAsync(v2sourceRepository, packageIdentity, targetPackageStream, CancellationToken.None);
-                }
+                await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository, packageIdentity, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -62,10 +59,7 @@ namespace NuGet.Test
             Exception exception = null;
             try
             {
-                using (var targetPackageStream = new MemoryStream())
-                {
-                    await PackageDownloader.GetPackageStreamAsync(v3sourceRepository, packageIdentity, targetPackageStream, CancellationToken.None);
-                }
+                await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository, packageIdentity, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -84,14 +78,15 @@ namespace NuGet.Test
             var v2sourceRepository = sourceRepositoryProvider.GetRepositories().First();
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            using (var targetPackageStream = new MemoryStream())
+            // Act
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository, packageIdentity, CancellationToken.None))
             {
-                // Act
-                await PackageDownloader.GetPackageStreamAsync(v2sourceRepository, packageIdentity, targetPackageStream, CancellationToken.None);
+                var targetPackageStream = downloadResult.PackageStream;
 
                 // Assert
                 // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
                 Assert.Equal(185476, targetPackageStream.Length);
+                Assert.True(targetPackageStream.CanSeek);
             }
         }
 
@@ -103,14 +98,15 @@ namespace NuGet.Test
             var v3sourceRepository = sourceRepositoryProvider.GetRepositories().First();
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            using (var targetPackageStream = new MemoryStream())
+            // Act
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository, packageIdentity, CancellationToken.None))
             {
-                // Act
-                await PackageDownloader.GetPackageStreamAsync(v3sourceRepository, packageIdentity, targetPackageStream, CancellationToken.None);
+                var targetPackageStream = downloadResult.PackageStream;
 
                 // Assert
                 // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
                 Assert.Equal(185476, targetPackageStream.Length);
+                Assert.True(targetPackageStream.CanSeek);
             }
         }
     }

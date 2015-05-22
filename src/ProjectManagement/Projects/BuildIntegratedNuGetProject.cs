@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectManagement.Projects
@@ -85,7 +86,11 @@ namespace NuGet.ProjectManagement.Projects
             return packages;
         }
 
-        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
         {
             var dependency = new PackageDependency(packageIdentity.Id, new VersionRange(packageIdentity.Version));
 

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -47,7 +48,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -97,7 +98,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -155,7 +156,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -206,7 +207,7 @@ namespace ProjectManagement.Test
             Exception exception = null;
             try
             {
-                using (var packageStream = packageFileInfo.OpenRead())
+                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -257,7 +258,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithFrameworkReference(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -309,7 +310,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyContentPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -326,15 +327,15 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(4, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\test3.js", filesList[0]);
+            Assert.Equal("Scripts\\test1.js", filesList[0]);
             Assert.Equal("Scripts\\test2.js", filesList[1]);
-            Assert.Equal("Scripts\\test1.js", filesList[2]);
+            Assert.Equal("Scripts\\test3.js", filesList[2]);
             Assert.Equal("packages.config", filesList[3]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(3, processedFilesList.Count);
-            Assert.Equal("Scripts\\test3.js", processedFilesList[0]);
+            Assert.Equal("Scripts\\test1.js", processedFilesList[0]);
             Assert.Equal("Scripts\\test2.js", processedFilesList[1]);
-            Assert.Equal("Scripts\\test1.js", processedFilesList[2]);
+            Assert.Equal("Scripts\\test3.js", processedFilesList[2]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
@@ -366,7 +367,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetContentPackageWithTargetFramework(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -383,15 +384,15 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(4, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\net45test3.js", filesList[0]);
+            Assert.Equal("Scripts\\net45test1.js", filesList[0]);
             Assert.Equal("Scripts\\net45test2.js", filesList[1]);
-            Assert.Equal("Scripts\\net45test1.js", filesList[2]);
+            Assert.Equal("Scripts\\net45test3.js", filesList[2]);
             Assert.Equal("packages.config", filesList[3]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(3, processedFilesList.Count);
-            Assert.Equal("Scripts\\net45test3.js", processedFilesList[0]);
+            Assert.Equal("Scripts\\net45test1.js", processedFilesList[0]);
             Assert.Equal("Scripts\\net45test2.js", processedFilesList[1]);
-            Assert.Equal("Scripts\\net45test1.js", processedFilesList[2]);
+            Assert.Equal("Scripts\\net45test3.js", processedFilesList[2]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
@@ -423,7 +424,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyContentPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -440,9 +441,9 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(4, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\test3.js", filesList[0]);
+            Assert.Equal("Scripts\\test1.js", filesList[0]);
             Assert.Equal("Scripts\\test2.js", filesList[1]);
-            Assert.Equal("Scripts\\test1.js", filesList[2]);
+            Assert.Equal("Scripts\\test3.js", filesList[2]);
             Assert.Equal("packages.config", filesList[3]);
 
             // Main Act
@@ -486,7 +487,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithPPFiles(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -503,13 +504,13 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Foo.cs", filesList[0]);
-            Assert.Equal("Bar.cs", filesList[1]);
+            Assert.Equal("Bar.cs", filesList[0]);
+            Assert.Equal("Foo.cs", filesList[1]);
             Assert.Equal("packages.config", filesList[2]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(2, processedFilesList.Count);
-            Assert.Equal("Foo.cs", processedFilesList[0]);
-            Assert.Equal("Bar.cs", processedFilesList[1]);
+            Assert.Equal("Bar.cs", processedFilesList[0]);
+            Assert.Equal("Foo.cs", processedFilesList[1]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
@@ -541,7 +542,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithPPFiles(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -558,13 +559,13 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Foo.cs", filesList[0]);
-            Assert.Equal("Bar.cs", filesList[1]);
+            Assert.Equal("Bar.cs", filesList[0]);
+            Assert.Equal("Foo.cs", filesList[1]);
             Assert.Equal("packages.config", filesList[2]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(2, processedFilesList.Count);
-            Assert.Equal("Foo.cs", processedFilesList[0]);
-            Assert.Equal("Bar.cs", processedFilesList[1]);
+            Assert.Equal("Bar.cs", processedFilesList[0]);
+            Assert.Equal("Foo.cs", processedFilesList[1]);
 
             // Main Act
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
@@ -630,7 +631,7 @@ namespace ProjectManagement.Test
     </system.webServer>
 </configuration>
 ");
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -709,7 +710,7 @@ namespace ProjectManagement.Test
     </system.web>
 </configuration>
 ");
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -796,7 +797,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithBuildFiles(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -845,7 +846,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithBuildFiles(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -910,7 +911,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithPowershellScripts(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -962,7 +963,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetPackageWithPowershellScripts(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1037,7 +1038,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacySolutionLevelPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1084,7 +1085,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacySolutionLevelPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1146,7 +1147,7 @@ namespace ProjectManagement.Test
             Exception exception = null;
             try
             {
-                using (var packageStream = packageFileInfo.OpenRead())
+                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1197,7 +1198,7 @@ namespace ProjectManagement.Test
             Exception exception = null;
             try
             {
-                using (var packageStream = packageFileInfo.OpenRead())
+                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
                     // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1245,7 +1246,7 @@ namespace ProjectManagement.Test
             var packageFileInfo = TestPackages.GetEmptyPackageWithDependencies(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
 
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1285,7 +1286,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1335,7 +1336,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1401,7 +1402,7 @@ namespace ProjectManagement.Test
                 escapedName,
                 packageIdentity.Id,
                 packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act Install
                 await
@@ -1427,8 +1428,8 @@ namespace ProjectManagement.Test
             // Check that the content files have been added to MSBuildNuGetProjectSystem
             Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\" + name + ".js", filesList[0]);
-            Assert.Equal(name + "\\" + name + "." + name, filesList[1]);
+            Assert.Equal(name + "\\" + name + "." + name, filesList[0]);
+            Assert.Equal("Scripts\\" + name + ".js", filesList[1]);
             Assert.Equal("packages.config", filesList[2]);
 
             Assert.True(
@@ -1482,7 +1483,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1545,7 +1546,7 @@ namespace ProjectManagement.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1579,7 +1580,7 @@ namespace ProjectManagement.Test
             // since the last package was uninstalled
             Assert.False(File.Exists(packagesProjectNameConfigPath));
 
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -1608,6 +1609,11 @@ namespace ProjectManagement.Test
             actual = Regex.Replace(Regex.Replace(actual, @"^\s*", "", RegexOptions.Multiline), "[\n\r]", "", RegexOptions.Multiline);
 
             Assert.Equal(expected, actual);
+        }
+
+        private static DownloadResourceResult GetDownloadResourceResult(FileInfo fileInfo)
+        {
+            return new DownloadResourceResult(fileInfo.OpenRead());
         }
     }
 }

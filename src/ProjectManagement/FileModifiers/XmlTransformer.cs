@@ -19,10 +19,10 @@ namespace NuGet.ProjectManagement
             _nodeActions = nodeActions;
         }
 
-        public void TransformFile(ZipArchiveEntry packageFile, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             // Get the xml fragment
-            var xmlFragment = GetXml(packageFile, msBuildNuGetProjectSystem);
+            var xmlFragment = GetXml(fileStreamFactory, msBuildNuGetProjectSystem);
 
             var transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, msBuildNuGetProjectSystem);
 
@@ -32,10 +32,10 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystemUtility.AddFile(msBuildNuGetProjectSystem, targetPath, transformDocument.Save);
         }
 
-        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void RevertFile(Func<Stream> fileStreamFactory, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             // Get the xml snippet
-            var xmlFragment = GetXml(packageFile, msBuildNuGetProjectSystem);
+            var xmlFragment = GetXml(fileStreamFactory, msBuildNuGetProjectSystem);
 
             var document = XmlUtility.GetOrCreateDocument(xmlFragment.Name, msBuildNuGetProjectSystem.ProjectFullPath, targetPath, msBuildNuGetProjectSystem.NuGetProjectContext);
 
@@ -66,14 +66,14 @@ namespace NuGet.ProjectManagement
                     throw new ArgumentException("internalZipFileInfo");
                 }
 
-                content = Preprocessor.Process(zipArchivePackageEntry, msBuildNuGetProjectSystem);
+                content = Preprocessor.Process(zipArchivePackageEntry.Open, msBuildNuGetProjectSystem);
             }
             return XElement.Parse(content, LoadOptions.PreserveWhitespace);
         }
 
-        private static XElement GetXml(ZipArchiveEntry packageFile, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        private static XElement GetXml(Func<Stream> fileStreamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            var content = Preprocessor.Process(packageFile, msBuildNuGetProjectSystem);
+            var content = Preprocessor.Process(fileStreamFactory, msBuildNuGetProjectSystem);
             return XElement.Parse(content, LoadOptions.PreserveWhitespace);
         }
     }

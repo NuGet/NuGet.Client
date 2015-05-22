@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
 namespace Test.Utility
@@ -155,7 +156,7 @@ namespace Test.Utility
             BindingRedirectsCallCount++;
         }
 
-        public Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject, bool throwOnFailure)
+        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)
         {
             var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
             if (!File.Exists(scriptFullPath) && throwOnFailure)

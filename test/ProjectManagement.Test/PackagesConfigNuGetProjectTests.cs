@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -30,7 +31,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, new TestNuGetProjectContext(), token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -53,7 +54,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, new TestNuGetProjectContext(), token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -77,7 +78,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, testNuGetProjectContext, token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), testNuGetProjectContext, token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -110,7 +111,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA, Stream.Null, testNuGetProjectContext, token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA, GetDownloadResourceResult(), testNuGetProjectContext, token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -120,7 +121,7 @@ namespace ProjectManagement.Test
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
             // Main Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageB, Stream.Null, testNuGetProjectContext, token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageB, GetDownloadResourceResult(), testNuGetProjectContext, token);
             // Assert
             installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, installedPackagesList.Count);
@@ -145,7 +146,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA, Stream.Null, testNuGetProjectContext, token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA, GetDownloadResourceResult(), testNuGetProjectContext, token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -155,7 +156,7 @@ namespace ProjectManagement.Test
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageB, Stream.Null, testNuGetProjectContext, token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageB, GetDownloadResourceResult(), testNuGetProjectContext, token);
             // Assert
             installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(2, installedPackagesList.Count);
@@ -188,7 +189,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA1, Stream.Null, new TestNuGetProjectContext(), token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA1, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -198,7 +199,7 @@ namespace ProjectManagement.Test
             Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
             // Main Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA2, Stream.Null, new TestNuGetProjectContext(), token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageA2, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
 
             // Assert
             installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
@@ -221,7 +222,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, new TestNuGetProjectContext(), token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -256,7 +257,7 @@ namespace ProjectManagement.Test
             MakeFileReadOnly(randomTestFolder);
 
             // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, Stream.Null, new TestNuGetProjectContext(), token);
+            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
             MakeFileReadOnly(randomTestFolder);
 
             // Assert
@@ -296,6 +297,11 @@ namespace ProjectManagement.Test
             {
                 File.SetAttributes(fullPath, File.GetAttributes(fullPath) | FileAttributes.ReadOnly);
             }
+        }
+
+        private static DownloadResourceResult GetDownloadResourceResult()
+        {
+            return new DownloadResourceResult(Stream.Null);
         }
     }
 }

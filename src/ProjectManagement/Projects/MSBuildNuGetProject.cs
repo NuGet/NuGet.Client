@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
 {
@@ -139,25 +140,28 @@ namespace NuGet.ProjectManagement
             return msBuildNuGetProjectContext != null ? msBuildNuGetProjectContext.SkipAssemblyReferences : false;
         }
 
-        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity, 
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext, 
+            CancellationToken token)
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (packageStream == null)
+            if (downloadResourceResult == null)
             {
-                throw new ArgumentNullException("packageStream");
+                throw new ArgumentNullException(nameof(downloadResourceResult));
             }
 
             if (nuGetProjectContext == null)
             {
-                throw new ArgumentNullException("nuGetProjectContext");
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            if (!packageStream.CanSeek)
+            if (!downloadResourceResult.PackageStream.CanSeek)
             {
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
@@ -175,9 +179,14 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-2: Create PackageReader using the PackageStream and obtain the various item groups            
-            packageStream.Seek(0, SeekOrigin.Begin);
-            var zipArchive = new ZipArchive(packageStream);
-            var packageReader = new PackageReader(zipArchive);
+            downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
+            var packageReader = downloadResourceResult.PackageReader;
+            if (packageReader == null)
+            {
+                var zipArchive = new ZipArchive(downloadResourceResult.PackageStream);
+                packageReader = new PackageReader(zipArchive);
+            }
+
             var libItemGroups = packageReader.GetLibItems();
             var referenceItemGroups = packageReader.GetReferenceItems();
             var frameworkReferenceGroups = packageReader.GetFrameworkItems();
@@ -271,7 +280,7 @@ namespace NuGet.ProjectManagement
             PackageEventsProvider.Instance.NotifyInstalling(packageEventArgs);
 
             // Step-6: Install package to FolderNuGetProject     
-            await FolderNuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
+            await FolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
 
             // Step-7: Raise PackageInstalled event
             // Call GetInstalledPath again, to get the package installed path
@@ -318,7 +327,7 @@ namespace NuGet.ProjectManagement
             if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
             {
                 MSBuildNuGetProjectSystemUtility.AddFiles(MSBuildNuGetProjectSystem,
-                    zipArchive, compatibleContentFilesGroup, FileTransformers);
+                    packageReader, compatibleContentFilesGroup, FileTransformers);
             }
 
             // Step-8.4: Add Build imports
@@ -333,7 +342,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-9: Install package to PackagesConfigNuGetProject
-            await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
+            await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
 
             // Step-10: Add packages.config to MSBuildNuGetProject
             MSBuildNuGetProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
@@ -355,7 +364,7 @@ namespace NuGet.ProjectManagement
                 if (!string.IsNullOrEmpty(initPS1RelativePath))
                 {
                     initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, initPS1RelativePath, zipArchive, this, throwOnFailure: true);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, initPS1RelativePath, this, throwOnFailure: true);
                 }
             }
 
@@ -365,7 +374,7 @@ namespace NuGet.ProjectManagement
                     p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 if (!string.IsNullOrEmpty(installPS1RelativePath))
                 {
-                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, installPS1RelativePath, zipArchive, this, throwOnFailure: true);
+                    await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, installPS1RelativePath, this, throwOnFailure: true);
                 }
             }
             return true;
@@ -497,7 +506,7 @@ namespace NuGet.ProjectManagement
                     if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
                     {
                         var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
-                        await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageInstallPath, uninstallPS1RelativePath, zipArchive, this, throwOnFailure: false);
+                        await MSBuildNuGetProjectSystem.ExecuteScriptAsync(packageIdentity, packageInstallPath, uninstallPS1RelativePath, this, throwOnFailure: false);
                     }
                 }
             }

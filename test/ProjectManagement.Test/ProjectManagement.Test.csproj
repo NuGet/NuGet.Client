@@ -57,6 +57,9 @@
     <Reference Include="NuGet.Packaging.Core.Types">
       <HintPath>..\..\packages\NuGet.Packaging.Core.Types.3.0.0-beta\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
     </Reference>
+    <Reference Include="NuGet.Protocol.Core.Types">
+      <HintPath>..\..\packages\NuGet.Protocol.Core.Types.3.0.0-beta\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
+    </Reference>
     <Reference Include="NuGet.Versioning">
       <HintPath>..\..\packages\NuGet.Versioning.3.0.0-beta\lib\net45\NuGet.Versioning.dll</HintPath>
     </Reference>

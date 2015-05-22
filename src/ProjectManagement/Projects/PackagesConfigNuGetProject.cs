@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
 {
@@ -63,8 +64,11 @@ namespace NuGet.ProjectManagement
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
-        public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext, 
+            CancellationToken token)
         {
             if (packageIdentity == null)
             {

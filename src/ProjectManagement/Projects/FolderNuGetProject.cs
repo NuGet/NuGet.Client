@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.ProjectManagement
@@ -45,25 +46,28 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(Enumerable.Empty<PackageReference>());
         }
 
-        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, Stream packageStream,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (packageStream == null)
+            if (downloadResourceResult == null)
             {
-                throw new ArgumentNullException("packageStream");
+                throw new ArgumentNullException(nameof(downloadResourceResult));
             }
 
             if (nuGetProjectContext == null)
             {
-                throw new ArgumentNullException("nuGetProjectContext");
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            if (!packageStream.CanSeek)
+            if (!downloadResourceResult.PackageStream.CanSeek)
             {
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
@@ -77,9 +81,31 @@ namespace NuGet.ProjectManagement
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Root);
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
-            packageStream.Seek(0, SeekOrigin.Begin);
-            var addedPackageFilesList = new List<string>(await PackageExtractor.ExtractPackageAsync(packageStream, packageIdentity, PackagePathResolver, nuGetProjectContext.PackageExtractionContext,
-                PackageSaveMode, token));
+            downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
+            var addedPackageFilesList = new List<string>();
+            if (downloadResourceResult.PackageReader != null)
+            {
+                addedPackageFilesList.AddRange(
+                    await PackageExtractor.ExtractPackageAsync(
+                        downloadResourceResult.PackageReader,
+                        downloadResourceResult.PackageStream,
+                        packageIdentity,
+                        PackagePathResolver,
+                        nuGetProjectContext.PackageExtractionContext,
+                        PackageSaveMode,
+                        token));
+            }
+            else
+            {
+                addedPackageFilesList.AddRange(
+                    await PackageExtractor.ExtractPackageAsync(
+                        downloadResourceResult.PackageStream,
+                        packageIdentity,
+                        PackagePathResolver,
+                        nuGetProjectContext.PackageExtractionContext,
+                        PackageSaveMode,
+                        token));
+            }
 
             if (PackageSaveMode.HasFlag(PackageSaveModes.Nupkg))
             {

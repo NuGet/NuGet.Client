@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.ProjectManagement
 {
@@ -43,7 +44,7 @@ namespace NuGet.ProjectManagement
         string ResolvePath(string path);
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
-        Task ExecuteScriptAsync(string packageInstallPath, string scriptRelativePath, ZipArchive packageZipArchive, NuGetProject nuGetProject, bool throwOnFailure);
+        Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure);
         void BeginProcessing(IEnumerable<string> files);
         void EndProcessing();
 

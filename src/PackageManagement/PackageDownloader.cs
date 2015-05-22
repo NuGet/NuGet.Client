@@ -11,29 +11,19 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-/// <summary>
+    /// <summary>
     /// Abstracts the logic to get a package stream for a given package identity from a given source repository
     /// </summary>
     public static class PackageDownloader
     {
         /// <summary>
-        /// Sets <paramref name="targetPackageStream" /> for a given <paramref name="packageIdentity" /> from the given
-        /// <paramref name="sourceRepository" />. If successfully set, returns true. Otherwise, false.
+        /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" /> from the given
+        /// <paramref name="sourceRepository" />.
         /// </summary>
-        public static async Task GetPackageStreamAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, Stream targetPackageStream, CancellationToken token)
+        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
-            using (var downloadStream = await GetDownloadStreamAsync(sourceRepository, packageIdentity, token))
-            {
-                token.ThrowIfCancellationRequested();
-
-                await downloadStream.CopyToAsync(targetPackageStream);
-            }
-        }
-
-        private static async Task<Stream> GetDownloadStreamAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
-        {
             var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
 
             if (downloadResource == null)
@@ -41,12 +31,42 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
-            var downloadStream = await downloadResource.GetStreamAsync(packageIdentity, token);
-            if (downloadStream == null)
+            var downloadResourceResult = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, token);
+            if (downloadResourceResult == null)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadStreamNotAvailable, packageIdentity, sourceRepository.PackageSource.Source));
             }
 
+            return new DownloadResourceResult(
+                await GetSeekableStream(downloadResourceResult.PackageStream, token),
+                downloadResourceResult.PackageReader);
+        }
+
+        private static async Task<Stream> GetSeekableStream(Stream downloadStream, CancellationToken token)
+        {
+            if (!downloadStream.CanSeek)
+            {
+                var memoryStream = new MemoryStream();
+                try
+                {
+                    token.ThrowIfCancellationRequested();
+                    await downloadStream.CopyToAsync(memoryStream);
+                }
+                catch
+                {
+                    memoryStream.Dispose();
+                    throw;
+                }
+                finally
+                {
+                    downloadStream.Dispose();
+                }
+
+                memoryStream.Position = 0;
+                return memoryStream;
+            }
+
+            downloadStream.Position = 0;
             return downloadStream;
         }
     }

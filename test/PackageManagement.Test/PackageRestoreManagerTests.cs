@@ -12,6 +12,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -43,7 +44,7 @@ namespace NuGet.Test
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var token = CancellationToken.None;
 
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResult(packageFileInfo))
             {
                 // Act
                 await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -156,7 +157,7 @@ namespace NuGet.Test
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var token = CancellationToken.None;
 
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResult(packageFileInfo))
             {
                 // Act
                 await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -265,7 +266,7 @@ namespace NuGet.Test
 
             var packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 testPackage1.Id, testPackage1.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResult(packageFileInfo))
             {
                 // Act
                 await projectB.InstallPackageAsync(testPackage1, packageStream, testNuGetProjectContext, token);
@@ -274,7 +275,7 @@ namespace NuGet.Test
 
             packageFileInfo = TestPackages.GetLegacyTestPackage(randomTestPackageSourcePath,
                 testPackage2.Id, testPackage2.Version.ToNormalizedString());
-            using (var packageStream = packageFileInfo.OpenRead())
+            using (var packageStream = GetDownloadResult(packageFileInfo))
             {
                 // Act
                 await projectA.InstallPackageAsync(testPackage2, packageStream, testNuGetProjectContext, token);
@@ -336,6 +337,11 @@ namespace NuGet.Test
             Assert.Equal(2, testPackage2ProjectNames.Count);
             Assert.True(testPackage2ProjectNames.Contains("projectA", StringComparer.OrdinalIgnoreCase));
             Assert.True(testPackage2ProjectNames.Contains("projectC", StringComparer.OrdinalIgnoreCase));
+        }
+
+        private static DownloadResourceResult GetDownloadResult(FileInfo packageFileInfo)
+        {
+            return new DownloadResourceResult(packageFileInfo.OpenRead());
         }
     }
 }

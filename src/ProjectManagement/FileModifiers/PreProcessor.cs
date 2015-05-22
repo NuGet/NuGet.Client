@@ -15,22 +15,22 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public class Preprocessor : IPackageFileTransformer
     {
-        public void TransformFile(ZipArchiveEntry packageFile, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void TransformFile(Func<Stream> fileStreamFactory, string targetPath, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             MSBuildNuGetProjectSystemUtility.TryAddFile(msBuildNuGetProjectSystem, targetPath,
-                () => StreamUtility.StreamFromString(Process(packageFile, msBuildNuGetProjectSystem)));
+                () => StreamUtility.StreamFromString(Process(fileStreamFactory, msBuildNuGetProjectSystem)));
         }
 
-        public void RevertFile(ZipArchiveEntry packageFile, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void RevertFile(Func<Stream> fileStreamFactory, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             MSBuildNuGetProjectSystemUtility.DeleteFileSafe(targetPath,
-                () => StreamUtility.StreamFromString(Process(packageFile, msBuildNuGetProjectSystem)),
+                () => StreamUtility.StreamFromString(Process(fileStreamFactory, msBuildNuGetProjectSystem)),
                 msBuildNuGetProjectSystem);
         }
 
-        internal static string Process(ZipArchiveEntry packageFile, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        internal static string Process(Func<Stream> fileStreamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            using (var stream = packageFile.Open())
+            using (var stream = fileStreamFactory())
             {
                 return Process(stream, msBuildNuGetProjectSystem, throwIfNotFound: false);
             }

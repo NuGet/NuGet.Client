@@ -881,7 +881,7 @@ namespace NuGet.PackageManagement
                         tokenSource.Cancel();
                     }
                 }
-                catch (TaskCanceledException)
+                catch (OperationCanceledException)
                 {
                     // ignore these
                 }
@@ -1098,10 +1098,9 @@ namespace NuGet.PackageManagement
                         }
                         else
                         {
-                            using (var targetPackageStream = new MemoryStream())
+                            using (var downloadPackageResult = await PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, token))
                             {
-                                await PackageDownloader.GetPackageStreamAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, targetPackageStream, token);
-                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, targetPackageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, downloadPackageResult, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                             }
                         }
 
@@ -1146,7 +1145,7 @@ namespace NuGet.PackageManagement
         public async Task ExecuteBuildIntegratedProjectActionsAsync(
             BuildIntegratedNuGetProject buildIntegratedProject,
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
-            INuGetProjectContext nuGetProjectContext, 
+            INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             // Find the target framework
@@ -1253,9 +1252,9 @@ namespace NuGet.PackageManagement
                         var packagePath = PackagesFolderNuGetProject.GetInstalledPackageFilePath(nuGetProjectAction.PackageIdentity);
                         if (File.Exists(packagePath))
                         {
-                            using (var packageStream = File.OpenRead(packagePath))
+                            using (var downloadResourceResult = new DownloadResourceResult(File.OpenRead(packagePath)))
                             {
-                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageStream, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, downloadResourceResult, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                             }
                         }
                     }
@@ -1308,11 +1307,11 @@ namespace NuGet.PackageManagement
             var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
 
             token.ThrowIfCancellationRequested();
-            using (var targetPackageStream = new MemoryStream())
+
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepository, packageIdentity, token))
             {
-                await PackageDownloader.GetPackageStreamAsync(sourceRepository, packageIdentity, targetPackageStream, token);
                 // If you already downloaded the package, just restore it, don't cancel the operation now
-                await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, targetPackageStream, nuGetProjectContext, token);
+                await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);
             }
 
             return true;
@@ -1328,20 +1327,19 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
-        private static Task ExecuteInstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, Stream packageStream, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        private static Task ExecuteInstallAsync(
+            NuGetProject nuGetProject,
+            PackageIdentity packageIdentity,
+            DownloadResourceResult resourceResult,
+            HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
         {
             // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback
-            MinClientVersionHandler.CheckMinClientVersion(packageStream, packageIdentity);
+            MinClientVersionHandler.CheckMinClientVersion(resourceResult, packageIdentity);
 
             packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
-            return nuGetProject.InstallPackageAsync(packageIdentity, packageStream, nuGetProjectContext, token);
-
-            // TODO: Consider using CancelEventArgs instead of a regular EventArgs??
-            //if (packageOperationEventArgs.Cancel)
-            //{
-            //    return;
-            //}
+            return nuGetProject.InstallPackageAsync(packageIdentity, resourceResult, nuGetProjectContext, token);
         }
 
         private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
