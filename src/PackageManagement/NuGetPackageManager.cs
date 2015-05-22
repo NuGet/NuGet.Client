@@ -310,8 +310,10 @@ namespace NuGet.PackageManagement
 
                 if (!resolutionContext.IncludePrerelease)
                 {
-                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages,
-                        projectInstalledPackageReferences.Select(p => p.PackageIdentity));
+                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(
+                        prunedAvailablePackages,
+                        projectInstalledPackageReferences.Select(p => p.PackageIdentity),
+                        packagesToInstall: Enumerable.Empty<PackageIdentity>());
                 }
 
                 // Verify that the target is allowed by packages.config
@@ -449,7 +451,10 @@ namespace NuGet.PackageManagement
 
                 if (!resolutionContext.IncludePrerelease)
                 {
-                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, packageTargetsForResolver);
+                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(
+                        prunedAvailablePackages, 
+                        packageTargetsForResolver, 
+                        packagesToInstall);
                 }
 
                 // Verify that the target is allowed by packages.config
@@ -725,7 +730,10 @@ namespace NuGet.PackageManagement
 
                     if (!resolutionContext.IncludePrerelease)
                     {
-                        prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(prunedAvailablePackages, packageTargetsForResolver);
+                        prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(
+                            prunedAvailablePackages, 
+                            packageTargetsForResolver, 
+                            new PackageIdentity[] { packageIdentity });
                     }
 
                     // Verify that the target is allowed by packages.config

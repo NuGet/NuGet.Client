@@ -3163,5 +3163,51 @@ namespace NuGet.Test
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
         }
+
+        [Fact]
+        public async Task TestPacManInstallPackagePrerelease()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new NullSettings();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var target = new PackageIdentity("Microsoft.ApplicationInsights.Web", NuGetVersion.Parse("0.16.1-build00418"));
+
+            // Act
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                msBuildNuGetProject,
+                target,
+                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories().First(),
+                null,
+                token);
+
+            var result = nugetProjectActions.ToList();
+
+            var resultIdentities = result.Select(p => p.PackageIdentity);
+
+            Assert.True(resultIdentities.Contains(target));
+
+            //  and all the actions are Install
+            foreach (var nugetProjectAction in result)
+            {
+                Assert.Equal(nugetProjectAction.NuGetProjectActionType, NuGetProjectActionType.Install);
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
     }
 }

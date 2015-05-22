@@ -19,14 +19,55 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Remove all prerelease packages for stable targets
         /// </summary>
-        public static IEnumerable<SourcePackageDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> targets)
+        public static IEnumerable<SourcePackageDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> targets, IEnumerable<PackageIdentity> packagesToInstall)
         {
-            var allowed = new HashSet<string>(targets
-                .Where(p => p.HasVersion && p.Version.IsPrerelease)
-                .Select(p => p.Id), 
-                StringComparer.OrdinalIgnoreCase);
+            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            CollectAllowedFromTargets(targets, allowed);
+            CollectAllowedFromDependenciesOfPackagesToInstall(packages, packagesToInstall, allowed);
 
             return packages.Where(p => !(p.HasVersion && p.Version.IsPrerelease) || allowed.Contains(p.Id));
+        }
+
+        private static void CollectAllowedFromTargets(IEnumerable<PackageIdentity> targets, HashSet<string> allowed)
+        {
+            foreach (var p in targets.Where(p => p.HasVersion && p.Version.IsPrerelease))
+            {
+                allowed.Add(p.Id);
+            }
+        }
+
+        private static void CollectAllowedFromDependenciesOfPackagesToInstall(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> packagesToInstall, HashSet<string> allowed)
+        {
+            var prereleasePackageToInstall = new HashSet<PackageIdentity>(packagesToInstall.Where(p => p.HasVersion && p.Version.IsPrerelease), PackageIdentityComparer.Default);
+
+            var maxDepth = packages.Select(p => p.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+
+            foreach (var packageToInstall in packages.Where(p => prereleasePackageToInstall.Contains(p)))
+            {
+                int depth = 0;
+                WalkDependencies(packages, packageToInstall, allowed, depth, maxDepth);
+            }
+        }
+
+        private static void WalkDependencies(IEnumerable<SourcePackageDependencyInfo> packages, SourcePackageDependencyInfo packageToInstall, HashSet<string> allowed, int depth, int maxDepth)
+        {
+            if (depth > maxDepth)
+            {
+                return;
+            }
+
+            if (packageToInstall.Dependencies != null)
+            {
+                foreach (var dependency in packageToInstall.Dependencies)
+                {
+                    allowed.Add(dependency.Id);
+                    foreach (SourcePackageDependencyInfo dependentPackage in packages.Where(p => p.Id.Equals(dependency.Id, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        WalkDependencies(packages, dependentPackage, allowed, depth + 1, maxDepth);
+                    }
+                }
+            }
         }
 
         public static IEnumerable<SourcePackageDependencyInfo> PruneDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
