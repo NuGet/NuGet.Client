@@ -721,9 +721,10 @@ namespace NuGetVSExtension
             UserSettings settings;
             if (_nugetSettings.WindowSettings.TryGetValue(key, out settings))
             {
-                return settings;
+                return settings ?? new UserSettings();
             }
-            return null;
+			
+            return new UserSettings();
         }
 
         public void AddWindowSettings(string key, UserSettings obj)
