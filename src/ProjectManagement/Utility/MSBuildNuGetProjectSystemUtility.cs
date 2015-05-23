@@ -84,7 +84,7 @@ namespace NuGet.ProjectManagement
             {
                 try
                 {
-                    var paths = frameworkSpecificGroup.Items.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
+                    var paths = packageItemListAsArchiveEntryNames.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
                         GetEffectivePathForContentFile(packageTargetFramework, file)));
                     paths = paths.Where(p => !string.IsNullOrEmpty(p));
                     msBuildNuGetProjectSystem.BeginProcessing(paths);
@@ -94,7 +94,7 @@ namespace NuGet.ProjectManagement
                     // Ignore all exceptions for now
                 }
 
-                foreach (var file in frameworkSpecificGroup.Items)
+                foreach (var file in packageItemListAsArchiveEntryNames)
                 {
                     if (IsEmptyFolder(file))
                     {
