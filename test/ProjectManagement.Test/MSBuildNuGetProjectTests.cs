@@ -327,15 +327,15 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(4, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\test1.js", filesList[0]);
+            Assert.Equal("Scripts\\test3.js", filesList[0]);
             Assert.Equal("Scripts\\test2.js", filesList[1]);
-            Assert.Equal("Scripts\\test3.js", filesList[2]);
+            Assert.Equal("Scripts\\test1.js", filesList[2]);
             Assert.Equal("packages.config", filesList[3]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(3, processedFilesList.Count);
-            Assert.Equal("Scripts\\test1.js", processedFilesList[0]);
+            Assert.Equal("Scripts\\test3.js", processedFilesList[0]);
             Assert.Equal("Scripts\\test2.js", processedFilesList[1]);
-            Assert.Equal("Scripts\\test3.js", processedFilesList[2]);
+            Assert.Equal("Scripts\\test1.js", processedFilesList[2]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
@@ -384,15 +384,15 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(4, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\net45test1.js", filesList[0]);
+            Assert.Equal("Scripts\\net45test3.js", filesList[0]);
             Assert.Equal("Scripts\\net45test2.js", filesList[1]);
-            Assert.Equal("Scripts\\net45test3.js", filesList[2]);
+            Assert.Equal("Scripts\\net45test1.js", filesList[2]);
             Assert.Equal("packages.config", filesList[3]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(3, processedFilesList.Count);
-            Assert.Equal("Scripts\\net45test1.js", processedFilesList[0]);
+            Assert.Equal("Scripts\\net45test3.js", processedFilesList[0]);
             Assert.Equal("Scripts\\net45test2.js", processedFilesList[1]);
-            Assert.Equal("Scripts\\net45test3.js", processedFilesList[2]);
+            Assert.Equal("Scripts\\net45test1.js", processedFilesList[2]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
@@ -441,9 +441,9 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(4, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Scripts\\test1.js", filesList[0]);
+            Assert.Equal("Scripts\\test3.js", filesList[0]);
             Assert.Equal("Scripts\\test2.js", filesList[1]);
-            Assert.Equal("Scripts\\test3.js", filesList[2]);
+            Assert.Equal("Scripts\\test1.js", filesList[2]);
             Assert.Equal("packages.config", filesList[3]);
 
             // Main Act
@@ -504,13 +504,13 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Bar.cs", filesList[0]);
-            Assert.Equal("Foo.cs", filesList[1]);
+            Assert.Equal("Foo.cs", filesList[0]);
+            Assert.Equal("Bar.cs", filesList[1]);
             Assert.Equal("packages.config", filesList[2]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(2, processedFilesList.Count);
-            Assert.Equal("Bar.cs", processedFilesList[0]);
-            Assert.Equal("Foo.cs", processedFilesList[1]);
+            Assert.Equal("Foo.cs", processedFilesList[0]);
+            Assert.Equal("Bar.cs", processedFilesList[1]);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
@@ -559,13 +559,13 @@ namespace ProjectManagement.Test
             // Check that the reference has been added to MSBuildNuGetProjectSystem
             Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal("Bar.cs", filesList[0]);
-            Assert.Equal("Foo.cs", filesList[1]);
+            Assert.Equal("Foo.cs", filesList[0]);
+            Assert.Equal("Bar.cs", filesList[1]);
             Assert.Equal("packages.config", filesList[2]);
             var processedFilesList = msBuildNuGetProjectSystem.ProcessedFiles.ToList();
             Assert.Equal(2, processedFilesList.Count);
-            Assert.Equal("Bar.cs", processedFilesList[0]);
-            Assert.Equal("Foo.cs", processedFilesList[1]);
+            Assert.Equal("Foo.cs", processedFilesList[0]);
+            Assert.Equal("Bar.cs", processedFilesList[1]);
 
             // Main Act
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
@@ -1428,8 +1428,8 @@ namespace ProjectManagement.Test
             // Check that the content files have been added to MSBuildNuGetProjectSystem
             Assert.Equal(3, msBuildNuGetProjectSystem.Files.Count);
             var filesList = msBuildNuGetProjectSystem.Files.ToList();
-            Assert.Equal(name + "\\" + name + "." + name, filesList[0]);
-            Assert.Equal("Scripts\\" + name + ".js", filesList[1]);
+            Assert.Equal("Scripts\\" + name + ".js", filesList[0]);
+            Assert.Equal(name + "\\" + name + "." + name, filesList[1]);
             Assert.Equal("packages.config", filesList[2]);
 
             Assert.True(
