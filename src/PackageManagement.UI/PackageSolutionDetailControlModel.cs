@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
 
         private readonly List<PackageInstallationInfo> _allProjects;
 
-        // indicates that the model is updating the checkbox state. In this case, 
+        // indicates that the model is updating the checkbox state. In this case,
         // the CheckAllProject() & UncheckAllProject() should be no-op.
         private bool _updatingCheckbox;
 
@@ -64,14 +64,15 @@ namespace NuGet.PackageManagement.UI
 
         protected override void CreateVersions()
         {
-            if (SelectedAction == Resources.Action_Consolidate
-                ||
+            if (SelectedAction == Resources.Action_Consolidate ||
                 SelectedAction == Resources.Action_Uninstall)
             {
                 _versions = _allProjects.Select(project => GetInstalledPackage(project.NuGetProject, Id))
                     .Where(package => package != null)
-                    .OrderByDescending(p => p.PackageIdentity.Version)
-                    .Select(package => new VersionForDisplay(package.PackageIdentity.Version, string.Empty))
+                    .Select(p => p.PackageIdentity.Version)
+                    .OrderByDescending(version => version)
+                    .Distinct()
+                    .Select(version => new VersionForDisplay(version, string.Empty))
                     .ToList();
             }
             else if (SelectedAction == Resources.Action_Install
