@@ -2907,7 +2907,8 @@ function Test-InstallPackageWithScriptAddImportFile
     Assert-AreEqual 0 $errorlist.Count
 }
 
-function Test-InstallPackageInCpsApp
+# Temporarily disable this test
+function Disable-Test-InstallPackageInCpsApp
 {
     param($context)
 
