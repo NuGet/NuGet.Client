@@ -2909,20 +2909,20 @@ function Test-InstallPackageWithScriptAddImportFile
 
 function Test-InstallPackageInCpsApp
 {
-	param($context)
+    param($context)
 
     # Arrange
-    $p = New-CpsApp
+    $p = New-CpsApp "CpsProject"
 
-	#Act
-	$p | Install-Package Microsoft.Bcl.build -version 1.0.14
-	Build-Solution
+    #Act
+    $p | Install-Package Microsoft.Bcl.build -version 1.0.14
+    Build-Solution
 
     # Assert
     $errorlist = Get-Errors
     Assert-AreEqual 0 $errorlist.Count
-	Assert-Package $p Microsoft.Bcl.Build
+    Assert-Package $p Microsoft.Bcl.Build
 
-	$item = Get-ProjectItem $p packages.config
-	Assert-NotNull $item
+    $item = Get-ProjectItem $p packages.config
+    Assert-NotNull $item
 }
