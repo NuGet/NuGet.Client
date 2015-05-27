@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "NuGet.DependencyResolver.Core": "3.0.0-*",
+    "NuGet.DependencyResolver.Core": "3.1.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {

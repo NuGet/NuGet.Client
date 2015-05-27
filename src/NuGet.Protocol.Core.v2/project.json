@@ -1,5 +1,5 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.1.0-*",
     "authors": [ "NuGet" ],
     "description": "NuGet Protocol v2",
     "copyright": "Copyright .NET Foundation. All rights reserved.",
@@ -10,9 +10,9 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Configuration": "3.0.0-*",
-        "NuGet.Packaging": "3.0.0-*",
-        "NuGet.Protocol.Core.Types": "3.0.0-*",
+        "NuGet.Configuration": "3.1.0-*",
+        "NuGet.Packaging": "3.1.0-*",
+        "NuGet.Protocol.Core.Types": "3.1.0-*",
         "NuGet.Core": "2.8.6-beta-*"
     },
     "frameworks": {

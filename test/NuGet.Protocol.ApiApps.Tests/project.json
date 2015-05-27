@@ -2,7 +2,7 @@
   "dependencies": {
     "xunit.runner.aspnet": "2.0.0-aspnet-*",
     "Moq": "4.2.1408.0717",
-    "NuGet.Protocol.ApiApps": "3.0.0-*",
+    "NuGet.Protocol.ApiApps": "3.1.0-*",
     "NuGet.Protocol.Test.Utility": "1.0.0-*"
   },
   "commands": {

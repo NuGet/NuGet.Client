@@ -1,7 +1,7 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.1.0-*",
     "dependencies": {
-        "NuGet.RuntimeModel": "3.0.0-*",
+        "NuGet.RuntimeModel": "3.1.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {

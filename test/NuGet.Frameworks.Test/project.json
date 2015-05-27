@@ -1,9 +1,9 @@
 ﻿{
-  "version": "3.0.0-*",
+  "version": "3.1.0-*",
   "dependencies": {
-    "NuGet.Frameworks": "3.0.0-*",
+    "NuGet.Frameworks": "3.1.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*",
-    "NuGet.Packaging": "3.0.0-*"
+    "NuGet.Packaging": "3.1.0-*"
   },
   "commands": {
     "test": "xunit.runner.aspnet"

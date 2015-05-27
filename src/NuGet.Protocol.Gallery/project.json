@@ -1,14 +1,14 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.1.0-*",
     "authors": [ "NuGet" ],
-    "description": "NuGet Protocol for 3.0.0 gallery sites",
+    "description": "NuGet Protocol for 3.1.0 gallery sites",
     "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
     "tags": [ "nuget protocol" ],
     "dependencies": {
-        "NuGet.Configuration": "3.0.0-*",
-        "NuGet.Protocol.Core.v3": "3.0.0-*"
+        "NuGet.Configuration": "3.1.0-*",
+        "NuGet.Protocol.Core.v3": "3.1.0-*"
     },
     "compilationOptions": {
         "warningsAsErrors": true

@@ -1,7 +1,7 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.1.0-*",
     "authors": [ "NuGet" ],
-    "description": "NuGet Protocol for 3.0.0 servers",
+    "description": "NuGet Protocol for 3.1.0 servers",
     "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
@@ -10,10 +10,10 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
-        "NuGet.Logging": "3.0.0-*",
-        "NuGet.Packaging": "3.0.0-*",
-        "NuGet.Protocol.Core.Types": "3.0.0-*",
+        "NuGet.Common": { "type": "build", "version": "3.1.0-*" },
+        "NuGet.Logging": "3.1.0-*",
+        "NuGet.Packaging": "3.1.0-*",
+        "NuGet.Protocol.Core.Types": "3.1.0-*",
         "Newtonsoft.Json": "6.0.6"
     },
     "frameworks": {
