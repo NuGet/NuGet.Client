@@ -43,14 +43,19 @@ namespace NuGet.Commands
         public ISet<GraphItem<RemoteResolveResult>> Flattened { get; }
         public ISet<LibraryRange> Unresolved { get; }
         public bool InConflict { get; }
+        public bool WriteToLockFile { get; }
 
-        private RestoreTargetGraph(bool inConflict, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, GraphNode<RemoteResolveResult> graph, ISet<RemoteMatch> install, ISet<GraphItem<RemoteResolveResult>> flattened, ISet<LibraryRange> unresolved)
+        public string Name { get; }
+
+        private RestoreTargetGraph(bool inConflict, bool writeToLockFile, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, GraphNode<RemoteResolveResult> graph, ISet<RemoteMatch> install, ISet<GraphItem<RemoteResolveResult>> flattened, ISet<LibraryRange> unresolved)
         {
             InConflict = inConflict;
+            WriteToLockFile = writeToLockFile;
             RuntimeIdentifier = runtimeIdentifier;
             RuntimeGraph = runtimeGraph;
             Framework = framework;
             Graph = graph;
+            Name = GetName(Framework, RuntimeIdentifier);
 
             Conventions = new ManagedCodeConventions(runtimeGraph);
 
@@ -59,13 +64,26 @@ namespace NuGet.Commands
             Unresolved = unresolved;
         }
 
-        public static RestoreTargetGraph Create(bool inConflict, NuGetFramework framework, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILogger logger)
+        public static string GetName(NuGetFramework framework, string runtimeIdentifier)
         {
-            return Create(inConflict, framework, null, RuntimeGraph.Empty, graph, context, logger);
+            if (string.IsNullOrEmpty(runtimeIdentifier))
+            {
+                return framework.ToString();
+            }
+            else
+            {
+                return $"{framework} ({runtimeIdentifier})";
+            }
+        }
+
+        public static RestoreTargetGraph Create(bool inConflict, bool writeToLockFile, NuGetFramework framework, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILogger logger)
+        {
+            return Create(inConflict, writeToLockFile, framework, null, RuntimeGraph.Empty, graph, context, logger);
         }
 
         public static RestoreTargetGraph Create(
             bool inConflict,
+            bool writeToLockFile,
             NuGetFramework framework,
             string runtimeIdentifier,
             RuntimeGraph runtimeGraph,
@@ -117,6 +135,7 @@ namespace NuGet.Commands
 
             return new RestoreTargetGraph(
                 inConflict,
+                writeToLockFile,
                 framework,
                 runtimeIdentifier,
                 runtimeGraph,

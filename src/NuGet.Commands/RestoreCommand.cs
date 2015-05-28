@@ -29,56 +29,60 @@ namespace NuGet.Commands
     public class RestoreCommand
     {
         private readonly ILogger _log;
+        private readonly RestoreRequest _request;
 
-        public RestoreCommand(ILogger logger)
+        private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
+
+        public RestoreCommand(ILogger logger, RestoreRequest request)
         {
             _log = logger;
+            _request = request;
         }
 
-        public async Task<RestoreResult> ExecuteAsync(RestoreRequest request)
+        public async Task<RestoreResult> ExecuteAsync()
         {
-            if (request.Project.TargetFrameworks.Count == 0)
+            if (_request.Project.TargetFrameworks.Count == 0)
             {
                 _log.LogError(Strings.Log_ProjectDoesNotSpecifyTargetFrameworks);
                 return new RestoreResult(success: false, restoreGraphs: Enumerable.Empty<RestoreTargetGraph>());
             }
 
-            var projectLockFilePath = string.IsNullOrEmpty(request.LockFilePath) ?
-                Path.Combine(request.Project.BaseDirectory, LockFileFormat.LockFileName) :
-                request.LockFilePath;
+            var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
+                Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
+                _request.LockFilePath;
 
-            _log.LogInformation(Strings.FormatLog_RestoringPackages(request.Project.FilePath));
+            _log.LogInformation(Strings.FormatLog_RestoringPackages(_request.Project.FilePath));
 
             // Load repositories
-            var projectResolver = new PackageSpecResolver(request.Project);
-            var nugetRepository = Repository.Factory.GetCoreV3(request.PackagesDirectory);
+            var projectResolver = new PackageSpecResolver(_request.Project);
+            var nugetRepository = Repository.Factory.GetCoreV3(_request.PackagesDirectory);
 
             var context = new RemoteWalkContext();
 
             ExternalProjectReference externalProjectReference = null;
-            if (request.ExternalProjects.Any())
+            if (_request.ExternalProjects.Any())
             {
                 externalProjectReference = new ExternalProjectReference(
-                    request.Project.Name,
-                    request.Project.FilePath,
-                    request.ExternalProjects.Select(p => p.UniqueName));
+                    _request.Project.FilePath,
+                    _request.Project.FilePath,
+                    _request.ExternalProjects.Select(p => p.UniqueName));
             }
 
             context.ProjectLibraryProviders.Add(
                 new LocalDependencyProvider(
                     new PackageSpecReferenceDependencyProvider(projectResolver, externalProjectReference)));
 
-            if (request.ExternalProjects != null)
+            if (_request.ExternalProjects != null)
             {
                 context.ProjectLibraryProviders.Add(
                     new LocalDependencyProvider(
-                        new ExternalProjectReferenceDependencyProvider(request.ExternalProjects)));
+                        new ExternalProjectReferenceDependencyProvider(_request.ExternalProjects)));
             }
 
             context.LocalLibraryProviders.Add(
                 new SourceRepositoryDependencyProvider(nugetRepository, _log));
 
-            foreach (var provider in request.Sources.Select(s => CreateProviderFromSource(s, request.NoCache)))
+            foreach (var provider in _request.Sources.Select(s => CreateProviderFromSource(s, _request.NoCache)))
             {
                 context.RemoteLibraryProviders.Add(provider);
             }
@@ -87,19 +91,25 @@ namespace NuGet.Commands
 
             var projectRange = new LibraryRange()
             {
-                Name = request.Project.Name,
-                VersionRange = new VersionRange(request.Project.Version),
+                Name = _request.Project.Name,
+                VersionRange = new VersionRange(_request.Project.Version),
                 TypeConstraint = LibraryTypes.Project
             };
 
             // Resolve dependency graphs
-            var frameworks = request.Project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
+            var frameworks = new HashSet<NuGetFramework>(_request.Project.TargetFrameworks.Select(f => f.FrameworkName));
             var graphs = new List<RestoreTargetGraph>();
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
 
             foreach (var framework in frameworks)
             {
-                frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context));
+                frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context, writeToLockFile: true));
+            }
+
+            foreach(var framework in _request.SupportProfiles.Select(p => p.Item1).Distinct().Where(f => !frameworks.Contains(f)))
+            {
+                // Walk dependencies for frameworks that only exist via supports profiles
+                frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context, writeToLockFile: false));
             }
 
             graphs.AddRange(await Task.WhenAll(frameworkTasks));
@@ -112,22 +122,23 @@ namespace NuGet.Commands
 
             // Install the runtime-agnostic packages
             var allInstalledPackages = new HashSet<LibraryIdentity>();
-            var localRepository = new NuGetv3LocalRepository(request.PackagesDirectory, checkPackageIdCase: false);
-            await InstallPackages(graphs, request.PackagesDirectory, allInstalledPackages, request.MaxDegreeOfConcurrency);
+            var localRepository = new NuGetv3LocalRepository(_request.PackagesDirectory, checkPackageIdCase: false);
+            await InstallPackages(graphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
 
             // Resolve runtime dependencies
             var runtimeGraphs = new List<RestoreTargetGraph>();
-            if (request.Project.RuntimeGraph.Runtimes.Count > 0)
+            var runtimeTuples = new HashSet<Tuple<NuGetFramework, string>>();
+            if (_request.Project.RuntimeGraph.Runtimes.Count > 0)
             {
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-                foreach (var graph in graphs)
+                foreach (var graph in graphs.Where(g => g.WriteToLockFile))
                 {
-                    runtimeTasks.Add(WalkRuntimeDependencies(projectRange, graph, request.Project.RuntimeGraph, remoteWalker, context, localRepository));
+                    runtimeTasks.Add(WalkRuntimeDependencies(projectRange, graph, _request.Project.RuntimeGraph, remoteWalker, context, localRepository, writeToLockFile: true));
                 }
 
-                foreach (var runtimeSpecificGraphs in await Task.WhenAll(runtimeTasks))
+                foreach (var runtimeSpecificGraph in (await Task.WhenAll(runtimeTasks)).SelectMany(g => g))
                 {
-                    runtimeGraphs.AddRange(runtimeSpecificGraphs);
+                    runtimeGraphs.Add(runtimeSpecificGraph);
                 }
 
                 graphs.AddRange(runtimeGraphs);
@@ -139,30 +150,75 @@ namespace NuGet.Commands
                 }
 
                 // Install runtime-specific packages
-                await InstallPackages(runtimeGraphs, request.PackagesDirectory, allInstalledPackages, request.MaxDegreeOfConcurrency);
+                await InstallPackages(runtimeGraphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
             }
             else
             {
                 _log.LogVerbose(Strings.Log_SkippingRuntimeWalk);
             }
 
+            // Walk additional runtime graphs for supports checks
+            if(_request.SupportProfiles.Any())
+            {
+                var checkTasks = new List<Task<RestoreTargetGraph>>();
+                foreach(var profile in _request.SupportProfiles.Where(p => !runtimeTuples.Contains(p)))
+                {
+                    _log.LogVerbose($"Walking graph for {profile.Item1} {profile.Item2} to check support");
+                    var graph = graphs.SingleOrDefault(g => g.Framework.Equals(profile.Item1) && string.IsNullOrEmpty(g.RuntimeIdentifier));
+                    var runtimeGraph = GetRuntimeGraph(graph, _request.Project.RuntimeGraph, localRepository);
+                    checkTasks.Add(WalkDependencies(projectRange, profile.Item1, profile.Item2, runtimeGraph, remoteWalker, context, writeToLockFile: false));
+                }
+
+                var checkGraphs = (await Task.WhenAll(checkTasks)).ToList();
+                graphs.AddRange(checkGraphs);
+
+                if (checkGraphs.Any(g => g.InConflict))
+                {
+                    _log.LogError("Failed to resolve conflicts");
+                    return new RestoreResult(success: false, restoreGraphs: graphs);
+                }
+
+                // Install packages for supports check
+                await InstallPackages(checkGraphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
+            }
+
             // Build the lock file
-            var repository = new NuGetv3LocalRepository(request.PackagesDirectory, checkPackageIdCase: false);
-            var lockFile = CreateLockFile(request.Project, graphs, repository);
+            var lockFile = CreateLockFile(_request.Project, graphs.Where(g => g.WriteToLockFile), localRepository);
+
+            // Scan every graph for compatibility
+            var checkResults = new List<CompatibilityCheckResult>();
+            bool success = true;
+            var checker = new CompatibilityChecker(localRepository, lockFile, _log);
+            foreach(var graph in graphs)
+            {
+                _log.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
+                var result = checker.Check(graph);
+                success &= result.Success;
+                checkResults.Add(result);
+                if (result.Success)
+                {
+                    _log.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
+                }
+                else
+                {
+                    _log.LogError(Strings.FormatLog_PackagesIncompatible(graph.Name));
+                }
+            }
+
             var lockFileFormat = new LockFileFormat();
             lockFileFormat.Write(projectLockFilePath, lockFile);
 
             // Generate Targets/Props files
-            WriteTargetsAndProps(request.Project, graphs, repository);
+            WriteTargetsAndProps(_request.Project, graphs, localRepository);
 
-            return new RestoreResult(true, graphs, lockFile);
+            return new RestoreResult(success, graphs, checkResults, lockFile);
         }
 
         private void WriteTargetsAndProps(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
         {
-            // Get the runtime-independent graphs
-            var tfmGraphs = targetGraphs.Where(g => string.IsNullOrEmpty(g.RuntimeIdentifier)).ToList();
-            if (tfmGraphs.Count > 1)
+            // Get the project graph
+            var projectFrameworks = project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
+            if (projectFrameworks.Count > 1)
             {
                 var name = $"{project.Name}.nuget.targets";
                 var path = Path.Combine(project.BaseDirectory, name);
@@ -171,7 +227,7 @@ namespace NuGet.Commands
                 GenerateMSBuildErrorFile(path);
                 return;
             }
-            var graph = tfmGraphs[0];
+            var graph = targetGraphs.Single(g => g.Framework.Equals(projectFrameworks[0]) && string.IsNullOrEmpty(g.RuntimeIdentifier));
 
             var pathResolver = new VersionFolderPathResolver(repository.RepositoryRoot);
 
@@ -287,7 +343,7 @@ namespace NuGet.Commands
             }
         }
 
-        private LockFile CreateLockFile(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
+        private LockFile CreateLockFile(PackageSpec project, IEnumerable<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
         {
             var lockFile = new LockFile();
 
@@ -342,7 +398,7 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    var targetLibrary = CreateLockFileTargetLibrary(
+                    var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
                         packageInfo,
                         targetGraph,
                         new VersionFolderPathResolver(repository.RepositoryRoot),
@@ -381,135 +437,15 @@ namespace NuGet.Commands
             return lockFileLib;
         }
 
-        private LockFileTargetLibrary CreateLockFileTargetLibrary(LocalPackageInfo package, RestoreTargetGraph targetGraph, VersionFolderPathResolver versionFolderPathResolver, string correctedPackageName)
+        private Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, RemoteDependencyWalker walker, RemoteWalkContext context, bool writeToLockFile)
         {
-            var lockFileLib = new LockFileTargetLibrary();
-
-            var framework = targetGraph.Framework;
-            var runtimeIdentifier = targetGraph.RuntimeIdentifier;
-
-            // package.Id is read from nuspec and it might be in wrong casing.
-            // correctedPackageName should be the package name used by dependency graph and
-            // it has the correct casing that runtime needs during dependency resolution.
-            lockFileLib.Name = correctedPackageName ?? package.Id;
-            lockFileLib.Version = package.Version;
-
-            IList<string> files;
-            var contentItems = new ContentItemCollection();
-            HashSet<string> referenceFilter = null;
-            using (var nupkgStream = File.OpenRead(package.ZipPath))
-            {
-                var packageReader = new PackageReader(nupkgStream);
-                files = packageReader.GetFiles().Select(p => p.Replace(Path.DirectorySeparatorChar, '/')).ToList();
-
-                contentItems.Load(files);
-
-                var dependencySet = packageReader.GetPackageDependencies().GetNearest(framework);
-                if (dependencySet != null)
-                {
-                    var set = dependencySet.Packages;
-
-                    if (set != null)
-                    {
-                        lockFileLib.Dependencies = set.ToList();
-                    }
-                }
-
-                var referenceSet = packageReader.GetReferenceItems().GetNearest(framework);
-                if (referenceSet != null)
-                {
-                    referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
-                }
-
-                // TODO: Remove this when we do #596
-                // ASP.NET Core isn't compatible with generic PCL profiles
-                if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase)
-                    &&
-                    !string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.DnxCore, StringComparison.OrdinalIgnoreCase))
-                {
-                    var frameworkAssemblies = packageReader.GetFrameworkItems().GetNearest(framework);
-                    if (frameworkAssemblies != null)
-                    {
-                        foreach (var assemblyReference in frameworkAssemblies.Items)
-                        {
-                            lockFileLib.FrameworkAssemblies.Add(assemblyReference);
-                        }
-                    }
-                }
-            }
-
-            var nativeCriteria = targetGraph.Conventions.Criteria.ForRuntime(targetGraph.RuntimeIdentifier);
-            var managedCriteria = targetGraph.Conventions.Criteria.ForFrameworkAndRuntime(framework, targetGraph.RuntimeIdentifier);
-
-            var compileGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.CompileAssemblies, targetGraph.Conventions.Patterns.RuntimeAssemblies);
-
-            if (compileGroup != null)
-            {
-                lockFileLib.CompileTimeAssemblies = compileGroup.Items.Select(t => new LockFileItem(t.Path)).ToList();
-            }
-
-            var runtimeGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.RuntimeAssemblies);
-            if (runtimeGroup != null)
-            {
-                lockFileLib.RuntimeAssemblies = runtimeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
-            }
-
-            var resourceGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.ResourceAssemblies);
-            if (resourceGroup != null)
-            {
-                lockFileLib.ResourceAssemblies = resourceGroup.Items.Select(ToResourceLockFileItem).ToList();
-            }
-
-            var nativeGroup = contentItems.FindBestItemGroup(nativeCriteria, targetGraph.Conventions.Patterns.NativeLibraries);
-            if (nativeGroup != null)
-            {
-                lockFileLib.NativeLibraries = nativeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
-            }
-
-            // COMPAT: Support lib/contract so older packages can be consumed
-            var contractPath = "lib/contract/" + package.Id + ".dll";
-            var hasContract = files.Any(path => path == contractPath);
-            var hasLib = lockFileLib.RuntimeAssemblies.Any();
-
-            if (hasContract
-                && hasLib
-                && !framework.IsDesktop())
-            {
-                lockFileLib.CompileTimeAssemblies.Clear();
-                lockFileLib.CompileTimeAssemblies.Add(new LockFileItem(contractPath));
-            }
-
-            // Apply filters from the <references> node in the nuspec
-            if (referenceFilter != null)
-            {
-                // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
-                // runtimes/* is unaffected (it doesn't start with lib/)
-                lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(p.Path)).ToList();
-                lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(p.Path)).ToList();
-            }
-
-            return lockFileLib;
+            return WalkDependencies(projectRange, framework, null, RuntimeGraph.Empty, walker, context, writeToLockFile);
         }
 
-        private static LockFileItem ToResourceLockFileItem(ContentItem item)
+        private async Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, bool writeToLockFile)
         {
-            return new LockFileItem(item.Path)
-            {
-                Properties =
-                {
-                    { "locale", item.Properties["locale"].ToString()}
-                }
-            };
-        }
-
-        private Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, RemoteDependencyWalker walker, RemoteWalkContext context)
-        {
-            return WalkDependencies(projectRange, framework, null, RuntimeGraph.Empty, walker, context);
-        }
-
-        private async Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context)
-        {
-            _log.LogInformation(Strings.FormatLog_RestoringPackagesForFramework(framework));
+            var name = RestoreTargetGraph.GetName(framework, runtimeIdentifier);
+            _log.LogInformation(Strings.FormatLog_RestoringPackages(name));
             var graph = await walker.WalkAsync(
                 projectRange,
                 framework,
@@ -517,47 +453,61 @@ namespace NuGet.Commands
                 runtimeGraph);
 
             // Resolve conflicts
-            _log.LogVerbose(Strings.FormatLog_ResolvingConflictsForFramework(framework));
+            _log.LogVerbose(Strings.FormatLog_ResolvingConflicts(name));
             var inConflict = !graph.TryResolveConflicts();
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            return RestoreTargetGraph.Create(inConflict, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
+            return RestoreTargetGraph.Create(inConflict, writeToLockFile, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
         }
 
-        private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository)
+        private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository, bool writeToLockFile)
         {
             // Load runtime specs
-            _log.LogVerbose(Strings.Log_ScanningForRuntimeJson);
-            var runtimeGraph = projectRuntimeGraph;
-            graph.Graph.ForEach(node =>
-                {
-                    var match = node?.Item?.Data?.Match;
-                    if (match == null)
-                    {
-                        return;
-                    }
-
-                    // Locate the package in the local repository
-                    var package = localRepository.FindPackagesById(match.Library.Name).FirstOrDefault(p => p.Version == match.Library.Version);
-                    if (package != null)
-                    {
-                        var nextGraph = LoadRuntimeGraph(package);
-                        if (nextGraph != null)
-                        {
-                            _log.LogVerbose(Strings.FormatLog_MergingRuntimes(match.Library));
-                            runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
-                        }
-                    }
-                });
+            RuntimeGraph runtimeGraph = GetRuntimeGraph(graph, projectRuntimeGraph, localRepository);
 
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in projectRuntimeGraph.Runtimes.Keys)
             {
-                _log.LogInformation(Strings.FormatLog_RestoringPackagesForFrameworkAndRuntime(graph.Framework, runtimeName));
-                resultGraphs.Add(WalkDependencies(projectRange, graph.Framework, runtimeName, runtimeGraph, walker, context));
+                _log.LogInformation(Strings.FormatLog_RestoringPackages(RestoreTargetGraph.GetName(graph.Framework, runtimeName)));
+                resultGraphs.Add(WalkDependencies(projectRange, graph.Framework, runtimeName, runtimeGraph, walker, context, writeToLockFile));
             }
 
             return Task.WhenAll(resultGraphs);
+        }
+
+        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, NuGetv3LocalRepository localRepository)
+        {
+            // TODO: Caching!
+            RuntimeGraph runtimeGraph;
+            if (_runtimeGraphCache.TryGetValue(graph.Framework, out runtimeGraph))
+            {
+                return runtimeGraph;
+            }
+
+            _log.LogVerbose(Strings.Log_ScanningForRuntimeJson);
+            runtimeGraph = projectRuntimeGraph;
+            graph.Graph.ForEach(node =>
+            {
+                var match = node?.Item?.Data?.Match;
+                if (match == null)
+                {
+                    return;
+                }
+
+                // Locate the package in the local repository
+                var package = localRepository.FindPackagesById(match.Library.Name).FirstOrDefault(p => p.Version == match.Library.Version);
+                if (package != null)
+                {
+                    var nextGraph = LoadRuntimeGraph(package);
+                    if (nextGraph != null)
+                    {
+                        _log.LogVerbose(Strings.FormatLog_MergingRuntimes(match.Library));
+                        runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
+                    }
+                }
+            });
+            _runtimeGraphCache[graph.Framework] = runtimeGraph;
+            return runtimeGraph;
         }
 
         private RuntimeGraph LoadRuntimeGraph(LocalPackageInfo package)

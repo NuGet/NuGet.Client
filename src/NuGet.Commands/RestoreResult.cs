@@ -17,6 +17,8 @@ namespace NuGet.Commands
         /// </summary>
         public IEnumerable<RestoreTargetGraph> RestoreGraphs { get; }
 
+        public IEnumerable<CompatibilityCheckResult> CompatibilityCheckResults { get; }
+
         /// <summary>
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
         /// was used to determine the packages to install during the restore.
@@ -27,14 +29,15 @@ namespace NuGet.Commands
         public LockFile LockFile { get; }
 
         public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs)
-            : this(success, restoreGraphs, lockfile: null)
+            : this(success, restoreGraphs, Enumerable.Empty<CompatibilityCheckResult>(), lockfile: null)
         {
         }
 
-        public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs, LockFile lockfile)
+        public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs, IEnumerable<CompatibilityCheckResult> compatibilityCheckResults, LockFile lockfile)
         {
             Success = success;
             RestoreGraphs = restoreGraphs;
+            CompatibilityCheckResults = compatibilityCheckResults;
             LockFile = lockfile;
         }
 

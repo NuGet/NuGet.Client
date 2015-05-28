@@ -1,0 +1,13 @@
+{
+    "dependencies": {
+        "System.Linq": "4.0.0-beta-*",
+        "Microsoft.NETCore.Targets": "1.0.0-beta-*"
+    },
+    "frameworks": {
+        "core50": {}
+    },
+    "supports": {
+        "netcore50": ["win8-x86", "win8-x64"],
+        "dnxcore50": []
+    }
+}

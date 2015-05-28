@@ -77,6 +77,11 @@ namespace NuGet.ContentModel
             }
         }
 
+        public bool HasItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
+        {
+            return FindBestItemGroup(criteria, definitions) != null;
+        }
+
         public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
             foreach (var definition in definitions)

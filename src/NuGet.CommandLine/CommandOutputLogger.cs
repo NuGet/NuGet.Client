@@ -10,71 +10,95 @@ namespace NuGet.CommandLine
     /// <summary>
     /// Logger to print formatted command output.
     /// </summary>
-    public class CommandOutputLogger : ILogger
+    internal class CommandOutputLogger : ILogger
     {
-        private const string Debug = nameof(Debug);
-        private const string Error = nameof(Error);
-        private const string Information = nameof(Information);
-        private const string Verbose = nameof(Verbose);
-        private const string Warning = nameof(Warning);
+        private enum LogLevel
+        {
+            Debug = 0,
+            Verbose = 1,
+            Information = 2,
+            Warning = 3,
+            Error = 4
+        }
 
         private static readonly bool _useConsoleColor = true;
+        private Lazy<LogLevel> _verbosity;
+
+        private LogLevel Verbosity { get { return _verbosity.Value; } }
+
+        internal CommandOutputLogger(CommandOption verbosity)
+        {
+            _verbosity = new Lazy<LogLevel>(() =>
+            {
+                LogLevel level;
+                if (!Enum.TryParse(verbosity.Value(), out level))
+                {
+                    level = LogLevel.Information;
+                }
+                return level;
+            });
+        }
 
         public void LogDebug(string data)
         {
-            LogInternal(Debug, data);
+            LogInternal(LogLevel.Debug, data);
         }
 
         public void LogError(string data)
         {
-            LogInternal(Error, data);
+            LogInternal(LogLevel.Error, data);
         }
 
         public void LogInformation(string data)
         {
-            LogInternal(Information, data);
+            LogInternal(LogLevel.Information, data);
         }
 
         public void LogVerbose(string data)
         {
-            LogInternal(Verbose, data);
+            LogInternal(LogLevel.Verbose, data);
         }
 
         public void LogWarning(string data)
         {
-            LogInternal(Warning, data);
+            LogInternal(LogLevel.Warning, data);
         }
 
-        private void LogInternal(string logLevel, string message)
+        private void LogInternal(LogLevel logLevel, string message)
         {
+            if(logLevel < Verbosity)
+            {
+                return;
+            }
+
             var caption = string.Empty;
             if (_useConsoleColor)
             {
                 switch (logLevel)
                 {
-                    case Debug:
+                    case LogLevel.Debug:
                         caption = "\x1b[35mdebug\x1b[39m";
                         break;
-                    case Information:
+                    case LogLevel.Information:
                         caption = "\x1b[32minfo \x1b[39m";
                         break;
-                    case Warning:
+                    case LogLevel.Warning:
                         caption = "\x1b[33mwarn \x1b[39m";
                         break;
-                    case Error:
+                    case LogLevel.Error:
                         caption = "\x1b[31merror\x1b[39m";
                         break;
-                    case Verbose:
+                    case LogLevel.Verbose:
                         caption = "\x1b[35mtrace\x1b[39m";
                         break;
                 }
             }
             else
             {
-                caption = logLevel;
+                caption = logLevel.ToString().ToLowerInvariant();
             }
 
-            lock(Console.Out)
+            lock (Console.Out)
             {
                 AnsiConsole.GetOutput(_useConsoleColor).WriteLine($"{caption}: {message}");
             }

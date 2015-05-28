@@ -11,6 +11,38 @@ namespace NuGet.Commands
             = new ResourceManager("NuGet.Commands.Strings", typeof(Strings).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Checking compatibility of packages on {0}.
+        /// </summary>
+        internal static string Log_CheckingCompatibility
+        {
+            get { return GetString("Log_CheckingCompatibility"); }
+        }
+
+        /// <summary>
+        /// Checking compatibility of packages on {0}.
+        /// </summary>
+        internal static string FormatLog_CheckingCompatibility(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_CheckingCompatibility"), p0);
+        }
+
+        /// <summary>
+        /// Checking compatibility for {0} {1} with {2}.
+        /// </summary>
+        internal static string Log_CheckingPackageCompatibility
+        {
+            get { return GetString("Log_CheckingPackageCompatibility"); }
+        }
+
+        /// <summary>
+        /// Checking compatibility for {0} {1} with {2}.
+        /// </summary>
+        internal static string FormatLog_CheckingPackageCompatibility(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_CheckingPackageCompatibility"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// Failed to resolve conflicts.
         /// </summary>
         internal static string Log_FailedToResolveConflicts
@@ -75,6 +107,86 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// {0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no compatible run-time assembly.
+        /// </summary>
+        internal static string Log_MissingImplementationFx
+        {
+            get { return GetString("Log_MissingImplementationFx"); }
+        }
+
+        /// <summary>
+        /// {0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no compatible run-time assembly.
+        /// </summary>
+        internal static string FormatLog_MissingImplementationFx(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_MissingImplementationFx"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// {0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no run-time assembly compatible with {4}.
+        /// </summary>
+        internal static string Log_MissingImplementationFxRuntime
+        {
+            get { return GetString("Log_MissingImplementationFxRuntime"); }
+        }
+
+        /// <summary>
+        /// {0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no run-time assembly compatible with {4}.
+        /// </summary>
+        internal static string FormatLog_MissingImplementationFxRuntime(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_MissingImplementationFxRuntime"), p0, p1, p2, p3, p4);
+        }
+
+        /// <summary>
+        /// {0} {1} is not compatible with {2}.
+        /// </summary>
+        internal static string Log_PackageNotCompatibleWithFx
+        {
+            get { return GetString("Log_PackageNotCompatibleWithFx"); }
+        }
+
+        /// <summary>
+        /// {0} {1} is not compatible with {2}.
+        /// </summary>
+        internal static string FormatLog_PackageNotCompatibleWithFx(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_PackageNotCompatibleWithFx"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// All packages are compatibile with {0}.
+        /// </summary>
+        internal static string Log_PackagesAreCompatible
+        {
+            get { return GetString("Log_PackagesAreCompatible"); }
+        }
+
+        /// <summary>
+        /// All packages are compatibile with {0}.
+        /// </summary>
+        internal static string FormatLog_PackagesAreCompatible(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_PackagesAreCompatible"), p0);
+        }
+
+        /// <summary>
+        /// Some packages are not compatible with {0}.
+        /// </summary>
+        internal static string Log_PackagesIncompatible
+        {
+            get { return GetString("Log_PackagesIncompatible"); }
+        }
+
+        /// <summary>
+        /// Some packages are not compatible with {0}.
+        /// </summary>
+        internal static string FormatLog_PackagesIncompatible(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_PackagesIncompatible"), p0);
+        }
+
+        /// <summary>
         /// The project does not specify any target frameworks.
         /// </summary>
         internal static string Log_ProjectDoesNotSpecifyTargetFrameworks
@@ -91,19 +203,19 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Resolving conflicts for framework {0}.
+        /// Resolving conflicts for {0}...
         /// </summary>
-        internal static string Log_ResolvingConflictsForFramework
+        internal static string Log_ResolvingConflicts
         {
-            get { return GetString("Log_ResolvingConflictsForFramework"); }
+            get { return GetString("Log_ResolvingConflicts"); }
         }
 
         /// <summary>
-        /// Resolving conflicts for framework {0}.
+        /// Resolving conflicts for {0}...
         /// </summary>
-        internal static string FormatLog_ResolvingConflictsForFramework(object p0)
+        internal static string FormatLog_ResolvingConflicts(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ResolvingConflictsForFramework"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ResolvingConflicts"), p0);
         }
 
         /// <summary>
@@ -120,38 +232,6 @@ namespace NuGet.Commands
         internal static string FormatLog_RestoringPackages(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Log_RestoringPackages"), p0);
-        }
-
-        /// <summary>
-        /// Restoring packages for framework {0}.
-        /// </summary>
-        internal static string Log_RestoringPackagesForFramework
-        {
-            get { return GetString("Log_RestoringPackagesForFramework"); }
-        }
-
-        /// <summary>
-        /// Restoring packages for framework {0}.
-        /// </summary>
-        internal static string FormatLog_RestoringPackagesForFramework(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Log_RestoringPackagesForFramework"), p0);
-        }
-
-        /// <summary>
-        /// Restoring packages for framework {0} on {1}.
-        /// </summary>
-        internal static string Log_RestoringPackagesForFrameworkAndRuntime
-        {
-            get { return GetString("Log_RestoringPackagesForFrameworkAndRuntime"); }
-        }
-
-        /// <summary>
-        /// Restoring packages for framework {0} on {1}.
-        /// </summary>
-        internal static string FormatLog_RestoringPackagesForFrameworkAndRuntime(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Log_RestoringPackagesForFrameworkAndRuntime"), p0, p1);
         }
 
         /// <summary>

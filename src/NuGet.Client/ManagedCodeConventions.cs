@@ -19,7 +19,7 @@ namespace NuGet.Client
         private static readonly ContentPropertyDefinition TfmProperty = new ContentPropertyDefinition(PropertyNames.TargetFrameworkMoniker,
             table: new Dictionary<string, object>()
                 {
-                    { "any", new NuGetFramework(FrameworkConstants.SpecialIdentifiers.Any, FrameworkConstants.EmptyVersion) }
+                    { "any", FrameworkConstants.CommonFrameworks.DotNet }
                 },
             parser: TargetFrameworkName_Parser,
             compatibilityTest: TargetFrameworkName_CompatibilityTest,
@@ -186,16 +186,12 @@ namespace NuGet.Client
                 {
                     builder = builder
                         // Take runtime-specific matches first!
-                        .Add[PropertyNames.TargetFrameworkMoniker, framework][PropertyNames.RuntimeIdentifier, runtimeIdentifier]
-                        .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.CommonFrameworks.DotNet50][PropertyNames.RuntimeIdentifier, runtimeIdentifier]
-                        .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.SpecialIdentifiers.Any][PropertyNames.RuntimeIdentifier, runtimeIdentifier];
+                        .Add[PropertyNames.TargetFrameworkMoniker, framework][PropertyNames.RuntimeIdentifier, runtimeIdentifier];
                 }
 
                 // Then try runtime-agnostic
                 builder = builder
-                    .Add[PropertyNames.TargetFrameworkMoniker, framework]
-                    .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.CommonFrameworks.DotNet50]
-                    .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.SpecialIdentifiers.Any];
+                    .Add[PropertyNames.TargetFrameworkMoniker, framework];
 
                 return builder.Criteria;
             }
@@ -216,14 +212,51 @@ namespace NuGet.Client
 
         public class ManagedCodePatterns
         {
+            /// <summary>
+            /// Pattern used to locate all files targetted at a specific runtime and/or framework
+            /// </summary>
+            public PatternSet AnyTargettedFile { get; }
+
+            /// <summary>
+            /// Pattern used to locate all files designed for loading as managed code assemblies at run-time
+            /// </summary>
             public PatternSet RuntimeAssemblies { get; }
+
+            /// <summary>
+            /// Pattern used to locate all files designed for using as managed code references at compile-time
+            /// </summary>
             public PatternSet CompileAssemblies { get; }
+
+            /// <summary>
+            /// Pattern used to locate all files designed for loading as native code libraries at run-time
+            /// </summary>
             public PatternSet NativeLibraries { get; }
+
+            /// <summary>
+            /// Pattern used to locate all files designed for loading as managed code resource assemblies at run-time
+            /// </summary>
             public PatternSet ResourceAssemblies { get; }
+
+            /// <summary>
+            /// Pattern used to identify MSBuild targets and props files
+            /// </summary>
             public PatternSet MSBuildFiles { get; }
 
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
+                AnyTargettedFile = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        "{any}/{tfm}/{any?}",
+                        "runtimes/{rid}/{any}/{tfm}/{any?}",
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        "{any}/{tfm}/{any?}",
+                        "runtimes/{rid}/{any}/{tfm}/{any?}",
+                    });
+
                 RuntimeAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]

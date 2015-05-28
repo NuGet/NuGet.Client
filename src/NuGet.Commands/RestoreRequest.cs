@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -17,8 +19,10 @@ namespace NuGet.Commands
             Project = project;
             Sources = sources.ToList().AsReadOnly();
             PackagesDirectory = packagesDirectory;
-            ExternalProjects = new List<ExternalProjectReference>();
             WriteMSBuildFiles = true;
+
+            ExternalProjects = new List<ExternalProjectReference>();
+            SupportProfiles = new List<Tuple<NuGetFramework, string>>();
         }
 
         /// <summary>
@@ -63,5 +67,8 @@ namespace NuGet.Commands
         /// If set, MSBuild files (.targets/.props) will be written for the project being restored
         /// </summary>
         public bool WriteMSBuildFiles { get; set; }
+
+        // Temporary; we'll get this from the project eventually.
+        public IList<Tuple<NuGetFramework, string>> SupportProfiles { get; }
     }
 }

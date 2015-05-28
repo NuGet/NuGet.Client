@@ -10,6 +10,7 @@ using System.Reflection;
 using Microsoft.Framework.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Logging;
 using NuGet.ProjectModel;
 
@@ -29,14 +30,16 @@ namespace NuGet.CommandLine
             }
 #endif
 
-            // Set up logging
-            _log = new CommandOutputLogger();
-
             var app = new CommandLineApplication();
             app.Name = "nuget3";
             app.FullName = ".NET Package Manager";
             app.HelpOption("-h|--help");
             app.VersionOption("--version", GetType().GetTypeInfo().Assembly.GetName().Version.ToString());
+
+            var verbosity = app.Option("-v|--verbosity <verbosity>", "The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Warning, Error", CommandOptionType.SingleValue);
+
+            // Set up logging
+            _log = new CommandOutputLogger(verbosity);
 
             app.Command("restore", restore =>
                 {
@@ -45,6 +48,7 @@ namespace NuGet.CommandLine
                     var sources = restore.Option("-s|--source <source>", "Specifies a NuGet package source to use during the restore", CommandOptionType.MultipleValue);
                     var packagesDirectory = restore.Option("--packages <packagesDirectory>", "Directory to install packages in", CommandOptionType.SingleValue);
                     var parallel = restore.Option("-p|--parallel <noneOrNumberOfParallelTasks>", $"The number of concurrent tasks to use when restoring. Defaults to {RestoreRequest.DefaultDegreeOfConcurrency}; pass 'none' to run without concurrency.", CommandOptionType.SingleValue);
+                    var supports = restore.Option("--supports <tfmRidPair>", "A 'tfm~rid' string indicating a profile to check supports for.", CommandOptionType.MultipleValue);
                     var projectFile = restore.Argument("[project file]", "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
 
                     restore.OnExecute(async () =>
@@ -107,6 +111,20 @@ namespace NuGet.CommandLine
                                 packageSources,
                                 packagesDir);
 
+                            if (supports.HasValue())
+                            {
+                                var supportsProfiles = supports.Values.Select(s =>
+                                {
+                                    var splat = s.Split('~');
+                                    return Tuple.Create(NuGetFramework.Parse(splat[0]), splat[1]);
+                                });
+
+                                foreach (var profile in supportsProfiles)
+                                {
+                                    request.SupportProfiles.Add(profile);
+                                }
+                            }
+
                             if (externalProjects != null)
                             {
                                 foreach (var externalReference in externalProjects)
@@ -140,14 +158,21 @@ namespace NuGet.CommandLine
                             {
                                 _log.LogInformation($"Running restore with {request.MaxDegreeOfConcurrency} concurrent jobs");
                             }
-                            var command = new RestoreCommand(_log);
+                            var command = new RestoreCommand(_log, request);
                             var sw = Stopwatch.StartNew();
-                            var result = await command.ExecuteAsync(request);
+                            var result = await command.ExecuteAsync();
                             sw.Stop();
 
-                            _log.LogInformation($"Restore completed in {sw.ElapsedMilliseconds:0.00}ms!");
-
-                            return 0;
+                            if (result.Success)
+                            {
+                                _log.LogInformation($"Restore completed in {sw.ElapsedMilliseconds:0.00}ms!");
+                                return 0;
+                            }
+                            else
+                            {
+                                _log.LogError($"Restore failed in {sw.ElapsedMilliseconds:0.00}ms!");
+                                return 1;
+                            }
                         });
                 });
 

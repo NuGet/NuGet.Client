@@ -8,7 +8,9 @@ using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -23,9 +25,6 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_NuGetVersioning107RuntimeAssemblies()
         {
             // Arrange
-            var logger = new TestLogger();
-            var command = new RestoreCommand(logger);
-
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -45,7 +44,9 @@ namespace NuGet.Commands.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            var result = await command.ExecuteAsync(request);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
             var installed = result.GetAllInstalled();
             var unresolved = result.GetAllUnresolved();
             var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
@@ -67,9 +68,6 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_InstallPackageWithDependencies()
         {
             // Arrange
-            var logger = new TestLogger();
-            var command = new RestoreCommand(logger);
-
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -89,7 +87,9 @@ namespace NuGet.Commands.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            var result = await command.ExecuteAsync(request);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
             var installed = result.GetAllInstalled();
             var unresolved = result.GetAllUnresolved();
             var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
@@ -97,7 +97,7 @@ namespace NuGet.Commands.Test
             var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
 
             // Assert
-            Assert.Equal(0, logger.Errors);
+            Assert.Equal(9, logger.Errors); // There will be compatibility errors, but we don't care
             Assert.Equal(3, installed.Count);
             Assert.Equal(0, unresolved.Count);
             Assert.Equal("5.0.4", jsonNetPackage.Version.ToNormalizedString());
@@ -110,9 +110,6 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_RestoreWithNoChanges()
         {
             // Arrange
-            var logger = new TestLogger();
-            var command = new RestoreCommand(logger);
-
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -129,10 +126,13 @@ namespace NuGet.Commands.Test
             request.MaxDegreeOfConcurrency = 1;
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-            var firstRun = await command.ExecuteAsync(request);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var firstRun = await command.ExecuteAsync();
 
             // Act
-            var result = await command.ExecuteAsync(request);
+            command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
             var installed = result.GetAllInstalled();
             var unresolved = result.GetAllUnresolved();
 
@@ -148,9 +148,6 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_PackageIsAddedToPackageCache(string source)
         {
             // Arrange
-            var logger = new TestLogger();
-            var command = new RestoreCommand(logger);
-
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(source));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -168,7 +165,9 @@ namespace NuGet.Commands.Test
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             // Act
-            var result = await command.ExecuteAsync(request);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
             var nuspecPath = Path.Combine(packagesDir, "NuGet.Versioning", "1.0.7", "NuGet.Versioning.nuspec");
 
             // Assert
@@ -182,9 +181,6 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPath(string source)
         {
             // Arrange
-            var logger = new TestLogger();
-            var command = new RestoreCommand(logger);
-
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(source));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -202,7 +198,9 @@ namespace NuGet.Commands.Test
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             // Act
-            var result = await command.ExecuteAsync(request);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
             var nuspecPath = Path.Combine(packagesDir, "owin", "1.0.0", "owin.nuspec");
 
             // Assert
@@ -213,9 +211,6 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_JsonNet701Beta3RuntimeAssemblies()
         {
             // Arrange
-            var logger = new TestLogger();
-            var command = new RestoreCommand(logger);
-
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -235,7 +230,9 @@ namespace NuGet.Commands.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            var result = await command.ExecuteAsync(request);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
             var installed = result.GetAllInstalled();
             var unresolved = result.GetAllUnresolved();
             var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
@@ -257,9 +254,6 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_NoCompatibleRuntimeAssembliesForProject()
         {
             // Arrange
-            var logger = new TestLogger();
-            var command = new RestoreCommand(logger);
-
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -279,7 +273,9 @@ namespace NuGet.Commands.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            var result = await command.ExecuteAsync(request);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
             var installed = result.GetAllInstalled();
             var unresolved = result.GetAllUnresolved();
             var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
@@ -287,7 +283,13 @@ namespace NuGet.Commands.Test
             var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
             // Assert
-            Assert.Equal(0, logger.Errors);
+            var expectedIssue = CompatibilityIssue.Incompatible(
+                new PackageIdentity("NuGet.Core", new NuGetVersion(2, 8, 3)), FrameworkConstants.CommonFrameworks.NetCore50, null);
+            Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
+            Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
+            Assert.Contains(expectedIssue.Format(), logger.Messages);
+
+            Assert.Equal(9, logger.Errors);
             Assert.Equal(2, installed.Count);
             Assert.Equal(0, unresolved.Count);
             Assert.Equal(0, runtimeAssemblies.Count);
@@ -296,10 +298,20 @@ namespace NuGet.Commands.Test
         private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, string framework, string runtime)
         {
             return targets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(framework)))
-            .Where(target => target.RuntimeIdentifier == runtime)
-            .SelectMany(target => target.Libraries)
-            .SelectMany(library => library.RuntimeAssemblies)
-            .ToList();
+                .Where(target => target.RuntimeIdentifier == runtime)
+                .SelectMany(target => target.Libraries)
+                .SelectMany(library => library.RuntimeAssemblies)
+                .ToList();
+        }
+
+        private static void AddRuntime(PackageSpec spec, string rid)
+        {
+            spec.RuntimeGraph = RuntimeGraph.Merge(
+                spec.RuntimeGraph,
+                new RuntimeGraph(new[]
+                {
+                    new RuntimeDescription(rid)
+                }));
         }
 
         private static void AddDependency(PackageSpec spec, string id, string version)
