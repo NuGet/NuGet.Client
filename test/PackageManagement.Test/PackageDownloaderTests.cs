@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -106,6 +106,71 @@ namespace NuGet.Test
                 // Assert
                 // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
                 Assert.Equal(185476, targetPackageStream.Length);
+                Assert.True(targetPackageStream.CanSeek);
+            }
+        }
+
+        [Fact]
+        public async Task TestDownloadPackage_MultipleSources()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
+            {
+                new PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
+                TestSourceRepositoryUtility.V3PackageSource,
+                new PackageSource("http://blah.com"),
+            });
+
+            var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
+
+            // Act
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(), packageIdentity, CancellationToken.None))
+            {
+                var targetPackageStream = downloadResult.PackageStream;
+
+                // Assert
+                Assert.True(targetPackageStream.CanSeek);
+            }
+        }
+
+        [Fact]
+        public async Task TestDownloadPackage_MultipleSources_NotFound()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
+            {
+                new PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
+                new PackageSource("http://blah.com"),
+            });
+
+            var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                packageIdentity,
+                CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task TestDownloadPackage_MultipleSources_FoundOnMultiple()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
+            {
+                TestSourceRepositoryUtility.V3PackageSource,
+                TestSourceRepositoryUtility.V3PackageSource,
+                new PackageSource("http://blah.com"),
+                TestSourceRepositoryUtility.V2PackageSource,
+                TestSourceRepositoryUtility.V2PackageSource,
+            });
+
+            var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
+
+            // Act
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(), packageIdentity, CancellationToken.None))
+            {
+                var targetPackageStream = downloadResult.PackageStream;
+
+                // Assert
                 Assert.True(targetPackageStream.CanSeek);
             }
         }

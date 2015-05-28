@@ -451,8 +451,8 @@ namespace NuGet.PackageManagement
                 if (!resolutionContext.IncludePrerelease)
                 {
                     prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(
-                        prunedAvailablePackages, 
-                        packageTargetsForResolver, 
+                        prunedAvailablePackages,
+                        packageTargetsForResolver,
                         packagesToInstall);
                 }
 
@@ -838,6 +838,9 @@ namespace NuGet.PackageManagement
 
         /// <summary>
         /// Check all sources in parallel to see if the package exists while respecting the order of the list.
+        /// This is only used by PreviewInstall with DependencyBehavior.Ignore.
+        /// Since, resolver gather is not used when dependencies are not used,
+        /// we simply get the source repository using MetadataResource.Exists
         /// </summary>
         private static async Task<SourceRepository> GetSourceRepository(PackageIdentity packageIdentity, IEnumerable<SourceRepository> sourceRepositories)
         {
@@ -1294,11 +1297,10 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(MessageLevel.Info, string.Format(Strings.RestoringPackage, packageIdentity));
             var enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
                 SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            var sourceRepository = await GetSourceRepository(packageIdentity, enabledSources);
 
             token.ThrowIfCancellationRequested();
 
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepository, packageIdentity, token))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(enabledSources, packageIdentity, token))
             {
                 // If you already downloaded the package, just restore it, don't cancel the operation now
                 await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);
