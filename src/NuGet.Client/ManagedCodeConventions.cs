@@ -22,7 +22,9 @@ namespace NuGet.Client
                     { "any", new NuGetFramework(FrameworkConstants.SpecialIdentifiers.Any, FrameworkConstants.EmptyVersion) }
                 },
             parser: TargetFrameworkName_Parser,
-            compatibilityTest: TargetFrameworkName_CompatibilityTest);
+            compatibilityTest: TargetFrameworkName_CompatibilityTest,
+            compareTest: TargetFrameworkName_NearestCompareTest);
+
         private static readonly ContentPropertyDefinition LocaleProperty = new ContentPropertyDefinition(PropertyNames.Locale,
             parser: Locale_Parser);
 
@@ -123,10 +125,41 @@ namespace NuGet.Client
                     // Otherwise, ignore 'any' framework values
                     return false;
                 }
+
                 return DefaultCompatibilityProvider.Instance.IsCompatible(criteriaFrameworkName, availableFrameworkName);
             }
 
             return false;
+        }
+
+        private static int TargetFrameworkName_NearestCompareTest(object projectFramework, object criteria, object available)
+        {
+            var projectFrameworkName = projectFramework as NuGetFramework;
+            var criteriaFrameworkName = criteria as NuGetFramework;
+            var availableFrameworkName = available as NuGetFramework;
+
+            if (criteriaFrameworkName != null
+                && availableFrameworkName != null
+                && projectFrameworkName != null)
+            {
+                var reducer = new FrameworkReducer();
+                var frameworks = new NuGetFramework[] { criteriaFrameworkName, availableFrameworkName };
+
+                // Find the nearest compatible framework to the project framework.
+                var nearest = reducer.GetNearest(projectFrameworkName, frameworks);
+
+                if (criteriaFrameworkName.Equals(nearest))
+                {
+                    return -1;
+                }
+
+                if (availableFrameworkName.Equals(nearest))
+                {
+                    return 1;
+                }
+            }
+
+            return 0;
         }
 
         private static Version NormalizeVersion(Version version)

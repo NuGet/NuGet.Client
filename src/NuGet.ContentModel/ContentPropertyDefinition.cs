@@ -15,52 +15,61 @@ namespace NuGet.ContentModel
     public class ContentPropertyDefinition
     {
         public ContentPropertyDefinition(string name)
-            : this(name, null, null, null, null, false)
+            : this(name, null, null, null, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, IDictionary<string, object> table)
-            : this(name, table, null, null, null, false)
+            : this(name, table, null, null, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, Func<string, object> parser)
-            : this(name, null, parser, null, null, false)
+            : this(name, null, parser, null, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, Func<object, object, bool> compatibilityTest)
-            : this(name, null, null, compatibilityTest, null, false)
+            : this(name, null, null, compatibilityTest, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser)
-            : this(name, table, parser, null, null, false)
+            : this(name, table, parser, null, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<object, object, bool> compatibilityTest)
-            : this(name, table, null, compatibilityTest, null, false)
+            : this(name, table, null, compatibilityTest, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, Func<string, object> parser, Func<object, object, bool> compatibilityTest)
-            : this(name, null, parser, compatibilityTest, null, false)
+            : this(name, null, parser, compatibilityTest, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser, Func<object, object, bool> compatibilityTest)
-            : this(name, table, parser, compatibilityTest, null, false)
+            : this(name, table, parser, compatibilityTest, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name,
+            IDictionary<string, object> table,
+            Func<string, object> parser, 
+            Func<object, object, bool> compatibilityTest,
+            Func<object, object, object, int> compareTest)
+            : this(name, table, parser, compatibilityTest, compareTest, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions)
-            : this(name, null, null, null, fileExtensions, false)
+            : this(name, null, null, null, null, fileExtensions, false)
         {
         }
 
         public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions, bool allowSubfolders)
-            : this(name, null, null, null, fileExtensions, allowSubfolders)
+            : this(name, null, null, null, null, fileExtensions, allowSubfolders)
         {
         }
 
@@ -69,6 +78,7 @@ namespace NuGet.ContentModel
             IDictionary<string, object> table,
             Func<string, object> parser,
             Func<object, object, bool> compatibilityTest,
+            Func<object, object, object, int> compareTest,
             IEnumerable<string> fileExtensions,
             bool allowSubfolders)
         {
@@ -86,6 +96,7 @@ namespace NuGet.ContentModel
 
             Parser = parser ?? (o => o);
             CompatibilityTest = compatibilityTest ?? Equals;
+            CompareTest = compareTest;
             FileExtensions = (fileExtensions ?? Enumerable.Empty<string>()).ToList();
             FileExtensionAllowSubFolders = allowSubfolders;
         }
@@ -146,6 +157,11 @@ namespace NuGet.ContentModel
 
         public Func<object, object, bool> CompatibilityTest { get; }
 
+        /// <summary>
+        /// Find the nearest compatible candidate.
+        /// </summary>
+        public Func<object, object, object, int> CompareTest { get; }
+
         public virtual bool IsCriteriaSatisfied(object critieriaValue, object candidateValue)
         {
             return CompatibilityTest.Invoke(critieriaValue, candidateValue);
@@ -163,6 +179,14 @@ namespace NuGet.ContentModel
             {
                 return 1;
             }
+
+            if (CompareTest != null)
+            {
+                // In the case of a tie call the external compare test to determine the nearest candidate.
+                return CompareTest.Invoke(criteriaValue, candidateValue1, candidateValue2);
+            }
+
+            // No tie breaker was provided.
             return 0;
         }
     }
