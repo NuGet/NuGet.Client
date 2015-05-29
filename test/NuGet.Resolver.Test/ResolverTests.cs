@@ -156,9 +156,9 @@ namespace NuGet.Resolver.Test
             sourceRepository.Add(target);
 
             // make lots of packages
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 10; i++)
             {
-                for (int j = 1; j < 10; j++)
+                for (int j = 1; j < 20; j++)
                 {
                     int next = j + 1;
                     sourceRepository.Add(CreatePackage($"Package{j}", $"2.0.{i}", new Dictionary<string, string>() { { $"Package{next}", "1.0.0" } }));
@@ -181,7 +181,7 @@ namespace NuGet.Resolver.Test
             }
 
             // Assert
-            Assert.Equal("Unable to resolve dependency 'Package10'.", message);
+            Assert.Equal("Unable to resolve dependency 'Package20'.", message);
         }
 
         [Fact]
@@ -205,9 +205,9 @@ namespace NuGet.Resolver.Test
             int next = -1;
 
             // make lots of packages
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 100; i++)
             {
-                for (int j = 1; j < 10; j++)
+                for (int j = 1; j < 100; j++)
                 {
                     next = j + 1;
                     sourceRepository.Add(CreatePackage($"Package{j}", $"2.0.{i}", new Dictionary<string, string>() { { $"Package{next}", "1.0.0" } }));
@@ -224,7 +224,7 @@ namespace NuGet.Resolver.Test
             var packages = resolver.Resolve(context, CancellationToken.None);
 
             // Assert
-            Assert.Equal(11, packages.Count());
+            Assert.Equal(101, packages.Count());
         }
 
         [Fact]
