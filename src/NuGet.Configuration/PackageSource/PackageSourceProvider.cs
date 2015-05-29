@@ -489,6 +489,12 @@ namespace NuGet.Configuration
                     sourcesToDisable.Add(new SettingValue(source.Name, "true", isMachineWide: false, priority: settingPriority));
                 }
             }
+            
+            // add entries to the disabledPackageSource for machine wide setting
+            foreach(var source in sources.Where(s => s.IsMachineWide && !s.IsEnabled))
+            {
+                sourcesToDisable.Add(new SettingValue(source.Name, "true", isMachineWide: true, priority: 0));
+            }
 
             // Write the updates to the nearest settings file.
             Settings.UpdateSections(ConfigurationContants.PackageSources, sourceSettings);
