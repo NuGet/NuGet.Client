@@ -206,7 +206,8 @@ function VsPackageInstallerEvents {
         $p | Install-Package jquery -Version 1.5 -Source $context.RepositoryPath
         $p | Uninstall-Package jquery
 
-        # Assert
+        
+		# Assert
         Assert-AreEqual 1 $global:installing
         Assert-AreEqual 1 $global:installed
         Assert-AreEqual 1 $global:uninstalling
@@ -224,5 +225,211 @@ function VsPackageInstallerEvents {
 		Remove-Variable "uninstalled"  -scope global
     }
 }
+
+function Test-InstallPackageAPI 
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0") 
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function Test-InstallPackageAPIEmptyVersion
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","") 
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function Test-InstallPackageAPIBadSource
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act&Assert
+    Assert-Throws {[API.Test.InternalAPITestHook]::InstallPackageApiBadSource("owin","1.0.0") } "Exception calling `"InstallPackageApiBadSource`" with `"2`" argument(s): `"The remote name could not be resolved: 'packagesource'`""
+    Assert-NoPackage $p "owin"
+}
+
+function Test-UninstallPackageAPI
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
+    [API.Test.InternalAPITestHook]::UninstallPackageApi("microsoft.owin","true")
+
+    # Assert
+    Assert-NoPackage $p owin 1.0.0
+    Assert-NoPackage $p microsoft.owin 3.0.0
+}
+
+function Test-UninstallPackageAPINoDep
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
+    [API.Test.InternalAPITestHook]::UninstallPackageApi("microsoft.owin",0)
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+    Assert-NoPackage $p microsoft.owin 3.0.0
+}
+
+function Test-UninstallPackageAPINoForce
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
+    Assert-Throws { [API.Test.InternalAPITestHook]::UninstallPackageApi("owin","true") } "Exception calling `"UninstallPackageApi`" with `"2`" argument(s): `"Unable to uninstall 'Owin.1.0.0' because 'Microsoft.Owin.3.0.0' depends on it.`""
+}
+
+function Test-GetSourceAPI 
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $sourceProvider = $cm.GetService([NuGet.VisualStudio.IVsPackageSourceProvider])
+
+    # Act
+    $sources = $sourceProvider.GetSources("true","false")
+
+    # Assert
+    Assert-NotNull $sources
+}
+
+function Test-RestorePackageAPI
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $p | Install-Package JQuery
+    
+    # delete the packages folder
+    $packagesDir = Get-PackagesDir
+    Remove-Item -Recurse -Force $packagesDir
+    Assert-False (Test-Path $packagesDir)
+
+    # Act
+    [API.Test.InternalAPITestHook]::RestorePackageApi()
+
+    # Assert
+    Assert-True (Test-Path $packagesDir)
+    Assert-Package $p JQuery
+}
+
+function Test-InstallPackageAPIPackageNotExist
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act & Assert
+    Assert-Throws { [API.Test.InternalAPITestHook]::InstallPackageApi("NotExistPackage","") } "Exception calling `"InstallPackageApi`" with `"2`" argument(s): `"No latest version found for the 'NotExistPackage' for the given source repositories and resolution context`""
+}
+
+function Test-InstallPackageAPIInstalledPackage
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0") 
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function Test-InstallPackageAPIInstalledLowerVersionPackage
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0") 
+
+    # Assert
+    Assert-Package $p microsoft.owin 3.0.0
+    Assert-NoPackage $p microsoft.owin 2.0.0
+}
+
+function Test-InstallPackageAPIInstalledHigherVersionPackage
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0") 
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0") 
+
+    # Assert
+    Assert-Package $p microsoft.owin 2.0.0
+    Assert-NoPackage $p microsoft.owin 3.0.0
+}
+
+function Test-UninstallPackageAPIPackageNotExist
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $project = Get-Project
+    $projectName = $project.ProjectName
+
+    # Act & Assert
+    Assert-Throws {[API.Test.InternalAPITestHook]::UninstallPackageApi("owin","true") } "Exception calling `"UninstallPackageApi`" with `"2`" argument(s): `"Package 'owin' to be uninstalled could not be found in project '$projectName'`""
+}
+
+function Test-RestorePackageAPINoPackage 
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::RestorePackageApi()
+
+    # Assert
+    Assert-False (Join-Path (Get-ProjectDir $p) packages.config)
+}
+
+
+
 
 
