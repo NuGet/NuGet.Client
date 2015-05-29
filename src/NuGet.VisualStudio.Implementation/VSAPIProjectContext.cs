@@ -29,13 +29,12 @@ namespace NuGet.VisualStudio
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            // TODO: log somewhere?
+            // No logging needed when using the API
         }
 
         public FileConflictAction ResolveFileConflict(string message)
         {
-            // TODO: is this correct for the API?
-            return FileConflictAction.OverwriteAll;
+            return FileConflictAction.IgnoreAll;
         }
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
