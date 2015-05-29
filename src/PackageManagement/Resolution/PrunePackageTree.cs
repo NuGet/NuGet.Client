@@ -70,6 +70,22 @@ namespace NuGet.PackageManagement
             }
         }
 
+        public static IEnumerable<SourcePackageDependencyInfo> PruneDowngrades(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
+        {
+            // prune every package that is less that the currently installed package
+
+            IDictionary<string, NuGetVersion> installed = new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
+            foreach (var packageReference in packageReferences)
+            {
+                installed.Add(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version);
+            }
+
+            return packages.Where(package => 
+                (package.HasVersion && installed.ContainsKey(package.Id)) 
+                    ? 
+                installed[package.Id] <= package.Version : true);
+        }
+
         public static IEnumerable<SourcePackageDependencyInfo> PruneDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
         {
             var result = packages;
