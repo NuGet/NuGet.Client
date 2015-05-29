@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         public static VersionRange GetSafeRange(NuGetVersion version, bool includePrerelease)
         {
-            var max = new SemanticVersion(version.Major, version.Minor + 1, 0);
+            var max = new Versioning.SemanticVersion(version.Major, version.Minor + 1, 0);
             var maxVersion = NuGetVersion.Parse(max.ToString());
             return new VersionRange(version, true, maxVersion, false, includePrerelease);
         }

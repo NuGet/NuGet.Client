@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
                         RefreshFileUtility.CreateRefreshFile(ProjectFullPath, PathUtility.GetAbsolutePath(ProjectFullPath, referencePath), this);
 
-                        NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
+                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
                     }
                     catch (Exception e)
                     {
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
                         catch (Exception e)
                         {
-                            NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, e.Message);
                         }
                     }
                 });
@@ -108,12 +108,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (reference != null)
                 {
                     reference.Remove();
-                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
+                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
                 }
             }
             catch (Exception ex)
             {
-                MessageLevel messageLevel = MessageLevel.Warning;
+                var messageLevel = ProjectManagement.MessageLevel.Warning;
                 if (reference != null
                     && reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceConfig)
                 {
@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     // references always throws and there isn't an easy way to identify this. Instead, we'll attempt to lower the level of the message so it doesn't
                     // appear as readily.
 
-                    messageLevel = MessageLevel.Debug;
+                    messageLevel = ProjectManagement.MessageLevel.Debug;
                 }
                 NuGetProjectContext.Log(messageLevel, ex.Message);
             }

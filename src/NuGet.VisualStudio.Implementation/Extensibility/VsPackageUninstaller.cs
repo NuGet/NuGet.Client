@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -18,11 +17,11 @@ namespace NuGet.VisualStudio
     public class VsPackageUninstaller : IVsPackageUninstaller
     {
         private ISourceRepositoryProvider _sourceRepositoryProvider;
-        private ISettings _settings;
+        private Configuration.ISettings _settings;
         private ISolutionManager _solutionManager;
 
         [ImportingConstructor]
-        public VsPackageUninstaller(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
+        public VsPackageUninstaller(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;

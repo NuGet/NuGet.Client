@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var projectHasUpdates = false;
             var packages = new List<PowerShellUpdatePackage>();
 
-            var metadataTasks = new List<Tuple<Task<PSSearchMetadata>, PackageReference>>();
+            var metadataTasks = new List<Tuple<Task<PSSearchMetadata>, Packaging.PackageReference>>();
 
 
             foreach (var installedPackage in installedPackages)
@@ -233,14 +233,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (!projectHasUpdates)
             {
-                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
         }
 
         /// <summary>
         /// Output installed packages to the project(s)
         /// </summary>
-        private void WriteInstalledPackages(Dictionary<NuGetProject, IEnumerable<PackageReference>> dictionary)
+        private void WriteInstalledPackages(Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>> dictionary)
         {
             // Get the PowerShellPackageWithProjectView
             var view = PowerShellInstalledPackage.GetPowerShellPackageView(dictionary);
@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
+                LogCore(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
             }
         }
 
@@ -277,7 +277,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Output list of PowerShellPackages
             if (outputWarning && !string.IsNullOrEmpty(Filter))
             {
-                LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandObsolete, message));
+                LogCore(ProjectManagement.MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandObsolete, message));
             }
 
             WritePackages(packages, versionType);
@@ -328,7 +328,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                LogCore(MessageLevel.Info, Resources.Cmdlet_GetPackageNoPackageFound);
+                LogCore(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_GetPackageNoPackageFound);
             }
         }
 

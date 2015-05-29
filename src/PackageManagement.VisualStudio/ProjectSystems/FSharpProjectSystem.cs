@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (reference == null)
                 {
                     // No exact match found for referenceName. Trying case-insensitive search
-                    NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_NoExactMatchForReference, referenceName);
+                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_NoExactMatchForReference, referenceName);
                     foreach (Reference r in references)
                     {
                         if (String.Equals(referenceName, r.Name, StringComparison.OrdinalIgnoreCase))
@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             else
                             {
                                 var message = String.Format(CultureInfo.CurrentCulture, Strings.FailedToRemoveReference, referenceName);
-                                NuGetProjectContext.Log(MessageLevel.Error, message);
+                                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
                                 throw new InvalidOperationException(message);
                             }
                         }
@@ -112,16 +112,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (reference != null)
                 {
                     reference.Remove();
-                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
+                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
                 }
                 else
                 {
-                    NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FailedToFindMatchForRemoveReference, referenceName);
+                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FailedToFindMatchForRemoveReference, referenceName);
                 }
             }
             catch (Exception e)
             {
-                NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, e.Message);
             }
         }
     }

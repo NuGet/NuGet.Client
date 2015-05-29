@@ -7,7 +7,6 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Configuration;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -19,11 +18,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsTrackProjectDocuments2 _projectTracker;
         private readonly ISolutionManager _solutionManager;
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
-        private readonly ISettings _vsSettings;
+        private readonly Configuration.ISettings _vsSettings;
         private uint? _trackingCookie;
 
         [ImportingConstructor]
-        public VsSourceControlTracker(ISolutionManager solutionManager, ISourceControlManagerProvider sourceControlManagerProvider, ISettings vsSettings)
+        public VsSourceControlTracker(ISolutionManager solutionManager, ISourceControlManagerProvider sourceControlManagerProvider, Configuration.ISettings vsSettings)
             :
                 this(solutionManager, sourceControlManagerProvider, ServiceLocator.GetGlobalService<SVsTrackProjectDocuments, IVsTrackProjectDocuments2>(), vsSettings)
         {
@@ -33,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ISolutionManager solutionManager,
             ISourceControlManagerProvider sourceControlManagerProvider,
             IVsTrackProjectDocuments2 projectTracker,
-            ISettings vsSettings)
+            Configuration.ISettings vsSettings)
         {
             if (projectTracker == null)
             {

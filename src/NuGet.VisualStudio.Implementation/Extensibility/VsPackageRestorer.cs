@@ -6,22 +6,20 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsPackageRestorer))]
     public class VsPackageRestorer : IVsPackageRestorer
     {
-        private readonly ISettings _settings;
+        private readonly Configuration.ISettings _settings;
         private readonly ISolutionManager _solutionManager;
         private readonly IPackageRestoreManager _restoreManager;
 
         [ImportingConstructor]
-        public VsPackageRestorer(ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager)
+        public VsPackageRestorer(Configuration.ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager)
         {
             _settings = settings;
             _solutionManager = solutionManager;
@@ -30,7 +28,7 @@ namespace NuGet.VisualStudio
 
         public bool IsUserConsentGranted()
         {
-            var packageRestoreConsent = new PackageRestoreConsent(_settings);
+            var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
             return packageRestoreConsent.IsGranted;
         }
 

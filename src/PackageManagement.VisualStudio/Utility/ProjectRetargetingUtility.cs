@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="projectFramework">Current target framework of the project</param>
         /// <param name="packageReferences">List of package references in the project from which packages to be reinstalled are determined</param>
         /// <returns>List of package identities to be reinstalled</returns>
-        public static List<PackageIdentity> GetPackagesToBeReinstalled(NuGetFramework projectFramework, IEnumerable<PackageReference> packageReferences)
+        public static List<PackageIdentity> GetPackagesToBeReinstalled(NuGetFramework projectFramework, IEnumerable<Packaging.PackageReference> packageReferences)
         {
             Debug.Assert(projectFramework != null);
             Debug.Assert(packageReferences != null);
@@ -63,10 +63,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var packagesToBeReinstalled = new List<PackageIdentity>();
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-            var settings = ServiceLocator.GetInstance<ISettings>();
+            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, solutionManager);
 
-            foreach (PackageReference packageReference in packageReferences)
+            foreach (var packageReference in packageReferences)
             {
                 var identity = packageReference.PackageIdentity;
                 if (identity != null && ShouldPackageBeReinstalled(projectFramework, packageReference.TargetFramework, identity, packageManager))
@@ -176,14 +176,14 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(packagesToBeReinstalled != null);
 
             var installedPackageReferences = (await project.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-            var updatedPackageReferences = new List<PackageReference>();
+            var updatedPackageReferences = new List<Packaging.PackageReference>();
 
             if (installedPackageReferences != null && installedPackageReferences.Any())
             {
-                foreach (PackageReference packageReference in installedPackageReferences)
+                foreach (var packageReference in installedPackageReferences)
                 {
                     bool requireReinstallation = packagesToBeReinstalled.Any(p => p.Equals(packageReference.PackageIdentity));
-                    var newPackageReference = new PackageReference(packageReference.PackageIdentity, packageReference.TargetFramework,
+                    var newPackageReference = new Packaging.PackageReference(packageReference.PackageIdentity, packageReference.TargetFramework,
                         packageReference.IsUserInstalled, packageReference.IsDevelopmentDependency, requireReinstallation);
                     updatedPackageReferences.Add(newPackageReference);
                 }
@@ -219,7 +219,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Returns a list of package references that were marked for reinstallation in packages.config of the project
         /// </summary>
-        public static IList<PackageReference> GetPackageReferencesMarkedForReinstallation(NuGetProject project)
+        public static IList<Packaging.PackageReference> GetPackageReferencesMarkedForReinstallation(NuGetProject project)
         {
             if(project == null)
             {
@@ -234,12 +234,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 using (var stream = File.OpenRead(packagesConfigFullPath))
                 {
                     var reader = new PackagesConfigReader(stream);
-                    IEnumerable<PackageReference> packageReferences = reader?.GetPackages();
+                    IEnumerable<Packaging.PackageReference> packageReferences = reader?.GetPackages();
                     return packageReferences.Where(p => p.RequireReinstallation).ToList();
                 }
             }
 
-            return new List<PackageReference>();
+            return new List<Packaging.PackageReference>();
         }
 
         /// <summary>

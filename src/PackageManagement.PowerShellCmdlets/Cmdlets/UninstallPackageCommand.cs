@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(MessageLevel.Error, ex.Message);
+                Log(ProjectManagement.MessageLevel.Error, ex.Message);
             }
             finally
             {

@@ -16,21 +16,21 @@ namespace NuGet.PackageManagement.VisualStudio
         // the key to enable/disable automatic package restore during build.
         private const string PackageRestoreAutomaticKey = "automatic";
 
-        private readonly ISettings _settings;
-        private readonly IEnvironmentVariableReader _environmentReader;
+        private readonly Configuration.ISettings _settings;
+        private readonly Configuration.IEnvironmentVariableReader _environmentReader;
         private readonly ConfigurationDefaults _configurationDefaults;
 
-        public PackageRestoreConsent(ISettings settings)
+        public PackageRestoreConsent(Configuration.ISettings settings)
             : this(settings, new EnvironmentVariableWrapper())
         {
         }
 
-        public PackageRestoreConsent(ISettings settings, IEnvironmentVariableReader environmentReader)
+        public PackageRestoreConsent(Configuration.ISettings settings, Configuration.IEnvironmentVariableReader environmentReader)
             : this(settings, environmentReader, ConfigurationDefaults.Instance)
         {
         }
 
-        public PackageRestoreConsent(ISettings settings, IEnvironmentVariableReader environmentReader, ConfigurationDefaults configurationDefaults)
+        public PackageRestoreConsent(Configuration.ISettings settings, Configuration.IEnvironmentVariableReader environmentReader, ConfigurationDefaults configurationDefaults)
         {
             if (settings == null)
             {

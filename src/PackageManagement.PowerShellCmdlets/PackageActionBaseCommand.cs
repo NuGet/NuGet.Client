@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // For Install-Package -Force
                 if (isForce)
                 {
-                    PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
+                    var installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
                         StringComparer.OrdinalIgnoreCase.Equals(identity.Id, p.PackageIdentity.Id)).FirstOrDefault();
                     if (installedReference != null)
                     {
@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
-                    Log(MessageLevel.Info, ex.Message);
+                    Log(ProjectManagement.MessageLevel.Info, ex.Message);
                 }
                 else
                 {
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // For Install-Package -Force
                 if (isForce)
                 {
-                    PackageReference installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
+                    var installedReference = project.GetInstalledPackagesAsync(CancellationToken.None).Result.Where(p =>
                         StringComparer.OrdinalIgnoreCase.Equals(packageId, p.PackageIdentity.Id)).FirstOrDefault();
                     if (installedReference != null)
                     {
@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
-                    Log(MessageLevel.Info, ex.Message);
+                    Log(ProjectManagement.MessageLevel.Info, ex.Message);
                 }
                 else
                 {

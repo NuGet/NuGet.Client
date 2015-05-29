@@ -7,7 +7,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
@@ -127,7 +126,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(MessageLevel.Error, ex.Message);
+                Log(ProjectManagement.MessageLevel.Error, ex.Message);
             }
             finally
             {
@@ -151,12 +150,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (!_isPackageInstalled)
                 {
-                    Log(MessageLevel.Error, Resources.PackageNotInstalledInAnyProject, Id);
+                    Log(ProjectManagement.MessageLevel.Error, Resources.PackageNotInstalledInAnyProject, Id);
                 }
             }
             catch (Exception ex)
             {
-                Log(MessageLevel.Error, ex.Message);
+                Log(ProjectManagement.MessageLevel.Error, ex.Message);
             }
             finally
             {
@@ -189,9 +188,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (Safe.IsPresent)
                 {
                     // Update-Package -Safe -> get list of installed package references
-                    IEnumerable<PackageReference> installedReferences = Enumerable.Empty<PackageReference>();
-                    installedReferences = await project.GetInstalledPackagesAsync(token);
-                    foreach (PackageReference reference in installedReferences)
+                    var installedReferences = await project.GetInstalledPackagesAsync(token);
+                    foreach (var reference in installedReferences)
                     {
                         PackageIdentity update = GetPackageUpdate(reference, project, _allowPrerelease, true, null, false, DependencyBehavior.HighestPatch);
                         if (update.Version > reference.PackageIdentity.Version)
@@ -245,7 +243,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                Log(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             }
         }
 
@@ -276,7 +274,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                        Log(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
                 }
                 else
@@ -311,7 +309,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="project"></param>
         /// <param name="installedPackage"></param>
         /// <returns></returns>
-        private PackageIdentity GetUpdatePackageIdentityWhenVersionSpecified(NuGetProject project, PackageReference installedPackage)
+        private PackageIdentity GetUpdatePackageIdentityWhenVersionSpecified(NuGetProject project, Packaging.PackageReference installedPackage)
         {
             PackageIdentity update = null;
             // If Highest/HighestMinor/HighestPatch/Lowest is given after -version switch

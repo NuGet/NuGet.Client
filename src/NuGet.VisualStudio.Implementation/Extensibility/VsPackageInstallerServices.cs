@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -11,13 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
-using SemanticVersion = Legacy::NuGet.SemanticVersion;
 
 namespace NuGet.VisualStudio
 {
@@ -26,12 +22,12 @@ namespace NuGet.VisualStudio
     {
         private readonly ISolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
-        private readonly ISettings _settings;
+        private readonly Configuration.ISettings _settings;
         private NuGetPackageManager _packageManager;
         private string _packageFolderPath = string.Empty;
 
         [ImportingConstructor]
-        public VsPackageInstallerServices(ISolutionManager solutionManager, ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings)
+        public VsPackageInstallerServices(ISolutionManager solutionManager, ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings)
         {
             _solutionManager = solutionManager;
             _sourceRepositoryProvider = sourceRepositoryProvider;
@@ -69,14 +65,14 @@ namespace NuGet.VisualStudio
                 });
         }
 
-        private async Task<IEnumerable<PackageReference>> GetInstalledPackageReferencesAsync(Project project)
+        private async Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackageReferencesAsync(Project project)
         {
             if (project == null)
             {
                 throw new ArgumentNullException("project");
             }
 
-            List<PackageReference> packages = new List<PackageReference>();
+            var packages = new List<Packaging.PackageReference>();
 
             if (_solutionManager != null
                 && !String.IsNullOrEmpty(_solutionManager.SolutionDirectory))

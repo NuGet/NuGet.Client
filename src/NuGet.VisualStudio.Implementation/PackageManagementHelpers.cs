@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -35,7 +34,7 @@ namespace NuGet.VisualStudio
             var projectSafeName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
             NuGetProject nuGetProject = solutionManager.GetNuGetProject(projectSafeName);
 
-            var settings = ServiceLocator.GetInstance<ISettings>();
+            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
 
             // if the project does not exist in the solution (this is true for new templates) create it manually
             if (nuGetProject == null)

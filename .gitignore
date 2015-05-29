@@ -145,6 +145,10 @@ publish/
 !test/EndToEnd/Packages/**
 # If using the old MSBuild-Integrated Package Restore, uncomment this:
 #!**/packages/repositories.config
+.nuget/
+*.nuget.props
+*.nuget.targets
+project.lock.json
 
 # Windows Azure Build Output
 csx/

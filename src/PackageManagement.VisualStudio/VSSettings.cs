@@ -5,16 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    [Export(typeof(ISettings))]
-    public class VSSettings : ISettings
+    [Export(typeof(Configuration.ISettings))]
+    public class VSSettings : Configuration.ISettings
     {
-        private ISettings SolutionSettings { get; set; }
+        private Configuration.ISettings SolutionSettings { get; set; }
         private ISolutionManager SolutionManager { get; set; }
-        private IMachineWideSettings MachineWideSettings { get; set; }
+        private Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
         public event EventHandler SettingsChanged;
 
@@ -24,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         [ImportingConstructor]
-        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings machineWideSettings)
+        public VSSettings(ISolutionManager solutionManager, Configuration.IMachineWideSettings machineWideSettings)
         {
             if (solutionManager == null)
             {
@@ -50,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 root = Path.Combine(SolutionManager.SolutionDirectory, EnvDTEProjectUtility.NuGetSolutionSettingsFolder);
             }
-            SolutionSettings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+            SolutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
         }
 
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
@@ -79,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return SolutionSettings.GetNestedValues(section, subSection);
         }
 
-        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
+        public IList<Configuration.SettingValue> GetSettingValues(string section, bool isPath = false)
         {
             return SolutionSettings.GetSettingValues(section, isPath);
         }
@@ -104,12 +103,12 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionSettings.SetValue(section, key, value);
         }
 
-        public void SetValues(string section, IReadOnlyList<SettingValue> values)
+        public void SetValues(string section, IReadOnlyList<Configuration.SettingValue> values)
         {
             SolutionSettings.SetValues(section, values);
         }
 
-        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        public void UpdateSections(string section, IReadOnlyList<Configuration.SettingValue> values)
         {
             SolutionSettings.UpdateSections(section, values);
         }

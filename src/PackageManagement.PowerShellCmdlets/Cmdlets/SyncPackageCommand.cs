@@ -47,11 +47,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SubscribeToProgressEvents();
             if (_projects.Count == 0)
             {
-                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlets_NoProjectsToSyncPackage, Id));
+                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlets_NoProjectsToSyncPackage, Id));
             }
             else if (identity == null)
             {
-                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageNotInstalled, Id));
+                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageNotInstalled, Id));
             }
             else
             {
@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(MessageLevel.Error, ex.Message);
+                Log(ProjectManagement.MessageLevel.Error, ex.Message);
             }
             finally
             {

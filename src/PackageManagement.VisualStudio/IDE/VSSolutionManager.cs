@@ -487,7 +487,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private VSNuGetProjectFactory GetProjectFactory()
         {
-            var settings = ServiceLocator.GetInstance<ISettings>();
+            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
 
             // We are doing this to avoid a loop at initialization. We probably want to remove this dependency alltogether.
             var factory = new VSNuGetProjectFactory(() => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings));

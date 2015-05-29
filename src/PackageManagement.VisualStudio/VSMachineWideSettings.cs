@@ -7,14 +7,13 @@ using System.ComponentModel.Composition;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    [Export(typeof(IMachineWideSettings))]
-    public class VsMachineWideSettings : IMachineWideSettings
+    [Export(typeof(Configuration.IMachineWideSettings))]
+    public class VsMachineWideSettings : Configuration.IMachineWideSettings
     {
-        private readonly AsyncLazy<IEnumerable<Settings>> _settings;
+        private readonly AsyncLazy<IEnumerable<Configuration.Settings>> _settings;
 
         [ImportingConstructor]
         public VsMachineWideSettings()
@@ -25,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         internal VsMachineWideSettings(DTE dte)
         {
             var baseDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-            _settings = new AsyncLazy<IEnumerable<Settings>>(async () =>
+            _settings = new AsyncLazy<IEnumerable<Configuration.Settings>>(async () =>
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return Configuration.Settings.LoadMachineWideSettings(
@@ -36,6 +35,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 }, ThreadHelper.JoinableTaskFactory);
         }
 
-        public IEnumerable<Settings> Settings => ThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);
+        public IEnumerable<Configuration.Settings> Settings => ThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);
     }
 }

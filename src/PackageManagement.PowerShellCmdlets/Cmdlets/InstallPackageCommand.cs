@@ -9,12 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
 
@@ -82,7 +80,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(MessageLevel.Error, ex.Message);
+                Log(ProjectManagement.MessageLevel.Error, ex.Message);
             }
             finally
             {
@@ -102,7 +100,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(MessageLevel.Error, ex.Message);
+                Log(ProjectManagement.MessageLevel.Error, ex.Message);
             }
             finally
             {
@@ -201,7 +199,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Stream resStream = response.GetResponseStream();
 
                     PackagesConfigReader reader = new PackagesConfigReader(resStream);
-                    IEnumerable<PackageReference> packageRefs = reader.GetPackages();
+                    var packageRefs = reader.GetPackages();
                     identities = packageRefs.Select(v => v.PackageIdentity);
                 }
                 else
@@ -210,7 +208,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     using (FileStream stream = new FileStream(Id, FileMode.Open))
                     {
                         PackagesConfigReader reader = new PackagesConfigReader(stream);
-                        IEnumerable<PackageReference> packageRefs = reader.GetPackages();
+                        var packageRefs = reader.GetPackages();
                         identities = packageRefs.Select(v => v.PackageIdentity);
                     }
                 }
@@ -231,7 +229,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
+                LogCore(ProjectManagement.MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
             }
 
             return identities;
@@ -257,7 +255,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         Directory.CreateDirectory(Source);
                         string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
 
-                        using (HttpClient client = new HttpClient())
+                        using (var client = new System.Net.Http.HttpClient())
                         {
                             using (Stream downloadStream = client.GetStreamAsync(Id).Result)
                             using (var targetPackageStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write))
@@ -284,7 +282,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
+                Log(ProjectManagement.MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
             }
 
             return new List<PackageIdentity> { identity };

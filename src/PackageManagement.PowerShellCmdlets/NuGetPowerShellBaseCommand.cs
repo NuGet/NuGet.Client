@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected NuGetPowerShellBaseCommand()
         {
             _resourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-            ConfigSettings = ServiceLocator.GetInstance<ISettings>();
+            ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
             VsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
             SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
@@ -91,9 +91,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Package Source Provider
         /// </summary>
-        protected PackageSourceProvider PackageSourceProvider
+        protected Configuration.PackageSourceProvider PackageSourceProvider
         {
-            get { return new PackageSourceProvider(ConfigSettings); }
+            get { return new Configuration.PackageSourceProvider(ConfigSettings); }
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Settings read from the config files
         /// </summary>
-        protected ISettings ConfigSettings { get; }
+        protected Configuration.ISettings ConfigSettings { get; }
 
         /// <summary>
         /// DTE instance for PowerShell Cmdlets
@@ -202,7 +202,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
             if (packages.Any(p => p.IsMissing))
             {
-                var packageRestoreConsent = new PackageRestoreConsent(ConfigSettings);
+                var packageRestoreConsent = new VisualStudio.PackageRestoreConsent(ConfigSettings);
                 if (packageRestoreConsent.IsGranted)
                 {
                     await TaskScheduler.Default;
@@ -267,7 +267,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 throw new ArgumentNullException("source");
             }
 
-            PackageSource packageSource = new PackageSource(source);
+            var packageSource = new Configuration.PackageSource(source);
             SourceRepository repository = _resourceRepositoryProvider.CreateRepository(packageSource);
             PSSearchResource resource = repository.GetResource<PSSearchResource>();
 
@@ -286,7 +286,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         && exists == true)
                     {
                         source = outputPath;
-                        packageSource = new PackageSource(outputPath);
+                        packageSource = new Configuration.PackageSource(outputPath);
                     }
                 }
             }
@@ -468,13 +468,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the list of installed packages based on Filter, Skip and First parameters. Used for Get-Package.
         /// </summary>
         /// <returns></returns>
-        protected static async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
+        protected static async Task<Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
             string filter,
             int skip,
             int take,
             CancellationToken token)
         {
-            var installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
+            var installedPackages = new Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>();
 
             foreach (var project in projects)
             {
@@ -530,7 +530,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get update identity for a package that is installed to a project. Used for Update-Package Id -Version.
         /// </summary>
-        protected PackageIdentity GetPackageUpdate(PackageReference installedPackage, NuGetProject project,
+        protected PackageIdentity GetPackageUpdate(Packaging.PackageReference installedPackage, NuGetProject project,
             bool includePrerelease, bool isSafe, string version = null, bool isEnum = false, DependencyBehavior dependencyEnum = DependencyBehavior.Lowest)
         {
             PackageIdentity identity = null;
@@ -563,13 +563,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (actions == null
                 || !actions.Any())
             {
-                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
+                Log(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
             }
             else
             {
                 foreach (NuGetProjectAction action in actions)
                 {
-                    Log(MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
+                    Log(ProjectManagement.MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
                 }
             }
         }
@@ -837,7 +837,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="level"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public void Log(MessageLevel level, string message, params object[] args)
+        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
             string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
             BlockingCollection.Add(new LogMessage(level, formattedMessage));
@@ -848,23 +848,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="level"></param>
         /// <param name="formattedMessage"></param>
-        protected virtual void LogCore(MessageLevel level, string formattedMessage)
+        protected virtual void LogCore(ProjectManagement.MessageLevel level, string formattedMessage)
         {
             switch (level)
             {
-                case MessageLevel.Debug:
+                case ProjectManagement.MessageLevel.Debug:
                     WriteVerbose(formattedMessage);
                     break;
 
-                case MessageLevel.Warning:
+                case ProjectManagement.MessageLevel.Warning:
                     WriteWarning(formattedMessage);
                     break;
 
-                case MessageLevel.Info:
+                case ProjectManagement.MessageLevel.Info:
                     WriteLine(formattedMessage);
                     break;
 
-                case MessageLevel.Error:
+                case ProjectManagement.MessageLevel.Error:
                     WriteError(formattedMessage);
                     break;
             }
@@ -902,7 +902,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (InvalidOperationException ex)
             {
-                LogCore(MessageLevel.Error, ex.Message);
+                LogCore(ProjectManagement.MessageLevel.Error, ex.Message);
             }
         }
 
@@ -917,8 +917,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (path != null)
                 {
-                    string command = "& " + PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
-                    LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, path));
+                    string command = "& " + ProjectManagement.PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
+                    LogCore(ProjectManagement.MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
                 }
@@ -967,7 +967,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     throw _scriptException;
                 }
-                Log(MessageLevel.Warning, _scriptException.Message);
+                Log(ProjectManagement.MessageLevel.Warning, _scriptException.Message);
             }
         }
 

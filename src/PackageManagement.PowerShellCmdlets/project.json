@@ -1,0 +1,12 @@
+{
+    "dependencies": {
+        "Microsoft.Net.Http": "2.2.28",
+        "NuGet.Resolver": "3.1.0-*"
+    },
+    "frameworks": {
+        "net45": {}
+    },
+    "runtimes": {
+        "win-anycpu": {}
+    }
+}

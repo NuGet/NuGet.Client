@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.RegularExpressions;
-using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

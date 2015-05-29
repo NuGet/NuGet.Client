@@ -209,7 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private XDocument GetConfiguration()
         {
-            return XmlUtility.GetOrCreateDocument("configuration", MSBuildNuGetProjectSystem.ProjectFullPath, ConfigurationFile, MSBuildNuGetProjectSystem.NuGetProjectContext);
+            return ProjectManagement.XmlUtility.GetOrCreateDocument("configuration", MSBuildNuGetProjectSystem.ProjectFullPath, ConfigurationFile, MSBuildNuGetProjectSystem.NuGetProjectContext);
         }
 
         private static void UpdateBindingRedirectElement(XElement element, AssemblyBinding bindingRedirect)

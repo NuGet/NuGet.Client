@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -18,12 +17,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public VSPackageRestoreManager()
             : this(
                 ServiceLocator.GetInstance<ISourceRepositoryProvider>(),
-                ServiceLocator.GetInstance<ISettings>(),
+                ServiceLocator.GetInstance<Configuration.ISettings>(),
                 ServiceLocator.GetInstance<ISolutionManager>())
         {
         }
 
-        public VSPackageRestoreManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
+        public VSPackageRestoreManager(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager)
             : base(sourceRepositoryProvider, settings, solutionManager)
         {
             SolutionManager = solutionManager;

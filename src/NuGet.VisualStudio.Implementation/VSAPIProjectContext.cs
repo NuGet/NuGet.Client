@@ -27,7 +27,7 @@ namespace NuGet.VisualStudio
             BindingRedirectsDisabled = bindingRedirectsDisabled;
         }
 
-        public void Log(MessageLevel level, string message, params object[] args)
+        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
             // TODO: log somewhere?
         }

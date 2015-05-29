@@ -1,18 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
-using NuGet.Configuration;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v2;
 using NuGet.VisualStudio.Implementation.Resources;
-using IPackageRepository = Legacy::NuGet.IPackageRepository;
 
 namespace NuGet.VisualStudio
 {
@@ -34,14 +30,14 @@ namespace NuGet.VisualStudio
         {
             string path = GetRegistryRepositoryPath(keyName, null, _errorHandler);
 
-            PackageSource source;
+            Configuration.PackageSource source;
             if (isPreUnzipped)
             {
-                source = new V2PackageSource(path, () => new Legacy.NuGet.UnzippedPackageRepository(path));
+                source = new V2PackageSource(path, () => new UnzippedPackageRepository(path));
             }
             else
             {
-                source = new PackageSource(path);
+                source = new Configuration.PackageSource(path);
             }
 
             _repositories.Add(_provider.CreateRepository(source));
@@ -51,7 +47,7 @@ namespace NuGet.VisualStudio
         {
             string path = GetExtensionRepositoryPath(extensionId, null, _errorHandler);
 
-            PackageSource source = new PackageSource(path);
+            var source = new Configuration.PackageSource(path);
 
             _repositories.Add(provider.CreateRepository(source));
         }
@@ -67,7 +63,7 @@ namespace NuGet.VisualStudio
             _repositories.Add(repo);
         }
 
-        public SourceRepository CreateRepository(PackageSource source)
+        public SourceRepository CreateRepository(Configuration.PackageSource source)
         {
             return _provider.CreateRepository(source);
         }
@@ -77,10 +73,10 @@ namespace NuGet.VisualStudio
             return _repositories;
         }
 
-        public IPackageSourceProvider PackageSourceProvider
+        public Configuration.IPackageSourceProvider PackageSourceProvider
         {
             get
-            { 
+            {
                 // no op
                 Debug.Assert(false, "Not Implemented");
                 return null;

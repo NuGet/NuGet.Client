@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,10 +21,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Implementation.Resources;
-using IPackageRepository = Legacy::NuGet.IPackageRepository;
-using LazyLocalPackageRepository = Legacy::NuGet.LazyLocalPackageRepository;
 using Task = System.Threading.Tasks.Task;
-using UnzippedPackageRepository = Legacy::NuGet.UnzippedPackageRepository;
 
 namespace NuGet.VisualStudio
 {
@@ -47,7 +43,7 @@ namespace NuGet.VisualStudio
         public PreinstalledPackageInstaller(
             IVsPackageInstallerServices packageServices,
             ISolutionManager solutionManager,
-            ISettings settings,
+            Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
             VsPackageInstaller installer)
         {

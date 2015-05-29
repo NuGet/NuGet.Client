@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             VCProjectHelper.AddFileToProject(EnvDTEProject.Object, fullPath, folderPath);
 
-            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
+            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
 
         public override bool ReferenceExists(string name)
@@ -71,11 +71,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!String.IsNullOrEmpty(folderPath))
                 {
-                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
+                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
                 }
                 else
                 {
-                    NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(path));
+                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(path));
                 }
             }
         }

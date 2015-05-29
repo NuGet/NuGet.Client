@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentException(ProjectManagement.Strings.PackageStreamShouldBeSeekable);
             }
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
+            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
 
             packageStream.Seek(0, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
@@ -105,7 +105,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
+            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
 
             var args = new Dictionary<string, object>();
             await _project.UninstallPackageAsync(
@@ -121,9 +121,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override async Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            var result = new List<PackageReference>();
+            var result = new List<Packaging.PackageReference>();
             foreach (object item in await _project.GetInstalledPackagesAsync(token))
             {
                 PackageIdentity identity = null;
@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                result.Add(new PackageReference(
+                result.Add(new Packaging.PackageReference(
                     identity,
                     targetFramework: null));
             }

@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             AddFileToContainer(fullPath, folderPath, container);
 
-            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
+            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
     }
 }

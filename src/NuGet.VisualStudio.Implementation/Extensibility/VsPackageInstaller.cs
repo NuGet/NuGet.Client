@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -20,7 +18,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
-using IPackageRepository = Legacy::NuGet.IPackageRepository;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
@@ -29,7 +26,7 @@ namespace NuGet.VisualStudio
     public class VsPackageInstaller : IVsPackageInstaller2
     {
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
-        private readonly ISettings _settings;
+        private readonly Configuration.ISettings _settings;
         private readonly ISolutionManager _solutionManager;
         private readonly INuGetProjectContext _projectContext;
         private readonly IVsPackageInstallerServices _packageServices;
@@ -37,7 +34,7 @@ namespace NuGet.VisualStudio
         private JoinableTaskFactory PumpingJTF { get; }
 
         [ImportingConstructor]
-        public VsPackageInstaller(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager, IVsPackageInstallerServices packageServices)
+        public VsPackageInstaller(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager, IVsPackageInstallerServices packageServices)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
@@ -58,7 +55,7 @@ namespace NuGet.VisualStudio
                 versionRange = VersionRange.Parse(versionSpec);
             }
 
-            List<PackageDependency> toInstall = new List<PackageDependency> { new PackageDependency(packageId, versionRange) };
+            var toInstall = new List<Packaging.Core.PackageDependency> { new Packaging.Core.PackageDependency(packageId, versionRange) };
 
             await InstallInternalAsync(project, toInstall, sourceProvider, false, ignoreDependencies, token);
         }
@@ -244,7 +241,7 @@ namespace NuGet.VisualStudio
                     {
                         if (_projectContext != null)
                         {
-                            _projectContext.Log(MessageLevel.Error, msg);
+                            _projectContext.Log(ProjectManagement.MessageLevel.Error, msg);
                         }
                     };
             }
@@ -290,7 +287,7 @@ namespace NuGet.VisualStudio
 
             if (repo == null)
             {
-                PackageSource newSource = new PackageSource(source);
+                var newSource = new Configuration.PackageSource(source);
 
                 repo = _sourceRepositoryProvider.CreateRepository(newSource);
             }
@@ -298,7 +295,7 @@ namespace NuGet.VisualStudio
             return repo;
         }
 
-        internal async Task InstallInternalAsync(Project project, List<PackageDependency> packages, ISourceRepositoryProvider repoProvider, bool skipAssemblyReferences, bool ignoreDependencies, CancellationToken token)
+        internal async Task InstallInternalAsync(Project project, List<Packaging.Core.PackageDependency> packages, ISourceRepositoryProvider repoProvider, bool skipAssemblyReferences, bool ignoreDependencies, CancellationToken token)
         {
             foreach (var group in packages.GroupBy(e => e.Id, StringComparer.OrdinalIgnoreCase))
             {

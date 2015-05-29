@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio
@@ -12,7 +11,7 @@ namespace NuGet.VisualStudio
     [Export(typeof(IVsPackageSourceProvider))]
     public class VsPackageSourceProvider : IVsPackageSourceProvider
     {
-        private readonly IPackageSourceProvider _packageSourceProvider;
+        private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
 
         [ImportingConstructor]
         public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepositoryProvider)
@@ -25,7 +24,7 @@ namespace NuGet.VisualStudio
         {
             List<KeyValuePair<string, string>> sources = new List<KeyValuePair<string, string>>();
 
-            foreach (PackageSource source in _packageSourceProvider.LoadPackageSources())
+            foreach (var source in _packageSourceProvider.LoadPackageSources())
             {
                 if ((IsOfficial(source) || includeUnOfficial)
                     && (source.IsEnabled || includeDisabled))
@@ -50,7 +49,7 @@ namespace NuGet.VisualStudio
             }
         }
 
-        private static bool IsOfficial(PackageSource source)
+        private static bool IsOfficial(Configuration.PackageSource source)
         {
             bool official = source.IsOfficial;
 

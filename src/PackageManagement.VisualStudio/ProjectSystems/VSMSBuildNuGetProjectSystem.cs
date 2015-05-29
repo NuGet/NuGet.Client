@@ -189,7 +189,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 && !path.Equals(EnvDTEProjectUtility.WebConfig)
                 && !path.Equals(EnvDTEProjectUtility.AppConfig))
             {
-                NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
+                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }
             else
             {
@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Add the file to project or folder
             AddFileToContainer(fullPath, folderPath, container);
 
-            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
+            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }
 
         /// <summary>
@@ -275,7 +275,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // Add a reference to the project
                         AddGacReference(name);
 
-                        NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddGacReference, name, ProjectName);
+                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddGacReference, name, ProjectName);
                     }
                     catch (Exception e)
                     {
@@ -384,7 +384,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             }
                         }
 
-                        NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
+                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
                     }
                     catch (Exception e)
                     {
@@ -431,11 +431,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         string folderPath = Path.GetDirectoryName(path);
                         if (!String.IsNullOrEmpty(folderPath))
                         {
-                            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(path), folderPath);
                         }
                         else
                         {
-                            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(path));
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemovedFile, Path.GetFileName(path));
                         }
                     }
                 });
@@ -508,12 +508,12 @@ namespace NuGet.PackageManagement.VisualStudio
                         if (reference != null)
                         {
                             reference.Remove();
-                            NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_RemoveReference, name, ProjectName);
                         }
                     }
                     catch (Exception e)
                     {
-                        NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, e.Message);
                     }
                 });
         }
@@ -742,7 +742,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!recursive
                 && (FileSystemUtility.GetFiles(ProjectFullPath, path, "*.*", recursive).Any() || FileSystemUtility.GetDirectories(ProjectFullPath, path).Any()))
             {
-                NuGetProjectContext.Log(MessageLevel.Warning, ProjectManagement.Strings.Warning_DirectoryNotEmpty, path);
+                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, ProjectManagement.Strings.Warning_DirectoryNotEmpty, path);
                 return;
             }
 
@@ -756,7 +756,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         var deletedProjectItem = await EnvDTEProjectUtility.DeleteProjectItemAsync(EnvDTEProject, path);
                         if (deletedProjectItem)
                         {
-                            NuGetProjectContext.Log(MessageLevel.Debug, ProjectManagement.Strings.Debug_RemovedFolder, path);
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, ProjectManagement.Strings.Debug_RemovedFolder, path);
                         }
                     }
                 });

@@ -12,9 +12,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TemplateWizard;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
@@ -35,7 +33,7 @@ namespace NuGet.VisualStudio
         private readonly IOutputConsoleProvider _consoleProvider;
         private readonly ISolutionManager _solutionManager;
         private readonly PreinstalledPackageInstaller _preinstalledPackageInstaller;
-        private readonly ISettings _settings;
+        private readonly Configuration.ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
 
         private JoinableTaskFactory PumpingJTF { get; }
@@ -46,7 +44,7 @@ namespace NuGet.VisualStudio
             IVsPackageInstallerServices packageServices,
             IOutputConsoleProvider consoleProvider,
             ISolutionManager solutionManager,
-            ISettings settings,
+            Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider
             )
         {

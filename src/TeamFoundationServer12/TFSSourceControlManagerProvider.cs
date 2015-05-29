@@ -10,7 +10,6 @@ using System.Linq;
 using EnvDTE80;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
-using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 
@@ -19,12 +18,12 @@ namespace NuGet.TeamFoundationServer
     [Export(typeof(ITFSSourceControlManagerProvider))]
     public class TFSSourceControlManagerProvider : ITFSSourceControlManagerProvider
     {
-        private readonly ISettings _settings;
+        private readonly Configuration.ISettings _settings;
 
         [ImportingConstructor]
         public TFSSourceControlManagerProvider()
         {
-            _settings = ServiceLocator.GetInstanceSafe<ISettings>();
+            _settings = ServiceLocator.GetInstanceSafe<Configuration.ISettings>();
         }
 
         public SourceControlManager GetTFSSourceControlManager(SourceControlBindings sourceControlBindings)
@@ -39,7 +38,7 @@ namespace NuGet.TeamFoundationServer
 
     internal class DefaultTFSSourceControlManager : SourceControlManager
     {
-        public DefaultTFSSourceControlManager(ISettings settings, SourceControlBindings sourceControlBindings)
+        public DefaultTFSSourceControlManager(Configuration.ISettings settings, SourceControlBindings sourceControlBindings)
             : base(settings)
         {
             if (sourceControlBindings == null)
@@ -137,9 +136,9 @@ namespace NuGet.TeamFoundationServer
 
             // Expand the directory deletes into individual file deletes. Include all the files we want to add but exclude any directories that may be in the path of the file.
             var childrenToPendDelete = (from folder in pendingFolderDeletesToUndo
-                from childItem in GetItemsRecursive(folder.LocalItem)
-                where batchSet.Contains(childItem) || !batchFolders.Any(f => PathUtility.IsSubdirectory(childItem, f))
-                select childItem).ToArray();
+                                        from childItem in GetItemsRecursive(folder.LocalItem)
+                                        where batchSet.Contains(childItem) || !batchFolders.Any(f => PathUtility.IsSubdirectory(childItem, f))
+                                        select childItem).ToArray();
 
             if (childrenToPendDelete.Any())
             {
@@ -149,7 +148,7 @@ namespace NuGet.TeamFoundationServer
             // Undo exact file deletes
             var pendingFileDeletesToUndo = pendingDeletes.Where(delete =>
                 fullPaths.Any(f =>
-                    String.Equals(delete.LocalItem, PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
+                    String.Equals(delete.LocalItem, ProjectManagement.PathUtility.ReplaceAltDirSeparatorWithDirSeparator(f), StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
             if (pendingFileDeletesToUndo.Any())
@@ -160,7 +159,7 @@ namespace NuGet.TeamFoundationServer
 
         private IEnumerable<string> GetItemsRecursive(string fullPath)
         {
-            return PrivateWorkspace.VersionControlServer.GetItems(fullPath, VersionSpec.Latest, RecursionType.Full, DeletedState.NonDeleted, ItemType.File)
+            return PrivateWorkspace.VersionControlServer.GetItems(fullPath, Microsoft.TeamFoundation.VersionControl.Client.VersionSpec.Latest, RecursionType.Full, DeletedState.NonDeleted, ItemType.File)
                 .Items.Select(i => PrivateWorkspace.TryGetLocalItemForServerItem(i.ServerItem));
         }
 

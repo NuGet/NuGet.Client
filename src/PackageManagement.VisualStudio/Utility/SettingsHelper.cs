@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </param>
         public static void Set(string property, string value)
         {
-            var settings = ServiceLocator.GetInstance<ISettings>();
+            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             if (string.Equals(property, "PackageRestoreConsentGranted", StringComparison.OrdinalIgnoreCase))
             {
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             var packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
             var sources = packageSourceProvider.LoadPackageSources().ToList();
-            sources.Add(new PackageSource(source, name));
+            sources.Add(new Configuration.PackageSource(source, name));
             packageSourceProvider.SavePackageSources(sources);
         }
 
