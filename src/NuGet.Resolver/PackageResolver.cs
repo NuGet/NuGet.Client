@@ -116,8 +116,10 @@ namespace NuGet.Resolver
             // Run solver
             var comparer = new ResolverComparer(context.DependencyBehavior, context.PreferredVersions, context.TargetIds);
 
+            var sortedGroups = ResolverInputSort.TreeFlatten(grouped, context);
+
             var solution = CombinationSolver<ResolverPackage>.FindSolution(
-                groupedItems: grouped,
+                groupedItems: sortedGroups,
                 itemSorter: comparer,
                 shouldRejectPairFunc: ResolverUtility.ShouldRejectPackagePair,
                 diagnosticOutput: diagnosticOutput);

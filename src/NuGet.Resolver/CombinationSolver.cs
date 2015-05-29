@@ -35,6 +35,8 @@ namespace NuGet.Resolver
         /// </summary>
         private readonly List<HashSet<T>> _currentDomains;
 
+        private readonly List<List<T>> _currentDomainsSorted;
+
         /// <summary>
         /// The subset of past indexes where a conflict was found. Used to calculate the biggest and safest
         /// (i.e. not missing a better solution) jump we can make in MoveBackward.
@@ -74,6 +76,14 @@ namespace NuGet.Resolver
 
             // Initialize various arrays required for the algorithm to run.
             _currentDomains = initialDomains.Select(d => new HashSet<T>(d)).ToList();
+
+            _currentDomainsSorted = initialDomains.Select(d => new List<T>(d)).ToList();
+
+            foreach (var list in _currentDomainsSorted)
+            {
+                list.Sort(_prioritySorter);
+            }
+
             _conflictSet = initialDomains.Select(d => new HashSet<int>()).ToList();
             _pastForwardChecking = initialDomains.Select(d => new Stack<int>()).ToList();
             _futureForwardChecking = initialDomains.Select(d => new Stack<int>()).ToList();
@@ -121,8 +131,20 @@ namespace NuGet.Resolver
             var i = 0;
             var highest = -1;
 
+            var limit = 0;
+
             while (true)
             {
+                if (!consistent)
+                {
+                    limit++;
+
+                    if (limit > 10000)
+                    {
+                        return null;
+                    }
+                }
+
                 i = consistent ? MoveForward(i, ref consistent) : MoveBackward(i, ref consistent);
 
                 if (diagnosticOutput != null && i > highest)
@@ -170,7 +192,7 @@ namespace NuGet.Resolver
             consistent = false;
 
             //Call ToList so we can potentially remove the currentItem from currentDomains[i] as we're iterating
-            foreach (var currentItem in _currentDomains[i].OrderBy(x => x, _prioritySorter).ToList())
+            foreach (var currentItem in GetSortedList(i))
             {
                 if (consistent)
                 {
@@ -253,7 +275,7 @@ namespace NuGet.Resolver
         private bool CheckForward(int i, int j)
         {
             var reductionAgainstFutureDomain = new Stack<T>();
-            foreach (var itemInFutureDomain in _currentDomains[j].OrderBy(x => x, _prioritySorter))
+            foreach (var itemInFutureDomain in GetSortedList(j))
             {
                 _solution[j] = itemInFutureDomain;
 
@@ -315,6 +337,32 @@ namespace NuGet.Resolver
             {
                 _currentDomains[i].ExceptWith(reduction);
             }
+        }
+
+        private IEnumerable<T> GetSortedList(int pos)
+        {
+            var subSet = _currentDomains[pos];
+            var sorted = _currentDomainsSorted[pos];
+
+            if (subSet.Count == sorted.Count)
+            {
+                foreach (var item in sorted)
+                {
+                    yield return item;
+                }
+            }
+            else
+            {
+                foreach (var item in sorted)
+                {
+                    if (subSet.Contains(item))
+                    {
+                        yield return item;
+                    }
+                }
+            }
+
+            yield break;
         }
     }
 }

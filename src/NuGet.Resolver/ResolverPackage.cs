@@ -18,6 +18,8 @@ namespace NuGet.Resolver
         /// An absent package represents that the package is not needed in the solution.
         /// </summary>
         public bool Absent { get; }
+        private readonly SortedDictionary<string, VersionRange> _dependencyIds;
+        private readonly int _hash;
 
         public ResolverPackage(string id)
             : this(id, null)
@@ -35,6 +37,24 @@ namespace NuGet.Resolver
             Debug.Assert(!Absent || (version == null && dependencies == null), "Invalid absent package");
 
             Absent = absent;
+
+            // Create a dictionary to optimize dependency lookups
+            if (dependencies != null)
+            {
+                _dependencyIds = new SortedDictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
+                foreach (var dependency in dependencies)
+                {
+                    _dependencyIds.Add(dependency.Id, dependency.VersionRange == null ? VersionRange.All : dependency.VersionRange);
+                }
+            }
+
+            // Calculate the hash once
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddObject(Absent);
+            combiner.AddObject(base.GetHashCode());
+
+            _hash = combiner.CombinedHash;
         }
 
         public ResolverPackage(PackageDependencyInfo info, bool listed, bool absent)
@@ -45,19 +65,13 @@ namespace NuGet.Resolver
         /// <summary>
         /// Find the version range for the given package. The package may not exist.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         public VersionRange FindDependencyRange(string id)
         {
             VersionRange range = null;
 
-            Debug.Assert(Dependencies.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).Count() < 2, "Duplicate dependencies");
-
-            var dependency = Dependencies.Where(e => StringComparer.OrdinalIgnoreCase.Equals(id, e.Id)).FirstOrDefault();
-
-            if (dependency != null)
+            if (_dependencyIds != null)
             {
-                range = dependency.VersionRange == null ? VersionRange.All : dependency.VersionRange;
+                _dependencyIds.TryGetValue(id, out range);
             }
 
             return range;
@@ -82,17 +96,17 @@ namespace NuGet.Resolver
                 return false;
             }
 
-            return this.Absent == other.Absent && base.Equals(other);
+            //if (ReferenceEquals(other, this))
+            //{
+            //    return true;
+            //}
+
+            return this.Absent == other.Absent && PackageIdentity.Comparer.Equals(other, this);
         }
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-
-            combiner.AddObject(Absent);
-            combiner.AddObject(base.GetHashCode());
-
-            return combiner.CombinedHash;
+            return _hash;
         }
 
         public override bool Equals(object obj)
