@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -409,7 +407,7 @@ namespace NuGetVSExtension
             // Write just "Nothing to restore" message when there are no missing packages.
             if (!hasMissingPackages)
             {
-                WriteLine(VerbosityLevel.Minimal, Resources.NothingToRestore);
+                WriteLine(VerbosityLevel.Detailed, Resources.NothingToRestore);
                 return;
             }
 
@@ -420,7 +418,7 @@ namespace NuGetVSExtension
             }
             else
             {
-                WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinished);
+                WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinished);
             }
         }
 
