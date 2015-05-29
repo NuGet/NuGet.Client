@@ -2351,7 +2351,14 @@ namespace NuGet.Test
 
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
-            Assert.Equal("Already referencing a newer version of '" + packageIdentityB1.Id + "'..",
+            Assert.Equal(
+                string.Format("Unable to resolve dependencies. '{0} {1}' is not compatible with '{2} {3} constraint: {4} (= {5})'.",
+                    packageIdentityB2.Id,
+                    packageIdentityB2.Version,
+                    packageIdentityA.Id,
+                    packageIdentityA.Version,
+                    packageIdentityB1.Id,
+                    packageIdentityB1.Version),
                 exception.Message);
 
             // Clean-up
@@ -3028,7 +3035,13 @@ namespace NuGet.Test
         public async Task TestPacManInstallPackageEFFromV3()
         {
             // Arrange
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            //var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
+            {
+                TestSourceRepositoryUtility.V3PackageSource,
+                new PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
+            });
 
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new Configuration.NullSettings();
@@ -3039,7 +3052,7 @@ namespace NuGet.Test
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
 
-            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var projectTargetFramework = NuGetFramework.Parse("net452");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
             var target = new PackageIdentity("EntityFramework", NuGetVersion.Parse("7.0.0-beta4"));
@@ -3050,8 +3063,8 @@ namespace NuGet.Test
                 target,
                 new ResolutionContext(DependencyBehavior.Lowest, true, false),
                 new TestNuGetProjectContext(), 
-                sourceRepositoryProvider.GetRepositories().First(), 
-                null,
+                sourceRepositoryProvider.GetRepositories().First(),
+                sourceRepositoryProvider.GetRepositories(),
                 token);
 
             var result = nugetProjectActions.ToList();
@@ -3208,6 +3221,128 @@ namespace NuGet.Test
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManInstallPackageOverExisting()
+        {
+            // Arrange
+            var fwk46 = NuGetFramework.Parse("net46");
+            var fwk45 = NuGetFramework.Parse("net45");
+            var fwk4 = NuGetFramework.Parse("net4");
+
+            var installedPackages = new List<PackageReference>
+            {
+                new PackageReference(new PackageIdentity("51Degrees.mobi", NuGetVersion.Parse("2.1.15.1")), fwk4, true),
+                new PackageReference(new PackageIdentity("AspNetMvc", NuGetVersion.Parse("4.0.20710.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("AttributeRouting", NuGetVersion.Parse("3.5.6")), fwk4, true),
+                new PackageReference(new PackageIdentity("AttributeRouting.Core", NuGetVersion.Parse("3.5.6")), fwk4, true),
+                new PackageReference(new PackageIdentity("AttributeRouting.Core.Web", NuGetVersion.Parse("3.5.6")), fwk4, true),
+                new PackageReference(new PackageIdentity("AutoMapper", NuGetVersion.Parse("3.3.1")), fwk45, true),
+                new PackageReference(new PackageIdentity("Castle.Core", NuGetVersion.Parse("1.1.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("Castle.DynamicProxy", NuGetVersion.Parse("2.1.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("Clay", NuGetVersion.Parse("1.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("colorbox", NuGetVersion.Parse("1.4.29")), fwk45, true),
+                new PackageReference(new PackageIdentity("elmah", NuGetVersion.Parse("1.2.0.1")), fwk4, true),
+                new PackageReference(new PackageIdentity("elmah.corelibrary", NuGetVersion.Parse("1.2")), fwk4, true),
+                new PackageReference(new PackageIdentity("EntityFramework", NuGetVersion.Parse("6.1.3")), fwk45, true),
+                new PackageReference(new PackageIdentity("fasterflect", NuGetVersion.Parse("2.1.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("foolproof", NuGetVersion.Parse("0.9.4517")), fwk45, true),
+                new PackageReference(new PackageIdentity("Glimpse", NuGetVersion.Parse("0.87")), fwk4, true),
+                new PackageReference(new PackageIdentity("Glimpse.Elmah", NuGetVersion.Parse("0.9.3")), fwk4, true),
+                new PackageReference(new PackageIdentity("Glimpse.Mvc3", NuGetVersion.Parse("0.87")), fwk4, true),
+                new PackageReference(new PackageIdentity("jQuery", NuGetVersion.Parse("1.4.1")), fwk45, true),
+                new PackageReference(new PackageIdentity("knockout.mapper.TypeScript.DefinitelyTyped", NuGetVersion.Parse("0.0.4")), fwk45, true),
+                new PackageReference(new PackageIdentity("Knockout.Mapping", NuGetVersion.Parse("2.4.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("knockout.mapping.TypeScript.DefinitelyTyped", NuGetVersion.Parse("0.0.9")), fwk45, true),
+                new PackageReference(new PackageIdentity("knockout.TypeScript.DefinitelyTyped", NuGetVersion.Parse("0.5.1")), fwk45, true),
+                new PackageReference(new PackageIdentity("Knockout.Validation", NuGetVersion.Parse("1.0.1")), fwk45, true),
+                new PackageReference(new PackageIdentity("knockoutjs", NuGetVersion.Parse("2.0.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("LINQtoCSV", NuGetVersion.Parse("1.2.0.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("log4net", NuGetVersion.Parse("2.0.3")), fwk45, true),
+                new PackageReference(new PackageIdentity("Microsoft.AspNet.Mvc", NuGetVersion.Parse("4.0.40804.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("Microsoft.AspNet.Razor", NuGetVersion.Parse("2.0.30506.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("Microsoft.AspNet.WebPages", NuGetVersion.Parse("2.0.30506.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("Microsoft.Web.Infrastructure", NuGetVersion.Parse("1.0.0.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("MiniProfiler", NuGetVersion.Parse("3.1.1.140")), fwk45, true),
+                new PackageReference(new PackageIdentity("MiniProfiler.EF6", NuGetVersion.Parse("3.0.11")), fwk45, true),
+                new PackageReference(new PackageIdentity("MiniProfiler.MVC4", NuGetVersion.Parse("3.0.11")), fwk45, true),
+                new PackageReference(new PackageIdentity("Mvc3CodeTemplatesCSharp", NuGetVersion.Parse("3.0.11214.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("MvcDiagnostics", NuGetVersion.Parse("3.0.10714.0")), fwk4, true),
+                new PackageReference(new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8")), fwk45, true),
+                new PackageReference(new PackageIdentity("Ninject", NuGetVersion.Parse("3.2.2.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("Ninject.Web.Common", NuGetVersion.Parse("3.2.3.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("OpenPop.NET", NuGetVersion.Parse("2.0.5.1063")), fwk45, true),
+                new PackageReference(new PackageIdentity("PreMailer.Net", NuGetVersion.Parse("1.1.2")), fwk4, true),
+                new PackageReference(new PackageIdentity("Rejuicer", NuGetVersion.Parse("1.3.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("T4MVCExtensions", NuGetVersion.Parse("3.15.2")), fwk46, true),
+                new PackageReference(new PackageIdentity("T4MvcJs", NuGetVersion.Parse("1.0.13")), fwk45, true),
+                new PackageReference(new PackageIdentity("Twia.ReSharper", NuGetVersion.Parse("9.0.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("valueinjecter", NuGetVersion.Parse("2.3.3")), fwk45, true),
+                new PackageReference(new PackageIdentity("WebActivator", NuGetVersion.Parse("1.5")), fwk4, true),
+                new PackageReference(new PackageIdentity("YUICompressor.NET", NuGetVersion.Parse("1.6.0.2")), fwk45, true),
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            var target = "t4mvc";
+
+            // Act
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                new NullSettings(),
+                new TestSolutionManager());
+
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                nuGetProject,
+                target,
+                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories().First(),
+                null,
+                CancellationToken.None);
+
+            Assert.True(nugetProjectActions.Select(pa => pa.PackageIdentity.Id).Contains(target, StringComparer.OrdinalIgnoreCase));
+        }
+
+        //[Fact]
+        public async Task TestPacManInstallPackageDowngrade()
+        {
+            // Arrange
+            var fwk46 = NuGetFramework.Parse("net46");
+            var fwk45 = NuGetFramework.Parse("net45");
+            var fwk4 = NuGetFramework.Parse("net4");
+
+            var installedPackages = new List<PackageReference>
+            {
+                new PackageReference(new PackageIdentity("ResolverTestA", NuGetVersion.Parse("3.0.0")), fwk45, true),
+                new PackageReference(new PackageIdentity("ResolverTestB", NuGetVersion.Parse("3.0.0")), fwk45, true),
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            var target = "FixedTestA";
+
+            // Act
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                new NullSettings(),
+                new TestSolutionManager());
+
+            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                nuGetProject,
+                target,
+                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories().First(),
+                null,
+                CancellationToken.None);
+
+            Assert.True(nugetProjectActions.Select(pa => pa.PackageIdentity.Id).Contains(target, StringComparer.OrdinalIgnoreCase));
         }
     }
 }
