@@ -67,8 +67,8 @@ namespace NuGet.CommandLine
 #else
                                 externalProjects = MsBuildUtility.GetProjectReferences(projectPath);
 
-                                projectPath = Path.GetDirectoryName(Path.GetFullPath(projectPath));
-                                var packageSpecFile = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
+                                var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
+                                var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
                                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, projectFile.Value);
                                 _log.LogVerbose($"Reading project file {projectFile.Value}");
 #endif
