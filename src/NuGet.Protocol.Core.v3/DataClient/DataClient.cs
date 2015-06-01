@@ -36,6 +36,10 @@ namespace NuGet.Protocol.Core.v3.Data
             {
                 throw new ArgumentNullException("handler");
             }
+
+            // Set user agent
+            var userAgent = UserAgent.CreateUserAgentStringForVisualStudio(UserAgent.NuGetClientName);
+            UserAgent.SetUserAgent(this, userAgent);
         }
 
         /// <summary>
@@ -103,10 +107,6 @@ namespace NuGet.Protocol.Core.v3.Data
         /// </summary>
         public async Task<JObject> GetJObjectAsync(Uri address, CancellationToken token)
         {
-            // Set user agent
-            var userAgent = UserAgent.CreateUserAgentString(UserAgent.NuGetClientName);
-            UserAgent.SetUserAgent(this, userAgent);
-
             var response = await GetAsync(address, token);
             response.EnsureSuccessStatusCode();
 
