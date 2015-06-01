@@ -16,5 +16,7 @@ k-standard-goals
 #build-nuget-commandline-cmd target="package"
     exec program='cmd' commandline='/C dnu publish --runtime active --configuration Release --no-source' if='!IsMono' workingdir="${Path.Combine(Directory.GetCurrentDirectory(), "src", "NuGet.CommandLine")}"
     exec program='dnu' commandline='publish' if='IsMono' workingdir="${Path.Combine(Directory.GetCurrentDirectory(), "src", "NuGet.CommandLine")}"
-
-    nuget-pack nuspecFile="${Path.Combine(Directory.GetCurrentDirectory(), "src", "NuGet.CommandLine", "NuGet.CommandLine.Cmd.nuspec")}" outputDir="${Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "build")}" version='${E("DNX_VERSION")}' extra="-nopackageanalysis"
+    @{
+        var commandLineVersion = "3.1.0-" + E("DNX_BUILD_VERSION");
+    }
+    nuget-pack nuspecFile="${Path.Combine(Directory.GetCurrentDirectory(), "src", "NuGet.CommandLine", "NuGet.CommandLine.Cmd.nuspec")}" outputDir="${Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "build")}" extra=" -version ${commandLineVersion} -nopackageanalysis"
