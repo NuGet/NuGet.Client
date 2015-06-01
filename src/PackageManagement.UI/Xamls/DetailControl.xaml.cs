@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
 {
-    // The DataContext of this control is DetailControlModel, i.e. either 
+    // The DataContext of this control is DetailControlModel, i.e. either
     // PackageSolutionDetailControlModel or PackageDetailControlModel.
     public partial class DetailControl : UserControl
     {
@@ -79,6 +79,20 @@ namespace NuGet.PackageManagement.UI
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                     try
                     {
+                        var nugetUi = Control.Model.UIController as NuGetUI;
+                        if (nugetUi != null)
+                        {
+                            var model = (DetailControlModel)DataContext;
+
+                            // Set the properties by reading the current options on the UI
+                            nugetUi.FileConflictAction = model.Options.SelectedFileConflictAction.Action;
+                            nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
+                            nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
+                            nugetUi.ForceRemove = model.Options.ForceRemove;
+                            nugetUi.Projects = model.SelectedProjects;
+                            nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
+                        }
+
                         var restoreSucceded = await Control.RestoreBar.UIRestorePackagesAsync(CancellationToken.None);
                         if (restoreSucceded)
                         {
