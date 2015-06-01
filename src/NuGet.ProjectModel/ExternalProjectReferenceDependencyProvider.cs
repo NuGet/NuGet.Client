@@ -22,7 +22,7 @@ namespace NuGet.ProjectModel
 
         public ExternalProjectReferenceDependencyProvider(IEnumerable<ExternalProjectReference> externalProjects)
         {
-            ExternalProjects = new ReadOnlyDictionary<string, ExternalProjectReference>(externalProjects.ToDictionary(e => e.Name, StringComparer.OrdinalIgnoreCase));
+            ExternalProjects = new ReadOnlyDictionary<string, ExternalProjectReference>(externalProjects.ToDictionary(e => e.UniqueName, StringComparer.OrdinalIgnoreCase));
         }
 
         public bool SupportsType(string libraryType)
@@ -63,7 +63,7 @@ namespace NuGet.ProjectModel
                 PackageSpec packageSpec;
                 using (var stream = new FileStream(externalProject.PackageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    packageSpec = JsonPackageSpecReader.GetPackageSpec(stream, externalProject.Name, externalProject.PackageSpecPath);
+                    packageSpec = JsonPackageSpecReader.GetPackageSpec(stream, externalProject.UniqueName, externalProject.PackageSpecPath);
                 }
 
                 // Add framework-agnostic dependencies
@@ -82,7 +82,7 @@ namespace NuGet.ProjectModel
                 {
                     Identity = new LibraryIdentity()
                         {
-                            Name = externalProject.Name,
+                            Name = externalProject.UniqueName,
                             Version = new NuGetVersion("1.0.0"),
                             Type = LibraryTypes.ExternalProject
                         },

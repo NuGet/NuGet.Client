@@ -69,7 +69,7 @@ namespace NuGet.CommandLine
 
                                 projectPath = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                                 var packageSpecFile = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
-                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), Path.GetFileName(projectPath), projectFile.Value);
+                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, projectFile.Value);
                                 _log.LogVerbose($"Reading project file {projectFile.Value}");
 #endif
                             }
@@ -118,7 +118,6 @@ namespace NuGet.CommandLine
                                             projectReferences: Enumerable.Empty<string>()));
                                 }
                             }
-
 
                             // Run the restore
                             if (parallel.HasValue())

@@ -15,14 +15,14 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Represents a reference to a project produced by an external build system, such as msbuild.
         /// </summary>
-        /// <param name="name">unique project name or full path</param>
+        /// <param name="uniqueName">unique project name or full path</param>
         /// <param name="packageSpecPath">project.json path</param>
         /// <param name="projectReferences">unique names of the referenced projects</param>
-        public ExternalProjectReference(string name, string packageSpecPath, IEnumerable<string> projectReferences)
+        public ExternalProjectReference(string uniqueName, string packageSpecPath, IEnumerable<string> projectReferences)
         {
-            if (name == null)
+            if (uniqueName == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(uniqueName));
             }
 
             if (projectReferences == null)
@@ -30,15 +30,15 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(projectReferences));
             }
 
-            Name = name;
+            UniqueName = uniqueName;
             PackageSpecPath = packageSpecPath;
             ExternalProjectReferences = projectReferences.ToList();
         }
 
         /// <summary>
-        /// The name of the external project
+        /// Unique name of the external project
         /// </summary>
-        public string Name { get; }
+        public string UniqueName { get; }
 
         /// <summary>
         /// The path to the nuget.json file representing the NuGet dependencies of the project

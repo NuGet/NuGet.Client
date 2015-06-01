@@ -93,7 +93,7 @@ namespace NuGet.ProjectModel
 
             var dependencies = packageSpec.Dependencies.Concat(targetFrameworkDependencies).ToList();
 
-            if (string.Equals(_projectReference?.Name, libraryRange.Name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(_projectReference?.UniqueName, libraryRange.Name, StringComparison.OrdinalIgnoreCase))
             {
                 dependencies.AddRange(_projectReference.ExternalProjectReferences
                     .Select(reference => new LibraryDependency

@@ -55,18 +55,18 @@ namespace NuGet.Commands
 
             var context = new RemoteWalkContext();
 
-            ExternalProjectReference exterenalProjectReference = null;
+            ExternalProjectReference externalProjectReference = null;
             if (request.ExternalProjects.Any())
             {
-                exterenalProjectReference = new ExternalProjectReference(
-                    request.Project.Name,
+                externalProjectReference = new ExternalProjectReference(
                     request.Project.FilePath,
-                    request.ExternalProjects.Select(p => p.Name));
+                    request.Project.FilePath,
+                    request.ExternalProjects.Select(p => p.UniqueName));
             }
 
             context.ProjectLibraryProviders.Add(
                 new LocalDependencyProvider(
-                    new PackageSpecReferenceDependencyProvider(projectResolver, exterenalProjectReference)));
+                    new PackageSpecReferenceDependencyProvider(projectResolver, externalProjectReference)));
 
             if (request.ExternalProjects != null)
             {
