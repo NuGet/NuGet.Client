@@ -48,7 +48,7 @@
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
         
         <!-- Restore NuGet.CommandLine.Cmd -->
-        <Exec Command="$(NuGetExePath) install -Source https://www.myget.org/F/nugetbuild/api/v2 NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache" 
+        <Exec Command="$(NuGetExePath) install -Source https://www.myget.org/F/nugetbuild/api/v2 NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre" 
               Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
               
         <!-- Restore MsBuid script -->
