@@ -41,7 +41,7 @@ namespace NuGet.Commands
                     // waiting on this lock don't need to install it again.
                     if (createdNewLock && !File.Exists(targetNupkg))
                     {
-                        log.LogInformation($"Installing {library.Name} {library.Version}");
+                        log.LogInformation(Strings.FormatLog_InstallingPackage(library.Name, library.Version));
 
                         Directory.CreateDirectory(targetPath);
                         using (var nupkgStream = new FileStream(
@@ -63,30 +63,6 @@ namespace NuGet.Commands
                         // Fixup the casing of the nuspec on disk to match what we expect
                         var nuspecFile = Directory.EnumerateFiles(targetPath, "*" + ManifestExtension).Single();
                         FixNuSpecIdCasing(nuspecFile, targetNuspec, library.Name);
-
-                        /*var actualNuSpecName = Path.GetFileName(nuspecFile);
-                    var expectedNuSpecName = Path.GetFileName(targetNuspec);
-
-                    if (!string.Equals(actualNuSpecName, expectedNuSpecName, StringComparison.Ordinal))
-                    {
-                        MetadataBuilder metadataBuilder = null;
-                        var nuspecFormatter = new NuSpecFormatter();
-                        using (var nuspecStream = File.OpenRead(nuspecFile))
-                        {
-                            metadataBuilder = nuspecFormatter.Read(nuspecStream);
-                            // REVIEW: any way better hardcoding "id"?
-                            metadataBuilder.SetMetadataValue("id", library.Name);
-                        }
-
-                        // Delete the previous nuspec file
-                        File.Delete(nuspecFile);
-
-                        // Write the new manifest
-                        using (var targetNuspecStream = File.OpenWrite(targetNuspec))
-                        {
-                            nuspecFormatter.Save(metadataBuilder, targetNuspecStream);
-                        }
-                    }*/
 
                         stream.Seek(0, SeekOrigin.Begin);
                         string packageHash;
@@ -123,37 +99,6 @@ namespace NuGet.Commands
                 using (var stream = File.OpenWrite(targetNuspec))
                 {
                     xDoc.Save(stream);
-                }
-            }
-        }
-
-        internal static LibraryIdentity CreateLibraryFromNupkg(string nupkgPath)
-        {
-            using (var fileStream = File.OpenRead(nupkgPath))
-            {
-                using (var archive = new ZipArchive(fileStream))
-                {
-                    foreach (var entry in archive.Entries)
-                    {
-                        if (!entry.Name.EndsWith(ManifestExtension, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-
-                        using (var entryStream = entry.Open())
-                        {
-                            var reader = new NuspecReader(entryStream);
-                            return new LibraryIdentity()
-                                {
-                                    Name = reader.GetId(),
-                                    Version = reader.GetVersion(),
-                                    Type = LibraryTypes.Package
-                                };
-                        }
-                    }
-
-                    throw new FormatException(
-                        string.Format("{0} doesn't contain {1} entry", nupkgPath, ManifestExtension));
                 }
             }
         }

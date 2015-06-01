@@ -9,7 +9,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.ContentModel;
@@ -40,7 +39,7 @@ namespace NuGet.Commands
         {
             if (request.Project.TargetFrameworks.Count == 0)
             {
-                _log.LogError("The project does not specify any target frameworks!");
+                _log.LogError(Strings.Log_ProjectDoesNotSpecifyTargetFrameworks);
                 return new RestoreResult(success: false, restoreGraphs: Enumerable.Empty<RestoreTargetGraph>());
             }
 
@@ -48,9 +47,7 @@ namespace NuGet.Commands
                 Path.Combine(request.Project.BaseDirectory, LockFileFormat.LockFileName) :
                 request.LockFilePath;
 
-            _log.LogInformation($"Restoring packages for '{request.Project.FilePath}'");
-
-            _log.LogWarning("TODO: Read and use lock file");
+            _log.LogInformation(Strings.FormatLog_RestoringPackages(request.Project.FilePath));
 
             // Load repositories
             var projectResolver = new PackageSpecResolver(request.Project);
@@ -62,8 +59,8 @@ namespace NuGet.Commands
             if (request.ExternalProjects.Any())
             {
                 exterenalProjectReference = new ExternalProjectReference(
-                    request.Project.Name, 
-                    request.Project.FilePath, 
+                    request.Project.Name,
+                    request.Project.FilePath,
                     request.ExternalProjects.Select(p => p.Name));
             }
 
@@ -109,7 +106,7 @@ namespace NuGet.Commands
 
             if (graphs.Any(g => g.InConflict))
             {
-                _log.LogError("Failed to resolve conflicts");
+                _log.LogError(Strings.Log_FailedToResolveConflicts);
                 return new RestoreResult(success: false, restoreGraphs: graphs);
             }
 
@@ -137,7 +134,7 @@ namespace NuGet.Commands
 
                 if (runtimeGraphs.Any(g => g.InConflict))
                 {
-                    _log.LogError("Failed to resolve conflicts");
+                    _log.LogError(Strings.Log_FailedToResolveConflicts);
                     return new RestoreResult(success: false, restoreGraphs: graphs);
                 }
 
@@ -146,7 +143,7 @@ namespace NuGet.Commands
             }
             else
             {
-                _log.LogVerbose("Skipping runtime dependency walk, no runtimes defined in project.json");
+                _log.LogVerbose(Strings.Log_SkippingRuntimeWalk);
             }
 
             // Build the lock file
@@ -169,7 +166,7 @@ namespace NuGet.Commands
             {
                 var name = $"{project.Name}.nuget.targets";
                 var path = Path.Combine(project.BaseDirectory, name);
-                _log.LogInformation($"Generating MSBuild file {name}");
+                _log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(name));
 
                 GenerateMSBuildErrorFile(path);
                 return;
@@ -223,7 +220,7 @@ namespace NuGet.Commands
 
             if (targets.Any())
             {
-                _log.LogInformation($"Generating MSBuild file {targetsName}");
+                _log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(targetsName));
 
                 GenerateImportsFile(repository, targetsPath, targets);
             }
@@ -234,7 +231,7 @@ namespace NuGet.Commands
 
             if (props.Any())
             {
-                _log.LogInformation($"Generating MSBuild file {propsName}");
+                _log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(propsName));
 
                 GenerateImportsFile(repository, propsPath, props);
             }
@@ -512,7 +509,7 @@ namespace NuGet.Commands
 
         private async Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context)
         {
-            _log.LogInformation($"Restoring packages for {framework}");
+            _log.LogInformation(Strings.FormatLog_RestoringPackagesForFramework(framework));
             var graph = await walker.WalkAsync(
                 projectRange,
                 framework,
@@ -520,7 +517,7 @@ namespace NuGet.Commands
                 runtimeGraph);
 
             // Resolve conflicts
-            _log.LogVerbose($"Resolving Conflicts for {framework}");
+            _log.LogVerbose(Strings.FormatLog_ResolvingConflictsForFramework(framework));
             var inConflict = !graph.TryResolveConflicts();
 
             // Flatten and create the RestoreTargetGraph to hold the packages
@@ -530,7 +527,7 @@ namespace NuGet.Commands
         private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository)
         {
             // Load runtime specs
-            _log.LogVerbose("Scanning packages for runtime.json files...");
+            _log.LogVerbose(Strings.Log_ScanningForRuntimeJson);
             var runtimeGraph = projectRuntimeGraph;
             graph.Graph.ForEach(node =>
                 {
@@ -547,7 +544,7 @@ namespace NuGet.Commands
                         var nextGraph = LoadRuntimeGraph(package);
                         if (nextGraph != null)
                         {
-                            _log.LogVerbose($"Merging in runtimes defined in {match.Library}");
+                            _log.LogVerbose(Strings.FormatLog_MergingRuntimes(match.Library));
                             runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
                         }
                     }
@@ -556,7 +553,7 @@ namespace NuGet.Commands
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in projectRuntimeGraph.Runtimes.Keys)
             {
-                _log.LogInformation($"Restoring packages for {graph.Framework} on {runtimeName}");
+                _log.LogInformation(Strings.FormatLog_RestoringPackagesForFrameworkAndRuntime(graph.Framework, runtimeName));
                 resultGraphs.Add(WalkDependencies(projectRange, graph.Framework, runtimeName, runtimeGraph, walker, context));
             }
 
@@ -615,7 +612,7 @@ namespace NuGet.Commands
 
         private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source, bool noCache)
         {
-            _log.LogVerbose($"Using source {source.Source}");
+            _log.LogVerbose(Strings.FormatLog_UsingSource(source.Source));
 
             var nugetRepository = Repository.Factory.GetCoreV3(source.Source);
             return new SourceRepositoryDependencyProvider(nugetRepository, _log, noCache);

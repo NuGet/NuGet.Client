@@ -117,6 +117,42 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Log_FailedToResolveConflicts" xml:space="preserve">
+    <value>Failed to resolve conflicts.</value>
+  </data>
+  <data name="Log_GeneratingMsBuildFile" xml:space="preserve">
+    <value>Generating MSBuild file {0}.</value>
+  </data>
+  <data name="Log_InstallingPackage" xml:space="preserve">
+    <value>Installing {0} {1}.</value>
+  </data>
+  <data name="Log_MergingRuntimes" xml:space="preserve">
+    <value>Merging in runtimes defined in {0}.</value>
+  </data>
+  <data name="Log_ProjectDoesNotSpecifyTargetFrameworks" xml:space="preserve">
+    <value>The project does not specify any target frameworks.</value>
+  </data>
+  <data name="Log_ResolvingConflictsForFramework" xml:space="preserve">
+    <value>Resolving conflicts for framework {0}.</value>
+  </data>
+  <data name="Log_RestoringPackages" xml:space="preserve">
+    <value>Restoring packages for {0}...</value>
+  </data>
+  <data name="Log_RestoringPackagesForFramework" xml:space="preserve">
+    <value>Restoring packages for framework {0}.</value>
+  </data>
+  <data name="Log_RestoringPackagesForFrameworkAndRuntime" xml:space="preserve">
+    <value>Restoring packages for framework {0} on {1}.</value>
+  </data>
+  <data name="Log_ScanningForRuntimeJson" xml:space="preserve">
+    <value>Scanning packages for runtime.json files...</value>
+  </data>
+  <data name="Log_SkippingRuntimeWalk" xml:space="preserve">
+    <value>Skipping runtime dependency walk, no runtimes defined in project.json.</value>
+  </data>
+  <data name="Log_UsingSource" xml:space="preserve">
+    <value>Using source {0}.</value>
+  </data>
   <data name="MSBuildWarning_MultiTarget" xml:space="preserve">
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>

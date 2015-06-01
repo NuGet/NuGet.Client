@@ -11,6 +11,198 @@ namespace NuGet.Commands
             = new ResourceManager("NuGet.Commands.Strings", typeof(Strings).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Failed to resolve conflicts.
+        /// </summary>
+        internal static string Log_FailedToResolveConflicts
+        {
+            get { return GetString("Log_FailedToResolveConflicts"); }
+        }
+
+        /// <summary>
+        /// Failed to resolve conflicts.
+        /// </summary>
+        internal static string FormatLog_FailedToResolveConflicts()
+        {
+            return GetString("Log_FailedToResolveConflicts");
+        }
+
+        /// <summary>
+        /// Generating MSBuild file {0}.
+        /// </summary>
+        internal static string Log_GeneratingMsBuildFile
+        {
+            get { return GetString("Log_GeneratingMsBuildFile"); }
+        }
+
+        /// <summary>
+        /// Generating MSBuild file {0}.
+        /// </summary>
+        internal static string FormatLog_GeneratingMsBuildFile(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_GeneratingMsBuildFile"), p0);
+        }
+
+        /// <summary>
+        /// Installing {0} {1}.
+        /// </summary>
+        internal static string Log_InstallingPackage
+        {
+            get { return GetString("Log_InstallingPackage"); }
+        }
+
+        /// <summary>
+        /// Installing {0} {1}.
+        /// </summary>
+        internal static string FormatLog_InstallingPackage(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_InstallingPackage"), p0, p1);
+        }
+
+        /// <summary>
+        /// Merging in runtimes defined in {0}.
+        /// </summary>
+        internal static string Log_MergingRuntimes
+        {
+            get { return GetString("Log_MergingRuntimes"); }
+        }
+
+        /// <summary>
+        /// Merging in runtimes defined in {0}.
+        /// </summary>
+        internal static string FormatLog_MergingRuntimes(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_MergingRuntimes"), p0);
+        }
+
+        /// <summary>
+        /// The project does not specify any target frameworks.
+        /// </summary>
+        internal static string Log_ProjectDoesNotSpecifyTargetFrameworks
+        {
+            get { return GetString("Log_ProjectDoesNotSpecifyTargetFrameworks"); }
+        }
+
+        /// <summary>
+        /// The project does not specify any target frameworks.
+        /// </summary>
+        internal static string FormatLog_ProjectDoesNotSpecifyTargetFrameworks()
+        {
+            return GetString("Log_ProjectDoesNotSpecifyTargetFrameworks");
+        }
+
+        /// <summary>
+        /// Resolving conflicts for framework {0}.
+        /// </summary>
+        internal static string Log_ResolvingConflictsForFramework
+        {
+            get { return GetString("Log_ResolvingConflictsForFramework"); }
+        }
+
+        /// <summary>
+        /// Resolving conflicts for framework {0}.
+        /// </summary>
+        internal static string FormatLog_ResolvingConflictsForFramework(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ResolvingConflictsForFramework"), p0);
+        }
+
+        /// <summary>
+        /// Restoring packages for {0}...
+        /// </summary>
+        internal static string Log_RestoringPackages
+        {
+            get { return GetString("Log_RestoringPackages"); }
+        }
+
+        /// <summary>
+        /// Restoring packages for {0}...
+        /// </summary>
+        internal static string FormatLog_RestoringPackages(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_RestoringPackages"), p0);
+        }
+
+        /// <summary>
+        /// Restoring packages for framework {0}.
+        /// </summary>
+        internal static string Log_RestoringPackagesForFramework
+        {
+            get { return GetString("Log_RestoringPackagesForFramework"); }
+        }
+
+        /// <summary>
+        /// Restoring packages for framework {0}.
+        /// </summary>
+        internal static string FormatLog_RestoringPackagesForFramework(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_RestoringPackagesForFramework"), p0);
+        }
+
+        /// <summary>
+        /// Restoring packages for framework {0} on {1}.
+        /// </summary>
+        internal static string Log_RestoringPackagesForFrameworkAndRuntime
+        {
+            get { return GetString("Log_RestoringPackagesForFrameworkAndRuntime"); }
+        }
+
+        /// <summary>
+        /// Restoring packages for framework {0} on {1}.
+        /// </summary>
+        internal static string FormatLog_RestoringPackagesForFrameworkAndRuntime(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_RestoringPackagesForFrameworkAndRuntime"), p0, p1);
+        }
+
+        /// <summary>
+        /// Scanning packages for runtime.json files...
+        /// </summary>
+        internal static string Log_ScanningForRuntimeJson
+        {
+            get { return GetString("Log_ScanningForRuntimeJson"); }
+        }
+
+        /// <summary>
+        /// Scanning packages for runtime.json files...
+        /// </summary>
+        internal static string FormatLog_ScanningForRuntimeJson()
+        {
+            return GetString("Log_ScanningForRuntimeJson");
+        }
+
+        /// <summary>
+        /// Skipping runtime dependency walk, no runtimes defined in project.json.
+        /// </summary>
+        internal static string Log_SkippingRuntimeWalk
+        {
+            get { return GetString("Log_SkippingRuntimeWalk"); }
+        }
+
+        /// <summary>
+        /// Skipping runtime dependency walk, no runtimes defined in project.json.
+        /// </summary>
+        internal static string FormatLog_SkippingRuntimeWalk()
+        {
+            return GetString("Log_SkippingRuntimeWalk");
+        }
+
+        /// <summary>
+        /// Using source {0}.
+        /// </summary>
+        internal static string Log_UsingSource
+        {
+            get { return GetString("Log_UsingSource"); }
+        }
+
+        /// <summary>
+        /// Using source {0}.
+        /// </summary>
+        internal static string FormatLog_UsingSource(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_UsingSource"), p0);
+        }
+
+        /// <summary>
         /// Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.
         /// </summary>
         internal static string MSBuildWarning_MultiTarget
