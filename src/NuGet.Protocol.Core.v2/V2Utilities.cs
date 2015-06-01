@@ -4,8 +4,7 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v2
@@ -34,7 +33,7 @@ namespace NuGet.Protocol.Core.v2
             {
                 return _lprepo;
             }
-            var _userAgent = UserAgentUtil.GetUserAgent("NuGet.Client.Interop", "host");
+            var _userAgent = UserAgent.CreateUserAgentStringForVisualStudio(UserAgent.NuGetClientName);
             var events = repo as IHttpClientEvents;
             if (events != null)
             {
