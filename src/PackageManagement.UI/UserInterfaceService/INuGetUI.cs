@@ -54,11 +54,6 @@ namespace NuGet.PackageManagement.UI
         bool DisplayPreviewWindow { get; }
 
         /// <summary>
-        /// The current user action to perform
-        /// </summary>
-        UserAction UserAction { get; }
-
-        /// <summary>
         /// Package currently selected in the UI
         /// </summary>
         PackageIdentity SelectedPackage { get; }
