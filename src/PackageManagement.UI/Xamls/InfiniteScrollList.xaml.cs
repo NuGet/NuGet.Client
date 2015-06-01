@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Resx = NuGet.PackageManagement.UI;
+using Mvs = Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -31,6 +32,8 @@ namespace NuGet.PackageManagement.UI
 
         public static Style PackageItemStyle;
         public static Style LoadingStatusIndicatorStyle;
+
+        private const string LogEntrySource = "NuGet Package Manager";
 
         public InfiniteScrollList()
         {
@@ -142,10 +145,13 @@ namespace NuGet.PackageManagement.UI
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Resx.Resources.Text_ErrorOccurred,
-                            ex);
+                            ex.Message);
 
                     _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
                     _loadingStatusIndicator.ErrorMessage = message;
+
+                    // Write stack to activity log
+                    Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
                 }
             }
         }
