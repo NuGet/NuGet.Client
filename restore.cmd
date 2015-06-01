@@ -1,13 +1,15 @@
 @echo off
 
+msbuild /v:M Build\Build.tasks /t:DownloadNuGetExe
+
 if not exist %~dp0\packages\NuGet.CommandLine.Cmd (
     msbuild %~dp0\build\build.tasks /t:DownloadNuGetExe /v:Q
-    nuget.exe install -Source https://www.myget.org/F/nugetbuild/api/v2 NuGet.CommandLine.Cmd -ExcludeVersion -Out %~dp0\packages -NoCache
+    .nuget\nuget.exe install -Source https://www.myget.org/F/nugetbuild/api/v2 NuGet.CommandLine.Cmd -ExcludeVersion -Out %~dp0\packages -NoCache
 )
 
 if not exist %~dp0\packages\NuGet.MsBuild.Integration (
     msbuild %~dp0\build\build.tasks /t:DownloadNuGetExe /v:Q
-    nuget.exe install -source https://www.myget.org/F/nugetbuild/api/v2 NuGet.MsBuild.Integration -ExcludeVersion -Out %~dp0\packages -NoCache -pre
+    .nuget\nuget.exe install -source https://www.myget.org/F/nugetbuild/api/v2 NuGet.MsBuild.Integration -ExcludeVersion -Out %~dp0\packages -NoCache -pre
 )
 
 set NuGetCommandLineCmd=%~dp0\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd
