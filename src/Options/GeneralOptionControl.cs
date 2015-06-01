@@ -4,16 +4,14 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
-using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
-using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.Options
 {
     public partial class GeneralOptionControl : UserControl
     {
         private readonly IProductUpdateSettings _productUpdateSettings;
-        private readonly ISettings _settings;
+        private readonly Configuration.ISettings _settings;
         private bool _initialized;
 
         public GeneralOptionControl()
@@ -23,7 +21,7 @@ namespace NuGet.Options
             _productUpdateSettings = ServiceLocator.GetInstance<IProductUpdateSettings>();
             Debug.Assert(_productUpdateSettings != null);
 
-            _settings = ServiceLocator.GetInstance<ISettings>();
+            _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             Debug.Assert(_settings != null);
             // Starting from VS11, we don't need to check for updates anymore because VS will do it.
             Controls.Remove(updatePanel);
@@ -35,7 +33,7 @@ namespace NuGet.Options
             {
                 try
                 {
-                    var packageRestoreConsent = new PackageRestoreConsent(_settings);
+                    var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
                     packageRestoreConsentCheckBox.Checked = packageRestoreConsent.IsGrantedInSettings;
                     packageRestoreAutomaticCheckBox.Checked = packageRestoreConsent.IsAutomatic;
                     packageRestoreAutomaticCheckBox.Enabled = packageRestoreConsentCheckBox.Checked;
@@ -60,7 +58,7 @@ namespace NuGet.Options
 
             try
             {
-                var packageRestoreConsent = new PackageRestoreConsent(_settings);
+                var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
                 packageRestoreConsent.IsGrantedInSettings = packageRestoreConsentCheckBox.Checked;
                 packageRestoreConsent.IsAutomatic = packageRestoreAutomaticCheckBox.Checked;
             }

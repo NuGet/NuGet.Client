@@ -367,7 +367,7 @@ namespace NuGetVSExtension
         /// <returns>True if the package restore user consent is granted.</returns>
         private static bool IsConsentGranted()
         {
-            var settings = ServiceLocator.GetInstance<ISettings>();
+            var settings = ServiceLocator.GetInstance<NuGet.Configuration.ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             return packageRestoreConsent.IsGranted;
         }
@@ -378,7 +378,7 @@ namespace NuGetVSExtension
         /// <returns>True if automatic package restore on build is enabled.</returns>
         private static bool IsAutomatic()
         {
-            var settings = ServiceLocator.GetInstance<ISettings>();
+            var settings = ServiceLocator.GetInstance<NuGet.Configuration.ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             return packageRestoreConsent.IsAutomatic;
         }

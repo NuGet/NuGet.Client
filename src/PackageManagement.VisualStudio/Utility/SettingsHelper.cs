@@ -50,9 +50,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Gets the VsSettings singleton object.
         /// </summary>
         /// <returns>The VsSettings object in the system.</returns>
-        public static ISettings GetVsSettings()
+        public static Configuration.ISettings GetVsSettings()
         {
-            return ServiceLocator.GetInstance<ISettings>();
+            return ServiceLocator.GetInstance<Configuration.ISettings>();
         }
 
         /// <summary>
