@@ -1963,6 +1963,62 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        
+        public void DisabledMachineWideSourceByDefault()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""Microsoft and .NET""
+         value = ""https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/"" />
+        <add key=""test1""
+         value = ""//test/source"" />
+    </packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "machinewide.config"), configContents);
+                var machineWideSetting = new Settings(mockBaseDirectory.Path, "machinewide.config", true);
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(new List<Settings> { machineWideSetting });
+
+                // Act
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                      configFileName: null,
+                      machineWideSettings: m.Object,
+                      loadAppDataSettings: true);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                Assert.False(sources[0].IsEnabled);
+                Assert.False(sources[1].IsEnabled);
+            }
+        }
+
+        
+        public void DisabledMachineWideSourceByDefaultWithNull()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                                  configFileName: null,
+                                  machineWideSettings: null,
+                                  loadAppDataSettings: true);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                Assert.Equal(2, sources.Count);
+            }
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();
