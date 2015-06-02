@@ -48,7 +48,7 @@ namespace NuGet.Protocol.VisualStudio
                     filters.SupportedFrameworks,
                     filters.IncludePrerelease);
 
-                // V2 sometimes requires that we also use an OData filter for 
+                // V2 sometimes requires that we also use an OData filter for
                 // latest /latest prerelease version
                 if (filters.IncludePrerelease)
                 {
@@ -61,7 +61,7 @@ namespace NuGet.Protocol.VisualStudio
                 query = query.OrderByDescending(p => p.DownloadCount)
                     .ThenBy(p => p.Id);
 
-                // Some V2 sources, e.g. NuGet.Server, local repository, the result contains all 
+                // Some V2 sources, e.g. NuGet.Server, local repository, the result contains all
                 // versions of each package. So we need to group the result by Id.
                 var collapsedQuery = query.AsEnumerable().AsCollapsed();
 
@@ -105,7 +105,7 @@ namespace NuGet.Protocol.VisualStudio
             var identity = new PackageIdentity(id, version);
 
             var versions = new Lazy<Task<IEnumerable<VersionInfo>>>(() =>
-                GetVersionInfoAsync(package, filters, cancellationToken));
+                GetVersionInfoAsync(package, filters, CancellationToken.None));
 
             var searchMetaData = new UISearchMetadata(identity,
                                                       title,
