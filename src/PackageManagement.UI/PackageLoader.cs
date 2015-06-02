@@ -539,12 +539,12 @@ namespace NuGet.PackageManagement.UI
                                                 .Select(v => v.Version)
                                                 .Max();
 
-                var highestInstalled = _installedPackages
+                var lowestInstalled = _installedPackages
                     .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, id))
-                    .OrderByDescending(p => p.Version, VersionComparer.Default)
+                    .OrderBy(p => p.Version, VersionComparer.Default)
                     .First();
 
-                if (VersionComparer.VersionRelease.Compare(highestInstalled.Version, highestAvailableVersion) < 0)
+                if (VersionComparer.VersionRelease.Compare(lowestInstalled.Version, highestAvailableVersion) < 0)
                 {
                     return PackageStatus.UpdateAvailable;
                 }
