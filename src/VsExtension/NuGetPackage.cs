@@ -334,7 +334,7 @@ namespace NuGetVSExtension
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
                 new SettingsToLegacySettings(Settings));
             HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(
-                new VSRequestCredentialProvider(webProxy),
+                new VisualStudioCredentialProvider(webProxy),
                 packageSourceProvider);
         }
 

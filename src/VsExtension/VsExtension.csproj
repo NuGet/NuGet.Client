@@ -81,7 +81,6 @@
     <Compile Include="VsEvents\OnBuildPackageRestorer.cs" />
     <Compile Include="VsEvents\ProjectRetargetingHandler.cs" />
     <Compile Include="VsEvents\ProjectUpgradeHandler.cs" />
-    <Compile Include="VsRequestCredentialProvider.cs" />
     <Compile Include="VsUtility.cs" />
   </ItemGroup>
   <ItemGroup>
