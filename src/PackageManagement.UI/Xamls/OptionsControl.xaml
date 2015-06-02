@@ -89,7 +89,7 @@
                 SelectedItem="{Binding Path=Options.SelectedFileConflictAction}"
                 />
 
-            <TextBlock Grid.Row="4" Grid.Column="1">
+            <TextBlock Grid.Row="4" Grid.Column="0" TextWrapping="Wrap">
                 <Hyperlink
                     NavigateUri="http://docs.nuget.org/consume/package-manager-ui#install-options"
                     Style="{StaticResource HyperlinkStyle}"
@@ -123,7 +123,7 @@
                 Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
                 Content="{x:Static resx:Resources.Checkbox_ForceRemove}" />
 
-            <TextBlock Grid.Row="4" Grid.Column="1">
+            <TextBlock Grid.Row="4" Grid.Column="1" TextWrapping="Wrap">
                 <Hyperlink
                     NavigateUri="http://docs.nuget.org/consume/package-manager-ui#uninstall-options"
                     Style="{StaticResource HyperlinkStyle}"
