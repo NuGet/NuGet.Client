@@ -32,8 +32,8 @@ namespace StandaloneUI
         [Import]
         public ISettings _settings;
 
-        // !!! [Import]
         public ISourceControlManagerProvider _sourceControlManagerProvider;
+
         public ICommonOperations _commonOperations;
 
         private CompositionContainer _container;
@@ -83,7 +83,7 @@ namespace StandaloneUI
                 context,
                 new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider, _commonOperations));
 
-            var model = new PackageManagerModel(uiController, context);
+            var model = new PackageManagerModel(uiController, context, isSolution: true);
             model.SolutionName = "test solution";
             _packageManagerControl = new PackageManagerControl(model, _settings, new SimpleSearchBoxFactory());
             layoutGrid.Children.Add(_packageManagerControl);
@@ -140,7 +140,9 @@ namespace StandaloneUI
         }
 
 #pragma warning disable 0067
+
         public event EventHandler PackageSourcesChanged;
+
 #pragma warning restore 0067
 
         public void SavePackageSources(IEnumerable<PackageSource> sources)

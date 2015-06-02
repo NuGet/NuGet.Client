@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             Model = model;
-            if (Model.Context.Projects.Count() == 1)
+            if (!Model.IsSolution)
             {
                 _detailModel = new PackageDetailControlModel(Model.Context.Projects);
             }
@@ -402,12 +402,16 @@ namespace NuGet.PackageManagement.UI
 
         private void SetTitle()
         {
-            if (Model.Context.Projects.Count() > 1)
+            if (Model.IsSolution)
             {
+                var name = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resx.Resources.Label_Solution,
+                    Model.SolutionName);
                 _label.Text = string.Format(
                     CultureInfo.CurrentCulture,
                     Resx.Resources.Label_PackageManager,
-                    Model.SolutionName);
+                    name);
             }
             else
             {

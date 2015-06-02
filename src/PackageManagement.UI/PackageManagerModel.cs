@@ -21,15 +21,20 @@ namespace NuGet.PackageManagement.UI
         internal const string EditorFactoryGuidString = "EC269AD5-3EA8-4A13-AAF8-76741843B3CD";
         public static readonly Guid EditorFactoryGuid = new Guid(EditorFactoryGuidString);
 
-        public PackageManagerModel(INuGetUI uiController, INuGetUIContext context)
+        public PackageManagerModel(INuGetUI uiController, INuGetUIContext context, bool isSolution)
         {
             Context = context;
             UIController = uiController;
+            IsSolution = isSolution;
         }
 
         public INuGetUIContext Context { get; }
 
+        // When the model is used for a solution, this property is not null nor empty.
         public string SolutionName { get; set; }
+
+        // Indicates whether the model is used for a solution, or for a project.
+        public bool IsSolution { get; private set; }
 
         public INuGetUI UIController { get; }
 
