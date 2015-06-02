@@ -842,7 +842,7 @@ function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
     $p1 | Install-Package A -Version 1.0 -Source $context.RepositoryPath
 
     # Act
-    Assert-Throws { Update-Package B -Source $context.RepositoryPath } "Already referencing a newer version of 'A'.."
+    Assert-Throws { Update-Package B -Source $context.RepositoryPath } "Unable to resolve dependencies. 'B 2.0.0' is not compatible with 'A 1.0.0 constraint: B (= 1.0.0)'."
 }
 
 function Test-UpdatePackageThrowsWhenSourceIsInvalid {
