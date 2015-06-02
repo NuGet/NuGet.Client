@@ -1,11 +1,11 @@
 # basic install into a build integrated project
-function BuildIntegratedInstallPackage {
+function Test-BuildIntegratedInstallPackage {
     # Arrange
     $project = New-UAPApplication UAPApp
 
     # Act
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
-    
+
     # Assert
     Assert-ProjectJsonDependency $project NuGet.Versioning 1.0.7
     Assert-ProjectJsonLockFilePackage $project NuGet.Versioning 1.0.7
@@ -13,14 +13,14 @@ function BuildIntegratedInstallPackage {
 }
 
 # install multiple packages into a project
-function BuildIntegratedInstallMultiplePackages {
+function Test-BuildIntegratedInstallMultiplePackages {
     # Arrange
     $project = New-UAPApplication UAPApp
 
     # Act
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
     Install-Package DotNetRDF -version 1.0.8.3533
-    
+
     # Assert
     Assert-ProjectJsonDependency $project NuGet.Versioning 1.0.7
     Assert-ProjectJsonDependency $project DotNetRDF 1.0.8.3533
@@ -34,7 +34,7 @@ function BuildIntegratedInstallMultiplePackages {
 }
 
 # install and then uninstall multiple packages
-function BuildIntegratedInstallAndUninstallAll {
+function Test-BuildIntegratedInstallAndUninstallAll {
     # Arrange
     $project = New-UAPApplication UAPApp
 
@@ -43,7 +43,7 @@ function BuildIntegratedInstallAndUninstallAll {
     Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533
     Uninstall-Package NuGet.Versioning -ProjectName $project.Name
     Uninstall-Package DotNetRDF -ProjectName $project.Name
-    
+
     # Assert
     Assert-ProjectJsonDependencyNotFound $project NuGet.Versioning
     Assert-ProjectJsonDependencyNotFound $project DotNetRDF
@@ -53,48 +53,48 @@ function BuildIntegratedInstallAndUninstallAll {
 }
 
 # install a package with dependencies
-function BuildIntegratedInstallAndVerifyLockFileContainsChildDependency {
+function Test-BuildIntegratedInstallAndVerifyLockFileContainsChildDependency {
     # Arrange
     $project = New-UAPApplication UAPApp
 
     # Act
     Install-Package json-ld.net -ProjectName $project.Name -version 1.0.4
-    
+
     # Assert
     Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 4.0.1
     Assert-ProjectJsonDependencyNotFound $project Newtonsoft.Json
 } 
 
 # basic uninstall
-function BuildIntegratedUninstallPackage {    
+function Test-BuildIntegratedUninstallPackage {
     # Arrange
     $project = New-UAPApplication UAPApp
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
 
     # Act
     Uninstall-Package NuGet.Versioning -ProjectName $project.Name
-    
+
     # Assert
     Assert-ProjectJsonDependencyNotFound $project NuGet.Versioning
     Assert-ProjectJsonLockFilePackageNotFound $project NuGet.Versioning
 }
 
 # basic update package
-function BuildIntegratedUpdatePackage {    
+function Test-BuildIntegratedUpdatePackage {
     # Arrange
     $project = New-UAPApplication UAPApp
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.5
 
     # Act
     Update-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.6
-    
+
     # Assert
     Assert-ProjectJsonDependency $project NuGet.Versioning 1.0.6
     Assert-ProjectJsonLockFilePackage $project NuGet.Versioning 1.0.6
     Assert-ProjectJsonLockFileRuntimeAssembly $project lib/portable-net40+win/NuGet.Versioning.dll
 }
 
-function BuildIntegratedUpdateNonExistantPackage {    
+function Test-BuildIntegratedUpdateNonExistantPackage {
     # Arrange
     $project = New-UAPApplication UAPApp
 
@@ -102,7 +102,7 @@ function BuildIntegratedUpdateNonExistantPackage {
     Assert-Throws { Update-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.6 } "'NuGet.Versioning' was not installed in any project. Update failed."
 }
 
-function BuildIntegratedUninstallNonExistantPackage {    
+function Test-BuildIntegratedUninstallNonExistantPackage {
     # Arrange
     $project = New-UAPApplication UAPApp
 
@@ -110,7 +110,7 @@ function BuildIntegratedUninstallNonExistantPackage {
     Assert-Throws { Uninstall-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.6 } "Package 'NuGet.Versioning' to be uninstalled could not be found in project 'UAPApp'"
 }
 
-function BuildIntegratedLockFileIsCreatedOnBuild {
+function Test-BuildIntegratedLockFileIsCreatedOnBuild {
     # Arrange
     $project = New-UAPApplication UAPApp
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
@@ -118,55 +118,136 @@ function BuildIntegratedLockFileIsCreatedOnBuild {
 
     # Act
     Build-Solution
-    
+
     # Assert
     Assert-ProjectJsonLockFilePackage $project NuGet.Versioning 1.0.7
 }
 
-function BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
+function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
     # Arrange
     $project = New-UAPApplication UAPApp
 
     # Act
     Install-Package automapper -ProjectName $project.Name -version 3.3.1
-    
+
     # Assert
     Assert-ProjectJsonLockFileRuntimeAssembly $project lib/windows8/AutoMapper.dll
 }
 
-function BuildIntegratedInstallPackageWithWPA81 {
+function Test-BuildIntegratedInstallPackageWithWPA81 {
     # Arrange
     $project = New-UAPApplication UAPApp
 
     # Act
     Install-Package kinnara.toolkit -ProjectName $project.Name -version 0.3.0
-    
+
     # Assert
     Assert-ProjectJsonLockFileRuntimeAssembly $project lib/wpa81/Kinnara.Toolkit.dll
 }
 
-function BuildIntegratedPackageOverrideDependencyRequirement {
+function Test-BuildIntegratedPackageOverrideDependencyRequirement {
     # Arrange
     $project = New-UAPApplication UAPApp
 
     # Act
     Install-Package Newtonsoft.Json -ProjectName $project.Name -version 6.0.4
     Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533
-    
+
     # Assert
     # DotNetRDF requires json.net >= 6.0.8, but the direct dependency overrides it
     Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 6.0.4
 }
 
-function BuildIntegratedDependencyUpdatedByInstall {
+function Test-BuildIntegratedDependencyUpdatedByInstall {
     # Arrange
     $project = New-UAPApplication UAPApp
 
     # Act
     Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533
     Install-Package Newtonsoft.Json -ProjectName $project.Name -version 7.0.1-beta3
-    
+
     # Assert
     # DotNetRDF requires json.net 6.0.8
     Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 7.0.1-beta3
+}
+
+function Test-BuildIntegratedInstallPackageJsonNet701Beta3 {
+    # Arrange
+    $project = New-UAPApplication UAPApp
+
+    # Act
+    Install-Package newtonsoft.json -ProjectName $project.Name -version 7.0.1-beta3
+
+    # Assert
+    Assert-ProjectJsonLockFileRuntimeAssembly $project "lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll"
+}
+
+function Test-BuildIntegratedProjectClosure {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedProjectClosure"
+    }
+
+    # Arrange
+    $project1 = New-Project BuildIntegratedClassLibrary Project1
+    $project2 = New-Project BuildIntegratedClassLibrary Project2
+    Add-ProjectReference $project1 $project2
+
+    Install-Package NuGet.Versioning -ProjectName $project2.Name -version 1.0.7
+    Remove-ProjectJsonLockFile $project2
+
+    # Act
+    Build-Solution
+
+    # Assert
+    Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
+    Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
+}
+
+function Test-BuildIntegratedProjectClosureWithLegacyProjects {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedProjectClosureWithLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-Project BuildIntegratedClassLibrary Project1
+    $project2 = New-ClassLibrary Project2
+    $project3 = New-ClassLibrary Project3
+
+    Add-ProjectReference $project1 $project2
+    Add-ProjectReference $project2 $project3
+
+    Install-Package Comparers -ProjectName $project2.Name -version 4.0.0
+
+    # Act
+    Build-Solution
+
+    # Assert
+    Assert-NotNull Get-ProjectJsonLockFile $project1
+}
+
+# Tests that packages are restored on build
+function Test-BuildIntegratedMixedLegacyProjects {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-ClassLibrary
+    $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
+
+    $project2 = New-Project BuildIntegratedClassLibrary
+    $project2 | Install-Package NuGet.Versioning -Version 1.0.7
+
+    # delete the packages folder
+    $packagesDir = Get-PackagesDir
+    Remove-Item -Recurse -Force $packagesDir
+    Assert-False (Test-Path $packagesDir)
+
+    # Act
+    Build-Solution
+
+    # Assert
+    Assert-True (Test-Path $packagesDir)
+    Assert-Package $project1 Newtonsoft.Json
+    Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
 }

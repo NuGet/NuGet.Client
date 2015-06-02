@@ -8,3 +8,14 @@ function Get-HostSemanticVersion {
 
     return $currentHostSemanticVersion.ToNormalizedString()  
 }
+
+function Verify-BuildIntegratedMsBuildTask {
+    $msBuildTaskPath = [IO.Path]::Combine(${env:ProgramFiles(x86)}, "MsBuild", "Microsoft", "NuGet", "Microsoft.NuGet.targets")
+
+    if (!(Test-Path $msBuildTaskPath)) {
+        Write-Warning "Build integrated NuGet target not found at $msBuildTaskPath"
+        return $false
+    }
+
+    return $true
+}

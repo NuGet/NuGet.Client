@@ -52,7 +52,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // keep track of found projects to avoid duplicates
             var uniqueProjects = new HashSet<string>();
-            uniqueProjects.Add(await EnvDTEProjectUtility.GetCustomUniqueNameAsync(EnvDTEProject));
+            var rootProjectName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(EnvDTEProject);
+            uniqueProjects.Add(rootProjectName);
 
             // continue walking all project references until we run out
             while (toProcess.Count > 0)
@@ -103,7 +104,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                results.Add(new BuildIntegratedProjectReference(projectUniqueName, jsonConfigItem, childReferences));
+                if (!string.Equals(rootProjectName, projectUniqueName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Don't add the project we're trying to resolve the closure for to the result
+                    results.Add(new BuildIntegratedProjectReference(projectUniqueName, jsonConfigItem, childReferences));
+                }
             }
 
             return results;
