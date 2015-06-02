@@ -143,7 +143,7 @@ namespace NuGet.Configuration
 
                 if (loadAppDataSettings)
                 {
-                    LoadUserSpecificSettings(validSettingFiles, root, configFileName);
+                    LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings);
                 }
 
                 if (machineWideSettings != null)
@@ -183,7 +183,9 @@ namespace NuGet.Configuration
         private static void LoadUserSpecificSettings(
             List<Settings> validSettingFiles,
             string root,
-            string configFileName)
+            string configFileName, 
+            IMachineWideSettings machineWideSettings
+            )
         {
             if (root == null)
             {
@@ -207,11 +209,31 @@ namespace NuGet.Configuration
                     var defaultSettingsFilePath = Path.Combine(
                         appDataPath, "NuGet", DefaultSettingsFileName);
 
-                    // Since defaultSettingsFilePath is a full path, so it doesn't matter what value is
-                    // used as root for the PhysicalFileSystem.
-                    appDataSettings = ReadSettings(
+                    if (!File.Exists(defaultSettingsFilePath) && machineWideSettings != null)
+                    {
+
+                        // Since defaultSettingsFilePath is a full path, so it doesn't matter what value is
+                        // used as root for the PhysicalFileSystem.
+                        appDataSettings = ReadSettings(
                         root,
                         defaultSettingsFilePath);
+
+                        // Disable machinewide sources to improve perf
+                        var disabledSources = new List<SettingValue>();
+                        foreach (var setting in machineWideSettings.Settings)
+                        {
+                            var values = setting.GetSettingValues(ConfigurationContants.PackageSources, isPath: true);
+                            foreach (var value in values)
+                            {
+                                disabledSources.Add(new SettingValue(value.Key, "true", isMachineWide: true, priority: 0));
+                            }
+                        }
+                        appDataSettings.UpdateSections(ConfigurationContants.DisabledPackageSources, disabledSources);
+                    }
+                    else
+                    {
+                        appDataSettings = ReadSettings(root, defaultSettingsFilePath);
+                    }
                 }
             }
             else
