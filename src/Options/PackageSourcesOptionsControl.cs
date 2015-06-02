@@ -91,8 +91,8 @@ namespace NuGet.Options
             // Never MUST both the listboxes be selected
             Debug.Assert(PackageSourcesListBox.SelectedItem == null || MachineWidePackageSourcesListBox.SelectedItem == null);
 
-            var selectedSource = (PackageSource)PackageSourcesListBox.SelectedItem;
-            var selectedMachineSource = (PackageSource)MachineWidePackageSourcesListBox.SelectedItem;
+            var selectedSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
+            var selectedMachineSource = (Configuration.PackageSource)MachineWidePackageSourcesListBox.SelectedItem;
 
             if (selectedSource != null)
             {
@@ -183,7 +183,7 @@ namespace NuGet.Options
         {
             if (MachineWidePackageSourcesListBox.SelectedItem == null)
             {
-                MachineWidePackageSourcesListBox.SelectedItem = (PackageSource)_machineWidepackageSources.Current;
+                MachineWidePackageSourcesListBox.SelectedItem = _machineWidepackageSources.Current;
             }
             OnSelectedMachineWidePackageSourceChanged(sender, null);
         }
@@ -193,7 +193,7 @@ namespace NuGet.Options
             if (PackageSourcesListBox.SelectedItem == null &&
                 _packageSources != null)
             {
-                PackageSourcesListBox.SelectedItem = (PackageSource)_packageSources.Current;
+                PackageSourcesListBox.SelectedItem = _packageSources.Current;
             }
             OnSelectedPackageSourceChanged(sender, null);
         }
@@ -503,7 +503,7 @@ namespace NuGet.Options
                 return;
             }
 
-            PackageSource currentItem = (PackageSource)currentListBox.Items[e.Index];
+            var currentItem = (Configuration.PackageSource)currentListBox.Items[e.Index];
 
             using (StringFormat drawFormat = new StringFormat())
             {
@@ -586,7 +586,7 @@ namespace NuGet.Options
                 return;
             }
 
-            PackageSource currentItem = (PackageSource)currentListBox.Items[e.Index];
+            var currentItem = (Configuration.PackageSource)currentListBox.Items[e.Index];
             using (StringFormat drawFormat = new StringFormat())
             {
                 using (Font italicFont = new Font(Font, FontStyle.Italic))
@@ -635,7 +635,7 @@ namespace NuGet.Options
             MachineWidePackageSourcesListBox.ClearSelected();
             UpdateUI();
 
-            UpdateTextBoxes((PackageSource)_packageSources.Current);
+            UpdateTextBoxes((Configuration.PackageSource)_packageSources.Current);
         }
 
         private void OnSelectedMachineWidePackageSourceChanged(object sender, EventArgs e)
@@ -643,10 +643,10 @@ namespace NuGet.Options
             PackageSourcesListBox.ClearSelected();
             UpdateUI();
 
-            UpdateTextBoxes((PackageSource)_machineWidepackageSources.Current);
+            UpdateTextBoxes((Configuration.PackageSource)_machineWidepackageSources.Current);
         }
 
-        private void UpdateTextBoxes(PackageSource packageSource)
+        private void UpdateTextBoxes(Configuration.PackageSource packageSource)
         {
             if (packageSource != null)
             {
