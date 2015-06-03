@@ -59,6 +59,7 @@ namespace NuGet.Frameworks
                 {
                     _identifierShortNames = new KeyValuePair<string, string>[]
                         {
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetPlatform, "dotnet"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, "net"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetMicro, "netmf"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Silverlight, "sl"),
@@ -81,7 +82,6 @@ namespace NuGet.Frameworks
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinXboxOne, "xamarinxboxone"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Dnx, "dnx"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.DnxCore, "dnxcore"),
-                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.CoreCLR, "core"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "netcore"), 
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
@@ -199,10 +199,10 @@ namespace NuGet.Frameworks
                                 FrameworkConstants.CommonFrameworks.DnxCore,
                                 FrameworkConstants.CommonFrameworks.DnxCore50),
 
-                            // core <-> core50
+                            // dotnet <-> dotnet50
                             new KeyValuePair<NuGetFramework, NuGetFramework>(
-                                FrameworkConstants.CommonFrameworks.Core,
-                                FrameworkConstants.CommonFrameworks.Core50),
+                                FrameworkConstants.CommonFrameworks.DotNet,
+                                FrameworkConstants.CommonFrameworks.DotNet50),
 
                             // TODO: remove these rules post-RC
                             // aspnet <-> aspnet50
@@ -266,8 +266,8 @@ namespace NuGet.Frameworks
                             // .NET is a subset of DNX
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.FrameworkIdentifiers.Dnx),
 
-                            // CoreCLR is a subset of DNXCore
-                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.FrameworkIdentifiers.DnxCore),
+                            // DotNet is a subset of DNXCore
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.FrameworkIdentifiers.DnxCore),
                         };
                 }
 
@@ -309,21 +309,21 @@ namespace NuGet.Frameworks
                                     new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.Version5),
                                     new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.Version5))),
 
-                            // NetCore50 supports Core50
+                            // NetCore50 supports DotNet
                             new OneWayCompatibilityMappingEntry(new FrameworkRange(
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, new Version(5, 0, 0, 0)),
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.Version5),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCore, FrameworkConstants.MaxVersion)),
                                 new FrameworkRange(
-                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5),
-                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5))),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.EmptyVersion),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.Version5))),
 
-                            // Net46 supports Core50
+                            // Net46 supports DotNet
                             new OneWayCompatibilityMappingEntry(new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 6, 0, 0)),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.MaxVersion)),
                                 new FrameworkRange(
-                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5),
-                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.CoreCLR, FrameworkConstants.Version5))),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.EmptyVersion),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.Version5))),
 
                             // Win projects support WinRT
                             new OneWayCompatibilityMappingEntry(new FrameworkRange(
@@ -357,6 +357,42 @@ namespace NuGet.Frameworks
                 }
 
                 return _frameworkPrecedence;
+            }
+        }
+
+        private static KeyValuePair<NuGetFramework, NuGetFramework>[] _shortNameReplacements;
+
+        public IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> ShortNameReplacements
+        {
+            get
+            {
+                if (_shortNameReplacements == null)
+                {
+                    _shortNameReplacements = new KeyValuePair<NuGetFramework, NuGetFramework>[]
+                    {
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(FrameworkConstants.CommonFrameworks.DotNet50, FrameworkConstants.CommonFrameworks.DotNet)
+                    };
+                }
+
+                return _shortNameReplacements;
+            }
+        }
+
+        private static KeyValuePair<NuGetFramework, NuGetFramework>[] _fullNameReplacements;
+
+        public IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> FullNameReplacements
+        {
+            get
+            {
+                if (_fullNameReplacements == null)
+                {
+                    _fullNameReplacements = new KeyValuePair<NuGetFramework, NuGetFramework>[]
+                    {
+                        new KeyValuePair<NuGetFramework, NuGetFramework>(FrameworkConstants.CommonFrameworks.DotNet, FrameworkConstants.CommonFrameworks.DotNet50)
+                    };
+                }
+
+                return _fullNameReplacements;
             }
         }
 

@@ -43,6 +43,10 @@ namespace NuGet.Frameworks
         // framework ordering
         private readonly List<string> _frameworkPrecedence = new List<string>();
 
+        // Rewrite mappings
+        private readonly Dictionary<NuGetFramework, NuGetFramework> _shortNameRewrites;
+        private readonly Dictionary<NuGetFramework, NuGetFramework> _fullNameRewrites;
+
         public FrameworkNameProvider(IEnumerable<IFrameworkMappings> mappings, IEnumerable<IPortableFrameworkMappings> portableMappings)
         {
             _identifierSynonyms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -56,6 +60,8 @@ namespace NuGet.Frameworks
             _equivalentProfiles = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
             _subSetFrameworks = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             _compatibilityMappings = new HashSet<OneWayCompatibilityMappingEntry>(OneWayCompatibilityMappingEntry.Comparer);
+            _shortNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
+            _fullNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
 
             InitMappings(mappings);
 
@@ -472,6 +478,10 @@ namespace NuGet.Frameworks
 
                     // add framework ordering rules
                     AddFrameworkPrecedenceMappings(mapping.FrameworkPrecedence);
+
+                    // add rewrite rules
+                    AddShortNameRewriteMappings(mapping.ShortNameReplacements);
+                    AddFullNameRewriteMappings(mapping.FullNameReplacements);
                 }
             }
         }
@@ -487,6 +497,34 @@ namespace NuGet.Frameworks
 
                     // populate optional frameworks
                     AddPortableOptionalFrameworks(portableMapping.ProfileOptionalFrameworks);
+                }
+            }
+        }
+
+        private void AddShortNameRewriteMappings(IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var mapping in mappings)
+                {
+                    if (!_shortNameRewrites.ContainsKey(mapping.Key))
+                    {
+                        _shortNameRewrites.Add(mapping.Key, mapping.Value);
+                    }
+                }
+            }
+        }
+
+        private void AddFullNameRewriteMappings(IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var mapping in mappings)
+                {
+                    if (!_fullNameRewrites.ContainsKey(mapping.Key))
+                    {
+                        _fullNameRewrites.Add(mapping.Key, mapping.Value);
+                    }
                 }
             }
         }
@@ -736,6 +774,32 @@ namespace NuGet.Frameworks
             }
 
             return 0;
+        }
+
+        public NuGetFramework GetShortNameReplacement(NuGetFramework framework)
+        {
+            NuGetFramework result;
+
+            // Replace the framework name if a rewrite exists
+            if (!_shortNameRewrites.TryGetValue(framework, out result))
+            {
+                result = framework;
+            }
+
+            return result;
+        }
+
+        public NuGetFramework GetFullNameReplacement(NuGetFramework framework)
+        {
+            NuGetFramework result;
+
+            // Replace the framework name if a rewrite exists
+            if (!_fullNameRewrites.TryGetValue(framework, out result))
+            {
+                result = framework;
+            }
+
+            return result;
         }
     }
 }

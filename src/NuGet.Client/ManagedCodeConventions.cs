@@ -187,14 +187,14 @@ namespace NuGet.Client
                     builder = builder
                         // Take runtime-specific matches first!
                         .Add[PropertyNames.TargetFrameworkMoniker, framework][PropertyNames.RuntimeIdentifier, runtimeIdentifier]
-                        .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.CommonFrameworks.Core50][PropertyNames.RuntimeIdentifier, runtimeIdentifier]
+                        .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.CommonFrameworks.DotNet50][PropertyNames.RuntimeIdentifier, runtimeIdentifier]
                         .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.SpecialIdentifiers.Any][PropertyNames.RuntimeIdentifier, runtimeIdentifier];
                 }
 
                 // Then try runtime-agnostic
                 builder = builder
                     .Add[PropertyNames.TargetFrameworkMoniker, framework]
-                    .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.CommonFrameworks.Core50]
+                    .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.CommonFrameworks.DotNet50]
                     .Add[PropertyNames.TargetFrameworkMoniker, FrameworkConstants.SpecialIdentifiers.Any];
 
                 return builder.Criteria;
