@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Logging;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
@@ -96,6 +97,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
 
             _client.BaseAddress = baseUri;
+
+            // Set user agent to HttpClient
+            var userAgent = UserAgent.CreateUserAgentStringForVisualStudio(UserAgent.NuGetClientName);
+            UserAgent.SetUserAgent(_client, userAgent);
         }
 
         public ILogger Logger { get; set; }

@@ -36,6 +36,10 @@ namespace NuGet.Protocol.Core.v3.Data
             {
                 throw new ArgumentNullException("handler");
             }
+
+            // Set user agent
+            var userAgent = UserAgent.CreateUserAgentStringForVisualStudio(UserAgent.NuGetClientName);
+            UserAgent.SetUserAgent(this, userAgent);
         }
 
         /// <summary>
