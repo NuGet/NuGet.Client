@@ -95,5 +95,17 @@ namespace NuGet.Frameworks
         /// </summary>
         /// <returns>0 if no order can be determined, -1 if the first framework is preferred.</returns>
         int CompareFrameworks(NuGetFramework x, NuGetFramework y);
+
+        /// <summary>
+        /// Returns folder short names rewrites.
+        /// Ex: dotnet50 -> dotnet
+        /// </summary>
+        NuGetFramework GetShortNameReplacement(NuGetFramework framework);
+
+        /// <summary>
+        /// Returns full name rewrites.
+        /// Ex: .NETPlatform,Version=v0.0 -> .NETPlatform,Version=v5.0
+        /// </summary>
+        NuGetFramework GetFullNameReplacement(NuGetFramework framework);
     }
 }

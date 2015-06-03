@@ -29,6 +29,7 @@ namespace NuGet.Frameworks
 
         public static class FrameworkIdentifiers
         {
+            public const string NetPlatform = ".NETPlatform";
             public const string Net = ".NETFramework";
             public const string NetCore = ".NETCore";
             public const string WinRT = "WinRT"; // deprecated
@@ -37,7 +38,6 @@ namespace NuGet.Frameworks
             public const string WindowsPhone = "WindowsPhone";
             public const string Windows = "Windows";
             public const string WindowsPhoneApp = "WindowsPhoneApp";
-            public const string CoreCLR = "CoreCLR";
             public const string Dnx = "DNX";
             public const string DnxCore = "DNXCore";
             public const string AspNet = "ASP.NET";
@@ -97,8 +97,8 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework DnxCore = new NuGetFramework(FrameworkIdentifiers.DnxCore, EmptyVersion);
             public static readonly NuGetFramework DnxCore50 = new NuGetFramework(FrameworkIdentifiers.DnxCore, Version5);
 
-            public static readonly NuGetFramework Core = new NuGetFramework(FrameworkIdentifiers.CoreCLR, EmptyVersion);
-            public static readonly NuGetFramework Core50 = new NuGetFramework(FrameworkIdentifiers.CoreCLR, Version5);
+            public static readonly NuGetFramework DotNet = new NuGetFramework(FrameworkIdentifiers.NetPlatform, EmptyVersion);
+            public static readonly NuGetFramework DotNet50 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, Version5);
 
             public static readonly NuGetFramework UAP10 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, Version10);
         }

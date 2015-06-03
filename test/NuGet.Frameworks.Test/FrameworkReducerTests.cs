@@ -114,16 +114,16 @@ namespace NuGet.Test
             var project = NuGetFramework.Parse("UAP10.0");
 
             var native = NuGetFramework.Parse("native");
-            var core50 = NuGetFramework.Parse("core50");
+            var dotnet = NuGetFramework.Parse("dotnet");
             var dnx451 = NuGetFramework.Parse("dnx451");
             var dnxcore50 = NuGetFramework.Parse("dnxcore50");
             var net45 = NuGetFramework.Parse("net45");
 
-            var all = new NuGetFramework[] { native, core50, dnx451, dnxcore50, net45 };
+            var all = new NuGetFramework[] { native, dotnet, dnx451, dnxcore50, net45 };
 
             var result = reducer.GetNearest(project, all);
 
-            Assert.Equal(core50, result);
+            Assert.Equal(dotnet, result);
         }
 
         [Fact]
@@ -133,16 +133,16 @@ namespace NuGet.Test
 
             var project = NuGetFramework.Parse("UAP10.0");
 
-            var core = NuGetFramework.Parse("core50");
+            var dotnet = NuGetFramework.Parse("dotnet");
             var dnx451 = NuGetFramework.Parse("dnx451");
             var dnxcore50 = NuGetFramework.Parse("dnxcore50");
             var net45 = NuGetFramework.Parse("net45");
 
-            var all = new NuGetFramework[] { core, dnx451, dnxcore50, net45 };
+            var all = new NuGetFramework[] { dotnet, dnx451, dnxcore50, net45 };
 
             var result = reducer.GetNearest(project, all);
 
-            Assert.Equal(core, result);
+            Assert.Equal(dotnet, result);
         }
 
         [Fact]
@@ -287,9 +287,9 @@ namespace NuGet.Test
             FrameworkReducer reducer = new FrameworkReducer();
 
             var dnxcore50 = NuGetFramework.Parse("dnxcore50");
-            var core50 = NuGetFramework.Parse("core50");
+            var dotnet = NuGetFramework.Parse("dotnet");
 
-            var all = new NuGetFramework[] { dnxcore50, core50 };
+            var all = new NuGetFramework[] { dnxcore50, dotnet };
 
             var result = reducer.GetNearest(NuGetFramework.AnyFramework, all);
 

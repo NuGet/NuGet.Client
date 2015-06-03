@@ -125,6 +125,7 @@ namespace NuGet.Test
         }
 
         [Theory]
+        [InlineData(".NETPlatform50", ".NETPlatform,Version=v5.0")]
         [InlineData(".NETFramework45", ".NETFramework,Version=v4.5")]
         [InlineData("Portable-net45+win8", ".NETPortable,Version=v0.0,Profile=Profile7")]
         [InlineData("windows8", "Windows,Version=v8.0")]
@@ -137,6 +138,9 @@ namespace NuGet.Test
         }
 
         [Theory]
+        [InlineData(".NETPlatform,Version=v1.0", ".NETPlatform,Version=v1.0")]
+        [InlineData(".NETPlatform,Version=v0.0", ".NETPlatform,Version=v5.0")]
+        [InlineData(".NETPlatform,Version=v5.0", ".NETPlatform,Version=v5.0")]
         [InlineData(".NETFramework,Version=v4.5", ".NETFramework,Version=v4.5")]
         [InlineData("NETFramework,Version=v4.5", ".NETFramework,Version=v4.5")]
         [InlineData(".NETPortable,Version=v0.0,Profile=Profile7", ".NETPortable,Version=v0.0,Profile=Profile7")]
@@ -177,6 +181,32 @@ namespace NuGet.Test
 
         [Theory]
         [InlineData("net45", ".NETFramework,Version=v4.5")]
+        [InlineData("net2", ".NETFramework,Version=v2.0")]
+        [InlineData("net4", ".NETFramework,Version=v4.0")]
+        [InlineData("net35", ".NETFramework,Version=v3.5")]
+        [InlineData("net4", ".NETFramework,Version=v4.0")]
+        [InlineData("net4-client", ".NETFramework,Version=v4.0,Profile=Client")]
+        [InlineData("net", ".NETFramework,Version=v0.0")]
+        [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
+        [InlineData("net45-cf", ".NETFramework,Version=v4.5,Profile=CompactFramework")]
+        [InlineData("uap10.0", "UAP,Version=v10.0")]
+        [InlineData("dotnet", ".NETPlatform,Version=v0.0")]
+        [InlineData("dotnet", ".NETPlatform,Version=v5.0")]
+        [InlineData("dotnet1", ".NETPlatform,Version=v1.0")]
+        public void NuGetFramework_ParseToShortName(string expected, string fullName)
+        {
+            // Arrange
+            var framework = NuGetFramework.Parse(fullName);
+
+            // Act
+            var shortName = framework.GetShortFolderName();
+
+            // Assert
+            Assert.Equal(expected, shortName);
+        }
+
+        [Theory]
+        [InlineData("net45", ".NETFramework,Version=v4.5")]
         [InlineData("net20", ".NETFramework,Version=v2.0")]
         [InlineData("net40", ".NETFramework,Version=v4.0")]
         [InlineData("net35", ".NETFramework,Version=v3.5")]
@@ -186,6 +216,10 @@ namespace NuGet.Test
         [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
         [InlineData("net45-cf", ".NETFramework,Version=v4.5,Profile=CompactFramework")]
         [InlineData("uap10.0", "UAP,Version=v10.0")]
+        [InlineData("dotnet", ".NETPlatform,Version=v5.0")]
+        [InlineData("dotnet5", ".NETPlatform,Version=v5.0")]
+        [InlineData("dotnet50", ".NETPlatform,Version=v5.0")]
+        [InlineData("dotnet10", ".NETPlatform,Version=v1.0")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
             string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;

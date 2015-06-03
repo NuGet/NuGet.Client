@@ -79,35 +79,45 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
-        /// Similar in format to the .NET FrameworkName type
+        /// Formatted to a System.Versioning.FrameworkName
         /// </summary>
-        /// <remarks>FrameworkName does not exist in Portable, otherwise this method would return it.</remarks>
         public string DotNetFrameworkName
         {
             get
             {
-                var result = string.Empty;
-
-                if (IsSpecificFramework)
-                {
-                    var parts = new List<string>(3) { Framework };
-
-                    parts.Add(String.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(Version)));
-
-                    if (!String.IsNullOrEmpty(Profile))
-                    {
-                        parts.Add(String.Format(CultureInfo.InvariantCulture, "Profile={0}", Profile));
-                    }
-
-                    result = String.Join(",", parts);
-                }
-                else
-                {
-                    result = String.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", Framework);
-                }
-
-                return result;
+                return GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
             }
+        }
+
+        /// <summary>
+        /// Formatted to a System.Versioning.FrameworkName
+        /// </summary>
+        public string GetDotNetFrameworkName(IFrameworkNameProvider mappings)
+        {
+            // Check for rewrites
+            var framework = mappings.GetFullNameReplacement(this);
+
+            var result = string.Empty;
+
+            if (framework.IsSpecificFramework)
+            {
+                var parts = new List<string>(3) { framework.Framework };
+
+                parts.Add(String.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
+
+                if (!String.IsNullOrEmpty(framework.Profile))
+                {
+                    parts.Add(String.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
+                }
+
+                result = String.Join(",", parts);
+            }
+            else
+            {
+                result = String.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -124,6 +134,9 @@ namespace NuGet.Frameworks
         /// </summary>
         public string GetShortFolderName(IFrameworkNameProvider mappings)
         {
+            // Check for rewrites
+            var framework = mappings.GetShortNameReplacement(this);
+
             var sb = new StringBuilder();
 
             if (IsSpecificFramework)
@@ -131,9 +144,9 @@ namespace NuGet.Frameworks
                 var shortFramework = string.Empty;
 
                 // get the framework
-                if (!mappings.TryGetShortIdentifier(Framework, out shortFramework))
+                if (!mappings.TryGetShortIdentifier(framework.Framework, out shortFramework))
                 {
-                    shortFramework = GetLettersAndDigitsOnly(Framework);
+                    shortFramework = GetLettersAndDigitsOnly(framework.Framework);
                 }
 
                 if (String.IsNullOrEmpty(shortFramework))
@@ -147,7 +160,7 @@ namespace NuGet.Frameworks
                 // add the version if it is non-empty
                 if (!AllFrameworkVersions)
                 {
-                    sb.Append(mappings.GetVersionString(Version));
+                    sb.Append(mappings.GetVersionString(framework.Version));
                 }
 
                 if (IsPCL)
@@ -155,24 +168,17 @@ namespace NuGet.Frameworks
                     sb.Append("-");
 
                     IEnumerable<NuGetFramework> frameworks = null;
-                    if (HasProfile
-                        && mappings.TryGetPortableFrameworks(Profile, false, out frameworks)
+                    if (framework.HasProfile
+                        && mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks)
                         && frameworks.Any())
                     {
                         var required = new HashSet<NuGetFramework>(frameworks, Comparer);
 
                         // Normalize by removing all optional frameworks
-                        mappings.TryGetPortableFrameworks(Profile, false, out frameworks);
-
-                        // TODO: is there a scenario where optional frameworks are still needed in the string?
-                        // mappings.TryGetPortableFrameworks(Profile, true, out frameworks);
-                        // HashSet<NuGetFramework> optional = new HashSet<NuGetFramework>(frameworks.Where(e => !required.Contains(e)), NuGetFramework.Comparer);
+                        mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks);
 
                         // sort the PCL frameworks by alphabetical order
                         var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
-
-                        // add optional frameworks at the end
-                        // sortedFrameworks.AddRange(optional.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
 
                         sb.Append(String.Join("+", sortedFrameworks));
                     }
@@ -186,10 +192,10 @@ namespace NuGet.Frameworks
                     // add the profile
                     var shortProfile = string.Empty;
 
-                    if (HasProfile && !mappings.TryGetShortProfile(Framework, Profile, out shortProfile))
+                    if (framework.HasProfile && !mappings.TryGetShortProfile(framework.Framework, framework.Profile, out shortProfile))
                     {
                         // if we have a profile, but can't get a mapping, just use the profile as is
-                        shortProfile = Profile;
+                        shortProfile = framework.Profile;
                     }
 
                     if (!String.IsNullOrEmpty(shortProfile))

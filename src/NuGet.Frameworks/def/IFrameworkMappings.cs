@@ -62,5 +62,17 @@ namespace NuGet.Frameworks
         /// Example: UAP10.0 -> win81, wpa81
         /// </summary>
         IEnumerable<string> FrameworkPrecedence { get; }
+
+        /// <summary>
+        /// Rewrite folder short names to the given value.
+        /// Ex: dotnet50 -> dotnet
+        /// </summary>
+        IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> ShortNameReplacements { get; }
+
+        /// <summary>
+        /// Rewrite full framework names to the given value.
+        /// Ex: .NETPlatform,Version=v0.0 -> .NETPlatform,Version=v5.0
+        /// </summary>
+        IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> FullNameReplacements { get; }
     }
 }

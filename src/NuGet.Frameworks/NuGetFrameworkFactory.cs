@@ -367,11 +367,9 @@ namespace NuGet.Frameworks
         {
             framework = null;
 
-            if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "core50")
-                || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "core")
-                || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "core5"))
+            if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dotnet"))
             {
-                framework = FrameworkConstants.CommonFrameworks.Core50;
+                framework = FrameworkConstants.CommonFrameworks.DotNet50;
             }
             else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnx")
                      || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnx451"))
