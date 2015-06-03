@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -16,10 +15,10 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using EnvDTEProperty = EnvDTE.Property;
+using Constants = NuGet.ProjectManagement.Constants;
 using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
 using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectItem;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
@@ -30,6 +29,8 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private const string BinDir = "bin";
         private const string NuGetImportStamp = "NuGetPackageImportStamp";
+        private IVsProjectBuildSystem _buildSystem;
+        private bool _buildSystemFetched;
 
         public VSMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
@@ -62,6 +63,20 @@ namespace NuGet.PackageManagement.VisualStudio
                     _scriptExecutor = ServiceLocator.GetInstanceSafe<IScriptExecutor>();
                 }
                 return _scriptExecutor;
+            }
+        }
+
+        public IVsProjectBuildSystem ProjectBuildSystem
+        {
+            get
+            {
+                if (!_buildSystemFetched)
+                {
+                    _buildSystem = EnvDTEProjectUtility.GetVsProjectBuildSystem(EnvDTEProject);
+                    _buildSystemFetched = true;
+                }
+
+                return _buildSystem;
             }
         }
 
@@ -334,7 +349,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         // Add a reference to the project
                         dynamic reference = EnvDTEProjectUtility.GetReferences(EnvDTEProject).Add(fullPath);
-                        
+
                         if (reference != null)
                         {
                             var path = GetReferencePath(reference);
@@ -730,10 +745,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual void BeginProcessing(IEnumerable<string> files)
         {
+            ProjectBuildSystem?.StartBatchEdit();
         }
 
         public virtual void EndProcessing()
         {
+            ProjectBuildSystem?.EndBatchEdit();
         }
 
         public void DeleteDirectory(string path, bool recursive)

@@ -1264,6 +1264,31 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Act on Project
 
+        public static IVsProjectBuildSystem GetVsProjectBuildSystem(EnvDTEProject project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Get the vs solution
+                IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
+                IVsHierarchy hierarchy;
+                var hr = solution.GetProjectOfUniqueName(GetUniqueName(project), out hierarchy);
+
+                if (hr != NuGetVSConstants.S_OK)
+                {
+                    Marshal.ThrowExceptionForHR(hr);
+                }
+
+                return hierarchy as IVsProjectBuildSystem;
+            });
+        }
+
         internal static void EnsureCheckedOutIfExists(EnvDTEProject envDTEProject, string root, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
