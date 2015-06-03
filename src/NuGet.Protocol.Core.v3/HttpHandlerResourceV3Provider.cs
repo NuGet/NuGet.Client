@@ -37,6 +37,7 @@ namespace NuGet.Protocol.Core.v3
         }
 
 #if !DNXCORE50
+
         private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource)
         {
             var uri = new Uri(packageSource.Source);
@@ -76,13 +77,67 @@ namespace NuGet.Protocol.Core.v3
                 {
                     CredentialStore.Instance.Add(uri, credential);
                 }
-                return new WebRequestHandler()
-                    {
-                        Proxy = proxy,
-                        Credentials = credential
-                    };
+                return new ProxyWebRequestHandler()
+                {
+                    Proxy = proxy,
+                    Credentials = credential
+                };
             }
         }
+
+        private class ProxyWebRequestHandler : WebRequestHandler
+        {
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                while (true)
+                {
+                    try
+                    {
+                        var response = await base.SendAsync(request, cancellationToken);
+                        if (HttpHandlerResourceV3.ProxyPassed != null)
+                        {
+                            HttpHandlerResourceV3.ProxyPassed(Proxy);
+                        }
+
+                        return response;
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        if (ProxyAuthenticationRequired(ex) &&
+                            HttpHandlerResourceV3.PromptForProxyCredentials != null)
+                        {
+                            // prompt use for proxy credentials.
+                            var credentials = HttpHandlerResourceV3.PromptForProxyCredentials(request.RequestUri, Proxy);
+                            if (credentials == null)
+                            {
+                                throw;
+                            }
+
+                            // use the user provider credential to send the request again.
+                            Proxy.Credentials = credentials;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
+            }
+
+            // Returns true if the cause of the exception is proxy authentication failure
+            private bool ProxyAuthenticationRequired(Exception ex)
+            {
+                var webException = ex.InnerException as WebException;
+                if (webException == null)
+                {
+                    return false;
+                }
+
+                var response = webException.Response as HttpWebResponse;
+                return response?.StatusCode == HttpStatusCode.ProxyAuthenticationRequired;
+            }
+        }
+
 #endif
     }
 }
