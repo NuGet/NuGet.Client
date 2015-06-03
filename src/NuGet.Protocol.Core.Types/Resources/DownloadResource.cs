@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
@@ -13,7 +14,7 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public abstract class DownloadResource : INuGetResource
     {
-        public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, CancellationToken token);
+        public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, ISettings settings, CancellationToken token);
 
         public event EventHandler<PackageProgressEventArgs> Progress;
     }

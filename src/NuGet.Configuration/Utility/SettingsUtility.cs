@@ -9,14 +9,19 @@ namespace NuGet.Configuration
     public static class SettingsUtility
     {
         public const string ConfigSection = "config";
+        public const string GlobalPackagesFolderKey = "globalPackagesFolder";
+        public const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
+        public const string DefaultGlobalPackagesFolderPath = ".nuget\\packages\\";
+        public const string RepositoryPathKey = "repositoryPath";
 
         public static string GetRepositoryPath(ISettings settings)
         {
-            var path = settings.GetValue(ConfigSection, "repositoryPath", isPath: true);
+            var path = settings.GetValue(ConfigSection, RepositoryPathKey, isPath: true);
             if (!String.IsNullOrEmpty(path))
             {
-                path = path.Replace('/', Path.DirectorySeparatorChar);
+                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }
+
             return path;
         }
 
@@ -37,6 +42,7 @@ namespace NuGet.Configuration
             {
                 return null;
             }
+
             if (String.IsNullOrEmpty(encryptedString))
             {
                 return String.Empty;
@@ -50,10 +56,12 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
             }
+
             if (String.IsNullOrEmpty(key))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
             }
+
             if (value == null)
             {
                 throw new ArgumentNullException("value");
@@ -113,6 +121,39 @@ namespace NuGet.Configuration
         public static bool DeleteConfigValue(ISettings settings, string key)
         {
             return settings.DeleteValue(ConfigSection, key);
+        }
+
+        public static string GetGlobalPackagesFolder(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            // Note that the value GlobalPackagesFolder must be a full path and not a relative path
+            // Read it like a string and explicitly not as a path
+            var path = settings.GetValue(ConfigSection, GlobalPackagesFolderKey, isPath: false);
+            if (!string.IsNullOrEmpty(path))
+            {
+                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                return path;
+            }
+
+            path = Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey);
+            if (!string.IsNullOrEmpty(path))
+            {
+                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                return path;
+            }
+
+#if !DNXCORE50
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+#else
+            var userProfile = Environment.GetEnvironmentVariable("UserProfile");
+#endif
+            path = Path.Combine(userProfile, DefaultGlobalPackagesFolderPath);
+
+            return path;
         }
     }
 }

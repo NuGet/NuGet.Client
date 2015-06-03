@@ -9,28 +9,28 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
-using NuGet.LibraryModel;
 using NuGet.Logging;
-using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
-namespace NuGet.Commands
+namespace NuGet.Packaging
 {
-    internal static class NuGetPackageUtils
+    public static class NuGetPackageUtils
     {
         private const string ManifestExtension = ".nuspec";
 
-        internal static async Task InstallFromStream(
+        public static async Task InstallFromStreamAsync(
             Stream stream,
-            LibraryIdentity library,
+            PackageIdentity packageIdentity,
             string packagesDirectory,
-            ILogger log)
+            ILogger log,
+            bool fixNuspecIdCasing)
         {
             var packagePathResolver = new DefaultPackagePathResolver(packagesDirectory);
 
-            var targetPath = packagePathResolver.GetInstallPath(library.Name, library.Version);
-            var targetNuspec = packagePathResolver.GetManifestFilePath(library.Name, library.Version);
-            var targetNupkg = packagePathResolver.GetPackageFilePath(library.Name, library.Version);
-            var hashPath = packagePathResolver.GetHashPath(library.Name, library.Version);
+            var targetPath = packagePathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
+            var targetNuspec = packagePathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
+            var targetNupkg = packagePathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+            var hashPath = packagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
             // Acquire the lock on a nukpg before we extract it to prevent the race condition when multiple
             // processes are extracting to the same destination simultaneously
@@ -41,7 +41,7 @@ namespace NuGet.Commands
                     // waiting on this lock don't need to install it again.
                     if (createdNewLock && !File.Exists(targetNupkg))
                     {
-                        log.LogInformation($"Installing {library.Name} {library.Version}");
+                        log.LogInformation($"Installing {packageIdentity.Id} {packageIdentity.Version}");
 
                         Directory.CreateDirectory(targetPath);
                         using (var nupkgStream = new FileStream(
@@ -58,46 +58,27 @@ namespace NuGet.Commands
                             ExtractPackage(targetPath, nupkgStream);
                         }
 
-                        // DNU REFACTORING TODO: delete the hacky FixNuSpecIdCasing() and uncomment logic below after we
-                        // have implementation of NuSpecFormatter.Read()
-                        // Fixup the casing of the nuspec on disk to match what we expect
-                        var nuspecFile = Directory.EnumerateFiles(targetPath, "*" + ManifestExtension).Single();
-                        FixNuSpecIdCasing(nuspecFile, targetNuspec, library.Name);
-
-                        /*var actualNuSpecName = Path.GetFileName(nuspecFile);
-                    var expectedNuSpecName = Path.GetFileName(targetNuspec);
-
-                    if (!string.Equals(actualNuSpecName, expectedNuSpecName, StringComparison.Ordinal))
-                    {
-                        MetadataBuilder metadataBuilder = null;
-                        var nuspecFormatter = new NuSpecFormatter();
-                        using (var nuspecStream = File.OpenRead(nuspecFile))
+                        if (fixNuspecIdCasing)
                         {
-                            metadataBuilder = nuspecFormatter.Read(nuspecStream);
-                            // REVIEW: any way better hardcoding "id"?
-                            metadataBuilder.SetMetadataValue("id", library.Name);
+                            // DNU REFACTORING TODO: delete the hacky FixNuSpecIdCasing() and uncomment logic below after we
+                            // have implementation of NuSpecFormatter.Read()
+                            // Fixup the casing of the nuspec on disk to match what we expect
+                            var nuspecFile = Directory.EnumerateFiles(targetPath, "*" + ManifestExtension).Single();
+                            FixNuSpecIdCasing(nuspecFile, targetNuspec, packageIdentity.Id);
                         }
 
-                        // Delete the previous nuspec file
-                        File.Delete(nuspecFile);
-
-                        // Write the new manifest
-                        using (var targetNuspecStream = File.OpenWrite(targetNuspec))
+                        using (var nupkgStream = File.Open(targetNupkg, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
-                            nuspecFormatter.Save(metadataBuilder, targetNuspecStream);
-                        }
-                    }*/
+                            string packageHash;
+                            using (var sha512 = SHA512.Create())
+                            {
+                                packageHash = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
+                            }
 
-                        stream.Seek(0, SeekOrigin.Begin);
-                        string packageHash;
-                        using (var sha512 = SHA512.Create())
-                        {
-                            packageHash = Convert.ToBase64String(sha512.ComputeHash(stream));
+                            // Note: PackageRepository relies on the hash file being written out as the final operation as part of a package install
+                            // to assume a package was fully installed.
+                            File.WriteAllText(hashPath, packageHash);
                         }
-
-                        // Note: PackageRepository relies on the hash file being written out as the final operation as part of a package install
-                        // to assume a package was fully installed.
-                        File.WriteAllText(hashPath, packageHash);
                     }
 
                     return 0;
@@ -118,43 +99,15 @@ namespace NuGet.Commands
                 var node = metadataNode.Elements(XName.Get("id", metadataNode.GetDefaultNamespace().NamespaceName)).First();
                 node.Value = correctedId;
 
-                File.Delete(nuspecFile);
+                var tmpNuspecFile = nuspecFile + ".tmp";
+                File.Move(nuspecFile, tmpNuspecFile);
 
                 using (var stream = File.OpenWrite(targetNuspec))
                 {
                     xDoc.Save(stream);
                 }
-            }
-        }
 
-        internal static LibraryIdentity CreateLibraryFromNupkg(string nupkgPath)
-        {
-            using (var fileStream = File.OpenRead(nupkgPath))
-            {
-                using (var archive = new ZipArchive(fileStream))
-                {
-                    foreach (var entry in archive.Entries)
-                    {
-                        if (!entry.Name.EndsWith(ManifestExtension, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-
-                        using (var entryStream = entry.Open())
-                        {
-                            var reader = new NuspecReader(entryStream);
-                            return new LibraryIdentity()
-                                {
-                                    Name = reader.GetId(),
-                                    Version = reader.GetVersion(),
-                                    Type = LibraryTypes.Package
-                                };
-                        }
-                    }
-
-                    throw new FormatException(
-                        string.Format("{0} doesn't contain {1} entry", nupkgPath, ManifestExtension));
-                }
+                File.Delete(tmpNuspecFile);
             }
         }
 
@@ -176,6 +129,9 @@ namespace NuGet.Commands
 
         private static bool NupkgFilter(string fullName)
         {
+            // Not all the files from a zip file are needed
+            // So, files such as '.rels' and '[Content_Types].xml' are not extracted
+
             var fileName = Path.GetFileName(fullName);
             if (fileName != null)
             {
@@ -198,15 +154,20 @@ namespace NuGet.Commands
             return true;
         }
 
-        public static void ExtractFiles(ZipArchive archive, string targetPath, Func<string, bool> shouldInclude)
+        private static void ExtractFiles(ZipArchive archive, string targetPath, Func<string, bool> shouldInclude)
         {
             foreach (var entry in archive.Entries)
             {
                 var entryFullName = entry.FullName;
+                // An entry in a ZipArchive could start with a '/' based on how it is zipped
+                // Remove it if present
                 if (entryFullName.StartsWith("/", StringComparison.Ordinal))
                 {
                     entryFullName = entryFullName.Substring(1);
                 }
+
+                // ZipArchive always has forward slashes in them. By replacing them with DirectorySeparatorChar;
+                // in windows, we get the windows-style path
                 entryFullName = Uri.UnescapeDataString(entryFullName.Replace('/', Path.DirectorySeparatorChar));
 
                 var targetFile = Path.Combine(targetPath, entryFullName);
