@@ -13,9 +13,9 @@ namespace NuGet.Test
 {
     class TestNuGetProject : NuGetProject
     {
-        IList<PackageReference> _installedPackages;
+        IList<NuGet.Packaging.PackageReference> _installedPackages;
 
-        public TestNuGetProject(IList<PackageReference> installedPackages)
+        public TestNuGetProject(IList<NuGet.Packaging.PackageReference> installedPackages)
             : base(CreateMetadata())
         {
             _installedPackages = installedPackages;
@@ -30,9 +30,9 @@ namespace NuGet.Test
             };
         }
 
-        public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override Task<IEnumerable<NuGet.Packaging.PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return Task.FromResult<IEnumerable<PackageReference>>(_installedPackages);
+            return Task.FromResult<IEnumerable<NuGet.Packaging.PackageReference>>(_installedPackages);
         }
 
         public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
