@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -82,6 +83,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 int hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
                 ErrorHandler.ThrowOnFailure(hr);
             }
+
+            UserAgent.VisualStudioInfo = VSVersionHelper.GetFullVsVersionString();
 
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
