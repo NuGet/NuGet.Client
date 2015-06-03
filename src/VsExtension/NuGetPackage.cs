@@ -322,6 +322,7 @@ namespace NuGetVSExtension
 
         /// <summary>
         /// Set default credential provider for the HttpClient, which is used by V2 sources.
+        /// Also set up authenticated proxy handling for V3 sources.
         /// </summary>
         private void SetDefaultCredentialProvider()
         {
@@ -330,9 +331,31 @@ namespace NuGetVSExtension
 
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
                 new SettingsToLegacySettings(Settings));
+            var credentialProvider = new VisualStudioCredentialProvider(webProxy);
             HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(
-                new VSRequestCredentialProvider(webProxy),
+                credentialProvider,
                 packageSourceProvider);
+
+            // Set up proxy handling for v3 sources.
+            // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
+            // get prompted twice for the same authenticated proxy.
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials = (uri, proxy) =>
+            {
+                var v2Credentials = Legacy.NuGet.ProxyCache.Instance.GetProxy(uri)?.Credentials;
+                if (v2Credentials != null && proxy.Credentials != v2Credentials)
+                {
+                    // if cached v2 credentials have not been used, try using it first.
+                    return v2Credentials;
+                }
+
+                return credentialProvider.GetCredentials(uri, proxy, CredentialType.ProxyCredentials, retrying: false);
+            };
+
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
+            {
+                // add the proxy to v2 proxy cache.
+                Legacy.NuGet.ProxyCache.Instance.Add(proxy);
+            };
         }
 
         private void AddMenuCommandHandlers()
