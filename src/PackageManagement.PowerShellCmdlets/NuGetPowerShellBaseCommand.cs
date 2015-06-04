@@ -212,6 +212,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     if (result.Restored)
                     {
+                        await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
                         return;
                     }
                 }
