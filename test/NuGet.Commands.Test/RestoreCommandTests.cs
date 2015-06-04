@@ -152,7 +152,7 @@ namespace NuGet.Commands.Test
             var command = new RestoreCommand(logger);
 
             var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            sources.Add(new PackageSource(source));
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
             var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
             _testFolders.Add(packagesDir);
@@ -170,6 +170,40 @@ namespace NuGet.Commands.Test
             // Act
             var result = await command.ExecuteAsync(request);
             var nuspecPath = Path.Combine(packagesDir, "NuGet.Versioning", "1.0.7", "NuGet.Versioning.nuspec");
+
+            // Assert
+            Assert.True(File.Exists(nuspecPath));
+        }
+
+
+        [Theory]
+        [InlineData("https://www.nuget.org/api/v2/")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
+        public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPath(string source)
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger);
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(source));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+            AddDependency(spec, "owin", "1.0");
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            // Act
+            var result = await command.ExecuteAsync(request);
+            var nuspecPath = Path.Combine(packagesDir, "owin", "1.0.0", "owin.nuspec");
 
             // Assert
             Assert.True(File.Exists(nuspecPath));

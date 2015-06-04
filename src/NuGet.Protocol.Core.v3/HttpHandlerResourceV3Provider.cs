@@ -27,18 +27,18 @@ namespace NuGet.Protocol.Core.v3
         {
             HttpHandlerResourceV3 curResource = null;
 
-#if !DNXCORE50
             // Everyone gets a dataclient
             var HttpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
             curResource = new HttpHandlerResourceV3(HttpHandler);
-#endif
 
             return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
         }
 
-#if !DNXCORE50
         private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource)
         {
+#if DNXCORE50
+            return new HttpClientHandler();
+#else
             var uri = new Uri(packageSource.Source);
             var proxy = ProxyCache.Instance.GetProxy(uri);
             var credential = CredentialStore.Instance.GetCredentials(uri);
@@ -77,12 +77,12 @@ namespace NuGet.Protocol.Core.v3
                     CredentialStore.Instance.Add(uri, credential);
                 }
                 return new WebRequestHandler()
-                    {
-                        Proxy = proxy,
-                        Credentials = credential
-                    };
+                {
+                    Proxy = proxy,
+                    Credentials = credential
+                };
             }
-        }
 #endif
+        }
     }
 }

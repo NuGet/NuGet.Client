@@ -14,7 +14,7 @@ namespace NuGet.Repositories
             Version = version;
             ExpandedPath = path;
             ManifestPath = Path.Combine(path, string.Format("{0}.nuspec", Id));
-            ZipPath = Path.Combine(path, string.Format("{0}.{1}.nupkg", Id, Version));
+            ZipPath = Path.Combine(path, string.Format("{0}.{1}.nupkg", Id, Version.ToNormalizedString()));
         }
 
         public string Id { get; }
