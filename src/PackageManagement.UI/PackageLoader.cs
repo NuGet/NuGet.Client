@@ -180,16 +180,11 @@ namespace NuGet.PackageManagement.UI
         {
             var installedPackages = new Dictionary<string, PackageIdentity>(
                 StringComparer.OrdinalIgnoreCase);
+
             foreach (var project in _projects)
             {
                 foreach (var package in (await project.GetInstalledPackagesAsync(token)))
                 {
-                    if (!(project is INuGetIntegratedProject)
-                        && !_packageManager.PackageExistsInPackagesFolder(package.PackageIdentity))
-                    {
-                        continue;
-                    }
-
                     PackageIdentity p;
                     if (installedPackages.TryGetValue(package.PackageIdentity.Id, out p))
                     {
