@@ -350,7 +350,7 @@ namespace NuGet.VisualStudio
 
                 bool includePrerelease = false;
 
-                ResolutionContext resolution = new ResolutionContext(depBehavior, includePrerelease, false);
+                ResolutionContext resolution = new ResolutionContext(depBehavior, includePrerelease, false, VersionConstraints.None);
 
                 NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, _settings, _solutionManager);
 
