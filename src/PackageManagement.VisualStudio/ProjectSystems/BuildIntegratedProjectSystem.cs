@@ -50,6 +50,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // start with the current project
             toProcess.Enqueue(EnvDTEProject);
 
+            // keep track of found projects to avoid duplicates
+            var uniqueProjects = new HashSet<string>();
+            uniqueProjects.Add(await EnvDTEProjectUtility.GetCustomUniqueNameAsync(EnvDTEProject));
+
             // continue walking all project references until we run out
             while (toProcess.Count > 0)
             {
@@ -74,9 +78,10 @@ namespace NuGet.PackageManagement.VisualStudio
                         childReferences.Add(childName);
 
                         // avoid looping by checking if we already have this project
-                        if (!results.Any(projReference => StringComparer.Ordinal.Equals(projReference.Name, childName)))
+                        if (!uniqueProjects.Contains(childName))
                         {
                             toProcess.Enqueue(childReference.SourceProject);
+                            uniqueProjects.Add(childName);
                         }
                     }
                     else
