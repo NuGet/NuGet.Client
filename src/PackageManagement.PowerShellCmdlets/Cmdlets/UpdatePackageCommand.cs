@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (update != null)
                     {
                         // Update by package identity
-                        await InstallPackageByIdentityAsync(project, update, ResolutionContext, this, WhatIf.IsPresent, Reinstall.IsPresent, UninstallContext);
+                        await InstallPackageByIdentityAsync(project, update, ResolutionContext, this, WhatIf.IsPresent);
                     }
                     else
                     {
@@ -284,8 +284,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (Reinstall.IsPresent)
                     {
                         // Update-Package Id -Reinstall
-                        PackageIdentity identity = installedPackage.PackageIdentity;
-                        await InstallPackageByIdentityAsync(project, identity, ResolutionContext, this, WhatIf.IsPresent, true, UninstallContext);
+                        var identitiesToUpdate = new List<PackageIdentity>() { installedPackage.PackageIdentity };
+                        var actions = await PackageManager.PreviewReinstallPackagesAsync(identitiesToUpdate, project, ResolutionContext,
+                            this, ActiveSourceRepository, null, token);
+
+                        if (WhatIf.IsPresent)
+                        {
+                            // Preview Update-Package Id -Reinstall actions
+                            PreviewNuGetPackageActions(actions);
+                        }
+                        else
+                        {
+                            await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
+                        }
                     }
                     else
                     {
@@ -294,11 +305,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         if (Safe.IsPresent)
                         {
                             PackageIdentity update = GetPackageUpdate(installedPackage, project, _allowPrerelease, true, null, false, GetDependencyBehavior());
-                            await InstallPackageByIdentityAsync(project, update, ResolutionContext, this, WhatIf.IsPresent, false, UninstallContext);
+                            await InstallPackageByIdentityAsync(project, update, ResolutionContext, this, WhatIf.IsPresent);
                         }
                         else
                         {
-                            await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent, false, UninstallContext);
+                            await InstallPackageByIdAsync(project, Id, ResolutionContext, this, WhatIf.IsPresent);
                         }
                     }
                 }

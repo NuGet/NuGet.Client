@@ -51,9 +51,6 @@
           <maml:name>IncludePrerelease</maml:name>
         </command:parameter>
         <command:parameter required="false" position="named">
-          <maml:name>Force</maml:name>
-        </command:parameter>
-        <command:parameter required="false" position="named">
           <maml:name>FileConflictAction</maml:name>
         </command:parameter>
         <command:parameter required="false" position="named">
@@ -114,12 +111,6 @@
         <maml:name>IncludePrerelease</maml:name>
         <maml:description>
           <maml:para>Indicates whether this command will consider prerelease packages. If omitted, only stable packages are considered.</maml:para>
-        </maml:description>
-      </command:parameter>
-      <command:parameter required="false" position="named">
-        <maml:name>Force</maml:name>
-        <maml:description>
-          <maml:para>Install a package forcely to the project. If the same version is already installed, will uninstall the package first and then install.</maml:para>
         </maml:description>
       </command:parameter>
       <command:parameter required="false" position="named">
