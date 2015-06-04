@@ -7,6 +7,8 @@
   x:Name="_self"
   ShowInTaskbar="False"
   WindowStyle="SingleBorderWindow"
+  Background="{DynamicResource {x:Static resx:Brushes.BackgroundBrushKey}}"
+  Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
   WindowStartupLocation="CenterOwner"
   Title="{Binding Title}"
   Height="500"
@@ -20,8 +22,7 @@
     </ResourceDictionary>
   </Window.Resources>
 
-  <Grid
-    Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition
         Height="auto" />
@@ -50,7 +51,7 @@
       BorderThickness="1">
       <ScrollViewer
         HorizontalScrollBarVisibility="Auto"
-        Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+        Background="{DynamicResource {x:Static resx:Brushes.ContentBrushKey}}"
         IsTabStop="True">
         <ItemsControl
           ItemsSource="{Binding Path=PreviewResults}"
@@ -112,26 +113,25 @@
     </Border>
 
     <Grid
-      Grid.Row="3"
-      Background="{Binding ElementName=_self, Path=Background}">
+      Grid.Row="3">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="auto"/>
+        <ColumnDefinition Width="auto" />
         <ColumnDefinition />
         <ColumnDefinition
           Width="auto" />
         <ColumnDefinition
           Width="auto" />
       </Grid.ColumnDefinitions>
-      <CheckBox 
+      <CheckBox
         x:Name="_doNotShowCheckBox"
         Grid.Column="0"
         Margin="12"
         MinWidth="180"
         VerticalAlignment="Center"
+        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
         Content="{x:Static resx:Resources.DoNotShowThisAgain}"
         Checked="DoNotShowCheckBox_Checked"
-        Unchecked="DoNotShowCheckBox_Unchecked"
-        />      
+        Unchecked="DoNotShowCheckBox_Unchecked" />
       <Button
         Grid.Column="2"
         MinWidth="86"

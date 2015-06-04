@@ -44,9 +44,6 @@ namespace NuGet.PackageManagement.UI
 
             if (!StandaloneSwitch.IsRunningStandalone)
             {
-                // it's running inside VS. Load needed resources
-                Brushes.Initialize();
-
                 var setter = new Setter(TemplateProperty, FindResource("ListBoxItemTemplate"));
                 PackageItemStyle.Setters.Add(setter);
             }
@@ -126,8 +123,8 @@ namespace NuGet.PackageManagement.UI
                     UpdatePackageList(r);
 
                     // select the first item if none was selected before
-                    if (_list.SelectedIndex == -1 && 
-                        Items.Count > 0 && 
+                    if (_list.SelectedIndex == -1 &&
+                        Items.Count > 0 &&
                         Items[0] != _loadingStatusIndicator)
                     {
                         _list.SelectedIndex = 0;

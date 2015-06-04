@@ -133,4 +133,7 @@
       </EventTrigger>
     </Style.Triggers>
   </Style>
+
+  <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Static resx:ResourceKeys.ScrollBarStyleKey}}" />
+  <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Static resx:ResourceKeys.ScrollViewerStyleKey}}" />
 </ResourceDictionary>

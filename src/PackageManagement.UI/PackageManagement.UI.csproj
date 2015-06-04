@@ -146,6 +146,8 @@
     <Compile Include="PackageInstallationInfo.cs" />
     <Compile Include="PackageLoaderOptions.cs" />
     <Compile Include="PackageSolutionDetailControlModel.cs" />
+    <Compile Include="Resources\ResourceKeys.cs" />
+    <Compile Include="Resources\Styles.cs" />
     <Compile Include="UserInterfaceService\INuGetUI.cs" />
     <Compile Include="Models\PackageLicenseInfo.cs" />
     <Compile Include="Models\DetailedPackageMetadata.cs" />
@@ -160,7 +162,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\PackageDependencySetMetadata.cs" />
     <Compile Include="Models\SearchResultPackageMetadata.cs" />
-    <Compile Include="Resources\Colors.cs" />
+    <Compile Include="Resources\Brushes.cs" />
     <Compile Include="Resources\IUIBrushes.cs" />
     <Compile Include="Resources\Commands.cs" />
     <Compile Include="Resources1.Designer.cs">

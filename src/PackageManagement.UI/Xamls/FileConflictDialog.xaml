@@ -6,7 +6,7 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:ui="clr-namespace:NuGet.PackageManagement.UI"
-  Background="{DynamicResource {x:Static resx:Brushes.HeaderBackground}}"
+  Background="{DynamicResource {x:Static resx:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
   Title="{x:Static resx:Resources.WindowTitle_FileConflict}"
   ShowInTaskbar="False"
