@@ -568,7 +568,7 @@ namespace NuGetVSExtension
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-            var nugetProject = solutionManager.GetNuGetProject(project.Name);
+            var nugetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
 
             // load packages.config. This makes sure that an exception will get thrown if there
             // are problems with packages.config, such as duplicate packages. When an exception
