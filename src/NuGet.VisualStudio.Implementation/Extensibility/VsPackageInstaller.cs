@@ -23,7 +23,7 @@ using Task = System.Threading.Tasks.Task;
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsPackageInstaller))]
-    public class VsPackageInstaller : IVsPackageInstaller2
+    public class VsPackageInstaller : IVsPackageInstaller
     {
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly Configuration.ISettings _settings;
@@ -44,42 +44,6 @@ namespace NuGet.VisualStudio
             PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
         }
 
-        public async Task InstallPackageAsync(Project project, IEnumerable<string> sources, string packageId, string versionSpec, bool ignoreDependencies, CancellationToken token)
-        {
-            var sourceProvider = GetSources(sources);
-
-            VersionRange versionRange = VersionRange.All;
-
-            if (!String.IsNullOrEmpty(versionSpec))
-            {
-                versionRange = VersionRange.Parse(versionSpec);
-            }
-
-            var toInstall = new List<Packaging.Core.PackageDependency> { new Packaging.Core.PackageDependency(packageId, versionRange) };
-
-            await InstallInternalAsync(project, toInstall, sourceProvider, false, ignoreDependencies, token);
-        }
-
-        public async Task InstallPackageAsync(IEnumerable<string> sources, Project project, string packageId, string version, bool ignoreDependencies, CancellationToken token)
-        {
-            var sourceProvider = GetSources(sources);
-
-            NuGetVersion semVer = null;
-
-            if (!String.IsNullOrEmpty(version))
-            {
-                NuGetVersion.TryParse(version, out semVer);
-            }
-
-            List<PackageIdentity> toInstall = new List<PackageIdentity> { new PackageIdentity(packageId, semVer) };
-
-            // Normalize the install folder for new installs (this only happens for IVsPackageInstaller2. IVsPackageInstaller keeps legacy behavior)
-            VSAPIProjectContext projectContext = new VSAPIProjectContext(false, false, false);
-
-            await InstallInternalAsync(project, toInstall, sourceProvider, projectContext, ignoreDependencies, token);
-        }
-
-        // Legacy methods
         public void InstallPackage(string source, Project project, string packageId, Version version, bool ignoreDependencies)
         {
             NuGetVersion semVer = null;
