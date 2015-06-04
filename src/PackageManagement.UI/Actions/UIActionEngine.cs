@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI
                 var includePrelease = userAction.PackageIdentity.Version.IsPrerelease || userAction.Action == NuGetProjectActionType.Uninstall;
                 var includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
 
-                var resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted);
+                var resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted, VersionConstraints.None);
 
                 var actions = await GetActionsAsync(
                     uiService,

@@ -67,6 +67,7 @@
     <Compile Include="BuildIntegration\ProjectContextLogger.cs" />
     <Compile Include="Context\IDEExecutionContext.cs" />
     <Compile Include="Context\UninstallationContext.cs" />
+    <Compile Include="Context\VersionConstraints.cs" />
     <Compile Include="IDE\ICommonOperations.cs" />
     <Compile Include="IDE\PackageRestoreData.cs" />
     <Compile Include="IDE\PackageRestoreContext.cs" />

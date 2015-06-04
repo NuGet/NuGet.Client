@@ -80,9 +80,9 @@ namespace NuGet.PackageManagement
                 installed.Add(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version);
             }
 
-            return packages.Where(package => 
-                (package.HasVersion && installed.ContainsKey(package.Id)) 
-                    ? 
+            return packages.Where(package =>
+                (package.HasVersion && installed.ContainsKey(package.Id))
+                    ?
                 installed[package.Id] <= package.Version : true);
         }
 
@@ -137,6 +137,79 @@ namespace NuGet.PackageManagement
                                            || packageReference.AllowedVersions.Satisfies(p.Version));
             }
             return packages;
+        }
+
+        /// <summary>
+        /// This is used in update scenarios ro remove packages that are of the same Id but different version than the primartTargets 
+        /// </summary>
+        public static IEnumerable<SourcePackageDependencyInfo> PruneByPrimaryTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> primaryTargets)
+        {
+            var targets = new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
+            foreach (var primaryTarget in primaryTargets)
+            {
+                targets.Add(primaryTarget.Id, primaryTarget.Version);
+            }
+
+            return packages.Where(p => !targets.ContainsKey(p.Id) || (targets.ContainsKey(p.Id) && targets[p.Id] == p.Version));
+        }
+
+        public static IEnumerable<SourcePackageDependencyInfo> PruneAllButHighest(IEnumerable<SourcePackageDependencyInfo> packages, string packageId)
+        {
+            SourcePackageDependencyInfo highest = null;
+            foreach (var package in packages)
+            {
+                if (string.Equals(package.Id, packageId, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (highest == null || highest.Version < package.Version)
+                    {
+                        highest = package;
+                    }
+                }
+            }
+
+            if (highest == null)
+            {
+                return packages;
+            }
+            else
+            {
+                return packages.Where(p => !p.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase) || p == highest);
+            }
+        }
+
+        public static IEnumerable<SourcePackageDependencyInfo> PruneByUpdateConstraints(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences, VersionConstraints versionConstraints)
+        {
+            var installed = new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
+            foreach (var packageReference in packageReferences)
+            {
+                installed[packageReference.PackageIdentity.Id] = packageReference.PackageIdentity.Version;
+            }
+
+            return packages.Where(p => !installed.ContainsKey(p.Id) || MeetsVersionConstraints(p.Version, installed[p.Id], versionConstraints));
+        }
+
+        private static bool MeetsVersionConstraints(NuGetVersion newVersion, NuGetVersion existingVersion, VersionConstraints versionConstraints)
+        {
+            return
+                (!versionConstraints.HasFlag(VersionConstraints.ExactMajor) || newVersion.Major == existingVersion.Major)
+                    &&
+                (!versionConstraints.HasFlag(VersionConstraints.ExactMinor) || newVersion.Minor == existingVersion.Minor)
+                    &&
+                (!versionConstraints.HasFlag(VersionConstraints.ExactPatch) || newVersion.Patch == existingVersion.Patch)
+                    &&
+                (!versionConstraints.HasFlag(VersionConstraints.ExactRelease) || newVersion.Release.Equals(existingVersion.Release, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static bool IsExactVersion(VersionConstraints versionConstraints)
+        {
+            return
+                versionConstraints.HasFlag(VersionConstraints.ExactMajor)
+                    &&
+                versionConstraints.HasFlag(VersionConstraints.ExactMinor)
+                    &&
+                versionConstraints.HasFlag(VersionConstraints.ExactPatch)
+                    &&
+                versionConstraints.HasFlag(VersionConstraints.ExactRelease);
         }
     }
 }
