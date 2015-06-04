@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal static void Initialize()
+        public static void Initialize()
         {
             var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
             var colorResources = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.ColorResources");
@@ -83,6 +83,12 @@ namespace NuGet.PackageManagement.UI
 
             prop = colorResources.GetProperty("ContentSelectedTextBrushKey");
             ContentSelectedTextBrushKey = prop.GetValue(null);
+
+            prop = colorResources.GetProperty("ContentBrushKey");
+            ContentBrushKey = prop.GetValue(null);
+
+            prop = colorResources.GetProperty("BackgroundBrushKey");
+            BackgroundBrushKey = prop.GetValue(null);
         }
 
         public static object ContentMouseOverBrushKey { get; private set; }
@@ -92,18 +98,9 @@ namespace NuGet.PackageManagement.UI
         public static object ContentSelectedBrushKey { get; private set; }
 
         public static object ContentSelectedTextBrushKey { get; private set; }
-    }
 
-    public static class Styles
-    {
-        public static void Initialize()
-        {
-            var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
-            var comboBoxType = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.AutomationComboBox");
-            ThemedComboStyle = Application.Current.FindResource(
-                new ComponentResourceKey(comboBoxType, "ThemedComboBoxStyle")) as Style;
-        }
+        public static object ContentBrushKey { get; private set; }
 
-        public static Style ThemedComboStyle { get; private set; }
+        public static object BackgroundBrushKey { get; private set; }
     }
 }

@@ -11,6 +11,8 @@
   MinHeight="450"
   Width="450"
   Height="450"
+  Background="{DynamicResource {x:Static resx:Brushes.BackgroundBrushKey}}"
+  Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
   mc:Ignorable="d"
   ShowInTaskbar="False"
   WindowStartupLocation="CenterOwner"
@@ -54,8 +56,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </Window.Resources>
-  <Grid
-    Background="White">
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition
         Height="Auto" />
@@ -94,7 +95,7 @@
             BorderBrush="{DynamicResource {x:Static resx:Brushes.BorderBrush}}">
             <ScrollViewer
               Padding="3"
-              Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+              Background="{DynamicResource {x:Static resx:Brushes.ContentBrushKey}}"
               CanContentScroll="True"
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled">
@@ -111,8 +112,7 @@
       TextWrapping="Wrap"></TextBlock>
 
     <Grid
-      Grid.Row="5"
-      Background="{Binding ElementName=_self, Path=Background}">
+      Grid.Row="5">
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
         <ColumnDefinition
@@ -137,7 +137,6 @@
         Content="{x:Static resx:Resources.Button_IDecline}"
         AutomationProperties.AutomationId="DeclineButton"
         Click="OnDeclineButtonClick" />
-
     </Grid>
   </Grid>
 </ui:VsDialogWindow>
