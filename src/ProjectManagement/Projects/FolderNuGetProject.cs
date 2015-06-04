@@ -74,7 +74,7 @@ namespace NuGet.ProjectManagement
             // 1. Check if the Package already exists at root, if so, return false
             if (PackageExists(packageIdentity))
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
                 return false;
             }
 
