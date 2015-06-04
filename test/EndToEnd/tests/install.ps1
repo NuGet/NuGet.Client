@@ -2860,37 +2860,6 @@ function Test-InstallPackageMissingPackageNoConsent {
     }
 }
 
-# Tests that Install-Package -Force and Install-Package -Force -WhatIf works.
-function Test-InstallPackageUsingForceSwitch
-{
-    param($context)
-
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act 1
-	$p | Install-Package jQuery -version 1.4.4
-	$p | Install-Package jQuery -version 2.1.3 -Force -WhatIf
-    $p | Install-Package jQuery -version 2.1.3 -Force
-
-    # Assert 1
-	Assert-Package $p jQuery 2.1.3
-
-	# Act 2 
-	$p | Install-Package jQuery -version 2.1.3 -Force -WhatIf
-    $p | Install-Package jQuery -version 2.1.3 -Force
-
-    # Assert 2
-	Assert-Package $p jQuery 2.1.3
-
-	# Act 3
-	$p | Install-Package jQuery -Force
-    $p | Install-Package jQuery -version 2.1.3 -Force
-
-    # Assert 2
-	Assert-Package $p jQuery 2.1.3
-}
-
 function Test-InstallPackageWithScriptAddImportFile
 {
 	param($context)

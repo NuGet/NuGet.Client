@@ -30,9 +30,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private bool _allowPrerelease;
         private bool _isHttp;
 
-        [Parameter]
-        public SwitchParameter Force { get; set; }
-
         protected override void Preprocess()
         {
             base.Preprocess();
@@ -75,7 +72,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 foreach (PackageIdentity identity in identities)
                 {
-                    await InstallPackageByIdentityAsync(Project, identity, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent, UninstallContext);
+                    await InstallPackageByIdentityAsync(Project, identity, ResolutionContext, this, WhatIf.IsPresent);
                 }
             }
             catch (Exception ex)
@@ -96,7 +93,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent, Force.IsPresent, UninstallContext);
+                await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent);
             }
             catch (Exception ex)
             {
@@ -359,27 +356,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false);
                 return _context;
             }
-        }
-
-        /// <summary>
-        /// Uninstall Resolution Context for Install-Package -Force command
-        /// </summary>
-        public UninstallationContext UninstallContext
-        {
-            get
-            {
-                _uninstallcontext = new UninstallationContext(false, Force.IsPresent);
-                return _uninstallcontext;
-            }
-        }
-
-        protected override DependencyBehavior GetDependencyBehavior()
-        {
-            if (Force.IsPresent)
-            {
-                return DependencyBehavior.Ignore;
-            }
-            return base.GetDependencyBehavior();
         }
     }
 }
