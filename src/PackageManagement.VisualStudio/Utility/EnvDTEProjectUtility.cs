@@ -557,7 +557,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
-            if (targetFrameworkMoniker != null)
+            if (!String.IsNullOrEmpty(targetFrameworkMoniker))
             {
                 var framework = NuGetFramework.Parse(targetFrameworkMoniker);
                 //if the framework is .net core 4.5.1 return windows 8.1
@@ -944,7 +944,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
-            if (targetFrameworkMoniker != null)
+            if (!String.IsNullOrEmpty(targetFrameworkMoniker))
             {
                 return new FrameworkName(targetFrameworkMoniker);
             }
