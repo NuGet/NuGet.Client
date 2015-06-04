@@ -895,7 +895,7 @@ namespace NuGet.Test
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new NullSettings();
             var token = CancellationToken.None;
-            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest);
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None);
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
@@ -1099,7 +1099,7 @@ namespace NuGet.Test
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new NullSettings();
             var token = CancellationToken.None;
-            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest);
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None);
             var testNuGetProjectContext = new TestNuGetProjectContext();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
@@ -1359,7 +1359,7 @@ namespace NuGet.Test
 
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                new ResolutionContext(DependencyBehavior.Ignore), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                new ResolutionContext(DependencyBehavior.Ignore, false, true, VersionConstraints.None), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
             // Assert
             // Check that the packages.config file exists after the installation
@@ -1812,7 +1812,7 @@ namespace NuGet.Test
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
-            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true);
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
             // Act
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
                 resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
@@ -1857,7 +1857,7 @@ namespace NuGet.Test
             Assert.Equal(0, packagesInPackagesConfig.Count);
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
-            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true);
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
 
             Exception exception = null;
             try
@@ -1926,13 +1926,15 @@ namespace NuGet.Test
             Assert.Equal(1, packagesInPackagesConfig.Count);
             Assert.Equal(packageIdentity0, packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-            var installedPackageIds = (await msBuildNuGetProject.GetInstalledPackagesAsync(token))
-                .Select(pr => pr.PackageIdentity.Id);
 
             // Main Act
-            var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(installedPackageIds, msBuildNuGetProject,
-                new ResolutionContext(DependencyBehavior.Highest), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(),
-                null, token)).ToList();
+            var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                msBuildNuGetProject,
+                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None), 
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                token)).ToList();
 
             // Assert
             Assert.Equal(2, packageActions.Count);
@@ -1991,13 +1993,15 @@ namespace NuGet.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
             Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-            var installedPackageIds = (await msBuildNuGetProject.GetInstalledPackagesAsync(token))
-                .Select(pr => pr.PackageIdentity.Id);
 
             // Main Act
-            var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(installedPackageIds, msBuildNuGetProject,
-                new ResolutionContext(DependencyBehavior.Highest), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(),
-                null, token)).ToList();
+            var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                msBuildNuGetProject,
+                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None), 
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                token)).ToList();
 
             // Assert
             Assert.Equal(4, packageActions.Count);
@@ -2061,23 +2065,33 @@ namespace NuGet.Test
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
             Assert.Equal(MorePackageWithDependents[2], packagesInPackagesConfig[0].PackageIdentity);
             Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-            var installedPackageIdentities = (await msBuildNuGetProject.GetInstalledPackagesAsync(token))
-                .Select(pr => pr.PackageIdentity);
+
+            var resolutionContext = new ResolutionContext(
+                DependencyBehavior.Highest,
+                false,
+                true,
+                VersionConstraints.ExactMajor | VersionConstraints.ExactMinor | VersionConstraints.ExactPatch | VersionConstraints.ExactRelease);
 
             // Main Act
-            var packageActions = (await nuGetPackageManager.PreviewReinstallPackagesAsync(installedPackageIdentities, msBuildNuGetProject,
-                new ResolutionContext(DependencyBehavior.Highest), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(),
-                null, token)).ToList();
+            var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                msBuildNuGetProject,
+                resolutionContext,
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                token)).ToList();
 
             // Assert
             var singlePackageSource = sourceRepositoryProvider.GetRepositories().Single().PackageSource.Source;
             Assert.Equal(6, packageActions.Count);
+
             Assert.True(MorePackageWithDependents[3].Equals(packageActions[0].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[0].NuGetProjectActionType);
             Assert.True(MorePackageWithDependents[2].Equals(packageActions[1].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[1].NuGetProjectActionType);
             Assert.True(MorePackageWithDependents[0].Equals(packageActions[2].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[2].NuGetProjectActionType);
+
             Assert.True(MorePackageWithDependents[0].Equals(packageActions[3].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Install, packageActions[3].NuGetProjectActionType);
             Assert.Equal(singlePackageSource, packageActions[3].SourceRepository.PackageSource.Source);
@@ -2140,10 +2154,20 @@ namespace NuGet.Test
             var installedPackageIdentities = (await msBuildNuGetProject.GetInstalledPackagesAsync(token))
                 .Select(pr => pr.PackageIdentity);
 
+            var resolutionContext = new ResolutionContext(
+                DependencyBehavior.Highest,
+                false,
+                true,
+                VersionConstraints.ExactMajor | VersionConstraints.ExactMinor | VersionConstraints.ExactPatch | VersionConstraints.ExactRelease);
+
             // Act
-            var packageActions = (await nuGetPackageManager.PreviewReinstallPackagesAsync(installedPackageIdentities, msBuildNuGetProject,
-                new ResolutionContext(DependencyBehavior.Highest), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(),
-                null, token)).ToList();
+            var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                msBuildNuGetProject,
+                resolutionContext, 
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                token)).ToList();
 
             // Assert
             var singlePackageSource = sourceRepositoryProvider.GetRepositories().Single().PackageSource.Source;
@@ -2154,6 +2178,7 @@ namespace NuGet.Test
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[1].NuGetProjectActionType);
             Assert.True(MorePackageWithDependents[0].Equals(packageActions[2].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Uninstall, packageActions[2].NuGetProjectActionType);
+
             Assert.True(MorePackageWithDependents[0].Equals(packageActions[3].PackageIdentity));
             Assert.Equal(NuGetProjectActionType.Install, packageActions[3].NuGetProjectActionType);
             Assert.Equal(singlePackageSource, packageActions[3].SourceRepository.PackageSource.Source);
@@ -2267,7 +2292,7 @@ namespace NuGet.Test
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
             // Act
-            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageId, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true),
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageId, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, versionConstraints: VersionConstraints.None),
                 testNuGetProjectContext, primarySourceRepository, null, token);
 
             // Check that the packages.config file does not exist
@@ -2329,7 +2354,7 @@ namespace NuGet.Test
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
             // Act
-            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentityB2, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true),
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentityB2, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, versionConstraints: VersionConstraints.None),
                 testNuGetProjectContext, primarySourceRepository, null, token);
 
             // Check that the packages.config file does not exist
@@ -2384,7 +2409,7 @@ namespace NuGet.Test
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
             var dotnetrdfPackageIdentity = new PackageIdentity("dotnetrdf", new NuGetVersion("1.0.8-prerelease1"));
-            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, includePrelease: true);
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
 
             var newtonsoftJsonPackageId = "newtonsoft.json";
 
@@ -2421,7 +2446,7 @@ namespace NuGet.Test
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
             var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
             var webgreasePackageIdentity = new PackageIdentity("WebGrease", new NuGetVersion("1.6.0"));
-            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true);
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
 
             var newtonsoftJsonPackageId = "newtonsoft.json";
 
@@ -2538,7 +2563,7 @@ namespace NuGet.Test
             var newtonsoftJsonPackageId = "newtonsoft.json";
             var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
             var primarySourceRepository = sourceRepositoryProvider.GetRepositories().Single();
-            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest);
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None);
             var testNuGetProjectContext = new TestNuGetProjectContext();
 
             // Act
@@ -2582,8 +2607,13 @@ namespace NuGet.Test
             Assert.NotNull(newtonsoftJsonPackageReference.AllowedVersions);
 
             // Main Act
-            var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<string> { newtonsoftJsonPackageId, "Microsoft.Web.Infrastructure" }, msBuildNuGetProject,
-                resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
+            var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                msBuildNuGetProject,
+                resolutionContext, 
+                testNuGetProjectContext,
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                token)).ToList();
 
             // Microsoft.Web.Infrastructure has no updates. However, newtonsoft.json has updates but does not satisfy the version range
             // Hence, no nuget project actions to perform
@@ -3061,7 +3091,7 @@ namespace NuGet.Test
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 msBuildNuGetProject,
                 target,
-                new ResolutionContext(DependencyBehavior.Lowest, true, false),
+                new ResolutionContext(DependencyBehavior.Lowest, true, false, VersionConstraints.None),
                 new TestNuGetProjectContext(), 
                 sourceRepositoryProvider.GetRepositories().First(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -3107,7 +3137,7 @@ namespace NuGet.Test
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 msBuildNuGetProject,
                 target,
-                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new ResolutionContext(DependencyBehavior.Lowest, false, false, VersionConstraints.None),
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories().First(),
                 null,
@@ -3154,7 +3184,7 @@ namespace NuGet.Test
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 msBuildNuGetProject,
                 target,
-                new ResolutionContext(DependencyBehavior.Lowest, true, false),
+                new ResolutionContext(DependencyBehavior.Lowest, true, false, VersionConstraints.None),
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories().First(),
                 null,
@@ -3201,7 +3231,7 @@ namespace NuGet.Test
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 msBuildNuGetProject,
                 target,
-                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new ResolutionContext(DependencyBehavior.Lowest, false, false, VersionConstraints.None),
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories().First(),
                 null,
@@ -3298,7 +3328,7 @@ namespace NuGet.Test
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 nuGetProject,
                 target,
-                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new ResolutionContext(DependencyBehavior.Lowest, false, false, VersionConstraints.None),
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories().First(),
                 null,
@@ -3336,7 +3366,7 @@ namespace NuGet.Test
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 nuGetProject,
                 target,
-                new ResolutionContext(DependencyBehavior.Lowest, false, false),
+                new ResolutionContext(DependencyBehavior.Lowest, false, false, VersionConstraints.None),
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories().First(),
                 null,
