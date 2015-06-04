@@ -25,7 +25,7 @@ namespace NuGet.Commands
             string packagesDirectory,
             ILogger log)
         {
-            var packagePathResolver = new DefaultPackagePathResolver(packagesDirectory);
+            var packagePathResolver = new VersionFolderPathResolver(packagesDirectory);
 
             var targetPath = packagePathResolver.GetInstallPath(library.Name, library.Version);
             var targetNuspec = packagePathResolver.GetManifestFilePath(library.Name, library.Version);

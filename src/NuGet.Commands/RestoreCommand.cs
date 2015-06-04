@@ -173,7 +173,7 @@ namespace NuGet.Commands
             }
             var graph = tfmGraphs[0];
 
-            var pathResolver = new DefaultPackagePathResolver(repository.RepositoryRoot);
+            var pathResolver = new VersionFolderPathResolver(repository.RepositoryRoot);
 
             var targets = new List<string>();
             var props = new List<string>();
@@ -345,7 +345,7 @@ namespace NuGet.Commands
                     var targetLibrary = CreateLockFileTargetLibrary(
                         packageInfo,
                         targetGraph,
-                        new DefaultPackagePathResolver(repository.RepositoryRoot),
+                        new VersionFolderPathResolver(repository.RepositoryRoot),
                         correctedPackageName: library.Name);
 
                     target.Libraries.Add(targetLibrary);
@@ -381,7 +381,7 @@ namespace NuGet.Commands
             return lockFileLib;
         }
 
-        private LockFileTargetLibrary CreateLockFileTargetLibrary(LocalPackageInfo package, RestoreTargetGraph targetGraph, DefaultPackagePathResolver defaultPackagePathResolver, string correctedPackageName)
+        private LockFileTargetLibrary CreateLockFileTargetLibrary(LocalPackageInfo package, RestoreTargetGraph targetGraph, VersionFolderPathResolver versionFolderPathResolver, string correctedPackageName)
         {
             var lockFileLib = new LockFileTargetLibrary();
 

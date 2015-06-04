@@ -6,11 +6,11 @@ using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
-    public class DefaultPackagePathResolver
+    public class VersionFolderPathResolver
     {
         private readonly string _path;
 
-        public DefaultPackagePathResolver(string path)
+        public VersionFolderPathResolver(string path)
         {
             _path = path;
         }
