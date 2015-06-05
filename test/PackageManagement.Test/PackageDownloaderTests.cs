@@ -32,7 +32,10 @@ namespace NuGet.Test
             Exception exception = null;
             try
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository, packageIdentity, CancellationToken.None);
+                await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+                    packageIdentity,
+                    NullSettings.Instance,
+                    CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -59,7 +62,10 @@ namespace NuGet.Test
             Exception exception = null;
             try
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository, packageIdentity, CancellationToken.None);
+                await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                    packageIdentity,
+                    NullSettings.Instance,
+                    CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -79,7 +85,10 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository, packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
@@ -99,7 +108,10 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository, packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
@@ -124,7 +136,10 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(), packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
@@ -147,6 +162,7 @@ namespace NuGet.Test
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
+                NullSettings.Instance,
                 CancellationToken.None));
         }
 
@@ -166,7 +182,10 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(), packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 

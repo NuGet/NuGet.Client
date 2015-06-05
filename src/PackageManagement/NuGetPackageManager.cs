@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement
     /// </summary>
     public class NuGetPackageManager
     {
-        private ISourceRepositoryProvider SourceRepositoryProvider { get; set; }
+        private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
         private ISolutionManager SolutionManager { get; }
 
@@ -44,13 +44,25 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, string packagesFolderPath)
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, string packagesFolderPath)
         {
-            InitializeMandatory(sourceRepositoryProvider);
+            if (sourceRepositoryProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             if (packagesFolderPath == null)
             {
                 throw new ArgumentNullException(nameof(packagesFolderPath));
             }
+
+            SourceRepositoryProvider = sourceRepositoryProvider;
+            Settings = settings;
 
             InitializePackagesFolderInfo(packagesFolderPath);
         }
@@ -60,7 +72,11 @@ namespace NuGet.PackageManagement
         /// </summary>
         public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
         {
-            InitializeMandatory(sourceRepositoryProvider);
+            if (sourceRepositoryProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
+            }
+
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
@@ -71,20 +87,11 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
+            SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
             SolutionManager = solutionManager;
 
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings));
-        }
-
-        private void InitializeMandatory(ISourceRepositoryProvider sourceRepositoryProvider)
-        {
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
-            }
-
-            SourceRepositoryProvider = sourceRepositoryProvider;
         }
 
         private void InitializePackagesFolderInfo(string packagesFolderPath)
@@ -1100,7 +1107,7 @@ namespace NuGet.PackageManagement
                         }
                         else
                         {
-                            using (var downloadPackageResult = await PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, token))
+                            using (var downloadPackageResult = await PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, Settings, token))
                             {
                                 await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, downloadPackageResult, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                             }
@@ -1194,7 +1201,12 @@ namespace NuGet.PackageManagement
                 buildIntegratedProject.JsonConfigPath);
 
             // Restore based on the modified package spec. This operation does not write the lock file to disk.
-            var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(buildIntegratedProject, packageSpec, nuGetProjectContext, sources, token);
+            var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(buildIntegratedProject,
+                packageSpec,
+                nuGetProjectContext,
+                sources,
+                Settings,
+                token);
 
             if (restoreResult.Success)
             {
@@ -1311,7 +1323,10 @@ namespace NuGet.PackageManagement
 
             token.ThrowIfCancellationRequested();
 
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(enabledSources, packageIdentity, token))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(enabledSources,
+                packageIdentity,
+                Settings,
+                token))
             {
                 // If you already downloaded the package, just restore it, don't cancel the operation now
                 await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);

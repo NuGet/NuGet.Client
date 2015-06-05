@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -24,12 +25,28 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
+            ISettings settings,
             CancellationToken token)
         {
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
                 var tasks = new List<Task<DownloadResourceResult>>(sources
-                    .Select(s => GetDownloadResourceResultAsync(s, packageIdentity, linkedTokenSource.Token)));
+                    .Select(s => GetDownloadResourceResultAsync(s, packageIdentity, settings, linkedTokenSource.Token)));
 
                 while (tasks.Any())
                 {
@@ -64,8 +81,26 @@ namespace NuGet.PackageManagement
         /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" /> from the given
         /// <paramref name="sourceRepository" />.
         /// </summary>
-        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository, PackageIdentity packageIdentity, CancellationToken token)
+        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
+            PackageIdentity packageIdentity,
+            ISettings settings,
+            CancellationToken token)
         {
+            if (sourceRepository == null)
+            {
+                throw new ArgumentNullException(nameof(sourceRepository));
+            }
+
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             token.ThrowIfCancellationRequested();
 
             var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
@@ -75,43 +110,13 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
-            var downloadResourceResult = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, token);
+            var downloadResourceResult = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
             if (downloadResourceResult == null)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadStreamNotAvailable, packageIdentity, sourceRepository.PackageSource.Source));
             }
 
-            return new DownloadResourceResult(
-                await GetSeekableStream(downloadResourceResult.PackageStream, token),
-                downloadResourceResult.PackageReader);
-        }
-
-        private static async Task<Stream> GetSeekableStream(Stream downloadStream, CancellationToken token)
-        {
-            if (!downloadStream.CanSeek)
-            {
-                var memoryStream = new MemoryStream();
-                try
-                {
-                    token.ThrowIfCancellationRequested();
-                    await downloadStream.CopyToAsync(memoryStream);
-                }
-                catch
-                {
-                    memoryStream.Dispose();
-                    throw;
-                }
-                finally
-                {
-                    downloadStream.Dispose();
-                }
-
-                memoryStream.Position = 0;
-                return memoryStream;
-            }
-
-            downloadStream.Position = 0;
-            return downloadStream;
+            return downloadResourceResult;
         }
     }
 }
