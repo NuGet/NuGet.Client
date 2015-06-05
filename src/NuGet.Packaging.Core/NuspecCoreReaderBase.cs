@@ -22,6 +22,7 @@ namespace NuGet.Packaging.Core
         protected const string Id = "id";
         protected const string Version = "version";
         protected const string MinClientVersion = "minClientVersion";
+        protected const string DevelopmentDependency = "developmentDependency";
 
         /// <summary>
         /// Read a nuspec from a stream.
@@ -69,6 +70,12 @@ namespace NuGet.Packaging.Core
         {
             var node = MetadataNode.Attribute(XName.Get(MinClientVersion));
             return node == null ? null : NuGetVersion.Parse(node.Value);
+        }
+
+        public bool GetDevelopmentDependency()
+        {
+            var node = MetadataNode.Elements(XName.Get(DevelopmentDependency, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+            return node == null ? false : bool.Parse(node.Value);
         }
 
         /// <summary>

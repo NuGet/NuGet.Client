@@ -235,6 +235,11 @@ namespace NuGet.Packaging
             return libItems;
         }
 
+        public bool GetDevelopmentDependency()
+        {
+            return Nuspec.GetDevelopmentDependency();
+        }
+
         protected override sealed NuspecCoreReaderBase NuspecCore
         {
             get { return Nuspec; }
