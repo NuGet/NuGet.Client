@@ -828,6 +828,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not available in this source.
+        /// </summary>
+        public static string Text_NotAvailableInSource {
+            get {
+                return ResourceManager.GetString("Text_NotAvailableInSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Progress.
         /// </summary>
         public static string Text_Progress {

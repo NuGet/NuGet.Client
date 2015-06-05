@@ -180,6 +180,8 @@
     <Compile Include="Converters\NuGetFrameworkToStringConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToVisibilityConverter.cs" />
     <Compile Include="Converters\StyleKeyConverter.cs" />
+    <Compile Include="Converters\SummaryToFontStyleConverter.cs" />
+    <Compile Include="Converters\SummaryToStringConverter.cs" />
     <Compile Include="DependencyBehaviorItem.cs" />
     <Compile Include="DetailControlModel.cs" />
     <Compile Include="FileConflictActionOptionItem.cs" />
