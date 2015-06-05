@@ -39,20 +39,27 @@
     </UsingTask>
 
     <Target Name="RestorePackages">
+        <ItemGroup>
+            <NuGetSourcesList Include="$(NUGET_BUILD_FEEDS)" />
+        </ItemGroup>
+
         <PropertyGroup>
             <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
             <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
+            <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
+            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '--source %(Identity)', ' ')</NuGetCommndLineCmdSources>
         </PropertyGroup>
+
         <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
         <Message Text="Restoring packages ... " Importance="high" />
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
-        
+
         <!-- Restore NuGet.CommandLine.Cmd -->
-        <Exec Command="$(NuGetExePath) install -Source https://www.myget.org/F/nugetbuild/api/v2 NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre" 
+        <Exec Command="$(NuGetExePath) install NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre @(NuGetExeSources)"
               Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
-              
+
         <!-- Restore MsBuid script -->
-        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -Source https://www.myget.org/F/nugetbuild/api/v2 -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre" 
+        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre @(NuGetExeSources)"
               Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
 
         <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
@@ -67,14 +74,14 @@
             <TestProjectsToRestore Include="$(RootDir)\test\StandaloneUI\*.csproj" />
         </ItemGroup>
         
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore %(SrcProjectsToRestore.FullPath)"  />
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore %(TestProjectsToRestore.FullPath)"  />
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(SrcProjectsToRestore.FullPath)"  />
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(TestProjectsToRestore.FullPath)"  />
     </Target>
 
     <ItemGroup>
       <!-- tests -->
-	  <TestProjects Include="$(RootDir)\test\ProjectManagement.Test\ProjectManagement.Test.csproj" />
-	  <TestProjects Include="$(RootDir)\test\PackageManagement.Test\PackageManagement.Test.csproj" />
+     <TestProjects Include="$(RootDir)\test\ProjectManagement.Test\ProjectManagement.Test.csproj" />
+     <TestProjects Include="$(RootDir)\test\PackageManagement.Test\PackageManagement.Test.csproj" />
     </ItemGroup>
 
     <Target Name="RunTests" Condition=" '$(DisableRunningUnitTests)' != 'true' ">        
