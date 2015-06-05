@@ -22,6 +22,10 @@
         x:Key="PackageStatusToUpdateImageVisibilityConverter" />
       <ui:BooleanToVisibilityConverter
         x:Key="BooleanToVisibilityConverter" />
+      <ui:SummaryToFontStyleConverter
+        x:Key="SummaryToFontStyleConverter" />
+      <ui:SummaryToStringConverter
+        x:Key="SummaryToStringConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Border
@@ -88,7 +92,8 @@
           Text="{Binding Id}" />
         <TextBlock
           Grid.Row="1"
-          Text="{Binding Summary}"
+          Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
+          FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
           TextTrimming="CharacterEllipsis"
           TextWrapping="Wrap" />
 

@@ -257,7 +257,7 @@ namespace NuGet.PackageManagement.UI
             };
         }
 
-        // Gets the package metadata from the local resource when the remote source 
+        // Gets the package metadata from the local resource when the remote source
         // is not available.
         private static async Task<UISearchMetadata> GetPackageMetadataWhenRemoteSourceUnavailable(
             UIMetadataResource localResource,
@@ -342,6 +342,14 @@ namespace NuGet.PackageManagement.UI
                 latestPackageMetadata: packageMetadata);
         }
 
+        /// <summary>
+        /// Get the metadata of an installed package.
+        /// </summary>
+        /// <param name="localResource">The local resource, i.e. the package folder of the solution.</param>
+        /// <param name="metadataResource">The remote metadata resource.</param>
+        /// <param name="identity">The installed package.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The metadata of the package.</returns>
         private async Task<UISearchMetadata> GetPackageMetadataAsync(
             UIMetadataResource localResource,
             UIMetadataResource metadataResource,
@@ -358,15 +366,28 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                return await GetPackageMetadataFromMetadataResourceAsync(
+                var metadata = await GetPackageMetadataFromMetadataResourceAsync(
                     metadataResource,
                     identity,
                     cancellationToken);
+
+                // if the package does not exist in the remote source, NuGet should
+                // try getting metadata from the local resource.
+                if (String.IsNullOrEmpty(metadata.Summary) && localResource != null)
+                {
+                    return await GetPackageMetadataWhenRemoteSourceUnavailable(
+                        localResource,
+                        identity,
+                        cancellationToken);
+                }
+                else
+                {
+                    return metadata;
+                }
             }
             catch
             {
-                // The remote source is not available. In this case, if the user
-                // is searching for installed packages, NuGet should not fail but
+                // The remote source is not available. NuGet should not fail but
                 // should use the local resource instead.
                 if (localResource != null)
                 {
