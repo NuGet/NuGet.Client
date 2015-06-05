@@ -53,9 +53,6 @@ namespace NuGet.PackageManagement.UI
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // Loaded should only fire once
-            Loaded -= UserControl_Loaded;
-
             if (PackageRestoreManager != null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate

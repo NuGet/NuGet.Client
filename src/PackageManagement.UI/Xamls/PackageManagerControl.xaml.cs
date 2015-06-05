@@ -43,6 +43,8 @@ namespace NuGet.PackageManagement.UI
 
         private readonly Dispatcher _uiDispatcher;
 
+        private bool _missingPackageStatus;
+
         public PackageManagerModel Model { get; }
 
         public PackageManagerControl(
@@ -102,6 +104,8 @@ namespace NuGet.PackageManagement.UI
             {
                 _legalDisclaimer.Visibility = Visibility.Collapsed;
             }
+
+            _missingPackageStatus = false;
         }
 
         public PackageRestoreBar RestoreBar => _restoreBar;
@@ -377,10 +381,13 @@ namespace NuGet.PackageManagement.UI
         {
             // TODO: PackageRestoreManager fires this event even when solution is closed.
             // Don't do anything if solution is closed.
-            if (!e.PackagesMissing)
+            // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh 
+            // only when package is missing last time and is not missing this time, we need to refresh
+            if (!e.PackagesMissing && _missingPackageStatus)
             {
                 UpdateAfterPackagesMissingStatusChanged();
             }
+            _missingPackageStatus = e.PackagesMissing;
         }
 
         // Refresh the UI after packages are restored.
