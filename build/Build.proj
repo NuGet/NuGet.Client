@@ -126,8 +126,52 @@
         <MonoProjects Include="@(TestProjects)" />
     </ItemGroup>
 
+    <Target Name="RestorePackages">
+        <ItemGroup>
+            <NuGetSourcesList Include="$(NUGET_BUILD_FEEDS)" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
+            <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
+            <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
+            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '--source %(Identity)', ' ')</NuGetCommndLineCmdSources>
+        </PropertyGroup>
+
+        <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
+        <Message Text="Restoring packages ... " Importance="high" />
+        <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
+
+        <!-- Restore NuGet.CommandLine.Cmd -->
+        <Exec Command="$(NuGetExePath) install NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre $(NuGetExeSources)"
+              Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
+
+        <!-- Restore MsBuid script -->
+        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre $(NuGetExeSources)"
+              Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
+
+        <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
+        <ItemGroup>
+            <ProjectsToRestore Include="$(RootDir)\src\VisualStudioAPI\*.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\PackageManagement.VisualStudio\*.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\TeamFoundationServer12\TeamFoundationServer12.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\TeamFoundationServer14\TeamFoundationServer14.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\Console.Types\Console.Types.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\Console\Console.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\PowerShellHost\PowerShellHost.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\Options\Options.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsExtension\VsExtension.csproj" />
+
+        </ItemGroup>
+
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(ProjectsToRestore.FullPath)"  />
+    </Target>
+
     <Target Name="Go"
-        DependsOnTargets="CheckFxCop; UpdateVsixVersion; Build; ReportFxCopResults;
+        DependsOnTargets="CheckFxCop; RestorePackages; UpdateVsixVersion; Build; ReportFxCopResults;
                                     VerifyAssembliesInVsix; RunTests; CreateDropDirectories; CopyExecutableOutputToDropDirectory; 
                                     CopyServerExtensionsOutputToDropDirectory;
                                     CopyVisualStudioAddInOutputToDropDirectory; CopyEndToEndTestsToDropDirectory;
