@@ -74,7 +74,6 @@
     <Compile Include="V2V3ParityTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
