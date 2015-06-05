@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,7 +68,7 @@ namespace NuGet.ProjectManagement
         public override Task<bool> InstallPackageAsync(
             PackageIdentity packageIdentity,
             DownloadResourceResult downloadResourceResult,
-            INuGetProjectContext nuGetProjectContext, 
+            INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             if (packageIdentity == null)
@@ -80,7 +81,8 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException("nuGetProjectContext");
             }
 
-            var newPackageReference = new PackageReference(packageIdentity, TargetFramework);
+            var isDevelopmentDependency = CheckDevelopmentDependency(downloadResourceResult);
+            var newPackageReference = new PackageReference(packageIdentity, TargetFramework, userInstalled: true, developmentDependency: isDevelopmentDependency, requireReinstallation: false);
             var installedPackagesList = GetInstalledPackagesList();
             var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
                 p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
@@ -206,6 +208,33 @@ namespace NuGet.ProjectManagement
             }
 
             return new List<PackageReference>();
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "Disposing the PackageReader will dispose the backing stream that we want to leave open.")]
+        private static bool CheckDevelopmentDependency(DownloadResourceResult downloadResourceResult)
+        {
+            bool isDevelopmentDependency = false;
+
+            // Catch any exceptions while fetching DevelopmentDependency element from nuspec file. 
+            // So it can continue to write the packages.config file.
+            try
+            {
+                if (downloadResourceResult.PackageReader != null)
+                {
+                    isDevelopmentDependency = downloadResourceResult.PackageReader.GetDevelopmentDependency();
+                }
+                else
+                {
+                    var packageZipArchive = new ZipArchive(downloadResourceResult.PackageStream, ZipArchiveMode.Read, leaveOpen: true);
+                    var packageReader = new PackageReader(packageZipArchive);
+                    var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+                    isDevelopmentDependency = nuspecReader.GetDevelopmentDependency();
+                }
+            }
+            catch { }
+
+            return isDevelopmentDependency;
         }
     }
 }

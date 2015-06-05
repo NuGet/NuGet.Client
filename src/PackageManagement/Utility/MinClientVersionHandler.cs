@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement
             }
             else
             {
-                var packageZipArchive = new ZipArchive(downloadResourceResult.PackageStream);
+                var packageZipArchive = new ZipArchive(downloadResourceResult.PackageStream, ZipArchiveMode.Read, leaveOpen: true);
                 var packageReader = new PackageReader(packageZipArchive);
                 var nuspecReader = new NuspecReader(packageReader.GetNuspec());
                 packageMinClientVersion = nuspecReader.GetMinClientVersion();
