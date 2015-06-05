@@ -8,7 +8,8 @@ param (
     [string]$PFXPath,
     [switch]$DelaySign,
     [Parameter(Mandatory=$true)][string]$Version,
-    [string]$MsbuildParameters = ''
+    [string]$MsbuildParameters = '',
+    [string]$packageSources
 )
 
 # build the specified project to create the nupkg
@@ -72,7 +73,7 @@ function Build()
     
     $msbuildExe = "${env:ProgramFiles(x86)}\MSBuild\14.0\Bin\msbuild.exe"
     
-    & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration" /p:EnableCodeAnalysis=true /m /v:M  /fl /flp:v=D $msbuildParameters
+    & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration" /p:EnableCodeAnalysis=true /m /v:M  /fl /flp:v=D /p:NUGET_BUILD_FEEDS='$packageSources' $msbuildParameters
 	if ($lastexitcode -ne 0) 
 	{		
 	  	throw "Build failed"
