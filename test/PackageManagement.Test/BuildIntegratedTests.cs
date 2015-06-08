@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -236,6 +238,193 @@ namespace NuGet.Test
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
         }
 
+        [Fact]
+        public async Task TestPacManBuildIntegratedUninstallPackageVerifyRemovalFromLockFile()
+        {
+            // Arrange
+            var packageIdentityA = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
+            var packageIdentityB = new PackageIdentity("entityframework", NuGetVersion.Parse("6.1.3"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJsonNet452(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net452");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
+                packageIdentityA,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                CancellationToken.None);
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
+                packageIdentityB,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                CancellationToken.None);
+
+            var lockFileFormat = new LockFileFormat();
+            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+            var entityFrameworkTargets = lockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => string.Equals(library.Name, packageIdentityB.Id, StringComparison.OrdinalIgnoreCase));
+
+            // Check that there are no packages returned by PackagesConfigProject
+            var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(2, installedPackages.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+            Assert.True(entityFrameworkTargets.Any());
+
+            // Act
+            await nuGetPackageManager.UninstallPackageAsync(buildIntegratedProject, packageIdentityB.Id,
+                new UninstallationContext(), new TestNuGetProjectContext(), token);
+
+            lockFile = lockFileFormat.Read(lockFilePath);
+            entityFrameworkTargets = lockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => string.Equals(library.Name, packageIdentityB.Id, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, installedPackages.Count);
+            Assert.Equal(packageIdentityA.Id, "newtonsoft.json", StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(0, entityFrameworkTargets.Count());
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedInstallPackageWithInitPS1()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
+            var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.0"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJsonNet452(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net452");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            string message = string.Empty;
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(2, buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count);
+            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(packageIdentity));
+            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(dependencyIdentity));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedUninstallPackageDoesNotCallInitPs1()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJsonNet452(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net452");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            string message = string.Empty;
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Clear();
+
+            // Act
+            await nuGetPackageManager.UninstallPackageAsync(buildIntegratedProject, packageIdentity.Id,
+                new UninstallationContext(), new TestNuGetProjectContext(), token);
+
+            // Assert
+            Assert.Equal(0, buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedUpdatePackageCallsInitPs1OnNewPackages()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
+            var updateIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.5"));
+            var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.0"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJsonNet452(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net452");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            string message = string.Empty;
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Clear();
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, updateIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count);
+            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(updateIdentity));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
         private static void CreateConfigJson(string path)
         {
             using (var writer = new StreamWriter(path))
@@ -260,6 +449,51 @@ namespace NuGet.Test
                 json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
 
                 return json;
+            }
+        }
+
+        private static void CreateConfigJsonNet452(string path)
+        {
+            using (var writer = new StreamWriter(path))
+            {
+                writer.Write(BasicConfigNet452.ToString());
+            }
+        }
+
+        private static JObject BasicConfigNet452
+        {
+            get
+            {
+                var json = new JObject();
+
+                var frameworks = new JObject();
+                frameworks["net452"] = new JObject();
+
+                json["dependencies"] = new JObject();
+
+                json["frameworks"] = frameworks;
+
+                json.Add("runtimes", JObject.Parse("{ \"win-any\": { } }"));
+
+                return json;
+            }
+        }
+
+        private class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject
+        {
+            public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; } = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+
+            public TestBuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
+                : base(jsonConfig, msbuildProjectSystem)
+            {
+
+            }
+
+            public override Task<bool> ExecuteInitScriptAsync(PackageIdentity identity, INuGetProjectContext projectContext, bool throwOnFailure)
+            {
+                ExecuteInitScriptAsyncCalls.Add(identity);
+
+                return base.ExecuteInitScriptAsync(identity, projectContext, throwOnFailure);
             }
         }
     }

@@ -21,7 +21,7 @@ using NuGet.Versioning;
 namespace NuGet.ProjectManagement.Projects
 {
     /// <summary>
-    /// A NuGet integrated MSBuild project.
+    /// A NuGet integrated MSBuild project.k
     /// These projects contain a project.json
     /// </summary>
     public class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject
@@ -179,6 +179,17 @@ namespace NuGet.ProjectManagement.Projects
         /// The underlying msbuild project system
         /// </summary>
         public IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; }
+
+        /// <summary>
+        /// Script executor hook
+        /// </summary>
+        public virtual Task<bool> ExecuteInitScriptAsync(
+            PackageIdentity identity,
+            INuGetProjectContext projectContext, 
+            bool throwOnFailure)
+        {
+            return Task.FromResult(false);
+        }
 
         private async Task<JObject> GetJsonAsync()
         {

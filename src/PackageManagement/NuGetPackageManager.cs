@@ -704,7 +704,7 @@ namespace NuGet.PackageManagement
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, targetFramework);
 
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
-                    
+
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(
                         primaryPackages,
                         oldListOfInstalledPackages,
@@ -732,9 +732,9 @@ namespace NuGet.PackageManagement
                     if (!resolutionContext.IncludePrerelease)
                     {
                         prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(
-                            prunedAvailablePackages, 
-                            packageTargetsForResolver, 
-                            new [] { packageIdentity });
+                            prunedAvailablePackages,
+                            packageTargetsForResolver,
+                            new[] { packageIdentity });
                     }
 
                     // Verify that the target is allowed by packages.config
@@ -1167,12 +1167,41 @@ namespace NuGet.PackageManagement
 
             sources.UnionWith(enabledSources);
 
+            // Read the current lock file if it exists
+            LockFile originalLockFile = null;
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+            if (File.Exists(lockFilePath))
+            {
+                originalLockFile = lockFileFormat.Read(lockFilePath);
+            }
+
             // Read project.json
             JObject rawPackageSpec;
             using (var streamReader = new StreamReader(buildIntegratedProject.JsonConfigPath))
             {
                 var reader = new JsonTextReader(streamReader);
                 rawPackageSpec = JObject.Load(reader);
+            }
+
+            // If the lock file does not exist, restore before starting the operations
+            if (originalLockFile == null)
+            {
+                var originalPackageSpec = JsonPackageSpecReader.GetPackageSpec(
+                    rawPackageSpec.ToString(),
+                    buildIntegratedProject.ProjectName,
+                    buildIntegratedProject.JsonConfigPath);
+
+                var originalRestoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(
+                    buildIntegratedProject,
+                    originalPackageSpec,
+                    nuGetProjectContext,
+                    sources,
+                    token);
+
+                originalLockFile = originalRestoreResult.LockFile;
             }
 
             // Modify the package spec
@@ -1206,8 +1235,6 @@ namespace NuGet.PackageManagement
                 }
 
                 // Write out the lock file
-                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
-                var lockFileFormat = new LockFileFormat();
                 lockFileFormat.Write(lockFilePath, restoreResult.LockFile);
 
                 // Write out a message for each action
@@ -1222,6 +1249,22 @@ namespace NuGet.PackageManagement
                         action.NuGetProjectActionType.ToString().ToLowerInvariant(), identityString,
                         String.Format(CultureInfo.InvariantCulture, "{0} {1}", toFromString,
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                }
+
+                // Run init.ps1 scripts
+                var sortedPackages = BuildIntegratedProjectUtility.GetOrderedProjectDependencies(buildIntegratedProject);
+                var addedPackages = new HashSet<PackageIdentity>(
+                    BuildIntegratedRestoreUtility.GetAddedPackages(originalLockFile, restoreResult.LockFile),
+                    PackageIdentity.Comparer);
+
+                // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.
+                foreach (var package in sortedPackages)
+                {
+                    if (addedPackages.Contains(package))
+                    {
+                        var packagePath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(package);
+                        await buildIntegratedProject.ExecuteInitScriptAsync(package, nuGetProjectContext, false);
+                    }
                 }
             }
             else

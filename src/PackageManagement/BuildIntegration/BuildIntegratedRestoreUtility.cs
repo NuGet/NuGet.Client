@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Configuration;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -22,7 +23,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Maximum number of threads to use during restore.
         /// </summary>
-        public const int MaxRestoreThreads = 8;
+        public const int MaxRestoreThreads = 16;
 
         /// <summary>
         /// Restore a build integrated project and update the lock file
@@ -89,6 +90,30 @@ namespace NuGet.PackageManagement
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Find all packages added to <paramref name="updatedLockFile"/>.
+        /// </summary>
+        public static IReadOnlyList<PackageIdentity> GetAddedPackages(LockFile originalLockFile, LockFile updatedLockFile)
+        {
+            var updatedPackages = updatedLockFile.Targets.SelectMany(target => target.Libraries)
+                .Select(library => new PackageIdentity(library.Name, library.Version));
+
+            var originalPackages = originalLockFile.Targets.SelectMany(target => target.Libraries)
+                .Select(library => new PackageIdentity(library.Name, library.Version));
+
+            var results = updatedPackages.Except(originalPackages, PackageIdentity.Comparer).ToList();
+
+            return results;
+        }
+
+        /// <summary>
+        /// Find all packages removed from <paramref name="updatedLockFile"/>.
+        /// </summary>
+        public static IReadOnlyList<PackageIdentity> GetRemovedPackages(LockFile originalLockFile, LockFile updatedLockFile)
+        {
+            return GetAddedPackages(updatedLockFile, originalLockFile);
         }
     }
 }
