@@ -43,7 +43,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Failed to resolve conflicts.
+        /// Failed to resolve conflicts for {0}.
         /// </summary>
         internal static string Log_FailedToResolveConflicts
         {
@@ -51,11 +51,11 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Failed to resolve conflicts.
+        /// Failed to resolve conflicts for {0}.
         /// </summary>
-        internal static string FormatLog_FailedToResolveConflicts()
+        internal static string FormatLog_FailedToResolveConflicts(object p0)
         {
-            return GetString("Log_FailedToResolveConflicts");
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_FailedToResolveConflicts"), p0);
         }
 
         /// <summary>
@@ -264,6 +264,22 @@ namespace NuGet.Commands
         internal static string FormatLog_SkippingRuntimeWalk()
         {
             return GetString("Log_SkippingRuntimeWalk");
+        }
+
+        /// <summary>
+        /// Unable to resolve {0} {1} for {2}.
+        /// </summary>
+        internal static string Log_UnresolvedDependency
+        {
+            get { return GetString("Log_UnresolvedDependency"); }
+        }
+
+        /// <summary>
+        /// Unable to resolve {0} {1} for {2}.
+        /// </summary>
+        internal static string FormatLog_UnresolvedDependency(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_UnresolvedDependency"), p0, p1, p2);
         }
 
         /// <summary>

@@ -124,7 +124,7 @@
     <value>Checking compatibility for {0} {1} with {2}.</value>
   </data>
   <data name="Log_FailedToResolveConflicts" xml:space="preserve">
-    <value>Failed to resolve conflicts.</value>
+    <value>Failed to resolve conflicts for {0}.</value>
   </data>
   <data name="Log_GeneratingMsBuildFile" xml:space="preserve">
     <value>Generating MSBuild file {0}.</value>
@@ -164,6 +164,9 @@
   </data>
   <data name="Log_SkippingRuntimeWalk" xml:space="preserve">
     <value>Skipping runtime dependency walk, no runtimes defined in project.json.</value>
+  </data>
+  <data name="Log_UnresolvedDependency" xml:space="preserve">
+    <value>Unable to resolve {0} {1} for {2}.</value>
   </data>
   <data name="Log_UsingSource" xml:space="preserve">
     <value>Using source {0}.</value>

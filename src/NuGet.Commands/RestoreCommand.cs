@@ -106,7 +106,7 @@ namespace NuGet.Commands
                 frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context, writeToLockFile: true));
             }
 
-            foreach(var framework in _request.SupportProfiles.Select(p => p.Item1).Distinct().Where(f => !frameworks.Contains(f)))
+            foreach (var framework in _request.SupportProfiles.Select(p => p.Item1).Distinct().Where(f => !frameworks.Contains(f)))
             {
                 // Walk dependencies for frameworks that only exist via supports profiles
                 frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context, writeToLockFile: false));
@@ -114,9 +114,8 @@ namespace NuGet.Commands
 
             graphs.AddRange(await Task.WhenAll(frameworkTasks));
 
-            if (graphs.Any(g => g.InConflict))
+            if (!ResolutionSucceeded(graphs))
             {
-                _log.LogError(Strings.Log_FailedToResolveConflicts);
                 return new RestoreResult(success: false, restoreGraphs: graphs);
             }
 
@@ -143,9 +142,8 @@ namespace NuGet.Commands
 
                 graphs.AddRange(runtimeGraphs);
 
-                if (runtimeGraphs.Any(g => g.InConflict))
+                if (!ResolutionSucceeded(graphs))
                 {
-                    _log.LogError(Strings.Log_FailedToResolveConflicts);
                     return new RestoreResult(success: false, restoreGraphs: graphs);
                 }
 
@@ -158,10 +156,10 @@ namespace NuGet.Commands
             }
 
             // Walk additional runtime graphs for supports checks
-            if(_request.SupportProfiles.Any())
+            if (_request.SupportProfiles.Any())
             {
                 var checkTasks = new List<Task<RestoreTargetGraph>>();
-                foreach(var profile in _request.SupportProfiles.Where(p => !runtimeTuples.Contains(p)))
+                foreach (var profile in _request.SupportProfiles.Where(p => !runtimeTuples.Contains(p)))
                 {
                     _log.LogVerbose($"Walking graph for {profile.Item1} {profile.Item2} to check support");
                     var graph = graphs.SingleOrDefault(g => g.Framework.Equals(profile.Item1) && string.IsNullOrEmpty(g.RuntimeIdentifier));
@@ -172,9 +170,8 @@ namespace NuGet.Commands
                 var checkGraphs = (await Task.WhenAll(checkTasks)).ToList();
                 graphs.AddRange(checkGraphs);
 
-                if (checkGraphs.Any(g => g.InConflict))
+                if (!ResolutionSucceeded(graphs))
                 {
-                    _log.LogError("Failed to resolve conflicts");
                     return new RestoreResult(success: false, restoreGraphs: graphs);
                 }
 
@@ -189,7 +186,7 @@ namespace NuGet.Commands
             var checkResults = new List<CompatibilityCheckResult>();
             bool success = true;
             var checker = new CompatibilityChecker(localRepository, lockFile, _log);
-            foreach(var graph in graphs)
+            foreach (var graph in graphs)
             {
                 _log.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
                 var result = checker.Check(graph);
@@ -212,6 +209,28 @@ namespace NuGet.Commands
             WriteTargetsAndProps(_request.Project, graphs, localRepository);
 
             return new RestoreResult(success, graphs, checkResults, lockFile);
+        }
+
+        private bool ResolutionSucceeded(List<RestoreTargetGraph> graphs)
+        {
+            var success = true;
+            foreach (var graph in graphs)
+            {
+                if (graph.InConflict)
+                {
+                    success = false;
+                    _log.LogError(Strings.FormatLog_FailedToResolveConflicts(graph.Name));
+                }
+                if (graph.Unresolved.Any())
+                {
+                    success = false;
+                    foreach (var unresolved in graph.Unresolved)
+                    {
+                        _log.LogError(Strings.FormatLog_UnresolvedDependency(unresolved.Name, unresolved.VersionRange.PrettyPrint(), graph.Name));
+                    }
+                }
+            }
+            return success;
         }
 
         private void WriteTargetsAndProps(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)

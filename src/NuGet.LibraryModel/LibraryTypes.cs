@@ -35,5 +35,10 @@ namespace NuGet.LibraryModel
         /// Indicates that the library comes from a Windows Metadata Assembly (.winmd file)
         /// </summary>
         public const string WinMD = "WinMD";
+
+        /// <summary>
+        /// Indicates that the library could not be resolved
+        /// </summary>
+        public const string Unresolved = "Unresolved";
     }
 }

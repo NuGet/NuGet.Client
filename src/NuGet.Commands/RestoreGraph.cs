@@ -104,8 +104,7 @@ namespace NuGet.Commands
                         return;
                     }
 
-                    if (node.Item == null
-                        || node.Item.Data.Match == null)
+                    if (string.Equals(node?.Item?.Key?.Type, LibraryTypes.Unresolved))
                     {
                         if (node.Key.TypeConstraint != LibraryTypes.Reference
                             &&

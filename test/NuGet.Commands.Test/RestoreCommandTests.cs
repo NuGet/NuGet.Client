@@ -295,6 +295,44 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, runtimeAssemblies.Count);
         }
 
+        [Fact]
+        public async Task RestoreCommand_CorrectlyIdentifiesUnresolvedPackages()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+            AddDependency(spec, "NotARealPackage.ThisShouldNotExists.DontCreateIt.Seriously.JustDontDoIt.Please", "2.8.3");
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            var installed = result.GetAllInstalled();
+            var unresolved = result.GetAllUnresolved();
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Null(result.LockFile);
+
+            Assert.Equal(1, logger.Errors);
+            Assert.Equal(1, unresolved.Count);
+            Assert.Equal(0, installed.Count);
+        }
+
         private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, string framework, string runtime)
         {
             return targets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(framework)))

@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
 {
@@ -23,79 +26,75 @@ namespace NuGet.DependencyResolver
 
         public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph)
         {
-            var cache = new Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>>();
+            var cache = new ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>>();
 
             return CreateGraphNode(cache, library, framework, runtimeIdentifier, runtimeGraph, _ => true);
         }
 
-        private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, Func<string, bool> predicate)
+        private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, Func<string, bool> predicate)
         {
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
             {
                 Item = await FindLibraryCached(cache, libraryRange, framework),
             };
 
-            if (node.Item == null)
+            Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
+            if (node.Key.VersionRange != null &&
+                node.Key.VersionRange.IsFloating)
             {
-                // Reject null items
-                node.Disposition = Disposition.Rejected;
+                cache.TryAdd(node.Key, Task.FromResult(node.Item));
             }
-            else
+
+            var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
+            var dependencies = node.Item.Data.Dependencies ?? Enumerable.Empty<LibraryDependency>();
+            foreach (var dependency in dependencies)
             {
-                if (node.Key.VersionRange != null
-                    &&
-                    node.Key.VersionRange.IsFloating)
+                if (predicate(dependency.Name))
                 {
-                    lock (cache)
-                    {
-                        if (!cache.ContainsKey(node.Key))
-                        {
-                            cache[node.Key] = Task.FromResult(node.Item);
-                        }
-                    }
-                }
+                    tasks.Add(CreateGraphNode(
+                        cache,
+                        dependency.LibraryRange,
+                        framework,
+                        runtimeName,
+                        runtimeGraph,
+                        ChainPredicate(predicate, node.Item, dependency)));
 
-                var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
-                var dependencies = node.Item.Data.Dependencies ?? Enumerable.Empty<LibraryDependency>();
-                foreach (var dependency in dependencies)
-                {
-                    if (predicate(dependency.Name))
+                    if (!string.IsNullOrEmpty(runtimeName)
+                        && runtimeGraph != null)
                     {
-                        tasks.Add(CreateGraphNode(cache, dependency.LibraryRange, framework, runtimeName, runtimeGraph, ChainPredicate(predicate, node.Item, dependency)));
-
-                        if (!string.IsNullOrEmpty(runtimeName)
-                            && runtimeGraph != null)
+                        // Look up any additional dependencies for this package
+                        foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, dependency.Name))
                         {
-                            // Look up any additional dependencies for this package
-                            foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, dependency.Name))
+                            // Add the dependency to the tasks
+                            var runtimeLibraryRange = new LibraryRange()
                             {
-                                // Add the dependency to the tasks
-                                var runtimeLibraryRange = new LibraryRange()
-                                {
-                                    Name = runtimeDependency.Id,
-                                    VersionRange = runtimeDependency.VersionRange
-                                };
-                                tasks.Add(CreateGraphNode(
-                                    cache,
-                                    runtimeLibraryRange,
-                                    framework,
-                                    runtimeName,
-                                    runtimeGraph,
-                                    ChainPredicate(predicate, node.Item, dependency)));
-                            }
+                                Name = runtimeDependency.Id,
+                                VersionRange = runtimeDependency.VersionRange
+                            };
+                            tasks.Add(CreateGraphNode(
+                                cache,
+                                runtimeLibraryRange,
+                                framework,
+                                runtimeName,
+                                runtimeGraph,
+                                ChainPredicate(predicate, node.Item, dependency)));
                         }
                     }
                 }
+            }
 
-                while (tasks.Any())
-                {
-                    var task = await Task.WhenAny(tasks);
-                    tasks.Remove(task);
-                    var dependencyNode = await task;
-                    // Not required for anything
-                    dependencyNode.OuterNode = node;
-                    node.InnerNodes.Add(dependencyNode);
-                }
+            while (tasks.Any())
+            {
+                // Wait for any node to finish resolving
+                var task = await Task.WhenAny(tasks);
+
+                // Extract the resolved node
+                tasks.Remove(task);
+                var dependencyNode = await task;
+                
+                // Wire the node into the tree
+                dependencyNode.OuterNode = node;
+                node.InnerNodes.Add(dependencyNode);
             }
 
             return node;
@@ -120,22 +119,13 @@ namespace NuGet.DependencyResolver
         }
 
         public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
-            Dictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache,
+            ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache,
             LibraryRange libraryRange,
             NuGetFramework framework,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            lock (cache)
-            {
-                Task<GraphItem<RemoteResolveResult>> task;
-                if (!cache.TryGetValue(libraryRange, out task))
-                {
-                    task = FindLibraryEntry(libraryRange, framework, cancellationToken);
-                    cache[libraryRange] = task;
-                }
-
-                return task;
-            }
+            return cache.GetOrAdd(libraryRange, (range) =>
+                FindLibraryEntry(range, framework, cancellationToken));
         }
 
         private async Task<GraphItem<RemoteResolveResult>> FindLibraryEntry(LibraryRange libraryRange, NuGetFramework framework, CancellationToken cancellationToken)
@@ -144,7 +134,7 @@ namespace NuGet.DependencyResolver
 
             if (match == null)
             {
-                return null;
+                return CreateUnresolvedMatch(libraryRange);
             }
 
             var dependencies = await match.Provider.GetDependenciesAsync(match.Library, framework, cancellationToken);
@@ -156,6 +146,29 @@ namespace NuGet.DependencyResolver
                     Match = match,
                     Dependencies = dependencies
                 },
+            };
+        }
+
+        private static GraphItem<RemoteResolveResult> CreateUnresolvedMatch(LibraryRange libraryRange)
+        {
+            var identity = new LibraryIdentity()
+            {
+                Name = libraryRange.Name,
+                Type = LibraryTypes.Unresolved,
+                Version = libraryRange.VersionRange?.MinVersion
+            };
+            return new GraphItem<RemoteResolveResult>(identity)
+            {
+                Data = new RemoteResolveResult()
+                {
+                    Match = new RemoteMatch()
+                    {
+                        Library = identity,
+                        Path = null,
+                        Provider = null
+                    },
+                    Dependencies = Enumerable.Empty<LibraryDependency>()
+                }
             };
         }
 
