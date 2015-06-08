@@ -177,7 +177,7 @@ namespace NuGet.VisualStudio
             repos.AddFromRepository(repository);
 
             // store expanded node state
-            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = await VsHierarchyHelper.GetAllExpandedNodesAsync(_solutionManager);
+            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
 
             foreach (var package in configuration.Packages)
             {
@@ -257,7 +257,7 @@ namespace NuGet.VisualStudio
             }
 
             // collapse nodes
-            await VsHierarchyHelper.CollapseAllNodesAsync(_solutionManager, expandedNodes);
+            await VsHierarchyUtility.CollapseAllNodesAsync(_solutionManager, expandedNodes);
         }
 
         /// <summary>

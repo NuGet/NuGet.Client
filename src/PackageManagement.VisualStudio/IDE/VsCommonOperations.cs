@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using EnvDTE;
@@ -14,6 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VsCommonOperations : ICommonOperations
     {
         private readonly DTE _dte;
+        private IDictionary<string, ISet<VsHierarchyItem>> _expandedNodes;
 
         public VsCommonOperations()
             : this(ServiceLocator.GetInstance<DTE>())
@@ -45,6 +47,40 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     return Task.FromResult(0);
                 });
+        }
+
+        public Task SaveSolutionExplorerNodeStates(ISolutionManager solutionManager)
+        {
+            if (solutionManager == null)
+            {
+                throw new ArgumentException(nameof(solutionManager));
+            }
+
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                _expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(solutionManager);
+
+                return Task.FromResult(0);
+            });
+        }
+
+        public Task CollapseAllNodes(ISolutionManager solutionManager)
+        {
+            if (solutionManager == null)
+            {
+                throw new ArgumentException(nameof(solutionManager));
+            }
+
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                await VsHierarchyUtility.CollapseAllNodesAsync(solutionManager, _expandedNodes);
+
+                return Task.FromResult(0);
+            });
         }
     }
 }

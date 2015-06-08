@@ -6,12 +6,12 @@ using System.Diagnostics;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace NuGet.VisualStudio
+namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Represent a particular tree node in the SolutionExplorer window.
     /// </summary>
-    internal class VsHierarchyItem : IEquatable<VsHierarchyItem>
+    public class VsHierarchyItem : IEquatable<VsHierarchyItem>
     {
         private readonly uint _vsitemid;
         private readonly IVsHierarchy _hierarchy;

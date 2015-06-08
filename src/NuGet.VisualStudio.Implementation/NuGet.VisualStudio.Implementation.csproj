@@ -127,8 +127,6 @@
       <DependentUpon>VsResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Utility\PumpingJTF.cs" />
-    <Compile Include="Utility\VsHierarchyHelper.cs" />
-    <Compile Include="Utility\VsHierarchyItem.cs" />
     <Compile Include="Utility\XmlUtility.cs" />
     <Compile Include="VSAPIProjectContext.cs" />
     <Compile Include="VsTemplateWizard.cs" />
