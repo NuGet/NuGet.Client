@@ -26,6 +26,16 @@ namespace NuGet.PackageManagement
             await CommonOperations.OpenFile(fullPath);
         }
 
+        public async Task SaveExpandedNodeStates(ISolutionManager solutionManager)
+        {
+            await CommonOperations.SaveSolutionExplorerNodeStates(solutionManager);
+        }
+
+        public async Task CollapseAllNodes(ISolutionManager solutionManager)
+        {
+            await CommonOperations.CollapseAllNodes(solutionManager);
+        }
+
         public PackageIdentity IDEDirectInstall
         {
             get { return DirectInstall; }

@@ -172,5 +172,15 @@ namespace StandaloneUI
             }
             return Task.FromResult(0);
         }
+
+        public Task SaveSolutionExplorerNodeStates(ISolutionManager solutionManager)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task CollapseAllNodes(ISolutionManager solutionManager)
+        {
+            return Task.FromResult(0);
+        }
     }
 }
