@@ -8,10 +8,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using VSLangProj;
 using EnvDTEProject = EnvDTE.Project;
+using Threading = System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -20,7 +24,13 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class BuildIntegratedProjectSystem : BuildIntegratedNuGetProject
     {
-        public BuildIntegratedProjectSystem(string jsonConfigPath, EnvDTEProject envDTEProject, IMSBuildNuGetProjectSystem msbuildProjectSystem, string uniqueName)
+        private IScriptExecutor _scriptExecutor;
+
+        public BuildIntegratedProjectSystem(
+            string jsonConfigPath,
+            EnvDTEProject envDTEProject,
+            IMSBuildNuGetProjectSystem msbuildProjectSystem,
+            string uniqueName)
             : base(jsonConfigPath, msbuildProjectSystem)
         {
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
@@ -32,6 +42,18 @@ namespace NuGet.PackageManagement.VisualStudio
         /// DTE project
         /// </summary>
         protected EnvDTEProject EnvDTEProject { get; }
+
+        private IScriptExecutor ScriptExecutor
+        {
+            get
+            {
+                if (_scriptExecutor == null)
+                {
+                    _scriptExecutor = ServiceLocator.GetInstanceSafe<IScriptExecutor>();
+                }
+                return _scriptExecutor;
+            }
+        }
 
         /// <summary>
         /// Returns the closure of all project to project references below this project.
@@ -112,6 +134,38 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return results;
+        }
+
+        public override async Threading.Task<bool> ExecuteInitScriptAsync(PackageIdentity identity, INuGetProjectContext projectContext, bool throwOnFailure)
+        {
+            if (ScriptExecutor != null)
+            {
+                var packageInstallPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(identity);
+
+                var packageReader = new PackageFolderReader(packageInstallPath);
+
+                var toolItemGroups = packageReader.GetToolItems();
+
+                if (toolItemGroups != null)
+                {
+                    // Init.ps1 must be found at the root folder, target frameworks are not recognized here since this is run for the solution.
+                    var toolItemGroup = toolItemGroups.Where(group => group.TargetFramework.IsAny).FirstOrDefault();
+
+                    if (toolItemGroup != null)
+                    {
+                        var initPS1RelativePath = toolItemGroup.Items.Where(p =>
+                            p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                        if (!string.IsNullOrEmpty(initPS1RelativePath))
+                        {
+                            initPS1RelativePath = ProjectManagement.PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
+                            return await ScriptExecutor.ExecuteAsync(identity, packageInstallPath, initPS1RelativePath, EnvDTEProject, this, projectContext, throwOnFailure);
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static IEnumerable<Reference> GetProjectReferences(EnvDTEProject project)

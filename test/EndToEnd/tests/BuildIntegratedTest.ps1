@@ -171,6 +171,23 @@ function Test-BuildIntegratedDependencyUpdatedByInstall {
     Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 7.0.1-beta3
 }
 
+function Test-BuildIntegratedInstallPackageInvokeInitScript {
+    param(
+        $context
+    )
+    
+    # Arrange
+    $p = New-UAPApplication
+
+    # Act
+    Install-Package PackageWithScriptsB -Source $context.RepositoryRoot
+
+    # Assert
+
+    # This asserts init.ps1 gets called
+    Assert-True (Test-Path function:\Get-WorldB)
+}
+
 function Test-BuildIntegratedInstallPackageJsonNet701Beta3 {
     # Arrange
     $project = New-UAPApplication UAPApp

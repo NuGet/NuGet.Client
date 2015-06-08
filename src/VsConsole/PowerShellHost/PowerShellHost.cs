@@ -299,50 +299,98 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     return;
                 }
 
-                try
-                {
-                    // invoke init.ps1 files in the order of package dependency.
-                    // if A -> B, we invoke B's init.ps1 before A's.
-                    var projects = _solutionManager.GetNuGetProjects();
-                    var packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
-                    var sortedPackages = new List<PackageIdentity>();
-                    foreach (NuGetProject project in projects)
-                    {
-                        // Skip project K projects.
-                        // TODO: enable init.ps1 for build integrated projects
-                        if (project is ProjectKNuGetProjectBase
-                            || project is INuGetIntegratedProject)
-                        {
-                            continue;
-                        }
+                // invoke init.ps1 files in the order of package dependency.
+                // if A -> B, we invoke B's init.ps1 before A's.
+                var sortedPackages = new List<PackageIdentity>();
 
+                var packagesFolderPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+                var globalPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+
+                var projects = _solutionManager.GetNuGetProjects().ToList();
+                var packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+
+                foreach (var project in projects)
+                {
+                    // Skip project K projects.
+                    if (project is ProjectKNuGetProjectBase)
+                    {
+                        continue;
+                    }
+
+                    var buildIntegratedProject = project as BuildIntegratedNuGetProject;
+
+                    if (buildIntegratedProject != null)
+                    {
+                        var packages = BuildIntegratedProjectUtility.GetOrderedProjectDependencies(buildIntegratedProject);
+                        sortedPackages.AddRange(packages);
+                        globalPackages.UnionWith(packages);
+                    }
+                    else
+                    {
                         var installedRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
+
                         if (installedRefs != null
                             && installedRefs.Any())
                         {
                             // This will be an empty list if packages have not been restored
                             var installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, CancellationToken.None);
                             sortedPackages.AddRange(installedPackages);
+                            packagesFolderPackages.UnionWith(installedPackages);
                         }
                     }
-
-                    // Get the path to the Packages folder.
-                    string packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
-                    foreach (var package in sortedPackages)
-                    {
-                        PackagePathResolver packagePathResolver = new PackagePathResolver(packagesFolderPath);
-                        string pathToPackage = packagePathResolver.GetInstalledPath(package);
-                        string toolsPath = Path.Combine(pathToPackage, "tools");
-                        AddPathToEnvironment(toolsPath);
-                        Runspace.ExecuteScript(toolsPath, PowerShellScripts.Init, package);
-                    }
                 }
-                catch (Exception ex)
-                {
-                    // if execution of Init scripts fails, do not let it crash our console
-                    ReportError(ex);
 
-                    ExceptionHelper.WriteToActivityLog(ex);
+                // Get the path to the Packages folder.
+                var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
+                var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+                var globalFolderPath = BuildIntegratedProjectUtility.GetGlobalPackagesFolder();
+                var globalPathResolver = new VersionFolderPathResolver(globalFolderPath);
+
+                var finishedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+
+                foreach (var package in sortedPackages)
+                {
+                    // Packages may occur under multiple projects, but we only need to run it once.
+                    if (!finishedPackages.Contains(package))
+                    {
+                        finishedPackages.Add(package);
+
+                        try
+                        {
+                            string pathToPackage = null;
+
+                            // If the package exists in both the global and packages folder, use the packages folder copy.
+                            if (packagesFolderPackages.Contains(package))
+                            {
+                                // Local package in the packages folder
+                                pathToPackage = packagePathResolver.GetInstalledPath(package);
+                            }
+                            else
+                            {
+                                // Global package
+                                pathToPackage = globalPathResolver.GetInstallPath(package.Id, package.Version);
+                            }
+
+                            if (!string.IsNullOrEmpty(pathToPackage))
+                            {
+                                var toolsPath = Path.Combine(pathToPackage, "tools");
+
+                                if (Directory.Exists(toolsPath))
+                                {
+                                    AddPathToEnvironment(toolsPath);
+                                    Runspace.ExecuteScript(toolsPath, PowerShellScripts.Init, package);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // if execution of Init scripts fails, do not let it crash our console
+                            ReportError(ex);
+
+                            ExceptionHelper.WriteToActivityLog(ex);
+                        }
+                    }
                 }
             }
         }
