@@ -115,13 +115,17 @@ namespace NuGet.CommandLine
                             {
                                 var supportsProfiles = supports.Values.Select(s =>
                                 {
+                                    if(!s.Contains("~"))
+                                    {
+                                        return new FrameworkRuntimePair(NuGetFramework.Parse(s), null);
+                                    }
                                     var splat = s.Split('~');
-                                    return Tuple.Create(NuGetFramework.Parse(splat[0]), splat[1]);
+                                    return new FrameworkRuntimePair(NuGetFramework.Parse(splat[0]), splat[1]);
                                 });
 
                                 foreach (var profile in supportsProfiles)
                                 {
-                                    request.SupportProfiles.Add(profile);
+                                    request.CompatibilityProfiles.Add(profile);
                                 }
                             }
 

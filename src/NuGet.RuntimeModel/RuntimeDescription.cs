@@ -38,10 +38,23 @@ namespace NuGet.RuntimeModel
 
         public bool Equals(RuntimeDescription other)
         {
-            return other != null &&
-                   string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
-                   InheritedRuntimes.OrderBy(s => s).SequenceEqual(other.InheritedRuntimes.OrderBy(s => s)) &&
-                   RuntimeDependencySets.OrderBy(p => p.Key).SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
+            // Breaking this up to ease debugging. The optimizer should be able to handle this, so don't refactor unless you have data :).
+            if (other == null)
+            {
+                return false;
+            }
+
+            var inheritedRuntimesEqual = InheritedRuntimes
+                .OrderBy(s => s)
+                .SequenceEqual(other.InheritedRuntimes.OrderBy(s => s));
+            var dependencySetsEqual = RuntimeDependencySets
+                .OrderBy(p => p.Key)
+                .SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
+
+            return
+                string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
+                inheritedRuntimesEqual &&
+                dependencySetsEqual;
         }
 
         public RuntimeDescription Clone()
@@ -62,20 +75,15 @@ namespace NuGet.RuntimeModel
 
             // Merge #imports
             List<string> inheritedRuntimes;
-            if (right.InheritedRuntimes.Count != 0)
+            if (right.InheritedRuntimes.Count != 0 && left.InheritedRuntimes.Count == 0)
             {
-                // Ack! Imports in both!
-                if (left.InheritedRuntimes.Count != 0)
-                {
-                    // Can't merge inherited runtimes!
-                    throw new InvalidOperationException($"TODO: Cannot merge the '#imports' property of {left.RuntimeIdentifier}. Only one runtime.json should define '#imports' for a particular runtime!");
-                }
-
                 // Copy #imports from right
                 inheritedRuntimes = new List<string>(right.InheritedRuntimes);
             }
             else
             {
+                // Ignore the inherited runtimes from the right if there are inherited runtimes on the left.
+
                 // Copy #imports from left (if any)
                 inheritedRuntimes = new List<string>(left.InheritedRuntimes);
             }
@@ -108,6 +116,11 @@ namespace NuGet.RuntimeModel
                 .AddObject(InheritedRuntimes)
                 .AddObject(RuntimeDependencySets)
                 .CombinedHash;
+        }
+
+        public override string ToString()
+        {
+            return $"({RuntimeIdentifier}: (#imports: {string.Join(",", InheritedRuntimes)}); {string.Join(",", RuntimeDependencySets)})";
         }
     }
 }

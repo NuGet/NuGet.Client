@@ -15,18 +15,38 @@ namespace NuGet.RuntimeModel
         public static readonly RuntimeGraph Empty = new RuntimeGraph();
 
         public IReadOnlyDictionary<string, RuntimeDescription> Runtimes { get; }
+        public IReadOnlyDictionary<string, CompatibilityProfile> Supports { get; set; }
 
         private RuntimeGraph()
+            : this(Enumerable.Empty<RuntimeDescription>(), Enumerable.Empty<CompatibilityProfile>())
         {
-            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(new Dictionary<string, RuntimeDescription>());
         }
 
         public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes)
+            : this(runtimes, Enumerable.Empty<CompatibilityProfile>())
         {
-            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(runtimes.ToDictionary(r => r.RuntimeIdentifier));
         }
 
-        public RuntimeGraph Clone() => new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()));
+        public RuntimeGraph(IEnumerable<CompatibilityProfile> supports)
+            : this(Enumerable.Empty<RuntimeDescription>(), supports)
+        {
+        }
+
+        public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes, IEnumerable<CompatibilityProfile> supports)
+            : this(runtimes.ToDictionary(r => r.RuntimeIdentifier), supports.ToDictionary(r => r.Name))
+        {
+        }
+
+        private RuntimeGraph(Dictionary<string, RuntimeDescription> runtimes, Dictionary<string, CompatibilityProfile> supports)
+        {
+            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(runtimes);
+            Supports = new ReadOnlyDictionary<string, CompatibilityProfile>(supports);
+        }
+
+        public RuntimeGraph Clone()
+        {
+            return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()));
+        }
 
         /// <summary>
         /// Merges the content of the other runtime graph in to this runtime graph
@@ -56,7 +76,20 @@ namespace NuGet.RuntimeModel
                 }
             }
 
-            return new RuntimeGraph(runtimes.Values);
+            // Copy over the right ones
+            var supports = new Dictionary<string, CompatibilityProfile>();
+            foreach (var compatProfile in right.Supports)
+            {
+                supports[compatProfile.Key] = compatProfile.Value;
+            }
+
+            // Overwrite with non-empty profiles from left
+            foreach (var compatProfile in left.Supports.Where(p => p.Value.RestoreContexts.Any()))
+            {
+                supports[compatProfile.Key] = compatProfile.Value;
+            }
+
+            return new RuntimeGraph(runtimes, supports);
         }
 
         public IEnumerable<string> ExpandRuntime(string runtime)
@@ -123,10 +156,19 @@ namespace NuGet.RuntimeModel
 
         public bool Equals(RuntimeGraph other)
         {
-            return other != null &&
-                   other.Runtimes
-                       .OrderBy(pair => pair.Key)
-                       .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key));
+            // Breaking this up to ease debugging. The optimizer should be able to handle this, so don't refactor unless you have data :).
+            if (other == null)
+            {
+                return false;
+            }
+
+            var runtimesEqual = Runtimes
+               .OrderBy(pair => pair.Key)
+               .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key));
+            var supportsEqual = Supports
+               .OrderBy(pair => pair.Key)
+               .SequenceEqual(other.Supports.OrderBy(pair => pair.Key));
+            return runtimesEqual && supportsEqual;
         }
 
         public override bool Equals(object obj)

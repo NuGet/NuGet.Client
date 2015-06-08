@@ -235,6 +235,22 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Restoring packages for {0} to determine compatibility...
+        /// </summary>
+        internal static string Log_RestoringPackagesForCompat
+        {
+            get { return GetString("Log_RestoringPackagesForCompat"); }
+        }
+
+        /// <summary>
+        /// Restoring packages for {0} to determine compatibility...
+        /// </summary>
+        internal static string FormatLog_RestoringPackagesForCompat(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_RestoringPackagesForCompat"), p0);
+        }
+
+        /// <summary>
         /// Scanning packages for runtime.json files...
         /// </summary>
         internal static string Log_ScanningForRuntimeJson
@@ -280,6 +296,22 @@ namespace NuGet.Commands
         internal static string FormatLog_UnresolvedDependency(object p0, object p1, object p2)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Log_UnresolvedDependency"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Unknown Compatibility Profile: {0}
+        /// </summary>
+        internal static string Log_UnknownCompatibilityProfile
+        {
+            get { return GetString("Log_UnknownCompatibilityProfile"); }
+        }
+
+        /// <summary>
+        /// Unknown Compatibility Profile: {0}
+        /// </summary>
+        internal static string FormatLog_UnknownCompatibilityProfile(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_UnknownCompatibilityProfile"), p0);
         }
 
         /// <summary>

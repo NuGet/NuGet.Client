@@ -1,11 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 
 namespace NuGet.RuntimeModel
@@ -56,16 +58,30 @@ namespace NuGet.RuntimeModel
         public static RuntimeGraph ReadRuntimeGraph(JToken json)
         {
             return new RuntimeGraph(
-                EachProperty(json["runtimes"]).Select(ReadRuntimeDescription));
+                EachProperty(json["runtimes"]).Select(ReadRuntimeDescription),
+                EachProperty(json["supports"]).Select(ReadCompatibilityProfile));
         }
 
         private static void WriteRuntimeGraph(JObject jObject, RuntimeGraph runtimeGraph)
         {
-            var runtimes = new JObject();
-            jObject["runtimes"] = runtimes;
-            foreach (var x in runtimeGraph.Runtimes.Values)
+            if (runtimeGraph.Runtimes.Any())
             {
-                WriteRuntimeDescription(runtimes, x);
+                var runtimes = new JObject();
+                jObject["runtimes"] = runtimes;
+                foreach (var x in runtimeGraph.Runtimes.Values)
+                {
+                    WriteRuntimeDescription(runtimes, x);
+                }
+            }
+
+            if (runtimeGraph.Supports.Any())
+            {
+                var supports = new JObject();
+                jObject["supports"] = supports;
+                foreach(var x in runtimeGraph.Supports.Values)
+                {
+                    WriteCompatibilityProfile(supports, x);
+                }
             }
         }
 
@@ -93,6 +109,61 @@ namespace NuGet.RuntimeModel
         private static void WritePackageDependency(JObject jObject, RuntimePackageDependency data)
         {
             jObject[data.Id] = new JValue(data.VersionRange.ToNormalizedString());
+        }
+
+        private static void WriteCompatibilityProfile(JObject jObject, CompatibilityProfile data)
+        {
+            var value = new JObject();
+            jObject[data.Name] = value;
+            foreach(var frameworkGroup in data.RestoreContexts.GroupBy(f => f.Framework))
+            {
+                var name = frameworkGroup.Key.GetShortFolderName();
+                var runtimes = frameworkGroup.ToList();
+                if(runtimes.Count == 1)
+                {
+                    // Write a string
+                    value[name] = runtimes[0].RuntimeIdentifier;
+                }
+                else if (runtimes.Count > 0)
+                {
+                    var array = new JArray();
+                    value[name] = array;
+                    foreach(var runtime in runtimes)
+                    {
+                        array.Add(runtime.RuntimeIdentifier);
+                    }
+                }
+            }
+        }
+
+        private static CompatibilityProfile ReadCompatibilityProfile(KeyValuePair<string, JToken> json)
+        {
+            var name = json.Key;
+            var sets = new List<FrameworkRuntimePair>();
+            foreach(var property in EachProperty(json.Value))
+            {
+                var profiles = ReadCompatibilitySets(property);
+                sets.AddRange(profiles);
+            }
+            return new CompatibilityProfile(name, sets);
+        }
+
+        private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(KeyValuePair<string, JToken> property)
+        {
+            var framework = NuGetFramework.Parse(property.Key);
+            switch(property.Value.Type)
+            {
+                case JTokenType.Array:
+                    foreach(var value in (JArray)property.Value)
+                    {
+                        yield return new FrameworkRuntimePair(framework, value.Value<string>());
+                    }
+                    break;
+                case JTokenType.String:
+                    yield return new FrameworkRuntimePair(framework, property.Value.ToString());
+                    break;
+                // Other token types are not supported
+            }
         }
 
         private static RuntimeDescription ReadRuntimeDescription(KeyValuePair<string, JToken> json)

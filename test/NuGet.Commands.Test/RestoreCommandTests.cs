@@ -333,6 +333,63 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, installed.Count);
         }
 
+        [Fact]
+        public async Task RestoreCommand_UnmatchedRefAndLibAssemblies()
+        {
+            const string project = @"
+{
+    ""dependencies"": {
+        ""System.Linq"": ""4.0.0-beta-*"",
+        ""Microsoft.NETCore.Targets"": ""1.0.0-beta-*""
+    },
+    ""frameworks"": {
+        ""dotnet"": {}
+    },
+    ""supports"": {
+        ""dnxcore50.app"": {}
+    }
+}
+";
+
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            // TODO(anurse): We should be mocking this out or using a stable source...
+            sources.Add(new PackageSource("https://www.myget.org/F/dotnet-core/api/v2/"));
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            var installed = result.GetAllInstalled();
+            var unresolved = result.GetAllUnresolved();
+            var brokenPackages = result.CompatibilityCheckResults.FirstOrDefault(c =>
+                c.Graph.Framework == FrameworkConstants.CommonFrameworks.DnxCore50 &&
+                !string.IsNullOrEmpty(c.Graph.RuntimeIdentifier)).Issues.Where(c => c.Type == CompatibilityIssueType.ReferenceAssemblyNotImplemented).ToArray();
+
+            // Assert
+            Assert.Equal(5, brokenPackages.Length);
+            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Globalization") && c.AssemblyName.Equals("System.Globalization")));
+            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.IO") && c.AssemblyName.Equals("System.IO")));
+            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Text.Encoding") && c.AssemblyName.Equals("System.Text.Encoding")));
+            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Threading.Tasks") && c.AssemblyName.Equals("System.Threading.Tasks")));
+            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Reflection") && c.AssemblyName.Equals("System.Reflection")));
+        }
+
         private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, string framework, string runtime)
         {
             return targets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(framework)))
@@ -389,7 +446,6 @@ namespace NuGet.Commands.Test
                 return json;
             }
         }
-
 
         public void Dispose()
         {

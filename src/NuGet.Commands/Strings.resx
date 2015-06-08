@@ -159,6 +159,9 @@
   <data name="Log_RestoringPackages" xml:space="preserve">
     <value>Restoring packages for {0}...</value>
   </data>
+  <data name="Log_RestoringPackagesForCompat" xml:space="preserve">
+    <value>Restoring packages for {0} to determine compatibility...</value>
+  </data>
   <data name="Log_ScanningForRuntimeJson" xml:space="preserve">
     <value>Scanning packages for runtime.json files...</value>
   </data>
@@ -167,6 +170,9 @@
   </data>
   <data name="Log_UnresolvedDependency" xml:space="preserve">
     <value>Unable to resolve {0} {1} for {2}.</value>
+  </data>
+  <data name="Log_UnknownCompatibilityProfile" xml:space="preserve">
+    <value>Unknown Compatibility Profile: {0}</value>
   </data>
   <data name="Log_UsingSource" xml:space="preserve">
     <value>Using source {0}.</value>

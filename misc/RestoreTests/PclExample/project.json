@@ -1,13 +1,17 @@
 {
     "dependencies": {
         "System.Linq": "4.0.0-beta-*",
-        "Microsoft.NETCore.Targets": "1.0.0-beta-*"
+        "Microsoft.NETCore.Targets": "1.0.0-beta-*",
     },
     "frameworks": {
-        "core50": {}
+        "dotnet": {}
     },
     "supports": {
-        "netcore50": ["win8-x86", "win8-x64"],
-        "dnxcore50": []
+        "woozlewuzzle.app": {},
+        "silverlight.app": {
+            "sl40": ""
+        },
+        "net46.app": {},
+        "dnxcore50.app": {}
     }
 }

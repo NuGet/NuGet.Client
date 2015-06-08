@@ -51,7 +51,7 @@ namespace NuGet.Commands
                     }
                     return Strings.FormatLog_MissingImplementationFxRuntime(Package.Id, Package.Version, AssemblyName, Framework, RuntimeIdentifier);
                 case CompatibilityIssueType.PackageIncompatible:
-                    return Strings.FormatLog_PackageNotCompatibleWithFx(Package.Id, Package.Version, RestoreTargetGraph.GetName(Framework, RuntimeIdentifier));
+                    return Strings.FormatLog_PackageNotCompatibleWithFx(Package.Id, Package.Version, FrameworkRuntimePair.GetName(Framework, RuntimeIdentifier));
                 default:
                     return null;
             }

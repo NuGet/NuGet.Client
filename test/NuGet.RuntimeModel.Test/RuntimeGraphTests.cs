@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
 
@@ -73,11 +74,11 @@ namespace NuGet.RuntimeModel.Test
                             new RuntimeDependencySet("Foo"),
                             new RuntimeDependencySet("Bar")
                         }),
-                }), leftGraph);
+                }), graph);
         }
 
         [Fact]
-        public void MergingCombinesDependenciesInDependencySetsDefinedInBoth()
+        public void MergingReplacesDependencySetsDefinedInBoth()
         {
             var leftGraph = new RuntimeGraph(new[]
                 {
@@ -96,7 +97,7 @@ namespace NuGet.RuntimeModel.Test
                         {
                             new RuntimeDependencySet("Foo", new[]
                                 {
-                                    new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
+                                    new RuntimePackageDependency("Foo.better.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
                                 }),
                         })
                 });
@@ -108,11 +109,10 @@ namespace NuGet.RuntimeModel.Test
                         {
                             new RuntimeDependencySet("Foo", new[]
                                 {
-                                    new RuntimePackageDependency("Foo.win8", new VersionRange(new NuGetVersion(1, 2, 3))),
-                                    new RuntimePackageDependency("Foo.more.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
+                                    new RuntimePackageDependency("Foo.better.win8", new VersionRange(new NuGetVersion(4, 5, 6)))
                                 }),
                         }),
-                }), leftGraph);
+                }), graph);
         }
 
         [Theory]
@@ -131,6 +131,45 @@ namespace NuGet.RuntimeModel.Test
             Assert.Equal(
                 expanded.Split(','),
                 graph.ExpandRuntime(start).ToArray());
+        }
+
+        [Fact]
+        public void MergeReplacesCompatibilityProfilesDefinedInRightWithValuesFromLeftIfLeftNonEmpty()
+        {
+            var leftGraph = new RuntimeGraph(new[]
+            {
+                new CompatibilityProfile("frob", new []
+                {
+                    new FrameworkRuntimePair(FrameworkConstants.CommonFrameworks.Dnx452, "frob")
+                })
+            });
+            var rightGraph = new RuntimeGraph(new[]
+            {
+                new CompatibilityProfile("frob", new []
+                {
+                    new FrameworkRuntimePair(FrameworkConstants.CommonFrameworks.DnxCore50, "blob")
+                })
+            });
+            var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
+            Assert.Equal(leftGraph, graph);
+        }
+
+        [Fact]
+        public void MergeReplacesCompatibilityProfilesDefinedInRightIntoLeftIfLeftIsEmpty()
+        {
+            var leftGraph = new RuntimeGraph(new[]
+            {
+                new CompatibilityProfile("frob")
+            });
+            var rightGraph = new RuntimeGraph(new[]
+            {
+                new CompatibilityProfile("frob", new []
+                {
+                    new FrameworkRuntimePair(FrameworkConstants.CommonFrameworks.DnxCore50, "blob")
+                })
+            });
+            var graph = RuntimeGraph.Merge(leftGraph, rightGraph);
+            Assert.Equal(rightGraph, graph);
         }
     }
 }

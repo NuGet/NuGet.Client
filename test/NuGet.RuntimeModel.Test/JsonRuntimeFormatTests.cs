@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
 
@@ -15,6 +16,67 @@ namespace NuGet.RuntimeModel.Test
         public void CanParseEmptyRuntimeJsons(string content)
         {
             Assert.Equal(RuntimeGraph.Empty, ParseRuntimeJsonString(content));
+        }
+
+        [Fact]
+        public void CanParseSupportsSection()
+        {
+            const string content = @"
+{
+    ""supports"": {
+        ""windows-frob"": {
+            ""netcore50"": [ ""winfrob-x86"", ""winfrob-x64"" ]
+        }
+    }
+}";
+            Assert.Equal(
+                new RuntimeGraph(new []
+                    {
+                        new CompatibilityProfile("windows-frob", new []
+                            {
+                                new FrameworkRuntimePair(FrameworkConstants.CommonFrameworks.NetCore50, "winfrob-x86"),
+                                new FrameworkRuntimePair(FrameworkConstants.CommonFrameworks.NetCore50, "winfrob-x64")
+                            })
+                    }),
+                ParseRuntimeJsonString(content));
+        }
+
+        [Fact]
+        public void CanParseSupportsAsFoundInProjectFiles()
+        {
+            const string content = @"
+{
+    ""supports"": {
+        ""windows-frob"": {}
+    }
+}";
+            Assert.Equal(
+                new RuntimeGraph(new []
+                    {
+                        new CompatibilityProfile("windows-frob")
+                    }),
+                ParseRuntimeJsonString(content));
+        }
+
+        [Fact]
+        public void CanParseCompatProfilesWithoutRuntimeIDs()
+        {
+            const string content = @"
+{
+    ""supports"": {
+        ""windows-phone-8"": {
+            ""wp8"": """"
+        }
+    }
+}";
+            Assert.Equal(
+                new RuntimeGraph(new []
+                    {
+                        new CompatibilityProfile("windows-phone-8", new [] {
+                            new FrameworkRuntimePair(FrameworkConstants.CommonFrameworks.WP8, null)
+                        })
+                    }),
+                ParseRuntimeJsonString(content));
         }
 
         [Fact]

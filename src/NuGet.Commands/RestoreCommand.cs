@@ -104,6 +104,7 @@ namespace NuGet.Commands
 
             foreach (var framework in frameworks)
             {
+                _log.LogInformation(Strings.FormatLog_RestoringPackages(framework.DotNetFrameworkName));
                 frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context, writeToLockFile: true));
             }
 
@@ -125,15 +126,24 @@ namespace NuGet.Commands
             var localRepository = new NuGetv3LocalRepository(_request.PackagesDirectory, checkPackageIdCase: false);
             await InstallPackages(graphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
 
+            // Load runtime specs
+            var runtimes = RuntimeGraph.Empty;
+            foreach(var graph in graphs)
+            {
+                runtimes = RuntimeGraph.Merge(
+                    runtimes,
+                    GetRuntimeGraph(graph, localRepository));
+            }
+
             // Resolve runtime dependencies
             var runtimeGraphs = new List<RestoreTargetGraph>();
-            var runtimeTuples = new HashSet<Tuple<NuGetFramework, string>>();
+            var runtimeProfiles = new HashSet<FrameworkRuntimePair>();
             if (_request.Project.RuntimeGraph.Runtimes.Count > 0)
             {
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
                 foreach (var graph in graphs.Where(g => g.WriteToLockFile))
                 {
-                    runtimeTasks.Add(WalkRuntimeDependencies(projectRange, graph, _request.Project.RuntimeGraph, remoteWalker, context, localRepository, writeToLockFile: true));
+                    runtimeTasks.Add(WalkRuntimeDependencies(projectRange, graph, _request.Project.RuntimeGraph, remoteWalker, context, localRepository, runtimes, writeToLockFile: true));
                 }
 
                 foreach (var runtimeSpecificGraph in (await Task.WhenAll(runtimeTasks)).SelectMany(g => g))
@@ -151,21 +161,39 @@ namespace NuGet.Commands
                 // Install runtime-specific packages
                 await InstallPackages(runtimeGraphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
             }
-            else
+
+            // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
+            foreach(var profile in _request.Project.RuntimeGraph.Supports)
             {
-                _log.LogVerbose(Strings.Log_SkippingRuntimeWalk);
+                CompatibilityProfile compatProfile;
+                if (profile.Value.RestoreContexts.Any())
+                {
+                    // Just use the contexts from the project definition
+                    compatProfile = profile.Value;
+                }
+                else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
+                {
+                    // No definition of this profile found, so just continue to the next one
+                    _log.LogWarning(Strings.FormatLog_UnknownCompatibilityProfile(profile.Key));
+                    continue;
+                }
+
+                foreach (var pair in compatProfile.RestoreContexts)
+                {
+                    _log.LogDebug($" {profile.Value.Name} -> +{pair}");
+                    _request.CompatibilityProfiles.Add(pair);
+                }
             }
 
             // Walk additional runtime graphs for supports checks
-            if (_request.SupportProfiles.Any())
+            if(_request.CompatibilityProfiles.Any())
             {
                 var checkTasks = new List<Task<RestoreTargetGraph>>();
-                foreach (var profile in _request.SupportProfiles.Where(p => !runtimeTuples.Contains(p)))
+                foreach(var profile in _request.CompatibilityProfiles.Where(p => !runtimeProfiles.Contains(p)))
                 {
-                    _log.LogVerbose($"Walking graph for {profile.Item1} {profile.Item2} to check support");
-                    var graph = graphs.SingleOrDefault(g => g.Framework.Equals(profile.Item1) && string.IsNullOrEmpty(g.RuntimeIdentifier));
-                    var runtimeGraph = GetRuntimeGraph(graph, _request.Project.RuntimeGraph, localRepository);
-                    checkTasks.Add(WalkDependencies(projectRange, profile.Item1, profile.Item2, runtimeGraph, remoteWalker, context, writeToLockFile: false));
+                    _log.LogInformation(Strings.FormatLog_RestoringPackagesForCompat(profile.Name));
+                    var graph = graphs.SingleOrDefault(g => g.Framework.Equals(profile.Framework) && string.IsNullOrEmpty(g.RuntimeIdentifier));
+                    checkTasks.Add(WalkDependencies(projectRange, profile.Framework, profile.RuntimeIdentifier, runtimes, remoteWalker, context, writeToLockFile: false));
                 }
 
                 var checkGraphs = (await Task.WhenAll(checkTasks)).ToList();
@@ -173,6 +201,7 @@ namespace NuGet.Commands
 
                 if (!ResolutionSucceeded(graphs))
                 {
+                    _log.LogError(Strings.Log_FailedToResolveConflicts);
                     return new RestoreResult(success: false, restoreGraphs: graphs);
                 }
 
@@ -464,8 +493,7 @@ namespace NuGet.Commands
 
         private async Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, bool writeToLockFile)
         {
-            var name = RestoreTargetGraph.GetName(framework, runtimeIdentifier);
-            _log.LogInformation(Strings.FormatLog_RestoringPackages(name));
+            var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
             var graph = await walker.WalkAsync(
                 projectRange,
                 framework,
@@ -480,22 +508,19 @@ namespace NuGet.Commands
             return RestoreTargetGraph.Create(inConflict, writeToLockFile, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
         }
 
-        private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository, bool writeToLockFile)
+        private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository, RuntimeGraph runtimes, bool writeToLockFile)
         {
-            // Load runtime specs
-            RuntimeGraph runtimeGraph = GetRuntimeGraph(graph, projectRuntimeGraph, localRepository);
-
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in projectRuntimeGraph.Runtimes.Keys)
             {
-                _log.LogInformation(Strings.FormatLog_RestoringPackages(RestoreTargetGraph.GetName(graph.Framework, runtimeName)));
-                resultGraphs.Add(WalkDependencies(projectRange, graph.Framework, runtimeName, runtimeGraph, walker, context, writeToLockFile));
+                _log.LogInformation(Strings.FormatLog_RestoringPackages(FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
+                resultGraphs.Add(WalkDependencies(projectRange, graph.Framework, runtimeName, runtimes, walker, context, writeToLockFile));
             }
 
             return Task.WhenAll(resultGraphs);
         }
 
-        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, NuGetv3LocalRepository localRepository)
+        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, NuGetv3LocalRepository localRepository)
         {
             // TODO: Caching!
             RuntimeGraph runtimeGraph;
@@ -505,7 +530,7 @@ namespace NuGet.Commands
             }
 
             _log.LogVerbose(Strings.Log_ScanningForRuntimeJson);
-            runtimeGraph = projectRuntimeGraph;
+            runtimeGraph = RuntimeGraph.Empty;
             graph.Graph.ForEach(node =>
             {
                 var match = node?.Item?.Data?.Match;

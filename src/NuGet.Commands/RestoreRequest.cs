@@ -22,7 +22,7 @@ namespace NuGet.Commands
             WriteMSBuildFiles = true;
 
             ExternalProjects = new List<ExternalProjectReference>();
-            SupportProfiles = new List<Tuple<NuGetFramework, string>>();
+            CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
         }
 
         /// <summary>
@@ -68,7 +68,9 @@ namespace NuGet.Commands
         /// </summary>
         public bool WriteMSBuildFiles { get; set; }
 
-        // Temporary; we'll get this from the project eventually.
-        public IList<Tuple<NuGetFramework, string>> SupportProfiles { get; }
+        /// <summary>
+        /// Additional compatibility profiles to check compatibility with.
+        /// </summary>
+        public ISet<FrameworkRuntimePair> CompatibilityProfiles { get; }
     }
 }

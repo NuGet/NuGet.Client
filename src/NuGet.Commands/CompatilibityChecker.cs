@@ -50,7 +50,6 @@ namespace NuGet.Commands
             // * All combinations of TxMs and Runtimes defined in the project.json
             // * Additional (TxMs, Runtime) pairs defined by the "supports" mechanism in project.json
 
-
             var runtimeAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var compileAssemblies = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
             var issues = new List<CompatibilityIssue>();

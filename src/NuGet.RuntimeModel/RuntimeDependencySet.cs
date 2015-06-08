@@ -27,9 +27,18 @@ namespace NuGet.RuntimeModel
 
         public bool Equals(RuntimeDependencySet other)
         {
-            return other != null &&
-                   string.Equals(other.Id, Id, StringComparison.Ordinal) &&
-                   Dependencies.OrderBy(p => p.Key).SequenceEqual(other.Dependencies.OrderBy(p => p.Key));
+            // Breaking this up to ease debugging. The optimizer should be able to handle this, so don't refactor unless you have data :).
+            if (other == null)
+            {
+                return false;
+            }
+
+            var dependenciesEqual = Dependencies
+                .OrderBy(p => p.Key)
+                .SequenceEqual(other.Dependencies.OrderBy(p => p.Key));
+
+            return string.Equals(other.Id, Id, StringComparison.Ordinal) &&
+                   dependenciesEqual;
         }
 
         public override bool Equals(object obj)
@@ -48,6 +57,11 @@ namespace NuGet.RuntimeModel
         public RuntimeDependencySet Clone()
         {
             return new RuntimeDependencySet(Id, Dependencies.Values.Select(d => d.Clone()));
+        }
+
+        public override string ToString()
+        {
+            return $"{Id} -> {string.Join(",", Dependencies.Select(d => d.Value.Id + " " + d.Value.VersionRange.ToString()))}";
         }
     }
 }

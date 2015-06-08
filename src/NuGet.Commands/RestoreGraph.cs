@@ -55,25 +55,13 @@ namespace NuGet.Commands
             RuntimeGraph = runtimeGraph;
             Framework = framework;
             Graph = graph;
-            Name = GetName(Framework, RuntimeIdentifier);
+            Name = FrameworkRuntimePair.GetName(Framework, RuntimeIdentifier);
 
             Conventions = new ManagedCodeConventions(runtimeGraph);
 
             Install = install;
             Flattened = flattened;
             Unresolved = unresolved;
-        }
-
-        public static string GetName(NuGetFramework framework, string runtimeIdentifier)
-        {
-            if (string.IsNullOrEmpty(runtimeIdentifier))
-            {
-                return framework.ToString();
-            }
-            else
-            {
-                return $"{framework} ({runtimeIdentifier})";
-            }
         }
 
         public static RestoreTargetGraph Create(bool inConflict, bool writeToLockFile, NuGetFramework framework, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILogger logger)

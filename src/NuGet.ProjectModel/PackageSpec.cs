@@ -60,7 +60,7 @@ namespace NuGet.ProjectModel
 
         public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
 
-        public List<TargetFrameworkInformation> TargetFrameworks { get; private set; }
+        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
 
         public RuntimeGraph RuntimeGraph { get; set; }
 
