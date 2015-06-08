@@ -1082,6 +1082,12 @@ namespace NuGet.PackageManagement
                 Exception executeNuGetProjectActionsException = null;
                 var executedNuGetProjectActions = new Stack<NuGetProjectAction>();
                 var packageWithDirectoriesToBeDeleted = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+                var ideExecutionContext = nuGetProjectContext.ExecutionContext as IDEExecutionContext;
+                if (ideExecutionContext != null)
+                {
+                    await ideExecutionContext.SaveExpandedNodeStates(SolutionManager);
+                }
+
                 try
                 {
                     await nuGetProject.PreProcessAsync(nuGetProjectContext, token);
@@ -1116,6 +1122,11 @@ namespace NuGet.PackageManagement
                 if (executeNuGetProjectActionsException != null)
                 {
                     await Rollback(nuGetProject, executedNuGetProjectActions, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                }
+
+                if (ideExecutionContext != null)
+                {
+                    await ideExecutionContext.CollapseAllNodes(SolutionManager);
                 }
 
                 // Delete the package directories as the last step, so that, if an uninstall had to be rolled back, we can just use the package file on the directory

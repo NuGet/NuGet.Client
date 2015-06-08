@@ -8,5 +8,9 @@ namespace NuGet.PackageManagement
     public interface ICommonOperations
     {
         Task OpenFile(string fullPath);
+
+        Task SaveSolutionExplorerNodeStates(ISolutionManager solutionManager);
+
+        Task CollapseAllNodes(ISolutionManager solutionManager);
     }
 }
