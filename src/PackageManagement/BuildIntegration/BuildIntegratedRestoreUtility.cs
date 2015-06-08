@@ -73,10 +73,10 @@ namespace NuGet.PackageManagement
 
             token.ThrowIfCancellationRequested();
 
-            var command = new RestoreCommand(new ProjectContextLogger(projectContext));
+            var command = new RestoreCommand(new ProjectContextLogger(projectContext), request);
 
             // Execute the restore
-            var result = await command.ExecuteAsync(request);
+            var result = await command.ExecuteAsync();
 
             // Report a final message with the Success result
             if (result.Success)
