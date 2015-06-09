@@ -159,7 +159,6 @@
     <Compile Include="V2V3ParityTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

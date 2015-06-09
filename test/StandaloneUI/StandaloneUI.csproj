@@ -65,7 +65,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Core, Version=1.6.30117.9648, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NuGet.Core.2.8.6-beta-02\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
@@ -170,9 +170,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\PackageManagement.UI\PackageManagement.UI.csproj">

@@ -346,7 +346,6 @@
     <Resource Include="Resources\packageicon.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="PackageManagement.UI.nuspec" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
