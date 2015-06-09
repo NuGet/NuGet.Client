@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (solutionManager == null)
             {
-                throw new ArgumentException(nameof(solutionManager));
+                throw new ArgumentNullException(nameof(solutionManager));
             }
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (solutionManager == null)
             {
-                throw new ArgumentException(nameof(solutionManager));
+                throw new ArgumentNullException(nameof(solutionManager));
             }
 
             return ThreadHelper.JoinableTaskFactory.Run(async delegate

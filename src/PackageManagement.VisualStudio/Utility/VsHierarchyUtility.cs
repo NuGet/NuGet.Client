@@ -83,6 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return project;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "solutionManager")]
         public static async TaskExpandedNodes GetAllExpandedNodesAsync(ISolutionManager solutionManager)
         {
             // this operation needs to execute on UI thread
@@ -103,6 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return results;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "solutionManager")]
         public static async Task CollapseAllNodesAsync(ISolutionManager solutionManager, IDictionary<string, ISet<VsHierarchyItem>> ignoreNodes)
         {
             // this operation needs to execute on UI thread
