@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public UserSettings()
         {
-            IncludePrerelease = true;
+            IncludePrerelease = RegistrySettingUtility.GetBooleanSetting(Constants.IncludePrereleaseRegistryName);
             ShowPreviewWindow = true;
             SelectedFilter = Filter.All;
             DependencyBehavior = DependencyBehavior.Lowest;
