@@ -19,6 +19,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// Gets the boolean value of a setting from the registry.
+        /// </summary>
+        /// <param name="key">the name of the registry key.</param>
+        /// <returns>True if the value of the registry key is not "0". Otherwise, false.</returns>
         public static bool GetBooleanSetting(string key)
         {
             try

@@ -707,6 +707,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
+            RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _checkboxPrerelease.IsChecked == true);
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
         }
 
