@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "framework", "framework", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83AEE32C-FFCC-43A6-898B-D7DF81774C25}"
 	ProjectSection(SolutionItems) = preProject
+		test\EndToEnd\tests\A-TopDownloadedPackages.ps1 = test\EndToEnd\tests\A-TopDownloadedPackages.ps1
 		test\EndToEnd\tests\BuildIntegratedTest.ps1 = test\EndToEnd\tests\BuildIntegratedTest.ps1
 		test\EndToEnd\tests\FindPackageTest.ps1 = test\EndToEnd\tests\FindPackageTest.ps1
 		test\EndToEnd\tests\GetPackageTest.ps1 = test\EndToEnd\tests\GetPackageTest.ps1

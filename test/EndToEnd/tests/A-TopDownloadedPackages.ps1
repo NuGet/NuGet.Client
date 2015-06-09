@@ -58,15 +58,12 @@ $topDownloadedPackageIds = (
 
 $projectSystemNames = (
     'New-MvcApplication',
-    'New-ConsoleApplication',
-    'New-ClassLibrary',
-    'New-WebApplication',
-    'New-Website'
+    'New-ClassLibrary'
     #'New-JavaScriptWindowsPhoneApp81', # At least 35 out of the 53 packages in the list cannot be installed on this project type
     #'New-JavaScriptApplication' # At least 35 out of the 53 packages in the list cannot be installed on this project type
     )
 
-function InstallPackageOnProjectSystem
+function Test-InstallPackageOnProjectSystem
 {
     param(
         $context,
@@ -87,7 +84,17 @@ function InstallPackageOnProjectSystem
 
     $project = &$projectSystemName
     Write-Host 'Installing ' $packageId ' on ' $projectSystemName '...'
-    Install-Package $packageId -Prerelease -ProjectName $project.Name
+
+	# Latest prerelease versions of Microsoft.AspNet.Mvc and EntityFramework package does not support .NET45 projects.
+	# Install latest stable versions instead.
+    if (($packageId -eq 'Microsoft.AspNet.Mvc') -or ($packageId -eq 'EntityFramework'))
+	{
+		Install-Package $packageId -ProjectName $project.Name
+	}
+	else
+	{
+	    Install-Package $packageId -Prerelease -ProjectName $project.Name
+	}
 
     Assert-Package $project $packageId
 }
