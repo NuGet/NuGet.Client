@@ -15,7 +15,10 @@ namespace NuGet.Packaging
     /// </summary>
     public class PackageFolderReader : PackageReaderBase
     {
+        private const string PathSeparator = "/";
         private readonly DirectoryInfo _root;
+        private List<string> _cachedPaths;
+        private FileInfo _nuspecFileInfo;
 
         /// <summary>
         /// Package folder reader
@@ -62,14 +65,17 @@ namespace NuGet.Packaging
         /// </summary>
         public override Stream GetNuspec()
         {
-            var nuspecFile = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (_nuspecFileInfo == null)
+            {
+                _nuspecFileInfo = _root.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            }
 
-            if (nuspecFile == null)
+            if (_nuspecFileInfo == null)
             {
                 throw new FileNotFoundException(String.Format(CultureInfo.CurrentCulture, Strings.MissingNuspec, _root.FullName));
             }
 
-            return nuspecFile.OpenRead();
+            return _nuspecFileInfo.OpenRead();
         }
 
         /// <summary>
@@ -90,30 +96,27 @@ namespace NuGet.Packaging
 
         public override IEnumerable<string> GetFiles()
         {
-            var searchFolder = new DirectoryInfo(_root.FullName);
-
-            foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
-            {
-                yield return GetRelativePath(_root, file);
-            }
-
-            yield break;
+            EnsureFileCache();
+            return _cachedPaths;
         }
 
         // TODO: add support for NuGet.ContentModel here
         protected override IEnumerable<string> GetFiles(string folder)
         {
-            var searchFolder = new DirectoryInfo(Path.Combine(_root.FullName, folder));
+            EnsureFileCache();
+            return _cachedPaths.Where(
+                path => path.StartsWith(folder + PathSeparator, StringComparison.OrdinalIgnoreCase));
+        }
 
-            if (searchFolder.Exists)
+        private void EnsureFileCache()
+        {
+            if (_cachedPaths == null)
             {
-                foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
-                {
-                    yield return GetRelativePath(_root, file);
-                }
+                _cachedPaths = _root.EnumerateFiles("*", SearchOption.AllDirectories)
+                    .Where(path => !path.Extension.Equals(".nupkg", StringComparison.OrdinalIgnoreCase))
+                    .Select(path => GetRelativePath(_root, path))
+                    .ToList();
             }
-
-            yield break;
         }
 
         /// <summary>
@@ -140,7 +143,7 @@ namespace NuGet.Packaging
 
             var parts = parents.Select(d => d.Name).Concat(new string[] { file.Name });
 
-            return String.Join("/", parts);
+            return String.Join(PathSeparator, parts);
         }
     }
 }
