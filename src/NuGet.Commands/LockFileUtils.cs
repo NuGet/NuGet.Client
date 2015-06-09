@@ -52,7 +52,8 @@ namespace NuGet.Commands
                     }
                 }
 
-                var referenceSet = packageReader.GetReferenceItems().GetNearest(framework);
+                var nuspec = new NuspecReader(packageReader.GetNuspec());
+                var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
                 if (referenceSet != null)
                 {
                     referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
