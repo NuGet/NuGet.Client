@@ -153,7 +153,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Init();
 
-            return _nuGetAndEnvDTEProjectCache.GetNuGetProjects();
+            var projects = _nuGetAndEnvDTEProjectCache.GetNuGetProjects().ToList();
+
+            return projects;
         }
 
         private IEnumerable<EnvDTEProject> GetEnvDTEProjects()
@@ -162,7 +164,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Init();
 
-            return _nuGetAndEnvDTEProjectCache.GetEnvDTEProjects();
+            var dteProjects = _nuGetAndEnvDTEProjectCache.GetEnvDTEProjects().ToList();
+
+            return dteProjects;
         }
 
         public bool IsSolutionOpen
