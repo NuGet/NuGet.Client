@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Packaging;
+using NuGet.ProjectManagement;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
@@ -15,12 +18,18 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageRestoreBar.xaml
     /// </summary>
-    public partial class PackageRestoreBar : UserControl
+    public partial class PackageRestoreBar : UserControl, INuGetProjectContext
     {
         private IPackageRestoreManager PackageRestoreManager { get; }
         private ISolutionManager SolutionManager { get; }
         private Dispatcher UIDispatcher { get; }
         private Exception RestoreException { get; set; }
+
+        public PackageExtractionContext PackageExtractionContext { get; set; }
+
+        public ISourceControlManagerProvider SourceControlManagerProvider { get; }
+
+        public ProjectManagement.ExecutionContext ExecutionContext { get; }
 
         public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
         {
@@ -114,7 +123,9 @@ namespace NuGet.PackageManagement.UI
             {
                 PackageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
                 var solutionDirectory = SolutionManager.SolutionDirectory;
-                await PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, token);
+                await PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
+                    this,
+                    token);
 
                 if (RestoreException == null)
                 {
@@ -140,6 +151,21 @@ namespace NuGet.PackageManagement.UI
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
             return true;
+        }
+
+        public void Log(MessageLevel level, string message, params object[] args)
+        {
+            ShowMessage(String.Format(CultureInfo.CurrentCulture, message, args));
+        }
+
+        public void ReportError(string message)
+        {
+            ShowMessage(message);
+        }
+
+        public FileConflictAction ResolveFileConflict(string message)
+        {
+            return FileConflictAction.IgnoreAll;
         }
 
         private void PackageRestoreFailedEvent(object sender, PackageRestoreFailedEventArgs e)
@@ -174,6 +200,15 @@ namespace NuGet.PackageManagement.UI
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
             StatusMessage.Text = UI.Resources.PackageRestoreErrorTryAgain + " " + error;
+        }
+
+        private void ShowMessage(string message)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                StatusMessage.Text = message;
+            });
         }
     }
 }

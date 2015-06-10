@@ -65,13 +65,18 @@ namespace NuGet.PackageManagement
         /// are missing
         /// </remarks>
         /// <returns>Returns true if atleast one package was restored.</returns>
-        Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory, CancellationToken token);
+        Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token);
 
         /// <summary>
         /// Restores the missing packages for a project. Returns true if atleast one package was restored.
         /// </summary>
         /// <remarks>Best use case is 'nuget.exe restore packages.config'</remarks>
-        Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory, NuGetProject nuGetProject, CancellationToken token);
+        Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
+            NuGetProject nuGetProject,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token);
 
         /// <summary>
         /// Restores the package references if they are missing
@@ -91,6 +96,7 @@ namespace NuGet.PackageManagement
         /// </returns>
         Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
+            INuGetProjectContext nuGetProjectContext,
             CancellationToken token);
     }
 
