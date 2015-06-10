@@ -131,19 +131,20 @@ namespace NuGet.ProjectManagement
         private static bool IsBindingRedirectsDisabled(INuGetProjectContext nuGetProjectContext)
         {
             var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-            return msBuildNuGetProjectContext?.BindingRedirectsDisabled ?? false;
+            return msBuildNuGetProjectContext!= null &&
+                (msBuildNuGetProjectContext.BindingRedirectsDisabled || msBuildNuGetProjectContext.SkipBindingRedirects);
         }
 
         private static bool IsSkipAssemblyReferences(INuGetProjectContext nuGetProjectContext)
         {
             var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-            return msBuildNuGetProjectContext?.SkipAssemblyReferences ?? false;
+            return msBuildNuGetProjectContext != null && msBuildNuGetProjectContext.SkipAssemblyReferences;
         }
 
         public override async Task<bool> InstallPackageAsync(
-            PackageIdentity packageIdentity, 
+            PackageIdentity packageIdentity,
             DownloadResourceResult downloadResourceResult,
-            INuGetProjectContext nuGetProjectContext, 
+            INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             if (packageIdentity == null)
@@ -272,7 +273,7 @@ namespace NuGet.ProjectManagement
             // Step-5: Raise PackageInstalling event
             // At this point, GetInstalledPath is pointless since the package is, likely, not already installed. It will be empty
             // Using PackagePathResolver.GetInstallPath would be wrong, since, package version from the nuspec is always used
-            var packageEventArgs = new PackageEventArgs(FolderNuGetProject, packageIdentity, FolderNuGetProject.GetInstalledPath(packageIdentity));
+            var packageEventArgs = new PackageEventArgs(FolderNuGetProject, packageIdentity, installPath: string.Empty);
             if (PackageInstalling != null)
             {
                 PackageInstalling(this, packageEventArgs);
@@ -283,24 +284,28 @@ namespace NuGet.ProjectManagement
             await FolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
 
             // Step-7: Raise PackageInstalled event
-            // Call GetInstalledPath again, to get the package installed path
-            packageEventArgs = new PackageEventArgs(FolderNuGetProject, packageIdentity, FolderNuGetProject.GetInstalledPath(packageIdentity));
+            // Call GetInstalledPath to get the package installed path
+            var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
+            packageEventArgs = new PackageEventArgs(FolderNuGetProject, packageIdentity, packageInstallPath);
             if (PackageInstalled != null)
             {
                 PackageInstalled(this, packageEventArgs);
             }
             PackageEventsProvider.Instance.NotifyInstalled(packageEventArgs);
 
+            var assemblyReferencesAdded = false;
             // Step-8: MSBuildNuGetProjectSystem operations
             // Step-8.1: Add references to project
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup)
-                && !IsSkipAssemblyReferences(nuGetProjectContext))
+            if (!IsSkipAssemblyReferences(nuGetProjectContext) &&
+                MSBuildNuGetProjectSystemUtility.IsValid(compatibleReferenceItemsGroup))
             {
                 foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
                 {
                     if (IsAssemblyReference(referenceItem))
                     {
-                        var referenceItemFullPath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), referenceItem);
+                        assemblyReferencesAdded = true;
+
+                        var referenceItemFullPath = Path.Combine(packageInstallPath, referenceItem);
                         var referenceName = Path.GetFileName(referenceItem);
                         if (MSBuildNuGetProjectSystem.ReferenceExists(referenceName))
                         {
@@ -311,8 +316,16 @@ namespace NuGet.ProjectManagement
                 }
             }
 
+            if (!assemblyReferencesAdded)
+            {
+                // Avoid adding binding redirects if installing a package does not result in any assembly references being added.
+                var msbuildProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
+                msbuildProjectContext.SkipBindingRedirects = true;
+            }
+
             // Step-8.2: Add Frameworkreferences to project
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
+            if (!IsSkipAssemblyReferences(nuGetProjectContext) &&
+                MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup))
             {
                 foreach (var frameworkReference in compatibleFrameworkReferencesGroup.Items)
                 {
@@ -335,7 +348,7 @@ namespace NuGet.ProjectManagement
             {
                 foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
                 {
-                    var fullImportFilePath = Path.Combine(FolderNuGetProject.GetInstalledPath(packageIdentity), buildImportFile);
+                    var fullImportFilePath = Path.Combine(packageInstallPath, buildImportFile);
                     MSBuildNuGetProjectSystem.AddImport(fullImportFilePath,
                         fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
                 }
@@ -352,7 +365,6 @@ namespace NuGet.ProjectManagement
             PackageEventsProvider.Instance.NotifyReferenceAdded(packageEventArgs);
 
             // Step-12: Execute powershell script - install.ps1
-            var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
             var anyFrameworkToolsGroup = toolItemGroups.FirstOrDefault(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework));
             if (anyFrameworkToolsGroup != null)
             {
