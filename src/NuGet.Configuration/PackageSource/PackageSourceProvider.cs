@@ -48,10 +48,25 @@ namespace NuGet.Configuration
         }
 
         public PackageSourceProvider(
+          ISettings settings,
+          IEnumerable<PackageSource> providerDefaultPrimarySources,
+          IEnumerable<PackageSource> providerDefaultSecondarySources,
+          IDictionary<PackageSource, PackageSource> migratePackageSources)
+            : this(settings, 
+                  providerDefaultPrimarySources, 
+                  providerDefaultSecondarySources, 
+                  migratePackageSources, 
+                  ConfigurationDefaults.Instance.DefaultPackageSources)
+        {
+        }
+
+        public PackageSourceProvider(
             ISettings settings,
             IEnumerable<PackageSource> providerDefaultPrimarySources,
             IEnumerable<PackageSource> providerDefaultSecondarySources,
-            IDictionary<PackageSource, PackageSource> migratePackageSources)
+            IDictionary<PackageSource, PackageSource> migratePackageSources,
+            IEnumerable<PackageSource> configurationDefaultSources
+            )
         {
             if (settings == null)
             {
@@ -62,10 +77,10 @@ namespace NuGet.Configuration
             _providerDefaultPrimarySources = providerDefaultPrimarySources ?? Enumerable.Empty<PackageSource>();
             _providerDefaultSecondarySources = providerDefaultSecondarySources ?? Enumerable.Empty<PackageSource>();
             _migratePackageSources = migratePackageSources;
-            _configurationDefaultSources = LoadConfigurationDefaultSources();
+            _configurationDefaultSources = LoadConfigurationDefaultSources(configurationDefaultSources);
         }
 
-        private IEnumerable<PackageSource> LoadConfigurationDefaultSources()
+        private IEnumerable<PackageSource> LoadConfigurationDefaultSources(IEnumerable<PackageSource> configurationDefaultSources)
         {
 #if !DNXCORE50
             // Global default NuGet source doesn't make sense on Mono
@@ -73,27 +88,12 @@ namespace NuGet.Configuration
             {
                 return Enumerable.Empty<PackageSource>();
             }
-
-            var baseDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NuGet");
-#else
-            var baseDirectory = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "NuGet");
 #endif
-            var settings = new Settings(baseDirectory, ConfigurationContants.ConfigurationDefaultsFile);
-
-            var disabledPackageSources = settings.GetSettingValues(ConfigurationContants.DisabledPackageSources);
-            var packageSources = settings.GetSettingValues(ConfigurationContants.PackageSources);
-
             var packageSourceLookup = new Dictionary<string, IndexedPackageSource>(StringComparer.OrdinalIgnoreCase);
             var packageIndex = 0;
 
-            foreach (var settingValue in packageSources)
+            foreach (var packageSource in configurationDefaultSources)
             {
-                // In a SettingValue representing a package source, the Key represents the name of the package source and the Value its source
-                var isEnabled = !disabledPackageSources.Any(p => p.Key.Equals(settingValue.Key, StringComparison.OrdinalIgnoreCase));
-
-                var packageSource = ReadPackageSource(settingValue, isEnabled);
-                packageSource.IsOfficial = true;
-
                 packageIndex = AddOrUpdateIndexedSource(packageSourceLookup, packageIndex, packageSource);
             }
 
