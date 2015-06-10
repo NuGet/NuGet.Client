@@ -582,13 +582,6 @@ namespace NuGet.PackageManagement.UI
             foreach (var project in _projects)
             {
                 var installedPackagesInProject = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                if (!(project is INuGetIntegratedProject))
-                {
-                    installedPackagesInProject = installedPackagesInProject.Where(
-                        p =>
-                            _packageManager.PackageExistsInPackagesFolder(p.PackageIdentity));
-                }
-
                 foreach (var package in installedPackagesInProject)
                 {
                     _installedPackages.Add(package.PackageIdentity);
