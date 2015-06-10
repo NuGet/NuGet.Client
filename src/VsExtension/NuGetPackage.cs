@@ -605,6 +605,12 @@ namespace NuGetVSExtension
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
 
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+
+            if (!solutionManager.IsSolutionOpen)
+            {
+                throw new InvalidOperationException(Resources.SolutionIsNotSaved);
+            }
+
             var nugetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
 
             // load packages.config. This makes sure that an exception will get thrown if there
@@ -910,7 +916,7 @@ namespace NuGetVSExtension
                 // This is actually true. All the menu commands under the 'Project Menu' do go away when no solution is open.
                 // If 'Manage NuGet Packages' is disabled but visible, 'Project' menu shows up just because 1 menu command is visible, even though, it is disabled
                 // So, make it invisible when no solution is open
-                command.Visible = SolutionManager.IsSolutionOpen;
+                command.Visible = (_dte != null && _dte.Solution != null && _dte.Solution.IsOpen);
 
                 // Enable the 'Manage NuGet Packages' dialog menu
                 // a) if the console is NOT busy executing a command, AND

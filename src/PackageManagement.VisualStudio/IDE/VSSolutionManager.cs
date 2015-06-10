@@ -169,6 +169,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return dteProjects;
         }
 
+        /// <summary>
+        /// IsSolutionOpen is true, if the dte solution is open
+        /// and is saved as required
+        /// </summary>
         public bool IsSolutionOpen
         {
             get
@@ -254,7 +258,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return (bool)value;
         }
 
-        private void OnSolutionOpened()
+        private void OnSolutionExistsAndFullyLoaded()
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -486,9 +490,23 @@ namespace NuGet.PackageManagement.VisualStudio
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             if (_dte.Solution.IsOpen)
                             {
-                                OnSolutionOpened();
+                                OnSolutionExistsAndFullyLoaded();
                             }
                         });
+                }
+                else
+                {
+                    // Check if the cache is initialized.
+                    // It is possible that the cache is not initialized, since,
+                    // the solution was not saved and/or there were no projects in the solution
+                    if (!_nuGetAndEnvDTEProjectCache.IsInitialized)
+                    {
+                        ThreadHelper.JoinableTaskFactory.Run(async delegate
+                        {
+                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            EnsureNuGetAndEnvDTEProjectCache();
+                        });
+                    }
                 }
             }
             catch (Exception ex)
@@ -579,7 +597,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 && fActive == 1)
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
-                OnSolutionOpened();
+                OnSolutionExistsAndFullyLoaded();
                 // We must call DeleteMarkedPackageDirectories outside of OnSolutionOpened, because OnSolutionOpened might be called in the constructor
                 // and DeleteOnRestartManager requires VsFileSystemProvider and RepositorySetings which both have dependencies on SolutionManager.
                 // In practice, this code gets executed even when a solution is opened directly during Visual Studio startup.

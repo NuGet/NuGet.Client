@@ -217,12 +217,16 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (EnvDTEProject project in projects)
+            if (projects.Any())
             {
-                AddProject(project, factory);
-            }
+                foreach (EnvDTEProject project in projects)
+                {
+                    AddProject(project, factory);
+                }
 
-            IsInitialized = true;
+                // Consider that the cache is initialized, only, when there are any projects to add
+                IsInitialized = true;
+            }
         }
 
         public void Clear()
