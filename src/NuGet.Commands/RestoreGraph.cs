@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Client;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
@@ -46,10 +47,11 @@ namespace NuGet.Commands
         public bool WriteToLockFile { get; }
 
         public string Name { get; }
+        public IEnumerable<ResolverConflict> Conflicts { get; internal set; }
 
-        private RestoreTargetGraph(bool inConflict, bool writeToLockFile, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, GraphNode<RemoteResolveResult> graph, ISet<RemoteMatch> install, ISet<GraphItem<RemoteResolveResult>> flattened, ISet<LibraryRange> unresolved)
+        private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts, bool writeToLockFile, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, GraphNode<RemoteResolveResult> graph, ISet<RemoteMatch> install, ISet<GraphItem<RemoteResolveResult>> flattened, ISet<LibraryRange> unresolved)
         {
-            InConflict = inConflict;
+            Conflicts = conflicts;
             WriteToLockFile = writeToLockFile;
             RuntimeIdentifier = runtimeIdentifier;
             RuntimeGraph = runtimeGraph;
@@ -64,13 +66,12 @@ namespace NuGet.Commands
             Unresolved = unresolved;
         }
 
-        public static RestoreTargetGraph Create(bool inConflict, bool writeToLockFile, NuGetFramework framework, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILogger logger)
+        public static RestoreTargetGraph Create(bool writeToLockFile, NuGetFramework framework, GraphNode<RemoteResolveResult> graph, RemoteWalkContext context, ILogger logger)
         {
-            return Create(inConflict, writeToLockFile, framework, null, RuntimeGraph.Empty, graph, context, logger);
+            return Create(writeToLockFile, framework, null, RuntimeGraph.Empty, graph, context, logger);
         }
 
         public static RestoreTargetGraph Create(
-            bool inConflict,
             bool writeToLockFile,
             NuGetFramework framework,
             string runtimeIdentifier,
@@ -83,6 +84,8 @@ namespace NuGet.Commands
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>();
             var unresolved = new HashSet<LibraryRange>();
 
+            var conflicts = new Dictionary<string, HashSet<ResolverRequest>>();
+
             graph.ForEach(node =>
                 {
                     if (node == null
@@ -90,6 +93,18 @@ namespace NuGet.Commands
                         || node.Disposition == Disposition.Rejected)
                     {
                         return;
+                    }
+
+                    if (node.Disposition == Disposition.Acceptable)
+                    {
+                        // This wasn't resolved. It's a conflict.
+                        HashSet<ResolverRequest> ranges;
+                        if (!conflicts.TryGetValue(node.Key.Name, out ranges))
+                        {
+                            ranges = new HashSet<ResolverRequest>();
+                            conflicts[node.Key.Name] = ranges;
+                        }
+                        ranges.Add(new ResolverRequest(node.OuterNode.Item.Key, node.Key));
                     }
 
                     if (string.Equals(node?.Item?.Key?.Type, LibraryTypes.Unresolved))
@@ -121,7 +136,7 @@ namespace NuGet.Commands
                 });
 
             return new RestoreTargetGraph(
-                inConflict,
+                conflicts.Select(p => new ResolverConflict(p.Key, p.Value)),
                 writeToLockFile,
                 framework,
                 runtimeIdentifier,

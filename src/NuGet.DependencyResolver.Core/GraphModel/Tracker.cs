@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,7 +14,7 @@ namespace NuGet.DependencyResolver
         public void Track(GraphItem<TItem> item)
         {
             var entry = GetEntry(item);
-            if (!entry.List.Contains(item))
+            if (!entry.List.Contains(item) && !entry.Locked)
             {
                 entry.List.Add(item);
             }
@@ -53,6 +54,14 @@ namespace NuGet.DependencyResolver
             return itemList;
         }
 
+        internal void Lock(GraphItem<TItem> item)
+        {
+            var entry = GetEntry(item);
+            entry.List.Clear();
+            entry.List.Add(item);
+            entry.Locked = true;
+        }
+
         private class Entry
         {
             public Entry()
@@ -63,6 +72,7 @@ namespace NuGet.DependencyResolver
             public HashSet<GraphItem<TItem>> List { get; set; }
 
             public bool Ambiguous { get; set; }
+            public bool Locked { get; set; }
         }
     }
 }

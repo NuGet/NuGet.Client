@@ -134,6 +134,11 @@ namespace NuGet.DependencyResolver
 
             if (match == null)
             {
+                // HACK(anurse): Reference requests are not resolved and just left as-is
+                if (libraryRange.TypeConstraint.Equals(LibraryTypes.Reference))
+                {
+                    return CreateReferenceMatch(libraryRange);
+                }
                 return CreateUnresolvedMatch(libraryRange);
             }
 
@@ -146,6 +151,29 @@ namespace NuGet.DependencyResolver
                     Match = match,
                     Dependencies = dependencies
                 },
+            };
+        }
+
+        private GraphItem<RemoteResolveResult> CreateReferenceMatch(LibraryRange libraryRange)
+        {
+            var identity = new LibraryIdentity()
+            {
+                Name = libraryRange.Name,
+                Type = LibraryTypes.Reference,
+                Version = libraryRange.VersionRange?.MinVersion
+            };
+            return new GraphItem<RemoteResolveResult>(identity)
+            {
+                Data = new RemoteResolveResult()
+                {
+                    Match = new RemoteMatch()
+                    {
+                        Library = identity,
+                        Path = null,
+                        Provider = null
+                    },
+                    Dependencies = Enumerable.Empty<LibraryDependency>()
+                }
             };
         }
 

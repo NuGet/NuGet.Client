@@ -180,4 +180,10 @@
   <data name="MSBuildWarning_MultiTarget" xml:space="preserve">
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>
+  <data name="Log_ResolverConflict" xml:space="preserve">
+    <value>Unable to satisfy conflicting requests for '{0}': {1}</value>
+  </data>
+  <data name="ResolverRequest_ToStringFormat" xml:space="preserve">
+    <value>{0} (via {1})</value>
+  </data>
 </root>

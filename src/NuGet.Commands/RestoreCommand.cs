@@ -50,7 +50,7 @@ namespace NuGet.Commands
             var result = await ExecuteRestore(localRepository);
 
             // Build the lock file
-            var lockFile = CreateLockFile(_request.Project, result.RestoreGraphs.Where(g => g.WriteToLockFile), localRepository);
+            var lockFile = CreateLockFile(_request.Project, result.RestoreGraphs, localRepository);
 
             // Scan every graph for compatibility
             var checkResults = new List<CompatibilityCheckResult>();
@@ -246,10 +246,16 @@ namespace NuGet.Commands
             var success = true;
             foreach (var graph in graphs)
             {
-                if (graph.InConflict)
+                if (graph.Conflicts.Any())
                 {
                     success = false;
                     _log.LogError(Strings.FormatLog_FailedToResolveConflicts(graph.Name));
+                    foreach(var conflict in graph.Conflicts)
+                    {
+                        _log.LogError(Strings.FormatLog_ResolverConflict(
+                            conflict.Name,
+                            string.Join(", ", conflict.Requests)));
+                    }
                 }
                 if (graph.Unresolved.Any())
                 {
@@ -502,10 +508,12 @@ namespace NuGet.Commands
 
             // Resolve conflicts
             _log.LogVerbose(Strings.FormatLog_ResolvingConflicts(name));
-            var inConflict = !graph.TryResolveConflicts();
+
+            // NOTE(anurse): We are OK with throwing away the result here. The Create call below will be checking for conflicts
+            graph.TryResolveConflicts();
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            return RestoreTargetGraph.Create(inConflict, writeToLockFile, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
+            return RestoreTargetGraph.Create(writeToLockFile, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
         }
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository, RuntimeGraph runtimes, bool writeToLockFile)

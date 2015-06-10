@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using NuGet.Logging;
 
 namespace NuGet.DependencyResolver
 {
@@ -39,7 +40,15 @@ namespace NuGet.DependencyResolver
                             return false;
                         }
 
-                        tracker.Track(node.Item);
+                        // HACK(anurse): Reference nodes win all battles.
+                        if (node.Item.Key.Type == "Reference")
+                        {
+                            tracker.Lock(node.Item);
+                        }
+                        else
+                        {
+                            tracker.Track(node.Item);
+                        }
                         return true;
                     });
 

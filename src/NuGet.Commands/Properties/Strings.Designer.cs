@@ -346,6 +346,38 @@ namespace NuGet.Commands
             return GetString("MSBuildWarning_MultiTarget");
         }
 
+        /// <summary>
+        /// Unable to satisfy conflicting requests for '{0}': {1}
+        /// </summary>
+        internal static string Log_ResolverConflict
+        {
+            get { return GetString("Log_ResolverConflict"); }
+        }
+
+        /// <summary>
+        /// Unable to satisfy conflicting requests for '{0}': {1}
+        /// </summary>
+        internal static string FormatLog_ResolverConflict(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ResolverConflict"), p0, p1);
+        }
+
+        /// <summary>
+        /// {0} (via {1})
+        /// </summary>
+        internal static string ResolverRequest_ToStringFormat
+        {
+            get { return GetString("ResolverRequest_ToStringFormat"); }
+        }
+
+        /// <summary>
+        /// {0} (via {1})
+        /// </summary>
+        internal static string FormatResolverRequest_ToStringFormat(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ResolverRequest_ToStringFormat"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
