@@ -28,7 +28,9 @@ namespace NuGet.Client
         private static readonly ContentPropertyDefinition LocaleProperty = new ContentPropertyDefinition(PropertyNames.Locale,
             parser: Locale_Parser);
 
-        private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(PropertyNames.AnyValue);
+        private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(
+            PropertyNames.AnyValue, 
+            parser: o => o); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly, fileExtensions: new[] { ".dll" });
         private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
 
@@ -51,6 +53,7 @@ namespace NuGet.Client
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
+                parser: o => o, // Identity parser, all strings are valid runtime ids :)
                 compatibilityTest: RuntimeIdentifier_CompatibilityTest);
 
             Properties = new ReadOnlyDictionary<string, ContentPropertyDefinition>(props);

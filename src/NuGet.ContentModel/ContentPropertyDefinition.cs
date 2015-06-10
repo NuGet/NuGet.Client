@@ -94,7 +94,7 @@ namespace NuGet.ContentModel
             }
             Table = new ReadOnlyDictionary<string, object>(table); // Wraps the dictionary in a read-only container. Does NOT copy!
 
-            Parser = parser ?? (o => o);
+            Parser = parser;
             CompatibilityTest = compatibilityTest ?? Equals;
             CompareTest = compareTest;
             FileExtensions = (fileExtensions ?? Enumerable.Empty<string>()).ToList();
