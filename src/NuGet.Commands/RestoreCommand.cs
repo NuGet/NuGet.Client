@@ -42,15 +42,52 @@ namespace NuGet.Commands
 
         public async Task<RestoreResult> ExecuteAsync()
         {
+            var localRepository = new NuGetv3LocalRepository(_request.PackagesDirectory, checkPackageIdCase: false);
+            var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
+                Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
+                _request.LockFilePath;
+
+            var result = await ExecuteRestore(localRepository);
+
+            // Build the lock file
+            var lockFile = CreateLockFile(_request.Project, result.RestoreGraphs.Where(g => g.WriteToLockFile), localRepository);
+
+            // Scan every graph for compatibility
+            var checkResults = new List<CompatibilityCheckResult>();
+            bool success = result.Success;
+            var checker = new CompatibilityChecker(localRepository, lockFile, _log);
+            foreach (var graph in result.RestoreGraphs)
+            {
+                _log.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
+                var res = checker.Check(graph);
+                success &= res.Success;
+                checkResults.Add(res);
+                if (result.Success)
+                {
+                    _log.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
+                }
+                else
+                {
+                    _log.LogError(Strings.FormatLog_PackagesIncompatible(graph.Name));
+                }
+            }
+
+            var lockFileFormat = new LockFileFormat();
+            lockFileFormat.Write(projectLockFilePath, lockFile);
+
+            // Generate Targets/Props files
+            WriteTargetsAndProps(_request.Project, result.RestoreGraphs, localRepository);
+
+            return new RestoreResult(success, result.RestoreGraphs, checkResults, lockFile);
+        }
+
+        private async Task<RestoreResult> ExecuteRestore(NuGetv3LocalRepository localRepository)
+        {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
                 _log.LogError(Strings.Log_ProjectDoesNotSpecifyTargetFrameworks);
                 return new RestoreResult(success: false, restoreGraphs: Enumerable.Empty<RestoreTargetGraph>());
             }
-
-            var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
-                Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
-                _request.LockFilePath;
 
             _log.LogInformation(Strings.FormatLog_RestoringPackages(_request.Project.FilePath));
 
@@ -108,12 +145,6 @@ namespace NuGet.Commands
                 frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context, writeToLockFile: true));
             }
 
-            foreach (var framework in _request.SupportProfiles.Select(p => p.Item1).Distinct().Where(f => !frameworks.Contains(f)))
-            {
-                // Walk dependencies for frameworks that only exist via supports profiles
-                frameworkTasks.Add(WalkDependencies(projectRange, framework, remoteWalker, context, writeToLockFile: false));
-            }
-
             graphs.AddRange(await Task.WhenAll(frameworkTasks));
 
             if (!ResolutionSucceeded(graphs))
@@ -123,12 +154,11 @@ namespace NuGet.Commands
 
             // Install the runtime-agnostic packages
             var allInstalledPackages = new HashSet<LibraryIdentity>();
-            var localRepository = new NuGetv3LocalRepository(_request.PackagesDirectory, checkPackageIdCase: false);
             await InstallPackages(graphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
 
             // Load runtime specs
             var runtimes = RuntimeGraph.Empty;
-            foreach(var graph in graphs)
+            foreach (var graph in graphs)
             {
                 runtimes = RuntimeGraph.Merge(
                     runtimes,
@@ -163,7 +193,7 @@ namespace NuGet.Commands
             }
 
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
-            foreach(var profile in _request.Project.RuntimeGraph.Supports)
+            foreach (var profile in _request.Project.RuntimeGraph.Supports)
             {
                 CompatibilityProfile compatProfile;
                 if (profile.Value.RestoreContexts.Any())
@@ -186,10 +216,10 @@ namespace NuGet.Commands
             }
 
             // Walk additional runtime graphs for supports checks
-            if(_request.CompatibilityProfiles.Any())
+            if (_request.CompatibilityProfiles.Any())
             {
                 var checkTasks = new List<Task<RestoreTargetGraph>>();
-                foreach(var profile in _request.CompatibilityProfiles.Where(p => !runtimeProfiles.Contains(p)))
+                foreach (var profile in _request.CompatibilityProfiles.Where(p => !runtimeProfiles.Contains(p)))
                 {
                     _log.LogInformation(Strings.FormatLog_RestoringPackagesForCompat(profile.Name));
                     var graph = graphs.SingleOrDefault(g => g.Framework.Equals(profile.Framework) && string.IsNullOrEmpty(g.RuntimeIdentifier));
@@ -201,7 +231,6 @@ namespace NuGet.Commands
 
                 if (!ResolutionSucceeded(graphs))
                 {
-                    _log.LogError(Strings.Log_FailedToResolveConflicts);
                     return new RestoreResult(success: false, restoreGraphs: graphs);
                 }
 
@@ -209,36 +238,7 @@ namespace NuGet.Commands
                 await InstallPackages(checkGraphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
             }
 
-            // Build the lock file
-            var lockFile = CreateLockFile(_request.Project, graphs.Where(g => g.WriteToLockFile), localRepository);
-
-            // Scan every graph for compatibility
-            var checkResults = new List<CompatibilityCheckResult>();
-            bool success = true;
-            var checker = new CompatibilityChecker(localRepository, lockFile, _log);
-            foreach (var graph in graphs)
-            {
-                _log.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
-                var result = checker.Check(graph);
-                success &= result.Success;
-                checkResults.Add(result);
-                if (result.Success)
-                {
-                    _log.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
-                }
-                else
-                {
-                    _log.LogError(Strings.FormatLog_PackagesIncompatible(graph.Name));
-                }
-            }
-
-            var lockFileFormat = new LockFileFormat();
-            lockFileFormat.Write(projectLockFilePath, lockFile);
-
-            // Generate Targets/Props files
-            WriteTargetsAndProps(_request.Project, graphs, localRepository);
-
-            return new RestoreResult(success, graphs, checkResults, lockFile);
+            return new RestoreResult(success: true, restoreGraphs: graphs);
         }
 
         private bool ResolutionSucceeded(List<RestoreTargetGraph> graphs)
@@ -263,7 +263,7 @@ namespace NuGet.Commands
             return success;
         }
 
-        private void WriteTargetsAndProps(PackageSpec project, List<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
+        private void WriteTargetsAndProps(PackageSpec project, IEnumerable<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
         {
             // Get the project graph
             var projectFrameworks = project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
