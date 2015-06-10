@@ -63,7 +63,7 @@ namespace NuGet.Commands
             if (_request.ExternalProjects.Any())
             {
                 externalProjectReference = new ExternalProjectReference(
-                    _request.Project.FilePath,
+                    _request.Project.Name,
                     _request.Project.FilePath,
                     _request.ExternalProjects.Select(p => p.UniqueName));
             }
