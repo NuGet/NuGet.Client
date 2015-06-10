@@ -58,11 +58,11 @@ function Test-BuildIntegratedInstallAndVerifyLockFileContainsChildDependency {
     $project = New-UAPApplication UAPApp
 
     # Act
-    Install-Package json-ld.net -ProjectName $project.Name -version 1.0.4
+    Install-Package AppSupport.Win81 -ProjectName $project.Name -version 0.0.3-alpha
 
     # Assert
-    Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 4.0.1
-    Assert-ProjectJsonDependencyNotFound $project Newtonsoft.Json
+    Assert-ProjectJsonLockFilePackage $project WindowsAzure.MobileServices 1.0.2
+    Assert-ProjectJsonDependencyNotFound $project WindowsAzure.MobileServices
 } 
 
 # basic uninstall
