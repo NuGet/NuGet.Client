@@ -31,7 +31,9 @@ namespace NuGet.Client
         private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(
             PropertyNames.AnyValue, 
             parser: o => o); // Identity parser, all strings are valid for any
-        private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly, fileExtensions: new[] { ".dll" });
+        private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
+            parser: o => o.Equals("_._", StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
+            fileExtensions: new[] { ".dll" });
         private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
 
         private RuntimeGraph _runtimeGraph;

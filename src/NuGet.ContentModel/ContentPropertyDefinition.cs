@@ -68,8 +68,18 @@ namespace NuGet.ContentModel
         {
         }
 
+        public ContentPropertyDefinition(string name, Func<string, object> parser, IEnumerable<string> fileExtensions)
+            : this(name, null, parser, null, null, fileExtensions, false)
+        {
+        }
+
         public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions, bool allowSubfolders)
             : this(name, null, null, null, null, fileExtensions, allowSubfolders)
+        {
+        }
+
+        public ContentPropertyDefinition(string name, Func<string, object> parser, IEnumerable<string> fileExtensions, bool allowSubfolders)
+            : this(name, null, parser, null, null, fileExtensions, allowSubfolders)
         {
         }
 
