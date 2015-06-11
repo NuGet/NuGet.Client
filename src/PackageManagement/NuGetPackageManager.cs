@@ -1206,6 +1206,7 @@ namespace NuGet.PackageManagement
                     originalPackageSpec,
                     nuGetProjectContext,
                     sources,
+                    Settings,
                     token);
 
                 originalLockFile = originalRestoreResult.LockFile;
@@ -1274,7 +1275,7 @@ namespace NuGet.PackageManagement
                 {
                     if (addedPackages.Contains(package))
                     {
-                        var packagePath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(package);
+                        var packagePath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(package, Settings);
                         await buildIntegratedProject.ExecuteInitScriptAsync(package, nuGetProjectContext, false);
                     }
                 }
