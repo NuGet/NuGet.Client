@@ -157,18 +157,14 @@ namespace NuGet.Packaging
         public static string GetInstalledPackageFilePath(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver)
         {
             var packageLookupPaths = GetPackageLookupPaths(packageIdentity, packagePathResolver);
-            if (packageLookupPaths.Any())
+            // TODO: Not handling nuspec-only scenarios
+            foreach (var packageLookupPath in packageLookupPaths)
             {
-                // TODO: Not handling nuspec-only scenarios
-                foreach (var packageLookupPath in packageLookupPaths)
+                if (packageLookupPath.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase) &&
+                    File.Exists(packageLookupPath))
                 {
-                    if (packageLookupPath.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)
-                        &&
-                        File.Exists(packageLookupPath))
-                    {
-                        // This is an installed package lookup path which matches the packageIdentity for the given packagePathResolver
-                        return packageLookupPath;
-                    }
+                    // This is an installed package lookup path which matches the packageIdentity for the given packagePathResolver
+                    return packageLookupPath;
                 }
             }
 
