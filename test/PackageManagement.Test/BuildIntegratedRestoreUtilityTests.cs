@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement.Projects;
@@ -39,7 +40,7 @@ namespace NuGet.Test
             var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
             // Act
-            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project, new TestNuGetProjectContext(), sources, CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project, new TestNuGetProjectContext(), sources, NullSettings.Instance, CancellationToken.None);
 
             // Assert
             Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));

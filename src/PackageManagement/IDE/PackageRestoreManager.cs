@@ -229,7 +229,7 @@ namespace NuGet.PackageManagement
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)
         {
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, Settings);
-            return new NuGetPackageManager(SourceRepositoryProvider, packagesFolderPath);
+            return new NuGetPackageManager(SourceRepositoryProvider, Settings, packagesFolderPath);
         }
 
         public Task<PackageRestoreResult> RestoreMissingPackagesAsync(NuGetPackageManager nuGetPackageManager,

@@ -30,7 +30,10 @@ namespace NuGet.PackageManagement
             Exception exception = null;
             try
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository, packageIdentity, CancellationToken.None);
+                await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+                    packageIdentity,
+                    NullSettings.Instance,
+                    CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -57,7 +60,10 @@ namespace NuGet.PackageManagement
             Exception exception = null;
             try
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository, packageIdentity, CancellationToken.None);
+                await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                    packageIdentity,
+                    NullSettings.Instance,
+                    CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -77,7 +83,10 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository, packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
@@ -97,7 +106,10 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository, packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
@@ -122,7 +134,10 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(), packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
@@ -145,6 +160,7 @@ namespace NuGet.PackageManagement
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
+                NullSettings.Instance,
                 CancellationToken.None));
         }
 
@@ -164,7 +180,10 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(), packageIdentity, CancellationToken.None))
+            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+                packageIdentity,
+                NullSettings.Instance,
+                CancellationToken.None))
             {
                 var targetPackageStream = downloadResult.PackageStream;
 

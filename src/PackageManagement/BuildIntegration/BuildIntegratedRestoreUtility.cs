@@ -32,10 +32,11 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
             IEnumerable<string> sources,
+            ISettings settings,
             CancellationToken token)
         {
             // Restore
-            var result = await RestoreAsync(project, project.PackageSpec, projectContext, sources, token);
+            var result = await RestoreAsync(project, project.PackageSpec, projectContext, sources, settings, token);
 
             // Find the lock file path
             var projectJson = new FileInfo(project.JsonConfigPath);
@@ -59,13 +60,14 @@ namespace NuGet.PackageManagement
             PackageSpec packageSpec,
             INuGetProjectContext projectContext,
             IEnumerable<string> sources,
+            ISettings settings,
             CancellationToken token)
         {
             // Restoring packages
             projectContext.Log(MessageLevel.Info, Strings.BuildIntegratedPackageRestoreStarted, project.ProjectName);
 
             var packageSources = sources.Select(source => new PackageSource(source));
-            var request = new RestoreRequest(packageSpec, packageSources, BuildIntegratedProjectUtility.GetGlobalPackagesFolder());
+            var request = new RestoreRequest(packageSpec, packageSources, SettingsUtility.GetGlobalPackagesFolder(settings));
             request.MaxDegreeOfConcurrency = MaxRestoreThreads;
 
             // Find the full closure of project.json files and referenced projects

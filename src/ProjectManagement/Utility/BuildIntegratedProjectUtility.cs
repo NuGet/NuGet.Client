@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement.Projects;
@@ -30,36 +33,19 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Get the root path of a package from the global folder.
         /// </summary>
-        public static string GetPackagePathFromGlobalSource(PackageIdentity identity)
+        public static string GetPackagePathFromGlobalSource(PackageIdentity identity, ISettings settings)
         {
-            var pathResolver = new VersionFolderPathResolver(GetGlobalPackagesFolder());
+            var pathResolver = new VersionFolderPathResolver(SettingsUtility.GetGlobalPackagesFolder(settings));
             return pathResolver.GetInstallPath(identity.Id, identity.Version);
         }
 
         /// <summary>
         /// nupkg path from the global cache folder
         /// </summary>
-        public static string GetNupkgPathFromGlobalSource(PackageIdentity identity)
+        public static string GetNupkgPathFromGlobalSource(PackageIdentity identity, ISettings settings)
         {
-            var pathResolver = new VersionFolderPathResolver(GetGlobalPackagesFolder());
+            var pathResolver = new VersionFolderPathResolver(SettingsUtility.GetGlobalPackagesFolder(settings));
             return pathResolver.GetPackageFileName(identity.Id, identity.Version);
-        }
-
-        /// <summary>
-        /// Global package folder path
-        /// </summary>
-        public static string GetGlobalPackagesFolder()
-        {
-            var path = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
-
-            if (string.IsNullOrEmpty(path))
-            {
-                var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-                path = Path.Combine(userProfile, ".nuget\\packages\\");
-            }
-
-            return path;
         }
 
         /// <summary>
