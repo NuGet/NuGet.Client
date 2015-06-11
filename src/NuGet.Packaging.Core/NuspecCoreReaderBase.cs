@@ -72,12 +72,6 @@ namespace NuGet.Packaging.Core
             return node == null ? null : NuGetVersion.Parse(node.Value);
         }
 
-        public bool GetDevelopmentDependency()
-        {
-            var node = MetadataNode.Elements(XName.Get(DevelopmentDependency, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
-            return node == null ? false : bool.Parse(node.Value);
-        }
-
         /// <summary>
         /// The developmentDependency attribute
         /// </summary>

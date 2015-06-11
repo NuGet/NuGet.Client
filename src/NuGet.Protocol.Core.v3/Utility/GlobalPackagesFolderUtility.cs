@@ -25,7 +25,7 @@ namespace NuGet.Protocol.Core.v3
             }
 
             var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            var defaultPackagePathResolver = new DefaultPackagePathResolver(globalPackagesFolder);
+            var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
             if (File.Exists(hashPath))
