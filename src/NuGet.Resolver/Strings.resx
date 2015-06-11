@@ -138,8 +138,11 @@
   <data name="UnableToFindCompatibleVersion" xml:space="preserve">
     <value>Unable to find a version of '{0}' that is compatible with {1}.</value>
   </data>
-  <data name="UnableToResolveDependency" xml:space="preserve">
+  <data name="UnableToResolveDependencyForEmptySource" xml:space="preserve">
     <value>Unable to resolve dependency '{0}'.</value>
+  </data>
+  <data name="UnableToResolveDependencyForMultipleSources" xml:space="preserve">
+    <value>Unable to resolve dependency '{0}'. Source(s) used: {1}.</value>
   </data>
   <data name="UnknownDependencyBehavior" xml:space="preserve">
     <value>Unknown DependencyBehavior value.</value>

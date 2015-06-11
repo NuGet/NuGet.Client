@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -24,7 +25,8 @@ namespace NuGet.Resolver
         public static string GetDiagnosticMessage(IEnumerable<ResolverPackage> solution,
             IEnumerable<PackageDependencyInfo> availablePackages,
             IEnumerable<PackageReference> packagesConfig,
-            IEnumerable<string> newPackageIds)
+            IEnumerable<string> newPackageIds,
+            IEnumerable<PackageSource> packageSources)
         {
             // remove empty and absent packages, absent packages cannot have error messages
             solution = solution.Where(package => package != null && !package.Absent);
@@ -50,7 +52,7 @@ namespace NuGet.Resolver
 
                 if (brokenPackage != null)
                 {
-                    return GetErrorMessage(targetId, solution, availablePackages, packagesConfig);
+                    return GetErrorMessage(targetId, solution, availablePackages, packagesConfig, packageSources);
                 }
             }
 
@@ -64,7 +66,7 @@ namespace NuGet.Resolver
 
                 if (brokenDependency != null)
                 {
-                    return GetErrorMessage(brokenDependency.Id, solution, availablePackages, packagesConfig);
+                    return GetErrorMessage(brokenDependency.Id, solution, availablePackages, packagesConfig, packageSources);
                 }
             }
 
@@ -79,7 +81,7 @@ namespace NuGet.Resolver
 
                 if (brokenDependency != null)
                 {
-                    return GetErrorMessage(brokenDependency.Id, solution, availablePackages, packagesConfig);
+                    return GetErrorMessage(brokenDependency.Id, solution, availablePackages, packagesConfig, packageSources);
                 }
             }
 
@@ -95,7 +97,7 @@ namespace NuGet.Resolver
 
                 if (brokenDependency != null)
                 {
-                    return GetErrorMessage(brokenDependency.Id, solution, availablePackages, packagesConfig);
+                    return GetErrorMessage(brokenDependency.Id, solution, availablePackages, packagesConfig, packageSources);
                 }
             }
 
@@ -105,7 +107,8 @@ namespace NuGet.Resolver
 
         private static string GetErrorMessage(string problemPackageId, IEnumerable<ResolverPackage> solution,
             IEnumerable<PackageDependencyInfo> availablePackages,
-            IEnumerable<PackageReference> packagesConfig)
+            IEnumerable<PackageReference> packagesConfig,
+            IEnumerable<PackageSource> packageSources)
         {
             var message = new StringBuilder();
 
@@ -121,7 +124,16 @@ namespace NuGet.Resolver
             if (!availablePackages.Any(package => StringComparer.OrdinalIgnoreCase.Equals(problemPackageId, package.Id)) ||
                 !dependantPackages.Any())
             {
-                message.AppendFormat(CultureInfo.CurrentCulture, Strings.UnableToResolveDependency, problemPackageId);
+                var packageSourceList = string.Join(", ", packageSources.Select(source => string.Format(CultureInfo.InvariantCulture, "'{0}'", source.Name)));
+
+                if (packageSources.Any())
+                {
+                    message.AppendFormat(CultureInfo.CurrentCulture, Strings.UnableToResolveDependencyForMultipleSources, problemPackageId, packageSourceList);
+                }
+                else
+                {
+                    message.AppendFormat(CultureInfo.CurrentCulture, Strings.UnableToResolveDependencyForEmptySource, problemPackageId, packageSourceList);
+                }
             }
             else
             {

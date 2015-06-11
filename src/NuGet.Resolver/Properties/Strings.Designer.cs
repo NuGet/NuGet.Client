@@ -125,17 +125,33 @@ namespace NuGet.Resolver
         /// <summary>
         /// Unable to resolve dependency '{0}'.
         /// </summary>
-        internal static string UnableToResolveDependency
+        internal static string UnableToResolveDependencyForEmptySource
         {
-            get { return GetString("UnableToResolveDependency"); }
+            get { return GetString("UnableToResolveDependencyForEmptySource"); }
         }
 
         /// <summary>
         /// Unable to resolve dependency '{0}'.
         /// </summary>
-        internal static string FormatUnableToResolveDependency(object p0)
+        internal static string FormatUnableToResolveDependencyForEmptySource(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToResolveDependency"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToResolveDependencyForEmptySource"), p0);
+        }
+
+        /// <summary>
+        /// Unable to resolve dependency '{0}' , source(s) in used: {1}.
+        /// </summary>
+        internal static string UnableToResolveDependencyForMultipleSources
+        {
+            get { return GetString("UnableToResolveDependencyForMultipleSources"); }
+        }
+
+        /// <summary>
+        /// Unable to resolve dependency '{0}' , source(s) in used: {1}.
+        /// </summary>
+        internal static string FormatUnableToResolveDependencyForMultipleSources(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToResolveDependencyForMultipleSources"), p0, p1);
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
+using NuGet.Configuration;
 
 namespace NuGet.Resolver.Test
 {
@@ -493,7 +494,8 @@ namespace NuGet.Resolver.Test
                 install.Select(p => p.PackageIdentity.Id),
                 install,
                 targets,
-                sourceRepository);
+                sourceRepository,
+                Enumerable.Empty<PackageSource>());
 
             var solution = resolver.Resolve(context, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
@@ -856,7 +858,8 @@ namespace NuGet.Resolver.Test
                 targets.Select(p => p.Id), Enumerable.Empty<string>(),
                 Enumerable.Empty<PackageReference>(),
                 targets,
-                availablePackages);
+                availablePackages,
+                Enumerable.Empty<PackageSource>());
         }
     }
 }

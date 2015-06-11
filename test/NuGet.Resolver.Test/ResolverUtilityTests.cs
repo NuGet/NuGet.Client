@@ -9,6 +9,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
+using NuGet.Configuration;
 
 namespace NuGet.Resolver.Test
 {
@@ -199,7 +200,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "a" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to find a version of 'd' that is compatible with 'b 2.0.0 constraint: d (= 1.0.0)', 'c 1.0.0 constraint: d (= 1.0.0)'.", message);
@@ -222,7 +223,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "a" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to find a version of 'z' that is compatible with 'y 1.0.0 constraint: z (= 1.0.0)'.", message);
@@ -247,7 +248,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (= 1.0.0)'. 'b' has an additional constraint (= 2.0.0) defined in packages.config.", message);
@@ -272,7 +273,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to resolve dependencies. 'b 2.0.0' is not compatible with 'a 1.0.0 constraint: b (= 1.0.0)'.", message);
@@ -294,7 +295,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to resolve dependencies. 'b 2.0.0' is not compatible with 'a 1.0.0 constraint: b (= 1.0.0)'.", message);
@@ -313,7 +314,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to resolve dependencies. 'b 2.0.0' is not compatible with 'a 1.0.0 constraint: b (= 1.0.0)'.", message);
@@ -331,7 +332,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to resolve dependency 'b'.", message);
@@ -350,7 +351,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (\u2265 1.0.0)'.", message);
@@ -365,7 +366,7 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to resolve dependencies.", message);
@@ -383,10 +384,51 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" });
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
             Assert.Equal("Unable to resolve dependencies.", message);
+        }
+
+        [Fact]
+        public void ResolverUtility_GetDiagnosticMessageForTargetMissingDependencyWithOneSource()
+        {
+
+            // Install a, b cannot be found
+
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("a", "1.0.0", "b", "[1.0.0, )"));
+
+            var available = solution.ToList();
+
+            // Act
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, 
+                new List<PackageSource>() { new PackageSource("http://test","test")});
+
+            // Assert
+            Assert.Equal("Unable to resolve dependency 'b'. Source(s) used: 'test'.", message);
+        }
+
+        [Fact]
+        public void ResolverUtility_GetDiagnosticMessageForTargetMissingDependencyWithMultipleSources()
+        {
+
+            // Install a, b cannot be found
+
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("a", "1.0.0", "b", "[1.0.0, )"));
+
+            var available = solution.ToList();
+
+            // Act
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" },
+                new List<PackageSource>() { new PackageSource("http://test", "test"),
+                                            new PackageSource("http://test1","test1")});
+
+            // Assert
+            Assert.Equal("Unable to resolve dependency 'b'. Source(s) used: 'test', 'test1'.", message);
         }
 
         private static ResolverPackage CreatePackage(string id, string version, string dependencyId, string dependencyVersionRange)

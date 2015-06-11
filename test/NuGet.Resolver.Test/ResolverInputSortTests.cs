@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -32,7 +33,8 @@ namespace NuGet.Resolver.Test
                 installed.Select(package => package.PackageIdentity.Id),
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
-                packages);
+                packages,
+                Enumerable.Empty<PackageSource>());
 
             var grouped = GroupPackages(packages);
 
@@ -66,7 +68,8 @@ namespace NuGet.Resolver.Test
                 installed.Select(package => package.PackageIdentity.Id),
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
-                packages);
+                packages,
+                Enumerable.Empty<PackageSource>());
 
             var grouped = GroupPackages(packages);
 
@@ -102,7 +105,8 @@ namespace NuGet.Resolver.Test
                 installed.Select(package => package.PackageIdentity.Id),
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
-                packages);
+                packages,
+                Enumerable.Empty<PackageSource>());
 
             var grouped = GroupPackages(packages);
 
@@ -137,7 +141,8 @@ namespace NuGet.Resolver.Test
                 installed.Select(package => package.PackageIdentity.Id),
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
-                packages);
+                packages,
+                Enumerable.Empty<PackageSource>());
 
             var grouped = GroupPackages(packages);
 
@@ -171,7 +176,8 @@ namespace NuGet.Resolver.Test
                 installed.Select(package => package.PackageIdentity.Id),
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
-                packages);
+                packages,
+                Enumerable.Empty<PackageSource>());
 
             var grouped = GroupPackages(packages);
 
@@ -207,7 +213,8 @@ namespace NuGet.Resolver.Test
                 installed.Select(package => package.PackageIdentity.Id),
                 installed,
                 Enumerable.Empty<PackageIdentity>(),
-                packages);
+                packages,
+                Enumerable.Empty<PackageSource>());
 
             var grouped = GroupPackages(packages);
 

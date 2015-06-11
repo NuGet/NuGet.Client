@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -26,7 +27,8 @@ namespace NuGet.Resolver
             IEnumerable<string> requiredPackageIds,
             IEnumerable<Packaging.PackageReference> packagesConfig,
             IEnumerable<PackageIdentity> preferredVersions,
-            IEnumerable<SourcePackageDependencyInfo> availablePackages)
+            IEnumerable<SourcePackageDependencyInfo> availablePackages,
+            IEnumerable<PackageSource> packageSources)
         {
             if (targetIds == null)
             {
@@ -53,6 +55,11 @@ namespace NuGet.Resolver
                 throw new ArgumentNullException(nameof(availablePackages));
             }
 
+            if(packageSources == null)
+            {
+                throw new ArgumentNullException(nameof(packageSources));
+            }
+
             DependencyBehavior = dependencyBehavior;
             TargetIds = new HashSet<string>(targetIds, StringComparer.OrdinalIgnoreCase);
 
@@ -62,7 +69,7 @@ namespace NuGet.Resolver
             PackagesConfig = packagesConfig;
             PreferredVersions = new HashSet<PackageIdentity>(preferredVersions, PackageIdentity.Comparer);
             AvailablePackages = availablePackages;
-
+            PackageSources = packageSources;
             Debug.Assert(PreferredVersions.GroupBy(p => p.Id, StringComparer.OrdinalIgnoreCase)
                 .All(group => group.Count() == 1), "duplicate preferred ids");
         }
@@ -99,6 +106,11 @@ namespace NuGet.Resolver
         /// Dependency behavior
         /// </summary>
         public DependencyBehavior DependencyBehavior { get; }
+        
+        /// <summary>
+        /// Package Sources
+        /// </summary>
+        public IEnumerable<PackageSource> PackageSources { get; }
 
     }
 }

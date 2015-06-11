@@ -149,7 +149,7 @@ namespace NuGet.Resolver
             }
 
             // no solution was found, throw an error with a diagnostic message
-            var message = ResolverUtility.GetDiagnosticMessage(bestSolution, context.AvailablePackages, context.PackagesConfig, context.TargetIds);
+            var message = ResolverUtility.GetDiagnosticMessage(bestSolution, context.AvailablePackages, context.PackagesConfig, context.TargetIds, context.PackageSources);
             throw new NuGetResolverConstraintException(message);
         }
 
