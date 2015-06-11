@@ -52,6 +52,8 @@ namespace NuGetVSExtension
 
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
+        private ISettings Settings { get; }
+
         private int TotalCount { get; set; }
 
         private int CurrentCount;
@@ -71,10 +73,12 @@ namespace NuGetVSExtension
         internal OnBuildPackageRestorer(ISolutionManager solutionManager,
             IPackageRestoreManager packageRestoreManager,
             IServiceProvider serviceProvider,
-            ISourceRepositoryProvider sourceRepositoryProvider)
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings)
         {
             SolutionManager = solutionManager;
             SourceRepositoryProvider = sourceRepositoryProvider;
+            Settings = settings;
 
             PackageRestoreManager = packageRestoreManager;
 
@@ -126,7 +130,7 @@ namespace NuGetVSExtension
                     return;
                 }
 
-                if (!IsAutomatic())
+                if (!IsAutomatic(Settings))
                 {
                     return;
                 }
@@ -169,7 +173,7 @@ namespace NuGetVSExtension
                             // Restore packages and create the lock file for each project
                             foreach (var project in buildEnabledProjects)
                             {
-                                await BuildIntegratedRestoreUtility.RestoreAsync(project, context, enabledSources, CancellationToken.None);
+                                await BuildIntegratedRestoreUtility.RestoreAsync(project, context, enabledSources, Settings, CancellationToken.None);
                             }
                         }
                     });
@@ -278,7 +282,7 @@ namespace NuGetVSExtension
 
             var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
 
-            if (IsConsentGranted())
+            if (IsConsentGranted(Settings))
             {
                 HasErrors = false;
                 Canceled = false;
@@ -365,9 +369,8 @@ namespace NuGetVSExtension
         /// Returns true if the package restore user consent is granted.
         /// </summary>
         /// <returns>True if the package restore user consent is granted.</returns>
-        private static bool IsConsentGranted()
+        private static bool IsConsentGranted(ISettings settings)
         {
-            var settings = ServiceLocator.GetInstance<NuGet.Configuration.ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             return packageRestoreConsent.IsGranted;
         }
@@ -376,9 +379,8 @@ namespace NuGetVSExtension
         /// Returns true if automatic package restore on build is enabled.
         /// </summary>
         /// <returns>True if automatic package restore on build is enabled.</returns>
-        private static bool IsAutomatic()
+        private static bool IsAutomatic(ISettings settings)
         {
-            var settings = ServiceLocator.GetInstance<NuGet.Configuration.ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             return packageRestoreConsent.IsAutomatic;
         }
