@@ -339,7 +339,9 @@ namespace NuGet.PackageManagement
                     packageTargetIdsForResolver,
                     projectInstalledPackageReferences,
                     Enumerable.Empty<PackageIdentity>(),
-                    prunedAvailablePackages);
+                    prunedAvailablePackages,
+                    SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource)
+                    );
 
                 nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
                 var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
@@ -482,7 +484,9 @@ namespace NuGet.PackageManagement
                     packageTargetsForResolver.Select(package => package.Id),
                     projectInstalledPackageReferences,
                     packageTargetsForResolver,
-                    prunedAvailablePackages);
+                    prunedAvailablePackages,
+                    SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource)
+                    );
 
                 var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
                 if (newListOfInstalledPackages == null)
@@ -789,7 +793,8 @@ namespace NuGet.PackageManagement
                         oldListOfInstalledPackages.Select(package => package.Id),
                         projectInstalledPackageReferences,
                         preferredPackageReferences.Select(package => package.PackageIdentity),
-                        prunedAvailablePackages);
+                        prunedAvailablePackages,
+                        SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource));
 
                     nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
 
