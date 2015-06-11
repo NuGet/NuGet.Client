@@ -8,9 +8,11 @@ using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -42,7 +44,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
-            PackageIdentity identity = GetPackageIdentity().Result;
+            var identity = ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var result = await GetPackageIdentity();
+                return result;
+            });
 
             SubscribeToProgressEvents();
             if (_projects.Count == 0)

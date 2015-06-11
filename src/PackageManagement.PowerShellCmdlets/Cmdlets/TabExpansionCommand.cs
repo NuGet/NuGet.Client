@@ -6,7 +6,7 @@ using System.Management.Automation;
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
-    /// This cmdlet will not be exported in the nuget module
+    /// This cmdlet will not be exported in the NuGet module
     /// </summary>
     [Cmdlet("TabExpansion", "Package")]
     public class TabExpansionCommand : FindPackageCommand

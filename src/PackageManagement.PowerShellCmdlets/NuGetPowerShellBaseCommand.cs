@@ -42,8 +42,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
         private readonly ISourceRepositoryProvider _resourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
+
         // TODO: Hook up DownloadResource.Progress event
         private readonly IHttpClientEvents _httpClientEvents;
+
         private ProgressRecordCollection _progressRecordCache;
         private Exception _scriptException;
         private bool _overwriteAll;
@@ -53,7 +55,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         internal const string SyncModeKey = "IsSyncMode";
         private const string CancellationTokenKey = "CancellationTokenKey";
 
-        #endregion
+        #endregion Members
 
         protected NuGetPowerShellBaseCommand()
         {
@@ -167,7 +169,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get { return this; }
         }
 
-        #endregion
+        #endregion Properties
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to display friendly message to the console.")]
         protected override sealed void ProcessRecord()
@@ -293,7 +295,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
-            // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null. 
+            // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null.
             PSSearchResource newResource = repository.GetResource<PSSearchResource>();
             if (newResource == null)
             {
@@ -575,7 +577,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        #endregion
+        #endregion Cmdlets base APIs
 
         #region Processing
 
@@ -654,7 +656,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return null;
         }
 
-        #endregion
+        #endregion Processing
 
         #region Implementing IErrorHandler
 
@@ -715,7 +717,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 category: ErrorCategory.InvalidOperation);
         }
 
-        #endregion
+        #endregion Implementing IErrorHandler
 
         #region Logging
 
@@ -944,7 +946,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected Semaphore ScriptEndSemaphore => _scriptEndSemaphore;
 
-        #endregion
+        #endregion Logging
 
         public bool IsExecuting { get; private set; }
 

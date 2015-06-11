@@ -135,7 +135,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Filter = string.Empty;
                 }
 
-                // Find avaiable packages from the current source and not taking targetframeworks into account. 
+                // Find avaiable packages from the current source and not taking targetframeworks into account.
                 if (UseRemoteSourceOnly)
                 {
                     var remotePackages = ThreadHelper.JoinableTaskFactory.Run(async delegate
@@ -195,7 +195,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             var metadataTasks = new List<Tuple<Task<PSSearchMetadata>, Packaging.PackageReference>>();
 
-
             foreach (var installedPackage in installedPackages)
             {
                 var task = Task.Run<PSSearchMetadata>(async () =>
@@ -215,8 +214,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (metadata != null)
                 {
-                    var package =
-                        PowerShellUpdatePackage.GetPowerShellPackageUpdateView(metadata, task.Item2.PackageIdentity.Version, versionType, project);
+                    var package = PowerShellUpdatePackage.GetPowerShellPackageUpdateView(metadata, task.Item2.PackageIdentity.Version, versionType, project);
 
                     projectHasUpdates = true;
 
@@ -260,7 +258,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void WritePackagesFromRemoteSource(IEnumerable<PSSearchMetadata> packages, bool outputWarning = false)
         {
             // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
-            // and will be replaced by Find-Package [-Id] 
+            // and will be replaced by Find-Package [-Id]
             VersionType versionType;
             string message;
             if (CollapseVersions)

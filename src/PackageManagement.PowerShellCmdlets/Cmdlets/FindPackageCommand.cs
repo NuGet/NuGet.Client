@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+extern alias Legacy;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +15,9 @@ using NuGet.Versioning;
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     /// <summary>
-    /// FindPackage is identical to GetPackage except that FindPackage filters packages only by Id and does not
-    /// consider description or tags.
+    /// FindPackage is similar to GetPackage -ListAvailable, but have the following difference:
+    /// Without -StartWith present, it find packages by keyword anywhere in the package Id, description or summary.
+    /// With -StartWith present, it only returns packages with Ids starting with the specified string.
     /// </summary>
     [Cmdlet(VerbsCommon.Find, "Package")]
     [OutputType(typeof(PowerShellPackage))]
@@ -43,16 +46,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public SwitchParameter AllVersions { get; set; }
 
         /// <summary>
-        /// Determines if an exact Id match would be performed with the Filter parameter. By default, FindPackage
-        /// returns all packages that starts with the
-        /// Filter value.
+        /// Determines if an exact Id match would be performed with the search results. By default, FindPackage
+        /// returns all packages that contain Filter value in package ID, description or summary.
         /// </summary>
         [Parameter]
         public SwitchParameter ExactMatch { get; set; }
 
         /// <summary>
         /// Find packages by AutoComplete endpoint, starting with Id.
-        /// Used for tab expansion.
+        /// Also used for tab expansion.
         /// </summary>
         [Parameter]
         public SwitchParameter StartWith { get; set; }
@@ -67,7 +69,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void Preprocess()
         {
-            // Since this is used for intellisense, we need to limit the number of packages that we return. Otherwise,
+            // Since this is also used for intellisense, we need to limit the number of packages that we return. Otherwise,
             // typing InstallPackage TAB would download the entire feed.
             if (First == 0)
             {
@@ -139,15 +141,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected void FindPackageStartWithId(bool excludeVersionInfo)
         {
             var autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>(Token);
-            IEnumerable<string> packageIds;
-
-            var task = autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Token);
-
-            packageIds = task.Result ?? Enumerable.Empty<string>();
+            var packageIds = ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Token);
+                return result;
+            });
 
             Token.ThrowIfCancellationRequested();
 
-            packageIds = packageIds.Skip(Skip).Take(First);
+            packageIds = packageIds == null ? Enumerable.Empty<string>() : packageIds.Skip(Skip).Take(First);
 
             if (excludeVersionInfo)
             {
@@ -174,11 +176,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     // Just start the task and don't wait for it to complete
                     package.AsyncLazyVersions.GetValueAsync();
-
-                    //if (package.Versions.Any())
-                    {
-                        packages.Add(package);
-                    }
+                    packages.Add(package);
                 }
 
                 WriteObject(packages, enumerateCollection: true);
@@ -194,11 +192,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                         // Just start the task and don't wait for it to complete
                         package.AsyncLazyVersions.GetValueAsync();
-
-                        //if (package.Versions.Any())
-                        {
-                            WriteObject(package);
-                        }
+                        WriteObject(package);
                     }
                 }
             }

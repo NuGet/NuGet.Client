@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 
@@ -55,8 +56,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 UIMetadataResource resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
-                Task<IEnumerable<UIPackageMetadata>> task = resource.GetMetadata(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
-                var metadata = task.Result;
+                var metadata = ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    var result = await resource.GetMetadata(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
+                    return result;
+                });
+
                 if (!string.IsNullOrEmpty(Version))
                 {
                     NuGetVersion nVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
