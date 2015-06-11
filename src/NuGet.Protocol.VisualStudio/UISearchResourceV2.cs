@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +44,13 @@ namespace NuGet.Protocol.VisualStudio
         {
             return await Task.Run(() =>
             {
+                // Check if source is available.
+                if (!IsHttpSource(V2Client.Source) && !IsLocalOrUNC(V2Client.Source))
+                {
+                    throw new InvalidOperationException(
+                        Strings.FormatProtocol_Search_LocalSourceNotFound(V2Client.Source));
+                }
+
                 var query = V2Client.Search(
                     searchTerm,
                     filters.SupportedFrameworks,
@@ -140,6 +148,41 @@ namespace NuGet.Protocol.VisualStudio
 
                 return nuGetVersions;
             });
+        }
+
+        private static bool IsHttpSource(string source)
+        {
+            if (string.IsNullOrEmpty(source))
+            {
+                return false;
+            }
+
+            Uri uri;
+            if (Uri.TryCreate(source, UriKind.Absolute, out uri))
+            {
+                return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool IsLocalOrUNC(string currentSource)
+        {
+            Uri currentURI;
+            if (Uri.TryCreate(currentSource, UriKind.RelativeOrAbsolute, out currentURI))
+            {
+                if (currentURI.IsFile || currentURI.IsUnc)
+                {
+                    if (Directory.Exists(currentSource))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
