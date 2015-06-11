@@ -25,13 +25,13 @@ namespace NuGet.PackageManagement
 
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
         private ISolutionManager SolutionManager { get; }
-        private ISettings Settings { get; }
+        private Configuration.ISettings Settings { get; }
 
         public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
         public event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
         public event EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent;
 
-        public PackageRestoreManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
+        public PackageRestoreManager(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -112,14 +112,14 @@ namespace NuGet.PackageManagement
         }
 
         private IEnumerable<PackageRestoreData> GetPackages(string solutionDirectory,
-            Dictionary<PackageReference, List<string>> packageReferencesDictionary)
+            Dictionary<Packaging.PackageReference, List<string>> packageReferencesDictionary)
         {
             var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
             return GetPackages(nuGetPackageManager, packageReferencesDictionary);
         }
 
         private static IEnumerable<PackageRestoreData> GetPackages(NuGetPackageManager nuGetPackageManager,
-            Dictionary<PackageReference, List<string>> packageReferencesDictionary)
+            Dictionary<Packaging.PackageReference, List<string>> packageReferencesDictionary)
         {
             var packages = new List<PackageRestoreData>();
 
@@ -140,9 +140,9 @@ namespace NuGet.PackageManagement
             return packages;
         }
 
-        private async Task<Dictionary<PackageReference, List<string>>> GetPackagesReferencesDictionaryAsync(CancellationToken token)
+        private async Task<Dictionary<Packaging.PackageReference, List<string>>> GetPackagesReferencesDictionaryAsync(CancellationToken token)
         {
-            var packageReferencesDict = new Dictionary<PackageReference, List<string>>(new PackageReferenceComparer());
+            var packageReferencesDict = new Dictionary<Packaging.PackageReference, List<string>>(new PackageReferenceComparer());
             foreach (var nuGetProject in SolutionManager.GetNuGetProjects())
             {
                 // skip project k projects and build aware projects
@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement
             // It is possible that the dictionary passed in may not have used the PackageReferenceComparer.
             // So, just to be sure, create a hashset with the keys from the dictionary using the PackageReferenceComparer
             // Now, we are guaranteed to not restore the same package more than once
-            var hashSetOfMissingPackageReferences = new HashSet<PackageReference>(missingPackages.Select(p => p.PackageReference), new PackageReferenceComparer());
+            var hashSetOfMissingPackageReferences = new HashSet<Packaging.PackageReference>(missingPackages.Select(p => p.PackageReference), new PackageReferenceComparer());
 
             // Before starting to restore package, set the nuGetProjectContext such that satellite files are not copied yet
             // Satellite files will be copied as a post operation. This helps restore packages in parallel
@@ -317,11 +317,11 @@ namespace NuGet.PackageManagement
         /// that dequeue from the ConcurrentQueue and perform package restore. So, this method should pre-populate the
         /// queue and must not enqueued to by other methods
         /// </summary>
-        private static Task ThrottledPackageRestoreAsync(HashSet<PackageReference> packageReferences,
+        private static Task ThrottledPackageRestoreAsync(HashSet<Packaging.PackageReference> packageReferences,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
-            var packageReferencesQueue = new ConcurrentQueue<PackageReference>(packageReferences);
+            var packageReferencesQueue = new ConcurrentQueue<Packaging.PackageReference>(packageReferences);
             var tasks = new List<Task>();
             for (var i = 0; i < Math.Min(packageRestoreContext.MaxNumberOfParallelTasks, packageReferences.Count); i++)
             {
@@ -336,11 +336,11 @@ namespace NuGet.PackageManagement
         /// performs package restore
         /// Note that this method should only Dequeue from the concurrent queue and not Enqueue
         /// </summary>
-        private static async Task PackageRestoreRunnerAsync(ConcurrentQueue<PackageReference> packageReferencesQueue,
+        private static async Task PackageRestoreRunnerAsync(ConcurrentQueue<Packaging.PackageReference> packageReferencesQueue,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
-            PackageReference currentPackageReference = null;
+            Packaging.PackageReference currentPackageReference = null;
             while (packageReferencesQueue.TryDequeue(out currentPackageReference))
             {
                 var result = await RestorePackageAsync(currentPackageReference, packageRestoreContext, nuGetProjectContext);
@@ -361,11 +361,11 @@ namespace NuGet.PackageManagement
         /// that dequeue from the ConcurrentQueue and perform copying of satellite files. So, this method should
         /// pre-populate the queue and must not enqueued to by other methods
         /// </summary>
-        private static Task ThrottledCopySatelliteFilesAsync(HashSet<PackageReference> packageReferences,
+        private static Task ThrottledCopySatelliteFilesAsync(HashSet<Packaging.PackageReference> packageReferences,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
-            var packageReferencesQueue = new ConcurrentQueue<PackageReference>(packageReferences);
+            var packageReferencesQueue = new ConcurrentQueue<Packaging.PackageReference>(packageReferences);
             var tasks = new List<Task>();
             for (var i = 0; i < Math.Min(packageRestoreContext.MaxNumberOfParallelTasks, packageReferences.Count); i++)
             {
@@ -375,7 +375,7 @@ namespace NuGet.PackageManagement
             return Task.WhenAll(tasks);
         }
 
-        private static async Task<bool> RestorePackageAsync(PackageReference packageReference,
+        private static async Task<bool> RestorePackageAsync(Packaging.PackageReference packageReference,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
@@ -399,7 +399,7 @@ namespace NuGet.PackageManagement
             // PackageReferences cannot be null here
             if (exception != null)
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, exception.Message);
+                nuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, exception.Message);
                 if (packageRestoreContext.PackageRestoreFailedEvent != null)
                 {
                     var packageReferenceComparer = new PackageReferenceComparer();
@@ -426,11 +426,11 @@ namespace NuGet.PackageManagement
         /// performs copying of satellite files
         /// Note that this method should only Dequeue from the concurrent queue and not Enqueue
         /// </summary>
-        private static async Task CopySatelliteFilesRunnerAsync(ConcurrentQueue<PackageReference> packageReferencesQueue,
+        private static async Task CopySatelliteFilesRunnerAsync(ConcurrentQueue<Packaging.PackageReference> packageReferencesQueue,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
-            PackageReference currentPackageReference = null;
+            Packaging.PackageReference currentPackageReference = null;
             while (packageReferencesQueue.TryDequeue(out currentPackageReference))
             {
                 var result = await packageRestoreContext.PackageManager.CopySatelliteFilesAsync(currentPackageReference.PackageIdentity, nuGetProjectContext, packageRestoreContext.Token);

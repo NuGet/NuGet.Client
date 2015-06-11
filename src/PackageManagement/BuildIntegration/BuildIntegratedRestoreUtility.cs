@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             INuGetProjectContext projectContext,
             IEnumerable<string> sources,
-            ISettings settings,
+            Configuration.ISettings settings,
             CancellationToken token)
         {
             // Restore
@@ -60,13 +60,13 @@ namespace NuGet.PackageManagement
             PackageSpec packageSpec,
             INuGetProjectContext projectContext,
             IEnumerable<string> sources,
-            ISettings settings,
+            Configuration.ISettings settings,
             CancellationToken token)
         {
             // Restoring packages
-            projectContext.Log(MessageLevel.Info, Strings.BuildIntegratedPackageRestoreStarted, project.ProjectName);
+            projectContext.Log(ProjectManagement.MessageLevel.Info, Strings.BuildIntegratedPackageRestoreStarted, project.ProjectName);
 
-            var packageSources = sources.Select(source => new PackageSource(source));
+            var packageSources = sources.Select(source => new Configuration.PackageSource(source));
             var request = new RestoreRequest(packageSpec, packageSources, SettingsUtility.GetGlobalPackagesFolder(settings));
             request.MaxDegreeOfConcurrency = MaxRestoreThreads;
 
@@ -84,11 +84,11 @@ namespace NuGet.PackageManagement
             // Report a final message with the Success result
             if (result.Success)
             {
-                projectContext.Log(MessageLevel.Info, Strings.BuildIntegratedPackageRestoreSucceeded, project.ProjectName);
+                projectContext.Log(ProjectManagement.MessageLevel.Info, Strings.BuildIntegratedPackageRestoreSucceeded, project.ProjectName);
             }
             else
             {
-                projectContext.Log(MessageLevel.Info, Strings.BuildIntegratedPackageRestoreFailed, project.ProjectName);
+                projectContext.Log(ProjectManagement.MessageLevel.Info, Strings.BuildIntegratedPackageRestoreFailed, project.ProjectName);
             }
 
             return result;

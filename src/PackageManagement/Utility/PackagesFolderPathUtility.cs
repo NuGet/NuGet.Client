@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement
     {
         private const string DefaultRepositoryPath = "packages";
 
-        public static string GetPackagesFolderPath(ISolutionManager solutionManager, ISettings settings)
+        public static string GetPackagesFolderPath(ISolutionManager solutionManager, Configuration.ISettings settings)
         {
             if (solutionManager == null)
             {
@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement
             return GetPackagesFolderPath(solutionManager.SolutionDirectory, settings);
         }
 
-        public static string GetPackagesFolderPath(string solutionDirectory, ISettings settings)
+        public static string GetPackagesFolderPath(string solutionDirectory, Configuration.ISettings settings)
         {
             if (string.IsNullOrEmpty(solutionDirectory))
             {

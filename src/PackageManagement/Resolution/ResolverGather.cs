@@ -348,7 +348,7 @@ namespace NuGet.PackageManagement
         /// <param name="packagesConfig">entries from packages.config</param>
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfVersionIsDisallowedByPackagesConfig(string target,
-            IEnumerable<PackageReference> packagesConfig,
+            IEnumerable<Packaging.PackageReference> packagesConfig,
             IEnumerable<PackageDependencyInfo> availablePackages)
         {
             ThrowIfVersionIsDisallowedByPackagesConfig(new string[] { target }, packagesConfig, availablePackages);
@@ -362,7 +362,7 @@ namespace NuGet.PackageManagement
         /// <param name="packagesConfig">entries from packages.config</param>
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfVersionIsDisallowedByPackagesConfig(IEnumerable<string> targets,
-            IEnumerable<PackageReference> packagesConfig,
+            IEnumerable<Packaging.PackageReference> packagesConfig,
             IEnumerable<PackageDependencyInfo> availablePackages)
         {
             foreach (var target in targets)

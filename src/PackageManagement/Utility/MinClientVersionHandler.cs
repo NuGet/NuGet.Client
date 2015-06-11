@@ -31,11 +31,11 @@ namespace NuGet.PackageManagement
             }
 
             // validate that the current version of NuGet satisfies the minVersion attribute specified in the .nuspec
-            if (Constants.NuGetSemanticVersion < packageMinClientVersion)
+            if (ProjectManagement.Constants.NuGetSemanticVersion < packageMinClientVersion)
             {
                 throw new NuGetVersionNotSatisfiedException(
                     string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied, packageIdentity,
-                        packageMinClientVersion.ToNormalizedString(), Constants.NuGetSemanticVersion.ToNormalizedString()));
+                        packageMinClientVersion.ToNormalizedString(), ProjectManagement.Constants.NuGetSemanticVersion.ToNormalizedString()));
             }
         }
     }

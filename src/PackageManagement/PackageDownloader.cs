@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
-            ISettings settings,
+            Configuration.ISettings settings,
             CancellationToken token)
         {
             if (sources == null)
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
-            ISettings settings,
+            Configuration.ISettings settings,
             CancellationToken token)
         {
             if (sourceRepository == null)

@@ -3,17 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using NuGet.Packaging;
 
 namespace NuGet.PackageManagement
 {
     public class PackageRestoreFailedEventArgs : EventArgs
     {
-        public PackageReference RestoreFailedPackageReference { get; private set; }
+        public Packaging.PackageReference RestoreFailedPackageReference { get; private set; }
         public Exception Exception { get; private set; }
         public IEnumerable<string> ProjectNames { get; private set; }
 
-        public PackageRestoreFailedEventArgs(PackageReference restoredFailedPackageReference, Exception exception, IEnumerable<string> projectNames)
+        public PackageRestoreFailedEventArgs(Packaging.PackageReference restoredFailedPackageReference, Exception exception, IEnumerable<string> projectNames)
         {
             if (restoredFailedPackageReference == null)
             {

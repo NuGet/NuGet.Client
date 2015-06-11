@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        public static IEnumerable<SourcePackageDependencyInfo> PruneDowngrades(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
+        public static IEnumerable<SourcePackageDependencyInfo> PruneDowngrades(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<Packaging.PackageReference> packageReferences)
         {
             // prune every package that is less that the currently installed package
 
@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement
                 installed[package.Id] <= package.Version : true);
         }
 
-        public static IEnumerable<SourcePackageDependencyInfo> PruneDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences)
+        public static IEnumerable<SourcePackageDependencyInfo> PruneDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<Packaging.PackageReference> packageReferences)
         {
             var result = packages;
             foreach (var packageReference in packageReferences)
@@ -129,7 +129,7 @@ namespace NuGet.PackageManagement
         }
 
         // TODO: Consider removing elements from the collection and check if that is better in performance
-        public static IEnumerable<SourcePackageDependencyInfo> RemoveDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, PackageReference packageReference)
+        public static IEnumerable<SourcePackageDependencyInfo> RemoveDisallowedVersions(IEnumerable<SourcePackageDependencyInfo> packages, Packaging.PackageReference packageReference)
         {
             if (packageReference.AllowedVersions != null)
             {

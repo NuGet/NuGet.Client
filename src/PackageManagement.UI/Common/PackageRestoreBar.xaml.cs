@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.UI
             return true;
         }
 
-        public void Log(MessageLevel level, string message, params object[] args)
+        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
             ShowMessage(String.Format(CultureInfo.CurrentCulture, message, args));
         }
