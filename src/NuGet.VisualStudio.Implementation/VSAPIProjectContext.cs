@@ -50,6 +50,8 @@ namespace NuGet.VisualStudio
 
         public bool BindingRedirectsDisabled { get; }
 
+        public bool SkipBindingRedirects { get; set; }
+
         public void ReportError(string message)
         {
             // no-op
