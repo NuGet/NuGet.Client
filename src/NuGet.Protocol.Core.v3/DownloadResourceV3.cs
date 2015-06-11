@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -49,20 +50,36 @@ namespace NuGet.Protocol.Core.v3
             return downloadUri;
         }
 
-        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, CancellationToken token)
+        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity,
+            ISettings settings,
+            CancellationToken token)
         {
             if (identity == null)
             {
                 throw new ArgumentNullException(nameof(identity));
             }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
             
             Uri uri = await GetDownloadUrl(identity, token);
             if (uri != null)
             {
-                var stream = await _client.GetStreamAsync(uri);
-                if (stream != null)
+                // Uri is not null, so the package exists in the source
+                // Now, check if it is in the global packages folder, before, getting the package stream
+                var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
+
+                if (packageFromGlobalPackages != null)
                 {
-                    return new DownloadResourceResult(stream);
+                    return packageFromGlobalPackages;
+                }
+
+                using (var packageStream = await _client.GetStreamAsync(uri))
+                {
+                    var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity, packageStream, settings);
+                    return downloadResult;
                 }
             }
 

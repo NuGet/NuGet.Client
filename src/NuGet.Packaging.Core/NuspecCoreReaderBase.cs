@@ -79,6 +79,15 @@ namespace NuGet.Packaging.Core
         }
 
         /// <summary>
+        /// The developmentDependency attribute
+        /// </summary>
+        public bool GetDevelopmentDependency()
+        {
+            var node = MetadataNode.Elements(XName.Get(DevelopmentDependency, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+            return node == null ? false : bool.Parse(node.Value);
+        }
+
+        /// <summary>
         /// Nuspec Metadata
         /// </summary>
         public IEnumerable<KeyValuePair<string, string>> GetMetadata()

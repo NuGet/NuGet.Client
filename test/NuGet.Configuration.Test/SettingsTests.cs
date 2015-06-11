@@ -1765,6 +1765,49 @@ namespace NuGet.Configuration.Test
             Assert.Equal("value1", v);
         }
 
+        [Fact]
+        public void GetGlobalPackagesFolder_FromNuGetConfig()
+        {
+            // Arrange
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+<config>
+<add key=""globalPackagesFolder"" value=""C:\Temp\NuGet"" />
+</config>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.config";
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+                // Assert
+                Assert.Equal(@"C:\Temp\NuGet", globalPackagesFolderPath);
+            }
+        }
+
+        [Fact]
+        public void GetGlobalPackagesFolder_Default()
+        {
+            // Arrange
+#if !DNXCORE50
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+#else
+            var userProfile = Environment.GetEnvironmentVariable("UserProfile");
+#endif
+            var expectedPath = Path.Combine(userProfile, SettingsUtility.DefaultGlobalPackagesFolderPath);
+
+            // Act
+            var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(new NullSettings());
+
+            // Assert
+            Assert.Equal(expectedPath, globalPackagesFolderPath);
+        }
+
         private void AssertEqualCollections(IList<SettingValue> actual, string[] expected)
         {
             Assert.Equal(actual.Count, expected.Length / 2);
