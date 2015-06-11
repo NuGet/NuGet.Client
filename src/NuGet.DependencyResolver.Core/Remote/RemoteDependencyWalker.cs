@@ -135,7 +135,7 @@ namespace NuGet.DependencyResolver
             if (match == null)
             {
                 // HACK(anurse): Reference requests are not resolved and just left as-is
-                if (libraryRange.TypeConstraint.Equals(LibraryTypes.Reference))
+                if (string.Equals(libraryRange.TypeConstraint, LibraryTypes.Reference))
                 {
                     return CreateReferenceMatch(libraryRange);
                 }

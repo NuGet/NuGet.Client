@@ -97,7 +97,7 @@ namespace NuGet.Commands.Test
             var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
 
             // Assert
-            Assert.Equal(9, logger.Errors); // There will be compatibility errors, but we don't care
+            Assert.Equal(6, logger.Errors); // There will be compatibility errors, but we don't care
             Assert.Equal(3, installed.Count);
             Assert.Equal(0, unresolved.Count);
             Assert.Equal("5.0.4", jsonNetPackage.Version.ToNormalizedString());
@@ -289,7 +289,7 @@ namespace NuGet.Commands.Test
             Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
             Assert.Contains(expectedIssue.Format(), logger.Messages);
 
-            Assert.Equal(9, logger.Errors);
+            Assert.Equal(6, logger.Errors);
             Assert.Equal(2, installed.Count);
             Assert.Equal(0, unresolved.Count);
             Assert.Equal(0, runtimeAssemblies.Count);
@@ -326,9 +326,8 @@ namespace NuGet.Commands.Test
 
             // Assert
             Assert.False(result.Success);
-            Assert.Null(result.LockFile);
 
-            Assert.Equal(1, logger.Errors);
+            Assert.Equal(2, logger.Errors);
             Assert.Equal(1, unresolved.Count);
             Assert.Equal(0, installed.Count);
         }
@@ -382,11 +381,9 @@ namespace NuGet.Commands.Test
                 !string.IsNullOrEmpty(c.Graph.RuntimeIdentifier)).Issues.Where(c => c.Type == CompatibilityIssueType.ReferenceAssemblyNotImplemented).ToArray();
 
             // Assert
-            Assert.Equal(5, brokenPackages.Length);
+            Assert.Equal(3, brokenPackages.Length);
             Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Globalization") && c.AssemblyName.Equals("System.Globalization")));
             Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.IO") && c.AssemblyName.Equals("System.IO")));
-            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Text.Encoding") && c.AssemblyName.Equals("System.Text.Encoding")));
-            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Threading.Tasks") && c.AssemblyName.Equals("System.Threading.Tasks")));
             Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Reflection") && c.AssemblyName.Equals("System.Reflection")));
         }
 
