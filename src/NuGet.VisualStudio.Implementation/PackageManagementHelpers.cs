@@ -39,7 +39,9 @@ namespace NuGet.VisualStudio
             // if the project does not exist in the solution (this is true for new templates) create it manually
             if (nuGetProject == null)
             {
-                VSNuGetProjectFactory factory = new VSNuGetProjectFactory(() => PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings));
+                VSNuGetProjectFactory factory =
+                    new VSNuGetProjectFactory(() => PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings),
+                    settings);
                 nuGetProject = factory.CreateNuGetProject(project, projectContext);
             }
 

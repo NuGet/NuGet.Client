@@ -26,16 +26,20 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private IScriptExecutor _scriptExecutor;
 
+        private Configuration.ISettings Settings { get; }
+
         public BuildIntegratedProjectSystem(
             string jsonConfigPath,
             EnvDTEProject envDTEProject,
             IMSBuildNuGetProjectSystem msbuildProjectSystem,
-            string uniqueName)
+            string uniqueName,
+            Configuration.ISettings settings)
             : base(jsonConfigPath, msbuildProjectSystem)
         {
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
 
             EnvDTEProject = envDTEProject;
+            Settings = settings;
         }
 
         /// <summary>
@@ -140,7 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (ScriptExecutor != null)
             {
-                var packageInstallPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(identity);
+                var packageInstallPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(identity, Settings);
 
                 var packageReader = new PackageFolderReader(packageInstallPath);
 

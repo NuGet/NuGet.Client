@@ -344,7 +344,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
                 var packagePathResolver = new PackagePathResolver(packagesFolderPath);
 
-                var globalFolderPath = BuildIntegratedProjectUtility.GetGlobalPackagesFolder();
+                var globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(_settings);
                 var globalPathResolver = new VersionFolderPathResolver(globalFolderPath);
 
                 var finishedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
