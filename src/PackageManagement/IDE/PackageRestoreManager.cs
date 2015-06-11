@@ -172,7 +172,9 @@ namespace NuGet.PackageManagement
         /// Restores missing packages for the entire solution
         /// </summary>
         /// <returns></returns>
-        public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory, CancellationToken token)
+        public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
         {
             var packageReferencesDictionary = await GetPackagesReferencesDictionaryAsync(token);
 
@@ -183,7 +185,7 @@ namespace NuGet.PackageManagement
                 return new PackageRestoreData(p.Key, p.Value, isMissing: true);
             });
 
-            return await RestoreMissingPackagesAsync(solutionDirectory, packages, token);
+            return await RestoreMissingPackagesAsync(solutionDirectory, packages, nuGetProjectContext, token);
         }
 
         /// <summary>
@@ -193,6 +195,7 @@ namespace NuGet.PackageManagement
         /// <returns></returns>
         public virtual async Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             NuGetProject nuGetProject,
+            INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             if (nuGetProject == null)
@@ -207,11 +210,12 @@ namespace NuGet.PackageManagement
             // When this method is called, the step to compute if a package is missing is implicit. Assume it is true
             var packages = installedPackages.Select(i => new PackageRestoreData(i, projectNames, isMissing: true));
 
-            return await RestoreMissingPackagesAsync(solutionDirectory, packages, token);
+            return await RestoreMissingPackagesAsync(solutionDirectory, packages, nuGetProjectContext, token);
         }
 
         public virtual Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
+            INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
             if (packages == null)
@@ -222,7 +226,7 @@ namespace NuGet.PackageManagement
             return RestoreMissingPackagesAsync(
                 GetNuGetPackageManager(solutionDirectory),
                 packages,
-                SolutionManager.NuGetProjectContext ?? new EmptyNuGetProjectContext(),
+                nuGetProjectContext,
                 token);
         }
 
@@ -395,7 +399,7 @@ namespace NuGet.PackageManagement
             // PackageReferences cannot be null here
             if (exception != null)
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, exception.ToString());
+                nuGetProjectContext.Log(MessageLevel.Warning, exception.Message);
                 if (packageRestoreContext.PackageRestoreFailedEvent != null)
                 {
                     var packageReferenceComparer = new PackageReferenceComparer();

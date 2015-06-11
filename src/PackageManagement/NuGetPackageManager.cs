@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+extern alias Legacy;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,8 +21,10 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v2;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using SharedPackageRepository = Legacy.NuGet.SharedPackageRepository;
 
 namespace NuGet.PackageManagement
 {
@@ -97,7 +100,11 @@ namespace NuGet.PackageManagement
         private void InitializePackagesFolderInfo(string packagesFolderPath)
         {
             PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath);
-            PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(new PackageSource(packagesFolderPath));
+            // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
+            // of the closure \ NuGetPackageManager.
+            var sharedPackageRepository = new SharedPackageRepository(packagesFolderPath);
+            var packageSource = new V2PackageSource(packagesFolderPath, () => sharedPackageRepository);
+            PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(packageSource);
         }
 
         /// <summary>

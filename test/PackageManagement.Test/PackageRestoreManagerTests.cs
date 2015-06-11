@@ -136,7 +136,9 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, CancellationToken.None);
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
+                testNuGetProjectContext,
+                CancellationToken.None);
 
             Assert.Equal(1, restoredPackages.Count);
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
@@ -226,7 +228,9 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, CancellationToken.None);
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
+                testNuGetProjectContext,
+                CancellationToken.None);
 
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
         }
@@ -305,7 +309,9 @@ namespace NuGet.Test
             Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(testPackage2));
 
             // Act
-            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, CancellationToken.None);
+            await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
+                testNuGetProjectContext,
+                CancellationToken.None);
 
             // Assert
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(jQuery144));
