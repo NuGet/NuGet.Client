@@ -197,7 +197,11 @@ namespace NuGet.ProjectManagement
                 var folderPath = Path.GetDirectoryName(fullPath);
                 if (!string.IsNullOrEmpty(folderPath))
                 {
-                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFileFromFolder, Path.GetFileName(fullPath), folderPath);
+                    nuGetProjectContext.Log(
+                        MessageLevel.Debug,
+                        Strings.Debug_RemovedFileFromFolder,
+                        Path.GetFileName(fullPath),
+                        Path.GetFullPath(folderPath));
                 }
                 else
                 {
@@ -249,9 +253,9 @@ namespace NuGet.ProjectManagement
 
                 // Get all directories that this package may have added
                 var directories = from grouping in directoryLookup
-                    from directory in GetDirectories(grouping.Key, altDirectorySeparator: false)
-                    orderby directory.Length descending
-                    select directory;
+                                  from directory in GetDirectories(grouping.Key, altDirectorySeparator: false)
+                                  orderby directory.Length descending
+                                  select directory;
 
                 // Remove files from every directory
                 foreach (var directory in directories)
