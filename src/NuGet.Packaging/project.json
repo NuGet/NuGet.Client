@@ -17,7 +17,6 @@
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
-                "mscorlib": "",
                 "System.Xml": "",
                 "System.Xml.Linq": "",
                 "System.IO.Compression": ""
@@ -27,8 +26,7 @@
             "dependencies": {
                 "System.IO.Compression": "4.0.0-beta-*",
                 "System.IO.FileSystem": "4.0.0-beta-*",
-                "System.Xml.XDocument": "4.0.10-beta-*",
-                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
+                "System.Xml.XDocument": "4.0.10-beta-*"
             }
         }
     }

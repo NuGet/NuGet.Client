@@ -25,12 +25,8 @@ namespace NuGet.Protocol.Core.v2
             V2Client = resource.V2Client;
         }
 
-        public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity,
-            Configuration.ISettings settings,
-            CancellationToken token)
+        public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, CancellationToken token)
         {
-            // settings are not used here, since, global packages folder are not used for v2 sources
-
             if (identity == null)
             {
                 throw new ArgumentNullException(nameof(identity));

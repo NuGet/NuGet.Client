@@ -10,6 +10,15 @@ namespace NuGet.Common
 {
     internal static class ConcurrencyUtilities
     {
+        internal static string FilePathToLockName(string filePath)
+        {
+            // If we use a file path directly as the name of a semaphore,
+            // the ctor of semaphore looks for the file and throws an IOException
+            // when the file doesn't exist. So we need a conversion from a file path
+            // to a unique lock name.
+            return filePath.Replace(Path.DirectorySeparatorChar, '_');
+        }
+
         internal static async Task<T> ExecuteWithFileLocked<T>(string filePath, Func<bool, Task<T>> action)
         {
             var createdNew = false;
@@ -29,15 +38,6 @@ namespace NuGet.Common
             {
                 fileLock.Release();
             }
-        }
-
-        private static string FilePathToLockName(string filePath)
-        {
-            // If we use a file path directly as the name of a semaphore,
-            // the ctor of semaphore looks for the file and throws an IOException
-            // when the file doesn't exist. So we need a conversion from a file path
-            // to a unique lock name.
-            return filePath.Replace(Path.DirectorySeparatorChar, '_');
         }
     }
 }

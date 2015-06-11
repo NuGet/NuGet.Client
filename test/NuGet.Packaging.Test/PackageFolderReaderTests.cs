@@ -37,29 +37,5 @@ namespace NuGet.Packaging.Test
 
             Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
         }
-
-        [Fact]
-        public void PackageFolderReader_IgnoresPackageFile()
-        {
-            // Arrange
-            var packageNupkg = TestPackages.GetLegacyTestPackage();
-            var zip = new ZipArchive(packageNupkg.OpenRead());
-            var zipReader = new PackageReader(zip);
-            var folder = Path.Combine(packageNupkg.Directory.FullName, Guid.NewGuid().ToString());
-            var zipFile = new ZipArchive(File.OpenRead(packageNupkg.FullName));
-            zipFile.ExtractAll(folder);
-            packageNupkg.CopyTo(Path.Combine(folder, packageNupkg.Name));
-
-            // Act
-            var folderReader = new PackageFolderReader(folder);
-
-            // Assert
-            Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
-            Assert.Equal(zipReader.GetFiles().OrderBy(f => f, StringComparer.Ordinal),
-                folderReader.GetFiles().OrderBy(f => f, StringComparer.Ordinal));
-            Assert.Equal(zipReader.GetLibItems().Count(), folderReader.GetLibItems().Count());
-            Assert.Equal(zipReader.GetReferenceItems().Count(), folderReader.GetReferenceItems().Count());
-            Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
-        }
     }
 }

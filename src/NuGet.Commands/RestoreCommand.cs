@@ -17,7 +17,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
@@ -576,13 +575,7 @@ namespace NuGet.Commands
                 await installItem.Provider.CopyToAsync(installItem.Library, memoryStream, default(CancellationToken));
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
-
-                var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
-                await NuGetPackageUtils.InstallFromStreamAsync(memoryStream,
-                    packageIdentity,
-                    packagesDirectory,
-                    _log,
-                    fixNuspecIdCasing: true);
+                await NuGetPackageUtils.InstallFromStream(memoryStream, installItem.Library, packagesDirectory, _log);
             }
         }
 
