@@ -60,13 +60,12 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _detailModel = new PackageSolutionDetailControlModel( 
+                _detailModel = new PackageSolutionDetailControlModel(
                     Model.Context.SolutionManager,
                     Model.Context.Projects);
             }
 
             InitializeComponent();
-            SetStyles();
 
             _windowSearchHostFactory = searchFactory;
             if (_windowSearchHostFactory != null)
@@ -200,17 +199,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _detailModel.Options.SelectedFileConflictAction = selectedFileConflictAction;
             }
-        }
-
-        private void SetStyles()
-        {
-            if (StandaloneSwitch.IsRunningStandalone)
-            {
-                return;
-            }
-
-            _sourceRepoList.Style = Styles.ThemedComboStyle;
-            _filter.Style = Styles.ThemedComboStyle;
         }
 
         private IEnumerable<SourceRepository> GetEnabledSources()
@@ -383,7 +371,7 @@ namespace NuGet.PackageManagement.UI
         {
             // TODO: PackageRestoreManager fires this event even when solution is closed.
             // Don't do anything if solution is closed.
-            // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh 
+            // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
             // only when package is missing last time and is not missing this time, we need to refresh
             if (!e.PackagesMissing && _missingPackageStatus)
             {

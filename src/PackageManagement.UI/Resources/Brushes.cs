@@ -69,26 +69,38 @@ namespace NuGet.PackageManagement.UI
 
         public static void Initialize()
         {
-            var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
-            var colorResources = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.ColorResources");
+            if (StandaloneSwitch.IsRunningStandalone)
+            {
+                // the values are not important. Just make sure they
+                // are not null othewise the xaml parser will throw exception
+                // when the keys are used in an xaml file.
+                ContentBrushKey = SystemColors.WindowBrush;
+                BackgroundBrushKey = SystemColors.WindowBrush;
+            }
+            else
+            {
+                // use colors of VisualStudio UI.
+                var assembly = AppDomain.CurrentDomain.Load("Microsoft.VisualStudio.ExtensionsExplorer.UI");
+                var colorResources = assembly.GetType("Microsoft.VisualStudio.ExtensionsExplorer.UI.ColorResources");
 
-            var prop = colorResources.GetProperty("ContentMouseOverBrushKey");
-            ContentMouseOverBrushKey = prop.GetValue(null);
+                var prop = colorResources.GetProperty("ContentMouseOverBrushKey");
+                ContentMouseOverBrushKey = prop.GetValue(null);
 
-            prop = colorResources.GetProperty("ContentInactiveSelectedBrushKey");
-            ContentInactiveSelectedBrushKey = prop.GetValue(null);
+                prop = colorResources.GetProperty("ContentInactiveSelectedBrushKey");
+                ContentInactiveSelectedBrushKey = prop.GetValue(null);
 
-            prop = colorResources.GetProperty("ContentSelectedBrushKey");
-            ContentSelectedBrushKey = prop.GetValue(null);
+                prop = colorResources.GetProperty("ContentSelectedBrushKey");
+                ContentSelectedBrushKey = prop.GetValue(null);
 
-            prop = colorResources.GetProperty("ContentSelectedTextBrushKey");
-            ContentSelectedTextBrushKey = prop.GetValue(null);
+                prop = colorResources.GetProperty("ContentSelectedTextBrushKey");
+                ContentSelectedTextBrushKey = prop.GetValue(null);
 
-            prop = colorResources.GetProperty("ContentBrushKey");
-            ContentBrushKey = prop.GetValue(null);
+                prop = colorResources.GetProperty("ContentBrushKey");
+                ContentBrushKey = prop.GetValue(null);
 
-            prop = colorResources.GetProperty("BackgroundBrushKey");
-            BackgroundBrushKey = prop.GetValue(null);
+                prop = colorResources.GetProperty("BackgroundBrushKey");
+                BackgroundBrushKey = prop.GetValue(null);
+            }
         }
 
         public static object ContentMouseOverBrushKey { get; private set; }

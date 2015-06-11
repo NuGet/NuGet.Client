@@ -19,6 +19,11 @@ namespace NuGet.PackageManagement.UI
             _uiContext = uiContext;
             InitializeComponent();
             _doNotShowCheckBox.IsChecked = IsDoNotShowPreviewWindowEnabled();
+
+            if (StandaloneSwitch.IsRunningStandalone)
+            {
+                Background = SystemColors.WindowBrush;
+            }
             _initialized = true;
         }
 
