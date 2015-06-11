@@ -228,6 +228,9 @@
     <Compile Include="Xamls\UpdateAvailableIndicator.xaml.cs">
       <DependentUpon>UpdateAvailableIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\Resources.xaml.cs" >
+	  <DependentUpon>Resources.xaml</DependentUpon>
+	</Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Common\PackageRestoreBar.xaml">

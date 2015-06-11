@@ -51,7 +51,6 @@
       FontWeight="Bold"
       Text="{x:Static resx:Resources.Label_Action}" />
     <ComboBox
-      x:Name="_actions"
       Grid.Row="3"
       Grid.Column="0"
       MinWidth="150"

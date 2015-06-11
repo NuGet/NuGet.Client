@@ -15,9 +15,8 @@ namespace NuGet.PackageManagement.UI
         public ActionsAndVersions()
         {
             InitializeComponent();
-            SetStyles();
 
-            // Change ItemContainerStyle of the _versions combobox so that 
+            // Change ItemContainerStyle of the _versions combobox so that
             // for a null value, a separator is generated.
             var dataTrigger = new DataTrigger();
             dataTrigger.Binding = new Binding();
@@ -30,17 +29,6 @@ namespace NuGet.PackageManagement.UI
             var style = new Style(typeof(ComboBoxItem), _versions.ItemContainerStyle);
             style.Triggers.Add(dataTrigger);
             _versions.ItemContainerStyle = style;
-        }
-
-        private void SetStyles()
-        {
-            if (StandaloneSwitch.IsRunningStandalone)
-            {
-                return;
-            }
-
-            _actions.Style = Styles.ThemedComboStyle;
-            _versions.Style = Styles.ThemedComboStyle;
         }
     }
 }
