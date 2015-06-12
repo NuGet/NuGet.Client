@@ -320,7 +320,10 @@ namespace NuGet.ProjectManagement
             {
                 // Avoid adding binding redirects if installing a package does not result in any assembly references being added.
                 var msbuildProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-                msbuildProjectContext.SkipBindingRedirects = true;
+                if (msbuildProjectContext != null)
+                {
+                    msbuildProjectContext.SkipBindingRedirects = true;
+                }
             }
 
             // Step-8.2: Add Frameworkreferences to project
