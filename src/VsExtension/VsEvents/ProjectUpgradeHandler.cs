@@ -26,7 +26,7 @@ namespace NuGetVSExtension
         /// Constructs and Registers ("Advises") for Project retargeting events if the IVsSolutionEvents service is available
         /// Otherwise, it simply exits
         /// </summary>
-        public ProjectUpgradeHandler(IServiceProvider serviceProvider, ISolutionManager solutionManager )
+        public ProjectUpgradeHandler(IServiceProvider serviceProvider, ISolutionManager solutionManager)
         {
             if (serviceProvider == null)
             {
@@ -66,7 +66,7 @@ namespace NuGetVSExtension
                 Project upgradedProject = VsHierarchyUtility.GetProjectFromHierarchy(pHierarchy);
                 var upgradedNuGetProject = EnvDTEProjectUtility.GetNuGetProject(upgradedProject, _solutionManager);
 
-                if (upgradedProject != null)
+                if (ProjectRetargetingUtility.IsProjectRetargetable(upgradedNuGetProject))
                 {
                     IList<PackageIdentity> packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(upgradedNuGetProject);
 

@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
 namespace NuGetVSExtension
@@ -130,7 +129,7 @@ namespace NuGetVSExtension
             foreach (Project project in solution.Projects)
             {
                 var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
-                if (nuGetProject != null)
+                if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                 {
                     var packageReferencesToBeReinstalled = ProjectRetargetingUtility.GetPackageReferencesMarkedForReinstallation(nuGetProject);
                     if (packageReferencesToBeReinstalled.Count > 0)
@@ -163,7 +162,7 @@ namespace NuGetVSExtension
                 var project = VsHierarchyUtility.GetProjectFromHierarchy(pAfterChangeHier);
                 var retargetedProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
 
-                if (retargetedProject != null)
+                if (ProjectRetargetingUtility.IsProjectRetargetable(retargetedProject))
                 {
                     var packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(retargetedProject);
                     if (packagesToBeReinstalled.Any())
@@ -240,7 +239,7 @@ namespace NuGetVSExtension
                         {
                             var nuGetProject = EnvDTEProjectUtility.GetNuGetProject(project, _solutionManager);
 
-                            if (nuGetProject != null)
+                            if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                             {
                                 var frameworkName = EnvDTEProjectUtility.GetTargetFrameworkString(project);
                                 if (NETCore451.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows81.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))

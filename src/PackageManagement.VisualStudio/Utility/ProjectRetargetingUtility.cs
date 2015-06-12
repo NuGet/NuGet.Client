@@ -10,11 +10,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -221,7 +221,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static IList<Packaging.PackageReference> GetPackageReferencesMarkedForReinstallation(NuGetProject project)
         {
-            if(project == null)
+            if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
             }
@@ -240,6 +240,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return new List<Packaging.PackageReference>();
+        }
+
+        /// <summary>
+        /// True if the project is non-null, and does not contain a project.json file
+        /// </summary>
+        public static bool IsProjectRetargetable(NuGetProject project)
+        {
+            // Skip projects with project.json
+            return project != null && !(project is INuGetIntegratedProject);
         }
 
         /// <summary>
