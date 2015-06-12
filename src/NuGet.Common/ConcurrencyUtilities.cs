@@ -10,25 +10,41 @@ namespace NuGet.Common
 {
     internal static class ConcurrencyUtilities
     {
-        internal static async Task<T> ExecuteWithFileLocked<T>(string filePath, Func<bool, Task<T>> action)
+        internal static async Task<T> ExecuteWithFileLocked<T>(string filePath, Func<Task<T>> action)
         {
-            var createdNew = false;
-            var fileLock = new Semaphore(initialCount: 0, maximumCount: 1, name: FilePathToLockName(filePath),
-                createdNew: out createdNew);
-            try
-            {
-                // If this lock is already acquired by another process, wait until we can acquire it
-                if (!createdNew)
-                {
-                    fileLock.WaitOne();
-                }
+            T result = default(T);
 
-                return await action(createdNew);
-            }
-            finally
+            using (var filelock = new Mutex(initiallyOwned: false, name: FilePathToLockName(filePath)))
             {
-                fileLock.Release();
+                while (true)
+                {
+                    try
+                    {
+                        if (filelock.WaitOne(1000))
+                        {
+                            try
+                            {
+                                result = await action();
+                            }
+                            finally
+                            {
+                                filelock.ReleaseMutex();
+                            }
+
+                            // Job is done. break the loop
+                            break;
+                        }
+
+                        // Still the mutex is not released. Loop continues
+                    }
+                    catch (AbandonedMutexException)
+                    {
+                        // Mutex was abandoned. Possibly, because, the process holding the mutex was killed
+                    }
+                }
             }
+
+            return result;
         }
 
         private static string FilePathToLockName(string filePath)
