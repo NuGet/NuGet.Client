@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -339,9 +339,15 @@ namespace NuGetVSExtension
             // Set up proxy handling for v3 sources.
             // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
             // get prompted twice for the same authenticated proxy.
+
+            var v2ProxyCacheType = typeof(NuGet.IProxyCache).Assembly.GetType("NuGet.ProxyCache");
+            var property = v2ProxyCacheType?.GetProperty(
+                "Instance",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            var v2ProxyCache = property?.GetValue(null) as IProxyCache;
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials = (uri, proxy) =>
             {
-                var v2Credentials = Legacy.NuGet.ProxyCache.Instance.GetProxy(uri)?.Credentials;
+                var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
                 if (v2Credentials != null && proxy.Credentials != v2Credentials)
                 {
                     // if cached v2 credentials have not been used, try using it first.
@@ -354,7 +360,7 @@ namespace NuGetVSExtension
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
             {
                 // add the proxy to v2 proxy cache.
-                Legacy.NuGet.ProxyCache.Instance.Add(proxy);
+                v2ProxyCache?.Add(proxy);
             };
         }
 

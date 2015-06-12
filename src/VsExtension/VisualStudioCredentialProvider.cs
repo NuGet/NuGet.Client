@@ -3,17 +3,17 @@
 
 using System;
 using System.Net;
-using NuGet;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet;
 
 namespace NuGetVSExtension
 {
-    public abstract class VisualStudioCredentialProvider : ICredentialProvider
+    public class VisualStudioCredentialProvider : ICredentialProvider
     {
         private readonly IVsWebProxy _webProxyService;
 
-        protected VisualStudioCredentialProvider(IVsWebProxy webProxyService)
+        public VisualStudioCredentialProvider(IVsWebProxy webProxyService)
         {
             if (webProxyService == null)
             {
@@ -32,7 +32,7 @@ namespace NuGetVSExtension
             {
                 throw new ArgumentNullException("uri");
             }
-            // Capture the original proxy before we do anything 
+            // Capture the original proxy before we do anything
             // so that we can re-set it once we get the credentials for the given Uri.
             IWebProxy originalProxy = null;
             if (proxy != null)
@@ -57,7 +57,18 @@ namespace NuGetVSExtension
             {
                 // The cached credentials that we found are not valid so let's ask the user
                 // until they abort or give us valid credentials.
-                InitializeCredentialProxy(uri, originalProxy);
+
+                // Set the static property WebRequest.DefaultWebProxy so that the right host name
+                // is displayed in the UI by IVsWebProxy.
+                var uriToDisplay = uri;
+                if (credentialType == CredentialType.ProxyCredentials &&
+                    proxy != null)
+                {
+                    // Display the proxy server's host name when asking for proxy credential
+                    uriToDisplay = proxy.GetProxy(uri);
+                }
+
+                WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
 
                 return PromptForCredentials(uri);
             }
@@ -67,14 +78,6 @@ namespace NuGetVSExtension
                 WebRequest.DefaultWebProxy = originalProxy;
             }
         }
-
-        /// <summary>
-        /// THIS IS KINDA HACKISH: we are forcing the static property just so that the VsWebProxy can pick up the Uri.
-        /// This method is responsible for initializing the WebRequest.DefaultWebProxy to the correct
-        /// Uri based on the type of request that credentials are needed for before we prompt for credentials
-        /// because the VsWebProxy uses that static property as a way to display the Uri that we are connecting to.
-        /// </summary>
-        protected abstract void InitializeCredentialProxy(Uri uri, IWebProxy originalProxy);
 
         /// <summary>
         /// This method is responsible for retrieving either cached credentials
