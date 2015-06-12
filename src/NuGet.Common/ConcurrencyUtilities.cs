@@ -10,41 +10,31 @@ namespace NuGet.Common
 {
     internal static class ConcurrencyUtilities
     {
-        internal static async Task<T> ExecuteWithFileLocked<T>(string filePath, Func<Task<T>> action)
+        internal static async Task<TVal> ExecuteWithFileLocked<TVal>(string filePath,
+            Func<Task<TVal>> action,
+            CancellationToken token)
         {
-            T result = default(T);
-
-            using (var filelock = new Mutex(initiallyOwned: false, name: FilePathToLockName(filePath)))
+            while (true)
             {
-                while (true)
+                token.ThrowIfCancellationRequested();
+                using (var fileLock = new Semaphore(initialCount: 1, maximumCount: 1, name: FilePathToLockName(filePath)))
                 {
-                    try
+                    if (fileLock.WaitOne(TimeSpan.FromSeconds(1)))
                     {
-                        if (filelock.WaitOne(1000))
+                        try
                         {
-                            try
-                            {
-                                result = await action();
-                            }
-                            finally
-                            {
-                                filelock.ReleaseMutex();
-                            }
-
-                            // Job is done. break the loop
-                            break;
+                            // Can perform the action
+                            return await action();
                         }
+                        finally
+                        {
+                            fileLock.Release();
+                        }
+                    }
 
-                        // Still the mutex is not released. Loop continues
-                    }
-                    catch (AbandonedMutexException)
-                    {
-                        // Mutex was abandoned. Possibly, because, the process holding the mutex was killed
-                    }
+                    // Timed out. Still the semaphore is not released. Loop continues
                 }
             }
-
-            return result;
         }
 
         private static string FilePathToLockName(string filePath)

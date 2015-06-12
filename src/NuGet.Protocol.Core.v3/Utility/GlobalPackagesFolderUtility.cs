@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Logging;
@@ -61,7 +62,8 @@ namespace NuGet.Protocol.Core.v3
 
         public static async Task<DownloadResourceResult> AddPackageAsync(PackageIdentity packageIdentity,
             Stream packageStream,
-            ISettings settings)
+            ISettings settings,
+            CancellationToken token)
         {
             if (packageIdentity == null)
             {
@@ -86,7 +88,8 @@ namespace NuGet.Protocol.Core.v3
                 packageIdentity,
                 globalPackagesFolder,
                 NullLogger.Instance,
-                fixNuspecIdCasing: false);
+                fixNuspecIdCasing: false,
+                token: token);
 
             var package = GetPackage(packageIdentity, settings);
             Debug.Assert(package.PackageStream.CanSeek);

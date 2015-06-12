@@ -77,10 +77,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
 
                 var handler = new HttpClientHandler
-                    {
-                        Proxy = webProxy,
-                        UseProxy = true
-                    };
+                {
+                    Proxy = webProxy,
+                    UseProxy = true
+                };
                 _client = new HttpClient(handler);
 #else
                 if (!string.IsNullOrEmpty(proxyUriBuilder.UserName))
@@ -115,7 +115,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var sw = new Stopwatch();
             sw.Start();
 
-            var result = await TryCache(uri, cacheKey, cacheAgeLimit);
+            var result = await TryCache(uri, cacheKey, cacheAgeLimit, cancellationToken);
             if (result.Stream != null)
             {
                 Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE".Green(), uri));
@@ -163,7 +163,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // The update of a cached file is divided into two steps:
             // 1) Delete the old file. 2) Create a new file with the same name.
             // To prevent race condition among multiple processes, here we use a lock to make the update atomic.
-            await ConcurrencyUtilities.ExecuteWithFileLocked(result.CacheFileName, async () =>
+            await ConcurrencyUtilities.ExecuteWithFileLocked(result.CacheFileName,
+                action: async () =>
                 {
                     using (var stream = new FileStream(
                         newFile,
@@ -209,7 +210,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         useAsync: true);
 
                     return 0;
-                });
+                },
+                token: cancellationToken);
 
             Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
                 "  {1} {0} {2}ms", uri, response.StatusCode.ToString().Green(), sw.ElapsedMilliseconds.ToString().Bold()));
@@ -217,7 +219,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return result;
         }
 
-        private async Task<HttpSourceResult> TryCache(string uri, string cacheKey, TimeSpan cacheAgeLimit)
+        private async Task<HttpSourceResult> TryCache(string uri,
+            string cacheKey,
+            TimeSpan cacheAgeLimit,
+            CancellationToken token)
         {
             var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
@@ -238,7 +243,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLocked(cacheFile, () =>
+            return await ConcurrencyUtilities.ExecuteWithFileLocked(cacheFile,
+                action: () =>
                 {
                     if (File.Exists(cacheFile))
                     {
@@ -255,18 +261,19 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                                 useAsync: true);
 
                             return Task.FromResult(new HttpSourceResult
-                                {
-                                    CacheFileName = cacheFile,
-                                    Stream = stream,
-                                });
+                            {
+                                CacheFileName = cacheFile,
+                                Stream = stream,
+                            });
                         }
                     }
 
                     return Task.FromResult(new HttpSourceResult
-                        {
-                            CacheFileName = cacheFile,
-                        });
-                });
+                    {
+                        CacheFileName = cacheFile,
+                    });
+                },
+                token: token);
         }
 
         private static string ComputeHash(string value)

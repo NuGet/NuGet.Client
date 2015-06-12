@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
@@ -23,7 +24,8 @@ namespace NuGet.Packaging
             PackageIdentity packageIdentity,
             string packagesDirectory,
             ILogger log,
-            bool fixNuspecIdCasing)
+            bool fixNuspecIdCasing,
+            CancellationToken token)
         {
             var packagePathResolver = new DefaultPackagePathResolver(packagesDirectory);
 
@@ -34,7 +36,8 @@ namespace NuGet.Packaging
 
             // Acquire the lock on a nukpg before we extract it to prevent the race condition when multiple
             // processes are extracting to the same destination simultaneously
-            await ConcurrencyUtilities.ExecuteWithFileLocked(targetNupkg, async () =>
+            await ConcurrencyUtilities.ExecuteWithFileLocked(targetNupkg,
+                action: async () =>
                 {
                     // If this is the first process trying to install the target nupkg, go ahead
                     // After this process successfully installs the package, all other processes
@@ -79,10 +82,13 @@ namespace NuGet.Packaging
                             // to assume a package was fully installed.
                             File.WriteAllText(hashPath, packageHash);
                         }
+
+                        log.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
                     }
 
                     return 0;
-                });
+                },
+                token: token);
         }
 
         // DNU REFACTORING TODO: delete this temporary workaround after we have NuSpecFormatter.Read()
