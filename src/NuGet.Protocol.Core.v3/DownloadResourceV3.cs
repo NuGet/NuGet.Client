@@ -78,7 +78,11 @@ namespace NuGet.Protocol.Core.v3
 
                 using (var packageStream = await _client.GetStreamAsync(uri))
                 {
-                    var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity, packageStream, settings);
+                    var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
+                        packageStream,
+                        settings,
+                        token);
+
                     return downloadResult;
                 }
             }

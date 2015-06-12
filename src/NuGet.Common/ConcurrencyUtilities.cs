@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,24 +10,30 @@ namespace NuGet.Common
 {
     internal static class ConcurrencyUtilities
     {
-        internal static async Task<T> ExecuteWithFileLocked<T>(string filePath, Func<bool, Task<T>> action)
+        internal static async Task<TVal> ExecuteWithFileLocked<TVal>(string filePath,
+            Func<Task<TVal>> action,
+            CancellationToken token)
         {
-            var createdNew = false;
-            var fileLock = new Semaphore(initialCount: 0, maximumCount: 1, name: FilePathToLockName(filePath),
-                createdNew: out createdNew);
-            try
+            while (true)
             {
-                // If this lock is already acquired by another process, wait until we can acquire it
-                if (!createdNew)
+                token.ThrowIfCancellationRequested();
+                using (var fileLock = new Semaphore(initialCount: 1, maximumCount: 1, name: FilePathToLockName(filePath)))
                 {
-                    fileLock.WaitOne();
-                }
+                    if (fileLock.WaitOne(TimeSpan.FromSeconds(1)))
+                    {
+                        try
+                        {
+                            // Can perform the action
+                            return await action();
+                        }
+                        finally
+                        {
+                            fileLock.Release();
+                        }
+                    }
 
-                return await action(createdNew);
-            }
-            finally
-            {
-                fileLock.Release();
+                    // Timed out. Still the semaphore is not released. Loop continues
+                }
             }
         }
 

@@ -606,7 +606,7 @@ namespace NuGet.Commands
         {
             using (var memoryStream = new MemoryStream())
             {
-                await installItem.Provider.CopyToAsync(installItem.Library, memoryStream, default(CancellationToken));
+                await installItem.Provider.CopyToAsync(installItem.Library, memoryStream, CancellationToken.None);
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
@@ -615,7 +615,8 @@ namespace NuGet.Commands
                     packageIdentity,
                     packagesDirectory,
                     _log,
-                    fixNuspecIdCasing: true);
+                    fixNuspecIdCasing: true,
+                    token: CancellationToken.None);
             }
         }
 
