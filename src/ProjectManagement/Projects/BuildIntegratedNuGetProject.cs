@@ -53,8 +53,8 @@ namespace NuGet.ProjectManagement.Projects
             }
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
-
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, msbuildProjectSystem.ProjectName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, msbuildProjectSystem.ProjectFullPath);
 
             var supported = new List<FrameworkName>
                 {
