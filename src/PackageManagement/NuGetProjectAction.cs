@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public SourceRepository SourceRepository { get; private set; }
 
-        private NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, SourceRepository sourceRepository = null)
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, SourceRepository sourceRepository = null)
         {
             if (packageIdentity == null)
             {
@@ -58,11 +58,6 @@ namespace NuGet.PackageManagement
 
         public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository)
         {
-            if (sourceRepository == null)
-            {
-                throw new ArgumentNullException("sourceRepository");
-            }
-
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, sourceRepository);
         }
 

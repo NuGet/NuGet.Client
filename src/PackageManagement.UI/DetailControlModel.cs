@@ -7,9 +7,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 
@@ -39,6 +39,9 @@ namespace NuGet.PackageManagement.UI
         {
             _nugetProjects = nugetProjects;
             _options = new Options();
+
+            // Show dependency behavior and file conflict options if any of the projects are non-build integrated
+            _options.ShowClassicOptions = nugetProjects.Any(project => !(project is BuildIntegratedNuGetProject));
         }
 
         public abstract IEnumerable<NuGetProject> SelectedProjects { get; }
@@ -81,6 +84,60 @@ namespace NuGet.PackageManagement.UI
                         return installedPackages.Select(e => e.PackageIdentity).Distinct(PackageIdentity.Comparer);
                     });
             }
+        }
+
+        /// <summary>
+        /// Get all installed packages across all projects (distinct)
+        /// </summary>
+        public virtual IEnumerable<Packaging.Core.PackageDependency> InstalledPackageDependencies
+        {
+            get
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    var installedPackages = new HashSet<Packaging.Core.PackageDependency>();
+                    foreach (var project in _nugetProjects)
+                    {
+                        var dependencies = await GetDependencies(project);
+
+                        installedPackages.UnionWith(dependencies);
+                    }
+                    return installedPackages;
+                });
+            }
+        }
+
+        private static async Task<IReadOnlyList<Packaging.Core.PackageDependency>> GetDependencies(NuGetProject project)
+        {
+            var results = new List<Packaging.Core.PackageDependency>();
+
+            var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+            var buildIntegratedProject = project as BuildIntegratedNuGetProject;
+
+            foreach (var package in projectInstalledPackages)
+            {
+                VersionRange range = null;
+
+                if (buildIntegratedProject != null && package.HasAllowedVersions)
+                {
+                    // The actual range is passed as the allowed version range for build integrated projects.
+                    range = package.AllowedVersions;
+                }
+                else
+                {
+                    range = new VersionRange(
+                        minVersion: package.PackageIdentity.Version,
+                        includeMinVersion: true,
+                        maxVersion: package.PackageIdentity.Version,
+                        includeMaxVersion: true);
+                }
+
+                var dependency = new Packaging.Core.PackageDependency(package.PackageIdentity.Id, range);
+
+                results.Add(dependency);
+            }
+
+            return results;
         }
 
         public virtual void Refresh()
@@ -170,7 +227,7 @@ namespace NuGet.PackageManagement.UI
                 SelectedActionIsInstall = false;
             }
 
-            OnPropertyChanged("Actions");
+            OnPropertyChanged(nameof(Actions));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -206,7 +263,7 @@ namespace NuGet.PackageManagement.UI
                 if (_packageMetadata != value)
                 {
                     _packageMetadata = value;
-                    OnPropertyChanged("PackageMetadata");
+                    OnPropertyChanged(nameof(PackageMetadata));
                 }
             }
         }
@@ -221,7 +278,7 @@ namespace NuGet.PackageManagement.UI
                 _selectedAction = value;
                 SelectedActionIsInstall = (SelectedAction != Resources.Action_Uninstall);
                 CreateVersions();
-                OnPropertyChanged("SelectedAction");
+                OnPropertyChanged(nameof(SelectedAction));
             }
         }
 
@@ -241,8 +298,32 @@ namespace NuGet.PackageManagement.UI
                 if (_selectedActionIsInstall != value)
                 {
                     _selectedActionIsInstall = value;
-                    OnPropertyChanged("SelectedActionIsInstall");
+                    OnPropertyChanged(nameof(SelectedActionIsInstall));
+                    OnPropertyChanged(nameof(ShowUninstallOptions));
+                    OnPropertyChanged(nameof(ShowInstallOptions));
                 }
+            }
+        }
+
+        /// <summary>
+        /// True if the uninstall options shold be shown.
+        /// </summary>
+        public bool ShowUninstallOptions
+        {
+            get
+            {
+                return !SelectedActionIsInstall && _options.ShowClassicOptions;
+            }
+        }
+
+        /// <summary>
+        /// True if the install options shold be shown.
+        /// </summary>
+        public bool ShowInstallOptions
+        {
+            get
+            {
+                return SelectedActionIsInstall && _options.ShowClassicOptions;
             }
         }
 
@@ -276,7 +357,7 @@ namespace NuGet.PackageManagement.UI
                         PackageMetadata = null;
                     }
                     OnSelectedVersionChanged();
-                    OnPropertyChanged("SelectedVersion");
+                    OnPropertyChanged(nameof(SelectedVersion));
                 }
             }
         }
@@ -368,7 +449,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _options = value;
-                OnPropertyChanged("Options");
+                OnPropertyChanged(nameof(Options));
             }
         }
 

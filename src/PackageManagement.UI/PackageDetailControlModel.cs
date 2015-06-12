@@ -39,15 +39,17 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateInstalledVersion()
         {
-            var installed = InstalledPackages.Where(p =>
-                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).OrderByDescending(p => p.Version, VersionComparer.Default);
+            var installed = InstalledPackageDependencies.Where(p =>
+                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).OrderByDescending(p => p.VersionRange?.MinVersion, VersionComparer.Default);
 
-            if (installed.Any())
+            var dependency = installed.FirstOrDefault(package => package.VersionRange != null && package.VersionRange.HasLowerBound);
+
+            if (dependency != null)
             {
                 InstalledVersion = string.Format(
                     CultureInfo.CurrentCulture,
                     Resources.Text_InstalledVersion,
-                    installed.First().Version.ToNormalizedString());
+                    dependency.VersionRange.OriginalString);
             }
             else
             {
@@ -106,8 +108,13 @@ namespace NuGet.PackageManagement.UI
         protected override void CreateVersions()
         {
             _versions = new List<VersionForDisplay>();
-            var installedVersion = InstalledPackages.Where(p =>
-                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).SingleOrDefault();
+            var installedDependency = InstalledPackageDependencies.Where(p =>
+                StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id) && p.VersionRange != null && p.VersionRange.HasLowerBound)
+                .OrderByDescending(p => p.VersionRange.MinVersion)
+                .FirstOrDefault();
+
+            // installVersion is null if the package is not installed
+            var installedVersion = installedDependency?.VersionRange?.MinVersion;
 
             var allVersions = _allPackageVersions.OrderByDescending(v => v);
             var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
@@ -115,7 +122,7 @@ namespace NuGet.PackageManagement.UI
 
             if (SelectedAction == Resources.Action_Uninstall)
             {
-                _versions.Add(new VersionForDisplay(installedVersion.Version, string.Empty));
+                _versions.Add(new VersionForDisplay(installedDependency.VersionRange, string.Empty));
             }
             else if (SelectedAction == Resources.Action_Install)
             {
@@ -144,7 +151,7 @@ namespace NuGet.PackageManagement.UI
             else if (SelectedAction == Resources.Action_Upgrade)
             {
                 if (latestStableVersion != null
-                    && latestStableVersion != installedVersion.Version)
+                    && latestStableVersion != installedVersion)
                 {
                     _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
 
@@ -152,14 +159,14 @@ namespace NuGet.PackageManagement.UI
                     _versions.Add(null);
                 }
 
-                foreach (var version in allVersions.Where(v => v > installedVersion.Version))
+                foreach (var version in allVersions.Where(v => v > installedVersion))
                 {
                     _versions.Add(new VersionForDisplay(version, string.Empty));
                 }
             }
             else if (SelectedAction == Resources.Action_Downgrade)
             {
-                foreach (var version in allVersions.Where(v => v < installedVersion.Version))
+                foreach (var version in allVersions.Where(v => v < installedVersion))
                 {
                     _versions.Add(new VersionForDisplay(version, string.Empty));
                 }

@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildIntegration\BuildIntegratedProjectAction.cs" />
     <Compile Include="BuildIntegration\BuildIntegratedRestoreUtility.cs" />
     <Compile Include="BuildIntegration\ProjectContextLogger.cs" />
     <Compile Include="Context\IDEExecutionContext.cs" />

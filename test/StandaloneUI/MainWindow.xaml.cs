@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
@@ -67,10 +68,11 @@ namespace StandaloneUI
             var testSolutionManager = new TestSolutionManager(@"c:\temp\test");
 
             var projectA = testSolutionManager.AddNewMSBuildProject("projectA");
-            var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
+            //var projectB = testSolutionManager.AddNewMSBuildProject("projectB");
             //var projectC = testSolutionManager.AddProjectKProject("projectK");
+            var projectBuildIntegrated = testSolutionManager.AddBuildIntegratedProject("BuildIntProj", NuGetFramework.Parse("net46"));
 
-            var projects = new[] { projectA, projectB };
+            var projects = new[] { projectBuildIntegrated };
 
             var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
             var contextFactory = new StandaloneUIContextFactory(
@@ -84,7 +86,7 @@ namespace StandaloneUI
                 context,
                 new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider, _commonOperations));
 
-            var model = new PackageManagerModel(uiController, context, isSolution: true);
+            var model = new PackageManagerModel(uiController, context, isSolution: false);
             model.SolutionName = "test solution";
             _packageManagerControl = new PackageManagerControl(model, _settings, new SimpleSearchBoxFactory());
             layoutGrid.Children.Add(_packageManagerControl);

@@ -184,6 +184,7 @@
     <Compile Include="UserSettings.cs" />
     <Compile Include="Utility\NuGetUIThreadHelper.cs" />
     <Compile Include="Utility\RegistrySettingUtility.cs" />
+    <Compile Include="Utility\UIUtility.cs" />
     <Compile Include="VersionForDisplay.cs" />
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">

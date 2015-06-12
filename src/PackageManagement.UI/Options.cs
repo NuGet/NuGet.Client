@@ -15,6 +15,7 @@ namespace NuGet.PackageManagement.UI
             ShowPreviewWindow = true;
             CreateFileConflictActions();
             CreateDependencyBehaviors();
+            ShowClassicOptions = true;
         }
 
         private void CreateFileConflictActions()
@@ -142,6 +143,28 @@ namespace NuGet.PackageManagement.UI
                 {
                     _forceRemove = value;
                     OnPropertyChanged(nameof(ForceRemove));
+                }
+            }
+        }
+
+        private bool _showClassicOptions;
+
+        /// <summary>
+        /// Classic options include, file conflicts, dependency behavior, force remove, and remove dependencies.
+        /// Classic options do not apply to build integrated projects.
+        /// </summary>
+        public bool ShowClassicOptions
+        {
+            get
+            {
+                return _showClassicOptions;
+            }
+            set
+            {
+                if (_showClassicOptions != value)
+                {
+                    _showClassicOptions = value;
+                    OnPropertyChanged(nameof(ShowClassicOptions));
                 }
             }
         }

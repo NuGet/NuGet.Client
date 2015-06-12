@@ -42,7 +42,7 @@
             Content="{x:Static resx:Resources.Checkbox_ShowPreviewWindow}" />
 
     <!-- install options -->
-    <Grid Grid.Row="4" Visibility="{Binding SelectedActionIsInstall,Converter={StaticResource BooleanToVisibilityConverter}}">
+    <Grid Grid.Row="4" Visibility="{Binding ShowInstallOptions,Converter={StaticResource BooleanToVisibilityConverter}}">
       <Grid.RowDefinitions>
         <RowDefinition Height="auto" />
         <RowDefinition Height="8" />
@@ -69,7 +69,7 @@
                 AutomationProperties.Name="{x:Static resx:Resources.Label_DependencyBehavior}"
                 ItemsSource="{Binding Path=Options.DependencyBehaviors}"
                 SelectedItem="{Binding Path=Options.SelectedDependencyBehavior}" />
-
+            
       <TextBlock
                 Grid.Row="2" Grid.Column="0"
                 Margin="0,0,6,0"
@@ -96,7 +96,7 @@
     </Grid>
 
     <!-- uninstall options -->
-    <Grid Grid.Row="4" Visibility="{Binding SelectedActionIsInstall,Converter={StaticResource InvertedBooleanToVisibilityConverter}}">
+    <Grid Grid.Row="4" Visibility="{Binding ShowUninstallOptions,Converter={StaticResource BooleanToVisibilityConverter}}">
       <Grid.RowDefinitions>
         <RowDefinition Height="auto" />
         <RowDefinition Height="8" />

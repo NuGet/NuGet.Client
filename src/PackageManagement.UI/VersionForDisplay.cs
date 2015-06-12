@@ -14,16 +14,39 @@ namespace NuGet.PackageManagement.UI
         public VersionForDisplay(
             NuGetVersion version,
             string additionalInfo)
+            : this(GetRange(version), additionalInfo)
         {
-            Version = version;
+
+        }
+
+        public VersionForDisplay(
+            VersionRange range,
+            string additionalInfo)
+        {
+            Range = range;
             _additionalInfo = additionalInfo;
 
-            _toString = string.IsNullOrEmpty(_additionalInfo) ?
-                Version.ToNormalizedString() :
-                _additionalInfo + " " + Version.ToNormalizedString();
+            Version = range.MinVersion;
+
+            // Display a single version if the range is locked
+            if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
+            {
+                _toString = string.IsNullOrEmpty(_additionalInfo) ?
+                    Version.ToNormalizedString() :
+                    _additionalInfo + " " + Version.ToNormalizedString();
+            }
+            else
+            {
+                // Display the range, use the original value for floating ranges
+                _toString = string.IsNullOrEmpty(_additionalInfo) ?
+                    Range.OriginalString :
+                    _additionalInfo + " " + Range.OriginalString;
+            }
         }
 
         public NuGetVersion Version { get; }
+
+        public VersionRange Range { get; }
 
         public override string ToString()
         {
@@ -39,6 +62,11 @@ namespace NuGet.PackageManagement.UI
         public override int GetHashCode()
         {
             return Version.GetHashCode();
+        }
+
+        private static VersionRange GetRange(NuGetVersion version)
+        {
+            return new VersionRange(minVersion: version, includeMinVersion: true, maxVersion: version, includeMaxVersion: true);
         }
     }
 }

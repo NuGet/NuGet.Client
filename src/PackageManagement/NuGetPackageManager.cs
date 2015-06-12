@@ -12,9 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -606,18 +604,29 @@ namespace NuGet.PackageManagement
         /// <paramref name="packageIdentity" /> into <paramref name="nuGetProject" />
         /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
-        public Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             if (nuGetProject is INuGetIntegratedProject)
             {
                 var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySourceRepository);
-                return Task.FromResult<IEnumerable<NuGetProjectAction>>(new[] { action });
+                var actions = new[] { action };
+
+                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+                if (buildIntegratedProject != null)
+                {
+                    actions = new[] {
+                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, token)
+                    };
+                }
+
+                return actions;
             }
 
             var primarySources = new List<SourceRepository> { primarySourceRepository };
-            return PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
+            return await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
                 nuGetProjectContext, primarySources, secondarySources, token);
         }
 
@@ -672,7 +681,18 @@ namespace NuGet.PackageManagement
             if (nuGetProject is INuGetIntegratedProject)
             {
                 var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First());
-                return new[] { action };
+                var actions = new[] { action };
+
+                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+                if (buildIntegratedProject != null)
+                {
+                    actions = new[] {
+                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, token)
+                    };
+                }
+
+                return actions;
             }
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
@@ -1005,7 +1025,18 @@ namespace NuGet.PackageManagement
             if (nuGetProject is INuGetIntegratedProject)
             {
                 var action = NuGetProjectAction.CreateUninstallProjectAction(packageReference.PackageIdentity);
-                return new[] { action };
+                var actions = new[] { action };
+
+                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+                if (buildIntegratedProject != null)
+                {
+                    actions = new[] {
+                        await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, actions, nuGetProjectContext, token)
+                    };
+                }
+
+                return actions;
             }
 
             // Step-1 : Get the metadata resources from "packages" folder or custom repository path
@@ -1161,7 +1192,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Run project actions for build integrated projects.
         /// </summary>
-        public async Task ExecuteBuildIntegratedProjectActionsAsync(
+        public async Task<BuildIntegratedProjectAction> PreviewBuildIntegratedProjectActionsAsync(
             BuildIntegratedNuGetProject buildIntegratedProject,
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
             INuGetProjectContext nuGetProjectContext,
@@ -1243,16 +1274,47 @@ namespace NuGet.PackageManagement
                 Settings,
                 token);
 
+            return new BuildIntegratedProjectAction(nuGetProjectActions.First().PackageIdentity,
+                nuGetProjectActions.First().NuGetProjectActionType,
+                originalLockFile,
+                rawPackageSpec,
+                restoreResult);
+        }
+
+        /// <summary>
+        /// Run project actions for build integrated projects.
+        /// </summary>
+        public async Task ExecuteBuildIntegratedProjectActionsAsync(
+            BuildIntegratedNuGetProject buildIntegratedProject,
+            IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            BuildIntegratedProjectAction projectAction = null;
+
+            if (nuGetProjectActions.Count() == 1 && nuGetProjectActions.All(action => action is BuildIntegratedProjectAction))
+            {
+                projectAction = nuGetProjectActions.Single() as BuildIntegratedProjectAction;
+            }
+            else
+            {
+                projectAction = await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, nuGetProjectActions, nuGetProjectContext, token);
+            }
+
+            var restoreResult = projectAction.RestoreResult;
+
             if (restoreResult.Success)
             {
                 // Write out project.json 
                 // This can be replaced with the PackageSpec writer once it has been added to the library
                 using (var writer = new StreamWriter(buildIntegratedProject.JsonConfigPath, append: false, encoding: Encoding.UTF8))
                 {
-                    await writer.WriteAsync(rawPackageSpec.ToString());
+                    await writer.WriteAsync(projectAction.UpdatedProjectJson.ToString());
                 }
 
                 // Write out the lock file
+                var lockFileFormat = new LockFileFormat();
+                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
                 lockFileFormat.Write(lockFilePath, restoreResult.LockFile);
 
                 // Write out a message for each action
@@ -1272,7 +1334,7 @@ namespace NuGet.PackageManagement
                 // Run init.ps1 scripts
                 var sortedPackages = BuildIntegratedProjectUtility.GetOrderedProjectDependencies(buildIntegratedProject);
                 var addedPackages = new HashSet<PackageIdentity>(
-                    BuildIntegratedRestoreUtility.GetAddedPackages(originalLockFile, restoreResult.LockFile),
+                    BuildIntegratedRestoreUtility.GetAddedPackages(projectAction.OriginalLockFile, restoreResult.LockFile),
                     PackageIdentity.Comparer);
 
                 // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.

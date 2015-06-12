@@ -249,7 +249,33 @@ namespace NuGet.PackageManagement.UI
         protected static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
         {
             var results = new List<PreviewResult>();
-            var actionsByProject = projectActions.GroupBy(action => action.Item1);
+
+            var expandedActions = new List<Tuple<NuGetProject, NuGetProjectAction>>();
+
+            // BuildIntegratedProjectActions contain all project actions rolled up into a single action, 
+            // to display these we need to expand them into the low level actions.
+            foreach (var action in projectActions)
+            {
+                var buildIntegratedAction = action.Item2 as BuildIntegratedProjectAction;
+
+                if (buildIntegratedAction != null)
+                {
+                    foreach (var buildAction in buildIntegratedAction.GetProjectActions())
+                    {
+                        expandedActions.Add(new Tuple<NuGetProject, NuGetProjectAction>(action.Item1, buildAction));
+                    }
+                }
+                else
+                {
+                    // leave the action as is
+                    expandedActions.Add(action);
+                }
+            }
+
+            // Group actions by project
+            var actionsByProject = expandedActions.GroupBy(action => action.Item1);
+
+            // Group actions by operation
             foreach (var actions in actionsByProject)
             {
                 var installed = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
