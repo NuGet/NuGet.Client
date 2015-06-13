@@ -196,11 +196,38 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to remove package directories that were marked for deletion on Visual Studio restart: {0}.
+        /// </summary>
+        public static string Warning_FailedToDeleteMarkedPackageDirectories {
+            get {
+                return ResourceManager.GetString("Warning_FailedToDeleteMarkedPackageDirectories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to remove package directory &apos;{0}&apos; that was marked for deletion on Visual Studio restart..
+        /// </summary>
+        public static string Warning_FailedToDeleteMarkedPackageDirectory {
+            get {
+                return ResourceManager.GetString("Warning_FailedToDeleteMarkedPackageDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to find match for removing reference &apos;{0}&apos;..
         /// </summary>
         public static string Warning_FailedToFindMatchForRemoveReference {
             get {
                 return ResourceManager.GetString("Warning_FailedToFindMatchForRemoveReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to mark package directory &apos;{0}&apos; for deletion on Visual Studio restart: {1}.
+        /// </summary>
+        public static string Warning_FailedToMarkPackageDirectoryForDeletion {
+            get {
+                return ResourceManager.GetString("Warning_FailedToMarkPackageDirectoryForDeletion", resourceCulture);
             }
         }
         

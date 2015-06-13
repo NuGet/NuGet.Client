@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -17,6 +19,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageActionBaseCommand : NuGetPowerShellBaseCommand
     {
+        private IDeleteOnRestartManager _deleteOnRestartManager;
+
+        public PackageActionBaseCommand()
+        {
+            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+        }
+
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public virtual string Id { get; set; }
 
@@ -178,6 +187,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // note that we're assuming that package id is the same for all versions.
             Id = metadata.First().Identity.Id;
+        }
+
+        protected override void EndProcessing()
+        {
+            base.EndProcessing();
+
+            var packageDirectoriesMarkedForDeletion = _deleteOnRestartManager.GetPackageDirectoriesMarkedForDeletion();
+            if (packageDirectoriesMarkedForDeletion != null && packageDirectoriesMarkedForDeletion.Count != 0)
+            {
+                _deleteOnRestartManager.CheckAndRaisePackageDirectoriesMarkedForDeletion();
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Cmdlet_RequestRestartToCompleteUninstall,
+                    string.Join(", ", packageDirectoriesMarkedForDeletion));
+                WriteWarning(message);
+            }
         }
 
         /// <summary>

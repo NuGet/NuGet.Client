@@ -38,6 +38,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly ISettings _settings;
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
         private readonly ICommonOperations _commonOperations;
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
@@ -48,7 +49,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private IConsole _activeConsole;
         private NuGetPSHost _nugetHost;
-        // indicates whether this host has been initialized. 
+        // indicates whether this host has been initialized.
         // null = not initilized, true = initialized successfully, false = initialized unsuccessfully
         private bool? _initialized;
         // store the current (non-truncated) project names displayed in the project name combobox
@@ -70,6 +71,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             _settings = ServiceLocator.GetInstance<ISettings>();
+            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+
             _dte = ServiceLocator.GetInstance<DTE>();
             _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
             _commonOperations = ServiceLocator.GetInstanceSafe<ICommonOperations>();
@@ -307,7 +310,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 var globalPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
 
                 var projects = _solutionManager.GetNuGetProjects().ToList();
-                var packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+                var packageManager = new NuGetPackageManager(
+                    _sourceRepositoryProvider,
+                    _settings,
+                    _solutionManager,
+                    _deleteOnRestartManager);
 
                 foreach (var project in projects)
                 {
@@ -558,7 +565,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         p => StringComparer.CurrentCultureIgnoreCase.Equals(p.PackageSource.Name, oldActiveSource));
                     if (s == null)
                     {
-                        // the old active source does not exist any more. In this case, 
+                        // the old active source does not exist any more. In this case,
                         // use the first eneabled source as the active source.
                         ActivePackageSource = _sourceRepositories.First().PackageSource.Name;
                     }

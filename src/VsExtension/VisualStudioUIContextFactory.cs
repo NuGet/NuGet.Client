@@ -21,19 +21,22 @@ namespace NuGetVSExtension
         private readonly IPackageRestoreManager _restoreManager;
         private readonly IOptionsPageActivator _optionsPage;
         private readonly ISettings _settings;
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
 
         [ImportingConstructor]
         public VisualStudioUIContextFactory([Import] ISourceRepositoryProvider repositoryProvider,
             [Import] ISolutionManager solutionManager,
             [Import] ISettings settings,
             [Import] IPackageRestoreManager packageRestoreManager,
-            [Import] IOptionsPageActivator optionsPage)
+            [Import] IOptionsPageActivator optionsPage,
+            [Import] IDeleteOnRestartManager deleteOnRestartManager)
         {
             _repositoryProvider = repositoryProvider;
             _solutionManager = solutionManager;
             _restoreManager = packageRestoreManager;
             _optionsPage = optionsPage;
             _settings = settings;
+            _deleteOnRestartManager = deleteOnRestartManager;
         }
 
         public INuGetUIContext Create(NuGetPackage package, IEnumerable<NuGetProject> projects)
@@ -44,7 +47,11 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException("projects");
             }
 
-            NuGetPackageManager packageManager = new NuGetPackageManager(_repositoryProvider, _settings, _solutionManager);
+            NuGetPackageManager packageManager = new NuGetPackageManager(
+                _repositoryProvider,
+                _settings,
+                _solutionManager,
+                _deleteOnRestartManager);
             UIActionEngine actionEngine = new UIActionEngine(_repositoryProvider, packageManager);
 
             return new VisualStudioUIContext(

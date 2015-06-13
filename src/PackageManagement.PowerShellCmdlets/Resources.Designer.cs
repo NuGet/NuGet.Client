@@ -439,6 +439,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One or more packages could not be completely uninstalled: &apos;{0}&apos;. Restart Visual Studio to finish uninstall..
+        /// </summary>
+        internal static string Cmdlet_RequestRestartToCompleteUninstall {
+            get {
+                return ResourceManager.GetString("Cmdlet_RequestRestartToCompleteUninstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to More than one .nuspec files were found..
         /// </summary>
         internal static string Cmdlet_TooManySpecFiles {

@@ -13,6 +13,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {

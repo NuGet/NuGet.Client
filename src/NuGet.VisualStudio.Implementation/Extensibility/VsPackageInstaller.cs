@@ -31,17 +31,24 @@ namespace NuGet.VisualStudio
         private readonly ISolutionManager _solutionManager;
         private readonly INuGetProjectContext _projectContext;
         private readonly IVsPackageInstallerServices _packageServices;
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
 
         private JoinableTaskFactory PumpingJTF { get; }
 
         [ImportingConstructor]
-        public VsPackageInstaller(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager, IVsPackageInstallerServices packageServices)
+        public VsPackageInstaller(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            Configuration.ISettings settings,
+            ISolutionManager solutionManager,
+            IVsPackageInstallerServices packageServices,
+            IDeleteOnRestartManager deleteOnRestartManager)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
             _projectContext = new VSAPIProjectContext();
             _packageServices = packageServices;
+            _deleteOnRestartManager = deleteOnRestartManager;
             PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
         }
 
@@ -352,7 +359,12 @@ namespace NuGet.VisualStudio
 
                 ResolutionContext resolution = new ResolutionContext(depBehavior, includePrerelease, false, VersionConstraints.None);
 
-                NuGetPackageManager packageManager = new NuGetPackageManager(repoProvider, _settings, _solutionManager);
+                NuGetPackageManager packageManager =
+                    new NuGetPackageManager(
+                        repoProvider,
+                        _settings,
+                        _solutionManager,
+                        _deleteOnRestartManager);
 
                 // find the project
                 NuGetProject nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);

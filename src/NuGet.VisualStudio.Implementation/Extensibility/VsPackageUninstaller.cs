@@ -21,16 +21,23 @@ namespace NuGet.VisualStudio
         private ISourceRepositoryProvider _sourceRepositoryProvider;
         private Configuration.ISettings _settings;
         private ISolutionManager _solutionManager;
+        private IDeleteOnRestartManager _deleteOnRestartManager;
 
         private JoinableTaskFactory PumpingJTF { get; }
 
         [ImportingConstructor]
-        public VsPackageUninstaller(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager)
+        public VsPackageUninstaller(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            Configuration.ISettings settings,
+            ISolutionManager solutionManager,
+            IDeleteOnRestartManager deleteOnRestartManager)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
+            
             PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
+            deleteOnRestartManager = deleteOnRestartManager;
         }
 
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
@@ -47,7 +54,12 @@ namespace NuGet.VisualStudio
 
             PumpingJTF.Run(async delegate
                 {
-                    NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+                    NuGetPackageManager packageManager =
+                       new NuGetPackageManager(
+                           _sourceRepositoryProvider,
+                           _settings,
+                           _solutionManager,
+                           _deleteOnRestartManager);
 
                     UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
                     VSAPIProjectContext projectContext = new VSAPIProjectContext();

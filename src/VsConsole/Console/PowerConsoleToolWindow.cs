@@ -48,6 +48,11 @@ namespace NuGetConsole.Implementation
             get { return ComponentModel.GetService<IPackageRestoreManager>(); }
         }
 
+        private IDeleteOnRestartManager DeleteOnRestartManager
+        {
+            get { return ComponentModel.GetService<IDeleteOnRestartManager>(); }
+        }
+
         private ISolutionManager SolutionManager
         {
             get { return ComponentModel.GetService<ISolutionManager>(); }
@@ -56,6 +61,11 @@ namespace NuGetConsole.Implementation
         private PowerConsoleWindow PowerConsoleWindow
         {
             get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
+        }
+
+        private IVsShell4 VsShell
+        {
+            get { return this.GetService<IVsShell4>(typeof(SVsShell)); }
         }
 
         private IVsUIShell VsUIShell
@@ -461,7 +471,7 @@ namespace NuGetConsole.Implementation
                     if (WpfConsole.Dispatcher.IsStartCompleted)
                     {
                         OnDispatcherStartCompleted();
-                        // if the dispatcher was started before we reach here, 
+                        // if the dispatcher was started before we reach here,
                         // it means the dispatcher has been in read-only mode (due to _startedWritingOutput = false).
                         // enable key input now.
                         WpfConsole.Dispatcher.AcceptKeyInput();
@@ -555,7 +565,12 @@ namespace NuGetConsole.Implementation
             {
                 if (_consoleParentPane == null)
                 {
-                    _consoleParentPane = new ConsoleContainer(SolutionManager, ProductUpdateService, PackageRestoreManager);
+                    _consoleParentPane = new ConsoleContainer(
+                        SolutionManager,
+                        ProductUpdateService,
+                        PackageRestoreManager,
+                        DeleteOnRestartManager,
+                        VsShell);
                 }
                 return _consoleParentPane;
             }

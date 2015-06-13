@@ -81,8 +81,8 @@ namespace NuGetVSExtension
         private ICommonOperations _commonOperations;
         private ISolutionManager _solutionManager;
         private ISourceRepositoryProvider _sourceRepositoryProvider;
+        private IDeleteOnRestartManager _deleteOnRestart;
 
-        //*** private IDeleteOnRestartManager _deleteOnRestart;
         private OleMenuCommand _managePackageDialogCommand;
 
         private OleMenuCommand _managePackageForSolutionDialogCommand;
@@ -222,7 +222,6 @@ namespace NuGetVSExtension
             }
         }
 
-        /* ****
         private IDeleteOnRestartManager DeleteOnRestart
         {
             get
@@ -236,7 +235,6 @@ namespace NuGetVSExtension
                 return _deleteOnRestart;
             }
         }
-        */
 
         private IMachineWideSettings MachineWideSettings
         {
@@ -301,14 +299,18 @@ namespace NuGetVSExtension
                 SourceControlManagerProvider,
                 CommonOperations);
 
-            /* ****
+            if (SolutionManager.NuGetProjectContext == null)
+            {
+                SolutionManager.NuGetProjectContext = _uiProjectContext;
+            }
+
             // when NuGet loads, if the current solution has some package
             // folders marked for deletion (because a previous uninstalltion didn't succeed),
             // delete them now.
             if (SolutionManager.IsSolutionOpen)
             {
-                DeleteOnRestart.DeleteMarkedPackageDirectories();
-            } */
+                DeleteOnRestart.DeleteMarkedPackageDirectories(_uiProjectContext);
+            }
 
             // NOTE: Don't use the exported IPackageRestoreManager for OnBuildPackageRestorer. Exported IPackageRestoreManager also uses 'PackageRestoreManager'
             //       but, overrides RestoreMissingPackages to catch the exceptions. OnBuildPackageRestorer needs to catch the exception by itself to populate error list window
@@ -626,7 +628,8 @@ namespace NuGetVSExtension
 
             var model = new PackageManagerModel(uiController, uiContext, isSolution: false);
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
-            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory);
+            var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
+            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
             var windowPane = new PackageManagerWindowPane(control);
             var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
             var ppunkDocData = Marshal.GetIUnknownForObject(model);
@@ -817,7 +820,8 @@ namespace NuGetVSExtension
             var model = new PackageManagerModel(uiController, uiContext, isSolution: true);
             model.SolutionName = solutionName;
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
-            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory);
+            var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
+            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
             var windowPane = new PackageManagerWindowPane(control);
             var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
             var ppunkDocData = Marshal.GetIUnknownForObject(model);

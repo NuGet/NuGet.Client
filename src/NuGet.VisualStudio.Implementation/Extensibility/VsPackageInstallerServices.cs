@@ -22,15 +22,21 @@ namespace NuGet.VisualStudio
     {
         private readonly ISolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly Configuration.ISettings _settings;
         private NuGetPackageManager _packageManager;
         private string _packageFolderPath = string.Empty;
 
         [ImportingConstructor]
-        public VsPackageInstallerServices(ISolutionManager solutionManager, ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings)
+        public VsPackageInstallerServices(
+            ISolutionManager solutionManager,
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            Configuration.ISettings settings,
+            IDeleteOnRestartManager deleteOnRestartManager)
         {
             _solutionManager = solutionManager;
             _sourceRepositoryProvider = sourceRepositoryProvider;
+            _deleteOnRestartManager = deleteOnRestartManager;
             _settings = settings;
         }
 
@@ -132,7 +138,12 @@ namespace NuGet.VisualStudio
         private void InitializePackageManagerAndPackageFolderPath()
         {
             // Initialize package manager here since _solutionManager may be targeting different project now.
-            _packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
+            _packageManager = new NuGetPackageManager(
+                _sourceRepositoryProvider,
+                _settings,
+                _solutionManager,
+                _deleteOnRestartManager);
+
             if (_packageManager != null
                 && _packageManager.PackagesFolderSourceRepository != null)
             {

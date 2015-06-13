@@ -11,6 +11,7 @@ using System.Management.Automation;
 using System.Net;
 using System.Text;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Resolver;
