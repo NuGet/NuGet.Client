@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement
         public PackageManagementContext(
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISolutionManager solutionManager,
-            ISettings settings,
+            NuGet.Configuration.ISettings settings,
             ISourceControlManagerProvider sourceControlManagerProvider,
             ICommonOperations commonOperations)
         {
@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// NuGet config settings
         /// </summary>
-        public ISettings Settings { get; private set; }
+        public NuGet.Configuration.ISettings Settings { get; private set; }
 
         /// <summary>
         /// SourceControlManager provider
