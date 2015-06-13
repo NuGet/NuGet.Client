@@ -17,6 +17,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
@@ -54,6 +55,8 @@ namespace NuGetVSExtension
 
         private ISettings Settings { get; }
 
+        private INuGetProjectContext NuGetProjectContext { get; }
+
         private int TotalCount { get; set; }
 
         private int CurrentCount;
@@ -74,11 +77,13 @@ namespace NuGetVSExtension
             IPackageRestoreManager packageRestoreManager,
             IServiceProvider serviceProvider,
             ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings)
+            ISettings settings,
+            INuGetProjectContext nuGetProjectContext)
         {
             SolutionManager = solutionManager;
             SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
+            NuGetProjectContext = nuGetProjectContext;
 
             PackageRestoreManager = packageRestoreManager;
 
@@ -362,7 +367,7 @@ namespace NuGetVSExtension
         {
             await TaskScheduler.Default;
 
-            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, packages, token);
+            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, packages, NuGetProjectContext, token);
         }
 
         /// <summary>

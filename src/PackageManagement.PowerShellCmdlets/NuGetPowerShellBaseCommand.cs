@@ -209,8 +209,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     await TaskScheduler.Default;
 
-                    var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
-                        solutionDirectory, packages, Token);
+                    var result = await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
+                        packages,
+                        this,
+                        Token);
 
                     if (result.Restored)
                     {

@@ -313,7 +313,13 @@ namespace NuGetVSExtension
             // NOTE: Don't use the exported IPackageRestoreManager for OnBuildPackageRestorer. Exported IPackageRestoreManager also uses 'PackageRestoreManager'
             //       but, overrides RestoreMissingPackages to catch the exceptions. OnBuildPackageRestorer needs to catch the exception by itself to populate error list window
             //       Exported IPackageRestoreManager is used by UI manual restore, Powershell manual restore and by VS extensibility package restore
-            OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager, PackageRestoreManager, this, SourceRepositoryProvider, Settings);
+            OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager,
+                PackageRestoreManager,
+                this,
+                SourceRepositoryProvider,
+                Settings,
+                new EmptyNuGetProjectContext());
+
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
 
