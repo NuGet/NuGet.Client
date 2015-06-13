@@ -72,7 +72,11 @@ namespace StandaloneUI
 
             var projects = new[] { projectA, projectB };
 
-            var packageRestoreManager = new PackageRestoreManager(repositoryProvider, settings, testSolutionManager);
+            var packageRestoreManager = new PackageRestoreManager(
+                repositoryProvider,
+                settings,
+                testSolutionManager);
+
             var contextFactory = new StandaloneUIContextFactory(
                 repositoryProvider,
                 testSolutionManager,
@@ -86,7 +90,8 @@ namespace StandaloneUI
 
             var model = new PackageManagerModel(uiController, context, isSolution: true);
             model.SolutionName = "test solution";
-            _packageManagerControl = new PackageManagerControl(model, _settings, new SimpleSearchBoxFactory());
+            _packageManagerControl =
+                new PackageManagerControl(model, _settings, new SimpleSearchBoxFactory(), vsShell: null);
             layoutGrid.Children.Add(_packageManagerControl);
         }
 

@@ -42,6 +42,8 @@ namespace NuGet.PackageManagement
 
         private ISettings Settings { get; }
 
+        public IDeleteOnRestartManager DeleteOnRestartManager { get; }
+
         public FolderNuGetProject PackagesFolderNuGetProject { get; set; }
 
         public SourceRepository PackagesFolderSourceRepository { get; set; }
@@ -49,7 +51,10 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, string packagesFolderPath)
+        public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            string packagesFolderPath)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -75,7 +80,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager with a mandatory SolutionManager lke VS
         /// </summary>
-        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
+        public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            ISolutionManager solutionManager,
+            IDeleteOnRestartManager deleteOnRestartManager)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -92,11 +101,17 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
+            if (deleteOnRestartManager == null)
+            {
+                throw new ArgumentNullException(nameof(deleteOnRestartManager));
+            }
+
             SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
             SolutionManager = solutionManager;
 
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings));
+            DeleteOnRestartManager = deleteOnRestartManager;
         }
 
         private void InitializePackagesFolderInfo(string packagesFolderPath)
@@ -1144,7 +1159,27 @@ namespace NuGet.PackageManagement
                 // Also, always perform deletion of package directories, even in a rollback, so that there are no stale package directories
                 foreach (var packageWithDirectoryToBeDeleted in packageWithDirectoriesToBeDeleted)
                 {
-                    await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
+                    var packageFolderPath = PackagesFolderNuGetProject.GetInstalledPath(packageWithDirectoryToBeDeleted);
+                    try
+                    {
+                        await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
+                    }
+                    finally
+                    {
+                        if (DeleteOnRestartManager != null)
+                        {
+                            if (Directory.Exists(packageFolderPath))
+                            {
+                                DeleteOnRestartManager.MarkPackageDirectoryForDeletion(
+                                    packageWithDirectoryToBeDeleted,
+                                    packageFolderPath,
+                                    nuGetProjectContext);
+
+                                // Raise the event to notify listners to update the UI etc.
+                                DeleteOnRestartManager.CheckAndRaisePackageDirectoriesMarkedForDeletion();
+                            }
+                        }
+                    }
                 }
 
                 // Clear direct install

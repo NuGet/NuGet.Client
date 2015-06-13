@@ -136,6 +136,7 @@
     <Compile Include="SourceRepository\TestSourceRepositoryUtility.cs" />
     <Compile Include="TestFilesystemUtility.cs" />
     <Compile Include="TestPackages.cs" />
+    <Compile Include="TestDeleteOnRestartManager.cs" />
     <Compile Include="TestSolutionManager.cs" />
   </ItemGroup>
   <ItemGroup>

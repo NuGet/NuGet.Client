@@ -53,7 +53,11 @@ namespace NuGet.Test
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
-            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var packageRestoreManager = new PackageRestoreManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager);
 
             // Act
             var packagesFromSolution = (await packageRestoreManager.GetPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, token));
@@ -88,7 +92,11 @@ namespace NuGet.Test
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
-            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var packageRestoreManager = new PackageRestoreManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager);
 
             // Act
             var packagesFromSolution = (await packageRestoreManager.GetPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, token));
@@ -111,14 +119,22 @@ namespace NuGet.Test
             var resolutionContext = new ResolutionContext();
             var token = CancellationToken.None;
 
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
                 resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
             await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
                 resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
-            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packageRestoreManager = new PackageRestoreManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager);
             var restoredPackages = new List<PackageIdentity>();
             packageRestoreManager.PackageRestoredEvent += delegate(object sender, PackageRestoredEventArgs args)
                 {
@@ -168,7 +184,11 @@ namespace NuGet.Test
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
-            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var packageRestoreManager = new PackageRestoreManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager);
 
             var packagesMissingEventCount = 0;
             var packagesMissing = false;
@@ -211,15 +231,22 @@ namespace NuGet.Test
             var resolutionContext = new ResolutionContext();
             var token = CancellationToken.None;
 
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
                 resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
             await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
                 resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
-            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
-
+            var packageRestoreManager = new PackageRestoreManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager);
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(packageIdentity));
 
             // Delete packages folder
@@ -257,7 +284,12 @@ namespace NuGet.Test
             var resolutionContext = new ResolutionContext();
             var token = CancellationToken.None;
 
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
 
             await nuGetPackageManager.InstallPackageAsync(projectA, jQueryValidation,
                 resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
@@ -286,7 +318,10 @@ namespace NuGet.Test
                 await projectC.InstallPackageAsync(testPackage2, packageStream, testNuGetProjectContext, token);
             }
 
-            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+            var packageRestoreManager = new PackageRestoreManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager);
             var restoredPackages = new List<PackageIdentity>();
             packageRestoreManager.PackageRestoredEvent += delegate(object sender, PackageRestoredEventArgs args) { restoredPackages.Add(args.Package); };
 

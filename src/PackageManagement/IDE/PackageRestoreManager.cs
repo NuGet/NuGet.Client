@@ -31,7 +31,10 @@ namespace NuGet.PackageManagement
         public event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
         public event EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent;
 
-        public PackageRestoreManager(ISourceRepositoryProvider sourceRepositoryProvider, ISettings settings, ISolutionManager solutionManager)
+        public PackageRestoreManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            ISolutionManager solutionManager)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -233,7 +236,10 @@ namespace NuGet.PackageManagement
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)
         {
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, Settings);
-            return new NuGetPackageManager(SourceRepositoryProvider, Settings, packagesFolderPath);
+            return new NuGetPackageManager(
+                SourceRepositoryProvider,
+                Settings,
+                packagesFolderPath);
         }
 
         public Task<PackageRestoreResult> RestoreMissingPackagesAsync(NuGetPackageManager nuGetPackageManager,

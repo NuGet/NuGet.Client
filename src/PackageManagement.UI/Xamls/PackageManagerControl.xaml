@@ -40,18 +40,21 @@
           Height="Auto" />
         <RowDefinition
           Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
         <RowDefinition />
       </Grid.RowDefinitions>
       <!-- Row 0 is used by restore bar -->
+      <!-- Row 1 is used by request restart bar -->
 
       <TextBlock
-        Grid.Row="1"
+        Grid.Row="2"
         x:Name="_label"
         FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}"
         Margin="8,8">Package Manager</TextBlock>
 
       <WrapPanel
-        Grid.Row="2"
+        Grid.Row="3"
         Margin="0,12,0,20"
         Orientation="Horizontal">
         <StackPanel
@@ -164,7 +167,7 @@
         </StackPanel>
       </WrapPanel>
       <Border
-        Grid.Row="3"
+        Grid.Row="4"
         BorderThickness="0,1,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
         <Grid>

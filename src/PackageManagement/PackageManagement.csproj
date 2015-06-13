@@ -155,6 +155,8 @@
     <Compile Include="Context\UninstallationContext.cs" />
     <Compile Include="Context\VersionConstraints.cs" />
     <Compile Include="IDE\ICommonOperations.cs" />
+    <Compile Include="IDE\PackagesMarkedForDeletionEventArgs.cs" />
+    <Compile Include="IDE\IDeleteOnRestartManager.cs" />
     <Compile Include="IDE\PackageRestoreData.cs" />
     <Compile Include="IDE\PackageRestoreContext.cs" />
     <Compile Include="IDE\PackageRestoreFailedEventArgs.cs" />
