@@ -184,7 +184,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         }
                         catch
                         {
-                            Logger.LogInformation(Strings.FormatLog_FileIsCorrupt(data.CacheFileName.Yellow().Bold()));
+                            Logger.LogInformation(Strings.FormatLog_FileIsCorrupt(data.CacheFileName));
                             throw;
                         }
                     }
@@ -194,7 +194,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_RetryingFindPackagesById(nameof(FindPackagesByIdAsync), baseUri) + Environment.NewLine + ex.Message;
-                    Logger.LogInformation(message.Yellow().Bold());
+                    Logger.LogInformation(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
@@ -203,11 +203,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     if (IgnoreFailure)
                     {
                         _ignored = true;
-                        Logger.LogWarning(message.Yellow().Bold());
+                        Logger.LogWarning(message);
                         return Enumerable.Empty<PackageInfo>();
                     }
 
-                    Logger.LogError(message.Red().Bold() + Environment.NewLine + ex.Message);
+                    Logger.LogError(message + Environment.NewLine + ex.Message);
 
                     throw new NuGetProtocolException(message, ex);
                 }
@@ -281,12 +281,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogInformation(message.Yellow().Bold());
+                    Logger.LogInformation(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogError(message.Red().Bold());
+                    Logger.LogError(message);
                 }
             }
 

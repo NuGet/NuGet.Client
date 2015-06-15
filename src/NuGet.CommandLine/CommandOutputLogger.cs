@@ -77,19 +77,19 @@ namespace NuGet.CommandLine
                 switch (logLevel)
                 {
                     case LogLevel.Debug:
-                        caption = "\x1b[35mdebug\x1b[39m";
+                        caption = "debug";
                         break;
                     case LogLevel.Information:
-                        caption = "\x1b[32minfo \x1b[39m";
+                        caption = "info ";
                         break;
                     case LogLevel.Warning:
-                        caption = "\x1b[33mwarn \x1b[39m";
+                        caption = "warn ";
                         break;
                     case LogLevel.Error:
-                        caption = "\x1b[31merror\x1b[39m";
+                        caption = "error";
                         break;
                     case LogLevel.Verbose:
-                        caption = "\x1b[35mtrace\x1b[39m";
+                        caption = "trace";
                         break;
                 }
             }
@@ -97,11 +97,7 @@ namespace NuGet.CommandLine
             {
                 caption = logLevel.ToString().ToLowerInvariant();
             }
-
-            lock (Console.Out)
-            {
-                AnsiConsole.GetOutput(_useConsoleColor).WriteLine($"{caption}: {message}");
-            }
+            Console.WriteLine($"{caption}: {message}");
         }
     }
 }

@@ -197,12 +197,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogInformation(message.Yellow().Bold());
+                    Logger.LogInformation(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogError(message.Red().Bold());
+                    Logger.LogError(message);
                 }
             }
 

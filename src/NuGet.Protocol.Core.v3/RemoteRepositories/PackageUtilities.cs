@@ -57,7 +57,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     var fileStream = nupkgStream as FileStream;
                     if (fileStream != null)
                     {
-                        report.LogWarning($"The ZIP archive {fileStream.Name.Yellow().Bold()} is corrupt");
+                        report.LogWarning($"The ZIP archive {fileStream.Name} is corrupt");
                     }
                     throw;
                 }

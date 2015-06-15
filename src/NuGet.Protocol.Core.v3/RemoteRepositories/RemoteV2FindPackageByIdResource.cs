@@ -94,7 +94,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
             if (packageInfo == null)
             {
-                Logger.LogWarning($"Unable to find package {id}{version}".Yellow());
+                Logger.LogWarning($"Unable to find package {id}{version}");
                 return null;
             }
 
@@ -190,7 +190,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             }
                             catch (XmlException)
                             {
-                                Logger.LogInformation($"The XML file {data.CacheFileName.Yellow().Bold()} is corrupt.");
+                                Logger.LogInformation($"The XML file {data.CacheFileName} is corrupt.");
                                 throw;
                             }
                         }
@@ -200,7 +200,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when(retry < 2)
                 {
-                    Logger.LogInformation(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id).Yellow().Bold());
+                    Logger.LogInformation(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
                 }
                 catch (Exception ex) when(retry == 2)
                 {
@@ -210,11 +210,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     if (IgnoreFailure)
                     {
                         _ignored = true;
-                        Logger.LogWarning(message.Yellow().Bold());
+                        Logger.LogWarning(message);
                         return Enumerable.Empty<PackageInfo>();
                     }
 
-                    Logger.LogError(message.Red().Bold() + Environment.NewLine + ex.Message);
+                    Logger.LogError(message + Environment.NewLine + ex.Message);
 
                     throw new NuGetProtocolException(message, ex);
                 }
@@ -301,11 +301,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 {
                     if (retry == 2)
                     {
-                        Logger.LogError(string.Format("Error: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri.Red().Bold()));
+                        Logger.LogError(string.Format("Error: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
                     }
                     else
                     {
-                        Logger.LogInformation(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}".Yellow().Bold(), ex.Message, package.ContentUri.Yellow().Bold()));
+                        Logger.LogInformation(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
                     }
                 }
             }

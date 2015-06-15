@@ -118,11 +118,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var result = await TryCache(uri, cacheKey, cacheAgeLimit, cancellationToken);
             if (result.Stream != null)
             {
-                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE".Green(), uri));
+                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE", uri));
                 return result;
             }
 
-            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET".Yellow(), uri));
+            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET", uri));
 
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             if (_userName != null)
@@ -144,7 +144,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
             {
                 Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                    "  {1} {0} {2}ms", uri, response.StatusCode.ToString().Green(), sw.ElapsedMilliseconds.ToString().Bold()));
+                    "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
                 return new HttpSourceResult();
             }
 
@@ -214,7 +214,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 token: cancellationToken);
 
             Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
-                "  {1} {0} {2}ms", uri, response.StatusCode.ToString().Green(), sw.ElapsedMilliseconds.ToString().Bold()));
+                "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
 
             return result;
         }
