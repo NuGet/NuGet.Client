@@ -26,7 +26,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private bool _versionSpecifiedPrerelease;
         private bool _allowPrerelease;
         private bool _isPackageInstalled;
-        private DependencyBehavior _updateVersionEnum;
         private NuGetVersion _nugetVersion;
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "Project")]
@@ -274,20 +273,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (!string.IsNullOrEmpty(Version))
             {
-                DependencyBehavior updateVersion;
-                IsVersionEnum = Enum.TryParse(Version, true, out updateVersion);
-                if (IsVersionEnum)
-                {
-                    _updateVersionEnum = updateVersion;
-                }
                 // If Version is prerelease, automatically allow prerelease (i.e. append -Prerelease switch).
-                else
+                _nugetVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
+                if (_nugetVersion.IsPrerelease)
                 {
-                    _nugetVersion = PowerShellCmdletsUtility.GetNuGetVersionFromString(Version);
-                    if (_nugetVersion.IsPrerelease)
-                    {
-                        _versionSpecifiedPrerelease = true;
-                    }
+                    _versionSpecifiedPrerelease = true;
                 }
             }
             _allowPrerelease = IncludePrerelease.IsPresent || _versionSpecifiedPrerelease;
