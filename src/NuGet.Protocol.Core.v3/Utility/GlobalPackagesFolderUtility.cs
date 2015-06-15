@@ -84,7 +84,8 @@ namespace NuGet.Protocol.Core.v3
 
             // The following call adds it to the global packages folder. Addition is performed using ConcurrentUtils, such that,
             // multiple processes may add at the same time
-            await NuGetPackageUtils.InstallFromStreamAsync(packageStream,
+            await NuGetPackageUtils.InstallFromSourceAsync(
+                stream => packageStream.CopyToAsync(stream),
                 packageIdentity,
                 globalPackagesFolder,
                 NullLogger.Instance,

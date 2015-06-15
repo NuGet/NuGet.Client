@@ -19,8 +19,8 @@ namespace NuGet.Packaging
     {
         private const string ManifestExtension = ".nuspec";
 
-        public static async Task InstallFromStreamAsync(
-            Stream stream,
+        public static async Task InstallFromSourceAsync(
+            Func<Stream, Task> copyToAsync,
             PackageIdentity packageIdentity,
             string packagesDirectory,
             ILogger log,
@@ -55,7 +55,7 @@ namespace NuGet.Packaging
                             bufferSize: 4096,
                             useAsync: true))
                         {
-                            await stream.CopyToAsync(nupkgStream);
+                            await copyToAsync(nupkgStream);
                             nupkgStream.Seek(0, SeekOrigin.Begin);
 
                             ExtractPackage(targetPath, nupkgStream);

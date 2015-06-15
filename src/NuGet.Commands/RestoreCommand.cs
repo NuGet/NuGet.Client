@@ -606,12 +606,9 @@ namespace NuGet.Commands
         {
             using (var memoryStream = new MemoryStream())
             {
-                await installItem.Provider.CopyToAsync(installItem.Library, memoryStream, CancellationToken.None);
-
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
                 var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
-                await NuGetPackageUtils.InstallFromStreamAsync(memoryStream,
+                await NuGetPackageUtils.InstallFromSourceAsync(
+                    stream => installItem.Provider.CopyToAsync(installItem.Library, stream, CancellationToken.None),
                     packageIdentity,
                     packagesDirectory,
                     _log,
