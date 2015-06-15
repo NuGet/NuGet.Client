@@ -17,7 +17,7 @@ namespace NuGet.Configuration
         public static readonly string ReadmeFileName = "readme.txt";
         public static readonly string NuGetSolutionSettingsFolder = ".nuget";
 
-        public static readonly string V3FeedName = "api.nuget.org";
-        public static readonly string V2FeedName = "nuget.org";
+        
+        public static readonly string FeedName = "nuget.org";
     }
 }
