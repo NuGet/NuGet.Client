@@ -60,7 +60,7 @@ namespace NuGet.Configuration
                 &&
                 string.Equals(rhs.Value, Value, StringComparison.OrdinalIgnoreCase)
                 &&
-                rhs.IsMachineWide == rhs.IsMachineWide
+                rhs.IsMachineWide == IsMachineWide
                 &&
                 rhs.AdditionalData.Count == AdditionalData.Count)
             {
