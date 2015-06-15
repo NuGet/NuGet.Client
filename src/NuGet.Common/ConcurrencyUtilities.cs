@@ -14,27 +14,29 @@ namespace NuGet.Common
             Func<Task<TVal>> action,
             CancellationToken token)
         {
-            while (true)
-            {
-                token.ThrowIfCancellationRequested();
-                using (var fileLock = new Semaphore(initialCount: 1, maximumCount: 1, name: FilePathToLockName(filePath)))
-                {
-                    if (fileLock.WaitOne(TimeSpan.FromSeconds(1)))
-                    {
-                        try
-                        {
-                            // Can perform the action
-                            return await action();
-                        }
-                        finally
-                        {
-                            fileLock.Release();
-                        }
-                    }
+            return await action();
 
-                    // Timed out. Still the semaphore is not released. Loop continues
-                }
-            }
+            //while (true)
+            //{
+            //    token.ThrowIfCancellationRequested();
+            //    using (var fileLock = new Semaphore(initialCount: 1, maximumCount: 1, name: FilePathToLockName(filePath)))
+            //    {
+            //        if (fileLock.WaitOne(TimeSpan.FromSeconds(1)))
+            //        {
+            //            try
+            //            {
+            //                // Can perform the action
+            //                return await action();
+            //            }
+            //            finally
+            //            {
+            //                fileLock.Release();
+            //            }
+            //        }
+
+            //        // Timed out. Still the semaphore is not released. Loop continues
+            //    }
+            //}
         }
 
         private static string FilePathToLockName(string filePath)
