@@ -94,6 +94,12 @@ namespace NuGet.Commands
                     {
                         string name = Path.GetFileNameWithoutExtension(runtime.Path);
 
+                        // Fix for NuGet/Home#752 - Consider ".ni.dll" (native image/ngen) files matches for ref/ assemblies
+                        if (name.EndsWith(".ni"))
+                        {
+                            name = name.Substring(0, name.Length - 3);
+                        }
+
                         // If there was a compile-time-only assembly under this name...
                         if (compileAssemblies.ContainsKey(name))
                         {
