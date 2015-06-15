@@ -819,6 +819,12 @@
           <maml:name>DependencyVersion</maml:name>
         </command:parameter>
         <command:parameter required="false" position="named">
+          <maml:name>ToHighestPatch</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
+          <maml:name>ToHighestMinor</maml:name>
+        </command:parameter>
+        <command:parameter required="false" position="named">
           <maml:name>WhatIf</maml:name>
         </command:parameter>
       </command:syntaxItem>
@@ -869,7 +875,7 @@
       <command:parameter required="false" position="named">
         <maml:name>Version</maml:name>
         <maml:description>
-          <maml:para>Specifies the version that the package will be upgraded to. If omitted, defaults to the latest version. Now it takes 'Highest', 'HighestMinor', 'HighestPatch' (equivalent to -Safe) and 'Lowest' to determine the version of package to be updated to.</maml:para>
+          <maml:para>Specifies the version that the package will be upgraded to. If omitted, defaults to the latest version.</maml:para>
         </maml:description>
         <command:parameterValue required="true">
           string
@@ -897,6 +903,18 @@
         <maml:name>DependencyVersion</maml:name>
         <maml:description>
           <maml:para>Specifies which dependency package version to install. If omitted, this defaults to the lowest required version.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ToHighestMinor</maml:name>
+        <maml:description>
+          <maml:para>Specifies to move to the highest minor version on update. If omitted, this defaults to the highest compatible version.</maml:para>
+        </maml:description>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>ToHighestPatch</maml:name>
+        <maml:description>
+          <maml:para>Specifies to move to the highest patch version on update. This is the same as Safe. If omitted, this defaults to the highest compatible version.</maml:para>
         </maml:description>
       </command:parameter>
       <command:parameter required="false" position="named">
@@ -948,7 +966,7 @@
         </dev:remarks>
       </command:example>
       <command:example>
-        <maml:title>----------  EXAMPLE 3  ----------</maml:title>
+        <maml:title>----------  EXAMPLE 4  ----------</maml:title>
         <dev:code>PM&gt; Update-Package -Safe -Project MvcApplication1</dev:code>
         <dev:remarks>
           <maml:para>
@@ -957,6 +975,21 @@
             Updates every package in the project, MvcApplication1, to the latest "safe" version. For example,
             if version 1.0.0 of a package is installed, and versions 1.0.1, 1.0.2, and 1.1 are
             available in the feed, the -Safe flag updates the package to 1.0.2.
+          </maml:para>
+          <maml:para></maml:para>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 5  ----------</maml:title>
+        <dev:code>PM&gt; Update-Package -ToHighestMinor -Project MvcApplication1</dev:code>
+        <dev:remarks>
+          <maml:para>
+            Description
+            ------------------------------------------------------------------
+            Updates every package in the project, MvcApplication1, to the highest minor version but keeps the major version. For example,
+            if version 1.0.0 of a package is installed, and versions 1.1.0, 1.2.0, and 2.0.0 are
+            available in the feed, the -ToHighestMinor flag updates the package to 1.2.0.
           </maml:para>
           <maml:para></maml:para>
           <maml:para></maml:para>
