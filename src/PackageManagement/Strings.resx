@@ -225,15 +225,6 @@
   <data name="NewerVersionAlreadyReferenced" xml:space="preserve">
     <value>Already referencing a newer version of '{0}'..</value>
   </data>
-  <data name="SuccessfullyExecutedPackageAction" xml:space="preserve">
-    <value>Successfully {0}ed '{1}' {2}.</value>
-  </data>
-  <data name="From" xml:space="preserve">
-    <value>from</value>
-  </data>
-  <data name="To" xml:space="preserve">
-    <value>to</value>
-  </data>
   <data name="ParameterCannotBeZeroOrNegative" xml:space="preserve">
     <value>Parameter cannot be zero or negative</value>
   </data>
@@ -257,5 +248,11 @@
   </data>
   <data name="BuildIntegratedPackageRestoreFailed" xml:space="preserve">
     <value>Package restore failed for '{0}'.</value>
+  </data>
+  <data name="SuccessfullyInstalled" xml:space="preserve">
+    <value>Successfully installed '{0}' to {1}</value>
+  </data>
+  <data name="SuccessfullyUninstalled" xml:space="preserve">
+    <value>Successfully uninstalled '{0}' from {1}</value>
   </data>
 </root>

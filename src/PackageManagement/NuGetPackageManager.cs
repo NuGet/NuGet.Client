@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -474,7 +475,7 @@ namespace NuGet.PackageManagement
                 // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                 prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
-                // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages                
+                // Step-2 : Call IPackageResolver.Resolve to get new list of installed packages
                 nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
 
                 var packageResolver = new PackageResolver();
@@ -553,8 +554,8 @@ namespace NuGet.PackageManagement
             var resolverPackages = dependencyInfoFromPackagesFolder?.Select(package =>
                     new ResolverPackage(package.Id, package.Version, package.Dependencies, true, false));
 
-            // Use the resolver sort to find the order. Packages with no dependencies 
-            // come first, then each package that has satisfied dependencies. 
+            // Use the resolver sort to find the order. Packages with no dependencies
+            // come first, then each package that has satisfied dependencies.
             // Packages with missing dependencies will not be returned.
             if (resolverPackages != null)
             {
@@ -807,7 +808,7 @@ namespace NuGet.PackageManagement
                     }
 
                     // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
-                    // based on newPackages obtained in Step-2 and project.GetInstalledPackages                    
+                    // based on newPackages obtained in Step-2 and project.GetInstalledPackages
 
                     nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.ResolvingActionsToInstallPackage, packageIdentity);
                     var newPackagesToUninstall = new List<PackageIdentity>();
@@ -1127,7 +1128,7 @@ namespace NuGet.PackageManagement
             }
             else
             {
-                Exception executeNuGetProjectActionsException = null;
+                ExceptionDispatchInfo exceptionInfo = null;
                 var executedNuGetProjectActions = new Stack<NuGetProjectAction>();
                 var packageWithDirectoriesToBeDeleted = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
                 var ideExecutionContext = nuGetProjectContext.ExecutionContext as IDEExecutionContext;
@@ -1154,9 +1155,23 @@ namespace NuGet.PackageManagement
                             }
                         }
 
-                        var toFromString = nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install ? Strings.To : Strings.From;
-                        nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.SuccessfullyExecutedPackageAction,
-                            nuGetProjectAction.NuGetProjectActionType.ToString().ToLowerInvariant(), nuGetProjectAction.PackageIdentity.ToString(), toFromString + " " + nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                        if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
+                        {
+                            nuGetProjectContext.Log(
+                                ProjectManagement.MessageLevel.Info,
+                                Strings.SuccessfullyInstalled,
+                                nuGetProjectAction.PackageIdentity,
+                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                        }
+                        else
+                        {
+                            // uninstall
+                            nuGetProjectContext.Log(
+                                ProjectManagement.MessageLevel.Info,
+                                Strings.SuccessfullyUninstalled,
+                                nuGetProjectAction.PackageIdentity,
+                                nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                        }
                     }
                     await nuGetProject.PostProcessAsync(nuGetProjectContext, token);
 
@@ -1164,10 +1179,10 @@ namespace NuGet.PackageManagement
                 }
                 catch (Exception ex)
                 {
-                    executeNuGetProjectActionsException = ex;
+                    exceptionInfo = ExceptionDispatchInfo.Capture(ex);
                 }
 
-                if (executeNuGetProjectActionsException != null)
+                if (exceptionInfo != null)
                 {
                     await Rollback(nuGetProject, executedNuGetProjectActions, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                 }
@@ -1187,9 +1202,9 @@ namespace NuGet.PackageManagement
                 // Clear direct install
                 SetDirectInstall(null, nuGetProjectContext);
 
-                if (executeNuGetProjectActionsException != null)
+                if (exceptionInfo != null)
                 {
-                    throw executeNuGetProjectActionsException;
+                    exceptionInfo.Throw();
                 }
             }
         }
@@ -1310,7 +1325,7 @@ namespace NuGet.PackageManagement
 
             if (restoreResult.Success)
             {
-                // Write out project.json 
+                // Write out project.json
                 // This can be replaced with the PackageSpec writer once it has been added to the library
                 using (var writer = new StreamWriter(buildIntegratedProject.JsonConfigPath, append: false, encoding: Encoding.UTF8))
                 {
@@ -1329,11 +1344,23 @@ namespace NuGet.PackageManagement
                         action.PackageIdentity.Id,
                         action.PackageIdentity.Version.ToNormalizedString());
 
-                    var toFromString = action.NuGetProjectActionType == NuGetProjectActionType.Install ? Strings.To : Strings.From;
-                    nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.SuccessfullyExecutedPackageAction,
-                        action.NuGetProjectActionType.ToString().ToLowerInvariant(), identityString,
-                        String.Format(CultureInfo.InvariantCulture, "{0} {1}", toFromString,
-                            buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    {
+                        nuGetProjectContext.Log(
+                            ProjectManagement.MessageLevel.Info,
+                            Strings.SuccessfullyInstalled,
+                            identityString,
+                            buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    }
+                    else
+                    {
+                        // uninstall
+                        nuGetProjectContext.Log(
+                            ProjectManagement.MessageLevel.Info,
+                            Strings.SuccessfullyUninstalled,
+                            identityString,
+                            buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    }
                 }
 
                 // Run init.ps1 scripts
