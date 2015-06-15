@@ -21,11 +21,11 @@ namespace NuGet.Configuration.Test
             // Act
             NullSettings settings = new NullSettings();
             List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName);
+            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
             primary.Add(item);
 
             List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, false);
+            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
             secondary.Add(item2);
 
             PackageSourceProvider psp = new PackageSourceProvider(settings, primary, secondary);
@@ -33,12 +33,12 @@ namespace NuGet.Configuration.Test
             // Assert
             //Primary IsEnabled = true, IsOfficial = true (Added for the first time)
             //Secondary IsEnabled = false, IsOfficial = true  (Added for the first time)
-            VerifyPackageSource(psp, 2, new string[] { NuGetConstants.V3FeedName, NuGetConstants.V2FeedName },
+            VerifyPackageSource(psp, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, false }, new bool[] { true, true });
+                new bool[] { true, true }, new bool[] { true, true });
         }
 
-        [Fact]
+        // We decide to enable V2.
         public void SecondaryIsAddedWhenNotPresentButDisabled()
         {
             // Act
@@ -47,22 +47,22 @@ namespace NuGet.Configuration.Test
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
             File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
             var disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 1, new string[] { NuGetConstants.V3FeedName },
+            VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl },
                 new bool[] { true }, new bool[] { false });
 
             List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName);
+            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
             primary.Add(item);
 
             List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, false);
+            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
             secondary.Add(item2);
 
             PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
@@ -72,7 +72,7 @@ namespace NuGet.Configuration.Test
             //Primary IsEnabled = true, IsOfficial = true
             //Secondary is added, marked as official but added as disabled
             //Secondary IsEnabled = false, IsOfficial = true
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.V3FeedName, NuGetConstants.V2FeedName },
+            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
                 new bool[] { true, false }, new bool[] { true, true });
 
@@ -89,18 +89,18 @@ namespace NuGet.Configuration.Test
             File.Create(nugetConfigFilePath).Close();
 
             var randomURL = "https://www.somerandomURL.com/";
-            var enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + randomURL + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + randomURL + "' />";
             var disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 1, new string[] { NuGetConstants.V3FeedName },
+            VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
                 new string[] { randomURL },
                 new bool[] { true }, new bool[] { false });
 
             List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName);
+            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
             primary.Add(item);
 
             PackageSourceProvider after = new PackageSourceProvider(settings, primary, null);
@@ -109,7 +109,7 @@ namespace NuGet.Configuration.Test
             //Primary Name already exists in nuget.config but with different URL
             //It gets overwritten by primary package source (which is enabled above while creating it)
             //IsEnabled = true, IsOfficial = true
-            VerifyPackageSource(after, 1, new string[] { NuGetConstants.V3FeedName },
+            VerifyPackageSource(after, 1, new string[] { NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl },
                 new bool[] { false }, new bool[] { true });
 
@@ -126,23 +126,23 @@ namespace NuGet.Configuration.Test
             File.Create(nugetConfigFilePath).Close();
 
             var randomURL = "https://www.somerandomURL.com/";
-            var enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
-            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.V2FeedName + "' value='" + randomURL + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
+            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.FeedName + "' value='" + randomURL + "' />";
             var disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 2, new string[] { NuGetConstants.V3FeedName, NuGetConstants.V2FeedName },
+            VerifyPackageSource(before, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl, randomURL },
                 new bool[] { true, true }, new bool[] { false, false });
 
             List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName);
+            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
             primary.Add(item);
 
             List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, false);
+            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
             secondary.Add(item2);
 
             PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
@@ -150,7 +150,7 @@ namespace NuGet.Configuration.Test
             //Seconday name already exists in nuget.config but with different URL
             //It gets overwritten by secondary scource which is disabled (while getting created above)
             //IsOfficial is set to true
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.V3FeedName, NuGetConstants.V2FeedName },
+            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
                 new bool[] { true, false }, new bool[] { true, true });
 
@@ -168,22 +168,22 @@ namespace NuGet.Configuration.Test
             File.Create(nugetConfigFilePath).Close();
 
             var enabledReplacement = @"<add key='anotherName' value='" + NuGetConstants.V3FeedUrl + "' />";
-            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             var disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 2, new string[] { "anotherName", NuGetConstants.V2FeedName },
+            VerifyPackageSource(before, 2, new string[] { "anotherName", NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
                 new bool[] { true, true }, new bool[] { false, false });
 
             List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName);
+            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
             primary.Add(item);
 
             List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, false);
+            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
             secondary.Add(item2);
 
             PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
@@ -193,7 +193,7 @@ namespace NuGet.Configuration.Test
             //In this case, we don't set IsOfficial = true
             //Secondary matches both name and URL so secondary is set to true
             //Since this is not the first time primary is getting added, we aren't aggressive in demoting secondary from enabled to disabled
-            VerifyPackageSource(after, 2, new string[] { "anotherName", NuGetConstants.V2FeedName },
+            VerifyPackageSource(after, 2, new string[] { "anotherName", NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
                 new bool[] { true, true }, new bool[] { false, true });
 
@@ -210,23 +210,23 @@ namespace NuGet.Configuration.Test
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
             File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.V3FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
             enabledReplacement = enabledReplacement + @"<add key='anotherName' value='" + NuGetConstants.V2FeedUrl + "' />";
             var disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 2, new string[] { NuGetConstants.V3FeedName, "anotherName" },
+            VerifyPackageSource(before, 2, new string[] { NuGetConstants.FeedName, "anotherName" },
                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
                 new bool[] { true, true }, new bool[] { false, false });
 
             List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName);
+            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
             primary.Add(item);
 
             List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, false);
+            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
             secondary.Add(item2);
 
             PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
@@ -236,7 +236,7 @@ namespace NuGet.Configuration.Test
             //In this case, we don't set IsOfficial = true
             //Primary matches both name and URL so primary's IsOfficial is set to true
             //Since this is not the first time primary is getting added, we aren't aggressive in demoting secondary from enabled to disabled
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.V3FeedName, "anotherName" },
+            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, "anotherName" },
                 new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
                 new bool[] { true, true }, new bool[] { true, false });
 
@@ -252,22 +252,22 @@ namespace NuGet.Configuration.Test
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
             File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             var disabledReplacement = string.Empty;
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 1, new string[] { NuGetConstants.V2FeedName },
+            VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V2FeedUrl },
                 new bool[] { true }, new bool[] { false });
 
             List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName);
+            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
             primary.Add(item);
 
             List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.V2FeedName, false);
+            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
             secondary.Add(item2);
 
             PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
@@ -275,7 +275,7 @@ namespace NuGet.Configuration.Test
             // Assert
             //First time Primary is getting added so it is set to Enabled
             //Secondary is demoted to disabled even though it is already enabled through nuget.config
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.V2FeedName, NuGetConstants.V3FeedName },
+            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
                 new string[] { NuGetConstants.V2FeedUrl, NuGetConstants.V3FeedUrl },
                 new bool[] { false, true }, new bool[] { true, true });
 
@@ -292,17 +292,17 @@ namespace NuGet.Configuration.Test
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
             File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             var disabledReplacement = string.Empty;
-            var activeReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            var activeReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, activeReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
-            Assert.Equal(NuGetConstants.V2FeedName, before.ActivePackageSourceName);
+            Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
-            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName));
-            Assert.Equal(NuGetConstants.V3FeedName, before.ActivePackageSourceName);
+            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName));
+            Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
             //Clean up
             TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
@@ -317,15 +317,15 @@ namespace NuGet.Configuration.Test
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
             File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement));
 
             Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
             PackageSourceProvider before = new PackageSourceProvider(settings);
             Assert.Null(before.ActivePackageSourceName);
 
-            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName));
-            Assert.Equal(NuGetConstants.V3FeedName, before.ActivePackageSourceName);
+            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName));
+            Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
             //Clean up
             TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
@@ -340,7 +340,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
             File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.V2FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
             var fileContents = CreateNuGetConfigContent(enabledReplacement);
             fileContents = fileContents.Replace("<activePackageSource>", string.Empty);
             fileContents = fileContents.Replace("</activePackageSource>", string.Empty);
@@ -350,9 +350,9 @@ namespace NuGet.Configuration.Test
             PackageSourceProvider before = new PackageSourceProvider(settings);
             Assert.Null(before.ActivePackageSourceName);
 
-            SettingValue newActiveValue = new SettingValue(NuGetConstants.V3FeedName, NuGetConstants.V3FeedUrl, false);
-            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.V3FeedName));
-            Assert.Equal(NuGetConstants.V3FeedName, before.ActivePackageSourceName);
+            SettingValue newActiveValue = new SettingValue(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, false);
+            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName));
+            Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
             //Clean up
             TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
@@ -904,7 +904,7 @@ namespace NuGet.Configuration.Test
                                 });
                     })
                 .Verifiable();
-
+           
             var migratePackageSources = new Dictionary<PackageSource, PackageSource>
                 {
                     {

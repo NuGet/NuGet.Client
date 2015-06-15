@@ -418,7 +418,7 @@ namespace NuGet.Configuration
             //Mark secondary sources as official but not enable them
             foreach (var secondaryPackageSource in _providerDefaultSecondarySources)
             {
-                secondaryPackageSource.IsEnabled = false;
+                secondaryPackageSource.IsEnabled = areProviderDefaultSourcesEnabled;
                 secondaryPackageSource.IsOfficial = true;
             }
         }
@@ -464,7 +464,9 @@ namespace NuGet.Configuration
                 if (!foundSettingWithSourcePriority)
                 {
                     // This is a new source, add it to the Setting with the lowest priority.
+
                     var settingValue = new SettingValue(source.Name, source.Source, isMachineWide: false);
+                    
                     if (source.ProtocolVersion != PackageSource.DefaultProtocolVersion)
                     {
                         settingValue.AdditionalData[ConfigurationContants.ProtocolVersionAttribute] =
