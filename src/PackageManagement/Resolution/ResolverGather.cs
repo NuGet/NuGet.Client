@@ -396,7 +396,7 @@ namespace NuGet.PackageManagement
         /// <param name="packagesConfig">entries from packages.config</param>
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfNewerVersionAlreadyReferenced(string target,
-            IEnumerable<PackageReference> packagesConfig,
+            IEnumerable<NuGet.Packaging.PackageReference> packagesConfig,
             IEnumerable<PackageDependencyInfo> availablePackages)
         {
             var configEntry = packagesConfig.FirstOrDefault(r => r.PackageIdentity.Id.Equals(target, StringComparison.OrdinalIgnoreCase));

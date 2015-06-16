@@ -386,7 +386,7 @@ namespace NuGet.PackageManagement
                 // Step-1 : Get metadata resources using gatherer
                 var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
+                nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
 
                 var allSources = new List<SourceRepository>(primarySources);
                 var primarySourcesSet = new HashSet<string>(primarySources.Select(s => s.PackageSource.Source));
@@ -459,9 +459,10 @@ namespace NuGet.PackageManagement
                     packageTargetIdsForResolver,
                     projectInstalledPackageReferences,
                     preferredVersions.Values,
-                    prunedAvailablePackages);
+                    prunedAvailablePackages,
+                    SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource));
 
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
+                nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
                 var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
                 if (newListOfInstalledPackages == null)
                 {
@@ -532,7 +533,7 @@ namespace NuGet.PackageManagement
             // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages
             var nuGetProjectActions = new List<NuGetProjectAction>();
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallOrUpdateMultiplePackages);
+            nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.ResolvingActionsToInstallOrUpdateMultiplePackages);
 
             // we are reinstalling everything so we just take the ordering directly from the Resolver
             var newPackagesToUninstall = oldListOfInstalledPackages;

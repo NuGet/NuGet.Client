@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.Protocol.Core.Types;
@@ -177,7 +176,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        public static IEnumerable<SourcePackageDependencyInfo> PruneByUpdateConstraints(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageReference> packageReferences, VersionConstraints versionConstraints)
+        public static IEnumerable<SourcePackageDependencyInfo> PruneByUpdateConstraints(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<NuGet.Packaging.PackageReference> packageReferences, VersionConstraints versionConstraints)
         {
             var installed = new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
             foreach (var packageReference in packageReferences)
