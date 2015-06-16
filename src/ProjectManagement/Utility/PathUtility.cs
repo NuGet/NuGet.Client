@@ -90,8 +90,8 @@ namespace NuGet.ProjectManagement
 
         public static string GetPackagePath(string path)
         {
-            // Uri.EscapeDataString escapes slashes.
-            return Uri.EscapeDataString(path).Replace("%5C", "/");
+            // Uri.EscapeDataString escapes slashes and white spaces.
+            return Uri.EscapeDataString(path).Replace("%5C", "/").Replace("%20", " ");
         }
 
         public static string EscapePSPath(string path)
