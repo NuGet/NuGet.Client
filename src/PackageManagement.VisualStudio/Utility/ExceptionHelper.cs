@@ -18,9 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            exception = Unwrap(exception);
-
-            ActivityLog.LogError(LogEntrySource, exception.Message + exception.StackTrace);
+            ActivityLog.LogError(LogEntrySource, exception.ToString());
         }
 
         public static Exception Unwrap(Exception exception)
