@@ -19,6 +19,7 @@ namespace NuGet.PackageManagement
             IncludePrerelease = false;
             IncludeUnlisted = true;
             VersionConstraints = VersionConstraints.None;
+            GatherCache = new GatherCache();
         }
 
         /// <summary>
@@ -55,5 +56,12 @@ namespace NuGet.PackageManagement
         /// Determines the containts that are placed on package update selection with respect to the installed packages
         /// </summary>
         public VersionConstraints VersionConstraints { get; }
+
+        /// <summary>
+        /// Gathe cache containing cached packages that can be used across operations.
+        /// Ex: Update-Package updates all packages across all projects, GatherCache stores
+        /// the gathered packages and re-uses them across all sub operations.
+        /// </summary>
+        internal GatherCache GatherCache { get; }
     }
 }

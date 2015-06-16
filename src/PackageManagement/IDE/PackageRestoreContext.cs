@@ -10,8 +10,6 @@ namespace NuGet.PackageManagement
 {
     public class PackageRestoreContext
     {
-        public const int DefaultMaxNumberOfParellelTasks = 16;
-
         public NuGetPackageManager PackageManager { get; }
         public IEnumerable<PackageRestoreData> Packages { get; }
         public CancellationToken Token { get; }
@@ -68,7 +66,7 @@ namespace NuGet.PackageManagement
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: null,
                 sourceRepositories: null,
-                maxNumberOfParallelTasks: DefaultMaxNumberOfParellelTasks)
+                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism)
         {
         }
 

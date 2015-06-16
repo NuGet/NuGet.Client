@@ -3,293 +3,417 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
-    /// <summary>
-    /// Aggregate repository helper for the Resolver Gather step.
-    /// </summary>
-    public static class ResolverGather
+    public class ResolverGather
     {
-        private const int MaxThreads = 4;
+        private readonly GatherContext _context;
+        private readonly List<SourceResource> _primaryResources = new List<SourceResource>();
+        private readonly List<SourceResource> _allResources = new List<SourceResource>();
+        private DependencyInfoResource _packagesFolderResource;
+        private readonly Queue<GatherRequest> _gatherRequests = new Queue<GatherRequest>();
+        private readonly GatherCache _cache;
+        private readonly List<Task<GatherResult>> _workerTasks;
+        private int _lastRequestId = -1;
+        private readonly List<GatherResult> _results = new List<GatherResult>();
+        private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private int _maxDegreeOfParallelism;
 
-        // Packages may have dependencies that span repositories
-        // Example:
-        // Repo 1:  A   C   E
-        //           \ / \ /
-        // Repo 2:    B   D
-        //
-        // To correctly resolve all dependencies of A we must check each source for every dependency.
-
-        /// <summary>
-        /// Gather dependency info for the install packages and the new targets.
-        /// </summary>
-        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(
-            IEnumerable<PackageIdentity> primaryTargets,
-            IEnumerable<PackageIdentity> installedPackages,
-            NuGetFramework targetFramework,
-            IEnumerable<SourceRepository> primarySources,
-            IEnumerable<SourceRepository> allSources,
-            SourceRepository packagesFolderSource,
-            CancellationToken token)
+        private ResolverGather(GatherContext context)
         {
-            return await GatherPackageDependencyInfo(null, primaryTargets, installedPackages,
-                targetFramework, primarySources, allSources, packagesFolderSource, token);
+            _context = context;
+
+            _maxDegreeOfParallelism = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+            RequestTimeout = PackageManagementConstants.DefaultRequestTimeout;
+
+            _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
+
+            _cache = _context.ResolutionContext?.GatherCache;
         }
 
         /// <summary>
-        /// Gather dependency info for the install packages and the new targets.
+        /// Maximum number of threads to use when gathering packages.
         /// </summary>
-        /// <param name="primaryTargetIds">Gathers all versions of the ids</param>
-        /// <param name="primaryTargets">Gathers a single version of the packages</param>
-        /// <param name="installedPackages">Already installed packages</param>
-        /// <param name="targetFramework">Project target framework</param>
-        /// <param name="primarySources">Primary source to search for the primary targets</param>
-        /// <param name="allSources">Fallback sources</param>
-        /// <param name="packagesFolderSource">Source for installed packages</param>
-        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherPackageDependencyInfo(
-            IEnumerable<string> primaryTargetIds,
-            IEnumerable<PackageIdentity> primaryTargets,
-            IEnumerable<PackageIdentity> installedPackages,
-            NuGetFramework targetFramework,
-            IEnumerable<SourceRepository> primarySources,
-            IEnumerable<SourceRepository> allSources,
-            SourceRepository packagesFolderSource,
+        /// <remarks>The value must be >= 1.</remarks>
+        public int MaxDegreeOfParallelism
+        {
+            get
+            {
+                return _maxDegreeOfParallelism;
+            }
+
+            set
+            {
+                _maxDegreeOfParallelism = Math.Max(1, value);
+            }
+        }
+
+        /// <summary>
+        /// Timeout when waiting for source requests
+        /// </summary>
+        public TimeSpan RequestTimeout { get; set; }
+
+        /// <summary>
+        /// Gather packages
+        /// </summary>
+        public static async Task<HashSet<SourcePackageDependencyInfo>> GatherAsync(
+            GatherContext context,
             CancellationToken token)
         {
+            var engine = new ResolverGather(context);
+
+            return await engine.GatherAsync(token);
+        }
+
+        private async Task<HashSet<SourcePackageDependencyInfo>> GatherAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
             // get a distinct set of packages from all repos
             var combinedResults = new HashSet<SourcePackageDependencyInfo>(PackageIdentity.Comparer);
 
-            // get the dependency info resources for each repo
-            // primary and all may share the same resources
-            var getResourceTasks = new List<Task>();
+            // Initialize dependency info resources in parallel
+            await InitializeResourcesAsync(token);
 
-            var depResources = new Dictionary<SourceRepository, Task<DependencyInfoResource>>();
-            foreach (var source in allSources.Concat(primarySources).Concat(new[] { packagesFolderSource }))
-            {
-                if (!depResources.ContainsKey(source))
-                {
-                    var task = Task.Run(async () => await source.GetResourceAsync<DependencyInfoResource>(token));
-
-                    depResources.Add(source, task);
-
-                    // Limit the number of tasks to MaxThreads by awaiting each time we hit the limit
-                    while (getResourceTasks.Count >= MaxThreads)
-                    {
-                        var finishedTask = await Task.WhenAny(getResourceTasks);
-
-                        getResourceTasks.Remove(finishedTask);
-                    }
-                }
-            }
-
-            // a resource may be null, if it is exclude this source from the gather
-            var primaryDependencyResources = new List<Tuple<SourceRepository, DependencyInfoResource>>();
-
-            foreach (var source in primarySources)
-            {
-                var resource = await depResources[source];
-
-                if (source != null)
-                {
-                    primaryDependencyResources.Add(new Tuple<SourceRepository, DependencyInfoResource>(source, resource));
-                }
-            }
-
-            var allDependencyResources = new List<Tuple<SourceRepository, DependencyInfoResource>>();
-
-            foreach (var source in allSources)
-            {
-                var resource = await depResources[source];
-
-                if (source != null)
-                {
-                    allDependencyResources.Add(new Tuple<SourceRepository, DependencyInfoResource>(source, resource));
-                }
-            }
+            var allPrimaryTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // resolve primary targets only from primary sources
-            foreach (var primaryTarget in primaryTargets)
+            foreach (var primaryTarget in _context.PrimaryTargets)
             {
-                await GatherPackage(primaryTarget.Id, primaryTarget.Version, combinedResults,
-                    primaryDependencyResources,
-                    targetFramework,
-                    ignoreExceptions: false,
-                    token: token);
+                // Add the id to the search list to block searching for all versions
+                _idsSearched.Add(primaryTarget.Id);
+                allPrimaryTargets.Add(primaryTarget.Id);
+
+                QueueWork(_primaryResources, primaryTarget, ignoreExceptions: false, isInstalledPackage: false);
             }
 
             // null can occur for scenarios with PackageIdentities only
-            if (primaryTargetIds != null)
+            if (_context.PrimaryTargetIds != null)
             {
-                foreach (var primaryTargetId in primaryTargetIds)
+                foreach (var primaryTargetId in _context.PrimaryTargetIds)
                 {
-                    await GatherPackage(primaryTargetId,
-                        version: null,
-                        packageCache: combinedResults,
-                        dependencyResources: primaryDependencyResources,
-                        targetFramework: targetFramework,
-                        ignoreExceptions: false,
-                        token: token);
+                    allPrimaryTargets.Add(primaryTargetId);
+                    var identity = new PackageIdentity(primaryTargetId, version: null);
+                    QueueWork(_primaryResources, identity, ignoreExceptions: false, isInstalledPackage: false);
                 }
             }
 
-            // Find all missing packages
-            var neededPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var allPrimaryIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // Start fetching the primary targets
+            StartWorkerTasks(token);
 
-            if (primaryTargetIds != null)
-            {
-                allPrimaryIds.UnionWith(primaryTargetIds);
-            }
-
-            allPrimaryIds.UnionWith(primaryTargets.Select(target => target.Id));
-
-            neededPackageIds.UnionWith(allPrimaryIds);
-
-            // make sure the primary targets exist
-            foreach (var primaryId in allPrimaryIds)
-            {
-                if (!combinedResults.Any(package => StringComparer.OrdinalIgnoreCase.Equals(primaryId, package.Id)))
-                {
-                    throw new InvalidOperationException(string.Format(Strings.PackageNotFound, primaryId));
-                }
-            }
-
-            // find all packages that have already been installed
-            var installedInfo = new HashSet<SourcePackageDependencyInfo>(PackageIdentity.Comparer);
-
-            foreach (var installedPackage in installedPackages)
-            {
-                var installedResource = await depResources[packagesFolderSource];
-
-                var packageInfo = await installedResource.ResolvePackage(installedPackage, targetFramework, token);
-
-                // Installed packages should exist, but if they do not an attempt will be made to find them in the sources.
-                if (packageInfo != null)
-                {
-                    packageInfo.SetIncludePrereleaseForDependencies();
-
-                    installedInfo.Add(packageInfo);
-                    combinedResults.Add(packageInfo);
-                }
-            }
-
-            // all packages found in the repos
-            var idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            // mark all primary ids so that they are not searched for in the fallback repos
-            idsSearched.UnionWith(allPrimaryIds);
-
-            // gather all missing dependencies
-            var complete = false;
-
-            // closure of all packages related to the new package
-            // start with just the primary ids
-            var closureIds = new HashSet<string>(allPrimaryIds, StringComparer.OrdinalIgnoreCase);
+            // Gather installed packages
+            await GatherInstalledPackagesAsync(_context.InstalledPackages, allPrimaryTargets, token);
 
             // walk the dependency graph both upwards and downwards for the new package
             // this is done in multiple passes to find the complete closure when
             // new dependecies are found
-            while (!complete)
+            while (true)
             {
-                complete = true;
+                token.ThrowIfCancellationRequested();
 
-                // find all dependencies of packages that we have expanded, and search those also
-                closureIds.UnionWith(combinedResults.Where(package => idsSearched.Contains(package.Id))
-                    .SelectMany(package => package.Dependencies)
-                    .Select(dependency => dependency.Id));
+                // Start tasks for queued requests and process finished results.
+                await StartTasksAndProcessWork(token);
 
-                // expand all parents of expanded packages
-                closureIds.UnionWith(combinedResults.Where(
-                    package => package.Dependencies.Any(dependency => idsSearched.Contains(dependency.Id)))
-                    .Select(package => package.Id));
+                // Completed results
+                var currentItems = _results.ToList();
 
-                // all unique ids gathered so far
-                var currentResultIds = new HashSet<string>(combinedResults.Select(package => package.Id), StringComparer.OrdinalIgnoreCase);
+                // Get a unique list of packages
+                // Results are ordered by their request order. If the same version of package
+                // exists in multiple sources the hashset will contain the package from the 
+                // source where it was requested from first.
+                var currentResults = new HashSet<SourcePackageDependencyInfo>(
+                    currentItems.OrderBy(item => item.Request.Order)
+                        .SelectMany(item => item.Packages),
+                    PackageIdentity.Comparer);
 
-                // installed packages must be gathered to find a complete solution
-                closureIds.UnionWith(installedPackages.Select(package => package.Id)
-                    .Where(id => !currentResultIds.Contains(id)));
-
-                // if any dependencies are completely missing they must be retrieved
-                closureIds.UnionWith(combinedResults.SelectMany(package => package.Dependencies)
-                    .Select(dependency => dependency.Id).Where(id => !currentResultIds.Contains(id)));
-
-                var missingIds = closureIds.Except(idsSearched, StringComparer.OrdinalIgnoreCase);
-
-                // Gather packages for all missing ids
-                foreach (var missingId in missingIds)
+                // Remove downgrades if the flag is not set, this will skip unneeded dependencies from older versions
+                if (!_context.AllowDowngrades)
                 {
-                    complete = false;
-                    idsSearched.Add(missingId);
+                    foreach (var installedPackage in _context.InstalledPackages)
+                    {
+                        // Clear out all versions of the installed package which are less than the installed version
+                        currentResults.RemoveWhere(package => string.Equals(installedPackage.Id, package.Id, StringComparison.OrdinalIgnoreCase)
+                            && package.Version < installedPackage.Version);
+                    }
+                }
 
-                    // Gather across all sources in parallel
-                    await GatherPackage(packageId: missingId, version: null,
-                        packageCache: combinedResults,
-                        dependencyResources: allDependencyResources,
-                        targetFramework: targetFramework,
-                        ignoreExceptions: true, token: token);
+                // Find all installed packages, these may have come from a remote source
+                // if they were not found on disk, so it is not possible to compute this up front.
+                var installedInfo = new HashSet<SourcePackageDependencyInfo>(
+                    currentItems.Where(item => item.Request.IsInstalledPackage)
+                        .OrderBy(item => item.Request.Order)
+                        .SelectMany(item => item.Packages),
+                        PackageIdentity.Comparer);
+
+                // Find the closure of all parent and child packages around the targets
+                // Skip walking dependencies when the behavior is set to ignore
+                if (_context.ResolutionContext?.DependencyBehavior != Resolver.DependencyBehavior.Ignore)
+                {
+                    var closureIds = GetClosure(currentResults, installedInfo, _idsSearched);
+
+                    // Find all ids in the closure that have not been gathered
+                   var missingIds = closureIds.Except(_idsSearched, StringComparer.OrdinalIgnoreCase);
+
+                    // Gather packages for all missing ids
+                    foreach (var missingId in missingIds)
+                    {
+                        QueueWork(_allResources, missingId, ignoreExceptions: true);
+                    }
+                }
+
+                // We are done when the queue is empty, and the number of finished requests matches the total request count
+                if (_gatherRequests.Count < 1 && _workerTasks.Count < 1)
+                {
+                    break;
                 }
             }
 
-            // resolve all targets
+            token.ThrowIfCancellationRequested();
+
+            // Order sources by their request order
+            foreach (var result in _results.OrderBy(result => result.Request.Order))
+            {
+                // Merge the results, taking on the first instance of each package
+                combinedResults.UnionWith(result.Packages);
+            }
+
+            // Throw if a primary target was not found
+            foreach (var targetId in allPrimaryTargets)
+            {
+                if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new InvalidOperationException(string.Format(Strings.PackageNotFound, targetId));
+                }
+            }
+
             return combinedResults;
         }
 
         /// <summary>
-        /// Retrieve packages from the given sources.
+        /// Start tasks for queued requests and process finished tasks.
+        /// This method will continue until at least 1 task has finished,
+        /// and keep going until all queued requests have been started.
         /// </summary>
-        private static async Task GatherPackage(
-            string packageId,
-            NuGetVersion version,
-            HashSet<SourcePackageDependencyInfo> packageCache,
-            List<Tuple<SourceRepository, DependencyInfoResource>> dependencyResources,
-            NuGetFramework targetFramework,
-            bool ignoreExceptions,
-            CancellationToken token)
+        private async Task StartTasksAndProcessWork(CancellationToken token)
         {
-            // results need to be kept in order
-            var results = new Queue<Task<IEnumerable<SourcePackageDependencyInfo>>>();
-
-            // resolve from each source
-            foreach (var sourceTuple in dependencyResources)
+            // Start new tasks and process the work at least once
+            // Continuing looping under the number of tasks has gone
+            // below the limit. While we are at the limit there is no 
+            // need to queue up additional work.
+            do
             {
-                // Limit the number of tasks to MaxThreads
-                // If we hit the limit stop and await the oldest task
-                if (results.Count >= MaxThreads)
+                token.ThrowIfCancellationRequested();
+
+                // Run queued work
+                StartWorkerTasks(token);
+
+                // Wait for at least one of the tasks to finish before processing results
+                if (_workerTasks.Count > 0)
                 {
-                    packageCache.UnionWith(await results.Dequeue());
+                    await Task.WhenAny(_workerTasks);
                 }
 
-                var resolverRes = sourceTuple.Item2;
-
-                var task = Task.Run(async () => await GatherPackageCore(packageId, version,
-                    resolverRes, targetFramework, ignoreExceptions, token));
-
-                results.Enqueue(task);
+                // Retrieve results from finished tasks
+                await ProcessResultsAsync();
             }
+            while (_workerTasks.Count >= MaxDegreeOfParallelism);
 
-            // retrieve package results from the gather tasks
-            // order is important here. packages from the first repository beat packages from later repositories
-            while (results.Count > 0)
+            // Start more tasks after processing
+            StartWorkerTasks(token);
+        }
+
+        /// <summary>
+        /// Retrieve already installed packages
+        /// </summary>
+        private async Task GatherInstalledPackagesAsync(IEnumerable<PackageIdentity> installedPackages, HashSet<string> allPrimaryTargets, CancellationToken token)
+        {
+            foreach (var installedPackage in installedPackages)
             {
-                packageCache.UnionWith(await results.Dequeue());
+                // Skip installed packages which are targets, this is important for upgrade and reinstall
+                if (!allPrimaryTargets.Contains(installedPackage.Id))
+                {
+                    var packageInfo = await _packagesFolderResource.ResolvePackage(installedPackage, _context.TargetFramework, token);
+
+                    // Installed packages should exist, but if they do not an attempt will be made to find them in the sources.
+                    if (packageInfo != null)
+                    {
+                        packageInfo.SetIncludePrereleaseForDependencies();
+
+                        // Create a request and result to match the other packages
+                        var request = new GatherRequest(
+                            source: null,
+                            package: installedPackage,
+                            ignoreExceptions: false,
+                            order: GetNextRequestId(),
+                            isInstalledPackage: true);
+
+                        var packages = new List<SourcePackageDependencyInfo>() { packageInfo };
+                        var result = new GatherResult(request, packages);
+
+                        _results.Add(result);
+                    }
+                    else
+                    {
+                        // retrieve the package info from another source if it does not exist in local
+                        QueueWork(_allResources, installedPackage, ignoreExceptions: true, isInstalledPackage: true);
+                    }
+                }
             }
+        }
+
+        /// <summary>
+        /// Find the closure of required package ids
+        /// </summary>
+        private static HashSet<string> GetClosure(
+            HashSet<SourcePackageDependencyInfo> combinedResults,
+            HashSet<SourcePackageDependencyInfo> installedPackages,
+            HashSet<string> idsSearched)
+        {
+            var closureIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // find all dependencies of packages that we have expanded, and search those also
+            closureIds.UnionWith(combinedResults.Where(package => idsSearched.Contains(package.Id))
+                .SelectMany(package => package.Dependencies)
+                .Select(dependency => dependency.Id));
+
+            // expand all parents of expanded packages
+            closureIds.UnionWith(combinedResults.Where(
+                package => package.Dependencies.Any(dependency => idsSearched.Contains(dependency.Id)))
+                .Select(package => package.Id));
+
+            // all unique ids gathered so far
+            var currentResultIds = new HashSet<string>(combinedResults.Select(package => package.Id),
+                StringComparer.OrdinalIgnoreCase);
+
+            // installed packages must be gathered to find a complete solution
+            closureIds.UnionWith(installedPackages.Select(package => package.Id)
+                .Where(id => !currentResultIds.Contains(id)));
+
+            // if any dependencies are completely missing they must be retrieved
+            closureIds.UnionWith(combinedResults.SelectMany(package => package.Dependencies)
+                .Select(dependency => dependency.Id).Where(id => !currentResultIds.Contains(id)));
+
+            return closureIds;
+        }
+
+        /// <summary>
+        /// Retrieve results from completed tasks
+        /// </summary>
+        private async Task ProcessResultsAsync()
+        {
+            var currentTasks = _workerTasks.ToArray();
+
+            foreach (var task in currentTasks)
+            {
+                if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
+                {
+                    _workerTasks.Remove(task);
+
+                    // Await the task to throw any exceptions that may have occurred
+                    var gatherResult = await task;
+
+                    _results.Add(gatherResult);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load up to the MaxThread count
+        /// </summary>
+        private void StartWorkerTasks(CancellationToken token)
+        {
+            while (_workerTasks.Count < MaxDegreeOfParallelism && _gatherRequests.Count > 0)
+            {
+                var request = _gatherRequests.Dequeue();
+                var task = Task.Run(async () => await GatherPackageAsync(request, token));
+                _workerTasks.Add(task);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the packages from the cache or source
+        /// </summary>
+        private async Task<GatherResult> GatherPackageAsync(GatherRequest request, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var packages = new List<SourcePackageDependencyInfo>();
+            GatherCacheResult cacheResult = null;
+            var packageSource = request.Source.Source.PackageSource;
+
+            // Gather packages from cache
+            if (_cache != null)
+            {
+                if (request.Package.HasVersion)
+                {
+                    cacheResult = _cache.GetPackage(packageSource, request.Package);
+                }
+                else
+                {
+                    cacheResult = _cache.GetPackages(packageSource, request.Package.Id);
+                }
+            }
+
+            if (_cache != null && cacheResult.HasEntry)
+            {
+                // Use cached packages
+                packages.AddRange(cacheResult.Packages);
+            }
+            else
+            {
+                // No cache entry exists, request it from the source
+                try
+                {
+                    using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
+                    {
+                        // stop requests after a timeout
+                        linkedTokenSource.CancelAfter(RequestTimeout);
+
+                        // Gather packages from source if it was not in the cache
+                        packages = await GatherPackageFromSourceAsync(
+                            request.Package.Id,
+                            request.Package.Version,
+                            request.Source.Resource,
+                            _context.TargetFramework,
+                            request.IgnoreExceptions,
+                            linkedTokenSource.Token);
+
+                        // add packages to the cache
+                        if (_cache != null)
+                        {
+                            if (request.Package.HasVersion)
+                            {
+                                _cache.AddPackageFromSingleVersionLookup(packageSource, request.Package, packages.FirstOrDefault());
+                            }
+                            else
+                            {
+                                _cache.AddAllPackagesForId(packageSource, request.Package.Id, packages);
+                            }
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore timeouts
+                }
+            }
+
+            return new GatherResult(request, packages);
         }
 
         /// <summary>
         /// Call the DependencyInfoResource safely
         /// </summary>
-        private static async Task<IEnumerable<SourcePackageDependencyInfo>> GatherPackageCore(
+        private static async Task<List<SourcePackageDependencyInfo>> GatherPackageFromSourceAsync(
             string packageId,
             NuGetVersion version,
             DependencyInfoResource resource,
@@ -308,17 +432,19 @@ namespace NuGet.PackageManagement
                 {
                     // find all versions of a package
                     var packages = await resource.ResolvePackages(packageId, targetFramework, token);
-
-                    results.AddRange(packages.Select(package =>
+                    packages = packages.Select(package =>
                     {
                         package.SetIncludePrereleaseForDependencies();
                         return package;
-                    }));
+                    });
+
+                    results.AddRange(packages);
                 }
                 else
                 {
                     // find a single package id and version
-                    var package = await resource.ResolvePackage(new PackageIdentity(packageId, version), targetFramework, token);
+                    var identity = new PackageIdentity(packageId, version);
+                    var package = await resource.ResolvePackage(identity, targetFramework, token);
 
                     if (package != null)
                     {
@@ -340,72 +466,161 @@ namespace NuGet.PackageManagement
             return results;
         }
 
-        /// <summary>
-        /// Throw if packages.config contains an AllowedVersions entry for the target, 
-        /// and no packages outside of that range have been found.
-        /// </summary>
-        /// <param name="target">target package id</param>
-        /// <param name="packagesConfig">entries from packages.config</param>
-        /// <param name="availablePackages">gathered packages</param>
-        public static void ThrowIfVersionIsDisallowedByPackagesConfig(string target,
-            IEnumerable<Packaging.PackageReference> packagesConfig,
-            IEnumerable<PackageDependencyInfo> availablePackages)
+        private void QueueWork(IReadOnlyList<SourceResource> sources, string packageId, bool ignoreExceptions)
         {
-            ThrowIfVersionIsDisallowedByPackagesConfig(new string[] { target }, packagesConfig, availablePackages);
+            var identity = new PackageIdentity(packageId, version: null);
+            QueueWork(sources, identity, ignoreExceptions, isInstalledPackage: false);
         }
 
-        /// <summary>
-        /// Throw if packages.config contains an AllowedVersions entry for the target, 
-        /// and no packages outside of that range have been found.
-        /// </summary>
-        /// <param name="targets">target package ids</param>
-        /// <param name="packagesConfig">entries from packages.config</param>
-        /// <param name="availablePackages">gathered packages</param>
-        public static void ThrowIfVersionIsDisallowedByPackagesConfig(IEnumerable<string> targets,
-            IEnumerable<Packaging.PackageReference> packagesConfig,
-            IEnumerable<PackageDependencyInfo> availablePackages)
+        private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage)
         {
-            foreach (var target in targets)
+            // No-op if the id has already been searched for
+            // Exact versions are not added to the list since we may need to search for the full 
+            // set of packages for that id later if it becomes part of the closure later.
+            if (package.HasVersion || _idsSearched.Add(package.Id))
             {
-                var configEntry = packagesConfig.FirstOrDefault(reference => reference.HasAllowedVersions
-                    && StringComparer.OrdinalIgnoreCase.Equals(target, reference.PackageIdentity.Id));
-
-                if (configEntry != null)
+                foreach (var source in sources)
                 {
-                    var packagesForId = availablePackages.Where(package => StringComparer.OrdinalIgnoreCase.Equals(target, package.Id));
+                    // Keep track of the order in which these were made
+                    var requestId = GetNextRequestId();
 
-                    // check if package versions exist, but none satisfy the allowed range
-                    if (packagesForId.Any() && !packagesForId.Any(package => configEntry.AllowedVersions.Satisfies(package.Version)))
-                    {
-                        // Unable to resolve '{0}'. An additional constraint {1} defined in {2} prevents this operation.
-                        throw new InvalidOperationException(
-                            String.Format(CultureInfo.CurrentCulture,
-                                Strings.PackagesConfigAllowedVersionConflict,
-                                target,
-                                configEntry.AllowedVersions.PrettyPrint(),
-                                "packages.config"));
-                    }
+                    var request = new GatherRequest(source, package, ignoreExceptions, requestId, isInstalledPackage);
+
+                    // Order is important here
+                    _gatherRequests.Enqueue(request);
                 }
             }
         }
 
-        /// <summary>
-        /// Throw if packages.config contains a newer version of the package already 
-        /// </summary>
-        /// <param name="target">target package id</param>
-        /// <param name="packagesConfig">entries from packages.config</param>
-        /// <param name="availablePackages">gathered packages</param>
-        public static void ThrowIfNewerVersionAlreadyReferenced(string target,
-            IEnumerable<NuGet.Packaging.PackageReference> packagesConfig,
-            IEnumerable<PackageDependencyInfo> availablePackages)
+        private async Task InitializeResourcesAsync(CancellationToken token)
         {
-            var configEntry = packagesConfig.FirstOrDefault(r => r.PackageIdentity.Id.Equals(target, StringComparison.OrdinalIgnoreCase));
-            var availablePackage = availablePackages.FirstOrDefault(p => p.Id.Equals(target, StringComparison.OrdinalIgnoreCase));
+            // get the dependency info resources for each repo
+            // primary and all may share the same resources
+            var getResourceTasks = new List<Task>();
 
-            if (configEntry != null && availablePackage != null && configEntry.PackageIdentity.Version > availablePackage.Version)
+            var allSources = new List<SourceRepository>();
+
+            allSources.AddRange(_context.PrimarySources);
+            allSources.Add(_context.PackagesFolderSource);
+            allSources.AddRange(_context.AllSources);
+
+            var depResources = new Dictionary<SourceRepository, Task<DependencyInfoResource>>();
+            foreach (var source in allSources)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, target));
+                if (!depResources.ContainsKey(source))
+                {
+                    var task = Task.Run(async () => await source.GetResourceAsync<DependencyInfoResource>(token));
+
+                    depResources.Add(source, task);
+
+                    // Limit the number of tasks to MaxThreads by awaiting each time we hit the limit
+                    while (getResourceTasks.Count >= MaxDegreeOfParallelism)
+                    {
+                        var finishedTask = await Task.WhenAny(getResourceTasks);
+
+                        getResourceTasks.Remove(finishedTask);
+                    }
+                }
             }
+
+            var uniquePrimarySources = new HashSet<Configuration.PackageSource>();
+
+            // a resource may be null, if it is exclude this source from the gather
+            foreach (var source in _context.PrimarySources)
+            {
+                if (uniquePrimarySources.Add(source.PackageSource))
+                {
+                    var resource = await depResources[source];
+
+                    if (source != null && !_primaryResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                    {
+                        _primaryResources.Add(new SourceResource(source, resource));
+                    }
+                }
+            }
+
+            // All sources - for fallback
+            var uniqueAllSources = new HashSet<Configuration.PackageSource>();
+
+            foreach (var source in allSources)
+            {
+                if (uniqueAllSources.Add(source.PackageSource))
+                {
+                    var resource = await depResources[source];
+
+                    if (source != null && !_allResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                    {
+                        _allResources.Add(new SourceResource(source, resource));
+                    }
+                }
+            }
+
+            // Installed packages resource
+            _packagesFolderResource = await _context.PackagesFolderSource.GetResourceAsync<DependencyInfoResource>(token);
+        }
+
+        /// <summary>
+        /// Get the current request id number, and increment it for the next count
+        /// </summary>
+        private int GetNextRequestId()
+        {
+            return ++_lastRequestId;
+        }
+
+        /// <summary>
+        /// Holds a Source and DependencyInfoResource
+        /// </summary>
+        private class SourceResource
+        {
+            public SourceResource(SourceRepository source, DependencyInfoResource resource)
+            {
+                Source = source;
+                Resource = resource;
+            }
+
+            public SourceRepository Source { get; }
+            public DependencyInfoResource Resource { get; }
+        }
+
+        /// <summary>
+        /// Request info
+        /// </summary>
+        private class GatherRequest
+        {
+            public GatherRequest(
+                SourceResource source,
+                PackageIdentity package,
+                bool ignoreExceptions,
+                int order,
+                bool isInstalledPackage)
+            {
+                Source = source;
+                Package = package;
+                IgnoreExceptions = ignoreExceptions;
+                Order = order;
+                IsInstalledPackage = isInstalledPackage;
+            }
+
+            public SourceResource Source { get; }
+            public PackageIdentity Package { get; }
+            public bool IgnoreExceptions { get; }
+            public int Order { get; }
+            public bool IsInstalledPackage { get; }
+        }
+
+        /// <summary>
+        /// Contains the original request along with the resulting packages.
+        /// </summary>
+        private class GatherResult
+        {
+            public GatherResult(GatherRequest request, IReadOnlyList<SourcePackageDependencyInfo> packages)
+            {
+                Request = request;
+                Packages = packages;
+            }
+
+            public GatherRequest Request { get; }
+            public IReadOnlyList<SourcePackageDependencyInfo> Packages { get; }
         }
     }
 }

@@ -21,11 +21,6 @@ namespace NuGet.PackageManagement
     public static class BuildIntegratedRestoreUtility
     {
         /// <summary>
-        /// Maximum number of threads to use during restore.
-        /// </summary>
-        public const int MaxRestoreThreads = 16;
-
-        /// <summary>
         /// Restore a build integrated project and update the lock file
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
@@ -68,7 +63,7 @@ namespace NuGet.PackageManagement
 
             var packageSources = sources.Select(source => new Configuration.PackageSource(source));
             var request = new RestoreRequest(packageSpec, packageSources, SettingsUtility.GetGlobalPackagesFolder(settings));
-            request.MaxDegreeOfConcurrency = MaxRestoreThreads;
+            request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
             // Find the full closure of project.json files and referenced projects
             var projectReferences = await project.GetProjectReferenceClosureAsync();

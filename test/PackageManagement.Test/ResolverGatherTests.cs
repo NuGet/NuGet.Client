@@ -19,7 +19,588 @@ namespace NuGet.Test
 {
     public class ResolverGatherTests
     {
-        // [Fact]
+        [Fact]
+        public void ResolverGather_TimeoutFromPrimaryRepositoryThrows()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var primaryRepo = CreateTimeoutRepo("primary");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0")
+                };
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+            repos.Add(primaryRepo);
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0")
+                };
+
+            var context = new GatherContext()
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = installedPackages,
+                TargetFramework = framework,
+                PrimarySources = new List<SourceRepository>() { primaryRepo },
+                AllSources = repos,
+                PackagesFolderSource = CreateRepo("installed", new List<SourcePackageDependencyInfo>()),
+                ResolutionContext = new ResolutionContext()
+            };
+
+            var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+
+            // Act and Assert
+            Assert.Throws(typeof(TaskCanceledException), () =>
+            {
+                try
+                {
+                    ResolverGather.GatherAsync(context, cts.Token).Wait();
+                }
+                catch (AggregateException ex)
+                {
+                    throw ex.InnerException;
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ResolverGather_TimeoutFromSecondaryRepositoryIgnored()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var secondaryRepo = CreateTimeoutRepo("secondary");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0")
+                };
+
+            var allRepos = new List<SourceRepository>();
+            allRepos.Add(CreateRepo("a", repoA));
+            allRepos.Add(secondaryRepo);
+
+            var primaryRepos = new List<SourceRepository>();
+            primaryRepos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0")
+                };
+
+            var context = new GatherContext()
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = installedPackages,
+                TargetFramework = framework,
+                AllSources = allRepos,
+                PrimarySources = primaryRepos,
+                PackagesFolderSource = CreateRepo("installed", new List<SourcePackageDependencyInfo>()),
+                ResolutionContext = new ResolutionContext()
+            };
+
+            var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+
+            // Act
+            var results = await ResolverGather.GatherAsync(context, cts.Token);
+
+            // Assert
+            Assert.Equal(1, results.Count);
+        }
+
+        [Fact]
+        public async Task ResolverGather_ThrowExceptionFromSecondaryRepositoryIgnored()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var secondaryRepo = CreateThrowingRepo("secondary", new InvalidOperationException("failed"));
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0")
+                };
+
+            var allRepos = new List<SourceRepository>();
+            allRepos.Add(CreateRepo("a", repoA));
+            allRepos.Add(secondaryRepo);
+
+            var primaryRepos = new List<SourceRepository>();
+            primaryRepos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0")
+                };
+
+            var context = new GatherContext()
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = installedPackages,
+                TargetFramework = framework,
+                AllSources = allRepos,
+                PrimarySources = primaryRepos,
+                PackagesFolderSource = CreateRepo("installed", new List<SourcePackageDependencyInfo>()),
+                ResolutionContext = new ResolutionContext()
+            };
+
+            // Act
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, results.Count);
+        }
+
+        [Fact]
+        public void ResolverGather_ThrowExceptionFromPrimaryRepository()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var primaryRepo = CreateThrowingRepo("primary", new InvalidOperationException("failed"));
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0")
+                };
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0")
+                };
+
+            var context = new GatherContext()
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = installedPackages,
+                TargetFramework = framework,
+                PrimarySources = new List<SourceRepository>() { primaryRepo },
+                AllSources = repos,
+                PackagesFolderSource = CreateRepo("installed", new List<SourcePackageDependencyInfo>()),
+                ResolutionContext = new ResolutionContext()
+            };
+
+            // Act and Assert
+            Assert.Throws(typeof(InvalidOperationException), () =>
+            {
+                try
+                {
+                    ResolverGather.GatherAsync(context, CancellationToken.None).Wait();
+                }
+                catch (AggregateException ex)
+                {
+                    throw ex.InnerException;
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ResolverGather_VerifyCacheIsUsed()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "2.0.0", "b"),
+                };
+
+            var repoB = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("b", "2.0.0"),
+                };
+
+            var repoBEmpty = new List<SourcePackageDependencyInfo>
+            {
+
+            };
+
+            var repoInstalled = new List<SourcePackageDependencyInfo>()
+            {
+
+            };
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+            repos.Add(CreateRepo("b", repoB));
+
+            var reposAOnly = new List<SourceRepository>();
+            reposAOnly.Add(CreateRepo("a", repoA));
+            reposAOnly.Add(CreateRepo("b", repoBEmpty));
+
+            var installedPackages = new List<PackageIdentity>
+            {
+
+            };
+
+            // this contains the cache
+            var resolutionContext = new ResolutionContext();
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = resolutionContext;
+
+            var contextAOnly = new GatherContext();
+            contextAOnly.PrimaryTargets = targets.ToList();
+            contextAOnly.InstalledPackages = installedPackages;
+            contextAOnly.TargetFramework = framework;
+            contextAOnly.PrimarySources = primaryRepo;
+            contextAOnly.AllSources = reposAOnly;
+            contextAOnly.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            contextAOnly.ResolutionContext = resolutionContext;
+
+            // Run the first time
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            // Act
+            // Run again
+            results = await ResolverGather.GatherAsync(contextAOnly, CancellationToken.None);
+
+            var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
+
+            // Assert
+            Assert.Equal(2, check.Count);
+            Assert.Equal("a", check[0].Key);
+
+            // B can only come from repoB, which should only be in the cache
+            Assert.Equal("b", check[1].Key);
+        }
+
+        [Fact]
+        public async Task ResolverGather_VerifyPackageMissingWithNoCache()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "2.0.0", "b"),
+                };
+
+            var repoB = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("b", "2.0.0"),
+                };
+
+            var repoBEmpty = new List<SourcePackageDependencyInfo>
+            {
+
+            };
+
+            var repoInstalled = new List<SourcePackageDependencyInfo>()
+            {
+
+            };
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+            repos.Add(CreateRepo("b", repoB));
+
+            var reposAOnly = new List<SourceRepository>();
+            reposAOnly.Add(CreateRepo("a", repoA));
+            reposAOnly.Add(CreateRepo("b", repoBEmpty));
+
+            var installedPackages = new List<PackageIdentity>
+            {
+
+            };
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
+            var contextAOnly = new GatherContext();
+            contextAOnly.PrimaryTargets = targets.ToList();
+            contextAOnly.InstalledPackages = installedPackages;
+            contextAOnly.TargetFramework = framework;
+            contextAOnly.PrimarySources = primaryRepo;
+            contextAOnly.AllSources = reposAOnly;
+            contextAOnly.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
+            // Run the first time
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            // Act
+            // Run again
+            results = await ResolverGather.GatherAsync(contextAOnly, CancellationToken.None);
+
+            var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
+
+            // Assert
+            Assert.Equal(1, check.Count);
+            Assert.Equal("a", check[0].Key);
+        }
+
+        [Fact]
+        public async Task ResolverGather_MissingInstalledPackageFromPackagesFolder()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0"),
+                    CreateDependencyInfo("b", "2.0.0"),
+                };
+
+            var repoInstalled = new List<SourcePackageDependencyInfo>()
+            {
+                // missing packages
+            };
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "2.0.0")
+                };
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
+            // Act
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
+
+            // Assert
+            Assert.Equal(2, check.Count);
+            Assert.Equal("a", check[0].Key);
+            Assert.Equal("b", check[1].Key);
+        }
+
+        [Fact]
+        public async Task ResolverGather_IgnoreDependenciesSetToTrueShouldSkipChildren()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("a", "2.0.0", "c"),
+                    CreateDependencyInfo("b", "2.0.0"),
+                    CreateDependencyInfo("c", "2.0.0")
+                };
+
+            var repoInstalled = new List<SourcePackageDependencyInfo>()
+            {
+                CreateDependencyInfo("a", "1.0.0", "b"),
+                CreateDependencyInfo("b", "2.0.0"),
+            };
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "2.0.0")
+                };
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.AllowDowngrades = false;
+            context.ResolutionContext = new ResolutionContext(DependencyBehavior.Ignore, true, true, VersionConstraints.None);
+
+            // Act
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
+
+            // Assert
+            Assert.Equal(2, check.Count);
+            Assert.Equal("a", check[0].Key);
+            Assert.Equal("b", check[1].Key);
+            // Skip C
+        }
+
+
+        [Fact]
+        public async Task ResolverGather_AllowDowngradesTrueShouldIncludeDowngradeDependencies()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("a", "2.0.0", "b"),
+                    CreateDependencyInfo("a", "3.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0", "c"), // should be ignored
+                    CreateDependencyInfo("b", "2.0.0"),
+                    CreateDependencyInfo("c", "2.0.0")
+                };
+
+            var repoInstalled = new List<SourcePackageDependencyInfo>()
+            {
+                // missing packages
+            };
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "2.0.0")
+                };
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.AllowDowngrades = true;
+
+            // Act
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
+
+            // Assert
+            Assert.Equal(3, check.Count);
+            Assert.Equal("a", check[0].Key);
+            Assert.Equal("b", check[1].Key);
+            Assert.Equal("c", check[2].Key);
+        }
+
+        [Fact]
+        public async Task ResolverGather_AllowDowngradesFalseShouldIgnoreDowngradeDependencies()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0", "b"),
+                    CreateDependencyInfo("a", "2.0.0", "b"),
+                    CreateDependencyInfo("a", "3.0.0", "b"),
+                    CreateDependencyInfo("b", "1.0.0", "c"), // should be ignored
+                    CreateDependencyInfo("b", "2.0.0"),
+                    CreateDependencyInfo("c", "2.0.0")
+                };
+
+            var repoInstalled = new List<SourcePackageDependencyInfo>()
+            {
+                // missing packages
+            };
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "2.0.0")
+                };
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.AllowDowngrades = false;
+
+            // Act
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
+
+            // Assert
+            Assert.Equal(2, check.Count);
+            Assert.Equal("a", check[0].Key);
+            Assert.Equal("b", check[1].Key);
+            // c should not be collected
+        }
+
+        [Fact]
         public void ResolverGather_MissingPrimaryPackage()
         {
             // Arrange
@@ -35,9 +616,9 @@ namespace NuGet.Test
                 };
 
             var repoInstalled = new List<SourcePackageDependencyInfo>()
-                {
-                    // missing packages
-                };
+            {
+                // missing packages
+            };
 
             var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
@@ -50,13 +631,20 @@ namespace NuGet.Test
                     CreatePackage("a", "1.0.0")
                 };
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
             // Act and Assert
             Assert.Throws(typeof(InvalidOperationException), () =>
                 {
                     try
                     {
-                        ResolverGather.GatherPackageDependencyInfo(targets,
-                            installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None).Wait();
+                        ResolverGather.GatherAsync(context, CancellationToken.None).Wait();
                     }
                     catch (AggregateException ex)
                     {
@@ -85,9 +673,9 @@ namespace NuGet.Test
                 };
 
             var repoInstalled = new List<SourcePackageDependencyInfo>()
-                {
-                    // missing packages
-                };
+            {
+                // missing packages
+            };
 
             var primaryRepo = new List<SourceRepository>();
             primaryRepo.Add(CreateRepo("a", repoA));
@@ -101,9 +689,16 @@ namespace NuGet.Test
                     CreatePackage("b", "1.0.0")
                 };
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
 
@@ -112,7 +707,7 @@ namespace NuGet.Test
             Assert.Equal("a", check[0].Key);
             Assert.Equal(1, check[0].Count());
             Assert.Equal("b", check[1].Key);
-            Assert.Equal(2, check[1].Count());
+            Assert.Equal(1, check[1].Count());
         }
 
         [Fact]
@@ -152,16 +747,23 @@ namespace NuGet.Test
                     CreatePackage("b", "1.0.0")
                 };
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
 
             // Assert
             Assert.Equal(2, check.Count);
             Assert.Equal("a", check[0].Key);
-            Assert.Equal(2, check[0].Count());
+            Assert.Equal(1, check[0].Count());
             Assert.Equal("b", check[1].Key);
             Assert.Equal(1, check[1].Count());
         }
@@ -206,9 +808,16 @@ namespace NuGet.Test
                     CreatePackage("b", "1.0.0")
                 };
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
 
@@ -257,9 +866,16 @@ namespace NuGet.Test
                     CreatePackage("b", "1.0.0")
                 };
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
 
@@ -309,9 +925,16 @@ namespace NuGet.Test
                     CreatePackage("b", "1.0.0")
                 };
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
 
@@ -389,9 +1012,16 @@ namespace NuGet.Test
                     CreatePackage("g", "1.0.0")
                 };
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                installedPackages, framework, primaryRepo, repos, CreateRepo("installed", repoInstalled), CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.GroupBy(e => e.Id).OrderBy(e => e.Key).ToList();
 
@@ -459,9 +1089,16 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://b"), providersB));
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://c"), providersC));
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = new List<PackageIdentity>();
+            context.TargetFramework = framework;
+            context.PrimarySources = repos;
+            context.AllSources = repos;
+            context.PackagesFolderSource = repos[2];
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                Enumerable.Empty<PackageIdentity>(), framework, repos, repos, repos[2], CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -516,9 +1153,16 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://b"), providersB));
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://c"), providersC));
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = new List<PackageIdentity>();
+            context.TargetFramework = framework;
+            context.PrimarySources = repos;
+            context.AllSources = repos;
+            context.PackagesFolderSource = repos[2];
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets, Enumerable.Empty<PackageIdentity>(),
-                framework, repos, repos, repos[2], CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -572,9 +1216,16 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://b"), providersB));
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://c"), providersC));
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = new List<PackageIdentity>();
+            context.TargetFramework = framework;
+            context.PrimarySources = repos;
+            context.AllSources = repos;
+            context.PackagesFolderSource = repos[2];
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets,
-                Enumerable.Empty<PackageIdentity>(), framework, repos, repos, repos[2], CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -630,9 +1281,16 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://3"), providers3));
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://4"), providersPackagesFolder));
 
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = new List<PackageIdentity>();
+            context.TargetFramework = framework;
+            context.PrimarySources = repos;
+            context.AllSources = repos;
+            context.PackagesFolderSource = repos[2];
+
             // Act
-            var results = await ResolverGather.GatherPackageDependencyInfo(targets, Enumerable.Empty<PackageIdentity>(),
-                framework, repos, repos, repos[3], CancellationToken.None);
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
 
             var check = results.OrderBy(e => e.Id).ToList();
 
@@ -641,6 +1299,22 @@ namespace NuGet.Test
             Assert.Equal("a", check[0].Id);
             Assert.Equal("b", check[1].Id);
             Assert.Equal("c", check[2].Id);
+        }
+
+        private static SourceRepository CreateTimeoutRepo(string source)
+        {
+            var providers = new List<Lazy<INuGetResourceProvider>>();
+            providers.Add(new Lazy<INuGetResourceProvider>(() => new TestTimeoutDependencyInfoProvider()));
+
+            return new SourceRepository(new Configuration.PackageSource(source), providers);
+        }
+
+        private static SourceRepository CreateThrowingRepo(string source, Exception exception)
+        {
+            var providers = new List<Lazy<INuGetResourceProvider>>();
+            providers.Add(new Lazy<INuGetResourceProvider>(() => new TestThrowingDependencyInfoProvider(exception)));
+
+            return new SourceRepository(new Configuration.PackageSource(source), providers);
         }
 
         private static SourceRepository CreateRepo(string source, List<SourcePackageDependencyInfo> packages)
@@ -677,6 +1351,92 @@ namespace NuGet.Test
         {
             var nuGetResource = new TestDependencyInfo(source, Packages);
             return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
+        }
+    }
+
+    internal class TestThrowingDependencyInfoProvider : ResourceProvider
+    {
+        public Exception Exception { get; set; }
+
+        public TestThrowingDependencyInfoProvider(Exception ex)
+            : base(typeof(DependencyInfoResource))
+        {
+            Exception = ex;
+        }
+
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        {
+            var nuGetResource = new TestThrowingDependencyInfo(source, Exception);
+            return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
+        }
+    }
+
+    internal class TestTimeoutDependencyInfoProvider : ResourceProvider
+    {
+        public TestTimeoutDependencyInfoProvider()
+            : base(typeof(DependencyInfoResource))
+        {
+
+        }
+
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        {
+            var nuGetResource = new TestTimeoutDependencyInfo(source);
+            return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
+        }
+    }
+
+    /// <summary>
+    /// Resolves against a local set of packages
+    /// </summary>
+    internal class TestThrowingDependencyInfo : DependencyInfoResource
+    {
+        public Exception Exception { get; set; }
+
+        public TestThrowingDependencyInfo(SourceRepository source, Exception ex)
+        {
+            Exception = ex;
+        }
+
+        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
+        {
+            throw Exception;
+        }
+
+        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
+        {
+            throw Exception;
+        }
+    }
+
+    /// <summary>
+    /// Resolves against a local set of packages
+    /// </summary>
+    internal class TestTimeoutDependencyInfo : DependencyInfoResource
+    {
+        public TestTimeoutDependencyInfo(SourceRepository source)
+        {
+
+        }
+
+        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
+        {
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+
+                await Task.Delay(20);
+            }
+        }
+
+        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
+        {
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+
+                await Task.Delay(20);
+            }
         }
     }
 
@@ -772,8 +1532,8 @@ namespace NuGet.Test
         public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
         {
             return Task.FromResult(Packages
-                .Exists(p => 
-                    ((PackageIdentity)p).Equals(identity) 
+                .Exists(p =>
+                    ((PackageIdentity)p).Equals(identity)
                     && (p.Listed || includeUnlisted))
             );
         }
@@ -781,7 +1541,7 @@ namespace NuGet.Test
         public override Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             return Task.FromResult(Packages
-                .Exists((p) => 
+                .Exists((p) =>
                     p.Id.Equals(packageId, StringComparison.InvariantCultureIgnoreCase)
                     && (!p.Version.IsPrerelease || includePrerelease)
                     && (p.Listed || includeUnlisted))

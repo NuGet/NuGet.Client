@@ -398,15 +398,23 @@ namespace NuGet.PackageManagement
                     }
                 }
 
-                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(
-                    primaryTargetIds,
-                    primaryTargets,
-                    oldListOfInstalledPackages,
-                    targetFramework,
-                    primarySources,
-                    allSources,
-                    PackagesFolderSourceRepository,
-                    token);
+                // Unless the packageIdentity was explicitly asked for we should remove any potential downgrades
+                var allowDowngrades = packageIdentity != null;
+
+                var gatherContext = new GatherContext()
+                {
+                    InstalledPackages = oldListOfInstalledPackages.ToList(),
+                    PrimaryTargetIds = primaryTargetIds.ToList(),
+                    PrimaryTargets = primaryTargets.ToList(),
+                    TargetFramework = targetFramework,
+                    PrimarySources = primarySources.ToList(),
+                    AllSources = allSources.ToList(),
+                    PackagesFolderSource = PackagesFolderSourceRepository,
+                    ResolutionContext = resolutionContext,
+                    AllowDowngrades = allowDowngrades
+                };
+
+                var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherAsync(gatherContext, token);
 
                 if (!availablePackageDependencyInfoWithSourceSet.Any())
                 {
@@ -433,11 +441,11 @@ namespace NuGet.PackageManagement
                     prunedAvailablePackages = PrunePackageTree.PruneAllButHighest(prunedAvailablePackages, packageId);
 
                     // And then verify that the installed package is not already of a higher version - this check here ensures the user get's the right error message
-                    ResolverGather.ThrowIfNewerVersionAlreadyReferenced(packageId, projectInstalledPackageReferences, prunedAvailablePackages);
+                    GatherExceptionHelpers.ThrowIfNewerVersionAlreadyReferenced(packageId, projectInstalledPackageReferences, prunedAvailablePackages);
                 }
 
                 // Verify that the target is allowed by packages.config
-                ResolverGather.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages);
+                GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages);
 
                 // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                 prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
@@ -446,7 +454,7 @@ namespace NuGet.PackageManagement
                 prunedAvailablePackages = PrunePackageTree.PruneByPrimaryTargets(prunedAvailablePackages, primaryTargets);
 
                 // Unless the packageIdentity was explicitly asked for we should remove any potential downgrades
-                if (packageIdentity == null)
+                if (!allowDowngrades)
                 {
                     prunedAvailablePackages = PrunePackageTree.PruneDowngrades(prunedAvailablePackages, projectInstalledPackageReferences);
                 }
@@ -645,7 +653,6 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException("packageIdentity.Version");
             }
 
-            // TODO: BUGBUG: HACK: Multiple primary repositories is mainly intended for nuget.exe at the moment
             // The following special case for ProjectK is not correct, if they used nuget.exe
             // and multiple repositories in the -Source switch
             if (nuGetProject is INuGetIntegratedProject)
@@ -676,8 +683,6 @@ namespace NuGet.PackageManagement
             }
 
             var nuGetProjectActions = new List<NuGetProjectAction>();
-            // TODO: these sources should be ordered
-            // TODO: search in only the active source but allow dependencies to come from other sources?
 
             var effectiveSources = GetEffectiveSources(primarySources, secondarySources);
 
@@ -707,14 +712,19 @@ namespace NuGet.PackageManagement
 
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
 
-                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherPackageDependencyInfo(
-                        primaryPackages,
-                        oldListOfInstalledPackages,
-                        targetFramework,
-                        primarySources,
-                        effectiveSources,
-                        PackagesFolderSourceRepository,
-                        token);
+                    var gatherContext = new GatherContext()
+                    {
+                        InstalledPackages = oldListOfInstalledPackages.ToList(),
+                        PrimaryTargets = primaryPackages,
+                        TargetFramework = targetFramework,
+                        PrimarySources = primarySources.ToList(),
+                        AllSources = effectiveSources.ToList(),
+                        PackagesFolderSource = PackagesFolderSourceRepository,
+                        ResolutionContext = resolutionContext,
+                        AllowDowngrades = downgradeAllowed
+                    };
+
+                    var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherAsync(gatherContext, token);
 
                     if (!availablePackageDependencyInfoWithSourceSet.Any())
                     {
@@ -740,7 +750,7 @@ namespace NuGet.PackageManagement
                     }
 
                     // Verify that the target is allowed by packages.config
-                    ResolverGather.ThrowIfVersionIsDisallowedByPackagesConfig(packageIdentity.Id, projectInstalledPackageReferences, prunedAvailablePackages);
+                    GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(packageIdentity.Id, projectInstalledPackageReferences, prunedAvailablePackages);
 
                     // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                     prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
