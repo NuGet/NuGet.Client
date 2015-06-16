@@ -172,6 +172,11 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageId");
             }
 
+            // We simply use ThreadHelper.JoinableTaskFactory.Run instead of PumpingJTF.Run, unlike,
+            // VsPackageInstaller and VsPackageUninstaller. Because, no powershell scripts get executed
+            // as part of the operations performed below. Powershell scripts need to be executed on the
+            // pipeline execution thread and they might try to access DTE. Doing that under
+            // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var installedPackageReferences = await GetInstalledPackageReferencesAsync(project);

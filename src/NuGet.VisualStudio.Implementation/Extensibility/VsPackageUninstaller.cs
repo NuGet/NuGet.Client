@@ -7,6 +7,8 @@ using System.Globalization;
 using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -20,12 +22,15 @@ namespace NuGet.VisualStudio
         private Configuration.ISettings _settings;
         private ISolutionManager _solutionManager;
 
+        private JoinableTaskFactory PumpingJTF { get; }
+
         [ImportingConstructor]
         public VsPackageUninstaller(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
+            PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
         }
 
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
@@ -40,7 +45,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageId"));
             }
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            PumpingJTF.Run(async delegate
                 {
                     NuGetPackageManager packageManager = new NuGetPackageManager(_sourceRepositoryProvider, _settings, _solutionManager);
 

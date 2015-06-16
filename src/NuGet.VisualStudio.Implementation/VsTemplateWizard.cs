@@ -370,6 +370,11 @@ namespace NuGet.VisualStudio
 
         void IWizard.RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
+            // We simply use ThreadHelper.JoinableTaskFactory.Run instead of PumpingJTF.Run, unlike,
+            // VsPackageInstaller and VsPackageUninstaller. Because, no powershell scripts get executed
+            // as part of the operations performed below. Powershell scripts need to be executed on the
+            // pipeline execution thread and they might try to access DTE. Doing that under
+            // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
             ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
