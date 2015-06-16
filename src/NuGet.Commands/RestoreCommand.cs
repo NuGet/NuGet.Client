@@ -604,17 +604,14 @@ namespace NuGet.Commands
 
         private async Task InstallPackage(RemoteMatch installItem, string packagesDirectory)
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
-                await NuGetPackageUtils.InstallFromSourceAsync(
-                    stream => installItem.Provider.CopyToAsync(installItem.Library, stream, CancellationToken.None),
-                    packageIdentity,
-                    packagesDirectory,
-                    _log,
-                    fixNuspecIdCasing: true,
-                    token: CancellationToken.None);
-            }
+            var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
+            await NuGetPackageUtils.InstallFromSourceAsync(
+                stream => installItem.Provider.CopyToAsync(installItem.Library, stream, CancellationToken.None),
+                packageIdentity,
+                packagesDirectory,
+                _log,
+                fixNuspecIdCasing: true,
+                token: CancellationToken.None);
         }
 
         private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source, bool noCache)
