@@ -164,8 +164,13 @@
     <Compile Include="IDE\ISolutionManager.cs" />
     <Compile Include="IDE\PackageRestoreManager.cs" />
     <Compile Include="Context\PackageManagementContext.cs" />
-    <Compile Include="Resolution\PrunePackageTree.cs" />
+    <Compile Include="PackageManagementConstants.cs" />
+    <Compile Include="Resolution\GatherCacheResult.cs" />
+    <Compile Include="Resolution\GatherContext.cs" />
     <Compile Include="Resolution\ResolverGather.cs" />
+    <Compile Include="Resolution\GatherCache.cs" />
+    <Compile Include="Resolution\PrunePackageTree.cs" />
+    <Compile Include="Resolution\GatherExceptionHelpers.cs" />
     <Compile Include="Resolution\UninstallResolver.cs" />
     <Compile Include="Utility\CustomExceptions.cs" />
     <Compile Include="Utility\ExceptionUtility.cs" />

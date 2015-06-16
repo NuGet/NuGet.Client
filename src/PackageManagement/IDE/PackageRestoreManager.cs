@@ -247,7 +247,7 @@ namespace NuGet.PackageManagement
                 PackageRestoredEvent,
                 PackageRestoreFailedEvent,
                 sourceRepositories: null,
-                maxNumberOfParallelTasks: PackageRestoreContext.DefaultMaxNumberOfParellelTasks);
+                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext);
         }
