@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,17 +11,28 @@ namespace NuGet.Common
     internal static class ConcurrencyUtilities
     {
         internal static async Task<TVal> ExecuteWithFileLocked<TVal>(string filePath,
-            Func<Task<TVal>> action,
+            Func<CancellationToken, Task<TVal>> action,
             CancellationToken token)
         {
             TVal result = default(TVal);
 
             var name = FilePathToLockName(filePath);
 
-            var lockStart = new SemaphoreSlim(0, 1);
-            var lockEnd = new SemaphoreSlim(1, 1);
+            var lockStart = new SemaphoreSlim(initialCount: 0, maxCount: 1);
+            var lockEnd = new SemaphoreSlim(initialCount: 0, maxCount: 1);
 
-            var task = Task.Run(() => HandleMutex(name, lockStart, lockEnd, token));
+            // We are creating threads below, instead of simply using a ThreadPool thread using Task.Run,
+            // in order to avoid ThreadPool exhaustion. By using Task.Run here, we will have to reduce
+            // the maximum number of Tasks the caller can create by a factor of 2
+            // This gives us both the performance we desire and does not cause ThreadPool exhaustion
+            var threadStart = new ThreadStart(() => HandleMutex(name, lockStart, lockEnd, token));
+
+            var thread = new Thread(threadStart)
+            {
+                Name = "Mutex+" + name
+            };
+
+            thread.Start();
 
             try
             {
@@ -30,7 +40,7 @@ namespace NuGet.Common
 
                 token.ThrowIfCancellationRequested();
 
-                result = await action();
+                result = await action(token);
             }
             finally
             {
@@ -40,44 +50,45 @@ namespace NuGet.Common
             return result;
         }
 
-        private static void HandleMutex(string name, SemaphoreSlim lockStart, SemaphoreSlim lockEnd, CancellationToken token)
+        private static void HandleMutex(string name,
+            SemaphoreSlim lockStart,
+            SemaphoreSlim lockEnd,
+            CancellationToken token)
         {
-            try
+            using (var mutex = new Mutex(initiallyOwned: false, name: name))
             {
-                using (var filelock = new Mutex(initiallyOwned: false, name: name))
+                while (!token.IsCancellationRequested)
                 {
-                    while (true)
+                    try
                     {
-                        try
+                        if (mutex.WaitOne(1000))
                         {
-                            if (filelock.WaitOne(1000))
+                            try
+                            {
+                                lockStart.Release();
+                            }
+                            finally
                             {
                                 try
                                 {
-                                    lockStart.Release();
+                                    lockEnd.Wait();
                                 }
                                 finally
                                 {
-                                    lockEnd.Wait();
-                                    filelock.ReleaseMutex();
+                                    mutex.ReleaseMutex();
                                 }
-
-                                // Job is done. break the loop
-                                break;
                             }
 
-                            // Still the mutex is not released. Loop continues
+                            break;
                         }
-                        catch (AbandonedMutexException)
-                        {
-                            // Mutex was abandoned. Possibly, because, the process holding the mutex was killed
-                        }
+
+                        // The mutex is not released. Loop continues
+                    }
+                    catch (AbandonedMutexException)
+                    {
+                        // The mutex was abandoned, possibly because the process holding the mutex was killed.
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.Fail(ex.ToString());
             }
         }
 
