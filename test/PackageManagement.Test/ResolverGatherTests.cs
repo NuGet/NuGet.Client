@@ -20,7 +20,7 @@ namespace NuGet.Test
     public class ResolverGatherTests
     {
         [Fact]
-        public void ResolverGather_TimeoutFromPrimaryRepositoryThrows()
+        public async Task ResolverGather_TimeoutFromPrimaryRepositoryThrows()
         {
             // Arrange
             var target = CreatePackage("a", "2.0.0");
@@ -59,16 +59,9 @@ namespace NuGet.Test
             var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
             // Act and Assert
-            Assert.Throws(typeof(TaskCanceledException), () =>
+            await Assert.ThrowsAsync(typeof(OperationCanceledException), async () =>
             {
-                try
-                {
-                    ResolverGather.GatherAsync(context, cts.Token).Wait();
-                }
-                catch (AggregateException ex)
-                {
-                    throw ex.InnerException;
-                }
+                await ResolverGather.GatherAsync(context, cts.Token);
             });
         }
 
@@ -169,7 +162,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public void ResolverGather_ThrowExceptionFromPrimaryRepository()
+        public async Task ResolverGather_ThrowExceptionFromPrimaryRepository()
         {
             // Arrange
             var target = CreatePackage("a", "2.0.0");
@@ -205,16 +198,9 @@ namespace NuGet.Test
             };
 
             // Act and Assert
-            Assert.Throws(typeof(InvalidOperationException), () =>
+            await Assert.ThrowsAsync(typeof(InvalidOperationException), async () =>
             {
-                try
-                {
-                    ResolverGather.GatherAsync(context, CancellationToken.None).Wait();
-                }
-                catch (AggregateException ex)
-                {
-                    throw ex.InnerException;
-                }
+                await ResolverGather.GatherAsync(context, CancellationToken.None);
             });
         }
 
@@ -601,7 +587,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public void ResolverGather_MissingPrimaryPackage()
+        public async Task ResolverGather_MissingPrimaryPackage()
         {
             // Arrange
             var target = CreatePackage("a", "2.0.0");
@@ -640,11 +626,11 @@ namespace NuGet.Test
             context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
 
             // Act and Assert
-            Assert.Throws(typeof(InvalidOperationException), () =>
+            await Assert.ThrowsAsync(typeof(InvalidOperationException), async () =>
                 {
                     try
                     {
-                        ResolverGather.GatherAsync(context, CancellationToken.None).Wait();
+                        await ResolverGather.GatherAsync(context, CancellationToken.None);
                     }
                     catch (AggregateException ex)
                     {
