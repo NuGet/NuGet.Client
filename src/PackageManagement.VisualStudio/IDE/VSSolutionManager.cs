@@ -499,7 +499,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Check if the cache is initialized.
                     // It is possible that the cache is not initialized, since,
                     // the solution was not saved and/or there were no projects in the solution
-                    if (!_nuGetAndEnvDTEProjectCache.IsInitialized)
+                    if (!_nuGetAndEnvDTEProjectCache.IsInitialized && _solutionOpenedRaised)
                     {
                         ThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
