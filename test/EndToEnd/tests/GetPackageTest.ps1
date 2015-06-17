@@ -489,7 +489,7 @@ function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPac
     # Arrange
     $p = New-ClassLibrary
     
-    $p | Install-Package antlr -Version '3.1.1' -Source 'api.nuget.org'
+    $p | Install-Package antlr -Version '3.1.1' -Source $SourceNuGet
     
     # Act
     $packages = @(Get-Package -updates -Source 'https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/')
