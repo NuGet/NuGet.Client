@@ -17,6 +17,7 @@ namespace NuGet.Packaging
     public static class PackageHelper
     {
         private static readonly string[] ExcludePaths = new[] { "_rels", "package" };
+        private static readonly string[] ExcludeExtension = new[] { ".nupkg.sha512" };
 
         public static bool IsManifest(string path)
         {
@@ -33,11 +34,13 @@ namespace NuGet.Packaging
             }
             if (packageSaveMode.HasFlag(PackageSaveModes.Nuspec))
             {
-                return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+                return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) && 
+                    !ExcludeExtension.Any(p => packageFileName.EndsWith(p, StringComparison.OrdinalIgnoreCase));
             }
             else
             {
-                return !IsManifest(packageFileName) && !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+                return !IsManifest(packageFileName) && !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) && 
+                    !ExcludeExtension.Any(p => packageFileName.EndsWith(p, StringComparison.OrdinalIgnoreCase));
             }
         }
 
