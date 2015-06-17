@@ -139,7 +139,7 @@ namespace NuGet.Resolver
         }
 
         /// <summary>
-        /// Unable to resolve dependency '{0}' , source(s) in used: {1}.
+        /// Unable to resolve dependency '{0}'. Source(s) used: {1}.
         /// </summary>
         internal static string UnableToResolveDependencyForMultipleSources
         {
@@ -147,7 +147,7 @@ namespace NuGet.Resolver
         }
 
         /// <summary>
-        /// Unable to resolve dependency '{0}' , source(s) in used: {1}.
+        /// Unable to resolve dependency '{0}'. Source(s) used: {1}.
         /// </summary>
         internal static string FormatUnableToResolveDependencyForMultipleSources(object p0, object p1)
         {

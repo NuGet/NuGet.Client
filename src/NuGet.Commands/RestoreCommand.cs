@@ -32,6 +32,8 @@ namespace NuGet.Commands
         private readonly ILogger _log;
         private readonly RestoreRequest _request;
 
+        private bool _success = true;
+
         private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
 
         public RestoreCommand(ILogger logger, RestoreRequest request)
@@ -47,22 +49,43 @@ namespace NuGet.Commands
                 Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
                 _request.LockFilePath;
 
-            var result = await ExecuteRestore(localRepository);
+            bool relockFile = false;
+            if (_request.ExistingLockFile != null && _request.ExistingLockFile.IsLocked && !_request.ExistingLockFile.IsValidForPackageSpec(_request.Project))
+            {
+                // The lock file was locked, but the project.json is out of date
+                relockFile = true;
+                _request.ExistingLockFile.IsLocked = false;
+                _log.LogInformation(Strings.Log_LockFileOutOfDate);
+            }
+
+            var graphs = await ExecuteRestore(localRepository);
 
             // Build the lock file
-            var lockFile = CreateLockFile(_request.Project, result.RestoreGraphs, localRepository);
+            LockFile lockFile;
+            if (_request.ExistingLockFile != null && _request.ExistingLockFile.IsLocked)
+            {
+                // No lock file to write!
+                _request.WriteLockFile = false; // Force WriteLockFile to false
+                lockFile = _request.ExistingLockFile;
+            }
+            else
+            {
+                lockFile = CreateLockFile(_request.Project, graphs, localRepository);
+
+                // If the lock file was locked originally but we are re-locking it, well... re-lock it :)
+                lockFile.IsLocked = relockFile;
+            }
 
             // Scan every graph for compatibility
             var checkResults = new List<CompatibilityCheckResult>();
-            bool success = result.Success;
             var checker = new CompatibilityChecker(localRepository, lockFile, _log);
-            foreach (var graph in result.RestoreGraphs)
+            foreach (var graph in graphs)
             {
                 _log.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
                 var res = checker.Check(graph);
-                success &= res.Success;
+                _success &= res.Success;
                 checkResults.Add(res);
-                if (result.Success)
+                if (res.Success)
                 {
                     _log.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
                 }
@@ -72,21 +95,29 @@ namespace NuGet.Commands
                 }
             }
 
+            // Write the lock file
             var lockFileFormat = new LockFileFormat();
-            lockFileFormat.Write(projectLockFilePath, lockFile);
+            if (_request.WriteLockFile)
+            {
+                lockFileFormat.Write(projectLockFilePath, lockFile);
+            }
 
             // Generate Targets/Props files
-            WriteTargetsAndProps(_request.Project, result.RestoreGraphs, localRepository);
+            if (_request.WriteMSBuildFiles)
+            {
+                WriteTargetsAndProps(_request.Project, graphs, localRepository);
+            }
 
-            return new RestoreResult(success, result.RestoreGraphs, checkResults, lockFile);
+            return new RestoreResult(_success, graphs, checkResults, lockFile);
         }
 
-        private async Task<RestoreResult> ExecuteRestore(NuGetv3LocalRepository localRepository)
+        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestore(NuGetv3LocalRepository localRepository)
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
                 _log.LogError(Strings.Log_ProjectDoesNotSpecifyTargetFrameworks);
-                return new RestoreResult(success: false, restoreGraphs: Enumerable.Empty<RestoreTargetGraph>());
+                _success = false;
+                return Enumerable.Empty<RestoreTargetGraph>();
             }
 
             _log.LogInformation(Strings.FormatLog_RestoringPackages(_request.Project.FilePath));
@@ -149,7 +180,8 @@ namespace NuGet.Commands
 
             if (!ResolutionSucceeded(graphs))
             {
-                return new RestoreResult(success: false, restoreGraphs: graphs);
+                _success = false;
+                return graphs;
             }
 
             // Install the runtime-agnostic packages
@@ -185,7 +217,8 @@ namespace NuGet.Commands
 
                 if (!ResolutionSucceeded(graphs))
                 {
-                    return new RestoreResult(success: false, restoreGraphs: graphs);
+                    _success = false;
+                    return graphs;
                 }
 
                 // Install runtime-specific packages
@@ -231,14 +264,15 @@ namespace NuGet.Commands
 
                 if (!ResolutionSucceeded(graphs))
                 {
-                    return new RestoreResult(success: false, restoreGraphs: graphs);
+                    _success = false;
+                    return graphs;
                 }
 
                 // Install packages for supports check
                 await InstallPackages(checkGraphs, _request.PackagesDirectory, allInstalledPackages, _request.MaxDegreeOfConcurrency);
             }
 
-            return new RestoreResult(success: true, restoreGraphs: graphs);
+            return graphs;
         }
 
         private bool ResolutionSucceeded(List<RestoreTargetGraph> graphs)
@@ -250,7 +284,7 @@ namespace NuGet.Commands
                 {
                     success = false;
                     _log.LogError(Strings.FormatLog_FailedToResolveConflicts(graph.Name));
-                    foreach(var conflict in graph.Conflicts)
+                    foreach (var conflict in graph.Conflicts)
                     {
                         _log.LogError(Strings.FormatLog_ResolverConflict(
                             conflict.Name,
@@ -477,6 +511,7 @@ namespace NuGet.Commands
             // it has the correct casing that runtime needs during dependency resolution.
             lockFileLib.Name = correctedPackageName ?? package.Id;
             lockFileLib.Version = package.Version;
+            lockFileLib.Type = LibraryTypes.Package; // Right now, lock file libraries are always packages
 
             using (var nupkgStream = File.OpenRead(package.ZipPath))
             {
@@ -500,20 +535,66 @@ namespace NuGet.Commands
         private async Task<RestoreTargetGraph> WalkDependencies(LibraryRange projectRange, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, bool writeToLockFile)
         {
             var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
-            var graph = await walker.WalkAsync(
-                projectRange,
-                framework,
-                runtimeIdentifier,
-                runtimeGraph);
+            var graphs = new List<GraphNode<RemoteResolveResult>>();
+            if (_request.ExistingLockFile != null && _request.ExistingLockFile.IsLocked)
+            {
+                // Walk all the items in the lock file target and just synthesize the outer graph
+                var target = _request.ExistingLockFile.GetTarget(framework, runtimeIdentifier);
+
+                if (target != null)
+                {
+                    foreach (var targetLibrary in target.Libraries)
+                    {
+                        var library = _request.ExistingLockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
+                        if (library == null)
+                        {
+                            _log.LogWarning(Strings.FormatLog_LockFileMissingLibraryForTargetLibrary(
+                                targetLibrary.Name,
+                                targetLibrary.Version,
+                                target.Name));
+                            continue; // This library is not in the main lockfile?
+                        }
+
+                        var range = new LibraryRange()
+                        {
+                            Name = library.Name,
+                            TypeConstraint = library.Type, // Lockfile contains only Package libraries.
+                            VersionRange = new VersionRange(
+                                minVersion: library.Version,
+                                includeMinVersion: true,
+                                maxVersion: library.Version,
+                                includeMaxVersion: true)
+                        };
+                        graphs.Add(await walker.WalkAsync(
+                            range,
+                            framework,
+                            runtimeIdentifier,
+                            runtimeGraph,
+                            recursive: false));
+                    }
+                }
+            }
+            else
+            {
+                graphs.Add(await walker.WalkAsync(
+                    projectRange,
+                    framework,
+                    runtimeIdentifier,
+                    runtimeGraph,
+                    recursive: true));
+            }
 
             // Resolve conflicts
             _log.LogVerbose(Strings.FormatLog_ResolvingConflicts(name));
 
             // NOTE(anurse): We are OK with throwing away the result here. The Create call below will be checking for conflicts
-            graph.TryResolveConflicts();
+            foreach (var graph in graphs)
+            {
+                graph.TryResolveConflicts();
+            }
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            return RestoreTargetGraph.Create(writeToLockFile, framework, runtimeIdentifier, runtimeGraph, graph, context, _log);
+            return RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _log, framework, runtimeIdentifier);
         }
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository, RuntimeGraph runtimes, bool writeToLockFile)
@@ -539,7 +620,7 @@ namespace NuGet.Commands
 
             _log.LogVerbose(Strings.Log_ScanningForRuntimeJson);
             runtimeGraph = RuntimeGraph.Empty;
-            graph.Graph.ForEach(node =>
+            graph.Graphs.ForEach(node =>
             {
                 var match = node?.Item?.Data?.Match;
                 if (match == null)

@@ -35,10 +35,19 @@ namespace NuGet.ProjectModel
         private const string CompileProperty = "compile";
         private const string NativeProperty = "native";
         private const string ResourceProperty = "resource";
+        private const string TypeProperty = "type";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
         private const string CompileAssembliesProperty = "compileAssemblies";
+
+        public LockFile Parse(string lockFileContent)
+        {
+            using(var reader = new StringReader(lockFileContent))
+            {
+                return Read(reader);
+            }
+        }
 
         public LockFile Read(string filePath)
         {
@@ -52,30 +61,35 @@ namespace NuGet.ProjectModel
         {
             using (var textReader = new StreamReader(stream))
             {
-                try
+                return Read(textReader);
+            }
+        }
+
+        public LockFile Read(TextReader reader)
+        {
+            try
+            {
+                using (var jsonReader = new JsonTextReader(reader))
                 {
-                    using (var jsonReader = new JsonTextReader(textReader))
+                    while (jsonReader.TokenType != JsonToken.StartObject)
                     {
-                        while (jsonReader.TokenType != JsonToken.StartObject)
+                        if (!jsonReader.Read())
                         {
-                            if (!jsonReader.Read())
-                            {
-                                throw new InvalidDataException();
-                            }
+                            throw new InvalidDataException();
                         }
-                        var token = JToken.Load(jsonReader);
-                        return ReadLockFile(token as JObject);
                     }
+                    var token = JToken.Load(jsonReader);
+                    return ReadLockFile(token as JObject);
                 }
-                catch
+            }
+            catch
+            {
+                // Ran into parsing errors, mark it as unlocked and out-of-date
+                return new LockFile
                 {
-                    // Ran into parsing errors, mark it as unlocked and out-of-date
-                    return new LockFile
-                        {
-                            IsLocked = false,
-                            Version = int.MinValue
-                        };
-                }
+                    IsLocked = false,
+                    Version = int.MinValue
+                };
             }
         }
 
@@ -135,6 +149,7 @@ namespace NuGet.ProjectModel
             library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
             library.Sha512 = ReadString(json[Sha512Property]);
             library.Files = ReadPathArray(json[FilesProperty] as JArray, ReadString);
+            library.Type = ReadString(json[TypeProperty]);
             return library;
         }
 
@@ -146,6 +161,7 @@ namespace NuGet.ProjectModel
                 WriteBool(json, ServicableProperty, library.IsServiceable);
             }
             json[Sha512Property] = WriteString(library.Sha512);
+            json[TypeProperty] = WriteString(library.Type);
             WritePathArray(json, FilesProperty, library.Files, WriteString);
             return new JProperty(
                 library.Name + "/" + library.Version.ToString(),
@@ -156,7 +172,7 @@ namespace NuGet.ProjectModel
         {
             var json = WriteObject(target.Libraries, WriteTargetLibrary);
 
-            var key = target.TargetFramework + (string.IsNullOrEmpty(target.RuntimeIdentifier) ? "" : "/" + target.RuntimeIdentifier);
+            var key = target.Name;
 
             return new JProperty(key, json);
         }
@@ -277,15 +293,7 @@ namespace NuGet.ProjectModel
 
             if (item.VersionRange != null)
             {
-                if (item.VersionRange.IsMinInclusive
-                    && item.VersionRange.MaxVersion == null)
-                {
-                    versionRange = item.VersionRange.MinVersion.ToString();
-                }
-                else
-                {
-                    versionRange = item.VersionRange.ToString();
-                }
+                versionRange = LockFile.RuntimeStyleLibraryRangeToString(item.Id, item.VersionRange);
             }
 
             return new JProperty(

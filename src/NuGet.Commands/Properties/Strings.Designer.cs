@@ -378,6 +378,38 @@ namespace NuGet.Commands
             return string.Format(CultureInfo.CurrentCulture, GetString("ResolverRequest_ToStringFormat"), p0, p1);
         }
 
+        /// <summary>
+        /// {0} {1} is specified in the Lock File target for {2} but is not present in the top-level Libraries list.
+        /// </summary>
+        internal static string Log_LockFileMissingLibraryForTargetLibrary
+        {
+            get { return GetString("Log_LockFileMissingLibraryForTargetLibrary"); }
+        }
+
+        /// <summary>
+        /// {0} {1} is specified in the Lock File target for {2} but is not present in the top-level Libraries list.
+        /// </summary>
+        internal static string FormatLog_LockFileMissingLibraryForTargetLibrary(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_LockFileMissingLibraryForTargetLibrary"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking.
+        /// </summary>
+        internal static string Log_LockFileOutOfDate
+        {
+            get { return GetString("Log_LockFileOutOfDate"); }
+        }
+
+        /// <summary>
+        /// The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking.
+        /// </summary>
+        internal static string FormatLog_LockFileOutOfDate()
+        {
+            return GetString("Log_LockFileOutOfDate");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

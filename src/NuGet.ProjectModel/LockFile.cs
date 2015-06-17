@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -65,25 +67,30 @@ namespace NuGet.ProjectModel
         }
 
         // DNU REFACTORING TODO: temp hack to make generated lockfile work with runtime lockfile validation
-        private static string RuntimeStyleLibraryRangeToString(LibraryRange libraryRange)
+        internal static string RuntimeStyleLibraryRangeToString(LibraryRange libraryRange)
+        {
+            return RuntimeStyleLibraryRangeToString(libraryRange.Name, libraryRange.VersionRange);
+        }
+
+        internal static string RuntimeStyleLibraryRangeToString(string name, VersionRange versionRange)
         {
             var sb = new StringBuilder();
-            sb.Append(libraryRange.Name);
+            sb.Append(name);
             sb.Append(" ");
 
-            if (libraryRange.VersionRange == null)
+            if (versionRange == null)
             {
                 return sb.ToString();
             }
 
-            var minVersion = libraryRange.VersionRange.MinVersion;
-            var maxVersion = libraryRange.VersionRange.MaxVersion;
+            var minVersion = versionRange.MinVersion;
+            var maxVersion = versionRange.MaxVersion;
 
             sb.Append(">= ");
 
-            if (libraryRange.VersionRange.IsFloating)
+            if (versionRange.IsFloating)
             {
-                sb.Append(libraryRange.VersionRange.Float.ToString());
+                sb.Append(versionRange.Float.ToString());
             }
             else
             {
@@ -92,11 +99,26 @@ namespace NuGet.ProjectModel
 
             if (maxVersion != null)
             {
-                sb.Append(libraryRange.VersionRange.IsMaxInclusive ? "<= " : "< ");
+                sb.Append(versionRange.IsMaxInclusive ? "<= " : "< ");
                 sb.Append(maxVersion.Version.ToString());
             }
 
             return sb.ToString();
+        }
+
+        public LockFileTarget GetTarget(NuGetFramework framework, string runtimeIdentifier)
+        {
+            return Targets.FirstOrDefault(t =>
+                t.TargetFramework.Equals(framework) &&
+                ((string.IsNullOrEmpty(runtimeIdentifier) && string.IsNullOrEmpty(t.RuntimeIdentifier) ||
+                 string.Equals(runtimeIdentifier, t.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase))));
+        }
+
+        public LockFileLibrary GetLibrary(string name, NuGetVersion version)
+        {
+            return Libraries.FirstOrDefault(l =>
+                string.Equals(l.Name, name) &&
+                l.Version.Equals(version));
         }
     }
 }

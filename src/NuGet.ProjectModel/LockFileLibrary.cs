@@ -10,6 +10,8 @@ namespace NuGet.ProjectModel
     {
         public string Name { get; set; }
 
+        public string Type { get; set; }
+
         public NuGetVersion Version { get; set; }
 
         public bool IsServiceable { get; set; }

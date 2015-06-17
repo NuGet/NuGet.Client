@@ -19,6 +19,8 @@ namespace NuGet.Commands
             Project = project;
             Sources = sources.ToList().AsReadOnly();
             PackagesDirectory = packagesDirectory;
+
+            WriteLockFile = true;
             WriteMSBuildFiles = true;
 
             ExternalProjects = new List<ExternalProjectReference>();
@@ -47,9 +49,21 @@ namespace NuGet.Commands
 
         /// <summary>
         /// The path to the lock file to read/write. If not specified, uses the file 'project.lock.json' in the same
-        /// directory as the provided PackageSpec
+        /// directory as the provided PackageSpec.
         /// </summary>
         public string LockFilePath { get; set; }
+
+        /// <summary>
+        /// Set this to false to prevent the command from writting the lock file (defaults to true)
+        /// </summary>
+        public bool WriteLockFile { get; set; }
+
+        /// <summary>
+        /// The existing lock file to use. If not specified, the lock file will be read from the <see cref="LockFilePath"/>
+        /// (or, if that property is not specified, from the default location of the lock file, as specified in the
+        /// description for <see cref="LockFilePath"/>)
+        /// </summary>
+        public LockFile ExistingLockFile { get; set; }
 
         /// <summary>
         /// The number of concurrent tasks to run during installs. Defaults to

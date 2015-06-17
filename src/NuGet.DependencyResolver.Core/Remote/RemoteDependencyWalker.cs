@@ -24,11 +24,11 @@ namespace NuGet.DependencyResolver
             _context = context;
         }
 
-        public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph)
+        public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
         {
             var cache = new ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>>();
 
-            return CreateGraphNode(cache, library, framework, runtimeIdentifier, runtimeGraph, _ => true);
+            return CreateGraphNode(cache, library, framework, runtimeIdentifier, runtimeGraph, _ => recursive);
         }
 
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, Func<string, bool> predicate)
@@ -293,7 +293,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        private async Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework, CancellationToken cancellationToken)
+        public async Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework, CancellationToken cancellationToken)
         {
             var libraryRange = new LibraryRange
             {

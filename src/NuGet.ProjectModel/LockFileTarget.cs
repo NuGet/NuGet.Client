@@ -12,6 +12,8 @@ namespace NuGet.ProjectModel
 
         public string RuntimeIdentifier { get; set; }
 
+        public string Name => TargetFramework + (string.IsNullOrEmpty(RuntimeIdentifier) ? "" : "/" + RuntimeIdentifier);
+
         public IList<LockFileTargetLibrary> Libraries { get; set; } = new List<LockFileTargetLibrary>();
     }
 }

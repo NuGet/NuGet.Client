@@ -186,4 +186,10 @@
   <data name="ResolverRequest_ToStringFormat" xml:space="preserve">
     <value>{0} (via {1})</value>
   </data>
+  <data name="Log_LockFileMissingLibraryForTargetLibrary" xml:space="preserve">
+    <value>{0} {1} is specified in the Lock File target for {2} but is not present in the top-level Libraries list.</value>
+  </data>
+  <data name="Log_LockFileOutOfDate" xml:space="preserve">
+    <value>The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking.</value>
+  </data>
 </root>

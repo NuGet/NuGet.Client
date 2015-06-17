@@ -132,6 +132,14 @@ namespace NuGet.DependencyResolver
             }
         }
 
+        public static void ForEach<TItem>(this IEnumerable<GraphNode<TItem>> roots, Action<GraphNode<TItem>> visitor)
+        {
+            foreach (var root in roots)
+            {
+                root.ForEach(visitor);
+            }
+        }
+
         public static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor)
         {
             // breadth-first walk of Node tree, without TState parameter
