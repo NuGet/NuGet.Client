@@ -58,7 +58,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly HashSet<string> UnsupportedProjectCapabilities = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "SharedAssetsProject", // This is true for shared projects in universal apps
-            "FileSystemBasedCordovaProject",
         };
 
         public const string WebConfig = "web.config";
