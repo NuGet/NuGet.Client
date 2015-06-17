@@ -15,7 +15,8 @@ namespace NuGet.Packaging
 {
     public static class PackageExtractor
     {
-        public static async Task<IEnumerable<string>> ExtractPackageAsync(Stream packageStream, PackageIdentity packageIdentity,
+        public static async Task<IEnumerable<string>> ExtractPackageAsync(
+            Stream packageStream,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
             PackageSaveModes packageSaveMode,
@@ -32,11 +33,6 @@ namespace NuGet.Packaging
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
 
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException("packageIdentity");
-            }
-
             if (packagePathResolver == null)
             {
                 throw new ArgumentNullException("packagePathResolver");
@@ -47,19 +43,16 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             var zipArchive = new ZipArchive(packageStream);
 
-            // default to non-legacy paths
-            var useLegacyPaths = packageExtractionContext == null ? false : packageExtractionContext.UseLegacyPackageInstallPath;
-
             var packageReader = new PackageReader(zipArchive);
-            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
-            var packageVersionFromNuspec = nuspecReader.GetVersion();
 
-            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(new PackageIdentity(packageIdentity.Id, packageVersionFromNuspec), useLegacyPaths));
+            var packageIdentityFromNuspec = packageReader.GetIdentity();
+
+            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
             filesAdded.AddRange(await PackageHelper.CreatePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token));
 
-            var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
+            var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
             if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
             {
                 // During package extraction, nupkg is the last file to be created
@@ -73,7 +66,7 @@ namespace NuGet.Packaging
             if (packageExtractionContext == null
                 || packageExtractionContext.CopySatelliteFiles)
             {
-                filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentity, packagePathResolver, packageSaveMode, token));
+                filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentityFromNuspec, packagePathResolver, packageSaveMode, token));
             }
 
             return filesAdded;
@@ -82,7 +75,6 @@ namespace NuGet.Packaging
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
             PackageReaderBase packageReader,
             Stream packageStream,
-            PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
             PackageSaveModes packageSaveMode,
@@ -91,11 +83,6 @@ namespace NuGet.Packaging
             if (packageStream == null)
             {
                 throw new ArgumentNullException(nameof(packageStream));
-            }
-
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             if (packagePathResolver == null)
@@ -108,15 +95,9 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             var filesAdded = new List<string>();
 
-            // default to non-legacy paths
-            var useLegacyPaths = packageExtractionContext == null ? false : packageExtractionContext.UseLegacyPackageInstallPath;
+            var packageIdentityFromNuspec = packageReader.GetIdentity();
 
-            var nuspecReader = new NuspecReader(packageReader.GetNuspec());
-            var packageVersionFromNuspec = nuspecReader.GetVersion();
-
-            var packageDirectoryInfo = Directory.CreateDirectory(
-                packagePathResolver.GetInstallPath(
-                    new PackageIdentity(packageIdentity.Id, packageVersionFromNuspec), useLegacyPaths));
+            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
             foreach (var file in packageReader.GetFiles().Where(file => PackageHelper.IsPackageFile(file, packageSaveMode)))
@@ -135,7 +116,7 @@ namespace NuGet.Packaging
                 filesAdded.Add(file);
             }
 
-            var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentity));
+            var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
             if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
             {
                 // During package extraction, nupkg is the last file to be created
@@ -160,12 +141,14 @@ namespace NuGet.Packaging
             {
                 PackageIdentity runtimeIdentity;
                 string packageLanguage;
+
+                var nuspecReader = new NuspecReader(packageReader.GetNuspec());
                 var isSatellitePackage = PackageHelper.IsSatellitePackage(nuspecReader, out runtimeIdentity, out packageLanguage);
 
                 // Short-circuit this if the package is not a satellite package.
                 if (isSatellitePackage)
                 {
-                    filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentity, packagePathResolver, packageSaveMode, token));
+                    filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentityFromNuspec, packagePathResolver, packageSaveMode, token));
                 }
             }
 
