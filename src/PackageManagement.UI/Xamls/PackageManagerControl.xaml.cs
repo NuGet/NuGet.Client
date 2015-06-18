@@ -12,6 +12,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
