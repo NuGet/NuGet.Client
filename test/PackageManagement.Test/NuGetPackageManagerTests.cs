@@ -2110,7 +2110,7 @@ namespace NuGet.Test
             // Main Act
             var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
-                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None), 
+                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None),
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -2182,7 +2182,7 @@ namespace NuGet.Test
             // Main Act
             var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
-                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None), 
+                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None),
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -2358,7 +2358,7 @@ namespace NuGet.Test
             // Act
             var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
-                resolutionContext, 
+                resolutionContext,
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -2839,7 +2839,7 @@ namespace NuGet.Test
             // Main Act
             var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
-                resolutionContext, 
+                resolutionContext,
                 testNuGetProjectContext,
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -3640,7 +3640,7 @@ namespace NuGet.Test
             Assert.True(nugetProjectActions.Select(pa => pa.PackageIdentity.Id).Contains(target, StringComparer.OrdinalIgnoreCase));
         }
 
-        //[Fact]
+        [Fact(Skip = "Test was skipped as part of 475ad399 and is currently broken.")]
         public async Task TestPacManInstallPackageDowngrade()
         {
             // Arrange
@@ -3680,6 +3680,93 @@ namespace NuGet.Test
                 CancellationToken.None);
 
             Assert.True(nugetProjectActions.Select(pa => pa.PackageIdentity.Id).Contains(target, StringComparer.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public async Task ExecuteNuGetProjectActionsAsync_FailsIfThePackageTypeUsesManagedCodeConventions()
+        {
+            // Arrange
+            var packageSource = new PackageSource("some source");
+            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
+            var sourceRepositoryProvider = new SourceRepositoryProvider(
+                packageSourceProvider,
+                new[] { new Lazy<INuGetResourceProvider>(() => new TestDownloadResourceProvider()) });
+            var testSettings = NullSettings.Instance;
+            var testSolutionManager = new TestSolutionManager();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nugetProject = new TestNuGetProject(new PackageReference[0]);
+
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+            var identity = new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0"));
+            var actions = new[] { NuGetProjectAction.CreateInstallProjectAction(identity, sourceRepositoryProvider.CreateRepository(packageSource)) };
+
+            // Act and Assert
+            var ex = await Assert.ThrowsAsync<NuGetVersionNotSatisfiedException>(() =>
+                nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    nugetProject,
+                    actions,
+                    new TestNuGetProjectContext(),
+                    default(CancellationToken)));
+            Assert.Equal("Package 'ManagedCodeConventions 1.0.0' uses features that are not supported by the current version of NuGet. " +
+                "To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget.", ex.Message);
+        }
+
+        private class TestDownloadResourceProvider : ResourceProvider
+        {
+            public TestDownloadResourceProvider()
+                : base(typeof(DownloadResource))
+            {
+            }
+
+            public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+            {
+                INuGetResource resource = new TestDownloadResource();
+                return Task.FromResult(Tuple.Create(true, resource));
+            }
+        }
+
+        private class TestPackageReader : PackageReaderBase
+        {
+            public TestPackageReader()
+                : base(new FrameworkNameProvider(new[] { DefaultFrameworkMappings.Instance }, new[] { DefaultPortableFrameworkMappings.Instance }))
+            {
+            }
+
+            public override PackageIdentity GetIdentity() => new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0"));
+
+            public override NuGetVersion GetMinClientVersion() => new NuGetVersion(2, 0, 0);
+
+            public override IEnumerable<string> GetFiles()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override IEnumerable<string> GetFiles(string folder)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Stream GetStream(string path)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override PackageType GetPackageType()
+            {
+                return new PackageType("Managed", new Version(2, 0));
+            }
+        }
+
+        private class TestDownloadResource : DownloadResource
+        {
+            public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, ISettings settings, CancellationToken token)
+            {
+                return Task.FromResult(new DownloadResourceResult(Stream.Null, new TestPackageReader()));
+            }
         }
     }
 }

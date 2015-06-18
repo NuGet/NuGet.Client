@@ -466,6 +466,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; uses features that are not supported by the current version of NuGet. To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget..
+        /// </summary>
+        internal static string UnsupportedPackageFeature {
+            get {
+                return ResourceManager.GetString("UnsupportedPackageFeature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Install failed. Rolling back....
         /// </summary>
         internal static string Warning_RollingBack {

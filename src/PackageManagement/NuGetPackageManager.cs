@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -1406,8 +1407,8 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
-            // TODO: MinClientVersion check should be performed in preview. Can easily avoid a lot of rollback
-            MinClientVersionHandler.CheckMinClientVersion(resourceResult, packageIdentity);
+            // TODO: EnsurePackageCompatibility check should be performed in preview. Can easily avoid a lot of rollback
+            EnsurePackageCompatibility(resourceResult, packageIdentity);
 
             packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
             return nuGetProject.InstallPackageAsync(packageIdentity, resourceResult, nuGetProjectContext, token);
@@ -1569,6 +1570,43 @@ namespace NuGet.PackageManagement
                 {
                     ideExecutionContext.IDEDirectInstall = null;
                 }
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "Disposing the PackageReader will dispose the backing stream that we want to leave open.")]
+        private static void EnsurePackageCompatibility(DownloadResourceResult downloadResourceResult, PackageIdentity packageIdentity)
+        {
+            NuGetVersion packageMinClientVersion;
+            PackageType packageType;
+            if (downloadResourceResult.PackageReader != null)
+            {
+                packageMinClientVersion = downloadResourceResult.PackageReader.GetMinClientVersion();
+                packageType = downloadResourceResult.PackageReader.GetPackageType();
+            }
+            else
+            {
+                var packageZipArchive = new ZipArchive(downloadResourceResult.PackageStream, ZipArchiveMode.Read, leaveOpen: true);
+                var packageReader = new PackageReader(packageZipArchive);
+                var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+                packageMinClientVersion = nuspecReader.GetMinClientVersion();
+                packageType = nuspecReader.GetPackageType();
+            }
+
+            // validate that the current version of NuGet satisfies the minVersion attribute specified in the .nuspec
+            if (Constants.NuGetSemanticVersion < packageMinClientVersion)
+            {
+                throw new NuGetVersionNotSatisfiedException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied,
+                        packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(),
+                        packageMinClientVersion.ToNormalizedString(), Constants.NuGetSemanticVersion.ToNormalizedString()));
+            }
+
+            if (packageType != PackageType.Default)
+            {
+                throw new NuGetVersionNotSatisfiedException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedPackageFeature,
+                    packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString()));
             }
         }
     }

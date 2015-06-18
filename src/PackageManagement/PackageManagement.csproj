@@ -190,7 +190,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Include="Utility\MinClientVersionHandler.cs" />
     <Compile Include="Utility\PackageReferenceComparer.cs" />
     <Compile Include="Utility\PackagesFolderPathUtility.cs" />
     <Compile Include="Utility\SourceRepositoryComparer.cs" />
