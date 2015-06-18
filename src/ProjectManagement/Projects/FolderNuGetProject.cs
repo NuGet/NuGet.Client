@@ -88,7 +88,6 @@ namespace NuGet.ProjectManagement
                     await PackageExtractor.ExtractPackageAsync(
                         downloadResourceResult.PackageReader,
                         downloadResourceResult.PackageStream,
-                        packageIdentity,
                         PackagePathResolver,
                         nuGetProjectContext.PackageExtractionContext,
                         PackageSaveMode,
@@ -99,7 +98,6 @@ namespace NuGet.ProjectManagement
                 addedPackageFilesList.AddRange(
                     await PackageExtractor.ExtractPackageAsync(
                         downloadResourceResult.PackageStream,
-                        packageIdentity,
                         PackagePathResolver,
                         nuGetProjectContext.PackageExtractionContext,
                         PackageSaveMode,

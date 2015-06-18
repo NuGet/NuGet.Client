@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using System.IO.Compression;
+using NuGet.Packaging;
 
 namespace NuGet.PackageManagement
 {
@@ -114,6 +116,15 @@ namespace NuGet.PackageManagement
             if (downloadResourceResult == null)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadStreamNotAvailable, packageIdentity, sourceRepository.PackageSource.Source));
+            }
+
+            if (downloadResourceResult.PackageReader == null)
+            {
+                downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
+                var zipArchive = new ZipArchive(downloadResourceResult.PackageStream);
+                var packageReader = new PackageReader(zipArchive);
+                downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
+                downloadResourceResult = new DownloadResourceResult(downloadResourceResult.PackageStream, packageReader);
             }
 
             return downloadResourceResult;

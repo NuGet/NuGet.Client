@@ -1096,7 +1096,10 @@ namespace NuGet.PackageManagement
                         {
                             using (var downloadPackageResult = await PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, Settings, token))
                             {
-                                await ExecuteInstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, downloadPackageResult, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                                // use the version exactly as specified in the nuspec file
+                                var packageIdentity = downloadPackageResult.PackageReader.GetIdentity();
+
+                                await ExecuteInstallAsync(nuGetProject, packageIdentity, downloadPackageResult, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                             }
                         }
 
@@ -1341,6 +1344,8 @@ namespace NuGet.PackageManagement
                 Settings,
                 token))
             {
+                packageIdentity = downloadResult.PackageReader.GetIdentity();
+
                 // If you already downloaded the package, just restore it, don't cancel the operation now
                 await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);
             }
