@@ -34,8 +34,10 @@ namespace NuGet.PackageManagement
             if (ProjectManagement.Constants.NuGetSemanticVersion < packageMinClientVersion)
             {
                 throw new NuGetVersionNotSatisfiedException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied, packageIdentity,
-                        packageMinClientVersion.ToNormalizedString(), ProjectManagement.Constants.NuGetSemanticVersion.ToNormalizedString()));
+                    string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied,
+                        packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(),
+                        packageMinClientVersion.ToNormalizedString(), 
+                        ProjectManagement.Constants.NuGetSemanticVersion.ToNormalizedString()));
             }
         }
     }
