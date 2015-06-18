@@ -108,6 +108,17 @@ namespace NuGet.Packaging
             return stream;
         }
 
+        /// <summary>
+        /// Underlying zip archive
+        /// </summary>
+        internal ZipArchive ZipArchive
+        {
+            get
+            {
+                return _zip;
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);

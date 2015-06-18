@@ -100,20 +100,39 @@ namespace NuGet.Packaging
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
-            foreach (var file in packageReader.GetFiles().Where(file => PackageHelper.IsPackageFile(file, packageSaveMode)))
+            var zipPackageReader = packageReader as PackageReader;
+
+            if (zipPackageReader != null)
             {
-                token.ThrowIfCancellationRequested();
+                // For zip files, use the ZipArchive directly
+                var files = await PackageHelper.CreatePackageFiles(
+                    zipPackageReader.ZipArchive.Entries, 
+                    packageDirectory, 
+                    packageSaveMode, 
+                    token);
 
-                var targetPath = Path.Combine(packageDirectory, file);
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-
-                using (var sourceStream = packageReader.GetStream(file))
-                using (var targetStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 1024, useAsync: true))
+                filesAdded.AddRange(files);
+            }
+            else
+            {
+                // Folder readers
+                foreach (var file in packageReader.GetFiles().Where(file => PackageHelper.IsPackageFile(file, packageSaveMode)))
                 {
-                    await sourceStream.CopyToAsync(targetStream);
-                }
+                    token.ThrowIfCancellationRequested();
 
-                filesAdded.Add(file);
+                    var targetPath = Path.Combine(packageDirectory, file);
+                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+
+                    using (var sourceStream = packageReader.GetStream(file))
+                    {
+                        using (var targetStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 1024, useAsync: true))
+                        {
+                            await sourceStream.CopyToAsync(targetStream);
+                        }
+                    }
+
+                    filesAdded.Add(file);
+                }
             }
 
             var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
@@ -130,7 +149,6 @@ namespace NuGet.Packaging
                     }
 
                     packageStream.Position = 0;
-
                 }
 
                 filesAdded.Add(await PackageHelper.CreatePackageFile(nupkgFilePath, packageStream, token));

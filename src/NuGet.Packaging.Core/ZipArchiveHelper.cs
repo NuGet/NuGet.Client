@@ -16,7 +16,9 @@ namespace NuGet.Packaging.Core
     {
         public static ZipArchiveEntry GetEntry(ZipArchive zipArchive, string path)
         {
-            var entry = zipArchive.Entries.Where(e => e.FullName == path).FirstOrDefault();
+            var unescapedPath = UnescapePath(path);
+
+            var entry = zipArchive.Entries.FirstOrDefault(zipEntry => UnescapePath(zipEntry.FullName) == unescapedPath);
 
             if (entry == null)
             {
