@@ -1874,7 +1874,7 @@ namespace NuGet.Test
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
             var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
+                Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
             Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
