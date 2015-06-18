@@ -13,7 +13,7 @@
     <self:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
     <DataTemplate
-      DataType="{x:Type self:LoadingStatusIndicator}">
+      DataType="{x:Type self:LoadingStatusIndicator}" >
       <Grid
         Margin="0,8">
         <TextBlock
@@ -42,7 +42,6 @@
             Text="{Binding Path=LoadingMessage}"
             HorizontalAlignment="Center" />
         </StackPanel>
-
 
         <StackPanel
           Orientation="Vertical"
@@ -236,6 +235,9 @@
       <Setter
         Property="Template"
         Value="{StaticResource LoadingIndicatorListBoxItemTemplate}" />
+      <Setter
+        Property="Focusable"
+        Value="False" />
     </Style>
 
     <!-- the style of the ListBoxItem when the item is a package. -->
