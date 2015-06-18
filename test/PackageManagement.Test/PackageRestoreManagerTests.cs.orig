@@ -52,12 +52,17 @@ namespace NuGet.Test
             }
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+<<<<<<< HEAD
             var testSettings = Configuration.NullSettings.Instance;
+            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = NullSettings.Instance;
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var packageRestoreManager = new PackageRestoreManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager);
+>>>>>>> origin/3.0-rtm
 
             // Act
             var packagesFromSolution = (await packageRestoreManager.GetPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, token));
@@ -91,12 +96,17 @@ namespace NuGet.Test
             var token = CancellationToken.None;
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+<<<<<<< HEAD
             var testSettings = Configuration.NullSettings.Instance;
+            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = NullSettings.Instance;
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var packageRestoreManager = new PackageRestoreManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager);
+>>>>>>> origin/3.0-rtm
 
             // Act
             var packagesFromSolution = (await packageRestoreManager.GetPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, token));
@@ -183,12 +193,17 @@ namespace NuGet.Test
             }
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+<<<<<<< HEAD
             var testSettings = Configuration.NullSettings.Instance;
+            var packageRestoreManager = new PackageRestoreManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = NullSettings.Instance;
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var packageRestoreManager = new PackageRestoreManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager);
+>>>>>>> origin/3.0-rtm
 
             var packagesMissingEventCount = 0;
             var packagesMissing = false;

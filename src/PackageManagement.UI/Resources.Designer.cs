@@ -711,6 +711,33 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Multiple packages failed to uninstall. Restart Visual Studio to finish the process..
+        /// </summary>
+        public static string RequestRestartToCompleteUninstallMultiplePackages {
+            get {
+                return ResourceManager.GetString("RequestRestartToCompleteUninstallMultiplePackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package at &apos;{0}&apos; failed to uninstall. Restart Visual Studio to finish the process..
+        /// </summary>
+        public static string RequestRestartToCompleteUninstallSinglePackage {
+            get {
+                return ResourceManager.GetString("RequestRestartToCompleteUninstallSinglePackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rest_art.
+        /// </summary>
+        public static string RestartButtonLabel {
+            get {
+                return ResourceManager.GetString("RestartButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to _Restore.
         /// </summary>
         public static string RestoreButtonLabel {

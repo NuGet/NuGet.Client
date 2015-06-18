@@ -1837,8 +1837,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1888,8 +1892,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1956,8 +1964,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -2110,7 +2122,11 @@ namespace NuGet.Test
             // Main Act
             var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
+<<<<<<< HEAD
+                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None), 
+=======
                 new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None),
+>>>>>>> origin/3.0-rtm
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -2182,7 +2198,11 @@ namespace NuGet.Test
             // Main Act
             var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
+<<<<<<< HEAD
+                new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None), 
+=======
                 new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None),
+>>>>>>> origin/3.0-rtm
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -2358,7 +2378,11 @@ namespace NuGet.Test
             // Act
             var packageActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
+<<<<<<< HEAD
+                resolutionContext, 
+=======
                 resolutionContext,
+>>>>>>> origin/3.0-rtm
                 new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -2606,8 +2630,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -2648,8 +2676,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -2695,8 +2727,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -2774,8 +2810,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -2839,7 +2879,11 @@ namespace NuGet.Test
             // Main Act
             var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                 msBuildNuGetProject,
+<<<<<<< HEAD
+                resolutionContext, 
+=======
                 resolutionContext,
+>>>>>>> origin/3.0-rtm
                 testNuGetProjectContext,
                 sourceRepositoryProvider.GetRepositories(),
                 sourceRepositoryProvider.GetRepositories(),
@@ -2856,8 +2900,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -2905,8 +2953,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -2958,8 +3010,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3011,8 +3067,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3064,8 +3124,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3117,8 +3181,12 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3182,8 +3250,12 @@ namespace NuGet.Test
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
 
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3252,8 +3324,12 @@ namespace NuGet.Test
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
 
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3298,8 +3374,12 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3349,8 +3429,12 @@ namespace NuGet.Test
             });
 
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3372,7 +3456,11 @@ namespace NuGet.Test
                 msBuildNuGetProject,
                 target,
                 new ResolutionContext(DependencyBehavior.Lowest, true, false, VersionConstraints.None),
+<<<<<<< HEAD
+                new TestNuGetProjectContext(), 
+=======
                 new TestNuGetProjectContext(),
+>>>>>>> origin/3.0-rtm
                 sourceRepositoryProvider.GetRepositories().First(),
                 sourceRepositoryProvider.GetRepositories(),
                 token);
@@ -3400,8 +3488,12 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3452,8 +3544,12 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3504,8 +3600,12 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
+>>>>>>> origin/3.0-rtm
             var token = CancellationToken.None;
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3618,15 +3718,20 @@ namespace NuGet.Test
 
             // Act
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            var testSettings = new NuGet.Configuration.NullSettings();
+            var testSettings = new NullSettings();
             var testSolutionManager = new TestSolutionManager();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
 
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
+<<<<<<< HEAD
+                new NuGet.Configuration.NullSettings(),
+                new TestSolutionManager());
+=======
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
+>>>>>>> origin/3.0-rtm
 
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 nuGetProject,
@@ -3660,15 +3765,20 @@ namespace NuGet.Test
 
             // Act
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            var testSettings = new NuGet.Configuration.NullSettings();
+            var testSettings = new NullSettings();
             var testSolutionManager = new TestSolutionManager();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
 
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
+<<<<<<< HEAD
+                new NuGet.Configuration.NullSettings(),
+                new TestSolutionManager());
+=======
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
+>>>>>>> origin/3.0-rtm
 
             var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(
                 nuGetProject,
@@ -3686,15 +3796,15 @@ namespace NuGet.Test
         public async Task ExecuteNuGetProjectActionsAsync_FailsIfThePackageTypeUsesManagedCodeConventions()
         {
             // Arrange
-            var packageSource = new Configuration.PackageSource("some source");
+            var packageSource = new PackageSource("some source");
             var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
             var sourceRepositoryProvider = new SourceRepositoryProvider(
                 packageSourceProvider,
                 new[] { new Lazy<INuGetResourceProvider>(() => new TestDownloadResourceProvider()) });
-            var testSettings = Configuration.NullSettings.Instance;
+            var testSettings = NullSettings.Instance;
             var testSolutionManager = new TestSolutionManager();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
-            var nugetProject = new TestNuGetProject(new Packaging.PackageReference[0]);
+            var nugetProject = new TestNuGetProject(new PackageReference[0]);
 
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -3763,10 +3873,7 @@ namespace NuGet.Test
 
         private class TestDownloadResource : DownloadResource
         {
-            public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
-                PackageIdentity identity,
-                Configuration.ISettings settings,
-                CancellationToken token)
+            public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, ISettings settings, CancellationToken token)
             {
                 return Task.FromResult(new DownloadResourceResult(Stream.Null, new TestPackageReader()));
             }

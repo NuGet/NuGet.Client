@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement
@@ -19,7 +20,11 @@ namespace NuGet.PackageManagement
         /// <param name="packagesConfig">entries from packages.config</param>
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfVersionIsDisallowedByPackagesConfig(string target,
+<<<<<<< HEAD
             IEnumerable<Packaging.PackageReference> packagesConfig,
+=======
+            IEnumerable<PackageReference> packagesConfig,
+>>>>>>> origin/3.0-rtm
             IEnumerable<PackageDependencyInfo> availablePackages)
         {
             ThrowIfVersionIsDisallowedByPackagesConfig(new string[] { target }, packagesConfig, availablePackages);
@@ -33,7 +38,11 @@ namespace NuGet.PackageManagement
         /// <param name="packagesConfig">entries from packages.config</param>
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfVersionIsDisallowedByPackagesConfig(IEnumerable<string> targets,
+<<<<<<< HEAD
             IEnumerable<Packaging.PackageReference> packagesConfig,
+=======
+            IEnumerable<PackageReference> packagesConfig,
+>>>>>>> origin/3.0-rtm
             IEnumerable<PackageDependencyInfo> availablePackages)
         {
             foreach (var target in targets)
@@ -67,7 +76,11 @@ namespace NuGet.PackageManagement
         /// <param name="packagesConfig">entries from packages.config</param>
         /// <param name="availablePackages">gathered packages</param>
         public static void ThrowIfNewerVersionAlreadyReferenced(string target,
+<<<<<<< HEAD
             IEnumerable<Packaging.PackageReference> packagesConfig,
+=======
+            IEnumerable<PackageReference> packagesConfig,
+>>>>>>> origin/3.0-rtm
             IEnumerable<PackageDependencyInfo> availablePackages)
         {
             var configEntry = packagesConfig.FirstOrDefault(r => r.PackageIdentity.Id.Equals(target, StringComparison.OrdinalIgnoreCase));

@@ -1,7 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+<<<<<<< HEAD
+=======
+extern alias Legacy;
 
+>>>>>>> origin/3.0-rtm
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +21,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -49,10 +52,14 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
+<<<<<<< HEAD
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, string packagesFolderPath)
+=======
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
-            Configuration.ISettings settings,
+            ISettings settings,
             string packagesFolderPath)
+>>>>>>> origin/3.0-rtm
         {
             if (sourceRepositoryProvider == null)
             {
@@ -78,11 +85,15 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager with a mandatory SolutionManager lke VS
         /// </summary>
+<<<<<<< HEAD
+        public NuGetPackageManager(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager)
+=======
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
-            Configuration.ISettings settings,
+            ISettings settings,
             ISolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager)
+>>>>>>> origin/3.0-rtm
         {
             if (sourceRepositoryProvider == null)
             {
@@ -286,6 +297,7 @@ namespace NuGet.PackageManagement
                 secondarySources: secondarySources,
                 token: token);
         }
+<<<<<<< HEAD
 
         public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             PackageIdentity packageIdentity,
@@ -307,6 +319,29 @@ namespace NuGet.PackageManagement
                 token: token);
         }
 
+=======
+
+        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
+            PackageIdentity packageIdentity,
+            NuGetProject nuGetProject,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
+        {
+            return PreviewUpdatePackagesAsync(
+                packageId: null,
+                packageIdentity: packageIdentity,
+                nuGetProject: nuGetProject,
+                resolutionContext: resolutionContext,
+                nuGetProjectContext: nuGetProjectContext,
+                primarySources: primarySources,
+                secondarySources: secondarySources,
+                token: token);
+        }
+
+>>>>>>> origin/3.0-rtm
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
                 string packageId,
                 PackageIdentity packageIdentity,
@@ -352,10 +387,17 @@ namespace NuGet.PackageManagement
             {
                 preferredVersions[installedPackage.Id] = installedPackage;
             }
+<<<<<<< HEAD
 
             var primaryTargetIds = Enumerable.Empty<string>();
             var primaryTargets = Enumerable.Empty<PackageIdentity>();
 
+=======
+
+            var primaryTargetIds = Enumerable.Empty<string>();
+            var primaryTargets = Enumerable.Empty<PackageIdentity>();
+
+>>>>>>> origin/3.0-rtm
             // We have been given the exact PackageIdentity (id and version) to update to e.g. from PMC update-package -Id <id> -Version <version>
             if (packageIdentity != null)
             {
@@ -404,7 +446,11 @@ namespace NuGet.PackageManagement
                 // Step-1 : Get metadata resources using gatherer
                 var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+<<<<<<< HEAD
                 nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
+=======
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
+>>>>>>> origin/3.0-rtm
 
                 var allSources = new List<SourceRepository>(primarySources);
                 var primarySourcesSet = new HashSet<string>(primarySources.Select(s => s.PackageSource.Source));
@@ -485,10 +531,16 @@ namespace NuGet.PackageManagement
                     packageTargetIdsForResolver,
                     projectInstalledPackageReferences,
                     preferredVersions.Values,
+<<<<<<< HEAD
                     prunedAvailablePackages,
                     SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource));
 
                 nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
+=======
+                    prunedAvailablePackages);
+
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
+>>>>>>> origin/3.0-rtm
                 var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
                 if (newListOfInstalledPackages == null)
                 {
@@ -559,7 +611,11 @@ namespace NuGet.PackageManagement
             // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages
             var nuGetProjectActions = new List<NuGetProjectAction>();
+<<<<<<< HEAD
             nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.ResolvingActionsToInstallOrUpdateMultiplePackages);
+=======
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvingActionsToInstallOrUpdateMultiplePackages);
+>>>>>>> origin/3.0-rtm
 
             // we are reinstalling everything so we just take the ordering directly from the Resolver
             var newPackagesToUninstall = oldListOfInstalledPackages;
@@ -1154,7 +1210,11 @@ namespace NuGet.PackageManagement
                         if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
                         {
                             nuGetProjectContext.Log(
+<<<<<<< HEAD
                                 ProjectManagement.MessageLevel.Info,
+=======
+                                MessageLevel.Info,
+>>>>>>> origin/3.0-rtm
                                 Strings.SuccessfullyInstalled,
                                 nuGetProjectAction.PackageIdentity,
                                 nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
@@ -1163,7 +1223,11 @@ namespace NuGet.PackageManagement
                         {
                             // uninstall
                             nuGetProjectContext.Log(
+<<<<<<< HEAD
                                 ProjectManagement.MessageLevel.Info,
+=======
+                                MessageLevel.Info,
+>>>>>>> origin/3.0-rtm
                                 Strings.SuccessfullyUninstalled,
                                 nuGetProjectAction.PackageIdentity,
                                 nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
@@ -1363,7 +1427,11 @@ namespace NuGet.PackageManagement
                     if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
                         nuGetProjectContext.Log(
+<<<<<<< HEAD
                             ProjectManagement.MessageLevel.Info,
+=======
+                            MessageLevel.Info,
+>>>>>>> origin/3.0-rtm
                             Strings.SuccessfullyInstalled,
                             identityString,
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
@@ -1372,11 +1440,16 @@ namespace NuGet.PackageManagement
                     {
                         // uninstall
                         nuGetProjectContext.Log(
+<<<<<<< HEAD
                             ProjectManagement.MessageLevel.Info,
+=======
+                            MessageLevel.Info,
+>>>>>>> origin/3.0-rtm
                             Strings.SuccessfullyUninstalled,
                             identityString,
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
+<<<<<<< HEAD
                 }
 
                 // Run init.ps1 scripts
@@ -1393,6 +1466,8 @@ namespace NuGet.PackageManagement
                         var packagePath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(package, Settings);
                         await buildIntegratedProject.ExecuteInitScriptAsync(package, nuGetProjectContext, false);
                     }
+=======
+>>>>>>> origin/3.0-rtm
                 }
             }
             else
@@ -1701,12 +1776,12 @@ namespace NuGet.PackageManagement
             }
 
             // validate that the current version of NuGet satisfies the minVersion attribute specified in the .nuspec
-            if (ProjectManagement.Constants.NuGetSemanticVersion < packageMinClientVersion)
+            if (Constants.NuGetSemanticVersion < packageMinClientVersion)
             {
                 throw new NuGetVersionNotSatisfiedException(
                     string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied,
                         packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(),
-                        packageMinClientVersion.ToNormalizedString(), ProjectManagement.Constants.NuGetSemanticVersion.ToNormalizedString()));
+                        packageMinClientVersion.ToNormalizedString(), Constants.NuGetSemanticVersion.ToNormalizedString()));
             }
 
             if (packageType != PackageType.Default)

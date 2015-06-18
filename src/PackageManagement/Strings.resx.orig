@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AnotherNuGetProjectWithSameNameExistsInSolution" xml:space="preserve">
+    <value>Another NuGetProject with the same name '{0}' exists in solution</value>
+  </data>
+  <data name="AttemptingToGatherDependencyInfo" xml:space="preserve">
+    <value>Attempting to gather dependencies information for package '{0}' with respect to project '{1}', targeting '{2}'</value>
+  </data>
+  <data name="AttemptingToResolveDependencies" xml:space="preserve">
+    <value>Attempting to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
+  </data>
+  <data name="InstalledPackage" xml:space="preserve">
+    <value>Installed package '{0}' to project</value>
+  </data>
+  <data name="InstallingPackage" xml:space="preserve">
+    <value>Installing package '{0}' to project</value>
+  </data>
+  <data name="InvalidNullSettingsOperation" xml:space="preserve">
+    <value>'{0}' cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to '%AppData%\NuGet\NuGet.config'</value>
+  </data>
+  <data name="MultiplePackageInstallOrUpdateHasToBeAnUpdate" xml:space="preserve">
+    <value>When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest</value>
+  </data>
+  <data name="NoLatestVersionFound" xml:space="preserve">
+    <value>No latest version found for the '{0}' for the given source repositories and resolution context</value>
+  </data>
+  <data name="NoNuGetProjectWithSpecifiedName" xml:space="preserve">
+    <value>No NuGetProject is available with specified name '{0}'</value>
+  </data>
+  <data name="NuGetProjectDoesNotHaveName" xml:space="preserve">
+    <value>NuGetProject does not have 'Name' set in metadata. It should be set and it should be unique</value>
+  </data>
+  <data name="PackageCouldNotBeInstalled" xml:space="preserve">
+    <value>Package '{0}' could not be installed</value>
+  </data>
+  <data name="PackageHasDependent" xml:space="preserve">
+    <value>Unable to uninstall '{0}' because '{1}' depends on it.</value>
+  </data>
+  <data name="PackageHasDependents" xml:space="preserve">
+    <value>Unable to uninstall '{0}' because '{1}' depend on it.</value>
+  </data>
+  <data name="PackageNotFound" xml:space="preserve">
+    <value>Package '{0}' is not found</value>
+  </data>
+  <data name="PackagesCouldNotBeInstalled" xml:space="preserve">
+    <value>Packages could not be installed</value>
+  </data>
+  <data name="PackageToBeUninstalledCouldNotBeFound" xml:space="preserve">
+    <value>Package '{0}' to be uninstalled could not be found in project '{1}'</value>
+  </data>
+  <data name="ResolvedActionsToInstallPackage" xml:space="preserve">
+    <value>Resolved actions to install package '{0}'</value>
+  </data>
+  <data name="ResolvedActionsToUninstallPackage" xml:space="preserve">
+    <value>Resolved actions to uninstall package '{0}'</value>
+  </data>
+  <data name="ResolvingActionsToInstallPackage" xml:space="preserve">
+    <value>Resolving actions to install package '{0}'</value>
+  </data>
+  <data name="ResolvingActionsToUninstallPackage" xml:space="preserve">
+    <value>Resolving actions to uninstall package '{0}'</value>
+  </data>
+  <data name="RestoringPackage" xml:space="preserve">
+    <value>Restoring NuGet package {0}.</value>
+  </data>
+  <data name="SolutionDirectoryNotAvailable" xml:space="preserve">
+    <value>Solution is not opened or not saved. Please ensure you have an open and saved solution.</value>
+  </data>
+  <data name="SolutionManagerNotAvailableForUninstall" xml:space="preserve">
+    <value>Uninstall is not supported when SolutionManager is not available</value>
+  </data>
+  <data name="UnableToGatherDependencyInfo" xml:space="preserve">
+    <value>Unable to gather dependencies information for package '{0}'</value>
+  </data>
+  <data name="UnableToResolveDependencyInfo" xml:space="preserve">
+    <value>Unable to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
+  </data>
+  <data name="UnknownPackage" xml:space="preserve">
+    <value>Unable to find package '{0}'</value>
+  </data>
+  <data name="UnknownPackageSpecificVersion" xml:space="preserve">
+    <value>Unable to find version '{1}' of package '{0}'.</value>
+  </data>
+  <data name="AttemptingToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
+    <value>Attempting to gather dependencies information for multiple packages with respect to project '{0}', targeting '{1}'</value>
+  </data>
+  <data name="AttemptingToResolveDependenciesForMultiplePackages" xml:space="preserve">
+    <value>Attempting to resolve dependencies for multiple packages</value>
+  </data>
+  <data name="OneOrMorePackagesNotFound" xml:space="preserve">
+    <value>One or more packages not found</value>
+  </data>
+  <data name="ResolvingActionsToInstallOrUpdateMultiplePackages" xml:space="preserve">
+    <value>Resolving actions install multiple packages</value>
+  </data>
+  <data name="UnableToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
+    <value>Unable to gather dependencies information for multiple packages</value>
+  </data>
+  <data name="UnableToResolveDependencyInfoForMultiplePackages" xml:space="preserve">
+    <value>Unable to resolve dependencies for multiple packages</value>
+  </data>
+  <data name="PackageMinVersionNotSatisfied" xml:space="preserve">
+    <value>The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget</value>
+  </data>
+  <data name="Warning_RollingBack" xml:space="preserve">
+    <value>Install failed. Rolling back...</value>
+  </data>
+  <data name="NewerVersionAlreadyReferenced" xml:space="preserve">
+    <value>Already referencing a newer version of '{0}'..</value>
+  </data>
+  <data name="ParameterCannotBeZeroOrNegative" xml:space="preserve">
+    <value>Parameter cannot be zero or negative</value>
+  </data>
+  <data name="PackagesConfigAllowedVersionConflict" xml:space="preserve">
+    <value>Unable to resolve '{0}'. An additional constraint '{1}' defined in {2} prevents this operation.</value>
+  </data>
+  <data name="RestoreFailedRollingBack" xml:space="preserve">
+    <value>Package restore failed. Rolling back package changes for '{0}'.</value>
+  </data>
+  <data name="DownloadResourceNotFound" xml:space="preserve">
+    <value>Cannot download packages from '{0}'.</value>
+  </data>
+  <data name="DownloadStreamNotAvailable" xml:space="preserve">
+    <value>Package stream for '{0}' cannot be found at '{1}'.</value>
+  </data>
+  <data name="BuildIntegratedPackageRestoreSucceeded" xml:space="preserve">
+    <value>Package restore completed successfully for '{0}'.</value>
+  </data>
+  <data name="BuildIntegratedPackageRestoreStarted" xml:space="preserve">
+    <value>Restoring packages for '{0}'.</value>
+  </data>
+  <data name="BuildIntegratedPackageRestoreFailed" xml:space="preserve">
+    <value>Package restore failed for '{0}'.</value>
+  </data>
+  <data name="SuccessfullyInstalled" xml:space="preserve">
+    <value>Successfully installed '{0}' to {1}</value>
+  </data>
+  <data name="SuccessfullyUninstalled" xml:space="preserve">
+    <value>Successfully uninstalled '{0}' from {1}</value>
+  </data>
+<<<<<<< HEAD
+=======
+  <data name="UnsupportedPackageFeature" xml:space="preserve">
+    <value>Package '{0}' uses features that are not supported by the current version of NuGet. To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget.</value>
+  </data>
+>>>>>>> origin/3.0-rtm
+</root>

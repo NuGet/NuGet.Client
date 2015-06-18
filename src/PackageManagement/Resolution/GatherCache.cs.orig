@@ -28,7 +28,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Add a single package
         /// </summary>
+<<<<<<< HEAD
         public void AddPackageFromSingleVersionLookup(Configuration.PackageSource source, PackageIdentity identity, SourcePackageDependencyInfo package)
+=======
+        public void AddPackageFromSingleVersionLookup(PackageSource source, PackageIdentity identity, SourcePackageDependencyInfo package)
+>>>>>>> origin/3.0-rtm
         {
             var key = new SourceAndPackageIdentity(identity, source);
 
@@ -38,7 +42,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Add the full list of versions for a package
         /// </summary>
+<<<<<<< HEAD
         public void AddAllPackagesForId(Configuration.PackageSource source, string packageId, List<SourcePackageDependencyInfo> packages)
+=======
+        public void AddAllPackagesForId(PackageSource source, string packageId, List<SourcePackageDependencyInfo> packages)
+>>>>>>> origin/3.0-rtm
         {
             var key = new SourceAndPackageId(packageId, source);
 
@@ -48,7 +56,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Retrieve an exact version of a package
         /// </summary>
+<<<<<<< HEAD
         public GatherCacheResult GetPackage(Configuration.PackageSource source, PackageIdentity package)
+=======
+        public GatherCacheResult GetPackage(PackageSource source, PackageIdentity package)
+>>>>>>> origin/3.0-rtm
         {
             var key = new SourceAndPackageIdentity(package, source);
 
@@ -82,7 +94,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Retrieve all versions of a package id
         /// </summary>
+<<<<<<< HEAD
         public GatherCacheResult GetPackages(Configuration.PackageSource source, string packageId)
+=======
+        public GatherCacheResult GetPackages(PackageSource source, string packageId)
+>>>>>>> origin/3.0-rtm
         {
             var key = new SourceAndPackageId(packageId, source);
 
@@ -98,15 +114,22 @@ namespace NuGet.PackageManagement
         /// </summary>
         private class SourceAndPackageIdentity : IEquatable<SourceAndPackageIdentity>
         {
+<<<<<<< HEAD
             public SourceAndPackageIdentity(PackageIdentity package, Configuration.PackageSource source)
+=======
+            public SourceAndPackageIdentity(PackageIdentity package, PackageSource source)
+>>>>>>> origin/3.0-rtm
             {
                 Package = package;
                 Source = source;
             }
 
             public PackageIdentity Package { get; }
-
+<<<<<<< HEAD
             public Configuration.PackageSource Source { get; }
+=======
+            public PackageSource Source { get; }
+>>>>>>> origin/3.0-rtm
 
             public bool Equals(SourceAndPackageIdentity other)
             {
@@ -145,14 +168,22 @@ namespace NuGet.PackageManagement
         /// </summary>
         private class SourceAndPackageId : IEquatable<SourceAndPackageId>
         {
+<<<<<<< HEAD
             public SourceAndPackageId(string packageId, Configuration.PackageSource source)
+=======
+            public SourceAndPackageId(string packageId, PackageSource source)
+>>>>>>> origin/3.0-rtm
             {
                 PackageId = packageId;
                 Source = source;
             }
 
             public string PackageId { get; set; }
+<<<<<<< HEAD
             public Configuration.PackageSource Source { get; set; }
+=======
+            public PackageSource Source { get; set; }
+>>>>>>> origin/3.0-rtm
 
             public bool Equals(SourceAndPackageId other)
             {

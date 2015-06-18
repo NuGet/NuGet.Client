@@ -31,10 +31,14 @@ namespace NuGet.PackageManagement
         public event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
         public event EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent;
 
+<<<<<<< HEAD
+        public PackageRestoreManager(ISourceRepositoryProvider sourceRepositoryProvider, Configuration.ISettings settings, ISolutionManager solutionManager)
+=======
         public PackageRestoreManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
-            Configuration.ISettings settings,
+            ISettings settings,
             ISolutionManager solutionManager)
+>>>>>>> origin/3.0-rtm
         {
             if (sourceRepositoryProvider == null)
             {

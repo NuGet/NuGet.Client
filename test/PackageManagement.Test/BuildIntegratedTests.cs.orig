@@ -30,13 +30,18 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
+>>>>>>> origin/3.0-rtm
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -74,13 +79,18 @@ namespace NuGet.Test
             var packageIdentity2 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
+>>>>>>> origin/3.0-rtm
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -126,13 +136,18 @@ namespace NuGet.Test
             var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
+>>>>>>> origin/3.0-rtm
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -173,13 +188,18 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
+>>>>>>> origin/3.0-rtm
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -222,13 +242,18 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
+>>>>>>> origin/3.0-rtm
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -272,8 +297,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new Configuration.NullSettings();
-            var deleteOnRestartManager = new TestDeleteOnRestartManager();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -342,8 +366,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new Configuration.NullSettings();
-            var deleteManager = new TestDeleteOnRestartManager();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteManager);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -379,8 +402,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new Configuration.NullSettings();
-            var testDeleteManager = new TestDeleteOnRestartManager();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, testDeleteManager);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
@@ -421,8 +443,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new Configuration.NullSettings();
-            var deleteOnRestartManager = new TestDeleteOnRestartManager();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
 
             var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
             var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");

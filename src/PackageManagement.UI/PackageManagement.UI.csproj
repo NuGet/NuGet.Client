@@ -115,6 +115,9 @@
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Common\OptionsPage.cs" />
+    <Compile Include="Common\RestartRequestBar.xaml.cs">
+      <DependentUpon>RestartRequestBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Common\PackageRestoreBar.xaml.cs">
       <DependentUpon>PackageRestoreBar.xaml</DependentUpon>
     </Compile>
@@ -148,6 +151,11 @@
     <Compile Include="PackageInstallationInfo.cs" />
     <Compile Include="PackageLoaderOptions.cs" />
     <Compile Include="PackageSolutionDetailControlModel.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Resources\ResourceKeys.cs" />
     <Compile Include="Resources\Styles.cs" />
     <Compile Include="UserInterfaceService\INuGetUI.cs" />
@@ -167,11 +175,6 @@
     <Compile Include="Resources\Brushes.cs" />
     <Compile Include="Resources\IUIBrushes.cs" />
     <Compile Include="Resources\Commands.cs" />
-    <Compile Include="Resources1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="StandaloneSwitch.cs" />
     <Compile Include="UserAction.cs" />
     <Compile Include="UserInterfaceService\INuGetUIContext.cs" />
@@ -234,6 +237,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Common\RestartRequestBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Common\PackageRestoreBar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -310,7 +317,7 @@
     <EmbeddedResource Include="Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
-      <LastGenOutput>Resources1.Designer.cs</LastGenOutput>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

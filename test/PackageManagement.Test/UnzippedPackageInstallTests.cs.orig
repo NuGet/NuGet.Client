@@ -33,14 +33,18 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
+<<<<<<< HEAD
             var testSettings = new Configuration.NullSettings();
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager);
+=======
+            var testSettings = new NullSettings();
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
-
+>>>>>>> origin/3.0-rtm
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();

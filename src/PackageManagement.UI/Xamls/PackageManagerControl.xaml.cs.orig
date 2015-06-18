@@ -12,8 +12,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
+<<<<<<< HEAD
+=======
 using NuGet.Configuration;
 using NuGet.Packaging;
+>>>>>>> origin/3.0-rtm
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
@@ -50,9 +53,14 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerControl(
             PackageManagerModel model,
+<<<<<<< HEAD
             Configuration.ISettings nugetSettings,
+            IVsWindowSearchHostFactory searchFactory)
+=======
+            ISettings nugetSettings,
             IVsWindowSearchHostFactory searchFactory,
             IVsShell4 vsShell)
+>>>>>>> origin/3.0-rtm
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             Model = model;
