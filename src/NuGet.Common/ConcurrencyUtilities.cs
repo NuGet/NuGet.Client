@@ -18,33 +18,43 @@ namespace NuGet.Common
 
             var name = FilePathToLockName(filePath);
 
-            var lockStart = new SemaphoreSlim(initialCount: 0, maxCount: 1);
-            var lockEnd = new SemaphoreSlim(initialCount: 0, maxCount: 1);
-
-            // We are creating threads below, instead of simply using a ThreadPool thread using Task.Run,
-            // in order to avoid ThreadPool exhaustion. By using Task.Run here, we will have to reduce
-            // the maximum number of Tasks the caller can create by a factor of 2
-            // This gives us both the performance we desire and does not cause ThreadPool exhaustion
-            var threadStart = new ThreadStart(() => HandleMutex(name, lockStart, lockEnd, token));
-
-            var thread = new Thread(threadStart)
+            using (var lockStart = new SemaphoreSlim(initialCount: 0, maxCount: 1))
+            using (var lockEnd = new SemaphoreSlim(initialCount: 0, maxCount: 1))
+            using (var lockOperation = new SemaphoreSlim(initialCount:0, maxCount: 1))
             {
-                Name = "Mutex+" + name
-            };
+                // We are creating threads below, instead of simply using a ThreadPool thread using Task.Run,
+                // in order to avoid ThreadPool exhaustion. By using Task.Run here, we will have to reduce
+                // the maximum number of Tasks the caller can create by a factor of 2
+                // This gives us both the performance we desire and does not cause ThreadPool exhaustion
+                var threadStart = new ThreadStart(() => HandleMutex(name, lockStart, lockEnd, lockOperation, token));
 
-            thread.Start();
+                var thread = new Thread(threadStart)
+                {
+                    Name = "Mutex+" + name
+                };
 
-            try
-            {
-                await lockStart.WaitAsync(token);
+                thread.Start();
 
-                token.ThrowIfCancellationRequested();
+                try
+                {
+                    await lockStart.WaitAsync(token);
 
-                result = await action(token);
-            }
-            finally
-            {
-                lockEnd.Release();
+                    token.ThrowIfCancellationRequested();
+
+                    result = await action(token);
+                }
+                finally
+                {
+                    try
+                    {
+                        lockEnd.Release();
+                    }
+                    catch
+                    {
+                    }
+
+                    await lockOperation.WaitAsync();
+                }
             }
 
             return result;
@@ -53,42 +63,50 @@ namespace NuGet.Common
         private static void HandleMutex(string name,
             SemaphoreSlim lockStart,
             SemaphoreSlim lockEnd,
+            SemaphoreSlim lockOperation,
             CancellationToken token)
         {
-            using (var mutex = new Mutex(initiallyOwned: false, name: name))
+            try
             {
-                while (!token.IsCancellationRequested)
+                using (var mutex = new Mutex(initiallyOwned: false, name: name))
                 {
-                    try
+                    while (!token.IsCancellationRequested)
                     {
-                        if (mutex.WaitOne(1000))
+                        try
                         {
-                            try
-                            {
-                                lockStart.Release();
-                            }
-                            finally
+                            if (mutex.WaitOne(1000))
                             {
                                 try
                                 {
-                                    lockEnd.Wait();
+                                    lockStart.Release();
                                 }
                                 finally
                                 {
-                                    mutex.ReleaseMutex();
+                                    try
+                                    {
+                                        lockEnd.Wait();
+                                    }
+                                    finally
+                                    {
+                                        mutex.ReleaseMutex();
+                                    }
                                 }
+
+                                break;
                             }
 
-                            break;
+                            // The mutex is not released. Loop continues
                         }
-
-                        // The mutex is not released. Loop continues
-                    }
-                    catch (AbandonedMutexException)
-                    {
-                        // The mutex was abandoned, possibly because the process holding the mutex was killed.
+                        catch (AbandonedMutexException)
+                        {
+                            // The mutex was abandoned, possibly because the process holding the mutex was killed.
+                        }
                     }
                 }
+            }
+            finally
+            {
+                lockOperation.Release();
             }
         }
 
