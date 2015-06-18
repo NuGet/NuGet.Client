@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.VisualStudio;
+using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -197,10 +198,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             foreach (var installedPackage in installedPackages)
             {
-                var task = Task.Run<PSSearchMetadata>(async () =>
+               var task = Task.Run<PSSearchMetadata>(async () =>
                {
                    var results = await GetPackagesFromRemoteSourceAsync(installedPackage.PackageIdentity.Id, frameworks, IncludePrerelease.IsPresent, Skip, First);
                    var metadata = results.Where(p => string.Equals(p.Identity.Id, installedPackage.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                   if (metadata != null)
+                   {
+                       await metadata.Versions.Value;
+                   }
 
                    return metadata;
                });
@@ -216,16 +222,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     var package = PowerShellUpdatePackage.GetPowerShellPackageUpdateView(metadata, task.Item2.PackageIdentity.Version, versionType, project);
 
-                    projectHasUpdates = true;
-
                     packages.Add(package);
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    // This is expected, we are going to await on this inside the powershell call.
-                    Task.Run(() => package.AsyncLazyVersions.GetValueAsync());
-#pragma warning restore CS4014
+                    var versions = package.Versions ?? Enumerable.Empty<NuGetVersion>();
 
-                    WriteObject(package);
+                    if (versions.Any())
+                    {
+                        projectHasUpdates = true;
+                        WriteObject(package);
+                    }
                 }
             }
 
