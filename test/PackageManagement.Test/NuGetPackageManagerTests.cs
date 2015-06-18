@@ -2049,7 +2049,7 @@ namespace NuGet.Test
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
             var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), projectTargetFramework);
+                Strings.UnableToFindCompatibleItems, packageIdentity, projectTargetFramework);
             Assert.Equal(errorMessage, exception.Message);
 
             // Clean-up
