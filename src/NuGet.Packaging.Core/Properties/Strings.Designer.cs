@@ -42,6 +42,22 @@ namespace NuGet.Packaging.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("MissingNuspec"), p0);
         }
 
+        /// <summary>
+        /// String argument '{0}' cannot be null or empty
+        /// </summary>
+        internal static string StringCannotBeNullOrEmpty
+        {
+            get { return GetString("StringCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// String argument '{0}' cannot be null or empty
+        /// </summary>
+        internal static string FormatStringCannotBeNullOrEmpty(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("StringCannotBeNullOrEmpty"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

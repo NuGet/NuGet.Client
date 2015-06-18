@@ -14,12 +14,9 @@ namespace NuGet.Packaging.Core
     /// </summary>
     public abstract class PackageReaderCoreBase : IPackageReaderCore
     {
-        /// <summary>
-        /// PackageReaderCore
-        /// </summary>
-        public PackageReaderCoreBase()
-        {
-        }
+        public abstract Stream GetStream(string path);
+
+        public abstract IEnumerable<string> GetFiles();
 
         public virtual PackageIdentity GetIdentity()
         {
@@ -31,9 +28,7 @@ namespace NuGet.Packaging.Core
             return NuspecCore.GetMinClientVersion();
         }
 
-        public abstract Stream GetStream(string path);
-
-        public abstract IEnumerable<string> GetFiles();
+        public virtual PackageType GetPackageType() => NuspecCore.GetPackageType();
 
         public virtual Stream GetNuspec()
         {

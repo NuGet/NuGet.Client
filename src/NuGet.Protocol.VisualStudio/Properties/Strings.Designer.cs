@@ -235,6 +235,22 @@ namespace NuGet.Protocol.VisualStudio
         }
 
         /// <summary>
+        /// The path '{0}' for the selected source could not be resolved.
+        /// </summary>
+        internal static string Protocol_Search_LocalSourceNotFound
+        {
+            get { return GetString("Protocol_Search_LocalSourceNotFound"); }
+        }
+
+        /// <summary>
+        /// The path '{0}' for the selected source could not be resolved.
+        /// </summary>
+        internal static string FormatProtocol_Search_LocalSourceNotFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_Search_LocalSourceNotFound"), p0);
+        }
+
+        /// <summary>
         /// API v2 (legacy)
         /// </summary>
         internal static string v2sourceDescription

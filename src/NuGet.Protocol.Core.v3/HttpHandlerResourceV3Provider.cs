@@ -35,6 +35,7 @@ namespace NuGet.Protocol.Core.v3
         }
 
 #if DNXCORE50
+
         private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource)
         {
             return new HttpClientHandler();

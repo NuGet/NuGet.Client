@@ -11,10 +11,11 @@ using NuGet.Versioning;
 namespace NuGet.Packaging.Core
 {
     /// <summary>
-    /// A very basic Nuspec reader that understands the Id, Version, and MinClientVersion of a package.
+    /// A very basic Nuspec reader that understands the Id, Version, PackageType, and MinClientVersion of a package.
     /// </summary>
     public abstract class NuspecCoreReaderBase : INuspecCoreReader
     {
+        private static readonly Version _emptyVersion = new Version(0, 0);
         private readonly XDocument _xml;
         private XElement _metadataNode;
 
@@ -23,6 +24,8 @@ namespace NuGet.Packaging.Core
         protected const string Version = "version";
         protected const string MinClientVersion = "minClientVersion";
         protected const string DevelopmentDependency = "developmentDependency";
+        protected const string PackageType = "packageType";
+        protected const string PackageTypeVersion = "version";
 
         /// <summary>
         /// Read a nuspec from a stream.
@@ -72,6 +75,22 @@ namespace NuGet.Packaging.Core
             return node == null ? null : NuGetVersion.Parse(node.Value);
         }
 
+        public PackageType GetPackageType()
+        {
+            var node = MetadataNode.Element(XName.Get(PackageType, MetadataNode.GetDefaultNamespace().NamespaceName));
+            if (node != null)
+            {
+                var versionAttribute = node.Attribute(XName.Get(PackageTypeVersion));
+                var packageTypeVersion = versionAttribute == null ? _emptyVersion : System.Version.Parse(versionAttribute.Value);
+                return new PackageType(node.Value, packageTypeVersion);
+            }
+
+            return Core.PackageType.Default;
+        }
+
+        /// <summary>
+        /// The developmentDependency attribute
+        /// </summary>
         public bool GetDevelopmentDependency()
         {
             var node = MetadataNode.Elements(XName.Get(DevelopmentDependency, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
@@ -83,12 +102,15 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public IEnumerable<KeyValuePair<string, string>> GetMetadata()
         {
-            foreach (var element in MetadataNode.Elements().Where(n => !n.HasElements && !String.IsNullOrEmpty(n.Value)))
-            {
-                yield return new KeyValuePair<string, string>(element.Name.LocalName, element.Value);
-            }
+            // Remove the PackageType element prior to returning the resulting metadata.
+            var filteredMetadataElements = MetadataNode.Elements().Where(
+                element => !element.HasElements &&
+                !String.IsNullOrEmpty(element.Value) &&
+                !element.Name.LocalName.Equals(PackageType, StringComparison.OrdinalIgnoreCase));
 
-            yield break;
+
+            return filteredMetadataElements
+                .Select(element => new KeyValuePair<string, string>(element.Name.LocalName, element.Value));
         }
 
         protected XElement MetadataNode
