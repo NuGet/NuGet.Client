@@ -123,4 +123,7 @@
   <data name="MissingNuspec" xml:space="preserve">
     <value>Nuspec file does not exist in package '{0}'</value>
   </data>
+  <data name="StringCannotBeNullOrEmpty" xml:space="preserve">
+    <value>String argument '{0}' cannot be null or empty</value>
+  </data>
 </root>
