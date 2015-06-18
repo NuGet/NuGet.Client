@@ -250,7 +250,7 @@ namespace NuGet.ProjectManagement
             {
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture,
-                        Strings.UnableToFindCompatibleItems, packageIdentity, MSBuildNuGetProjectSystem.TargetFramework));
+                        Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), MSBuildNuGetProjectSystem.TargetFramework));
             }
 
             if (hasCompatibleProjectLevelContent)
