@@ -42,73 +42,73 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Client, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Client.3.0.0-beta\lib\net45\NuGet.Client.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Client.3.0.0\lib\net45\NuGet.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Commands, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Commands.3.0.0-beta\lib\net45\NuGet.Commands.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Commands.3.0.0\lib\net45\NuGet.Commands.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Configuration">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Configuration.3.0.0-beta\lib\net45\NuGet.Configuration.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Configuration.3.0.0\lib\net45\NuGet.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.ContentModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.ContentModel.3.0.0-beta\lib\net45\NuGet.ContentModel.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.ContentModel.3.0.0\lib\net45\NuGet.ContentModel.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.DependencyResolver, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.DependencyResolver.3.0.0-beta\lib\net45\NuGet.DependencyResolver.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.DependencyResolver.3.0.0\lib\net45\NuGet.DependencyResolver.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.DependencyResolver.Core, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.DependencyResolver.Core.3.0.0-beta\lib\net45\NuGet.DependencyResolver.Core.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.DependencyResolver.Core.3.0.0\lib\net45\NuGet.DependencyResolver.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Frameworks">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Frameworks.3.0.0-beta\lib\net45\NuGet.Frameworks.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Frameworks.3.0.0\lib\net45\NuGet.Frameworks.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.LibraryModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.LibraryModel.3.0.0-beta\lib\net45\NuGet.LibraryModel.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.LibraryModel.3.0.0\lib\net45\NuGet.LibraryModel.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Packaging">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Packaging.3.0.0-beta\lib\net45\NuGet.Packaging.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.3.0.0\lib\net45\NuGet.Packaging.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging.Core">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.3.0.0-beta\lib\net45\NuGet.Packaging.Core.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.Core.3.0.0\lib\net45\NuGet.Packaging.Core.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Packaging.Core.Types">
-      <HintPath>..\..\packages\NuGet.Packaging.Core.Types.3.0.0-beta\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Packaging.Core.Types.3.0.0\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.ProjectModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.ProjectModel.3.0.0-beta\lib\net45\NuGet.ProjectModel.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.ProjectModel.3.0.0\lib\net45\NuGet.ProjectModel.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Protocol.Core.Types">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.Types.3.0.0-beta\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.Core.Types.3.0.0\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Protocol.Core.v3, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Protocol.Core.v3.3.0.0-beta\lib\net45\NuGet.Protocol.Core.v3.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Protocol.Core.v3.3.0.0\lib\net45\NuGet.Protocol.Core.v3.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Repositories, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.Repositories.3.0.0-beta\lib\net45\NuGet.Repositories.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Repositories.3.0.0\lib\net45\NuGet.Repositories.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Resolver">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Resolver.3.0.0-beta\lib\net45\NuGet.Resolver.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Resolver.3.0.0\lib\net45\NuGet.Resolver.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.RuntimeModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NuGet.RuntimeModel.3.0.0-beta\lib\net45\NuGet.RuntimeModel.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.RuntimeModel.3.0.0\lib\net45\NuGet.RuntimeModel.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NuGet.Versioning">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Versioning.3.0.0-beta\lib\net45\NuGet.Versioning.dll</HintPath>
+      <HintPath>..\..\packages\NuGet.Versioning.3.0.0\lib\net45\NuGet.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections" />

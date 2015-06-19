@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet's Package Management UI for Visual Studio</description>
     <dependencies>
-      <dependency id="NuGet.PackageManagement" version="3.0.0-beta" />
+      <dependency id="NuGet.PackageManagement" version="3.0.0" />
     </dependencies>
   </metadata>
 </package>
