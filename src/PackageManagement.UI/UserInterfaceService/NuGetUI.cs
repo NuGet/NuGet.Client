@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
     public class NuGetUI : INuGetUI
     {
         private readonly INuGetUIContext _context;
-        private const string LogEntrySource = "NuGet Package Manager";
+        public const string LogEntrySource = "NuGet Package Manager";
 
         public NuGetUI(
             INuGetUIContext context,
@@ -264,7 +264,16 @@ namespace NuGet.PackageManagement.UI
             {
                 // REVIEW: Will this allow a package author to execute arbitrary program on user's machine?
                 // We have limited the url to be HTTP only, but is it sufficient?
-                Process.Start(url.AbsoluteUri);
+                // If browser has issues opening the url, unhandled exceptions may crash VS     
+                try
+                {
+                    Process.Start(url.AbsoluteUri);
+                }
+                catch (Exception ex)
+                {
+                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.Message);
+                }
+
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.LinkOpened);
             }
         }
