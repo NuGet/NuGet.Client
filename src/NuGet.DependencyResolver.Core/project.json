@@ -5,7 +5,8 @@
     "NuGet.Frameworks": "3.1.0-*",
     "NuGet.Protocol.Core.v3": "3.1.0-*",
     "NuGet.Repositories": "3.1.0-*",
-    "NuGet.RuntimeModel": "3.1.0-*"
+    "NuGet.RuntimeModel": "3.1.0-*",
+    "NuGet.Common": { "type": "build",  "version": "3.1.0" }
   },
   "frameworks": {
     "net45": { },

@@ -13,7 +13,8 @@
         "NuGet.Configuration": "3.1.0-*",
         "NuGet.Packaging": "3.1.0-*",
         "NuGet.Protocol.Core.Types": "3.1.0-*",
-        "NuGet.Core": "2.8.6-beta-*"
+        "NuGet.Core": "2.8.6-beta-*",
+        "NuGet.Common": { "type": "build",  "version": "3.1.0-*" }
     },
     "frameworks": {
         "net45": {
