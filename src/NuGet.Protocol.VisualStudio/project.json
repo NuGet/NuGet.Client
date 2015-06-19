@@ -12,7 +12,8 @@
     "dependencies": {
         "NuGet.Configuration": "3.0.0",
         "NuGet.Protocol.Core.v2": "3.0.0",
-        "NuGet.Protocol.Core.v3": "3.0.0"
+        "NuGet.Protocol.Core.v3": "3.0.0",
+        "NuGet.Common": { "type": "build",  "version": "3.0.0" }
     },
     "frameworks": {
         "net45": {

@@ -4,7 +4,8 @@
     "dependencies": {
         "NuGet.Versioning": "3.0.0",
         "NuGet.Packaging": "3.0.0",
-        "Newtonsoft.Json": "6.0.6"
+        "Newtonsoft.Json": "6.0.6",
+        "NuGet.Common": { "type": "build",  "version": "3.0.0" }
     },
     "compilationOptions": {
         "warningsAsErrors": true

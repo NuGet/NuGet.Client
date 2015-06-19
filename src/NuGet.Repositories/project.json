@@ -1,7 +1,8 @@
 ﻿{
     "version": "3.0.0",
     "dependencies": {
-        "NuGet.Versioning": "3.0.0"
+        "NuGet.Versioning": "3.0.0",
+        "NuGet.Common": { "type": "build",  "version": "3.0.0" }
     },
     "compilationOptions": {
         "warningsAsErrors": true

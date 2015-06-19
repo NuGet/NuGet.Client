@@ -9,6 +9,9 @@
     "compilationOptions": {
         "warningsAsErrors": true
     },
+    "dependencies": {
+        "NuGet.Common": { "type": "build",  "version": "3.0.0" }
+    },
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
