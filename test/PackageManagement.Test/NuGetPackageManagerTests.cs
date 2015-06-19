@@ -3705,7 +3705,7 @@ namespace NuGet.Test
             var actions = new[] { NuGetProjectAction.CreateInstallProjectAction(identity, sourceRepositoryProvider.CreateRepository(packageSource)) };
 
             // Act and Assert
-            var ex = await Assert.ThrowsAsync<NuGetVersionNotSatisfiedException>(() =>
+            var ex = await Assert.ThrowsAsync<PackageManagement.NuGetVersionNotSatisfiedException>(() =>
                 nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
                     nugetProject,
                     actions,
