@@ -1,15 +1,15 @@
 ﻿{
-  "version": "3.0.0-*",
+  "version": "3.0.0",
   "description": "Complete commands common to command-line and GUI NuGet clients",
 
   "dependencies": {
-    "NuGet.Client": "3.0.0-*",
-    "NuGet.ContentModel": "3.0.0-*",
-    "NuGet.ProjectModel": "3.0.0-*",
-    "NuGet.Configuration": "3.0.0-*",
-    "NuGet.DependencyResolver": "3.0.0-*",
-    "NuGet.RuntimeModel": "3.0.0-*",
-    "NuGet.Common": { "version": "3.0.0-*", "type": "build" }
+    "NuGet.Client": "3.0.0",
+    "NuGet.ContentModel": "3.0.0",
+    "NuGet.ProjectModel": "3.0.0",
+    "NuGet.Configuration": "3.0.0",
+    "NuGet.DependencyResolver": "3.0.0",
+    "NuGet.RuntimeModel": "3.0.0",
+    "NuGet.Common": { "version": "3.0.0", "type": "build" }
   },
   "frameworks": {
     "net45": {
@@ -22,12 +22,6 @@
       "frameworkAssemblies": {
         "System.Xml":  "",
         "System.Xml.Linq": ""
-      }
-    },
-    "dnxcore50": {
-      "dependencies": {
-        "System.Linq.Parallel": "4.0.0-beta-*",
-        "System.Xml.XDocument": "4.0.10-beta-*"
       }
     }
   }

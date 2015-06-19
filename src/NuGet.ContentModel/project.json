@@ -1,16 +1,6 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "frameworks": {
-        "net45": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.ObjectModel": "4.0.10-beta-*",
-                "System.IO.FileSystem": "4.0.0-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*"
-            }
-        }
+        "net45": { }
     }
 }

@@ -1,5 +1,5 @@
 {
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "description": "NuGet's implementation for reading nupkg package and nuspec package specification files.",
     "authors": [ "NuGet" ],
     "copyright": "Copyright .NET Foundation. All rights reserved.",
@@ -10,9 +10,9 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
-        "NuGet.Packaging.Core": "3.0.0-*",
-        "NuGet.Logging": "3.0.0-*"
+        "NuGet.Common": { "type": "build", "version": "3.0.0" },
+        "NuGet.Packaging.Core": "3.0.0",
+        "NuGet.Logging": "3.0.0"
     },
     "frameworks": {
         "net45": {
@@ -21,14 +21,6 @@
                 "System.Xml": "",
                 "System.Xml.Linq": "",
                 "System.IO.Compression": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.IO.Compression": "4.0.0-beta-*",
-                "System.IO.FileSystem": "4.0.0-beta-*",
-                "System.Xml.XDocument": "4.0.10-beta-*",
-                "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
             }
         }
     }

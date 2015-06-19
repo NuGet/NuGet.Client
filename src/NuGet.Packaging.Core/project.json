@@ -1,5 +1,5 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "description": "The core data structures for NuGet.Packaging",
     "authors": [ "NuGet" ],
     "copyright": "Copyright .NET Foundation. All rights reserved.",
@@ -9,7 +9,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Packaging.Core.Types": "3.0.0-*"
+        "NuGet.Packaging.Core.Types": "3.0.0"
     },
     "frameworks": {
         "net45": {
@@ -17,13 +17,6 @@
                 "System.Xml": "",
                 "System.Xml.Linq": "",
                 "System.IO.Compression": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.IO": "4.0.10-beta-*",
-                "System.IO.Compression": "4.0.0-beta-*",
-                "System.Xml.XDocument": "4.0.10-beta-*"
             }
         }
     }

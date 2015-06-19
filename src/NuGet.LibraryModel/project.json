@@ -1,19 +1,13 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "dependencies": {
-        "NuGet.Versioning": "3.0.0-*"
+        "NuGet.Versioning": "3.0.0"
     },
     "compilationOptions": {
         "warningsAsErrors": true
     },
     "frameworks": {
         "net45": {
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Runtime": "4.0.20-*",
-                "System.Collections.Concurrent": "4.0.10-*"
-            }
         }
     }
 }

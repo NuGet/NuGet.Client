@@ -1,11 +1,11 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "description": "Strawman command line application for NuGet 3 restore",
     "compilationOptions": {
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Commands": "3.0.0-*",
+        "NuGet.Commands": "3.0.0",
         "Microsoft.Framework.CommandLineUtils": {
             "version": "1.0.0-*",
             "type": "build"
@@ -21,11 +21,6 @@
             "frameworkAssemblies": {
                 "Microsoft.Build.Framework": "14.0.0",
                 "Microsoft.Build": "14.0.0"
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Console": "4.0.0-beta-*"
             }
         }
     }

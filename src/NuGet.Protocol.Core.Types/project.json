@@ -1,5 +1,5 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "authors": [ "NuGet" ],
     "description": "NuGet's protocol-level base types used for connecting to API v2 and API v3 repositories.",
     "copyright": "Copyright .NET Foundation. All rights reserved.",
@@ -10,19 +10,14 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
-        "NuGet.Configuration": "3.0.0-*",
-        "NuGet.Packaging": "3.0.0-*"
+        "NuGet.Common": { "type": "build", "version": "3.0.0" },
+        "NuGet.Configuration": "3.0.0",
+        "NuGet.Packaging": "3.0.0"
     },
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
                 "System.Net.Http": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Net.Http": "4.0.0-beta-*"
             }
         }
     }

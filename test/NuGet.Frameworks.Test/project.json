@@ -13,7 +13,6 @@
       "frameworkAssemblies": {
         "System.Collections": ""
       }
-    },
-    "dnxcore50": { }
+    }
   }
 }

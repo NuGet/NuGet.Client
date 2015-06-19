@@ -8,7 +8,6 @@
         "test": "xunit.runner.aspnet"
     },
     "frameworks": {
-        "dnxcore50": { },
         "dnx451": { }
     }
 }

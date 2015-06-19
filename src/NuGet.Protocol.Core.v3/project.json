@@ -1,5 +1,5 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "authors": [ "NuGet" ],
     "description": "NuGet Protocol for 3.0.0 servers",
     "copyright": "Copyright .NET Foundation. All rights reserved.",
@@ -10,10 +10,10 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
-        "NuGet.Logging": "3.0.0-*",
-        "NuGet.Packaging": "3.0.0-*",
-        "NuGet.Protocol.Core.Types": "3.0.0-*",
+        "NuGet.Common": { "type": "build", "version": "3.0.0" },
+        "NuGet.Logging": "3.0.0",
+        "NuGet.Packaging": "3.0.0",
+        "NuGet.Protocol.Core.Types": "3.0.0",
         "Newtonsoft.Json": "6.0.6"
     },
     "frameworks": {
@@ -22,16 +22,6 @@
                 "System.Collections.Concurrent": "",
                 "System.Net.Http": "",
                 "System.Net.Http.WebRequest": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Dynamic.Runtime": "4.0.10-beta-*",
-                "System.Net.Http.WinHttpHandler": "4.0.0-beta-*",
-                "System.ObjectModel": "4.0.10-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "System.Threading": "4.0.10-beta-*",
-                "System.Threading.Thread": "4.0.0-beta-*"
             }
         }
     }

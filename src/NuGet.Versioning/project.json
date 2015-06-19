@@ -1,5 +1,5 @@
 ﻿{
-    "version": "3.0.0-*",
+    "version": "3.0.0",
     "authors": [ "NuGet" ],
     "description": "NuGet's implementation of Semantic Versioning.",
     "copyright": "Copyright .NET Foundation. All rights reserved.",
@@ -10,19 +10,9 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Common": { "type": "build",  "version": "3.0.0-*" }
+        "NuGet.Common": { "type": "build",  "version": "3.0.0" }
     },
     "frameworks": {
-        "net45": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Diagnostics.Tools": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*",
-                "System.Linq": "4.0.0-beta-*",
-                "System.Resources.ResourceManager": "4.0.0-beta-*",
-                "System.Reflection": "4.0.10-beta-*",
-                "System.Runtime.Extensions": "4.0.10-beta-*"
-            }
-        }
+        "net45": { }
     }
 }
