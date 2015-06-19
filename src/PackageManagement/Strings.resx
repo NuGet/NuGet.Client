@@ -255,4 +255,7 @@
   <data name="SuccessfullyUninstalled" xml:space="preserve">
     <value>Successfully uninstalled '{0}' from {1}</value>
   </data>
+  <data name="UnsupportedPackageFeature" xml:space="preserve">
+    <value>Package '{0}' uses features that are not supported by the current version of NuGet. To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget.</value>
+  </data>
 </root>
