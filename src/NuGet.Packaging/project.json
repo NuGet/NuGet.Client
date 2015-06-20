@@ -10,9 +10,9 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Common": { "type": "build", "version": "3.0.0-*" },
+        "NuGet.Common": { "type": "build", "version": "3.1.0-*" },
         "NuGet.Packaging.Core": "3.1.0-*",
-        "NuGet.Logging": "3.0.0-*"
+        "NuGet.Logging": "3.1.0-*"
     },
     "frameworks": {
         "net45": {
