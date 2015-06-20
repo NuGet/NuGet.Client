@@ -45,11 +45,29 @@ namespace NuGet.CommandLine
                 {
                     restore.Description = "Restores packages for a project and writes a lock file";
 
-                    var sources = restore.Option("-s|--source <source>", "Specifies a NuGet package source to use during the restore", CommandOptionType.MultipleValue);
-                    var packagesDirectory = restore.Option("--packages <packagesDirectory>", "Directory to install packages in", CommandOptionType.SingleValue);
-                    var parallel = restore.Option("-p|--parallel <noneOrNumberOfParallelTasks>", $"The number of concurrent tasks to use when restoring. Defaults to {RestoreRequest.DefaultDegreeOfConcurrency}; pass 'none' to run without concurrency.", CommandOptionType.SingleValue);
-                    var supports = restore.Option("--supports <tfmRidPair>", "A 'tfm~rid' string indicating a profile to check supports for.", CommandOptionType.MultipleValue);
-                    var projectFile = restore.Argument("[project file]", "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
+                    var sources = restore.Option(
+                        "-s|--source <source>",
+                        "Specifies a NuGet package source to use during the restore",
+                        CommandOptionType.MultipleValue);
+                    var packagesDirectory = restore.Option(
+                        "--packages <packagesDirectory>",
+                        "Directory to install packages in",
+                        CommandOptionType.SingleValue);
+                    var parallel = restore.Option(
+                        "-p|--parallel <noneOrNumberOfParallelTasks>",
+                        $"The number of concurrent tasks to use when restoring. Defaults to {RestoreRequest.DefaultDegreeOfConcurrency}; pass 'none' to run without concurrency.",
+                        CommandOptionType.SingleValue);
+                    var supports = restore.Option(
+                        "--supports <tfmRidPair>",
+                        "A 'tfm~rid' string indicating a profile to check supports for.",
+                        CommandOptionType.MultipleValue);
+                    var fallBack = restore.Option(
+                        "-f|--fallbacksource <FEED>",
+                        "A list of packages sources to use as a fallback",
+                        CommandOptionType.MultipleValue);
+                    var projectFile = restore.Argument(
+                        "[project file]",
+                        "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
 
                     restore.OnExecute(async () =>
                         {
@@ -106,6 +124,9 @@ namespace NuGet.CommandLine
                                 packageSources = packageSourceProvider.LoadPackageSources();
                             }
 
+                            packageSources = packageSources.Concat(
+                                fallBack.Values.Select(s => new PackageSource(s)));
+
                             var request = new RestoreRequest(
                                 project,
                                 packageSources,
@@ -115,7 +136,7 @@ namespace NuGet.CommandLine
                             {
                                 var supportsProfiles = supports.Values.Select(s =>
                                 {
-                                    if(!s.Contains("~"))
+                                    if (!s.Contains("~"))
                                     {
                                         return new FrameworkRuntimePair(NuGetFramework.Parse(s), null);
                                     }
