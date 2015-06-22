@@ -208,7 +208,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_JsonNet701Beta3RuntimeAssemblies()
+        public async Task RestoreCommand_JsonNet701RuntimeAssemblies()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -221,7 +221,7 @@ namespace NuGet.Commands.Test
             var specPath = Path.Combine(projectDir, "TestProject", "project.json");
             var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
 
-            AddDependency(spec, "Newtonsoft.Json", "7.0.1-beta3");
+            AddDependency(spec, "Newtonsoft.Json", "7.0.1");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
             request.MaxDegreeOfConcurrency = 1;
@@ -244,7 +244,7 @@ namespace NuGet.Commands.Test
             Assert.Equal(1, installed.Count);
             Assert.Equal(0, unresolved.Count);
             Assert.Equal("Newtonsoft.Json", installed.Single().Name);
-            Assert.Equal("7.0.1-beta3", installed.Single().Version.ToNormalizedString());
+            Assert.Equal("7.0.1", installed.Single().Version.ToNormalizedString());
 
             Assert.Equal(1, runtimeAssemblies.Count);
             Assert.Equal("lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll", runtimeAssembly.Path);
