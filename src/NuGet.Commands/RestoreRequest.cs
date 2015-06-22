@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
@@ -14,17 +13,22 @@ namespace NuGet.Commands
     {
         public static readonly int DefaultDegreeOfConcurrency = 8;
 
+        public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources)
+            : this(project, sources, packagesDirectory: null)
+        { }
+
         public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources, string packagesDirectory)
         {
             Project = project;
             Sources = sources.ToList().AsReadOnly();
-            PackagesDirectory = packagesDirectory;
 
             WriteLockFile = true;
             WriteMSBuildFiles = true;
 
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
+
+            PackagesDirectory = packagesDirectory;
         }
 
         /// <summary>
