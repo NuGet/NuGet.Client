@@ -135,13 +135,28 @@
   <data name="Log_InstallingPackage" xml:space="preserve">
     <value>Installing {0} {1}.</value>
   </data>
+  <data name="FailToLoadPackagesConfig" xml:space="preserve">
+    <value>Fail to load packages.config as XML file. Please check it. </value>
+  </data>
+  <data name="MinClientVersionAlreadyExist" xml:space="preserve">
+    <value>MinClientVersion already exists in packages.config</value>
+  </data>
   <data name="MissingNuspec" xml:space="preserve">
     <value>Nuspec file does not exist in package '{0}'</value>
+  </data>
+  <data name="PackageEntryAlreadyExist" xml:space="preserve">
+    <value>Package entry already exists in packages.config. Id: {0}</value>
+  </data>
+  <data name="PackageEntryNotExist" xml:space="preserve">
+    <value>Package entry does not exists in packages.config. Id: {0}, Version: {1}</value>
   </data>
   <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
     <value>Package stream should be seekable</value>
   </data>
   <data name="StringCannotBeNullOrEmpty" xml:space="preserve">
     <value>String argument '{0}' cannot be null or empty</value>
+  </data>
+  <data name="UnableToAddEntry" xml:space="preserve">
+    <value>An error occurred while updating packages.config. The file was closed before the entry could be added.</value>
   </data>
 </root>

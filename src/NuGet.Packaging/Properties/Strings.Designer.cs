@@ -154,6 +154,46 @@ namespace NuGet.Packaging
             return string.Format(CultureInfo.CurrentCulture, GetString("StringCannotBeNullOrEmpty"), p0);
         }
 
+        /// <summary>
+        /// An error occurred while updating packages.config. The file was closed before the entry could be added.
+        /// </summary>
+        internal static string UnableToAddEntry
+        {
+            get { return GetString("UnableToAddEntry"); }
+        }
+
+        /// <summary>
+        /// Package entry already exists in packages.config. Id: {0}
+        /// </summary>
+        internal static string PackageEntryAlreadyExist
+        {
+            get { return GetString("PackageEntryAlreadyExist"); }
+        }
+
+        /// <summary>
+        /// Package entry does not exists in packages.config. Id: {0}, Version: {1}
+        /// </summary>
+        internal static string PackageEntryNotExist
+        {
+            get { return GetString("PackageEntryNotExist"); }
+        }
+
+        /// <summary>
+        /// MinClientVersion already exists in packages.config
+        /// </summary>
+        internal static string MinClientVersionAlreadyExist
+        {
+            get { return GetString("MinClientVersionAlreadyExist"); }
+        }
+
+        /// <summary>
+        /// Fail to load packages.config as XML file. Please check it. 
+        /// </summary>
+        internal static string FailToLoadPackagesConfig
+        {
+            get { return GetString("FailToLoadPackagesConfig"); }
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -105,7 +104,7 @@ namespace NuGet.Packaging
         {
             NuGetVersion version = null;
 
-            var node = _doc.Root.Attribute(XName.Get("minClientVersion"));
+            var node = _doc.Root.Attribute(XName.Get(PackagesConfig.MinClientAttributeName));
 
             if (node == null)
             {
@@ -130,10 +129,10 @@ namespace NuGet.Packaging
         {
             var packages = new List<PackageReference>();
 
-            foreach (var package in _doc.Root.Elements(XName.Get("package")))
+            foreach (var package in _doc.Root.Elements(XName.Get(PackagesConfig.PackageNodeName)))
             {
                 string id = null;
-                if (!TryGetAttribute(package, "id", out id)
+                if (!PackagesConfig.TryGetAttribute(package, "id", out id)
                     || String.IsNullOrEmpty(id))
                 {
                     throw new PackagesConfigReaderException(string.Format(
@@ -142,7 +141,7 @@ namespace NuGet.Packaging
                 }
 
                 string version = null;
-                if (!TryGetAttribute(package, "version", out version)
+                if (!PackagesConfig.TryGetAttribute(package, PackagesConfig.VersionAttributeName, out version)
                     || String.IsNullOrEmpty(version))
                 {
                     throw new PackagesConfigReaderException(string.Format(
@@ -164,7 +163,7 @@ namespace NuGet.Packaging
 
                 string attributeValue = null;
                 VersionRange allowedVersions = null;
-                if (TryGetAttribute(package, "allowedVersions", out attributeValue))
+                if (PackagesConfig.TryGetAttribute(package, PackagesConfig.allowedVersionsAttributeName, out attributeValue))
                 {
                     if (!VersionRange.TryParse(attributeValue, out allowedVersions))
                     {
@@ -177,14 +176,14 @@ namespace NuGet.Packaging
                 }
 
                 var targetFramework = NuGetFramework.UnsupportedFramework;
-                if (TryGetAttribute(package, "targetFramework", out attributeValue))
+                if (PackagesConfig.TryGetAttribute(package, PackagesConfig.TargetFrameworkAttributeName, out attributeValue))
                 {
                     targetFramework = NuGetFramework.Parse(attributeValue, _frameworkMappings);
                 }
 
-                var developmentDependency = BoolAttribute(package, "developmentDependency");
-                var requireReinstallation = BoolAttribute(package, "requireReinstallation");
-                var userInstalled = BoolAttribute(package, "userInstalled", true);
+                var developmentDependency = PackagesConfig.BoolAttribute(package, PackagesConfig.developmentDependencyAttributeName);
+                var requireReinstallation = PackagesConfig.BoolAttribute(package, PackagesConfig.RequireInstallAttributeName);
+                var userInstalled = PackagesConfig.BoolAttribute(package, PackagesConfig.UserInstalledAttributeName, true);
 
                 var entry = new PackageReference(new PackageIdentity(id, semver), targetFramework, userInstalled, developmentDependency, requireReinstallation, allowedVersions);
 
@@ -215,41 +214,6 @@ namespace NuGet.Packaging
             }
 
             return packages;
-        }
-
-        // Get a boolean attribute value, or false if it does not exist
-        private static bool BoolAttribute(XElement node, string name, bool defaultValue = false)
-        {
-            string value = null;
-            if (TryGetAttribute(node, name, out value))
-            {
-                if (StringComparer.OrdinalIgnoreCase.Equals(value, "true"))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return defaultValue;
-        }
-
-        // Get an attribute that may or may not be present
-        private static bool TryGetAttribute(XElement node, string name, out string value)
-        {
-            var attribute = node.Attributes(XName.Get(name)).FirstOrDefault();
-
-            if (attribute != null
-                && !String.IsNullOrEmpty(attribute.Value))
-            {
-                value = attribute.Value;
-                return true;
-            }
-
-            value = null;
-            return false;
         }
     }
 }
