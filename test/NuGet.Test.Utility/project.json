@@ -1,7 +1,7 @@
 ﻿{
     "version": "3.1.0-*",
     "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "xunit": "2.1.0-*"
     },
     "frameworks": {
         "dnx451": {
