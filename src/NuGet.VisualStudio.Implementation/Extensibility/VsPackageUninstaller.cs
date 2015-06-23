@@ -35,9 +35,9 @@ namespace NuGet.VisualStudio
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
-            
+
             PumpingJTF = new PumpingJTF(ThreadHelper.JoinableTaskContext);
-            deleteOnRestartManager = deleteOnRestartManager;
+            _deleteOnRestartManager = deleteOnRestartManager;
         }
 
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
