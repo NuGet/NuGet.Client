@@ -3,32 +3,32 @@
   "version": -9996,
   "targets": {
     ".NETPlatform,Version=v5.0": {
-      "System.IO/4.0.10-beta-22927": {
+      "System.IO/4.0.10-beta-23021": {
         "dependencies": {
-          "System.Runtime": "4.0.20-beta-22927",
-          "System.Text.Encoding": "4.0.0-beta-22927",
-          "System.Threading.Tasks": "4.0.0-beta-22927"
+          "System.Runtime": "4.0.20-beta-23021",
+          "System.Text.Encoding": "4.0.0-beta-23021",
+          "System.Threading.Tasks": "4.0.0-beta-23021"
         },
         "compile": {
           "ref/dotnet/System.IO.dll": {}
         }
       },
-      "System.Runtime/4.0.20-beta-22927": {
+      "System.Runtime/4.0.20-beta-23021": {
         "compile": {
           "ref/dotnet/System.Runtime.dll": {}
         }
       },
-      "System.Text.Encoding/4.0.0-beta-22927": {
+      "System.Text.Encoding/4.0.0-beta-23021": {
         "dependencies": {
-          "System.Runtime": "4.0.0-beta-22927"
+          "System.Runtime": "4.0.0-beta-23021"
         },
         "compile": {
           "ref/dotnet/System.Text.Encoding.dll": {}
         }
       },
-      "System.Threading.Tasks/4.0.0-beta-22927": {
+      "System.Threading.Tasks/4.0.0-beta-23021": {
         "dependencies": {
-          "System.Runtime": "4.0.0-beta-22927"
+          "System.Runtime": "4.0.0-beta-23021"
         },
         "compile": {
           "ref/dotnet/System.Threading.Tasks.dll": {}
@@ -37,76 +37,128 @@
     }
   },
   "libraries": {
-    "System.IO/4.0.10-beta-22927": {
-      "sha512": "NYoIpyR5hJvnv/jnY817GLBaH+DLJEsSOEGw8/NL/y4taFzuWVR2ROQtpWXD/2GLrXiTZ6Kdn7f1czs4DOqH1A==",
-      "type": "Package",
+    "System.IO/4.0.10-beta-23021": {
+      "sha512": "1lW/iG9+WUz61Jm2uXtumwGbXRAFU8x08mUPm3qc1c30LQdNv33CfZB904pJiBYKNdFK1dp03/iKqRPbV6hB9g==",
       "files": [
-        "_rels/.rels",
+        "System.IO.4.0.10-beta-23021.nupkg",
+        "System.IO.4.0.10-beta-23021.nupkg.sha512",
         "System.IO.nuspec",
         "lib/DNXCore50/System.IO.dll",
-        "lib/netcore50/System.IO.dll",
         "lib/net46/_._",
+        "lib/netcore50/System.IO.dll",
         "ref/dotnet/System.IO.dll",
-        "runtimes/win8-aot/lib/netcore50/System.IO.dll",
+        "ref/dotnet/System.IO.xml",
+        "ref/dotnet/de/System.IO.xml",
+        "ref/dotnet/es/System.IO.xml",
+        "ref/dotnet/fr/System.IO.xml",
+        "ref/dotnet/it/System.IO.xml",
+        "ref/dotnet/ja/System.IO.xml",
+        "ref/dotnet/ko/System.IO.xml",
+        "ref/dotnet/ru/System.IO.xml",
+        "ref/dotnet/zh-hans/System.IO.xml",
+        "ref/dotnet/zh-hant/System.IO.xml",
         "ref/net46/_._",
-        "package/services/metadata/core-properties/5e76eae81b564da7b3fc45e27c517ebe.psmdcp",
-        "[Content_Types].xml"
+        "runtimes/win8-aot/lib/netcore50/System.IO.dll"
       ]
     },
-    "System.Runtime/4.0.20-beta-22927": {
-      "sha512": "WFRsJnfRzXYIiDJRbTXGctncx6Hw1F/uS2c5a5CzUwHuA3D/CM152F2HjWt12dLgH0BOcGvcRjKl2AfJ6MnHVg==",
-      "type": "Package",
+    "System.Runtime/4.0.20-beta-23021": {
+      "sha512": "squWHPO8TzlGaVBvJ5sdO1DWg7qzUK+CXLVvESQaIl/gqtaGvi81oN2HA7F7+uYwQM2A/LpjWfREfqX8S3UnxA==",
       "files": [
-        "_rels/.rels",
+        "System.Runtime.4.0.20-beta-23021.nupkg",
+        "System.Runtime.4.0.20-beta-23021.nupkg.sha512",
         "System.Runtime.nuspec",
         "lib/DNXCore50/System.Runtime.dll",
-        "lib/netcore50/System.Runtime.dll",
         "lib/net46/_._",
+        "lib/netcore50/System.Runtime.dll",
         "ref/dotnet/System.Runtime.dll",
-        "runtimes/win8-aot/lib/netcore50/System.Runtime.dll",
+        "ref/dotnet/System.Runtime.xml",
+        "ref/dotnet/de/System.Runtime.xml",
+        "ref/dotnet/es/System.Runtime.xml",
+        "ref/dotnet/fr/System.Runtime.xml",
+        "ref/dotnet/it/System.Runtime.xml",
+        "ref/dotnet/ja/System.Runtime.xml",
+        "ref/dotnet/ko/System.Runtime.xml",
+        "ref/dotnet/ru/System.Runtime.xml",
+        "ref/dotnet/zh-hans/System.Runtime.xml",
+        "ref/dotnet/zh-hant/System.Runtime.xml",
         "ref/net46/_._",
-        "package/services/metadata/core-properties/b7eb2b260f1846d69b1ccf1a4e614180.psmdcp",
-        "[Content_Types].xml"
+        "runtimes/win8-aot/lib/netcore50/System.Runtime.dll"
       ]
     },
-    "System.Text.Encoding/4.0.0-beta-22927": {
-      "sha512": "guYjgbAgP4TKdyys0WhXXLNVxasqWczLgbhi4modkSKLtC9vnewebG9mzgkzuKwnXwsi3r0h+uBfsHMO5hIxgQ==",
-      "type": "Package",
+    "System.Text.Encoding/4.0.0-beta-23021": {
+      "sha512": "qly3GEjbgrIpGIK8ws13k3u8w04iZ0MQZLG0xSM05mAViMCwVy3JH4dphvddbr2RCgsleR3ZLHoxYB7B814LxA==",
       "files": [
-        "_rels/.rels",
+        "License.rtf",
+        "System.Text.Encoding.4.0.0-beta-23021.nupkg",
+        "System.Text.Encoding.4.0.0-beta-23021.nupkg.sha512",
         "System.Text.Encoding.nuspec",
-        "License.rtf",
-        "ref/dotnet/System.Text.Encoding.dll",
-        "ref/net45/_._",
         "lib/net45/_._",
-        "ref/win8/_._",
         "lib/win8/_._",
+        "ref/dotnet/System.Text.Encoding.dll",
+        "ref/dotnet/System.Text.Encoding.xml",
+        "ref/dotnet/de/System.Text.Encoding.xml",
+        "ref/dotnet/es/System.Text.Encoding.xml",
+        "ref/dotnet/fr/System.Text.Encoding.xml",
+        "ref/dotnet/it/System.Text.Encoding.xml",
+        "ref/dotnet/ja/System.Text.Encoding.xml",
+        "ref/dotnet/ko/System.Text.Encoding.xml",
+        "ref/dotnet/ru/System.Text.Encoding.xml",
+        "ref/dotnet/zh-hans/System.Text.Encoding.xml",
+        "ref/dotnet/zh-hant/System.Text.Encoding.xml",
+        "ref/net45/_._",
         "ref/netcore50/System.Text.Encoding.dll",
-        "package/services/metadata/core-properties/9b75d4e6dbb04e01924ba65660f251d7.psmdcp",
-        "[Content_Types].xml"
+        "ref/netcore50/System.Text.Encoding.xml",
+        "ref/netcore50/de/System.Text.Encoding.xml",
+        "ref/netcore50/es/System.Text.Encoding.xml",
+        "ref/netcore50/fr/System.Text.Encoding.xml",
+        "ref/netcore50/it/System.Text.Encoding.xml",
+        "ref/netcore50/ja/System.Text.Encoding.xml",
+        "ref/netcore50/ko/System.Text.Encoding.xml",
+        "ref/netcore50/ru/System.Text.Encoding.xml",
+        "ref/netcore50/zh-hans/System.Text.Encoding.xml",
+        "ref/netcore50/zh-hant/System.Text.Encoding.xml",
+        "ref/win8/_._"
       ]
     },
-    "System.Threading.Tasks/4.0.0-beta-22927": {
-      "sha512": "32tZzgoOQuw1JA2B8TDSo1FRrKVuZ5ywWnc+x7OVqCav62avxeAIxd/ZkzpoNniNTDUYwgPyMjtyc+KsvUQtog==",
-      "type": "Package",
+    "System.Threading.Tasks/4.0.0-beta-23021": {
+      "sha512": "OJleivuD10okNk+3QMX+6EjKMjLJ1d2RZPiYZk0K7tooylMtv4VZ7q2fPYZQ+TxneEIzydJ/f3kiVtKgKsCiFw==",
       "files": [
-        "_rels/.rels",
-        "System.Threading.Tasks.nuspec",
         "License.rtf",
-        "ref/dotnet/System.Threading.Tasks.dll",
-        "ref/net45/_._",
+        "System.Threading.Tasks.4.0.0-beta-23021.nupkg",
+        "System.Threading.Tasks.4.0.0-beta-23021.nupkg.sha512",
+        "System.Threading.Tasks.nuspec",
         "lib/net45/_._",
-        "ref/win8/_._",
         "lib/win8/_._",
+        "ref/dotnet/System.Threading.Tasks.dll",
+        "ref/dotnet/System.Threading.Tasks.xml",
+        "ref/dotnet/de/System.Threading.Tasks.xml",
+        "ref/dotnet/es/System.Threading.Tasks.xml",
+        "ref/dotnet/fr/System.Threading.Tasks.xml",
+        "ref/dotnet/it/System.Threading.Tasks.xml",
+        "ref/dotnet/ja/System.Threading.Tasks.xml",
+        "ref/dotnet/ko/System.Threading.Tasks.xml",
+        "ref/dotnet/ru/System.Threading.Tasks.xml",
+        "ref/dotnet/zh-hans/System.Threading.Tasks.xml",
+        "ref/dotnet/zh-hant/System.Threading.Tasks.xml",
+        "ref/net45/_._",
         "ref/netcore50/System.Threading.Tasks.dll",
-        "package/services/metadata/core-properties/b80dd50f318e4a198547c0683e67e96d.psmdcp",
-        "[Content_Types].xml"
+        "ref/netcore50/System.Threading.Tasks.xml",
+        "ref/netcore50/de/System.Threading.Tasks.xml",
+        "ref/netcore50/es/System.Threading.Tasks.xml",
+        "ref/netcore50/fr/System.Threading.Tasks.xml",
+        "ref/netcore50/it/System.Threading.Tasks.xml",
+        "ref/netcore50/ja/System.Threading.Tasks.xml",
+        "ref/netcore50/ko/System.Threading.Tasks.xml",
+        "ref/netcore50/ru/System.Threading.Tasks.xml",
+        "ref/netcore50/zh-hans/System.Threading.Tasks.xml",
+        "ref/netcore50/zh-hant/System.Threading.Tasks.xml",
+        "ref/win8/_._"
       ]
     }
   },
   "projectFileDependencyGroups": {
     "": [
-      "System.IO [4.0.10-beta-*, )"
+      "System.IO >= 4.0.10-beta-*"
     ],
     ".NETPlatform,Version=v5.0": []
   }

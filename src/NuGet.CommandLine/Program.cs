@@ -175,6 +175,11 @@ namespace NuGet.CommandLine
                             var command = new RestoreCommand(_log, request);
                             var sw = Stopwatch.StartNew();
                             var result = await command.ExecuteAsync();
+
+                            // Commit the result
+                            _log.LogInformation("Committing restore...");
+                            result.Commit(_log);
+
                             sw.Stop();
 
                             if (result.Success)

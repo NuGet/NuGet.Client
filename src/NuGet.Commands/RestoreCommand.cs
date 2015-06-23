@@ -65,7 +65,6 @@ namespace NuGet.Commands
             if (_request.ExistingLockFile != null && _request.ExistingLockFile.IsLocked)
             {
                 // No lock file to write!
-                _request.WriteLockFile = false; // Force WriteLockFile to false
                 lockFile = _request.ExistingLockFile;
             }
             else
@@ -95,20 +94,10 @@ namespace NuGet.Commands
                 }
             }
 
-            // Write the lock file
-            var lockFileFormat = new LockFileFormat();
-            if (_request.WriteLockFile)
-            {
-                lockFileFormat.Write(projectLockFilePath, lockFile);
-            }
-
             // Generate Targets/Props files
-            if (_request.WriteMSBuildFiles)
-            {
-                WriteTargetsAndProps(_request.Project, graphs, localRepository);
-            }
+            var msbuild = RestoreMSBuildFiles(_request.Project, graphs, localRepository);
 
-            return new RestoreResult(_success, graphs, checkResults, lockFile);
+            return new RestoreResult(_success, graphs, checkResults, lockFile, projectLockFilePath, relockFile, msbuild);
         }
 
         private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestore(NuGetv3LocalRepository localRepository)
@@ -303,19 +292,15 @@ namespace NuGet.Commands
             return success;
         }
 
-        private void WriteTargetsAndProps(PackageSpec project, IEnumerable<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
+        private MSBuildRestoreResult RestoreMSBuildFiles(PackageSpec project, IEnumerable<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
         {
             // Get the project graph
             var projectFrameworks = project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
             if (projectFrameworks.Count > 1)
             {
-                var name = $"{project.Name}.nuget.targets";
-                var path = Path.Combine(project.BaseDirectory, name);
-                _log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(name));
-
-                GenerateMSBuildErrorFile(path);
-                return;
+                return new MSBuildRestoreResult(project.Name, project.BaseDirectory);
             }
+
             var graph = targetGraphs.Single(g => g.Framework.Equals(projectFrameworks[0]) && string.IsNullOrEmpty(g.RuntimeIdentifier));
 
             var pathResolver = new VersionFolderPathResolver(repository.RepositoryRoot);
@@ -357,80 +342,9 @@ namespace NuGet.Commands
                 }
             }
 
-            // Generate the files as needed
-            var targetsName = $"{project.Name}.nuget.targets";
-            var propsName = $"{project.Name}.nuget.props";
-            var targetsPath = Path.Combine(project.BaseDirectory, targetsName);
-            var propsPath = Path.Combine(project.BaseDirectory, propsName);
-
-            if (targets.Any())
-            {
-                _log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(targetsName));
-
-                GenerateImportsFile(repository, targetsPath, targets);
-            }
-            else if (File.Exists(targetsPath))
-            {
-                File.Delete(targetsPath);
-            }
-
-            if (props.Any())
-            {
-                _log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(propsName));
-
-                GenerateImportsFile(repository, propsPath, props);
-            }
-            else if (File.Exists(propsPath))
-            {
-                File.Delete(propsPath);
-            }
+            return new MSBuildRestoreResult(project.Name, project.BaseDirectory, repository.RepositoryRoot, props, targets);
         }
 
-        private void GenerateMSBuildErrorFile(string path)
-        {
-            var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
-            var doc = new XDocument(
-                new XDeclaration("1.0", "utf-8", "no"),
-
-                new XElement(ns + "Project",
-                    new XAttribute("ToolsVersion", "14.0"),
-
-                    new XElement(ns + "Target",
-                        new XAttribute("Name", "EmitMSBuildWarning"),
-                        new XAttribute("BeforeTargets", "Build"),
-
-                        new XElement(ns + "Warning",
-                            new XAttribute("Text", Strings.MSBuildWarning_MultiTarget)))));
-
-            using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
-            {
-                doc.Save(output);
-            }
-        }
-
-        private void GenerateImportsFile(NuGetv3LocalRepository repository, string path, List<string> imports)
-        {
-            var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
-            var doc = new XDocument(
-                new XDeclaration("1.0", "utf-8", "no"),
-
-                new XElement(ns + "Project",
-                    new XAttribute("ToolsVersion", "14.0"),
-
-                    new XElement(ns + "PropertyGroup",
-                        new XAttribute("Condition", "'$(NuGetPackageRoot)' == ''"),
-
-                        new XElement(ns + "NuGetPackageRoot", repository.RepositoryRoot)),
-                    new XElement(ns + "ImportGroup", imports.Select(i =>
-                        new XElement(ns + "Import",
-                            new XAttribute("Project", Path.Combine("$(NuGetPackageRoot)", i)),
-                            new XAttribute("Condition", $"Exists('{Path.Combine("$(NuGetPackageRoot)", i)}')"))))));
-
-            using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
-            {
-                doc.Save(output);
-            }
-        }
 
         private LockFile CreateLockFile(PackageSpec project, IEnumerable<RestoreTargetGraph> targetGraphs, NuGetv3LocalRepository repository)
         {

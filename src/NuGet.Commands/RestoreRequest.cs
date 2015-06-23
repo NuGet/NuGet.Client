@@ -22,9 +22,6 @@ namespace NuGet.Commands
             Project = project;
             Sources = sources.ToList().AsReadOnly();
 
-            WriteLockFile = true;
-            WriteMSBuildFiles = true;
-
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
 
@@ -58,11 +55,6 @@ namespace NuGet.Commands
         public string LockFilePath { get; set; }
 
         /// <summary>
-        /// Set this to false to prevent the command from writting the lock file (defaults to true)
-        /// </summary>
-        public bool WriteLockFile { get; set; }
-
-        /// <summary>
         /// The existing lock file to use. If not specified, the lock file will be read from the <see cref="LockFilePath"/>
         /// (or, if that property is not specified, from the default location of the lock file, as specified in the
         /// description for <see cref="LockFilePath"/>)
@@ -80,11 +72,6 @@ namespace NuGet.Commands
         /// If set, ignore the cache when downloading packages
         /// </summary>
         public bool NoCache { get; set; }
-
-        /// <summary>
-        /// If set, MSBuild files (.targets/.props) will be written for the project being restored
-        /// </summary>
-        public bool WriteMSBuildFiles { get; set; }
 
         /// <summary>
         /// Additional compatibility profiles to check compatibility with.

@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.LibraryModel;
+using NuGet.Logging;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -11,6 +12,13 @@ namespace NuGet.Commands
     public class RestoreResult
     {
         public bool Success { get; }
+
+        public MSBuildRestoreResult MSBuild { get; }
+
+        /// <summary>
+        /// Gets the path that the lock file will be written to.
+        /// </summary>
+        public string LockFilePath { get; set; }
 
         /// <summary>
         /// Gets the resolved dependency graphs produced by the restore operation
@@ -20,25 +28,32 @@ namespace NuGet.Commands
         public IEnumerable<CompatibilityCheckResult> CompatibilityCheckResults { get; }
 
         /// <summary>
+        /// Gets a boolean indicating if the lock file will be re-written on <see cref="Commit"/>
+        /// because the file needs to be re-locked.
+        /// </summary>
+        public bool RelockFile { get; }
+
+        /// <summary>
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
         /// was used to determine the packages to install during the restore.
         /// </summary>
-        /// <remarks>
-        /// May be null if the restore did not complete successfully
-        /// </remarks>
         public LockFile LockFile { get; }
 
-        public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs)
-            : this(success, restoreGraphs, Enumerable.Empty<CompatibilityCheckResult>(), lockfile: null)
-        {
-        }
-
-        public RestoreResult(bool success, IEnumerable<RestoreTargetGraph> restoreGraphs, IEnumerable<CompatibilityCheckResult> compatibilityCheckResults, LockFile lockfile)
+        public RestoreResult(
+            bool success, 
+            IEnumerable<RestoreTargetGraph> restoreGraphs, 
+            IEnumerable<CompatibilityCheckResult> compatibilityCheckResults, 
+            LockFile lockFile, 
+            string lockFilePath, 
+            bool relockFile,
+            MSBuildRestoreResult msbuild)
         {
             Success = success;
             RestoreGraphs = restoreGraphs;
             CompatibilityCheckResults = compatibilityCheckResults;
-            LockFile = lockfile;
+            LockFile = lockFile;
+            LockFilePath = lockFilePath;
+            MSBuild = msbuild;
         }
 
         /// <summary>
@@ -63,6 +78,24 @@ namespace NuGet.Commands
         public ISet<LibraryRange> GetAllUnresolved()
         {
             return new HashSet<LibraryRange>(RestoreGraphs.SelectMany(g => g.Unresolved).Distinct());
+        }
+
+        /// <summary>
+        /// Commits the Lock File contained in <see cref="LockFile"/> and the MSBuild targets/props to
+        /// the local file system.
+        /// </summary>
+        public void Commit(ILogger log)
+        {
+            // Write the lock file
+            var lockFileFormat = new LockFileFormat();
+
+            // Don't write the lock file if it is Locked AND we're not re-locking the file
+            if (!LockFile.IsLocked || RelockFile)
+            {
+                lockFileFormat.Write(LockFilePath, LockFile);
+            }
+
+            MSBuild.Commit(log);
         }
     }
 }
