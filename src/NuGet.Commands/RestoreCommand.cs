@@ -75,22 +75,25 @@ namespace NuGet.Commands
                 lockFile.IsLocked = relockFile;
             }
 
-            // Scan every graph for compatibility
+            // Scan every graph for compatibility, as long as there were no unresolved packages
             var checkResults = new List<CompatibilityCheckResult>();
-            var checker = new CompatibilityChecker(localRepository, lockFile, _log);
-            foreach (var graph in graphs)
+            if (graphs.All(g => !g.Unresolved.Any()))
             {
-                _log.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
-                var res = checker.Check(graph);
-                _success &= res.Success;
-                checkResults.Add(res);
-                if (res.Success)
+                var checker = new CompatibilityChecker(localRepository, lockFile, _log);
+                foreach (var graph in graphs)
                 {
-                    _log.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
-                }
-                else
-                {
-                    _log.LogError(Strings.FormatLog_PackagesIncompatible(graph.Name));
+                    _log.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
+                    var res = checker.Check(graph);
+                    _success &= res.Success;
+                    checkResults.Add(res);
+                    if (res.Success)
+                    {
+                        _log.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
+                    }
+                    else
+                    {
+                        _log.LogError(Strings.FormatLog_PackagesIncompatible(graph.Name));
+                    }
                 }
             }
 
@@ -238,7 +241,7 @@ namespace NuGet.Commands
             }
 
             // Walk additional runtime graphs for supports checks
-            if (_request.CompatibilityProfiles.Any())
+            if (_success && _request.CompatibilityProfiles.Any())
             {
                 var checkTasks = new List<Task<RestoreTargetGraph>>();
                 foreach (var profile in _request.CompatibilityProfiles.Where(p => !runtimeProfiles.Contains(p)))

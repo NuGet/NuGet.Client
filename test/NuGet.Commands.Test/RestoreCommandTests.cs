@@ -328,6 +328,8 @@ namespace NuGet.Commands.Test
             Assert.False(result.Success);
 
             Assert.Equal(1, logger.Errors);
+            Assert.Empty(result.CompatibilityCheckResults);
+            Assert.DoesNotContain("compatible with", logger.Messages);
             Assert.Equal(1, unresolved.Count);
             Assert.Equal(0, installed.Count);
         }

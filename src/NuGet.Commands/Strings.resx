@@ -145,7 +145,7 @@
     <value>{0} {1} is not compatible with {2}.</value>
   </data>
   <data name="Log_PackagesAreCompatible" xml:space="preserve">
-    <value>All packages are compatibile with {0}.</value>
+    <value>All packages are compatible with {0}.</value>
   </data>
   <data name="Log_PackagesIncompatible" xml:space="preserve">
     <value>Some packages are not compatible with {0}.</value>
