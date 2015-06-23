@@ -50,6 +50,7 @@ namespace NuGet.PackageManagement.UI
             // The reason we can't set it in XAML is that the VsBrushes class come from either
             // Microsoft.VisualStudio.Shell.12 or Microsoft.VisualStudio.Shell.14 assembly,
             // depending on whether NuGet runs inside VS12 or VS14.
+            RequestRestartMessage.SetResourceReference(TextBlock.ForegroundProperty, VsBrushes.InfoTextKey);
             RestartBar.SetResourceReference(Border.BackgroundProperty, VsBrushes.InfoBackgroundKey);
             RestartBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
         }
