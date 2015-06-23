@@ -20,6 +20,7 @@ IF EXIST packages\KoreBuild goto run
 .nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
 
 IF "%SKIP_DNX_INSTALL%"=="1" goto run
+set DNX_FEED=https://www.myget.org/F/aspnetrelease/api/v2
 CALL packages\KoreBuild\build\dnvm upgrade -runtime CLR -arch x86
 CALL packages\KoreBuild\build\dnvm install default -runtime CoreCLR -arch x86
 
