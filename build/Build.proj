@@ -135,7 +135,7 @@
             <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
             <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
             <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
-            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '--source %(Identity)', ' ')</NuGetCommndLineCmdSources>
+            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-f %(Identity)', ' ')</NuGetCommndLineCmdSources>
         </PropertyGroup>
 
         <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
@@ -147,7 +147,7 @@
               Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
 
         <!-- Restore MsBuid script -->
-        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre $(NuGetExeSources)"
+        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
               Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
 
         <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
