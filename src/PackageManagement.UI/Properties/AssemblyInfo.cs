@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany(".NET Foundation")]
 [assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("Copyright .NET Foundation. All rights reserved.")]
+[assembly: AssemblyCopyright("\x00a9 .NET Foundation. All rights reserved.")]
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: CLSCompliant(false)]
 [assembly: ComVisible(false)]
