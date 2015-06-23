@@ -208,6 +208,43 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_WarnWhenWeBumpYouUp()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+            AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            var installed = result.GetAllInstalled();
+            var unresolved = result.GetAllUnresolved();
+            var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
+
+            var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
+
+            // Assert
+            Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
+            Assert.Contains("Dependency specified was Newtonsoft.Json (≥ 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
+        }
+
+        [Fact]
         public async Task RestoreCommand_JsonNet701RuntimeAssemblies()
         {
             // Arrange

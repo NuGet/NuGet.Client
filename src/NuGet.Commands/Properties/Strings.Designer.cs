@@ -410,6 +410,22 @@ namespace NuGet.Commands
             return GetString("Log_LockFileOutOfDate");
         }
 
+        /// <summary>
+        /// Dependency specified was {0} {1} but ended up with {2} {3}.
+        /// </summary>
+        internal static string Log_DependencyBumpedUp
+        {
+            get { return GetString("Log_DependencyBumpedUp"); }
+        }
+
+        /// <summary>
+        /// Dependency specified was {0} {1} but ended up with {2} {3}.
+        /// </summary>
+        internal static string FormatLog_DependencyBumpedUp(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_DependencyBumpedUp"), p0, p1, p2, p3);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

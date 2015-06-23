@@ -511,7 +511,43 @@ namespace NuGet.Commands
             }
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            return RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _log, framework, runtimeIdentifier);
+            var result = RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _log, framework, runtimeIdentifier);
+
+            // Check if the dependencies got bumped up
+            // ...but not if there is an existing locked lock file.
+            if (_request.ExistingLockFile == null || !_request.ExistingLockFile.IsLocked)
+            {
+                // No lock file, OR the lock file is unlocked, so check dependencies
+                CheckDependencies(result, _request.Project.Dependencies); 
+
+                var fxInfo = _request.Project.GetTargetFramework(framework);
+                if (fxInfo != null)
+                {
+                    CheckDependencies(result, fxInfo.Dependencies);
+                }
+            }
+
+            return result;
+        }
+
+        private void CheckDependencies(RestoreTargetGraph result, IEnumerable<LibraryDependency> dependencies)
+        {
+            foreach (var dependency in dependencies)
+            {
+                // Ignore floating or version-less (project) dependencies
+                if (dependency.LibraryRange.VersionRange != null && !dependency.LibraryRange.VersionRange.IsFloating)
+                {
+                    var match = result.Flattened.FirstOrDefault(g => g.Key.Name.Equals(dependency.LibraryRange.Name));
+                    if (match != null && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
+                    {
+                        _log.LogWarning(Strings.FormatLog_DependencyBumpedUp(
+                            dependency.LibraryRange.Name,
+                            dependency.LibraryRange.VersionRange.PrettyPrint(),
+                            match.Key.Name,
+                            match.Key.Version));
+                    }
+                }
+            }
         }
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependencies(LibraryRange projectRange, RestoreTargetGraph graph, RuntimeGraph projectRuntimeGraph, RemoteDependencyWalker walker, RemoteWalkContext context, NuGetv3LocalRepository localRepository, RuntimeGraph runtimes, bool writeToLockFile)

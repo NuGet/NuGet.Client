@@ -1,0 +1,8 @@
+{
+    "dependencies": {
+        "Newtonsoft.Json": "7.0.0"
+    },
+    "frameworks": {
+        "netcore50": { }
+    }
+}

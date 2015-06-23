@@ -192,4 +192,7 @@
   <data name="Log_LockFileOutOfDate" xml:space="preserve">
     <value>The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking.</value>
   </data>
+  <data name="Log_DependencyBumpedUp" xml:space="preserve">
+    <value>Dependency specified was {0} {1} but ended up with {2} {3}.</value>
+  </data>
 </root>
