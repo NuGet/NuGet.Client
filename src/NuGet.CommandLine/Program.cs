@@ -57,10 +57,6 @@ namespace NuGet.CommandLine
                         "-p|--parallel <noneOrNumberOfParallelTasks>",
                         $"The number of concurrent tasks to use when restoring. Defaults to {RestoreRequest.DefaultDegreeOfConcurrency}; pass 'none' to run without concurrency.",
                         CommandOptionType.SingleValue);
-                    var supports = restore.Option(
-                        "--supports <tfmRidPair>",
-                        "A 'tfm~rid' string indicating a profile to check supports for.",
-                        CommandOptionType.MultipleValue);
                     var fallBack = restore.Option(
                         "-f|--fallbacksource <FEED>",
                         "A list of packages sources to use as a fallback",
@@ -142,24 +138,6 @@ namespace NuGet.CommandLine
 
                             // Resolve the packages directory
                             _log.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
-
-                            if (supports.HasValue())
-                            {
-                                var supportsProfiles = supports.Values.Select(s =>
-                                {
-                                    if (!s.Contains("~"))
-                                    {
-                                        return new FrameworkRuntimePair(NuGetFramework.Parse(s), null);
-                                    }
-                                    var splat = s.Split('~');
-                                    return new FrameworkRuntimePair(NuGetFramework.Parse(splat[0]), splat[1]);
-                                });
-
-                                foreach (var profile in supportsProfiles)
-                                {
-                                    request.CompatibilityProfiles.Add(profile);
-                                }
-                            }
 
                             if (externalProjects != null)
                             {

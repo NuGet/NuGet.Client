@@ -44,7 +44,7 @@ namespace NuGet.Commands
         /// <summary>
         /// The directory in which to install packages
         /// </summary>
-        public string PackagesDirectory { get; }
+        public string PackagesDirectory { get; set; }
 
         /// <summary>
         /// A list of projects provided by external build systems (i.e. MSBuild)
