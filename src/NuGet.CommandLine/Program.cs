@@ -32,38 +32,38 @@ namespace NuGet.CommandLine
 
             var app = new CommandLineApplication();
             app.Name = "nuget3";
-            app.FullName = ".NET Package Manager";
+            app.FullName = Strings.App_FullName;
             app.HelpOption("-h|--help");
             app.VersionOption("--version", GetType().GetTypeInfo().Assembly.GetName().Version.ToString());
 
-            var verbosity = app.Option("-v|--verbosity <verbosity>", "The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Warning, Error", CommandOptionType.SingleValue);
+            var verbosity = app.Option("-v|--verbosity <verbosity>", Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
             // Set up logging
             _log = new CommandOutputLogger(verbosity);
 
             app.Command("restore", restore =>
                 {
-                    restore.Description = "Restores packages for a project and writes a lock file";
+                    restore.Description = Strings.Restore_Description;
 
                     var sources = restore.Option(
                         "-s|--source <source>",
-                        "Specifies a NuGet package source to use during the restore",
+                        Strings.Restore_Switch_Source_Description,
                         CommandOptionType.MultipleValue);
                     var packagesDirectory = restore.Option(
                         "--packages <packagesDirectory>",
-                        "Directory to install packages in",
+                        Strings.Restore_Switch_Packages_Description,
                         CommandOptionType.SingleValue);
                     var parallel = restore.Option(
                         "-p|--parallel <noneOrNumberOfParallelTasks>",
-                        $"The number of concurrent tasks to use when restoring. Defaults to {RestoreRequest.DefaultDegreeOfConcurrency}; pass 'none' to run without concurrency.",
+                        Strings.FormatRestore_Switch_Parallel_Description(RestoreRequest.DefaultDegreeOfConcurrency),
                         CommandOptionType.SingleValue);
                     var fallBack = restore.Option(
                         "-f|--fallbacksource <FEED>",
-                        "A list of packages sources to use as a fallback",
+                        Strings.Restore_Switch_Fallback_Description,
                         CommandOptionType.MultipleValue);
                     var projectFile = restore.Argument(
-                        "[project file]",
-                        "The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory");
+                        "[project]",
+                        Strings.Restore_Arg_ProjectName_Description);
 
                     restore.OnExecute(async () =>
                         {
@@ -74,7 +74,7 @@ namespace NuGet.CommandLine
                             var projectPath = Path.GetFullPath(projectFile.Value ?? ".");
                             if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectPath), StringComparison.OrdinalIgnoreCase))
                             {
-                                _log.LogVerbose($"Reading project file {projectFile.Value}");
+                                _log.LogVerbose(Strings.FormatLog_ReadingProject(projectFile.Value));
                                 projectPath = Path.GetDirectoryName(projectPath);
                                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectFile.Value), Path.GetFileName(projectPath), projectFile.Value);
                             }
@@ -88,27 +88,21 @@ namespace NuGet.CommandLine
                                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                                 var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
                                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, projectFile.Value);
-                                _log.LogVerbose($"Reading project file {projectFile.Value}");
+                                _log.LogVerbose(Strings.FormatLog_ReadingProject(projectFile.Value));
 #endif
                             }
                             else
                             {
                                 var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
-                                _log.LogVerbose($"Reading project file {file}");
+                                _log.LogVerbose(Strings.FormatLog_ReadingProject(file));
                                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
                             }
-                            _log.LogVerbose($"Loaded project {project.Name} from {project.FilePath}");
+                            _log.LogVerbose(Strings.FormatLog_LoadedProject(project.Name, project.FilePath));
 
                             // Resolve the root directory
                             var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
-                            _log.LogVerbose($"Found project root directory: {rootDirectory}");
-
-                            // Resolve the packages directory
-                            var packagesDir = packagesDirectory.HasValue() ?
-                                packagesDirectory.Value() :
-                                Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
-                            _log.LogVerbose($"Using packages directory: {packagesDir}");
+                            _log.LogVerbose(Strings.FormatLog_FoundProjectRoot(rootDirectory));
 
                             var packageSources = sources.Values.Select(s => new PackageSource(s));
                             var settings = Settings.LoadDefaultSettings(projectPath,
@@ -137,7 +131,7 @@ namespace NuGet.CommandLine
                             }
 
                             // Resolve the packages directory
-                            _log.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
+                            _log.LogVerbose(Strings.FormatLog_UsingPackagesDirectory(request.PackagesDirectory));
 
                             if (externalProjects != null)
                             {
@@ -166,57 +160,32 @@ namespace NuGet.CommandLine
                             }
                             if (request.MaxDegreeOfConcurrency <= 1)
                             {
-                                _log.LogInformation("Running non-parallel restore");
+                                _log.LogInformation(Strings.Log_RunningNonParallelRestore);
                             }
                             else
                             {
-                                _log.LogInformation($"Running restore with {request.MaxDegreeOfConcurrency} concurrent jobs");
+                                _log.LogInformation(Strings.FormatLog_RunningParallelRestore(request.MaxDegreeOfConcurrency));
                             }
                             var command = new RestoreCommand(_log, request);
                             var sw = Stopwatch.StartNew();
                             var result = await command.ExecuteAsync();
 
                             // Commit the result
-                            _log.LogInformation("Committing restore...");
+                            _log.LogInformation(Strings.Log_Committing);
                             result.Commit(_log);
 
                             sw.Stop();
 
                             if (result.Success)
                             {
-                                _log.LogInformation($"Restore completed in {sw.ElapsedMilliseconds:0.00}ms!");
+                                _log.LogInformation(Strings.FormatLog_RestoreComplete(sw.ElapsedMilliseconds));
                                 return 0;
                             }
                             else
                             {
-                                _log.LogError($"Restore failed in {sw.ElapsedMilliseconds:0.00}ms!");
+                                _log.LogInformation(Strings.FormatLog_RestoreFailed(sw.ElapsedMilliseconds));
                                 return 1;
                             }
-                        });
-                });
-
-            app.Command("diag", diag =>
-                {
-                    diag.Description = "Diagnostic commands for debugging package dependency graphs";
-                    diag.Command("lockfile", lockfile =>
-                        {
-                            lockfile.Description = "Dumps data from the project lock file";
-
-                            var project = lockfile.Option("--project <project>", "Path containing the project lockfile, or the patht to the lockfile itself", CommandOptionType.SingleValue);
-                            var target = lockfile.Option("--target <target>", "View information about a specific project target", CommandOptionType.SingleValue);
-                            var library = lockfile.Argument("<library>", "Optionally, get detailed information about a specific library");
-
-                            lockfile.OnExecute(() =>
-                                {
-                                    var diagnostics = new DiagnosticCommands(_log);
-                                    var projectFile = project.HasValue() ? project.Value() : Path.GetFullPath(".");
-                                    return diagnostics.Lockfile(projectFile, target.Value(), library.Value);
-                                });
-                        });
-                    diag.OnExecute(() =>
-                        {
-                            diag.ShowHelp();
-                            return 0;
                         });
                 });
 
