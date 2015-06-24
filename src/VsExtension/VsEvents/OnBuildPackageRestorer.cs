@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -158,30 +160,10 @@ namespace NuGetVSExtension
                         }
 
                         // Call DNU to restore for BuildIntegratedProjectSystem projects
-                        var buildEnabledProjects = projects.Select(project => project as BuildIntegratedProjectSystem)
-                            .Where(project => project != null);
-                        if (buildEnabledProjects.Any())
-                        {
-                            Action<string> logMessage = message =>
-                            {
-                                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                                {
-                                    // Switch to main thread to update the error list window or output window
-                                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                                    WriteLine(VerbosityLevel.Quiet, "{0}", message);
-                                });
-                            };
+                        var buildEnabledProjects = projects.OfType<BuildIntegratedProjectSystem>();
 
-                            var context = new LoggingProjectContext(logMessage);
-                            var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
-
-                            // Restore packages and create the lock file for each project
-                            foreach (var project in buildEnabledProjects)
-                            {
-                                await BuildIntegratedRestoreUtility.RestoreAsync(project, context, enabledSources, Settings, CancellationToken.None);
-                            }
-                        }
-                    });
+                        await RestoreBuildIntegratedProjectsAsync(buildEnabledProjects);
+                    }, JoinableTaskCreationOptions.LongRunning);
             }
             catch (Exception ex)
             {
@@ -203,6 +185,144 @@ namespace NuGetVSExtension
                 PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
             }
+        }
+
+        private async Task RestoreBuildIntegratedProjectsAsync(IEnumerable<BuildIntegratedProjectSystem> buildEnabledProjects)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (buildEnabledProjects.Any() && IsConsentGranted(Settings))
+            {
+                // Get MSBuildOutputVerbosity from _dte
+                _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
+
+                var loggingProjectContext = new LoggingProjectContext(BuildIntegratedProjectLogMessageToDialog);
+                var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
+
+                if (_outputOptOutMessage)
+                {
+                    var waitDialogFactory = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
+
+                    // NOTE: During restore for build integrated projects,
+                    //       We might show the dialog even if there are no packages to restore
+                    // When both currentStep and totalSteps are 0, we get a marquee on the dialog
+                    using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
+                        waitCaption: Resources.DialogTitle,
+                        initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
+                            string.Empty,
+                            string.Empty,
+                            isCancelable: true,
+                            currentStep: 0,
+                            totalSteps: 0)))
+                    {
+                        // NOTE: During restore for build integrated projects,
+                        //       We might show PackageRestoreOptOutMessage even if there are no packages to restore
+                        WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
+                        _outputOptOutMessage = false;
+
+                        Token = threadedWaitDialogSession.UserCancellationToken;
+                        ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
+
+                        // Restore packages and create the lock file for each project
+                        foreach (var project in buildEnabledProjects)
+                        {
+                            var projectName = NuGetProject.GetUniqueNameOrName(project);
+                            await BuildIntegratedProjectRestoreAsync(project, loggingProjectContext, enabledSources, Token);
+                            WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
+                        }
+
+                        WriteLine(canceled: Canceled, hasMissingPackages: true, hasErrors: HasErrors);
+                    }
+                }
+            }
+        }
+
+        private async Task BuildIntegratedProjectRestoreAsync(BuildIntegratedNuGetProject project,
+            INuGetProjectContext loggingProjectContext,
+            IEnumerable<string> enabledSources,
+            CancellationToken token)
+        {
+            // Go off the UI thread to perform I/O operations
+            await TaskScheduler.Default;
+
+            var projectName = NuGetProject.GetUniqueNameOrName(project);
+
+            // Pass down the CancellationToken from the dialog
+            var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                loggingProjectContext,
+                enabledSources,
+                Settings,
+                token);
+
+            if (!restoreResult.Success)
+            {
+                await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
+            }
+        }
+
+        private async Task BuildIntegratedProjectReportErrorAsync(string projectName,
+            RestoreResult restoreResult,
+            CancellationToken token)
+        {
+            Debug.Assert(!restoreResult.Success);
+
+            if (token.IsCancellationRequested)
+            {
+                // If an operation is canceled, a single message gets shown in the summary
+                // that package restore has been canceled. Do not report it as separate errors
+                Canceled = true;
+                return;
+            }
+
+            // HasErrors will be used to show a message in the output window, that, Package restore failed
+            // If Canceled is not already set to true
+            HasErrors = true;
+
+            // Switch to main thread to update the error list window or output window
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            foreach (var libraryRange in restoreResult.GetAllUnresolved())
+            {
+                var message = string.Format(CultureInfo.CurrentCulture,
+                    Resources.BuildIntegratedPackageRestoreFailedForProject,
+                    projectName,
+                    libraryRange.ToString());
+
+                WriteLine(VerbosityLevel.Quiet, message);
+
+                MessageHelper.ShowError(_errorListProvider,
+                    TaskErrorCategory.Error,
+                    TaskPriority.High,
+                    message,
+                    hierarchyItem: null);
+            }
+        }
+
+        private void BuildIntegratedProjectLogMessageToDialog(string message)
+        {
+            if (Token.IsCancellationRequested)
+            {
+                Canceled = true;
+                return;
+            }
+
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                // Switch to main thread to update the error list window or output window
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // When both currentStep and totalSteps are 0, we get a marquee on the dialog
+                var progressData = new ThreadedWaitDialogProgressData(message,
+                    String.Empty,
+                    String.Empty,
+                    isCancelable: true,
+                    currentStep: 0,
+                    totalSteps: 0);
+
+                ThreadedWaitDialogProgress.Report(progressData);
+
+                WriteLine(VerbosityLevel.Normal, "{0}", message);
+            });
         }
 
         /// <summary>
@@ -262,7 +382,7 @@ namespace NuGetVSExtension
                                 exceptionMessage);
 
                             WriteLine(VerbosityLevel.Quiet, message);
-                            ActivityLog.LogError(LogEntrySource, message);
+
                             MessageHelper.ShowError(_errorListProvider, TaskErrorCategory.Error,
                                 TaskPriority.High, message, hierarchyItem: null);
                             WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
