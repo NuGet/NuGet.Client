@@ -33,16 +33,13 @@ namespace NuGet.PackageManagement
             // Restore
             var result = await RestoreAsync(project, project.PackageSpec, projectContext, sources, settings, token);
 
-            // Find the lock file path
-            var projectJson = new FileInfo(project.JsonConfigPath);
-            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJson.FullName);
-
             // Throw before writing if this has been canceled
             token.ThrowIfCancellationRequested();
 
-            // Write out the lock file
-            var lockFileFormat = new LockFileFormat();
-            lockFileFormat.Write(lockFilePath, result.LockFile);
+            var logger = new ProjectContextLogger(projectContext);
+
+            // Write out the lock file and msbuild files
+            result.Commit(logger);
 
             return result;
         }

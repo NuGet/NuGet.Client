@@ -1349,9 +1349,8 @@ namespace NuGet.PackageManagement
                 }
 
                 // Write out the lock file
-                var lockFileFormat = new LockFileFormat();
-                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
-                lockFileFormat.Write(lockFilePath, restoreResult.LockFile);
+                var logger = new ProjectContextLogger(nuGetProjectContext);
+                restoreResult.Commit(logger);
 
                 // Write out a message for each action
                 foreach (var action in nuGetProjectActions)
