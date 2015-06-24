@@ -460,7 +460,6 @@ namespace NuGet.Commands.Test
 
             var request = new RestoreRequest(spec, sources, packagesDir);
             request.MaxDegreeOfConcurrency = 1;
-            request.WriteLockFile = false;
             request.ExistingLockFile = lockFile;
 
             // Act
@@ -548,7 +547,6 @@ namespace NuGet.Commands.Test
 
             var request = new RestoreRequest(spec, sources, packagesDir);
             request.MaxDegreeOfConcurrency = 1;
-            request.WriteLockFile = false;
             request.ExistingLockFile = lockFile;
 
             // Act
