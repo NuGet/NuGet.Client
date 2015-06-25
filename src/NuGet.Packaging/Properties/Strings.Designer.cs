@@ -91,6 +91,22 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
+        /// Installing {0} {1}.
+        /// </summary>
+        internal static string Log_InstallingPackage
+        {
+            get { return GetString("Log_InstallingPackage"); }
+        }
+
+        /// <summary>
+        /// Installing {0} {1}.
+        /// </summary>
+        internal static string FormatLog_InstallingPackage(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_InstallingPackage"), p0, p1);
+        }
+
+        /// <summary>
         /// Nuspec file does not exist in package '{0}'
         /// </summary>
         internal static string MissingNuspec

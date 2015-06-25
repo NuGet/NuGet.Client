@@ -76,7 +76,11 @@ namespace NuGet.DependencyResolver
 
             using (var nupkgStream = await _findPackagesByIdResource.GetNupkgStreamAsync(identity.Name, identity.Version, cancellationToken))
             {
-                await nupkgStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // If the stream is already available, do not stop in the middle of copying the stream
+                // Pass in CancellationToken.None
+                await nupkgStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: CancellationToken.None);
             }
         }
 

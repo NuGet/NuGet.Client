@@ -41,7 +41,12 @@ namespace NuGet.Commands
             _request = request;
         }
 
-        public async Task<RestoreResult> ExecuteAsync()
+        public Task<RestoreResult> ExecuteAsync()
+        {
+            return ExecuteAsync(CancellationToken.None);
+        }
+
+        public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
             var localRepository = new NuGetv3LocalRepository(_request.PackagesDirectory, checkPackageIdCase: false);
             var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
@@ -59,7 +64,7 @@ namespace NuGet.Commands
                 _log.LogInformation(Strings.Log_LockFileOutOfDate);
             }
 
-            var graphs = await ExecuteRestoreAsync(localRepository);
+            var graphs = await ExecuteRestoreAsync(localRepository, token);
 
             // Build the lock file
             LockFile lockFile;
@@ -104,7 +109,8 @@ namespace NuGet.Commands
             return new RestoreResult(_success, graphs, checkResults, lockFile, projectLockFilePath, relockFile, msbuild);
         }
 
-        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(NuGetv3LocalRepository localRepository)
+        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(NuGetv3LocalRepository localRepository,
+            CancellationToken token)
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
@@ -170,7 +176,8 @@ namespace NuGet.Commands
                     framework,
                     remoteWalker,
                     context,
-                    writeToLockFile: true));
+                    writeToLockFile: true,
+                    token: token));
             }
 
             graphs.AddRange(await Task.WhenAll(frameworkTasks));
@@ -186,7 +193,8 @@ namespace NuGet.Commands
             await InstallPackagesAsync(graphs,
                 _request.PackagesDirectory,
                 allInstalledPackages,
-                _request.MaxDegreeOfConcurrency);
+                _request.MaxDegreeOfConcurrency,
+                token);
 
             // Load runtime specs
             var runtimes = RuntimeGraph.Empty;
@@ -212,7 +220,8 @@ namespace NuGet.Commands
                         context,
                         localRepository,
                         runtimes,
-                        writeToLockFile: true));
+                        writeToLockFile: true,
+                        token: token));
                 }
 
                 foreach (var runtimeSpecificGraph in (await Task.WhenAll(runtimeTasks)).SelectMany(g => g))
@@ -232,7 +241,8 @@ namespace NuGet.Commands
                 await InstallPackagesAsync(runtimeGraphs,
                     _request.PackagesDirectory,
                     allInstalledPackages,
-                    _request.MaxDegreeOfConcurrency);
+                    _request.MaxDegreeOfConcurrency,
+                    token);
             }
 
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
@@ -274,7 +284,8 @@ namespace NuGet.Commands
                         runtimes,
                         remoteWalker,
                         context,
-                        writeToLockFile: false));
+                        writeToLockFile: false,
+                        token: token));
                 }
 
                 var checkGraphs = (await Task.WhenAll(checkTasks)).ToList();
@@ -290,7 +301,8 @@ namespace NuGet.Commands
                 await InstallPackagesAsync(checkGraphs,
                     _request.PackagesDirectory,
                     allInstalledPackages,
-                    _request.MaxDegreeOfConcurrency);
+                    _request.MaxDegreeOfConcurrency,
+                    token);
             }
 
             return graphs;
@@ -495,7 +507,8 @@ namespace NuGet.Commands
             NuGetFramework framework,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
-            bool writeToLockFile)
+            bool writeToLockFile,
+            CancellationToken token)
         {
             return WalkDependenciesAsync(projectRange,
                 framework,
@@ -503,7 +516,8 @@ namespace NuGet.Commands
                 runtimeGraph: RuntimeGraph.Empty,
                 walker: walker,
                 context: context,
-                writeToLockFile: writeToLockFile);
+                writeToLockFile: writeToLockFile,
+                token: token);
         }
 
         private async Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
@@ -512,7 +526,8 @@ namespace NuGet.Commands
             RuntimeGraph runtimeGraph,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
-            bool writeToLockFile)
+            bool writeToLockFile,
+            CancellationToken token)
         {
             var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
             var graphs = new List<GraphNode<RemoteResolveResult>>();
@@ -521,10 +536,13 @@ namespace NuGet.Commands
                 // Walk all the items in the lock file target and just synthesize the outer graph
                 var target = _request.ExistingLockFile.GetTarget(framework, runtimeIdentifier);
 
+                token.ThrowIfCancellationRequested();
                 if (target != null)
                 {
                     foreach (var targetLibrary in target.Libraries)
                     {
+                        token.ThrowIfCancellationRequested();
+
                         var library = _request.ExistingLockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
                         if (library == null)
                         {
@@ -620,7 +638,8 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             NuGetv3LocalRepository localRepository,
             RuntimeGraph runtimes,
-            bool writeToLockFile)
+            bool writeToLockFile,
+            CancellationToken token)
         {
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in projectRuntimeGraph.Runtimes.Keys)
@@ -633,7 +652,8 @@ namespace NuGet.Commands
                     runtimes,
                     walker,
                     context,
-                    writeToLockFile));
+                    writeToLockFile,
+                    token));
             }
 
             return Task.WhenAll(resultGraphs);
@@ -692,14 +712,15 @@ namespace NuGet.Commands
         private async Task InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
             string packagesDirectory,
             HashSet<LibraryIdentity> allInstalledPackages,
-            int maxDegreeOfConcurrency)
+            int maxDegreeOfConcurrency,
+            CancellationToken token)
         {
             var packagesToInstall = graphs.SelectMany(g => g.Install.Where(match => allInstalledPackages.Add(match.Library)));
             if (maxDegreeOfConcurrency <= 1)
             {
                 foreach (var match in packagesToInstall)
                 {
-                    await InstallPackageAsync(match, packagesDirectory);
+                    await InstallPackageAsync(match, packagesDirectory, token);
                 }
             }
             else
@@ -711,23 +732,23 @@ namespace NuGet.Commands
                             RemoteMatch match;
                             while (bag.TryTake(out match))
                             {
-                                await InstallPackageAsync(match, packagesDirectory);
+                                await InstallPackageAsync(match, packagesDirectory, token);
                             }
                         });
                 await Task.WhenAll(tasks);
             }
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, string packagesDirectory)
+        private async Task InstallPackageAsync(RemoteMatch installItem, string packagesDirectory, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
             await NuGetPackageUtils.InstallFromSourceAsync(
-                stream => installItem.Provider.CopyToAsync(installItem.Library, stream, CancellationToken.None),
+                stream => installItem.Provider.CopyToAsync(installItem.Library, stream, token),
                 packageIdentity,
                 packagesDirectory,
                 _log,
                 fixNuspecIdCasing: true,
-                token: CancellationToken.None);
+                token: token);
         }
 
         private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source, bool noCache)

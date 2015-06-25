@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -44,9 +45,15 @@ namespace NuGet.Packaging
                     // waiting on this lock don't need to install it again.
                     if (!File.Exists(targetNupkg))
                     {
-                        log.LogInformation($"Installing {packageIdentity.Id} {packageIdentity.Version}");
+                        log.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_InstallingPackage, packageIdentity.Id, packageIdentity.Version));
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        // Do not stop the package extraction after this point
+                        // based on CancellationToken
 
                         Directory.CreateDirectory(targetPath);
+
                         using (var nupkgStream = new FileStream(
                             targetNupkg,
                             FileMode.Create,

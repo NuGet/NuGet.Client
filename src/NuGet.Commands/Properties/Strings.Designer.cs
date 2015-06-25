@@ -155,7 +155,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// All packages are compatibile with {0}.
+        /// All packages are compatible with {0}.
         /// </summary>
         internal static string Log_PackagesAreCompatible
         {
@@ -163,7 +163,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// All packages are compatibile with {0}.
+        /// All packages are compatible with {0}.
         /// </summary>
         internal static string FormatLog_PackagesAreCompatible(object p0)
         {

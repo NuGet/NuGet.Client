@@ -132,6 +132,9 @@
   <data name="ErrorNullOrEmptyPackageId" xml:space="preserve">
     <value>Null or empty package id</value>
   </data>
+  <data name="Log_InstallingPackage" xml:space="preserve">
+    <value>Installing {0} {1}.</value>
+  </data>
   <data name="MissingNuspec" xml:space="preserve">
     <value>Nuspec file does not exist in package '{0}'</value>
   </data>
