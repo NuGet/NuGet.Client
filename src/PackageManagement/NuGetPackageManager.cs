@@ -345,6 +345,65 @@ namespace NuGet.PackageManagement
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
+            var installedPackageReference = projectInstalledPackageReferences
+                    .Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageId))
+                    .FirstOrDefault();
+
+            // DNX and BuildIntegrated projects are handled here
+            if (nuGetProject is INuGetIntegratedProject)
+            {
+                var actions = new List<NuGetProjectAction>();
+
+                // Start with the given package identity if one was passed in
+                var updateToIdentity = packageIdentity;
+
+                // If the version was not passed in, find the highest version
+                if (updateToIdentity == null || !updateToIdentity.HasVersion)
+                {
+                    // Step-1 : Get latest version for packageId
+                    NuGetVersion latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySources, token);
+
+                    if (latestVersion == null)
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownPackage, packageId));
+                    }
+
+                    if (installedPackageReference.PackageIdentity.Version > latestVersion)
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, updateToIdentity));
+                    }
+
+                    updateToIdentity = new PackageIdentity(packageId, latestVersion);
+                }
+
+                // No-op if this is not an actual update, or if the latest version from the source is less than the currently installed version
+                if (installedPackageReference != null)
+                {
+                    var action = NuGetProjectAction.CreateInstallProjectAction(updateToIdentity, primarySources.FirstOrDefault());
+
+                    var lowLevelActions = new List<NuGetProjectAction>();
+                    lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(updateToIdentity, primarySources.FirstOrDefault()));
+
+                    var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+                    if (buildIntegratedProject != null)
+                    {
+                        // Create a build integrated action
+                        var buildIntegratedAction =
+                            await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
+
+                        actions.Add(buildIntegratedAction);
+                    }
+                    else
+                    {
+                        // Use the low level actions for projectK
+                        actions = lowLevelActions;
+                    }
+                }
+
+                return actions;
+            }
+
             var preferredVersions = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
 
             // By default we start by preferring everything we already have installed
