@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement
             var command = new RestoreCommand(new ProjectContextLogger(projectContext), request);
 
             // Execute the restore
-            var result = await command.ExecuteAsync();
+            var result = await command.ExecuteAsync(token);
 
             // Report a final message with the Success result
             if (result.Success)
