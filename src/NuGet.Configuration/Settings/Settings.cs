@@ -463,18 +463,16 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(values));
             }
 
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-            if (sectionElement != null)
-            {
-                XElementUtility.RemoveIndented(sectionElement);
-            }
-
             var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
 
-            if (valuesToWrite.Any())
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+
+            if (sectionElement == null && valuesToWrite.Any())
             {
                 sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
             }
+
+            RemoveElementAfterClearTag(sectionElement);
 
             foreach (var value in valuesToWrite)
             {
@@ -488,6 +486,32 @@ namespace NuGet.Configuration
             if (_next != null)
             {
                 _next.UpdateSections(section, values.Where(v => v.Priority >= _next._priority).ToList());
+            }
+        }
+
+        private static void RemoveElementAfterClearTag(XElement sectionElement)
+        {
+            if (sectionElement == null)
+            {
+                return;
+            }
+
+            var removeElmentList = new List<XElement>();
+            foreach (var element in sectionElement.Elements())
+            {
+                if (element.Name.LocalName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                {
+                    removeElmentList.Clear();
+                }
+                else 
+                {
+                    removeElmentList.Add(element);
+                }
+            }
+
+            foreach (var element in removeElmentList)
+            {
+                element.Remove();
             }
         }
 

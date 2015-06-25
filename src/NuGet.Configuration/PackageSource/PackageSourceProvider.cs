@@ -431,6 +431,14 @@ namespace NuGet.Configuration
 
             var existingSettings = (Settings.GetSettingValues(ConfigurationContants.PackageSources, isPath: true) ??
                                     Enumerable.Empty<SettingValue>()).Where(setting => !setting.IsMachineWide).ToList();
+            var minPriority = 0;
+            
+            // get lowest priority in existingSetting
+            if (existingSettings.Count > 0)
+            {
+                minPriority = existingSettings.Min(setting => setting.Priority);
+            }
+         
             existingSettings.RemoveAll(setting => !sources.Any(s => string.Equals(s.Name, setting.Key, StringComparison.OrdinalIgnoreCase)));
             var existingSettingsLookup = existingSettings.ToLookup(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
             var existingDisabledSources = Settings.GetSettingValues(ConfigurationContants.DisabledPackageSources) ??
@@ -464,8 +472,9 @@ namespace NuGet.Configuration
                 if (!foundSettingWithSourcePriority)
                 {
                     // This is a new source, add it to the Setting with the lowest priority.
-
-                    var settingValue = new SettingValue(source.Name, source.Source, isMachineWide: false);
+                    // if there is a clear tag in one config file, new source will be cleared
+                    // we should set new source priority to lowest existingSetting priority
+                    var settingValue = new SettingValue(source.Name, source.Source, isMachineWide: false, priority: minPriority);
                     
                     if (source.ProtocolVersion != PackageSource.DefaultProtocolVersion)
                     {

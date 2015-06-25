@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace NuGet.Configuration.Test
 {
@@ -52,15 +53,15 @@ namespace NuGet.Configuration.Test
             {
                 using (var streamReader = new StreamReader(fs))
                 {
-                    return RemovedLineEndings(streamReader.ReadToEnd());
+                    return FormatXmlString(streamReader.ReadToEnd());
                 }
             }
         }
 
-        // this method is for removing LineEndings for CI build
-        public static string RemovedLineEndings(string result)
+        // this method is for formating xml string
+        public static string FormatXmlString(string result)
         {
-            return result.Replace("\n", "").Replace("\r", "");
+            return XDocument.Parse(result).ToString();
         }
     }
 }
