@@ -105,7 +105,7 @@ namespace NuGetVSExtension
             var buildWindowPaneGuid = VSConstants.BuildOutput.ToString("B");
             foreach (OutputWindowPane pane in dte2.ToolWindows.OutputWindow.OutputWindowPanes)
             {
-                if (String.Equals(pane.Guid, buildWindowPaneGuid, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(pane.Guid, buildWindowPaneGuid, StringComparison.OrdinalIgnoreCase))
                 {
                     return pane;
                 }
@@ -170,7 +170,9 @@ namespace NuGetVSExtension
                 string message;
                 if (_msBuildOutputVerbosity < 3)
                 {
-                    message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex.Message);
+                    message = string.Format(CultureInfo.CurrentCulture,
+                        Resources.ErrorOccurredRestoringPackages,
+                        ex.Message);
                 }
                 else
                 {
@@ -187,7 +189,8 @@ namespace NuGetVSExtension
             }
         }
 
-        private async Task RestoreBuildIntegratedProjectsAsync(IEnumerable<BuildIntegratedProjectSystem> buildEnabledProjects)
+        private async Task RestoreBuildIntegratedProjectsAsync(
+            IEnumerable<BuildIntegratedProjectSystem> buildEnabledProjects)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -197,11 +200,14 @@ namespace NuGetVSExtension
                 _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
 
                 var loggingProjectContext = new LoggingProjectContext(BuildIntegratedProjectLogMessageToDialog);
-                var enabledSources = SourceRepositoryProvider.GetRepositories().Select(repo => repo.PackageSource.Source);
+                var enabledSources = SourceRepositoryProvider.GetRepositories()
+                    .Select(repo => repo.PackageSource.Source);
 
                 if (_outputOptOutMessage)
                 {
-                    var waitDialogFactory = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
+                    var waitDialogFactory
+                        = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory,
+                            IVsThreadedWaitDialogFactory>();
 
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
@@ -313,8 +319,8 @@ namespace NuGetVSExtension
 
                 // When both currentStep and totalSteps are 0, we get a marquee on the dialog
                 var progressData = new ThreadedWaitDialogProgressData(message,
-                    String.Empty,
-                    String.Empty,
+                    string.Empty,
+                    string.Empty,
                     isCancelable: true,
                     currentStep: 0,
                     totalSteps: 0);
@@ -338,14 +344,20 @@ namespace NuGetVSExtension
 
             if (args.Restored)
             {
-                PackageIdentity packageIdentity = args.Package;
+                var packageIdentity = args.Package;
                 Interlocked.Increment(ref CurrentCount);
 
                 ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                     {
                         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        var progressData = new ThreadedWaitDialogProgressData(String.Format(CultureInfo.CurrentCulture, Resources.RestoredPackage, packageIdentity),
-                            String.Empty, String.Empty, isCancelable: true, currentStep: CurrentCount, totalSteps: TotalCount);
+                        var progressData = new ThreadedWaitDialogProgressData(string.Format(CultureInfo.CurrentCulture,
+                                Resources.RestoredPackage,
+                                packageIdentity),
+                            string.Empty,
+                            string.Empty,
+                            isCancelable: true,
+                            currentStep: CurrentCount,
+                            totalSteps: TotalCount);
                         ThreadedWaitDialogProgress.Report(progressData);
                     });
             }
@@ -355,7 +367,8 @@ namespace NuGetVSExtension
         {
             if (Token.IsCancellationRequested)
             {
-                // If an operation is canceled, a single message gets shown in the summary that package restore has been canceled
+                // If an operation is canceled, a single message gets shown in the summary
+                // that package restore has been canceled
                 // Do not report it as separate errors
                 Canceled = true;
                 return;
@@ -376,7 +389,7 @@ namespace NuGetVSExtension
                             var exceptionMessage = _msBuildOutputVerbosity >= (int)VerbosityLevel.Detailed ?
                                 args.Exception.ToString() :
                                 args.Exception.Message;
-                            var message = String.Format(
+                            var message = string.Format(
                                 CultureInfo.CurrentCulture,
                                 Resources.PackageRestoreFailedForProject, projectName,
                                 exceptionMessage);
@@ -397,7 +410,8 @@ namespace NuGetVSExtension
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
-            var waitDialogFactory = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
+            var waitDialogFactory
+                = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
 
             if (String.IsNullOrEmpty(solutionDirectory))
             {
@@ -405,7 +419,8 @@ namespace NuGetVSExtension
                 return;
             }
 
-            var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
+            var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory,
+                CancellationToken.None);
 
             if (IsConsentGranted(Settings))
             {
@@ -415,7 +430,7 @@ namespace NuGetVSExtension
 
                 if (!packages.Any())
                 {
-                    // Restore is not applicable, since, there is no project with installed packages, that is, packages.config
+                    // Restore is not applicable, since, there is no project with installed packages
                     return;
                 }
 
@@ -429,9 +444,10 @@ namespace NuGetVSExtension
                         using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
                             waitCaption: Resources.DialogTitle,
                             initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
-                                String.Empty, String.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
+                                string.Empty, string.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
                         {
-                            // Only write the PackageRestoreOptOutMessage to output window, if, there are packages to restore
+                            // Only write the PackageRestoreOptOutMessage to output window,
+                            // if, there are packages to restore
                             WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
                             _outputOptOutMessage = false;
 
@@ -457,13 +473,14 @@ namespace NuGetVSExtension
                 using (var twd = waitDialogFactory.StartWaitDialog(
                     waitCaption: Resources.DialogTitle,
                     initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
-                        String.Empty, String.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
+                        string.Empty, string.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
                 {
                     CheckForMissingPackages(packages);
                 }
             }
 
-            await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+            await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory,
+                CancellationToken.None);
         }
 
         /// <summary>
@@ -474,10 +491,14 @@ namespace NuGetVSExtension
         {
             if (missingPackages.Any())
             {
-                var errorText = String.Format(CultureInfo.CurrentCulture,
+                var errorText = string.Format(CultureInfo.CurrentCulture,
                     Resources.PackageNotRestoredBecauseOfNoConsent,
                     String.Join(", ", missingPackages.Select(p => p.ToString())));
-                MessageHelper.ShowError(_errorListProvider, TaskErrorCategory.Error, TaskPriority.High, errorText, hierarchyItem: null);
+                MessageHelper.ShowError(_errorListProvider,
+                    TaskErrorCategory.Error,
+                    TaskPriority.High,
+                    errorText,
+                    hierarchyItem: null);
             }
         }
 
@@ -487,7 +508,10 @@ namespace NuGetVSExtension
         {
             await TaskScheduler.Default;
 
-            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory, packages, NuGetProjectContext, token);
+            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
+                packages,
+                NuGetProjectContext,
+                token);
         }
 
         /// <summary>
