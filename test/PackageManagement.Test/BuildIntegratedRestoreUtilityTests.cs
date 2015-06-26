@@ -36,11 +36,16 @@ namespace NuGet.Test
                 };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
+                new TestNuGetProjectContext());
             var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
             // Act
-            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project, new TestNuGetProjectContext(), sources, Configuration.NullSettings.Instance, CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                new TestNuGetProjectContext(),
+                sources,
+                Configuration.NullSettings.Instance,
+                CancellationToken.None);
 
             // Assert
             Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));

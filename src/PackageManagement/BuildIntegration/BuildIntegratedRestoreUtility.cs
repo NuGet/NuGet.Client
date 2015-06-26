@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,15 +56,21 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // Restoring packages
-            projectContext.Log(ProjectManagement.MessageLevel.Info, Strings.BuildIntegratedPackageRestoreStarted, project.ProjectName);
+            projectContext.Log(ProjectManagement.MessageLevel.Info,
+                Strings.BuildIntegratedPackageRestoreStarted,
+                project.ProjectName);
 
             var packageSources = sources.Select(source => new Configuration.PackageSource(source));
-            var request = new RestoreRequest(packageSpec, packageSources, SettingsUtility.GetGlobalPackagesFolder(settings));
+            var request = new RestoreRequest(packageSpec, packageSources,
+                SettingsUtility.GetGlobalPackagesFolder(settings));
+
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
             // Find the full closure of project.json files and referenced projects
             var projectReferences = await project.GetProjectReferenceClosureAsync();
-            request.ExternalProjects = projectReferences.Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference)).ToList();
+            request.ExternalProjects = projectReferences
+                .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))
+                .ToList();
 
             token.ThrowIfCancellationRequested();
 
@@ -76,11 +82,15 @@ namespace NuGet.PackageManagement
             // Report a final message with the Success result
             if (result.Success)
             {
-                projectContext.Log(ProjectManagement.MessageLevel.Info, Strings.BuildIntegratedPackageRestoreSucceeded, project.ProjectName);
+                projectContext.Log(ProjectManagement.MessageLevel.Info,
+                    Strings.BuildIntegratedPackageRestoreSucceeded,
+                    project.ProjectName);
             }
             else
             {
-                projectContext.Log(ProjectManagement.MessageLevel.Info, Strings.BuildIntegratedPackageRestoreFailed, project.ProjectName);
+                projectContext.Log(ProjectManagement.MessageLevel.Info,
+                    Strings.BuildIntegratedPackageRestoreFailed,
+                    project.ProjectName);
             }
 
             return result;
@@ -89,7 +99,8 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Find all packages added to <paramref name="updatedLockFile"/>.
         /// </summary>
-        public static IReadOnlyList<PackageIdentity> GetAddedPackages(LockFile originalLockFile, LockFile updatedLockFile)
+        public static IReadOnlyList<PackageIdentity> GetAddedPackages(LockFile originalLockFile,
+            LockFile updatedLockFile)
         {
             var updatedPackages = updatedLockFile.Targets.SelectMany(target => target.Libraries)
                 .Select(library => new PackageIdentity(library.Name, library.Version));
@@ -105,7 +116,8 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Find all packages removed from <paramref name="updatedLockFile"/>.
         /// </summary>
-        public static IReadOnlyList<PackageIdentity> GetRemovedPackages(LockFile originalLockFile, LockFile updatedLockFile)
+        public static IReadOnlyList<PackageIdentity> GetRemovedPackages(LockFile originalLockFile,
+            LockFile updatedLockFile)
         {
             return GetAddedPackages(updatedLockFile, originalLockFile);
         }
