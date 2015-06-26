@@ -16,9 +16,9 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Configuration;
+using NuGet.Logging;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -26,7 +26,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGetVSExtension
 {
-    internal sealed class OnBuildPackageRestorer
+    internal class OnBuildPackageRestorer : ILogger
     {
         private const string LogEntrySource = "NuGet PackageRestorer";
 
@@ -199,7 +199,6 @@ namespace NuGetVSExtension
                 // Get MSBuildOutputVerbosity from _dte
                 _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
 
-                var loggingProjectContext = new LoggingProjectContext(BuildIntegratedProjectLogMessageToDialog);
                 var enabledSources = SourceRepositoryProvider.GetRepositories()
                     .Select(repo => repo.PackageSource.Source);
 
@@ -233,7 +232,7 @@ namespace NuGetVSExtension
                         foreach (var project in buildEnabledProjects)
                         {
                             var projectName = NuGetProject.GetUniqueNameOrName(project);
-                            await BuildIntegratedProjectRestoreAsync(project, loggingProjectContext, enabledSources, Token);
+                            await BuildIntegratedProjectRestoreAsync(project, enabledSources, Token);
                             WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
                         }
 
@@ -244,7 +243,6 @@ namespace NuGetVSExtension
         }
 
         private async Task BuildIntegratedProjectRestoreAsync(BuildIntegratedNuGetProject project,
-            INuGetProjectContext loggingProjectContext,
             IEnumerable<string> enabledSources,
             CancellationToken token)
         {
@@ -255,7 +253,7 @@ namespace NuGetVSExtension
 
             // Pass down the CancellationToken from the dialog
             var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                loggingProjectContext,
+                this,
                 enabledSources,
                 Settings,
                 token);
@@ -302,33 +300,6 @@ namespace NuGetVSExtension
                     message,
                     hierarchyItem: null);
             }
-        }
-
-        private void BuildIntegratedProjectLogMessageToDialog(string message)
-        {
-            if (Token.IsCancellationRequested)
-            {
-                Canceled = true;
-                return;
-            }
-
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                // Switch to main thread to update the error list window or output window
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-                var progressData = new ThreadedWaitDialogProgressData(message,
-                    string.Empty,
-                    string.Empty,
-                    isCancelable: true,
-                    currentStep: 0,
-                    totalSteps: 0);
-
-                ThreadedWaitDialogProgress.Report(progressData);
-
-                WriteLine(VerbosityLevel.Normal, "{0}", message);
-            });
         }
 
         /// <summary>
@@ -584,14 +555,15 @@ namespace NuGetVSExtension
         private void WriteLine(VerbosityLevel verbosity, string format, params object[] args)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var outputPane = GetBuildOutputPane();
-            if (outputPane == null)
-            {
-                return;
-            }
 
             if (_msBuildOutputVerbosity >= (int)verbosity)
             {
+                var outputPane = GetBuildOutputPane();
+                if (outputPane == null)
+                {
+                    return;
+                }
+
                 var msg = string.Format(CultureInfo.CurrentCulture, format, args);
                 outputPane.OutputString(msg);
                 outputPane.OutputString(Environment.NewLine);
@@ -621,6 +593,90 @@ namespace NuGetVSExtension
             _errorListProvider.Dispose();
             _buildEvents.OnBuildBegin -= BuildEvents_OnBuildBegin;
             _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+        }
+
+        #region ILogger implementation
+        public void LogDebug(string data)
+        {
+            LogToVS(VerbosityLevel.Diagnostic, data);
+        }
+
+        public void LogVerbose(string data)
+        {
+            LogToVS(VerbosityLevel.Detailed, data);
+        }
+
+        public void LogInformation(string data)
+        {
+            LogToVS(VerbosityLevel.Normal, data);
+        }
+
+        public void LogWarning(string data)
+        {
+            LogToVS(VerbosityLevel.Minimal, data);
+        }
+
+        public void LogError(string data)
+        {
+            LogToVS(VerbosityLevel.Quiet, data);
+        }
+        #endregion ILogger implementation
+
+        private void LogToVS(VerbosityLevel verbosityLevel, string message)
+        {
+            if (Token.IsCancellationRequested)
+            {
+                // If an operation is canceled, don't log anything, simply return
+                // And, show a single message gets shown in the summary that package restore has been canceled
+                // Do not report it as separate errors
+                Canceled = true;
+                return;
+            }
+
+            // If the verbosity level of message is worse than VerbosityLevel.Normal, that is,
+            // VerbosityLevel.Detailed or VerbosityLevel.Diagnostic, AND,
+            // _msBuildOutputVerbosity is lesser than verbosityLevel; do nothing
+            if (verbosityLevel > VerbosityLevel.Normal && _msBuildOutputVerbosity < (int)verbosityLevel)
+            {
+                return;
+            }
+
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                // Switch to main thread to update the progress dialog, output window or error list window
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Only show messages with VerbosityLevel.Normal, VerbosityLevel.Minimal or VerbosityLevel.Quiet
+                if (verbosityLevel <= VerbosityLevel.Normal)
+                {
+                    // When both currentStep and totalSteps are 0, we get a marquee on the dialog
+                    var progressData = new ThreadedWaitDialogProgressData(message,
+                        string.Empty,
+                        string.Empty,
+                        isCancelable: true,
+                        currentStep: 0,
+                        totalSteps: 0);
+
+                    // Update the progress dialog
+                    ThreadedWaitDialogProgress.Report(progressData);
+                }
+
+                // Write to the output window. Based on _msBuildOutputVerbosity, the message may or may not
+                // get shown on the output window. Default is VerbosityLevel.Minimal
+                WriteLine(verbosityLevel, message);
+
+                // VerbosityLevel.Quiet corresponds to ILogger.LogError, and,
+                // VerbosityLevel.Minimal corresponds to ILogger.LogWarning
+                // In these 2 cases, we add an error or warning to the error list window
+                if (verbosityLevel == VerbosityLevel.Quiet || verbosityLevel == VerbosityLevel.Minimal)
+                {
+                    MessageHelper.ShowError(_errorListProvider,
+                        verbosityLevel == VerbosityLevel.Quiet ? TaskErrorCategory.Error : TaskErrorCategory.Warning,
+                        TaskPriority.High,
+                        message,
+                        hierarchyItem: null);
+                }
+            });
         }
     }
 }
