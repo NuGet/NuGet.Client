@@ -25,18 +25,16 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
-            INuGetProjectContext projectContext,
+            Logging.ILogger logger,
             IEnumerable<string> sources,
             Configuration.ISettings settings,
             CancellationToken token)
         {
             // Restore
-            var result = await RestoreAsync(project, project.PackageSpec, projectContext, sources, settings, token);
+            var result = await RestoreAsync(project, project.PackageSpec, logger, sources, settings, token);
 
             // Throw before writing if this has been canceled
             token.ThrowIfCancellationRequested();
-
-            var logger = new ProjectContextLogger(projectContext);
 
             // Write out the lock file and msbuild files
             result.Commit(logger);
@@ -50,20 +48,19 @@ namespace NuGet.PackageManagement
         internal static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
-            INuGetProjectContext projectContext,
+            Logging.ILogger logger,
             IEnumerable<string> sources,
             Configuration.ISettings settings,
             CancellationToken token)
         {
             // Restoring packages
-            projectContext.Log(ProjectManagement.MessageLevel.Info,
+            logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.BuildIntegratedPackageRestoreStarted,
-                project.ProjectName);
+                project.ProjectName));
 
             var packageSources = sources.Select(source => new Configuration.PackageSource(source));
             var request = new RestoreRequest(packageSpec, packageSources,
                 SettingsUtility.GetGlobalPackagesFolder(settings));
-
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
             // Find the full closure of project.json files and referenced projects
@@ -74,7 +71,7 @@ namespace NuGet.PackageManagement
 
             token.ThrowIfCancellationRequested();
 
-            var command = new RestoreCommand(new ProjectContextLogger(projectContext), request);
+            var command = new RestoreCommand(logger, request);
 
             // Execute the restore
             var result = await command.ExecuteAsync(token);
@@ -82,15 +79,15 @@ namespace NuGet.PackageManagement
             // Report a final message with the Success result
             if (result.Success)
             {
-                projectContext.Log(ProjectManagement.MessageLevel.Info,
+                logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.BuildIntegratedPackageRestoreSucceeded,
-                    project.ProjectName);
+                    project.ProjectName));
             }
             else
             {
-                projectContext.Log(ProjectManagement.MessageLevel.Info,
+                logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.BuildIntegratedPackageRestoreFailed,
-                    project.ProjectName);
+                    project.ProjectName));
             }
 
             return result;

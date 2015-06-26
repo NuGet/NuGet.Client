@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement.Projects;
@@ -42,7 +41,7 @@ namespace NuGet.Test
 
             // Act
             var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                new TestNuGetProjectContext(),
+                Logging.NullLogger.Instance,
                 sources,
                 Configuration.NullSettings.Instance,
                 CancellationToken.None);

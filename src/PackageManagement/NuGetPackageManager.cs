@@ -16,8 +16,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
-using NuGet.Packaging.Core;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -1324,6 +1324,8 @@ namespace NuGet.PackageManagement
                 rawPackageSpec = JObject.Load(reader);
             }
 
+            var logger = new ProjectContextLogger(nuGetProjectContext);
+
             // If the lock file does not exist, restore before starting the operations
             if (originalLockFile == null)
             {
@@ -1335,7 +1337,7 @@ namespace NuGet.PackageManagement
                 var originalRestoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(
                     buildIntegratedProject,
                     originalPackageSpec,
-                    nuGetProjectContext,
+                    logger,
                     sources,
                     Settings,
                     token);
@@ -1364,7 +1366,7 @@ namespace NuGet.PackageManagement
             // Restore based on the modified package spec. This operation does not write the lock file to disk.
             var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(buildIntegratedProject,
                 packageSpec,
-                nuGetProjectContext,
+                logger,
                 sources,
                 Settings,
                 token);
