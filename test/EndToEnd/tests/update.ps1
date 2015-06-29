@@ -1657,3 +1657,85 @@ function Test-UpdatePackageWhatIfMultipleProjects {
     Assert-Package $p1 TestUpdatePackage '1.0.0.0'
     Assert-Package $p2 TestUpdatePackage '1.0.0.0'
 }
+
+# Test update-package ordering
+function Test-UpdatingPackageInstallOrdering {
+    param(
+        $context
+    )
+    
+    # Arrange
+    $p = New-ConsoleApplication
+
+	# A.1 depends on B.1 depends on C.1 however A.2 depends on C.2 depends on B.2 (B and C are swapped)
+
+    # Act
+    Install-Package A -Version 1.0 -Source $context.RepositoryPath
+    Assert-Package $p A 1.0
+    Assert-Package $p B 1.0
+    Assert-Package $p C 1.0
+    
+    Update-Package A -Source $context.RepositoryPath
+    # Make sure the new package is installed
+    Assert-Package $p A 2.0
+    Assert-Package $p B 2.0
+    Assert-Package $p C 2.0
+    
+    # Make sure the old package is removed
+    Assert-Null (Get-ProjectPackage $p A 1.0)
+    Assert-Null (Get-ProjectPackage $p B 1.0)
+    Assert-Null (Get-ProjectPackage $p C 1.0)
+}
+
+# Test update-package with ToHighestPatch flag - this is the same exact behavior as -Safe
+function Test-UpdatePackageWithToHighestPatchFlag {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p1 = New-ConsoleApplication
+    $p1 | Install-Package A -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
+    $p1 | Install-Package B -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
+    $p1 | Install-Package C -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
+
+    # Act    
+    Update-Package A -Source $context.RepositoryPath -Safe
+
+    # Assert
+    Assert-Package $p1 A 1.0.3
+    Assert-Package $p1 B 1.0.0
+    Assert-Package $p1 C 1.0.0
+    Assert-SolutionPackage A 1.0.3
+    Assert-SolutionPackage B 1.0.0
+    Assert-SolutionPackage C 1.0.0
+}
+
+# Test update-package with ToHighestMinor flag
+function Test-UpdatePackageWithToHighestMinorFlag {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-ConsoleApplication
+    
+	$p | Install-Package A -Version 1.0.0 -Source $context.RepositoryPath
+
+    Assert-Package $p A 1.0.0
+    Assert-Package $p B 1.0.0
+    Assert-Package $p C 1.0.0
+
+    # Act    
+    Update-Package A -Source $context.RepositoryPath -ToHighestMinor
+
+    # Assert
+    Assert-Package $p A 1.2.0
+    Assert-Package $p B 1.2.0
+    Assert-Package $p C 1.2.0
+
+    # Make sure the old package is removed
+    Assert-Null (Get-ProjectPackage $p A 1.0.0)
+    Assert-Null (Get-ProjectPackage $p B 1.0.0)
+    Assert-Null (Get-ProjectPackage $p C 1.0.0)
+}
