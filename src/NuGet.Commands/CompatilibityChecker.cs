@@ -189,10 +189,11 @@ namespace NuGet.Commands
                 if (targetLibrary == null)
                 {
                     targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
-                        package,
-                        graph,
-                        new VersionFolderPathResolver(_localRepository.RepositoryRoot),
-                        libraryId.Name);
+                        library: null,
+                        package: package,
+                        targetGraph: graph,
+                        defaultPackagePathResolver: new VersionFolderPathResolver(_localRepository.RepositoryRoot),
+                        correctedPackageName: libraryId.Name);
                 }
 
                 return new CompatibilityData(files, targetLibrary);

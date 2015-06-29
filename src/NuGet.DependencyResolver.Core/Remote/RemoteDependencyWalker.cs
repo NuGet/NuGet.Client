@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
-using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
 {
@@ -26,23 +25,28 @@ namespace NuGet.DependencyResolver
 
         public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
         {
-            var cache = new ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>>();
-
-            return CreateGraphNode(cache, library, framework, runtimeIdentifier, runtimeGraph, _ => recursive);
+            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => recursive);
         }
 
-        private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, Func<string, bool> predicate)
+        private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            string runtimeName,
+            RuntimeGraph runtimeGraph,
+            Func<string, bool> predicate)
         {
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
             {
-                Item = await FindLibraryCached(cache, libraryRange, framework),
+                Item = await FindLibraryCached(_context.FindLibraryEntryCache, libraryRange, framework),
             };
 
             Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
             if (node.Key.VersionRange != null &&
                 node.Key.VersionRange.IsFloating)
             {
-                cache.TryAdd(node.Key, Task.FromResult(node.Item));
+                var cacheKey = new LibraryRangeCacheKey(node.Key, framework);
+
+                _context.FindLibraryEntryCache.TryAdd(cacheKey, Task.FromResult(node.Item));
             }
 
             var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
@@ -52,7 +56,6 @@ namespace NuGet.DependencyResolver
                 if (predicate(dependency.Name))
                 {
                     tasks.Add(CreateGraphNode(
-                        cache,
                         dependency.LibraryRange,
                         framework,
                         runtimeName,
@@ -72,7 +75,6 @@ namespace NuGet.DependencyResolver
                                 VersionRange = runtimeDependency.VersionRange
                             };
                             tasks.Add(CreateGraphNode(
-                                cache,
                                 runtimeLibraryRange,
                                 framework,
                                 runtimeName,
@@ -91,7 +93,7 @@ namespace NuGet.DependencyResolver
                 // Extract the resolved node
                 tasks.Remove(task);
                 var dependencyNode = await task;
-                
+
                 // Wire the node into the tree
                 dependencyNode.OuterNode = node;
                 node.InnerNodes.Add(dependencyNode);
@@ -119,13 +121,15 @@ namespace NuGet.DependencyResolver
         }
 
         public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
-            ConcurrentDictionary<LibraryRange, Task<GraphItem<RemoteResolveResult>>> cache,
+            ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>> cache,
             LibraryRange libraryRange,
             NuGetFramework framework,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            return cache.GetOrAdd(libraryRange, (range) =>
-                FindLibraryEntry(range, framework, cancellationToken));
+            var key = new LibraryRangeCacheKey(libraryRange, framework);
+
+            return cache.GetOrAdd(key, (cacheKey) =>
+                FindLibraryEntry(cacheKey.LibraryRange, framework, cancellationToken));
         }
 
         private async Task<GraphItem<RemoteResolveResult>> FindLibraryEntry(LibraryRange libraryRange, NuGetFramework framework, CancellationToken cancellationToken)

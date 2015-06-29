@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -34,6 +33,8 @@ namespace NuGet.Commands
         private bool _success = true;
 
         private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
+        private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
+            = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
 
         public RestoreCommand(ILogger logger, RestoreRequest request)
         {
@@ -64,7 +65,9 @@ namespace NuGet.Commands
                 _log.LogInformation(Strings.Log_LockFileOutOfDate);
             }
 
-            var graphs = await ExecuteRestoreAsync(localRepository, token);
+            var context = new RemoteWalkContext();
+
+            var graphs = await ExecuteRestoreAsync(localRepository, context, token);
 
             // Build the lock file
             LockFile lockFile;
@@ -75,7 +78,7 @@ namespace NuGet.Commands
             }
             else
             {
-                lockFile = CreateLockFile(_request.Project, graphs, localRepository);
+                lockFile = CreateLockFile(_request.ExistingLockFile, _request.Project, graphs, localRepository, context);
 
                 // If the lock file was locked originally but we are re-locking it, well... re-lock it :)
                 lockFile.IsLocked = relockFile;
@@ -104,12 +107,13 @@ namespace NuGet.Commands
             }
 
             // Generate Targets/Props files
-            var msbuild = RestoreMSBuildFiles(_request.Project, graphs, localRepository);
+            var msbuild = RestoreMSBuildFiles(_request.Project, graphs, localRepository, context);
 
             return new RestoreResult(_success, graphs, checkResults, lockFile, projectLockFilePath, relockFile, msbuild);
         }
 
         private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(NuGetv3LocalRepository localRepository,
+            RemoteWalkContext context,
             CancellationToken token)
         {
             if (_request.Project.TargetFrameworks.Count == 0)
@@ -124,8 +128,6 @@ namespace NuGet.Commands
             // Load repositories
             var projectResolver = new PackageSpecResolver(_request.Project);
             var nugetRepository = Repository.Factory.GetCoreV3(_request.PackagesDirectory);
-
-            var context = new RemoteWalkContext();
 
             ExternalProjectReference externalProjectReference = null;
             if (_request.ExternalProjects.Any())
@@ -341,7 +343,8 @@ namespace NuGet.Commands
 
         private MSBuildRestoreResult RestoreMSBuildFiles(PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
-            NuGetv3LocalRepository repository)
+            NuGetv3LocalRepository repository,
+            RemoteWalkContext context)
         {
             // Get the project graph
             var projectFrameworks = project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
@@ -361,18 +364,17 @@ namespace NuGet.Commands
                 .Distinct()
                 .OrderBy(g => g.Data.Match.Library))
             {
-                var package = repository.FindPackagesById(library.Key.Name)
-                    .FirstOrDefault(p => p.Version == library.Key.Version);
 
-                if (package != null)
+                var packageIdentity = new PackageIdentity(library.Key.Name, library.Key.Version);
+                IList<string> packageFiles;
+                context.PackageFileCache.TryGetValue(packageIdentity, out packageFiles);
+
+                if (packageFiles != null)
                 {
                     var criteria = graph.Conventions.Criteria.ForFramework(graph.Framework);
                     var contentItemCollection = new ContentItemCollection();
-                    using (var nupkgStream = File.OpenRead(package.ZipPath))
-                    {
-                        var reader = new PackageReader(nupkgStream);
-                        contentItemCollection.Load(reader.GetFiles());
-                    }
+
+                    contentItemCollection.Load(packageFiles);
 
                     // Find MSBuild thingies
                     var buildItems = contentItemCollection.FindBestItemGroup(criteria, graph.Conventions.Patterns.MSBuildFiles);
@@ -383,21 +385,21 @@ namespace NuGet.Commands
                         var items = buildItems.Items
                             .Where(item =>
                                 Path.GetFileNameWithoutExtension(item.Path)
-                                .Equals(package.Id, StringComparison.OrdinalIgnoreCase))
+                                .Equals(library.Key.Name, StringComparison.OrdinalIgnoreCase))
                             .ToList();
 
                         targets.AddRange(items
                             .Select(c => c.Path)
                             .Where(path => Path.GetExtension(path).Equals(".targets", StringComparison.OrdinalIgnoreCase))
                             .Select(path =>
-                                Path.Combine(pathResolver.GetPackageDirectory(package.Id, package.Version),
+                                Path.Combine(pathResolver.GetPackageDirectory(library.Key.Name, library.Key.Version),
                                 path.Replace('/', Path.DirectorySeparatorChar))));
 
                         props.AddRange(items
                             .Select(c => c.Path)
                             .Where(path => Path.GetExtension(path).Equals(".props", StringComparison.OrdinalIgnoreCase))
                             .Select(path =>
-                                Path.Combine(pathResolver.GetPackageDirectory(package.Id, package.Version),
+                                Path.Combine(pathResolver.GetPackageDirectory(library.Key.Name, library.Key.Version),
                                 path.Replace('/', Path.DirectorySeparatorChar))));
                     }
                 }
@@ -406,33 +408,16 @@ namespace NuGet.Commands
             return new MSBuildRestoreResult(project.Name, project.BaseDirectory, repository.RepositoryRoot, props, targets);
         }
 
-        private LockFile CreateLockFile(PackageSpec project,
+        private LockFile CreateLockFile(
+            LockFile previousLockFile,
+            PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
-            NuGetv3LocalRepository repository)
+            NuGetv3LocalRepository repository,
+            RemoteWalkContext context)
         {
             var lockFile = new LockFile();
-
-            using (var sha512 = SHA512.Create())
-            {
-                foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct().OrderBy(x => x.Data.Match.Library))
-                {
-                    var library = item.Data.Match.Library;
-                    var packageInfo = repository.FindPackagesById(library.Name)
-                        .FirstOrDefault(p => p.Version == library.Version);
-
-                    if (packageInfo == null)
-                    {
-                        continue;
-                    }
-
-                    var lockFileLib = CreateLockFileLibrary(
-                        packageInfo,
-                        sha512,
-                        correctedPackageName: library.Name);
-
-                    lockFile.Libraries.Add(lockFileLib);
-                }
-            }
+            var resolver = new VersionFolderPathResolver(repository.RepositoryRoot);
+            var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
             // Use empty string as the key of dependencies shared by all frameworks
             lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
@@ -445,6 +430,42 @@ namespace NuGet.Commands
                     frameworkInfo.FrameworkName.ToString(),
                     frameworkInfo.Dependencies.Select(x => x.LibraryRange.ToString())));
             }
+
+            // Record all libraries used
+            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct().OrderBy(x => x.Data.Match.Library))
+            {
+                var library = item.Data.Match.Library;
+                var packageInfo = repository.FindPackagesById(library.Name)
+                    .FirstOrDefault(p => p.Version == library.Version);
+
+                if (packageInfo == null)
+                {
+                    continue;
+                }
+
+                var sha512 = File.ReadAllText(resolver.GetHashPath(packageInfo.Id, packageInfo.Version));
+
+                LockFileLibrary previousLibrary = null;
+                previousLibraries?.TryGetValue(Tuple.Create(library.Name, library.Version), out previousLibrary);
+
+                var lockFileLib = previousLibrary;
+
+                // If we have the same library in the lock file already, use that.
+                if (previousLibrary == null || previousLibrary.Sha512 != sha512)
+                {
+                    lockFileLib = CreateLockFileLibrary(
+                        packageInfo,
+                        sha512,
+                        correctedPackageName: library.Name);
+                }
+
+                lockFile.Libraries.Add(lockFileLib);
+
+                var packageIdentity = new PackageIdentity(lockFileLib.Name, lockFileLib.Version);
+                context.PackageFileCache.TryAdd(packageIdentity, lockFileLib.Files);
+            }
+
+            var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
 
             // Add the targets
             foreach (var targetGraph in targetGraphs)
@@ -464,9 +485,10 @@ namespace NuGet.Commands
                     }
 
                     var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
+                        libraries[Tuple.Create(library.Name, library.Version)],
                         packageInfo,
                         targetGraph,
-                        new VersionFolderPathResolver(repository.RepositoryRoot),
+                        resolver,
                         correctedPackageName: library.Name);
 
                     target.Libraries.Add(targetLibrary);
@@ -478,7 +500,7 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        private LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, SHA512 sha512, string correctedPackageName)
+        private LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string correctedPackageName)
         {
             var lockFileLib = new LockFileLibrary();
 
@@ -488,10 +510,10 @@ namespace NuGet.Commands
             lockFileLib.Name = correctedPackageName ?? package.Id;
             lockFileLib.Version = package.Version;
             lockFileLib.Type = LibraryTypes.Package; // Right now, lock file libraries are always packages
+            lockFileLib.Sha512 = sha512;
 
             using (var nupkgStream = File.OpenRead(package.ZipPath))
             {
-                lockFileLib.Sha512 = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
                 nupkgStream.Seek(0, SeekOrigin.Begin);
 
                 var packageReader = new PackageReader(nupkgStream);
@@ -697,6 +719,12 @@ namespace NuGet.Commands
         }
 
         private RuntimeGraph LoadRuntimeGraph(LocalPackageInfo package)
+        {
+            var id = new PackageIdentity(package.Id, package.Version);
+            return _runtimeGraphCacheByPackage.GetOrAdd(id, (x) => LoadRuntimeGraphCore(package));
+        }
+
+        private RuntimeGraph LoadRuntimeGraphCore(LocalPackageInfo package)
         {
             var runtimeGraphFile = Path.Combine(package.ExpandedPath, RuntimeGraph.RuntimeGraphFileName);
             if (File.Exists(runtimeGraphFile))

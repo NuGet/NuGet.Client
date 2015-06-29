@@ -13,7 +13,7 @@ namespace NuGet.Commands
 {
     internal static class LockFileUtils
     {
-        public static LockFileTargetLibrary CreateLockFileTargetLibrary(LocalPackageInfo package, RestoreTargetGraph targetGraph, VersionFolderPathResolver defaultPackagePathResolver, string correctedPackageName)
+        public static LockFileTargetLibrary CreateLockFileTargetLibrary(LockFileLibrary library, LocalPackageInfo package, RestoreTargetGraph targetGraph, VersionFolderPathResolver defaultPackagePathResolver, string correctedPackageName)
         {
             var lockFileLib = new LockFileTargetLibrary();
 
@@ -29,49 +29,63 @@ namespace NuGet.Commands
             IList<string> files;
             var contentItems = new ContentItemCollection();
             HashSet<string> referenceFilter = null;
-            using (var nupkgStream = File.OpenRead(package.ZipPath))
+
+            // If the previous LockFileLibrary was given, use that to find the file list. Otherwise read the nupkg.
+            if (library == null)
             {
-                var packageReader = new PackageReader(nupkgStream);
-                files = packageReader
-                    .GetFiles()
-                    .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
-                    .ToList();
-
-                contentItems.Load(files);
-
-                var dependencySet = packageReader
-                    .GetPackageDependencies()
-                    .GetNearest(framework);
-                if (dependencySet != null)
+                using (var nupkgStream = File.OpenRead(package.ZipPath))
                 {
-                    var set = dependencySet.Packages;
+                    var packageReader = new PackageReader(nupkgStream);
+                    files = packageReader
+                        .GetFiles()
+                        .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
+                        .ToList();
 
-                    if (set != null)
-                    {
-                        lockFileLib.Dependencies = set.ToList();
-                    }
                 }
+            }
+            else
+            {
+                files = library.Files.Select(p => p.Replace(Path.DirectorySeparatorChar, '/')).ToList();
+            }
 
-                var nuspec = new NuspecReader(packageReader.GetNuspec());
-                var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
-                if (referenceSet != null)
+            contentItems.Load(files);
+
+            var nuspecPath = defaultPackagePathResolver.GetManifestFilePath(package.Id, package.Version);
+
+            var nuspec = new NuspecReader(File.OpenRead(nuspecPath));
+
+            var dependencySet = nuspec
+                .GetDependencyGroups()
+                .GetNearest(framework);
+
+            if (dependencySet != null)
+            {
+                var set = dependencySet.Packages;
+
+                if (set != null)
                 {
-                    referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
+                    lockFileLib.Dependencies = set.ToList();
                 }
+            }
 
-                // TODO: Remove this when we do #596
-                // ASP.NET Core isn't compatible with generic PCL profiles
-                if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase)
-                    &&
-                    !string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.DnxCore, StringComparison.OrdinalIgnoreCase))
+            var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
+            if (referenceSet != null)
+            {
+                referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
+            }
+
+            // TODO: Remove this when we do #596
+            // ASP.NET Core isn't compatible with generic PCL profiles
+            if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase)
+                &&
+                !string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.DnxCore, StringComparison.OrdinalIgnoreCase))
+            {
+                var frameworkAssemblies = nuspec.GetFrameworkReferenceGroups().GetNearest(framework);
+                if (frameworkAssemblies != null)
                 {
-                    var frameworkAssemblies = packageReader.GetFrameworkItems().GetNearest(framework);
-                    if (frameworkAssemblies != null)
+                    foreach (var assemblyReference in frameworkAssemblies.Items)
                     {
-                        foreach (var assemblyReference in frameworkAssemblies.Items)
-                        {
-                            lockFileLib.FrameworkAssemblies.Add(assemblyReference);
-                        }
+                        lockFileLib.FrameworkAssemblies.Add(assemblyReference);
                     }
                 }
             }

@@ -88,51 +88,56 @@ namespace NuGet.Commands
 
             graphs.ForEach(node =>
                 {
-                    if (node == null
-                        || node.Key == null
-                        || node.Disposition == Disposition.Rejected)
+                    if (node == null || node.Key == null)
                     {
                         return;
                     }
 
-                    if (node.Disposition == Disposition.Acceptable)
+                    if (node.Disposition != Disposition.Rejected)
                     {
-                        // This wasn't resolved. It's a conflict.
-                        HashSet<ResolverRequest> ranges;
-                        if (!conflicts.TryGetValue(node.Key.Name, out ranges))
+                        if (node.Disposition == Disposition.Acceptable)
                         {
-                            ranges = new HashSet<ResolverRequest>();
-                            conflicts[node.Key.Name] = ranges;
-                        }
-                        ranges.Add(new ResolverRequest(node.OuterNode.Item.Key, node.Key));
-                    }
-
-                    if (string.Equals(node?.Item?.Key?.Type, LibraryTypes.Unresolved))
-                    {
-                        if (node.Key.TypeConstraint != LibraryTypes.Reference
-                            &&
-                            node.Key.VersionRange != null)
-                        {
-                            unresolved.Add(node.Key);
+                            // This wasn't resolved. It's a conflict.
+                            HashSet<ResolverRequest> ranges;
+                            if (!conflicts.TryGetValue(node.Key.Name, out ranges))
+                            {
+                                ranges = new HashSet<ResolverRequest>();
+                                conflicts[node.Key.Name] = ranges;
+                            }
+                            ranges.Add(new ResolverRequest(node.OuterNode.Item.Key, node.Key));
                         }
 
-                        return;
-                    }
+                        if (string.Equals(node?.Item?.Key?.Type, LibraryTypes.Unresolved))
+                        {
+                            if (node.Key.TypeConstraint != LibraryTypes.Reference
+                                &&
+                                node.Key.VersionRange != null)
+                            {
+                                unresolved.Add(node.Key);
+                            }
 
-                    if (!string.Equals(node.Item.Data.Match.Library.Name, node.Key.Name, StringComparison.Ordinal))
-                    {
-                        // Fix casing of the library name to be installed
-                        node.Item.Data.Match.Library.Name = node.Key.Name;
+                            return;
+                        }
+
+                        if (!string.Equals(node.Item.Data.Match.Library.Name, node.Key.Name, StringComparison.Ordinal))
+                        {
+                            // Fix casing of the library name to be installed
+                            node.Item.Data.Match.Library.Name = node.Key.Name;
+                        }
+
+                        // Don't add rejected nodes since we only want to write reduced nodes
+                        // to the lock file
+                        flattened.Add(node.Item);
                     }
 
                     // If the package came from a remote library provider, it needs to be installed locally
+                    // Rejected nodes are included here to avoid downloading them from remote sources
+                    // each time the lock file is generated.
                     var isRemote = context.RemoteLibraryProviders.Contains(node.Item.Data.Match.Provider);
                     if (isRemote)
                     {
                         install.Add(node.Item.Data.Match);
                     }
-
-                    flattened.Add(node.Item);
                 });
 
             return new RestoreTargetGraph(

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,6 +11,9 @@ namespace NuGet.RuntimeModel
 {
     public class RuntimeGraph : IEquatable<RuntimeGraph>
     {
+        private ConcurrentDictionary<Tuple<string, string>, bool> _areCompatible 
+            = new ConcurrentDictionary<Tuple<string, string>, bool>();
+
         public static readonly string RuntimeGraphFileName = "runtime.json";
 
         public static readonly RuntimeGraph Empty = new RuntimeGraph();
@@ -132,8 +136,9 @@ namespace NuGet.RuntimeModel
         /// </returns>
         public bool AreCompatible(string criteria, string provided)
         {
-            // TODO: Cache this!
-            return ExpandRuntime(criteria).Contains(provided);
+            var key = new Tuple<string, string>(criteria, provided);
+
+            return _areCompatible.GetOrAdd(key, (tuple) => ExpandRuntime(tuple.Item1).Contains(tuple.Item2));
         }
 
         public IEnumerable<RuntimePackageDependency> FindRuntimeDependencies(string runtimeName, string packageId)
