@@ -30,23 +30,11 @@ namespace NuGet.PackageManagement.UI
 
         private int _startIndex;
 
-        public static Style PackageItemStyle;
-        public static Style LoadingStatusIndicatorStyle;
-
         private const string LogEntrySource = "NuGet Package Manager";
 
         public InfiniteScrollList()
         {
             InitializeComponent();
-
-            PackageItemStyle = (Style)FindResource("packageItemStyle");
-            LoadingStatusIndicatorStyle = (Style)FindResource("loadingStatusIndicatorStyle");
-
-            if (!StandaloneSwitch.IsRunningStandalone)
-            {
-                var setter = new Setter(TemplateProperty, FindResource("ListBoxItemTemplate"));
-                PackageItemStyle.Setters.Add(setter);
-            }
 
             _list.ItemsSource = Items;
             _startIndex = 0;
