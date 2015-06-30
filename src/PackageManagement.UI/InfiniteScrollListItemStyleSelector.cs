@@ -8,21 +8,19 @@ namespace NuGet.PackageManagement.UI
 {
     public class InfiniteScrollListItemStyleSelector : StyleSelector
     {
-        private static InfiniteScrollList InfiniteScrollList = new InfiniteScrollList();
-
         private Style PackageItemStyle { get; set; }
         private Style LoadingStatusIndicatorStyle { get; set; }
 
-        private void Init()
+        private void Init(ItemsControl infiniteScrollList)
         {
-            if (InfiniteScrollList != null && PackageItemStyle == null && LoadingStatusIndicatorStyle == null)
+            if (PackageItemStyle == null && LoadingStatusIndicatorStyle == null)
             {
-                PackageItemStyle = (Style)InfiniteScrollList.FindResource("packageItemStyle");
-                LoadingStatusIndicatorStyle = (Style)InfiniteScrollList.FindResource("loadingStatusIndicatorStyle");
+                PackageItemStyle = (Style)infiniteScrollList.FindResource("packageItemStyle");
+                LoadingStatusIndicatorStyle = (Style)infiniteScrollList.FindResource("loadingStatusIndicatorStyle");
 
                 if (!StandaloneSwitch.IsRunningStandalone && PackageItemStyle.Setters.Count == 0)
                 {
-                    var setter = new Setter(InfiniteScrollList.TemplateProperty, InfiniteScrollList.FindResource("ListBoxItemTemplate"));
+                    var setter = new Setter(InfiniteScrollList.TemplateProperty, infiniteScrollList.FindResource("ListBoxItemTemplate"));
                     PackageItemStyle.Setters.Add(setter);
                 }
             }
@@ -30,7 +28,7 @@ namespace NuGet.PackageManagement.UI
 
         public override Style SelectStyle(object item, DependencyObject container)
         {
-            Init();
+            Init(ItemsControl.ItemsControlFromItemContainer(container));
 
             if (item is LoadingStatusIndicator)
             {
