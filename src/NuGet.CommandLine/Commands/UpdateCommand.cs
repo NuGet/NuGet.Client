@@ -1,0 +1,389 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+
+namespace NuGet.CommandLine
+{
+    [Command(typeof(NuGetCommand), "update", "UpdateCommandDescription", UsageSummary = "<packages.config|solution|project>",
+        UsageExampleResourceName = "UpdateCommandUsageExamples")]
+    public class UpdateCommand : Command
+    {
+        private readonly List<string> _sources = new List<string>();
+        private readonly List<string> _ids = new List<string>();
+
+        [Option(typeof(NuGetCommand), "UpdateCommandSourceDescription")]
+        public ICollection<string> Source
+        {
+            get { return _sources; }
+        }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandIdDescription")]
+        public ICollection<string> Id
+        {
+            get { return _ids; }
+        }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
+        public string RepositoryPath { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandSafeDescription")]
+        public bool Safe { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandSelfDescription")]
+        public bool Self { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandVerboseDescription")]
+        public bool Verbose { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandPrerelease")]
+        public bool Prerelease { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandFileConflictAction")]
+        public FileConflictAction FileConflictAction { get; set; }
+
+        public override async Task ExecuteCommandAsync()
+        {
+            // update with self as parameter
+            if (Self)
+            {
+                var selfUpdater = new SelfUpdater(RepositoryFactory) { Console = Console };
+                selfUpdater.UpdateSelf();
+                return;
+            }
+
+            string inputFile = GetInputFile();
+
+            if (string.IsNullOrEmpty(inputFile))
+            {
+                throw new CommandLineException(NuGetResources.InvalidFile);
+            }
+
+            var context = new ConsoleProjectContext(Logger);
+
+            string inputFileName = Path.GetFileName(inputFile);
+            // update with packages.config as parameter
+            if (PackageReferenceFile.IsValidConfigFileName(inputFileName))
+            {
+                await UpdatePackagesAsync(inputFile, context);
+                return;
+            }
+
+            // update with project file as parameter
+            if (ProjectHelper.SupportedProjectExtensions.Contains(Path.GetExtension(inputFile) ?? string.Empty))
+            {
+                if (!File.Exists(inputFile))
+                {
+                    throw new CommandLineException(NuGetResources.UnableToFindProject, inputFile);
+                }
+
+                await UpdatePackagesAsync(new MSBuildProjectSystem(inputFile, context));
+                return;
+            }
+
+            if (!File.Exists(inputFile))
+            {
+                throw new CommandLineException(NuGetResources.UnableToFindSolution, inputFile);
+            }
+
+            // update with solution as parameter
+            string solutionDir = Path.GetDirectoryName(inputFile);
+            //UpdateAllPackages(solutionDir);
+            throw new NotImplementedException();
+        }
+
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        //private void UpdateAllPackages(string solutionDir, INuGetProjectContext projectContext)
+        //{
+        //    Console.WriteLine(LocalizedResourceManager.GetString("ScanningForProjects"));
+
+        //    // Search recursively for all packages.xxx.config files
+        //    string[] packagesConfigFiles = Directory.GetFiles(
+        //        solutionDir, "*.config", SearchOption.AllDirectories);
+
+        //    var projects = packagesConfigFiles.Where(s => Path.GetFileName(s).StartsWith("packages.", StringComparison.OrdinalIgnoreCase))
+        //                                      .Select(s => GetProject(s, projectContext))
+        //                                      .Where(p => p != null)
+        //                                      .Distinct()
+        //                                      .ToList();
+
+        //    if (projects.Count == 0)
+        //    {
+        //        Console.WriteLine(LocalizedResourceManager.GetString("NoProjectsFound"));
+        //        return;
+        //    }
+
+        //    if (projects.Count == 1)
+        //    {
+        //        Console.WriteLine(LocalizedResourceManager.GetString("FoundProject"), projects.Single().ProjectName);
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine(LocalizedResourceManager.GetString("FoundProjects"), projects.Count, String.Join(", ", projects.Select(p => p.ProjectName)));
+        //    }
+
+        //    string repositoryPath = GetRepositoryPathFromSolution(solutionDir);
+        //    IPackageRepository sourceRepository = AggregateRepositoryHelper.CreateAggregateRepositoryFromSources(RepositoryFactory, SourceProvider, Source);
+
+        //    foreach (var project in projects)
+        //    {
+        //        try
+        //        {
+        //            UpdatePackages(project, repositoryPath, sourceRepository);
+        //            if (Verbose)
+        //            {
+        //                Console.WriteLine();
+        //            }
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            if (Console.Verbosity == NuGet.Verbosity.Detailed)
+        //            {
+        //                Console.WriteWarning(e.ToString());
+        //            }
+        //            else
+        //            {
+        //                Console.WriteWarning(e.Message);
+        //            }
+        //        }
+        //    }
+        //}
+
+        private static MSBuildProjectSystem GetProject(string path, INuGetProjectContext projectContext)
+        {
+            try
+            {
+                return GetMSBuildProject(path, projectContext);
+            }
+            catch (CommandLineException)
+            {
+
+            }
+
+            return null;
+        }
+
+        private string GetInputFile()
+        {
+            if (Arguments.Any())
+            {
+                string path = Arguments[0];
+                string extension = Path.GetExtension(path) ?? string.Empty;
+
+                if (extension.Equals(".config", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetPackagesConfigPath(path);
+                }
+
+                if (extension.Equals(".sln", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Path.GetFullPath(path);
+                }
+
+                if (ProjectHelper.SupportedProjectExtensions.Contains(extension))
+                {
+                    return Path.GetFullPath(path);
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetPackagesConfigPath(string path)
+        {
+            if (path.EndsWith(Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
+            {
+                return Path.GetFullPath(path);
+            }
+
+            return null;
+        }
+
+        private IEnumerable<Configuration.PackageSource> GetPackageSources()
+        {
+            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
+            var availableSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            var packageSources = new List<Configuration.PackageSource>();
+            foreach (var source in Source)
+            {
+                packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
+            }
+
+            if (packageSources.Count == 0)
+            {
+                packageSources.AddRange(packageSourceProvider.LoadPackageSources());
+            }
+
+            return packageSources;
+        }
+
+        private Task UpdatePackagesAsync(string packagesConfigPath, INuGetProjectContext projectContext)
+        {
+            var project = GetMSBuildProject(packagesConfigPath, projectContext);
+            return UpdatePackagesAsync(project);
+        }
+
+        private async Task UpdatePackagesAsync(MSBuildProjectSystem project)
+        {
+            var sourceRepositoryProvider = GetSourceRepositoryProvider();
+            var projectDirectory = Path.GetDirectoryName(project.ProjectFullPath);
+            var packagesDirectory = GetRepositoryPath(projectDirectory);
+            var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesDirectory);
+            var nugetProject = new MSBuildNuGetProject(project, projectDirectory, packagesDirectory);
+
+            var projectActions = await packageManager.PreviewUpdatePackagesAsync(
+                nugetProject,
+                new ResolutionContext(),
+                project.NuGetProjectContext,
+                GetPackageSources().Select(sourceRepositoryProvider.CreateRepository),
+                Enumerable.Empty<SourceRepository>(),
+                CancellationToken.None);
+
+            await packageManager.ExecuteNuGetProjectActionsAsync(
+                nugetProject,
+                projectActions,
+                project.NuGetProjectContext,
+                CancellationToken.None);
+        }
+
+        private SourceRepositoryProvider GetSourceRepositoryProvider()
+        {
+            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
+            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider,
+                Enumerable.Concat(
+                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
+                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
+            return sourceRepositoryProvider;
+        }
+
+        private string GetRepositoryPath(string projectRoot)
+        {
+            string packagesDir = RepositoryPath;
+
+            if (String.IsNullOrEmpty(packagesDir))
+            {
+                packagesDir = SettingsUtility.GetRepositoryPath(Settings);
+                if (String.IsNullOrEmpty(packagesDir))
+                {
+                    // Try to resolve the packages directory from the project
+                    string projectDir = Path.GetDirectoryName(projectRoot);
+                    string solutionDir = ProjectHelper.GetSolutionDir(projectDir);
+
+                    return GetRepositoryPathFromSolution(solutionDir);
+                }
+            }
+
+            return GetPackagesDir(packagesDir, Logger);
+        }
+
+        private string GetRepositoryPathFromSolution(string solutionDir)
+        {
+            string packagesDir = RepositoryPath;
+
+            if (String.IsNullOrEmpty(packagesDir) &&
+                !String.IsNullOrEmpty(solutionDir))
+            {
+                packagesDir = Path.Combine(solutionDir, CommandLineConstants.PackagesDirectoryName);
+            }
+
+            return GetPackagesDir(packagesDir, Logger);
+        }
+
+        private static string GetPackagesDir(string packagesDir, Logging.ILogger logger)
+        {
+            if (!String.IsNullOrEmpty(packagesDir))
+            {
+                // Get the full path to the packages directory
+                packagesDir = Path.GetFullPath(packagesDir);
+
+                // REVIEW: Do we need to check for existence?
+                if (Directory.Exists(packagesDir))
+                {
+                    string currentDirectory = Directory.GetCurrentDirectory();
+                    string relativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(currentDirectory), packagesDir);
+                    logger.LogVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString("LookingForInstalledPackages"),
+                            relativePath));
+                    return packagesDir;
+                }
+            }
+
+            throw new CommandLineException(LocalizedResourceManager.GetString("UnableToLocatePackagesFolder"));
+        }
+
+        private static MSBuildProjectSystem GetMSBuildProject(string packageReferenceFilePath, INuGetProjectContext projectContext)
+        {
+            // Try to locate the project file associated with this packages.config file
+            var directory = Path.GetDirectoryName(packageReferenceFilePath);
+            var projectFiles = ProjectHelper.GetProjectFiles(directory).Take(2).ToArray();
+
+            if (projectFiles.Length == 0)
+            {
+                throw new CommandLineException(LocalizedResourceManager.GetString("UnableToLocateProjectFile"), packageReferenceFilePath);
+            }
+
+            if (projectFiles.Length > 1)
+            {
+                throw new CommandLineException(LocalizedResourceManager.GetString("MultipleProjectFilesFound"), packageReferenceFilePath);
+            }
+
+            return new MSBuildProjectSystem(projectFiles[0], projectContext);
+        }
+
+
+        //private class UpdateConsoleProjectContext : ConsoleProjectContext
+        //{
+        //    private readonly IConsole _console;
+        //    private readonly ProjectManagement.FileConflictAction FileConflictAction;
+        //    private bool _overwriteAll;
+        //    private bool _ignoreAll;
+
+        //    public UpdateConsoleProjectContext(
+        //        IConsole console, 
+        //        Logging.ILogger logger,
+        //        ProjectManagement.FileConflictAction conflictAction)
+        //        : base(logger)
+        //    {
+        //        _console = console;
+        //        FileConflictAction = conflictAction;
+        //    }
+
+        //    //public override ProjectManagement.FileConflictAction ResolveFileConflict(string message)
+        //    //{
+        //    //    // the -FileConflictAction is set to Overwrite or user has chosen Overwrite All previously
+        //    //    if (FileConflictAction == ProjectManagement.FileConflictAction.Overwrite || _overwriteAll)
+        //    //    {
+        //    //        return ProjectManagement.FileConflictAction.Overwrite;
+        //    //    }
+
+        //    //    // the -FileConflictAction is set to Ignore or user has chosen Ignore All previously
+        //    //    if (FileConflictAction == ProjectManagement.FileConflictAction.Ignore || _ignoreAll)
+        //    //    {
+        //    //        return ProjectManagement.FileConflictAction.Ignore;
+        //    //    }
+
+        //    //    // otherwise, prompt user for choice, unless we're in non-interactive mode
+        //    //    if (_console != null && !_console.IsNonInteractive)
+        //    //    {
+        //    //        var resolution = _console.ResolveFileConflict(message);
+        //    //        _overwriteAll = resolution == ProjectManagement.FileConflictAction.OverwriteAll;
+        //    //        _ignoreAll = resolution == ProjectManagement.FileConflictAction.IgnoreAll;
+        //    //        return resolution;
+        //    //    }
+
+        //    //    return FileConflictResolution.Ignore;
+        //    //    //}
+        //    //}
+        //}
+    }
+}

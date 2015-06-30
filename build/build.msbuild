@@ -66,6 +66,7 @@
             <SrcProjectsToRestore Include="$(RootDir)\src\ProjectManagement\*.csproj" />
             <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement\*.csproj" />
             <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement.UI\*.csproj" />
+            <SrcProjectsToRestore Include="$(RootDir)\src\NuGet.CommandLine\*.csproj" />
 
             <TestProjectsToRestore Include="$(RootDir)\test\Test.Utility\*.csproj" />
             <TestProjectsToRestore Include="$(RootDir)\test\ProjectManagement.Test\*.csproj" />

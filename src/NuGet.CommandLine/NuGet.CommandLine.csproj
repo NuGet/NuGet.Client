@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{957C4E99-3644-47DD-8F9A-AE36F41EBE4A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NuGet.CommandLine</RootNamespace>
+    <AssemblyName>NuGet</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <RestoreNuGetPackages>true</RestoreNuGetPackages>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CommandLineMachineWideSettings.cs" />
+    <Compile Include="CommandLineParser.cs" />
+    <Compile Include="CommandManager.cs" />
+    <Compile Include="CommandOutputLogger.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\CommandAttribute.cs" />
+    <Compile Include="Commands\ConfigCommand.cs" />
+    <Compile Include="Commands\DeleteCommand.cs" />
+    <Compile Include="Commands\DownloadCommandBase.cs" />
+    <Compile Include="Commands\HelpCommand.cs" />
+    <Compile Include="Commands\HelpCommandMarkdownTemplate.cs" />
+    <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\InstallCommand.cs" />
+    <Compile Include="Commands\ListCommand.cs" />
+    <Compile Include="Commands\OptionAttribute.cs" />
+    <Compile Include="Commands\PackCommand.cs" />
+    <Compile Include="Commands\ProjectFactory.cs" />
+    <Compile Include="Commands\PushCommand.cs" />
+    <Compile Include="Commands\RestoreCommand.cs" />
+    <Compile Include="Commands\SetApiKeyCommand.cs" />
+    <Compile Include="Commands\SourcesCommand.cs" />
+    <Compile Include="Commands\SpecCommand.cs" />
+    <Compile Include="Commands\UpdateCommand.cs" />
+    <Compile Include="Common\AggregateRepositoryHelper.cs" />
+    <Compile Include="Common\CachedPackageSourceProvider.cs" />
+    <Compile Include="Common\CommandLineConstants.cs" />
+    <Compile Include="Common\CommandLineException.cs" />
+    <Compile Include="Common\CommandLineRepositoryFactory.cs" />
+    <Compile Include="Common\CommandLineUtility.cs" />
+    <Compile Include="Common\Console.cs" />
+    <Compile Include="Common\ConsoleCredentialProvider.cs" />
+    <Compile Include="Common\ConsoleProjectContext.cs" />
+    <Compile Include="Common\IConsole.cs" />
+    <Compile Include="Common\IMSBuildProjectSystem.cs" />
+    <Compile Include="Common\LocalizedResourceManager.cs" />
+    <Compile Include="Common\MSBuildProjectSystem.cs" />
+    <Compile Include="Common\MSBuildSolutionParser.cs" />
+    <Compile Include="Common\PackageExtractor.cs" />
+    <Compile Include="Common\PackageSourceProviderExtensions.cs" />
+    <Compile Include="Common\ProjectHelper.cs" />
+    <Compile Include="Common\ProjectInSolution.cs" />
+    <Compile Include="Common\ReadOnlyPackageRepository.cs" />
+    <Compile Include="Common\ResourceHelper.cs" />
+    <Compile Include="Common\SelfUpdater.cs" />
+    <Compile Include="Common\Solution.cs" />
+    <Compile Include="Common\TypeHelper.cs" />
+    <Compile Include="Common\V3PackageRepository.cs" />
+    <Compile Include="Common\Verbosity.cs" />
+    <Compile Include="DebugHelper.cs" />
+    <Compile Include="DefaultManifestValuesRule.cs" />
+    <Compile Include="DefaultPackageRules.cs" />
+    <Compile Include="DiagnosticCommands.cs" />
+    <Compile Include="FileConflictAction.cs" />
+    <Compile Include="ICommandManager.cs" />
+    <Compile Include="ISolutionParser.cs" />
+    <Compile Include="MsBuildUtility.cs" />
+    <Compile Include="NuGetCommand.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>NuGetCommand.resx</DependentUpon>
+    </Compile>
+    <Compile Include="NuGetResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>NuGetResources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PackageServer.cs" />
+    <Compile Include="PackageSourceBuilder.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="StrictSemanticVersionValidationRule.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="NuGetCommand.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>NuGetCommand.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NuGetResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PackageManagement\PackageManagement.csproj">
+      <Project>{1cb46687-b482-4f64-869a-ed5280badeb4}</Project>
+      <Name>PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProjectManagement\ProjectManagement.csproj">
+      <Project>{fcd39e83-d8de-4401-ab12-d824ac2fe07b}</Project>
+      <Name>ProjectManagement</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Build">
+      <HintPath>C:\Program Files (x86)\MSBuild\14.0\Bin\Microsoft.Build.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build.Framework">
+      <HintPath>C:\Program Files (x86)\MSBuild\14.0\Bin\Microsoft.Build.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.Composition.Registration" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="project.json" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\packages\NuGet.MsBuild.Integration\build\Microsoft.NuGet.targets" />
+  <Import Project="..\..\build\sign.targets" />
+</Project>

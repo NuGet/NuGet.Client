@@ -28,13 +28,18 @@ namespace NuGet.ProjectManagement
         public PackageSaveModes PackageSaveMode { get; set; }
 
         public FolderNuGetProject(string root)
+            : this(root, new PackagePathResolver(root))
+        {
+        }
+
+        public FolderNuGetProject(string root, PackagePathResolver packagePathResolver)
         {
             if (root == null)
             {
                 throw new ArgumentNullException(nameof(root));
             }
             Root = root;
-            PackagePathResolver = new PackagePathResolver(root);
+            PackagePathResolver = packagePathResolver;
             PackageSaveMode = PackageSaveModes.Nupkg;
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, root);
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.AnyFramework);
