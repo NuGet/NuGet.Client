@@ -17,7 +17,7 @@ namespace NuGet.ProjectModel
 {
     public class LockFileFormat
     {
-        public static readonly int Version = -9996;
+        public static readonly int Version = 1;
         public static readonly string LockFileName = "project.lock.json";
 
         private static readonly char[] PathSplitChars = new[] { '/' };
