@@ -26,7 +26,8 @@ namespace NuGet.Frameworks
             }
 
             return StringComparer.OrdinalIgnoreCase.Equals(x.FrameworkIdentifier, y.FrameworkIdentifier) &&
-                   NuGetFramework.Comparer.Equals(x.Min, y.Min) && NuGetFramework.Comparer.Equals(x.Max, y.Max);
+                   NuGetFramework.Comparer.Equals(x.Min, y.Min) && NuGetFramework.Comparer.Equals(x.Max, y.Max)
+                   && x.IncludeMin == y.IncludeMin && x.IncludeMax == y.IncludeMax;
         }
 
         public int GetHashCode(FrameworkRange obj)
@@ -41,6 +42,8 @@ namespace NuGet.Frameworks
             combiner.AddStringIgnoreCase(obj.FrameworkIdentifier);
             combiner.AddObject(obj.Min);
             combiner.AddObject(obj.Max);
+            combiner.AddObject(obj.IncludeMin);
+            combiner.AddObject(obj.IncludeMax);
 
             return combiner.CombinedHash;
         }

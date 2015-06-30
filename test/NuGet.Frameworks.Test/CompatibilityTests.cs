@@ -138,11 +138,8 @@ namespace NuGet.Test
         [InlineData("win81", "netcore50")]
         [InlineData("wpa81", "netcore50")]
         [InlineData("uap10.0", "portable-net45+sl5+wp8")]
-        [InlineData("netcore451", "dotnet")]
         [InlineData("win8", "netcore451")]
-        [InlineData("netcore451", "dotnet")]
-        [InlineData("win81", "dotnet")]
-        [InlineData("wpa81", "dotnet")]
+        [InlineData("net40", "dotnet")]
         public void Compatibility_SimpleNonCompat(string fw1, string fw2)
         {
             var framework1 = NuGetFramework.Parse(fw1);
@@ -212,23 +209,38 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("net45")]
-        [InlineData("netcore45")]
-        [InlineData("win8")]
+        [InlineData("net40-client")]
+        [InlineData("net40")]
         [InlineData("native")]
-        [InlineData("dnx451")]
+        [InlineData("sl5")]
+        [InlineData("wp7")]
+        [InlineData("wp4")]
+        [InlineData("sl")]
+        [InlineData("netmf")]
+        [InlineData("net35")]
+        [InlineData("net403")]
         [InlineData("portable-net45+win8")]
-        public void Compatibility_DotNetNeg(string framework)
+        [InlineData("net45-cf")]
+        [InlineData("sl5")]
+        [InlineData("sl")]
+        [InlineData("netmf")]
+        [InlineData("wp7")]
+        [InlineData("net40")]
+        public void Compatibility_ProjectCannotInstallDotNetLibraries(string framework)
         {
+            // Arrange
             var framework1 = NuGetFramework.Parse(framework);
             var framework2 = NuGetFramework.Parse("dotnet");
-
             var compat = DefaultCompatibilityProvider.Instance;
 
+            // Act & Assert
             Assert.False(compat.IsCompatible(framework1, framework2));
         }
 
         [Theory]
+        [InlineData("net45")]
+        [InlineData("net45-client")]
+        [InlineData("net451")]
         [InlineData("net50")]
         [InlineData("net46")]
         [InlineData("dnx46")]
@@ -237,12 +249,36 @@ namespace NuGet.Test
         [InlineData("dnxcore")]
         [InlineData("netcore50")]
         [InlineData("netcore60")]
-        public void Compatibility_DotNetCompat(string framework)
+        [InlineData("uap")]
+        [InlineData("uap11.0")]
+        [InlineData("wpa")]
+        [InlineData("wpa81")]
+        [InlineData("netcore")]
+        [InlineData("win")]
+        [InlineData("win8")]
+        [InlineData("win81")]
+        [InlineData("monotouch")]
+        [InlineData("monotouch10")]
+        [InlineData("monoandroid")]
+        [InlineData("monoandroid40")]
+        [InlineData("monomac")]
+        [InlineData("xamarinios")]
+        [InlineData("xamarinmac")]
+        [InlineData("xamarinpsthree")]
+        [InlineData("xamarinpsfour")]
+        [InlineData("xamarinpsvita")]
+        [InlineData("xamarinxboxthreesixty")]
+        [InlineData("xamarinxboxone")]
+        [InlineData("sl6")]
+        public void Compatibility_ProjectCanInstallDotNetLibraries(string framework)
         {
+            // Arrange
             var framework1 = NuGetFramework.Parse(framework);
             var framework2 = NuGetFramework.Parse("dotnet");
 
             var compat = DefaultCompatibilityProvider.Instance;
+
+            // Act & Assert
 
             // verify that compatibility is inferred across all the mappings
             Assert.True(compat.IsCompatible(framework1, framework2));
@@ -250,7 +286,6 @@ namespace NuGet.Test
             // verify that this was a one way mapping
             Assert.True(!compat.IsCompatible(framework2, framework1));
         }
-
 
         [Theory]
         [InlineData("dotnet")]

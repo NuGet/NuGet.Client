@@ -35,7 +35,7 @@ namespace NuGet.Frameworks
         private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _equivalentProfiles;
 
         // all compatibility mappings
-        private readonly HashSet<OneWayCompatibilityMappingEntry> _compatibilityMappings;
+        private readonly Dictionary<string, HashSet<OneWayCompatibilityMappingEntry>> _compatibilityMappings;
 
         // subsets, net -> netcore
         private readonly Dictionary<string, HashSet<string>> _subSetFrameworks;
@@ -59,7 +59,7 @@ namespace NuGet.Frameworks
             _equivalentFrameworks = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
             _equivalentProfiles = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
             _subSetFrameworks = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            _compatibilityMappings = new HashSet<OneWayCompatibilityMappingEntry>(OneWayCompatibilityMappingEntry.Comparer);
+            _compatibilityMappings = new Dictionary<string, HashSet<OneWayCompatibilityMappingEntry>>(StringComparer.OrdinalIgnoreCase);
             _shortNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
             _fullNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
 
@@ -535,7 +535,14 @@ namespace NuGet.Frameworks
             {
                 foreach (var mapping in mappings)
                 {
-                    _compatibilityMappings.Add(mapping);
+                    HashSet<OneWayCompatibilityMappingEntry> entries;
+                    if (!_compatibilityMappings.TryGetValue(mapping.TargetFrameworkRange.Min.Framework, out entries))
+                    {
+                        entries = new HashSet<OneWayCompatibilityMappingEntry>(OneWayCompatibilityMappingEntry.Comparer);
+                        _compatibilityMappings.Add(mapping.TargetFrameworkRange.Min.Framework, entries);
+                    }
+
+                    entries.Add(mapping);
                 }
             }
         }
@@ -735,9 +742,15 @@ namespace NuGet.Frameworks
 
         public bool TryGetCompatibilityMappings(NuGetFramework framework, out IEnumerable<FrameworkRange> supportedFrameworkRanges)
         {
-            supportedFrameworkRanges = _compatibilityMappings.Where(m => m.TargetFrameworkRange.Satisfies(framework)).Select(m => m.SupportedFrameworkRange);
+            HashSet<OneWayCompatibilityMappingEntry> entries;
+            if (_compatibilityMappings.TryGetValue(framework.Framework, out entries))
+            {
+                supportedFrameworkRanges = entries.Where(m => m.TargetFrameworkRange.Satisfies(framework)).Select(m => m.SupportedFrameworkRange);
+                return supportedFrameworkRanges.Any();
+            }
 
-            return supportedFrameworkRanges.Any();
+            supportedFrameworkRanges = null;
+            return false;
         }
 
         public bool TryGetSubSetFrameworks(string frameworkIdentifier, out IEnumerable<string> subSetFrameworks)

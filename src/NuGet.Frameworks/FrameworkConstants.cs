@@ -13,6 +13,9 @@ namespace NuGet.Frameworks
         public static readonly Version MaxVersion = new Version(Int32.MaxValue, 0, 0, 0);
         public static readonly Version Version5 = new Version(5, 0, 0, 0);
         public static readonly Version Version10 = new Version(10, 0, 0, 0);
+        public static readonly FrameworkRange DotNetAll = new FrameworkRange(
+                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.EmptyVersion),
+                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.MaxVersion));
 
         public static class SpecialIdentifiers
         {

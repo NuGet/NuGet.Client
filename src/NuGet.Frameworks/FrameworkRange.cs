@@ -13,8 +13,16 @@ namespace NuGet.Frameworks
     {
         private readonly NuGetFramework _minFramework;
         private readonly NuGetFramework _maxFramework;
+        private readonly bool _includeMin;
+        private readonly bool _includeMax;
 
         public FrameworkRange(NuGetFramework min, NuGetFramework max)
+            : this(min, max, true, true)
+        {
+
+        }
+
+        public FrameworkRange(NuGetFramework min, NuGetFramework max, bool includeMin, bool includeMax)
         {
             if (min == null)
             {
@@ -33,6 +41,8 @@ namespace NuGet.Frameworks
 
             _minFramework = min;
             _maxFramework = max;
+            _includeMin = includeMin;
+            _includeMax = includeMax;
         }
 
         /// <summary>
@@ -52,6 +62,28 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// Minimum version inclusiveness.
+        /// </summary>
+        public bool IncludeMin
+        {
+            get
+            {
+                return _includeMin;
+            }
+        }
+
+        /// <summary>
+        /// Maximum version inclusiveness.
+        /// </summary>
+        public bool IncludeMax
+        {
+            get
+            {
+                return _includeMax;
+            }
+        }
+
+        /// <summary>
         /// Framework Identifier of both the Min and Max
         /// </summary>
         public string FrameworkIdentifier
@@ -65,13 +97,10 @@ namespace NuGet.Frameworks
         public bool Satisfies(NuGetFramework framework)
         {
             return SameExceptForVersion(_minFramework, framework)
-                   && _minFramework.Version <= framework.Version
-                   && _maxFramework.Version >= framework.Version;
-
-            // TODO: platform version check?
+                && (_includeMin ? _minFramework.Version <= framework.Version : _minFramework.Version < framework.Version)
+                && (_includeMax ? _maxFramework.Version >= framework.Version : _maxFramework.Version > framework.Version);
         }
 
-        // TODO: should the range be 2D and work on both framework and platform versions?
         private static bool SameExceptForVersion(NuGetFramework x, NuGetFramework y)
         {
             return StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)

@@ -332,11 +332,68 @@ namespace NuGet.Frameworks
                                 new FrameworkRange(
                                     new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
                                     new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0)))),
+
+                            // Dotnet compatibility white list
+                            // net45 and up support dotnet
+                            new OneWayCompatibilityMappingEntry(
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, new Version(4, 5, 0, 0)),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.MaxVersion)),
+                                FrameworkConstants.DotNetAll),
+
+                            // dnx451 and up support dotnet
+                            new OneWayCompatibilityMappingEntry(
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, new Version(4, 5, 1, 0)),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Dnx, FrameworkConstants.MaxVersion)),
+                                FrameworkConstants.DotNetAll),
+
+                            // silverlight above version 5 supports dotnet
+                            new OneWayCompatibilityMappingEntry(
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, FrameworkConstants.Version5),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Silverlight, FrameworkConstants.MaxVersion),
+                                    includeMin: false,
+                                    includeMax: true),
+                                FrameworkConstants.DotNetAll),
+
+                            // wp8 and up support dotnet
+                            new OneWayCompatibilityMappingEntry(
+                                new FrameworkRange(
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, new Version(8, 0, 0, 0)),
+                                    new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhone, FrameworkConstants.MaxVersion)),
+                                FrameworkConstants.DotNetAll),
+
+                           // the below frameworks support dotnet
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.DnxCore),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.MonoAndroid),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.MonoMac),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.MonoTouch),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.NetCore),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.UAP),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.Windows),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinIOs),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinMac),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStationVita),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinXbox360),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinXboxOne),
                         };
                 }
 
                 return _compatibilityMappings;
             }
+        }
+
+        // Map the given framework to dotnet
+        private static OneWayCompatibilityMappingEntry CreateDotNetMappingForAllVersions(string framework)
+        {
+            return new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                        new NuGetFramework(framework, FrameworkConstants.EmptyVersion),
+                        new NuGetFramework(framework, FrameworkConstants.MaxVersion)),
+                        FrameworkConstants.DotNetAll);
         }
 
         private static string[] _frameworkPrecedence;
