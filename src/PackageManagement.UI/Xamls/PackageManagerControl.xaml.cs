@@ -834,6 +834,8 @@ namespace NuGet.PackageManagement.UI
             _windowSearchHost.TerminateSearch();
             RemoveRestoreBar();
             RemoveRestartBar();
+            Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
+            _packageList.SelectionChanged -= PackageList_SelectionChanged;
         }
 
         private void SuppressDisclaimerChecked(object sender, RoutedEventArgs e)
