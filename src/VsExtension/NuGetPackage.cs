@@ -671,8 +671,6 @@ namespace NuGetVSExtension
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
             var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
             var windowPane = new PackageManagerWindowPane(control);
-            var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
-            var ppunkDocData = Marshal.GetIUnknownForObject(model);
             var guidEditorType = Guid.Empty;
             var guidCommandUI = Guid.Empty;
             var caption = String.Format(
@@ -682,6 +680,9 @@ namespace NuGetVSExtension
 
             IVsWindowFrame windowFrame;
             IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
+
+            var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
+            var ppunkDocData = Marshal.GetIUnknownForObject(model);
             int hr = uiShell.CreateDocumentWindow(
                 windowFlags,
                 documentName,
@@ -697,6 +698,9 @@ namespace NuGetVSExtension
                 string.Empty,
                 null,
                 out windowFrame);
+            Marshal.Release(ppunkDocData);
+            Marshal.Release(ppunkDocView);
+
             ErrorHandler.ThrowOnFailure(hr);
             return windowFrame;
         }
@@ -869,15 +873,16 @@ namespace NuGetVSExtension
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
             var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
             var windowPane = new PackageManagerWindowPane(control);
-            var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
-            var ppunkDocData = Marshal.GetIUnknownForObject(model);
             var guidEditorType = Guid.Empty;
             var guidCommandUI = Guid.Empty;
-            var caption = String.Format(
+            var caption = string.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Label_NuGetWindowCaption,
                 solutionName);
             var documentName = _dte.Solution.FullName;
+
+            var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
+            var ppunkDocData = Marshal.GetIUnknownForObject(model);
             int hr = uiShell.CreateDocumentWindow(
                 windowFlags,
                 documentName,
@@ -893,6 +898,9 @@ namespace NuGetVSExtension
                 string.Empty,
                 null,
                 out windowFrame);
+            Marshal.Release(ppunkDocData);
+            Marshal.Release(ppunkDocView);
+
             ErrorHandler.ThrowOnFailure(hr);
             return windowFrame;
         }
