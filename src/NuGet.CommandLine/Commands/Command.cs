@@ -82,8 +82,8 @@ namespace NuGet.CommandLine
                 if (String.IsNullOrEmpty(ConfigFile))
                 {
                     Settings = Configuration.Settings.LoadDefaultSettings(
-                        Directory.GetCurrentDirectory(), 
-                        configFileName: null, 
+                        Directory.GetCurrentDirectory(),
+                        configFileName: null,
                         machineWideSettings: MachineWideSettings);
                 }
                 else
@@ -98,18 +98,48 @@ namespace NuGet.CommandLine
                 }
 
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
-
-                // Register an additional provider for the console specific application so that the user
-                // will be prompted if a proxy is set and credentials are required
-                //var credentialProvider = new SettingsCredentialProvider(
-                //    new ConsoleCredentialProvider(Console),
-                //    SourceProvider, 
-                //    Console);
-                //HttpClient.DefaultCredentialProvider = credentialProvider;
+                SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
                 ExecuteCommandAsync().Wait();
             }
+        }
+
+        /// <summary>
+        /// Set default credential provider for the HttpClient, which is used by V2 sources.
+        /// Also set up authenticated proxy handling for V3 sources.
+        /// </summary>
+        private void SetDefaultCredentialProvider()
+        {
+            // Register an additional provider for the console specific application so that the user
+            // will be prompted if a proxy is set and credentials are required
+            var credentialProvider = new SettingsCredentialProvider(
+                new ConsoleCredentialProvider(Console),
+                SourceProvider,
+                Console);
+            HttpClient.DefaultCredentialProvider = credentialProvider;
+
+            // Set up proxy handling for v3 sources.
+            // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
+            // get prompted twice for the same authenticated proxy.
+            var v2ProxyCache = NuGet.ProxyCache.Instance as IProxyCache;
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials = (uri, proxy) =>
+            {
+                var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
+                if (v2Credentials != null && proxy.Credentials != v2Credentials)
+                {
+                    // if cached v2 credentials have not been used, try using it first.
+                    return v2Credentials;
+                }
+
+                return credentialProvider.GetCredentials(uri, proxy, CredentialType.ProxyCredentials, retrying: false);
+            };
+
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
+            {
+                // add the proxy to v2 proxy cache.
+                v2ProxyCache?.Add(proxy);
+            };
         }
 
         public virtual Task ExecuteCommandAsync()

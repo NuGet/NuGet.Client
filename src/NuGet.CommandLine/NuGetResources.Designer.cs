@@ -10811,6 +10811,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Using credentials from config. UserName: {0}.
+        /// </summary>
+        internal static string SettingsCredentials_UsingSavedCredentials {
+            get {
+                return ResourceManager.GetString("SettingsCredentials_UsingSavedCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package source name &apos;All&apos; is a reserved name..
         /// </summary>
         internal static string SourcesCommandAllNameIsReserved {
