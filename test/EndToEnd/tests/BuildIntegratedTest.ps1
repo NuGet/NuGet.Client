@@ -1,7 +1,7 @@
 # basic install into a build integrated project
 function Test-BuildIntegratedInstallPackage {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
@@ -15,7 +15,7 @@ function Test-BuildIntegratedInstallPackage {
 # install multiple packages into a project
 function Test-BuildIntegratedInstallMultiplePackages {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
@@ -36,7 +36,7 @@ function Test-BuildIntegratedInstallMultiplePackages {
 # install and then uninstall multiple packages
 function Test-BuildIntegratedInstallAndUninstallAll {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
@@ -55,7 +55,7 @@ function Test-BuildIntegratedInstallAndUninstallAll {
 # install a package with dependencies
 function Test-BuildIntegratedInstallAndVerifyLockFileContainsChildDependency {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package AppSupport.Win81 -ProjectName $project.Name -version 0.0.3-alpha
@@ -68,7 +68,7 @@ function Test-BuildIntegratedInstallAndVerifyLockFileContainsChildDependency {
 # basic uninstall
 function Test-BuildIntegratedUninstallPackage {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
 
     # Act
@@ -82,7 +82,7 @@ function Test-BuildIntegratedUninstallPackage {
 # basic update package
 function Test-BuildIntegratedUpdatePackage {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.5
 
     # Act
@@ -96,7 +96,7 @@ function Test-BuildIntegratedUpdatePackage {
 
 function Test-BuildIntegratedUpdateNonExistantPackage {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act and Assert
     Assert-Throws { Update-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.6 } "'NuGet.Versioning' was not installed in any project. Update failed."
@@ -104,7 +104,7 @@ function Test-BuildIntegratedUpdateNonExistantPackage {
 
 function Test-BuildIntegratedUninstallNonExistantPackage {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act and Assert
     Assert-Throws { Uninstall-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.6 } "Package 'NuGet.Versioning' to be uninstalled could not be found in project 'UAPApp'"
@@ -112,7 +112,7 @@ function Test-BuildIntegratedUninstallNonExistantPackage {
 
 function Test-BuildIntegratedLockFileIsCreatedOnBuild {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
     Remove-ProjectJsonLockFile $project
 
@@ -125,7 +125,7 @@ function Test-BuildIntegratedLockFileIsCreatedOnBuild {
 
 function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package automapper -ProjectName $project.Name -version 3.3.1
@@ -136,7 +136,7 @@ function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
 
 function Test-BuildIntegratedInstallPackageWithWPA81 {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package kinnara.toolkit -ProjectName $project.Name -version 0.3.0
@@ -147,7 +147,7 @@ function Test-BuildIntegratedInstallPackageWithWPA81 {
 
 function Test-BuildIntegratedPackageOverrideDependencyRequirement {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package Newtonsoft.Json -ProjectName $project.Name -version 6.0.4
@@ -160,15 +160,15 @@ function Test-BuildIntegratedPackageOverrideDependencyRequirement {
 
 function Test-BuildIntegratedDependencyUpdatedByInstall {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533
-    Install-Package Newtonsoft.Json -ProjectName $project.Name -version 7.0.1-beta3
+    Install-Package Newtonsoft.Json -ProjectName $project.Name -version 7.0.1
 
     # Assert
     # DotNetRDF requires json.net 6.0.8
-    Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 7.0.1-beta3
+    Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 7.0.1
 }
 
 function Test-BuildIntegratedInstallPackageInvokeInitScript {
@@ -177,7 +177,7 @@ function Test-BuildIntegratedInstallPackageInvokeInitScript {
     )
     
     # Arrange
-    $p = New-UAPApplication
+    $p = New-BuildIntegratedProj
 
     # Act
     Install-Package PackageWithScriptsB -Source $context.RepositoryRoot
@@ -190,7 +190,7 @@ function Test-BuildIntegratedInstallPackageInvokeInitScript {
 
 function Test-BuildIntegratedInstallPackageJsonNet701Beta3 {
     # Arrange
-    $project = New-UAPApplication UAPApp
+    $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package newtonsoft.json -ProjectName $project.Name -version 7.0.1-beta3

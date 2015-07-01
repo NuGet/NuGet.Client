@@ -7,7 +7,7 @@ param([parameter(Mandatory = $true)]
 $ErrorActionPreference = "Stop"
 $FileKind = "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}"
 
-function New-UAPApplication 
+function New-BuildIntegratedProj 
 {
     param(
         [string]$ProjectName,
@@ -16,7 +16,7 @@ function New-UAPApplication
 
     if ($dte.Version -ge '14.0')
     {
-        $SolutionFolder | New-Project UAPApp $ProjectName
+        $SolutionFolder | New-Project BuildIntegratedProj $ProjectName
     }
     else
     {
@@ -278,7 +278,7 @@ function New-PortableLibrary
     $project
 }
 
-function New-UAPApplication 
+function New-BuildIntegratedProj 
 {
     param(
         [string]$ProjectName,
@@ -287,7 +287,7 @@ function New-UAPApplication
 
     if ($dte.Version -ge '14.0')
     {
-        $SolutionFolder | New-Project UAPApp $ProjectName
+        $SolutionFolder | New-Project BuildIntegratedProj $ProjectName
     }
     else
     {
