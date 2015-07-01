@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel.Test
             const string lockFileContent = @"
 {
   ""locked"": true,
-  ""version"": -9996,
+  ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
       ""System.Runtime/4.0.20-beta-22927"": {
@@ -61,7 +61,7 @@ namespace NuGet.ProjectModel.Test
             var lockFile = lockFileFormat.Parse(lockFileContent);
 
             Assert.True(lockFile.IsLocked);
-            Assert.Equal(-9996, lockFile.Version);
+            Assert.Equal(1, lockFile.Version);
 
             var target = lockFile.Targets.Single();
             Assert.Equal(NuGetFramework.Parse("dotnet"), target.TargetFramework);
@@ -99,7 +99,7 @@ namespace NuGet.ProjectModel.Test
         {
             const string lockFileContent = @"{
   ""locked"": true,
-  ""version"": -9996,
+  ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
       ""System.Runtime/4.0.20-beta-22927"": {
@@ -130,7 +130,7 @@ namespace NuGet.ProjectModel.Test
 }";
             var lockFile = new LockFile();
             lockFile.IsLocked = true;
-            lockFile.Version = -9996;
+            lockFile.Version = 1;
 
             var target = new LockFileTarget()
             {
