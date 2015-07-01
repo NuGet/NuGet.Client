@@ -50,7 +50,7 @@ namespace NuGet.ProjectModel
 
             // This never returns null
             var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
-            var targetFrameworkDependencies = targetFrameworkInfo.Dependencies;
+            var targetFrameworkDependencies = new List<LibraryDependency>(targetFrameworkInfo.Dependencies);
 
             if (targetFramework.IsDesktop())
             {

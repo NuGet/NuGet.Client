@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
@@ -26,6 +27,40 @@ namespace NuGet.LibraryModel
                 output = TypeConstraint + "/" + output;
             }
             return output;
+        }
+
+        public string ToLockFileDependencyGroupString()
+        {
+            var sb = new StringBuilder();
+            sb.Append(Name);
+            sb.Append(" ");
+
+            if (VersionRange == null)
+            {
+                return sb.ToString();
+            }
+
+            var minVersion = VersionRange.MinVersion;
+            var maxVersion = VersionRange.MaxVersion;
+
+            sb.Append(">= ");
+
+            if (VersionRange.IsFloating)
+            {
+                sb.Append(VersionRange.Float.ToString());
+            }
+            else
+            {
+                sb.Append(minVersion.ToString());
+            }
+
+            if (maxVersion != null)
+            {
+                sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
+                sb.Append(maxVersion.Version.ToString());
+            }
+
+            return sb.ToString();
         }
 
         public bool Equals(LibraryRange other)

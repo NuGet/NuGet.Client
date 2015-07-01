@@ -422,13 +422,13 @@ namespace NuGet.Commands
             // Use empty string as the key of dependencies shared by all frameworks
             lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
                 string.Empty,
-                project.Dependencies.Select(x => x.LibraryRange.ToString())));
+                project.Dependencies.Select(x => x.LibraryRange.ToLockFileDependencyGroupString())));
 
             foreach (var frameworkInfo in project.TargetFrameworks)
             {
                 lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
                     frameworkInfo.FrameworkName.ToString(),
-                    frameworkInfo.Dependencies.Select(x => x.LibraryRange.ToString())));
+                    frameworkInfo.Dependencies.Select(x => x.LibraryRange.ToLockFileDependencyGroupString())));
             }
 
             // Record all libraries used

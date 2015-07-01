@@ -372,6 +372,52 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_PopulatesProjectFileDependencyGroupsCorrectly()
+        {
+            const string project = @"{
+    ""dependencies"": {
+        ""Newtonsoft.Json"": ""6.0.4""
+    },
+    ""frameworks"": {
+        ""net45"": {}
+    },
+    ""supports"": {
+    }
+}
+";
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            var installed = result.GetAllInstalled();
+            var unresolved = result.GetAllUnresolved();
+
+            // Assert
+            Assert.Equal(2, result.LockFile.ProjectFileDependencyGroups.Count);
+            Assert.True(string.IsNullOrEmpty(result.LockFile.ProjectFileDependencyGroups[0].FrameworkName));
+            Assert.Equal(new[] { "Newtonsoft.Json >= 6.0.4" }, result.LockFile.ProjectFileDependencyGroups[0].Dependencies.ToArray());
+            Assert.Equal(".NETFramework,Version=v4.5", result.LockFile.ProjectFileDependencyGroups[1].FrameworkName);
+            Assert.Empty(result.LockFile.ProjectFileDependencyGroups[1].Dependencies);
+        }
+
+        [Fact]
         public async Task RestoreCommand_UnmatchedRefAndLibAssemblies()
         {
             const string project = @"

@@ -42,7 +42,7 @@ namespace NuGet.ProjectModel
                 // If the framework name is empty, the associated dependencies are shared by all frameworks
                 if (string.IsNullOrEmpty(group.FrameworkName))
                 {
-                    actualDependencies = spec.Dependencies.Select(x => RuntimeStyleLibraryRangeToString(x.LibraryRange)).OrderBy(x => x);
+                    actualDependencies = spec.Dependencies.Select(x => x.LibraryRange.ToLockFileDependencyGroupString()).OrderBy(x => x);
                 }
                 else
                 {
@@ -54,7 +54,7 @@ namespace NuGet.ProjectModel
                         return false;
                     }
 
-                    actualDependencies = framework.Dependencies.Select(d => RuntimeStyleLibraryRangeToString(d.LibraryRange)).OrderBy(x => x);
+                    actualDependencies = framework.Dependencies.Select(d => d.LibraryRange.ToLockFileDependencyGroupString()).OrderBy(x => x);
                 }
 
                 if (!actualDependencies.SequenceEqual(expectedDependencies))
@@ -64,46 +64,6 @@ namespace NuGet.ProjectModel
             }
 
             return true;
-        }
-
-        // DNU REFACTORING TODO: temp hack to make generated lockfile work with runtime lockfile validation
-        internal static string RuntimeStyleLibraryRangeToString(LibraryRange libraryRange)
-        {
-            return RuntimeStyleLibraryRangeToString(libraryRange.Name, libraryRange.VersionRange);
-        }
-
-        internal static string RuntimeStyleLibraryRangeToString(string name, VersionRange versionRange)
-        {
-            var sb = new StringBuilder();
-            sb.Append(name);
-            sb.Append(" ");
-
-            if (versionRange == null)
-            {
-                return sb.ToString();
-            }
-
-            var minVersion = versionRange.MinVersion;
-            var maxVersion = versionRange.MaxVersion;
-
-            sb.Append(">= ");
-
-            if (versionRange.IsFloating)
-            {
-                sb.Append(versionRange.Float.ToString());
-            }
-            else
-            {
-                sb.Append(minVersion.ToString());
-            }
-
-            if (maxVersion != null)
-            {
-                sb.Append(versionRange.IsMaxInclusive ? "<= " : "< ");
-                sb.Append(maxVersion.Version.ToString());
-            }
-
-            return sb.ToString();
         }
 
         public LockFileTarget GetTarget(NuGetFramework framework, string runtimeIdentifier)
