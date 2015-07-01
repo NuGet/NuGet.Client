@@ -687,7 +687,7 @@ function Get-ErrorTasks {
     $dte.ExecuteCommand("View.ErrorList", " ")
     
     # Make sure there are no errors in the error list
-    $errorList = $dte.Windows | ?{ $_.Caption -eq 'Error List' } | Select -First 1
+    $errorList = $dte.Windows | ?{ $_.Caption -like 'Error List*' } | Select -First 1
     
     if(!$errorList) {
         throw "Unable to locate the error list"
