@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -52,10 +52,10 @@ namespace NuGet.Configuration
           IEnumerable<PackageSource> providerDefaultPrimarySources,
           IEnumerable<PackageSource> providerDefaultSecondarySources,
           IDictionary<PackageSource, PackageSource> migratePackageSources)
-            : this(settings, 
-                  providerDefaultPrimarySources, 
-                  providerDefaultSecondarySources, 
-                  migratePackageSources, 
+            : this(settings,
+                  providerDefaultPrimarySources,
+                  providerDefaultSecondarySources,
+                  migratePackageSources,
                   ConfigurationDefaults.Instance.DefaultPackageSources)
         {
         }
@@ -171,13 +171,71 @@ namespace NuGet.Configuration
             return loadedPackageSources;
         }
 
+        public static void AddDefaultSourcesToRootNuGetConfig()
+        {
+            // Load the root settings (%AppData% one)
+            var settings = Configuration.Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
+            AddDefaultSourcesToRootNuGetConfigCore(settings);
+        }
+
+        // Internal for unit testing.
+        internal static void AddDefaultSourcesToRootNuGetConfigCore(ISettings settings)
+        {
+            var sourceSettings = settings.GetSettingValues(ConfigurationContants.PackageSources).ToList();
+
+            var settingToMigrate = sourceSettings
+                    .Where(f => f.Key.Equals(NuGetConstants.FeedName, StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+            var v3Setting = new SettingValue(
+                NuGetConstants.FeedName,
+                NuGetConstants.V3FeedUrl,
+                isMachineWide: false,
+                priority: 1);
+            v3Setting.AdditionalData[ConfigurationContants.ProtocolVersionAttribute] = "3";
+
+            var v2Setting = new SettingValue(
+               NuGetConstants.FeedName,
+               NuGetConstants.V2FeedUrl,
+               isMachineWide: false,
+               priority: 1);
+
+            if (settingToMigrate.Length == 0)
+            {
+                // Potentially empty \ non-existent NuGet.config. Add both v2 and v3 sources
+                sourceSettings.Add(v3Setting);
+                sourceSettings.Add(v2Setting);
+            }
+            else if (settingToMigrate.Any(setting => ReadProtocolVersion(setting) == 3))
+            {
+                // Source already exists for the newest protocol version. Do nothing.
+                return;
+            }
+            else
+            {
+                Debug.Assert(settingToMigrate.Length > 0 && settingToMigrate.Any(setting => ReadProtocolVersion(setting) == 2));
+                var index = sourceSettings.IndexOf(settingToMigrate[0]);
+                // Add the v3 source prior to v2. This would allow older clients that don't understand protocolVersion
+                // to continue picking up the v2 source.
+                sourceSettings.Insert(index, v3Setting);
+            }
+
+            try
+            {
+                settings.UpdateSections(ConfigurationContants.PackageSources, sourceSettings);
+            }
+            catch
+            {
+                // Don't throw if migration fails
+            }
+        }
+
         private PackageSource ReadPackageSource(SettingValue setting, bool isEnabled)
         {
             var name = setting.Key;
             var packageSource = new PackageSource(setting.Value, name, isEnabled)
-                {
-                    IsMachineWide = setting.IsMachineWide
-                };
+            {
+                IsMachineWide = setting.IsMachineWide
+            };
 
             var credentials = ReadCredential(name);
             if (credentials != null)
@@ -215,10 +273,10 @@ namespace NuGet.Configuration
             if (!packageSourceLookup.TryGetValue(packageSource.Name, out previouslyAddedSource))
             {
                 packageSourceLookup[packageSource.Name] = new IndexedPackageSource
-                    {
-                        PackageSource = packageSource,
-                        Index = packageIndex++
-                    };
+                {
+                    PackageSource = packageSource,
+                    Index = packageIndex++
+                };
             }
             else if (previouslyAddedSource.PackageSource.ProtocolVersion < packageSource.ProtocolVersion
                      &&
@@ -432,13 +490,13 @@ namespace NuGet.Configuration
             var existingSettings = (Settings.GetSettingValues(ConfigurationContants.PackageSources, isPath: true) ??
                                     Enumerable.Empty<SettingValue>()).Where(setting => !setting.IsMachineWide).ToList();
             var minPriority = 0;
-            
+
             // get lowest priority in existingSetting
             if (existingSettings.Count > 0)
             {
                 minPriority = existingSettings.Min(setting => setting.Priority);
             }
-         
+
             existingSettings.RemoveAll(setting => !sources.Any(s => string.Equals(s.Name, setting.Key, StringComparison.OrdinalIgnoreCase)));
             var existingSettingsLookup = existingSettings.ToLookup(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
             var existingDisabledSources = Settings.GetSettingValues(ConfigurationContants.DisabledPackageSources) ??
@@ -475,7 +533,7 @@ namespace NuGet.Configuration
                     // if there is a clear tag in one config file, new source will be cleared
                     // we should set new source priority to lowest existingSetting priority
                     var settingValue = new SettingValue(source.Name, source.Source, isMachineWide: false, priority: minPriority);
-                    
+
                     if (source.ProtocolVersion != PackageSource.DefaultProtocolVersion)
                     {
                         settingValue.AdditionalData[ConfigurationContants.ProtocolVersionAttribute] =
@@ -500,9 +558,9 @@ namespace NuGet.Configuration
                     sourcesToDisable.Add(new SettingValue(source.Name, "true", isMachineWide: false, priority: settingPriority));
                 }
             }
-            
+
             // add entries to the disabledPackageSource for machine wide setting
-            foreach(var source in sources.Where(s => s.IsMachineWide && !s.IsEnabled))
+            foreach (var source in sources.Where(s => s.IsMachineWide && !s.IsEnabled))
             {
                 sourcesToDisable.Add(new SettingValue(source.Name, "true", isMachineWide: true, priority: 0));
             }
