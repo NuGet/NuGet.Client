@@ -441,7 +441,7 @@ namespace NuGet.Commands.Test
 
             const string lockFileContent = @"{
   ""locked"": true,
-  ""version"": -9996,
+  ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
       ""System.Runtime/4.0.10-beta-23008"": {
@@ -528,7 +528,7 @@ namespace NuGet.Commands.Test
 
             const string lockFileContent = @"{
   ""locked"": true,
-  ""version"": -9996,
+  ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
       ""System.Runtime/4.0.10-beta-23008"": {
