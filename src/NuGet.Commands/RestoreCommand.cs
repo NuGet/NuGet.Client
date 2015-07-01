@@ -167,86 +167,38 @@ namespace NuGet.Commands
             };
 
             // Resolve dependency graphs
-            var frameworks = new HashSet<NuGetFramework>(_request.Project.TargetFrameworks.Select(f => f.FrameworkName));
-            var graphs = new List<RestoreTargetGraph>();
-            var frameworkTasks = new List<Task<RestoreTargetGraph>>();
-
-            foreach (var framework in frameworks)
-            {
-                _log.LogInformation(Strings.FormatLog_RestoringPackages(framework.DotNetFrameworkName));
-                frameworkTasks.Add(WalkDependenciesAsync(projectRange,
-                    framework,
-                    remoteWalker,
-                    context,
-                    writeToLockFile: true,
-                    token: token));
-            }
-
-            graphs.AddRange(await Task.WhenAll(frameworkTasks));
-
-            if (!ResolutionSucceeded(graphs))
-            {
-                _success = false;
-                return graphs;
-            }
-
-            // Install the runtime-agnostic packages
+            var projectFrameworkRuntimePairs = new List<FrameworkRuntimePair>();
             var allInstalledPackages = new HashSet<LibraryIdentity>();
-            await InstallPackagesAsync(graphs,
-                _request.PackagesDirectory,
-                allInstalledPackages,
-                _request.MaxDegreeOfConcurrency,
-                token);
+            var allGraphs = new List<RestoreTargetGraph>();
 
-            // Load runtime specs
-            var runtimes = RuntimeGraph.Empty;
-            foreach (var graph in graphs)
+            // Compute the project framework + runtime id pairs based on project information
+            foreach (var framework in _request.Project.TargetFrameworks)
             {
-                runtimes = RuntimeGraph.Merge(
-                    runtimes,
-                    GetRuntimeGraph(graph, localRepository));
+                // We care about TFM only and null RID for compilation purposes
+                projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
+
+                foreach (var runtimeId in _request.Project.RuntimeGraph.Runtimes.Keys)
+                {
+                    projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
+                }
             }
 
-            // Resolve runtime dependencies
-            var runtimeGraphs = new List<RestoreTargetGraph>();
-            var runtimeProfiles = new HashSet<FrameworkRuntimePair>();
-            if (_request.Project.RuntimeGraph.Runtimes.Count > 0)
-            {
-                var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-                foreach (var graph in graphs.Where(g => g.WriteToLockFile))
-                {
-                    runtimeTasks.Add(WalkRuntimeDependenciesAsync(projectRange,
-                        graph,
-                        _request.Project.RuntimeGraph,
-                        remoteWalker,
-                        context,
-                        localRepository,
-                        runtimes,
-                        writeToLockFile: true,
-                        token: token));
-                }
+            var result = await TryRestore(projectRange,
+                                          projectFrameworkRuntimePairs,
+                                          allInstalledPackages,
+                                          localRepository,
+                                          remoteWalker,
+                                          context,
+                                          writeToLockFile: true,
+                                          token: token);
 
-                foreach (var runtimeSpecificGraph in (await Task.WhenAll(runtimeTasks)).SelectMany(g => g))
-                {
-                    runtimeGraphs.Add(runtimeSpecificGraph);
-                }
+            var success = result.Item1;
+            var runtimes = result.Item3;
 
-                graphs.AddRange(runtimeGraphs);
+            allGraphs.AddRange(result.Item2);
 
-                if (!ResolutionSucceeded(graphs))
-                {
-                    _success = false;
-                    return graphs;
-                }
-
-                // Install runtime-specific packages
-                await InstallPackagesAsync(runtimeGraphs,
-                    _request.PackagesDirectory,
-                    allInstalledPackages,
-                    _request.MaxDegreeOfConcurrency,
-                    token);
-            }
-
+            _success = success;
+            
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
             foreach (var profile in _request.Project.RuntimeGraph.Supports)
             {
@@ -273,44 +225,116 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var checkTasks = new List<Task<RestoreTargetGraph>>();
-                foreach (var profile in _request.CompatibilityProfiles.Where(p => !runtimeProfiles.Contains(p)))
-                {
-                    _log.LogInformation(Strings.FormatLog_RestoringPackagesForCompat(profile.Name));
-                    var graph = graphs
-                        .SingleOrDefault(g => g.Framework.Equals(profile.Framework) && string.IsNullOrEmpty(g.RuntimeIdentifier));
+                var compatibiliyResult = await TryRestore(projectRange,
+                                                          _request.CompatibilityProfiles,
+                                                          allInstalledPackages,
+                                                          localRepository,
+                                                          remoteWalker,
+                                                          context,
+                                                          writeToLockFile: false,
+                                                          token: token);
 
-                    checkTasks.Add(WalkDependenciesAsync(projectRange,
-                        profile.Framework,
-                        profile.RuntimeIdentifier,
-                        runtimes,
+                _success = compatibiliyResult.Item1;
+
+                allGraphs.AddRange(compatibiliyResult.Item2);
+            }
+
+            return allGraphs;
+        }
+
+        private async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestore(LibraryRange projectRange,
+            IEnumerable<FrameworkRuntimePair> frameworkRuntimePairs,
+            HashSet<LibraryIdentity> allInstalledPackages,
+            NuGetv3LocalRepository localRepository,
+            RemoteDependencyWalker remoteWalker,
+            RemoteWalkContext context,
+            bool writeToLockFile,
+            CancellationToken token)
+        {
+            var runtimes = RuntimeGraph.Empty;
+            var frameworkTasks = new List<Task<RestoreTargetGraph>>();
+            var graphs = new List<RestoreTargetGraph>();
+            var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
+
+            foreach (var pair in runtimesByFramework)
+            {
+                _log.LogInformation(Strings.FormatLog_RestoringPackages(pair.Key.DotNetFrameworkName));
+
+                frameworkTasks.Add(WalkDependenciesAsync(projectRange,
+                    pair.Key,
+                    remoteWalker,
+                    context,
+                    writeToLockFile: writeToLockFile,
+                    token: token));
+            }
+
+            var frameworkGraphs = await Task.WhenAll(frameworkTasks);
+
+            graphs.AddRange(frameworkGraphs);
+
+            if (!ResolutionSucceeded(frameworkGraphs))
+            {
+                return Tuple.Create(false, graphs, runtimes);
+            }
+
+            await InstallPackagesAsync(graphs,
+                    _request.PackagesDirectory,
+                    allInstalledPackages,
+                    _request.MaxDegreeOfConcurrency,
+                    token);
+
+            // Load runtime specs
+            foreach (var graph in graphs)
+            {
+                runtimes = RuntimeGraph.Merge(
+                    runtimes,
+                    GetRuntimeGraph(graph, localRepository));
+            }
+
+            // Resolve runtime dependencies
+            var runtimeGraphs = new List<RestoreTargetGraph>();
+            if (runtimesByFramework.Count > 0)
+            {
+                var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
+                foreach (var graph in graphs)
+                {
+                    var runtimeIds = runtimesByFramework[graph.Framework];
+
+                    runtimeTasks.Add(WalkRuntimeDependenciesAsync(projectRange,
+                        graph,
+                        runtimeIds.Where(rid => !string.IsNullOrEmpty(rid)),
                         remoteWalker,
                         context,
-                        writeToLockFile: false,
+                        localRepository,
+                        runtimes,
+                        writeToLockFile: writeToLockFile,
                         token: token));
                 }
 
-                var checkGraphs = (await Task.WhenAll(checkTasks)).ToList();
-                graphs.AddRange(checkGraphs);
-
-                if (!ResolutionSucceeded(graphs))
+                foreach (var runtimeSpecificGraph in (await Task.WhenAll(runtimeTasks)).SelectMany(g => g))
                 {
-                    _success = false;
-                    return graphs;
+                    runtimeGraphs.Add(runtimeSpecificGraph);
                 }
 
-                // Install packages for supports check
-                await InstallPackagesAsync(checkGraphs,
+                graphs.AddRange(runtimeGraphs);
+
+                if (!ResolutionSucceeded(runtimeGraphs))
+                {
+                    return Tuple.Create(false, graphs, runtimes);
+                }
+
+                // Install runtime-specific packages
+                await InstallPackagesAsync(runtimeGraphs,
                     _request.PackagesDirectory,
                     allInstalledPackages,
                     _request.MaxDegreeOfConcurrency,
                     token);
             }
 
-            return graphs;
+            return Tuple.Create(true, graphs, runtimes);
         }
 
-        private bool ResolutionSucceeded(List<RestoreTargetGraph> graphs)
+        private bool ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs)
         {
             var success = true;
             foreach (var graph in graphs)
@@ -655,7 +679,7 @@ namespace NuGet.Commands
 
         private Task<RestoreTargetGraph[]> WalkRuntimeDependenciesAsync(LibraryRange projectRange,
             RestoreTargetGraph graph,
-            RuntimeGraph projectRuntimeGraph,
+            IEnumerable<string> runtimeIds,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
             NuGetv3LocalRepository localRepository,
@@ -664,7 +688,7 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
-            foreach (var runtimeName in projectRuntimeGraph.Runtimes.Keys)
+            foreach (var runtimeName in runtimeIds)
             {
                 _log.LogInformation(Strings.FormatLog_RestoringPackages(FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
 
