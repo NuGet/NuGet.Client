@@ -423,7 +423,7 @@ namespace NuGet.Commands.Test
             const string project = @"
 {
     ""dependencies"": {
-        ""System.Linq"": ""4.0.0-beta-*"",
+        ""System.Runtime.WindowsRuntime"": ""4.0.0-beta-*"",
         ""Microsoft.NETCore.Targets"": ""1.0.0-beta-*""
     },
     ""frameworks"": {
@@ -466,10 +466,8 @@ namespace NuGet.Commands.Test
                 !string.IsNullOrEmpty(c.Graph.RuntimeIdentifier)).Issues.Where(c => c.Type == CompatibilityIssueType.ReferenceAssemblyNotImplemented).ToArray();
 
             // Assert
-            Assert.True(brokenPackages.Length >= 3);
-            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Globalization") && c.AssemblyName.Equals("System.Globalization")));
-            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.IO") && c.AssemblyName.Equals("System.IO")));
-            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Reflection") && c.AssemblyName.Equals("System.Reflection")));
+            Assert.True(brokenPackages.Length >= 1);
+            Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Runtime.WindowsRuntime") && c.AssemblyName.Equals("System.Runtime.WindowsRuntime")));
         }
 
         [Fact]
