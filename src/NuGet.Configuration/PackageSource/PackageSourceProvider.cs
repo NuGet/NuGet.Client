@@ -399,12 +399,13 @@ namespace NuGet.Configuration
             {
                 // Update provider default sources and use provider default sources since _configurationDefaultSources is empty
                 UpdateProviderDefaultSources(loadedPackageSources);
-                defaultPackageSourcesToBeAdded = GetPackageSourcesToBeAdded(loadedPackageSources, _providerDefaultPrimarySources, true);
-                defaultPackageSourcesToBeAdded = defaultPackageSourcesToBeAdded.Concat(GetPackageSourcesToBeAdded(loadedPackageSources, _providerDefaultSecondarySources, false)).ToList();
+                defaultPackageSourcesToBeAdded = GetPackageSourcesToBeAdded(
+                    loadedPackageSources,
+                    Enumerable.Concat(_providerDefaultPrimarySources, _providerDefaultSecondarySources));
             }
             else
             {
-                defaultPackageSourcesToBeAdded = GetPackageSourcesToBeAdded(loadedPackageSources, _configurationDefaultSources, false);
+                defaultPackageSourcesToBeAdded = GetPackageSourcesToBeAdded(loadedPackageSources, _configurationDefaultSources);
             }
 
             var defaultSourcesInsertIndex = loadedPackageSources.FindIndex(source => source.IsMachineWide);
@@ -417,7 +418,7 @@ namespace NuGet.Configuration
             loadedPackageSources.InsertRange(defaultSourcesInsertIndex, defaultPackageSourcesToBeAdded);
         }
 
-        private List<PackageSource> GetPackageSourcesToBeAdded(List<PackageSource> loadedPackageSources, IEnumerable<PackageSource> allDefaultPackageSources, bool checkSecondary)
+        private List<PackageSource> GetPackageSourcesToBeAdded(List<PackageSource> loadedPackageSources, IEnumerable<PackageSource> allDefaultPackageSources)
         {
             // There are 4 different cases to consider for primary/ secondary package sources
             // Case 1. primary/ secondary Package Source is already present matching both feed source and the feed name. Set IsOfficial to true
@@ -429,6 +430,21 @@ namespace NuGet.Configuration
             var defaultPackageSourcesToBeAdded = new List<PackageSource>();
             foreach (var packageSource in allDefaultPackageSources)
             {
+                var existingIndex = defaultPackageSourcesToBeAdded.FindIndex(
+                    source => string.Equals(source.Name, packageSource.Name, StringComparison.OrdinalIgnoreCase));
+
+                // Ignore sources with the same name but lower protocol versions that are already added.
+                if (existingIndex != -1)
+                {
+                    var existingSource = defaultPackageSourcesToBeAdded[existingIndex];
+                    if (existingSource.ProtocolVersion < packageSource.ProtocolVersion)
+                    {
+                        defaultPackageSourcesToBeAdded.RemoveAt(existingIndex);
+                        defaultPackageSourcesToBeAdded.Insert(existingIndex, packageSource);
+                    }
+                    continue;
+                }
+
                 var sourceMatchingIndex = loadedPackageSources.FindIndex(p => p.Source.Equals(packageSource.Source, StringComparison.OrdinalIgnoreCase));
                 if (sourceMatchingIndex != -1)
                 {

@@ -16,7 +16,7 @@ namespace NuGet.Configuration.Test
     public class PackageSourceProviderTests
     {
         [Fact]
-        public void PrimaryAndSecondaryAreAddedWhenNotPresent()
+        public void PrimarySourceIsAddedWhenNotPresent()
         {
             // Act
             NullSettings settings = new NullSettings();
@@ -30,54 +30,77 @@ namespace NuGet.Configuration.Test
 
             PackageSourceProvider psp = new PackageSourceProvider(settings, primary, secondary);
 
+            // Act
+            var sources = psp.LoadPackageSources();
+
             // Assert
             //Primary IsEnabled = true, IsOfficial = true (Added for the first time)
-            //Secondary IsEnabled = false, IsOfficial = true  (Added for the first time)
-            VerifyPackageSource(psp, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, true }, new bool[] { true, true });
+            var actual = Assert.Single(sources);
+            Assert.Equal(item.Name, actual.Name);
+            Assert.Equal(item.Source, actual.Source);
+            Assert.True(actual.IsEnabled);
+            Assert.True(actual.IsOfficial);
         }
 
-        // We decide to enable V2.
-        public void SecondaryIsAddedWhenNotPresentButDisabled()
+        [Fact]
+        public void SecondarySourceIsPreferredOverPrimaryIfItHasAHigherProtocolVersion()
         {
             // Act
-            //Create nuget.config that has Primary defined and Secondary missing
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-            File.Create(nugetConfigFilePath).Close();
+            var settings = new NullSettings();
+            var primarySource = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
-            var disabledReplacement = string.Empty;
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
+            var secondarySource = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName);
+            secondarySource.ProtocolVersion = 3;
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl },
-                new bool[] { true }, new bool[] { false });
+            var packageSourceProvider = new PackageSourceProvider(settings, new[] { primarySource }, new[] { secondarySource });
 
-            List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
-            primary.Add(item);
-
-            List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
-            secondary.Add(item2);
-
-            PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
+            // Act
+            var sources = packageSourceProvider.LoadPackageSources();
 
             // Assert
-            //Primary already exists in nuget.config as Enabled. So IsEnabled = true. IsOfficial is also set to true when loading package sources
-            //Primary IsEnabled = true, IsOfficial = true
-            //Secondary is added, marked as official but added as disabled
-            //Secondary IsEnabled = false, IsOfficial = true
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, false }, new bool[] { true, true });
+            //Primary IsEnabled = true, IsOfficial = true (Added for the first time)
+            var actual = Assert.Single(sources);
+            Assert.Equal(secondarySource.Name, actual.Name);
+            Assert.Equal(secondarySource.Source, actual.Source);
+            Assert.True(actual.IsEnabled);
+            Assert.True(actual.IsOfficial);
+        }
 
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+        [Fact]
+        public void WhenPrimarySourcesAreRepeatedWithTheSameProtocolVersion_FIrstSourceIsPicked()
+        {
+            // Act
+            var settings = new NullSettings();
+            var primarySource1 = new PackageSource("Source1", "FeedName");
+            var primarySource2 = new PackageSource("Source2", "FeedName");
+            var primarySource3 = new PackageSource("Source3", "FeedName")
+            {
+                ProtocolVersion = 3
+            };
+
+            var primarySource4 = new PackageSource("Source4", "FeedName")
+            {
+                ProtocolVersion = 3
+            };
+            var primarySources = new[]
+            {
+                primarySource1, primarySource2, primarySource3, primarySource4
+            };
+
+            var secondarySource = new PackageSource(NuGetConstants.V2FeedUrl, "FeedName");
+            secondarySource.ProtocolVersion = 3;
+
+            var packageSourceProvider = new PackageSourceProvider(settings, primarySources, new[] { secondarySource });
+
+            // Act
+            var sources = packageSourceProvider.LoadPackageSources();
+
+            // Assert
+            //Primary IsEnabled = true, IsOfficial = true (Added for the first time)
+            var actual = Assert.Single(sources);
+            Assert.Equal(primarySource3.Name, actual.Name);
+            Assert.Equal(primarySource3.Source, actual.Source);
+            Assert.True(actual.IsOfficial);
         }
 
         public void PrimaryURLIsForcedWhenPrimaryNameHasAnotherFeed()
@@ -814,7 +837,7 @@ namespace NuGet.Configuration.Test
   </packageSources>
 </configuration>";
                 TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
-                
+
                 var rootPath = Path.Combine(Path.Combine(mockBaseDirectory, @"dir1\dir2"), Path.GetRandomFileName());
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
@@ -823,11 +846,11 @@ namespace NuGet.Configuration.Test
 
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
-               
+
                 // act
                 packageSourceList.Add(new PackageSource("https://test3.net", "test3"));
                 packageSourceProvider.SavePackageSources(packageSourceList);
-                
+
                 // Assert
                 Assert.Equal(
                    TestFilesystemUtility.FormatXmlString(
