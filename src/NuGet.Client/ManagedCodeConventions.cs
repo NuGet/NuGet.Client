@@ -35,6 +35,7 @@ namespace NuGet.Client
             parser: o => o.Equals("_._", StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
             fileExtensions: new[] { ".dll" });
         private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
+        private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly, fileExtensions: new[] { ".resources.dll" });
 
         private RuntimeGraph _runtimeGraph;
 
@@ -52,6 +53,7 @@ namespace NuGet.Client
             props[AssemblyProperty.Name] = AssemblyProperty;
             props[LocaleProperty.Name] = LocaleProperty;
             props[MSBuildProperty.Name] = MSBuildProperty;
+            props[SatelliteAssemblyProperty.Name] = SatelliteAssemblyProperty;
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
@@ -316,8 +318,8 @@ namespace NuGet.Client
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "runtimes/{rid}/lib/{tfm}/{locale}/{resources}",
-                        "lib/{tfm}/{locale}/{resources}"
+                        "runtimes/{rid}/lib/{tfm}/{locale}/{satelliteAssembly}",
+                        "lib/{tfm}/{locale}/{satelliteAssembly}"
                     });
 
                 MSBuildFiles = new PatternSet(
@@ -349,6 +351,7 @@ namespace NuGet.Client
             public static readonly string ManagedAssembly = "assembly";
             public static readonly string Locale = "locale";
             public static readonly string MSBuild = "msbuild";
+            public static readonly string SatelliteAssembly = "satelliteAssembly";
         }
     }
 }

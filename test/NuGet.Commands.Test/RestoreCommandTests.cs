@@ -418,6 +418,48 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_CanInstallPackageWithSatelliteAssemblies()
+        {
+            const string project = @"
+{
+    ""dependencies"": {
+        ""Microsoft.OData.Client"": ""6.12.0"",
+    },
+    ""frameworks"": {
+        ""net40"": {}
+    }
+}
+";
+
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2"));
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            Assert.True(result.Success);
+        }
+
+        [Fact]
         public async Task RestoreCommand_UnmatchedRefAndLibAssemblies()
         {
             const string project = @"
