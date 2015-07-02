@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 
 namespace NuGet.Configuration.Test
 {
@@ -45,23 +44,6 @@ namespace NuGet.Configuration.Test
                 var info = new UTF8Encoding(true).GetBytes(configurationContent);
                 file.Write(info, 0, info.Count());
             }
-        }
-
-        public static string ReadConfigurationFile(string path)
-        {
-            using (var fs = File.OpenRead(path))
-            {
-                using (var streamReader = new StreamReader(fs))
-                {
-                    return FormatXmlString(streamReader.ReadToEnd());
-                }
-            }
-        }
-
-        // this method is for formating xml string
-        public static string FormatXmlString(string result)
-        {
-            return XDocument.Parse(result).ToString();
         }
     }
 }

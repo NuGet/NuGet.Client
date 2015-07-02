@@ -642,7 +642,7 @@ namespace NuGet.Configuration.Test
 #else
             string appDataPath = Environment.GetEnvironmentVariable("AppData");
 #endif
-            var configFileContent = TestFilesystemUtility.ReadConfigurationFile(Path.Combine(appDataPath, @"NuGet\NuGet.config"));
+            var configFileContent = File.ReadAllText(Path.Combine(appDataPath, @"NuGet\NuGet.config"));
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
@@ -655,11 +655,11 @@ namespace NuGet.Configuration.Test
   </disabledPackageSources>
 </configuration>";
 
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), configFileContent);
+            Assert.Equal(result, configFileContent);
         }
 
         [Fact]
-        public void SavePackageSourcesWithOneCLear()
+        public void SavePackageSourcesWithOneClear()
         {
             using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
             {
@@ -693,20 +693,19 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(
-                   TestFilesystemUtility.FormatXmlString(
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
-        <clear />
+        <add key=""test.org"" value=""https://test.org"" /> 
+         <clear />
         <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
         <add key=""test2"" value=""https://test2.net"" />
         <add key=""test3"" value=""https://test3.net"" />
     </packageSources>
 </configuration>
-"),
-                   TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+",
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
             }
         }
 
@@ -746,21 +745,20 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(
-                   TestFilesystemUtility.FormatXmlString(
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
-        <clear />
+        <add key=""test.org"" value=""https://test.org"" /> 
+        <clear /> 
         <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
         <clear />
         <add key=""test2"" value=""https://test2.net"" />
         <add key=""test3"" value=""https://test3.net"" />
     </packageSources>
 </configuration>
-"),
-                   TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+",
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
             }
         }
 
@@ -798,19 +796,17 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(
-                   TestFilesystemUtility.FormatXmlString(
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <clear /> 
+        <clear />
         <add key=""test3"" value=""https://test3.net"" />
     </packageSources>
     <disabledPackageSources>
-        <clear />
-    </disabledPackageSources>
+        <clear /></disabledPackageSources>
 </configuration>
-"),
-                   TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+",
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
             }
         }
 
@@ -824,7 +820,8 @@ namespace NuGet.Configuration.Test
                 var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <clear /> <!-- i.e. ignore values from prior conf files -->
+    <!-- i.e. ignore values from prior conf files -->
+    <clear />
     <add key=""key2"" value=""https://test.org/2"" />
   </packageSources>
 </configuration>";
@@ -853,27 +850,25 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(
-                   TestFilesystemUtility.FormatXmlString(
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <clear /> <!-- i.e. ignore values from prior conf files -->
-       <add key=""key2"" value=""https://test.org/2"" />
+    <!-- i.e. ignore values from prior conf files -->
+    <clear />
+    <add key=""key2"" value=""https://test.org/2"" />
     <add key=""test3"" value=""https://test3.net"" />
   </packageSources>
-</configuration>"),
-                   TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\dir2\NuGet.config"))));
+</configuration>",
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\dir2\NuGet.config")));
 
                 Assert.Equal(
-                  TestFilesystemUtility.FormatXmlString(
                      @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""key1"" value=""https://test.org/1"" /> 
-     <clear />   
-  </packageSources>
-</configuration>"),
-                  TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\NuGet.config"))));
+    <clear /></packageSources>
+</configuration>",
+                  File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\NuGet.config")));
             }
         }
 
@@ -1795,18 +1790,19 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 3
-                Assert.Equal(TestFilesystemUtility.FormatXmlString(config2Contents),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
+                Assert.Equal(config2Contents, File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
                 Assert.Equal(
-                    TestFilesystemUtility.FormatXmlString(
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+<configuration>
+<packageSources>
+ <add key=""NuGet.org"" value=""https://NuGet.org"" />
+</packageSources>
   <disabledPackageSources>
     <add key=""NuGet.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-"),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+",
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
             }
         }
 
@@ -1865,18 +1861,20 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 2
-                Assert.Equal(TestFilesystemUtility.FormatXmlString(config1Contents),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+                Assert.Equal(config1Contents, File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
                 Assert.Equal(
-                    TestFilesystemUtility.FormatXmlString(
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>  <packageSources>       <add key=""test.org"" value=""https://test.org"" />    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+<configuration>
+<packageSources>
+ <add key=""test.org"" value=""https://test.org"" />
+ <add key=""NuGet.org"" value=""https://NuGet.org"" />
+</packageSources>
   <disabledPackageSources>
     <add key=""NuGet.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-"),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
+",
+                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
             }
         }
 
@@ -1938,20 +1936,22 @@ namespace NuGet.Configuration.Test
 
                 // Assert - 2
                 Assert.Equal(
-                    TestFilesystemUtility.FormatXmlString(
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://new.NuGet.org"" />  </packageSources>
 </configuration>
-"),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+",
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
 
                 Assert.Equal(
-                    TestFilesystemUtility.FormatXmlString(
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://new.NuGet.org"" />    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
+                         @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+<packageSources>
+ <add key=""NuGet.org"" value=""https://new.NuGet.org"" />
+ <add key=""test.org"" value=""https://test.org"" />
+</packageSources>
 </configuration>
-"),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
+",
+                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
             }
         }
 
@@ -2009,29 +2009,27 @@ namespace NuGet.Configuration.Test
                 sources.Insert(1, new PackageSource("http://newsource", "NewSourceName"));
 
                 packageSourceProvider.SavePackageSources(sources);
-                
+
                 // Assert - 2
                 Assert.Equal(
-                    TestFilesystemUtility.FormatXmlString(
-                        @"<?xml version=""1.0"" encoding=""utf - 8""?>
-<configuration>  
-<packageSources>        
-<add key=""NewSourceName"" value=""http://newsource"" />    
-<add key=""test.org"" value=""https://test.org"" />  
-</packageSources>  
-<disabledPackageSources>    
-<add key=""test.org"" value=""true"" />  
-</disabledPackageSources></configuration>
-"),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>  <packageSources>    <add key=""NewSourceName"" value=""http://newsource"" />    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
+  <disabledPackageSources>
+    <add key=""test.org"" value=""true"" />
+  </disabledPackageSources>
+</configuration>
+",
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
 
                 Assert.Equal(
-                    TestFilesystemUtility.FormatXmlString(
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
+<configuration>
+<packageSources>
+ <add key=""NuGet.org"" value=""https://NuGet.org"" />
+</packageSources>
 </configuration>
-"),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
+",
+                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
             }
         }
 
@@ -2097,18 +2095,17 @@ namespace NuGet.Configuration.Test
 
                 // Assert - 2
                 Assert.Equal(
-                    TestFilesystemUtility.FormatXmlString(
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-    <add key=""test.org"" value=""https://test.org"" />
-    <add key=""test.org"" value=""https://new2.test.org"" protocolVersion=""3"" />
-    <add key=""test2"" value=""https://test2.net"" />
-    <add key=""nuget.org"" value=""https://nuget.org"" />
-  </packageSources>
+        <add key=""test.org"" value=""https://test.org"" />
+        <add key=""test.org"" value=""https://new2.test.org"" protocolVersion=""3"" />
+        <add key=""test2"" value=""https://test2.net"" />
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+    </packageSources>
 </configuration>
-"),
-                    TestFilesystemUtility.FormatXmlString(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+",
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
             }
         }
 
@@ -2360,8 +2357,6 @@ namespace NuGet.Configuration.Test
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        
-        
         <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
         <add key=""nuget.org"" value=""https://nuget.org/api/v2"" />
         <add key=""Microsoft and .NET"" value=""https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/"" />
@@ -2410,7 +2405,6 @@ namespace NuGet.Configuration.Test
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        
         <add key=""Microsoft and .NET"" value=""https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/"" />
         <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
         <add key=""nuget.org"" value=""https://www.nuget.org/api/v2/"" />
@@ -2461,9 +2455,6 @@ namespace NuGet.Configuration.Test
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        
-        
-        
         <add key=""local"" value=""c:\users\testuser\.nuget"" />
         <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
         <add key=""nuget.org"" value=""http://not-nuget.org"" />

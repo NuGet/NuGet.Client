@@ -358,7 +358,7 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </NewSectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)));
         }
 
         [Fact]
@@ -387,7 +387,7 @@ namespace NuGet.Configuration.Test
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)));
         }
 
         [Fact]
@@ -415,7 +415,7 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""NewValue"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, configFile)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)));
         }
 
         [Fact]
@@ -494,7 +494,7 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </NewSectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -524,7 +524,7 @@ namespace NuGet.Configuration.Test
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -554,7 +554,7 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""NewValue"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -590,7 +590,7 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""Value2"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -623,7 +623,7 @@ namespace NuGet.Configuration.Test
     </MyKey>
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -666,7 +666,7 @@ namespace NuGet.Configuration.Test
     </MyKey2>
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -707,7 +707,7 @@ namespace NuGet.Configuration.Test
     </MyKey>
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -808,7 +808,7 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -872,7 +872,7 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -894,7 +894,7 @@ namespace NuGet.Configuration.Test
             SettingsUtility.SetEncryptedValue(settings, "SectionName", "key", "NewValue");
 
             // Assert
-            var content = TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, nugetConfigPath));
+            var content = File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath));
             Assert.False(content.Contains("NewValue"));
         }
 
@@ -1675,7 +1675,7 @@ namespace NuGet.Configuration.Test
             settings.SetValue("SectionName", "key1", "newValue");
 
             // Assert
-            var text = TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, "user.config"));
+            var text = File.ReadAllText(Path.Combine(mockBaseDirectory, "user.config"));
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1683,13 +1683,13 @@ namespace NuGet.Configuration.Test
     <add key=""key1"" value=""newValue"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(result), text);
+            Assert.Equal(result, text);
 
-            text = TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, @"NuGet\Config\a1.config"));
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(a1Config), text);
+            text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\a1.config"));
+            Assert.Equal(a1Config, text);
 
-            text = TestFilesystemUtility.ReadConfigurationFile(Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\a2.config"));
-            Assert.Equal(TestFilesystemUtility.FormatXmlString(a2Config), text);
+            text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\a2.config"));
+            Assert.Equal(a2Config, text);
         }
 
         // Tests that when configFileName is not null, the specified
