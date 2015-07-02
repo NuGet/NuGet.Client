@@ -799,11 +799,12 @@ namespace NuGet.Configuration.Test
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <clear />
+        <clear /> 
         <add key=""test3"" value=""https://test3.net"" />
     </packageSources>
     <disabledPackageSources>
-        <clear /></disabledPackageSources>
+        <clear />
+    </disabledPackageSources>
 </configuration>
 ",
                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
@@ -866,7 +867,8 @@ namespace NuGet.Configuration.Test
 <configuration>
   <packageSources>
     <add key=""key1"" value=""https://test.org/1"" /> 
-    <clear /></packageSources>
+    <clear />   
+  </packageSources>
 </configuration>",
                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\NuGet.config")));
             }

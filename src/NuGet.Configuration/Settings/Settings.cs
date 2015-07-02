@@ -519,9 +519,15 @@ namespace NuGet.Configuration
                 }
             }
 
-            foreach (var element in nodesToRemove)
+            // Special case for the scenario where the clear element is the last element in the
+            // section (followed by whitespace and comments). In this case, we can avoid removing any
+            // node and preserving the original formatting.
+            if (nodesToRemove.Any(node => node.NodeType == XmlNodeType.Element))
             {
-                element.Remove();
+                foreach (var element in nodesToRemove)
+                {
+                    element.Remove();
+                }
             }
         }
 
