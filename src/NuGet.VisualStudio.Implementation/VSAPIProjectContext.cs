@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -50,12 +49,6 @@ namespace NuGet.VisualStudio
         public bool SkipAssemblyReferences { get; }
 
         public bool BindingRedirectsDisabled { get; }
-
-        public bool SkipBindingRedirects
-        {
-            get;
-            set;
-        }
 
         public void ReportError(string message)
         {
