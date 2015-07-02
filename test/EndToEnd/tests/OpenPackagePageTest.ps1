@@ -100,7 +100,7 @@ function Test-OpenPackagePageAcceptSourceName {
 	if ($SourceNuGet -eq 'nuget.org')
 	{
 		$source = 'nUGet.OrG'  # keep the coverage that the source name is case insensitive
-		$expectedUrl = 'http://elmah.googlecode.com/'
+		$expectedUrl = 'http://elmah.googlecode.com'
 	}
 	else 
 	{
