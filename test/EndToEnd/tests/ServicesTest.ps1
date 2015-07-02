@@ -429,7 +429,19 @@ function Test-RestorePackageAPINoPackage
     Assert-False (Join-Path (Get-ProjectDir $p) packages.config)
 }
 
+function Test-InstallPackageAPIBindingRedirect 
+{
+    param($context)
 
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("TestBindingRedirectA","1.0.0") 
+
+    # Assert
+    Assert-BindingRedirect $p app.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
+}
 
 
 
