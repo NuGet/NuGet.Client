@@ -1048,12 +1048,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
             public bool Equals(string x, string y)
             {
-                return Path.GetFileName(x).Equals(Path.GetFileName(y));
+                return Path.GetFileName(x).Equals(Path.GetFileName(y), StringComparison.OrdinalIgnoreCase);
             }
 
             public int GetHashCode(string obj)
             {
-                return Path.GetFileName(obj).GetHashCode();
+                return Path.GetFileName(obj).ToLowerInvariant().GetHashCode();
             }
         }
 
