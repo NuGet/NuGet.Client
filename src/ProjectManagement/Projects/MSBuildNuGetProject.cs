@@ -131,8 +131,7 @@ namespace NuGet.ProjectManagement
         private static bool IsBindingRedirectsDisabled(INuGetProjectContext nuGetProjectContext)
         {
             var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-            return msBuildNuGetProjectContext!= null &&
-                (msBuildNuGetProjectContext.BindingRedirectsDisabled || msBuildNuGetProjectContext.SkipBindingRedirects);
+            return msBuildNuGetProjectContext!= null && msBuildNuGetProjectContext.BindingRedirectsDisabled;
         }
 
         private static bool IsSkipAssemblyReferences(INuGetProjectContext nuGetProjectContext)
@@ -293,7 +292,6 @@ namespace NuGet.ProjectManagement
             }
             PackageEventsProvider.Instance.NotifyInstalled(packageEventArgs);
 
-            var assemblyReferencesAdded = false;
             // Step-8: MSBuildNuGetProjectSystem operations
             // Step-8.1: Add references to project
             if (!IsSkipAssemblyReferences(nuGetProjectContext) &&
@@ -303,8 +301,6 @@ namespace NuGet.ProjectManagement
                 {
                     if (IsAssemblyReference(referenceItem))
                     {
-                        assemblyReferencesAdded = true;
-
                         var referenceItemFullPath = Path.Combine(packageInstallPath, referenceItem);
                         var referenceName = Path.GetFileName(referenceItem);
                         if (MSBuildNuGetProjectSystem.ReferenceExists(referenceName))
@@ -313,16 +309,6 @@ namespace NuGet.ProjectManagement
                         }
                         MSBuildNuGetProjectSystem.AddReference(referenceItemFullPath);
                     }
-                }
-            }
-
-            if (!assemblyReferencesAdded)
-            {
-                // Avoid adding binding redirects if installing a package does not result in any assembly references being added.
-                var msbuildProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-                if (msbuildProjectContext != null)
-                {
-                    msbuildProjectContext.SkipBindingRedirects = true;
                 }
             }
 
