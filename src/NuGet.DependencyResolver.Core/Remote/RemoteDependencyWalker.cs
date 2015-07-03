@@ -14,14 +14,6 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.DependencyResolver
 {
-    public enum NodeState
-    {
-        Continue,
-        Eclipsed,
-        PotentiallyDowngraded,
-        Cycle
-    }
-
     public class RemoteDependencyWalker
     {
         private readonly RemoteWalkContext _context;
@@ -33,7 +25,7 @@ namespace NuGet.DependencyResolver
 
         public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
         {
-            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => NodeState.Continue);
+            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => DependencyResult.Acceptable);
         }
 
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(
@@ -41,7 +33,7 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeName,
             RuntimeGraph runtimeGraph,
-            Func<LibraryRange, NodeState> predicate)
+            Func<LibraryRange, DependencyResult> predicate)
         {
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
             {
@@ -58,12 +50,32 @@ namespace NuGet.DependencyResolver
             }
 
             var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
-            var dependencies = node.Item.Data.Dependencies ?? Enumerable.Empty<LibraryDependency>();
+            var dependencies = new List<LibraryDependency>(node.Item.Data.Dependencies ?? Enumerable.Empty<LibraryDependency>());
+
+            if (!string.IsNullOrEmpty(runtimeName) && runtimeGraph != null)
+            {
+                // Look up any additional dependencies for this package
+                foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name))
+                {
+                    var runtimeLibraryRange = new LibraryRange()
+                    {
+                        Name = runtimeDependency.Id,
+                        VersionRange = runtimeDependency.VersionRange
+                    };
+
+                    dependencies.Add(new LibraryDependency
+                    {
+                        LibraryRange = runtimeLibraryRange
+                    });
+                }
+            }
+
+
             foreach (var dependency in dependencies)
             {
                 var result = predicate(dependency.LibraryRange);
 
-                if (result == NodeState.Continue)
+                if (result == DependencyResult.Acceptable)
                 {
                     tasks.Add(CreateGraphNode(
                         dependency.LibraryRange,
@@ -71,39 +83,20 @@ namespace NuGet.DependencyResolver
                         runtimeName,
                         runtimeGraph,
                         ChainPredicate(predicate, node, dependency)));
-
-                    if (!string.IsNullOrEmpty(runtimeName)
-                        && runtimeGraph != null)
-                    {
-                        // Look up any additional dependencies for this package
-                        foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, dependency.Name))
-                        {
-                            // Add the dependency to the tasks
-                            var runtimeLibraryRange = new LibraryRange()
-                            {
-                                Name = runtimeDependency.Id,
-                                VersionRange = runtimeDependency.VersionRange
-                            };
-                            tasks.Add(CreateGraphNode(
-                                runtimeLibraryRange,
-                                framework,
-                                runtimeName,
-                                runtimeGraph,
-                                ChainPredicate(predicate, node, dependency)));
-                        }
-                    }
                 }
                 else
                 {
-                    if (result == NodeState.PotentiallyDowngraded || result == NodeState.Cycle)
+                    // Keep the node in the tree if we need to look at it later
+                    if (result == DependencyResult.PotentiallyDowngraded ||
+                        result == DependencyResult.Cycle)
                     {
-                        var eclipsedNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
+                        var dependencyNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
                         {
-                            Disposition = result == NodeState.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded
+                            Disposition = result == DependencyResult.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded
                         };
 
-                        eclipsedNode.OuterNode = node;
-                        node.InnerNodes.Add(eclipsedNode);
+                        dependencyNode.OuterNode = node;
+                        node.InnerNodes.Add(dependencyNode);
                     }
                 }
             }
@@ -124,7 +117,7 @@ namespace NuGet.DependencyResolver
             return node;
         }
 
-        private Func<LibraryRange, NodeState> ChainPredicate(Func<LibraryRange, NodeState> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
+        private Func<LibraryRange, DependencyResult> ChainPredicate(Func<LibraryRange, DependencyResult> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
         {
             var item = node.Item;
 
@@ -132,19 +125,20 @@ namespace NuGet.DependencyResolver
             {
                 if (item.Data.Match.Library.Name == library.Name)
                 {
-                    return NodeState.Cycle;
+                    return DependencyResult.Cycle;
                 }
 
                 foreach (var d in item.Data.Dependencies)
                 {
                     if (d != dependency && d.Name == library.Name)
                     {
-                        if (d.LibraryRange.VersionRange.MinVersion < library.VersionRange.MinVersion)
+                        if (d.LibraryRange.TypeConstraint != LibraryTypes.Reference &&
+                            d.LibraryRange.VersionRange.MinVersion < library.VersionRange.MinVersion)
                         {
-                            return NodeState.PotentiallyDowngraded;
+                            return DependencyResult.PotentiallyDowngraded;
                         }
 
-                        return NodeState.Eclipsed;
+                        return DependencyResult.Eclipsed;
                     }
                 }
 
@@ -433,6 +427,14 @@ namespace NuGet.DependencyResolver
             }
 
             return bestMatch;
+        }
+
+        private enum DependencyResult
+        {
+            Acceptable,
+            Eclipsed,
+            PotentiallyDowngraded,
+            Cycle
         }
     }
 }
