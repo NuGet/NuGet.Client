@@ -109,7 +109,15 @@ namespace NuGet.Commands
             // Generate Targets/Props files
             var msbuild = RestoreMSBuildFiles(_request.Project, graphs, localRepository, context);
 
-            return new RestoreResult(_success, graphs, checkResults, lockFile, projectLockFilePath, relockFile, msbuild);
+            return new RestoreResult(
+                _success,
+                graphs,
+                checkResults,
+                lockFile,
+                _request.ExistingLockFile,
+                projectLockFilePath,
+                relockFile,
+                msbuild);
         }
 
         private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(NuGetv3LocalRepository localRepository,
@@ -198,7 +206,7 @@ namespace NuGet.Commands
             allGraphs.AddRange(result.Item2);
 
             _success = success;
-            
+
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
             foreach (var profile in _request.Project.RuntimeGraph.Supports)
             {

@@ -21,6 +21,163 @@ namespace NuGet.Commands.Test
     {
         private ConcurrentBag<string> _testFolders = new ConcurrentBag<string>();
 
+
+        [Fact]
+        public async Task RestoreCommand_TestLockFileWrittenOnLockFileChange()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+            AddDependency(spec, "NuGet.Versioning", "1.0.7");
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var lockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lastDate = File.GetLastWriteTime(lockFilePath);
+
+            request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var previousLockFile = result.LockFile;
+
+            // Act
+
+            // Modify the previous lock file so that they are not equal
+            previousLockFile.Version = 1000;
+
+            request.ExistingLockFile = previousLockFile;
+
+            command = new RestoreCommand(logger, request);
+            result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var currentDate = File.GetLastWriteTime(lockFilePath);
+
+            // Assert
+            // The file should be written out
+            Assert.NotEqual(lastDate, currentDate);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WriteLockFileOnForce()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+            AddDependency(spec, "NuGet.Versioning", "1.0.7");
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var lockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            // Act
+            var lastDate = File.GetLastWriteTime(lockFilePath);
+
+            request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+            var previousLockFile = result.LockFile;
+            request.ExistingLockFile = result.LockFile;
+
+            command = new RestoreCommand(logger, request);
+            result = await command.ExecuteAsync();
+            result.Commit(logger, true);
+
+            var currentDate = File.GetLastWriteTime(lockFilePath);
+
+            // Assert
+            // The file should be written out
+            Assert.NotEqual(lastDate, currentDate);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_NoopOnLockFileWriteIfFilesMatch()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+            AddDependency(spec, "NuGet.Versioning", "1.0.7");
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var lockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            // Act
+            var lastDate = File.GetLastWriteTime(lockFilePath);
+
+            request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+            var previousLockFile = result.LockFile;
+            request.ExistingLockFile = result.LockFile;
+
+            command = new RestoreCommand(logger, request);
+            result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var currentDate = File.GetLastWriteTime(lockFilePath);
+
+            // Assert
+            // The file should not be written out
+            Assert.Equal(lastDate, currentDate);
+
+            // Verify the files are equal
+            Assert.True(previousLockFile.Equals(result.LockFile));
+
+            // Verify the hash codes are the same
+            Assert.Equal(previousLockFile.GetHashCode(), result.LockFile.GetHashCode());
+        }
+
         [Fact]
         public async Task RestoreCommand_NuGetVersioning107RuntimeAssemblies()
         {

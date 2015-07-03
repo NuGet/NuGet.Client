@@ -11,10 +11,11 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public class LockFile
+    public class LockFile : IEquatable<LockFile>
     {
+        // Set the version to the current default for new files.
+        public int Version { get; set; } = LockFileFormat.Version;
         public bool IsLocked { get; set; }
-        public int Version { get; set; }
         public IList<ProjectFileDependencyGroup> ProjectFileDependencyGroups { get; set; } = new List<ProjectFileDependencyGroup>();
         public IList<LockFileLibrary> Libraries { get; set; } = new List<LockFileLibrary>();
         public IList<LockFileTarget> Targets { get; set; } = new List<LockFileTarget>();
@@ -79,6 +80,59 @@ namespace NuGet.ProjectModel
             return Libraries.FirstOrDefault(l =>
                 string.Equals(l.Name, name) &&
                 l.Version.Equals(version));
+        }
+
+        public bool Equals(LockFile other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (Object.ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return IsLocked == other.IsLocked
+                && Version == other.Version
+                && ProjectFileDependencyGroups.OrderBy(group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(other.ProjectFileDependencyGroups.OrderBy(
+                        group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+                && Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(other.Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase))
+                && Targets.OrderBy(target => target.Name).SequenceEqual(other.Targets.OrderBy(target => target.Name));
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as LockFile);
+        }
+
+        public override int GetHashCode()
+        {
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddObject(IsLocked);
+            combiner.AddObject(Version);
+
+            foreach (var item in ProjectFileDependencyGroups.OrderBy(
+                group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+
+            foreach (var item in Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+
+            foreach (var item in Targets.OrderBy(target => target.Name))
+            {
+                combiner.AddObject(item);
+            }
+
+            return combiner.CombinedHash;
         }
     }
 }

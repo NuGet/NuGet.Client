@@ -39,12 +39,18 @@ namespace NuGet.Commands
         /// </summary>
         public LockFile LockFile { get; }
 
+        /// <summary>
+        /// The existing lock file. This is null if no lock file was provided on the <see cref="RestoreRequest"/>.
+        /// </summary>
+        public LockFile PreviousLockFile { get; }
+
         public RestoreResult(
-            bool success, 
-            IEnumerable<RestoreTargetGraph> restoreGraphs, 
-            IEnumerable<CompatibilityCheckResult> compatibilityCheckResults, 
-            LockFile lockFile, 
-            string lockFilePath, 
+            bool success,
+            IEnumerable<RestoreTargetGraph> restoreGraphs,
+            IEnumerable<CompatibilityCheckResult> compatibilityCheckResults,
+            LockFile lockFile,
+            LockFile previousLockFile,
+            string lockFilePath,
             bool relockFile,
             MSBuildRestoreResult msbuild)
         {
@@ -54,6 +60,7 @@ namespace NuGet.Commands
             LockFile = lockFile;
             LockFilePath = lockFilePath;
             MSBuild = msbuild;
+            PreviousLockFile = previousLockFile;
         }
 
         /// <summary>
@@ -81,10 +88,24 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Commits the Lock File contained in <see cref="LockFile"/> and the MSBuild targets/props to
+        /// Commits the lock file contained in <see cref="LockFile"/> and the MSBuild targets/props to
         /// the local file system.
         /// </summary>
+        /// <remarks>If <see cref="PreviousLockFile"/> and <see cref="LockFile"/> are identical
+        ///  the file will not be written to disk.</remarks>
         public void Commit(ILogger log)
+        {
+            Commit(log, forceWrite: false);
+        }
+
+        /// <summary>
+        /// Commits the lock file contained in <see cref="LockFile"/> and the MSBuild targets/props to
+        /// the local file system.
+        /// </summary>
+        /// <remarks>If <see cref="PreviousLockFile"/> and <see cref="LockFile"/> are identical
+        ///  the file will not be written to disk.</remarks>
+        /// <param name="forceWrite">Write out the lock file even if no changes exist.</param>
+        public void Commit(ILogger log, bool forceWrite)
         {
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
@@ -92,7 +113,14 @@ namespace NuGet.Commands
             // Don't write the lock file if it is Locked AND we're not re-locking the file
             if (!LockFile.IsLocked || RelockFile)
             {
-                lockFileFormat.Write(LockFilePath, LockFile);
+                // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
+                // update on a restore with no actual changes.
+                if (forceWrite
+                    || PreviousLockFile == null
+                    || !PreviousLockFile.Equals(LockFile))
+                {
+                    lockFileFormat.Write(LockFilePath, LockFile);
+                }
             }
 
             MSBuild.Commit(log);
