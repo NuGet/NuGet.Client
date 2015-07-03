@@ -98,7 +98,7 @@ namespace NuGet.DependencyResolver
 
             while (current != null)
             {
-                result = string.IsNullOrEmpty(result) ? current.Key.ToString() : current.Key + " -> " + result;
+                result = (current.Item?.Key ?? current.Key).ToString() + (string.IsNullOrEmpty(result) ? "" : " -> " + result);
                 current = current.OuterNode;
             }
 

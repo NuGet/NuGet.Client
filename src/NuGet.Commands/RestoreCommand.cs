@@ -259,7 +259,7 @@ namespace NuGet.Commands
             bool writeToLockFile,
             CancellationToken token)
         {
-            var runtimes = RuntimeGraph.Empty;
+            var allRuntimes = RuntimeGraph.Empty;
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
             var graphs = new List<RestoreTargetGraph>();
             var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
@@ -282,7 +282,7 @@ namespace NuGet.Commands
 
             if (!ResolutionSucceeded(frameworkGraphs))
             {
-                return Tuple.Create(false, graphs, runtimes);
+                return Tuple.Create(false, graphs, allRuntimes);
             }
 
             await InstallPackagesAsync(graphs,
@@ -291,14 +291,6 @@ namespace NuGet.Commands
                     _request.MaxDegreeOfConcurrency,
                     token);
 
-            // Load runtime specs
-            foreach (var graph in graphs)
-            {
-                runtimes = RuntimeGraph.Merge(
-                    runtimes,
-                    GetRuntimeGraph(graph, localRepository));
-            }
-
             // Resolve runtime dependencies
             var runtimeGraphs = new List<RestoreTargetGraph>();
             if (runtimesByFramework.Count > 0)
@@ -306,7 +298,12 @@ namespace NuGet.Commands
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
                 foreach (var graph in graphs)
                 {
+                    // Get the runtime graph for this specific tfm graph
+                    var runtimeGraph = GetRuntimeGraph(graph, localRepository);
                     var runtimeIds = runtimesByFramework[graph.Framework];
+
+                    // Merge all runtimes for the output
+                    allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
 
                     runtimeTasks.Add(WalkRuntimeDependenciesAsync(projectRange,
                         graph,
@@ -314,7 +311,7 @@ namespace NuGet.Commands
                         remoteWalker,
                         context,
                         localRepository,
-                        runtimes,
+                        runtimeGraph,
                         writeToLockFile: writeToLockFile,
                         token: token));
                 }
@@ -328,7 +325,7 @@ namespace NuGet.Commands
 
                 if (!ResolutionSucceeded(runtimeGraphs))
                 {
-                    return Tuple.Create(false, graphs, runtimes);
+                    return Tuple.Create(false, graphs, allRuntimes);
                 }
 
                 // Install runtime-specific packages
@@ -339,7 +336,7 @@ namespace NuGet.Commands
                     token);
             }
 
-            return Tuple.Create(true, graphs, runtimes);
+            return Tuple.Create(true, graphs, allRuntimes);
         }
 
         private bool ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs)
