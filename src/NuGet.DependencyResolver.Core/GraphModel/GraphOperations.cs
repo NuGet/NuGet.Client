@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using NuGet.Logging;
 
@@ -17,8 +18,100 @@ namespace NuGet.DependencyResolver
             Ambiguous
         }
 
+        private static bool TrimGraph<TItem>(this GraphNode<TItem> root)
+        {
+            // A -> B -> A
+
+            // A -> B -> C -> D 2.0
+            //        -> D 1.0
+            // Check for cycles and nearest win situations where there's a potential downgrade
+
+            var nodes = new List<Tuple<GraphNode<TItem>, GraphNode<TItem>>>();
+
+            root.ForEach(node =>
+            {
+                if (node.Disposition != Disposition.PotentiallyDowngraded)
+                {
+                    return;
+                }
+
+                bool downgraded = false;
+
+                // TODO: This could be more efficient
+                for (var n = node.OuterNode; !downgraded && n != null; n = n.OuterNode)
+                {
+                    foreach (var sideNode in n.InnerNodes)
+                    {
+                        if (sideNode != node &&
+                            sideNode.Key != node.Key &&
+                            sideNode.Key.Name == node.Key.Name)
+                        {
+                            nodes.Add(Tuple.Create(node, sideNode));
+
+                            downgraded = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (node.Disposition == Disposition.PotentiallyDowngraded)
+                {
+                    nodes.Add(Tuple.Create(node, (GraphNode<TItem>)null));
+                }
+            });
+
+            var sb = new StringBuilder();
+
+            // Remove the bad nodes
+            nodes.ForEach(n =>
+            {
+                var downgraded = n.Item1;
+                var downgradedBy = n.Item2;
+
+                // We need to remove the node from the tree since it's not actually resolved and
+                // other layers down the stack will check it
+                downgraded.OuterNode.InnerNodes.Remove(downgraded);
+
+                if (downgradedBy != null)
+                {
+                    sb.AppendLine($"Attempting to downgrade {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion}");
+                    sb.AppendLine(GetPath(downgraded));
+                    sb.AppendLine(GetPath(downgradedBy));
+                    sb.AppendLine();
+                }
+            });
+
+            // An exception is pretty terrrible
+            if (sb.Length > 0)
+            {
+                throw new InvalidOperationException(sb.ToString());
+            }
+
+            return true;
+        }
+
+        private static string GetPath<TItem>(GraphNode<TItem> node)
+        {
+            var result = "";
+            var current = node;
+
+            while (current != null)
+            {
+                result = string.IsNullOrEmpty(result) ? current.Key.ToString() : current.Key + " -> " + result;
+                current = current.OuterNode;
+            }
+
+            return result;
+        }
+
         public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root)
         {
+            if (!root.TrimGraph())
+            {
+                return false;
+            }
+
             // now we walk the tree as often as it takes to determine 
             // which paths are accepted or rejected, based on conflicts occuring
             // between cousin packages

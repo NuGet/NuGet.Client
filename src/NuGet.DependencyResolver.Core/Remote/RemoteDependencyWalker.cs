@@ -14,6 +14,14 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.DependencyResolver
 {
+    public enum NodeState
+    {
+        Continue,
+        Eclipsed,
+        PotentiallyDowngraded,
+        Cycle
+    }
+
     public class RemoteDependencyWalker
     {
         private readonly RemoteWalkContext _context;
@@ -25,7 +33,7 @@ namespace NuGet.DependencyResolver
 
         public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
         {
-            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, parent: null, predicate: _ => recursive);
+            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => NodeState.Continue);
         }
 
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(
@@ -33,13 +41,11 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeName,
             RuntimeGraph runtimeGraph,
-            GraphNode<RemoteResolveResult> parent,
-            Func<LibraryRange, bool> predicate)
+            Func<LibraryRange, NodeState> predicate)
         {
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
             {
-                Item = await FindLibraryCached(_context.FindLibraryEntryCache, libraryRange, framework),
-                OuterNode = parent
+                Item = await FindLibraryCached(_context.FindLibraryEntryCache, libraryRange, framework)
             };
 
             Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
@@ -55,14 +61,15 @@ namespace NuGet.DependencyResolver
             var dependencies = node.Item.Data.Dependencies ?? Enumerable.Empty<LibraryDependency>();
             foreach (var dependency in dependencies)
             {
-                if (predicate(dependency.LibraryRange))
+                var result = predicate(dependency.LibraryRange);
+
+                if (result == NodeState.Continue)
                 {
                     tasks.Add(CreateGraphNode(
                         dependency.LibraryRange,
                         framework,
                         runtimeName,
                         runtimeGraph,
-                        node,
                         ChainPredicate(predicate, node, dependency)));
 
                     if (!string.IsNullOrEmpty(runtimeName)
@@ -82,9 +89,21 @@ namespace NuGet.DependencyResolver
                                 framework,
                                 runtimeName,
                                 runtimeGraph,
-                                node,
                                 ChainPredicate(predicate, node, dependency)));
                         }
+                    }
+                }
+                else
+                {
+                    if (result == NodeState.PotentiallyDowngraded || result == NodeState.Cycle)
+                    {
+                        var eclipsedNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
+                        {
+                            Disposition = result == NodeState.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded
+                        };
+
+                        eclipsedNode.OuterNode = node;
+                        node.InnerNodes.Add(eclipsedNode);
                     }
                 }
             }
@@ -97,6 +116,7 @@ namespace NuGet.DependencyResolver
                 // Extract the resolved node
                 tasks.Remove(task);
                 var dependencyNode = await task;
+                dependencyNode.OuterNode = node;
 
                 node.InnerNodes.Add(dependencyNode);
             }
@@ -104,7 +124,7 @@ namespace NuGet.DependencyResolver
             return node;
         }
 
-        private Func<LibraryRange, bool> ChainPredicate(Func<LibraryRange, bool> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
+        private Func<LibraryRange, NodeState> ChainPredicate(Func<LibraryRange, NodeState> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
         {
             var item = node.Item;
 
@@ -112,7 +132,7 @@ namespace NuGet.DependencyResolver
             {
                 if (item.Data.Match.Library.Name == library.Name)
                 {
-                    throw new InvalidOperationException($"Circular dependency references not supported. '{GetChain(node, dependency.Name)}'.");
+                    return NodeState.Cycle;
                 }
 
                 foreach (var d in item.Data.Dependencies)
@@ -121,30 +141,15 @@ namespace NuGet.DependencyResolver
                     {
                         if (d.LibraryRange.VersionRange.MinVersion < library.VersionRange.MinVersion)
                         {
-                            // TODO: Don't throw on the first downgrade in the future, we want to report all of the errors in a single failure
-                            throw new InvalidOperationException($"Attempting to downgrade {library.Name} from {d.LibraryRange.VersionRange.MinVersion} to {library.VersionRange.MinVersion}. {Environment.NewLine} {GetChain(node, d.LibraryRange.ToString())}");
+                            return NodeState.PotentiallyDowngraded;
                         }
 
-                        return false;
+                        return NodeState.Eclipsed;
                     }
                 }
 
                 return predicate(library);
             };
-        }
-
-        private static string GetChain<T>(GraphNode<T> node, string name)
-        {
-            var result = name;
-            var current = node;
-
-            while (current != null)
-            {
-                result = current.Key.Name + " -> " + result;
-                current = current.OuterNode;
-            }
-
-            return result;
         }
 
         public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(

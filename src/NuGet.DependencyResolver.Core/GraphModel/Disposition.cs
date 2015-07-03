@@ -7,6 +7,8 @@ namespace NuGet.DependencyResolver
     {
         Acceptable,
         Rejected,
-        Accepted
+        Accepted,
+        PotentiallyDowngraded,
+        Cycle
     }
 }
