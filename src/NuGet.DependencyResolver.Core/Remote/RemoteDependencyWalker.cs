@@ -35,6 +35,39 @@ namespace NuGet.DependencyResolver
             RuntimeGraph runtimeGraph,
             Func<LibraryRange, DependencyResult> predicate)
         {
+            var dependencies = new List<LibraryDependency>();
+
+            if (!string.IsNullOrEmpty(runtimeName) && runtimeGraph != null)
+            {
+                // HACK(davidfowl): This is making runtime.json support package redirects
+
+                // Look up any additional dependencies for this package
+                foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name))
+                {
+                    var libraryDependency = new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange()
+                        {
+                            Name = runtimeDependency.Id,
+                            VersionRange = runtimeDependency.VersionRange
+                        }
+                    };
+
+                    if (runtimeDependency.Id == libraryRange.Name)
+                    {
+                        if (libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
+                        {
+                            libraryRange = libraryDependency.LibraryRange;
+                        }
+                    }
+                    else
+                    {
+                        // Otherwise it's a dependency of this node
+                        dependencies.Add(libraryDependency);
+                    }
+                }
+            }
+
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
             {
                 Item = await FindLibraryCached(_context.FindLibraryEntryCache, libraryRange, framework)
@@ -50,26 +83,7 @@ namespace NuGet.DependencyResolver
             }
 
             var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
-            var dependencies = new List<LibraryDependency>(node.Item.Data.Dependencies ?? Enumerable.Empty<LibraryDependency>());
-
-            if (!string.IsNullOrEmpty(runtimeName) && runtimeGraph != null)
-            {
-                // Look up any additional dependencies for this package
-                foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name))
-                {
-                    var runtimeLibraryRange = new LibraryRange()
-                    {
-                        Name = runtimeDependency.Id,
-                        VersionRange = runtimeDependency.VersionRange
-                    };
-
-                    dependencies.Add(new LibraryDependency
-                    {
-                        LibraryRange = runtimeLibraryRange
-                    });
-                }
-            }
-
+            dependencies.AddRange(node.Item.Data.Dependencies);
 
             foreach (var dependency in dependencies)
             {
