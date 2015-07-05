@@ -49,7 +49,20 @@ namespace NuGet.Commands
         public string Name { get; }
         public IEnumerable<ResolverConflict> Conflicts { get; internal set; }
 
-        private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts, bool writeToLockFile, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, IEnumerable<GraphNode<RemoteResolveResult>> graphs, ISet<RemoteMatch> install, ISet<GraphItem<RemoteResolveResult>> flattened, ISet<LibraryRange> unresolved)
+        public IEnumerable<DowngradeResult> Downgrades { get; private set; }
+        public IEnumerable<GraphNode<RemoteResolveResult>> Cycles { get; private set; }
+
+        private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts,
+                                   bool writeToLockFile,
+                                   NuGetFramework framework,
+                                   string runtimeIdentifier,
+                                   RuntimeGraph runtimeGraph,
+                                   IEnumerable<GraphNode<RemoteResolveResult>> graphs,
+                                   ISet<RemoteMatch> install,
+                                   ISet<GraphItem<RemoteResolveResult>> flattened,
+                                   ISet<LibraryRange> unresolved,
+                                   IEnumerable<DowngradeResult> downgrades,
+                                   IEnumerable<GraphNode<RemoteResolveResult>> cycles)
         {
             Conflicts = conflicts;
             WriteToLockFile = writeToLockFile;
@@ -64,6 +77,8 @@ namespace NuGet.Commands
             Install = install;
             Flattened = flattened;
             Unresolved = unresolved;
+            Downgrades = downgrades;
+            Cycles = cycles;
         }
 
         public static RestoreTargetGraph Create(bool writeToLockFile, IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, NuGetFramework framework)
@@ -85,6 +100,15 @@ namespace NuGet.Commands
             var unresolved = new HashSet<LibraryRange>();
 
             var conflicts = new Dictionary<string, HashSet<ResolverRequest>>();
+            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
+            var cycles = new List<GraphNode<RemoteResolveResult>>();
+
+            // NOTE(anurse): We are OK with throwing away the result here. The Create call below will be checking for conflicts
+            foreach (var graph in graphs)
+            {
+                graph.CheckCycleAndNearestWins(downgrades, cycles);
+                graph.TryResolveConflicts();
+            }
 
             graphs.ForEach(node =>
                 {
@@ -149,7 +173,9 @@ namespace NuGet.Commands
                 graphs,
                 install,
                 flattened,
-                unresolved);
+                unresolved,
+                downgrades.Select(d => new DowngradeResult { DowngradedTo = d.Item1, DowngradedFrom = d.Item2 }),
+                cycles);
         }
     }
 }

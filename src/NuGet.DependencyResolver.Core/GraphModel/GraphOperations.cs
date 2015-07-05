@@ -18,29 +18,32 @@ namespace NuGet.DependencyResolver
             Ambiguous
         }
 
-        private static void TrimGraph<TItem>(this GraphNode<TItem> root)
+        public static void CheckCycleAndNearestWins<TItem>(this GraphNode<TItem> root,
+                                                           List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> downgrades, 
+                                                           List<GraphNode<TItem>> cycles)
         {
+            // Cycle
+            
             // A -> B -> A (cycle)
 
+            // Downgrade
+            
             // A -> B -> C -> D 2.0 (downgrage)
             //        -> D 1.0
 
-            // A -> B -> C -> D 2.0 (potential downgrade that turns out to not downgrade)
+            // Potential downgrade that turns out to not downgrade
+            // This should never happen in practice since B would have never been valid to begin with.
+
+            // A -> B -> C -> D 2.0
             //        -> D 1.0
             //   -> D 2.0
-
-            // Check for cycles and nearest win situations where there's a potential downgrade
-
-            var nodes = new List<Tuple<GraphNode<TItem>, GraphNode<TItem>>>();
-
-            // A 1.0
 
             root.ForEach(node =>
             {
                 if (node.Disposition == Disposition.Cycle)
                 {
-                    // Throw at the first cycle because you should never have them
-                    throw new InvalidOperationException($"Circular dependencies are not supported. {Environment.NewLine} {GetPath(node)}");
+                    cycles.Add(node);
+                    return;
                 }
 
                 if (node.Disposition != Disposition.PotentiallyDowngraded)
@@ -50,7 +53,8 @@ namespace NuGet.DependencyResolver
 
                 bool downgraded = false;
 
-                // REVIEW: Measure this
+                // REVIEW: This could probably be done in a single pass where we keep track
+                // of what is nearer as we walk down the graph (BFS)
                 for (var n = node.OuterNode; !downgraded && n != null; n = n.OuterNode)
                 {
                     foreach (var sideNode in n.InnerNodes)
@@ -59,7 +63,7 @@ namespace NuGet.DependencyResolver
                             sideNode.Key != node.Key &&
                             sideNode.Key.Name == node.Key.Name)
                         {
-                            nodes.Add(Tuple.Create(node, sideNode));
+                            downgrades.Add(Tuple.Create(node, sideNode));
 
                             downgraded = true;
 
@@ -68,42 +72,16 @@ namespace NuGet.DependencyResolver
                     }
                 }
 
-                // We looked at this node's ancestors and nothing eclipsed it
                 if (node.Disposition == Disposition.PotentiallyDowngraded)
                 {
-                    nodes.Add(Tuple.Create(node, (GraphNode<TItem>)null));
+                    // Remove this node from the tree so the nothing else explodes
+                    // This is ok since we have a parent pointer and we can still print the path
+                    node.OuterNode.InnerNodes.Remove(node);
                 }
             });
-
-            var sb = new StringBuilder();
-
-            // Remove the bad nodes
-            nodes.ForEach(n =>
-            {
-                var downgraded = n.Item1;
-                var downgradedBy = n.Item2;
-
-                // We need to remove the node from the tree since it's not actually resolved and
-                // other layers down the stack will check it
-                downgraded.OuterNode.InnerNodes.Remove(downgraded);
-
-                if (downgradedBy != null)
-                {
-                    sb.AppendLine($"Attempting to downgrade {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion}");
-                    sb.AppendLine(GetPath(downgraded));
-                    sb.AppendLine(GetPath(downgradedBy));
-                    sb.AppendLine();
-                }
-            });
-
-            // REVIEW: Should we throw or should we return this as data?
-            if (sb.Length > 0)
-            {
-                throw new InvalidOperationException(sb.ToString());
-            }
         }
 
-        private static string GetPath<TItem>(GraphNode<TItem> node)
+        public static string GetPath<TItem>(this GraphNode<TItem> node)
         {
             var result = "";
             var current = node;
@@ -119,8 +97,6 @@ namespace NuGet.DependencyResolver
 
         public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root)
         {
-            root.TrimGraph();
-
             // now we walk the tree as often as it takes to determine 
             // which paths are accepted or rejected, based on conflicts occuring
             // between cousin packages

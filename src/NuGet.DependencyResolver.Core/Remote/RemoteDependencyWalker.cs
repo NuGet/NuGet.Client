@@ -55,7 +55,9 @@ namespace NuGet.DependencyResolver
 
                     if (runtimeDependency.Id == libraryRange.Name)
                     {
-                        if (libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
+                        if (libraryRange.VersionRange != null &&
+                            runtimeDependency.VersionRange != null && 
+                            libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
                         {
                             libraryRange = libraryDependency.LibraryRange;
                         }
@@ -146,7 +148,8 @@ namespace NuGet.DependencyResolver
                 {
                     if (d != dependency && d.Name == library.Name)
                     {
-                        if (d.LibraryRange.TypeConstraint != LibraryTypes.Reference &&
+                        if (d.LibraryRange.VersionRange != null &&
+                            library.VersionRange != null &&
                             d.LibraryRange.VersionRange.MinVersion < library.VersionRange.MinVersion)
                         {
                             return DependencyResult.PotentiallyDowngraded;

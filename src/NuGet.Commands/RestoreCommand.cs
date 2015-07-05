@@ -84,6 +84,24 @@ namespace NuGet.Commands
                 lockFile.IsLocked = relockFile;
             }
 
+            foreach (var g in graphs.Where(g => g.Cycles.Any() || g.Downgrades.Any()))
+            {
+                _success = false;
+
+                foreach (var cycle in g.Cycles)
+                {
+                    _log.LogError($"Cycle detected {Environment.NewLine} {cycle.GetPath()}");
+                }
+
+                foreach (var downgrade in g.Downgrades)
+                {
+                    var downgraded = downgrade.DowngradedTo;
+                    var downgradedBy = downgrade.DowngradedFrom;
+
+                    _log.LogError($"Detected package downgrade: {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion} {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                }
+            }
+
             // Scan every graph for compatibility, as long as there were no unresolved packages
             var checkResults = new List<CompatibilityCheckResult>();
             if (graphs.All(g => !g.Unresolved.Any()))
@@ -635,12 +653,6 @@ namespace NuGet.Commands
 
             // Resolve conflicts
             _log.LogVerbose(Strings.FormatLog_ResolvingConflicts(name));
-
-            // NOTE(anurse): We are OK with throwing away the result here. The Create call below will be checking for conflicts
-            foreach (var graph in graphs)
-            {
-                graph.TryResolveConflicts();
-            }
 
             // Flatten and create the RestoreTargetGraph to hold the packages
             var result = RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _log, framework, runtimeIdentifier);
