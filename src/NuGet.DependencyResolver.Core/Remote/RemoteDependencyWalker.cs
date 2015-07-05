@@ -25,7 +25,7 @@ namespace NuGet.DependencyResolver
 
         public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
         {
-            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => DependencyResult.Acceptable);
+            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed);
         }
 
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(
@@ -56,7 +56,7 @@ namespace NuGet.DependencyResolver
                     if (runtimeDependency.Id == libraryRange.Name)
                     {
                         if (libraryRange.VersionRange != null &&
-                            runtimeDependency.VersionRange != null && 
+                            runtimeDependency.VersionRange != null &&
                             libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
                         {
                             libraryRange = libraryDependency.LibraryRange;
