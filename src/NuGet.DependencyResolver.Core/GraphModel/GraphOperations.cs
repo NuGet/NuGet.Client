@@ -198,21 +198,30 @@ namespace NuGet.DependencyResolver
                     });
 
                 // Locate nodes that were formerly disputed that do not have resolutions
+                var unresolvableVersionSpecifications = new HashSet<string>(StringComparer.Ordinal);
+
                 root.ForEach(true, (node, state) =>
                 {
                     if (node.Disposition == Disposition.Rejected)
                     {
                         LibraryIdentity resolvedLibrary;
-                        if (!acceptedLibraries.TryGetValue(node.Key.Name, out resolvedLibrary) ||
+                        if (acceptedLibraries.TryGetValue(node.Key.Name, out resolvedLibrary) &&
                             !node.Key.VersionRange.Satisfies(resolvedLibrary.Version))
                         {
-                            throw new InvalidOperationException(
+                            unresolvableVersionSpecifications.Add(
                                 Strings.FormatError_FailedToResolveConflicts(node.Key.Name, node.Key.VersionRange));
+
+                            return false;
                         }
                     }
 
                     return true;
                 });
+
+                if (unresolvableVersionSpecifications.Count > 0)
+                {
+                    throw new InvalidOperationException(string.Join(Environment.NewLine, unresolvableVersionSpecifications));
+                }
 
                 incomplete = false;
 

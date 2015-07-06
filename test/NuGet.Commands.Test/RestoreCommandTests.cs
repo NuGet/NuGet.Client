@@ -50,7 +50,7 @@ namespace NuGet.Commands.Test
 
             var lockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-            var lastDate = File.GetLastWriteTime(lockFilePath);
+            var lastDate = File.GetLastWriteTimeUtc(lockFilePath);
 
             request = new RestoreRequest(spec, sources, packagesDir);
             request.MaxDegreeOfConcurrency = 1;
@@ -69,7 +69,7 @@ namespace NuGet.Commands.Test
             result = await command.ExecuteAsync();
             result.Commit(logger);
 
-            var currentDate = File.GetLastWriteTime(lockFilePath);
+            var currentDate = File.GetLastWriteTimeUtc(lockFilePath);
 
             // Assert
             // The file should be written out

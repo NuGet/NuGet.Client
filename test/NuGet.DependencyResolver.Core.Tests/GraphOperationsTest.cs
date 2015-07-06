@@ -53,6 +53,35 @@ namespace NuGet.DependencyResolver
             Assert.Equal(Disposition.Accepted, nodeC180.Disposition);
         }
 
+        [Fact]
+        public void TryResolveConflicts_ThrowsErrorsForAllUnresolvableConflicts()
+        {
+            // Arrange
+            var root = CreateNode("Root", "1.0.0");
+            var nodeA = CreateNode("A", "1.0.0");
+            nodeA.InnerNodes.Add(CreateNode("C", "(1.0.0,1.4.0]", "1.3.8"));
+            root.InnerNodes.Add(nodeA);
+
+            var nodeD = CreateNode("D", "1.1");
+            nodeD.InnerNodes.Add(CreateNode("C", "(1.2.0,1.4.1]", "1.3.8"));
+            nodeD.InnerNodes.Add(CreateNode("E", "[0.1]", "0.1"));
+            root.InnerNodes.Add(nodeD);
+
+            var nodeB = CreateNode("B", "2.0.0");
+            nodeB.InnerNodes.Add(CreateNode("C", "1.8.0"));
+            root.InnerNodes.Add(nodeB);
+
+            var nodeE = CreateNode("E", "2.4.0");
+            nodeB.InnerNodes.Add(CreateNode("E", "1.0"));
+            root.InnerNodes.Add(nodeE);
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => root.TryResolveConflicts());
+            Assert.Equal("Unable to find a version of package 'C' that is compatible with version constraint '(1.0.0, 1.4.0]'." + Environment.NewLine +
+                         "Unable to find a version of package 'C' that is compatible with version constraint '(1.2.0, 1.4.1]'." + Environment.NewLine +
+                         "Unable to find a version of package 'E' that is compatible with version constraint '[0.1.0, 0.1.0]'.", ex.Message);
+        }
+
         private static GraphNode<RemoteResolveResult> CreateNode(
             string id,
             string versionSpec,
