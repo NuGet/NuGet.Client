@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using NuGet.LibraryModel;
 using NuGet.Logging;
+using NuGet.DependencyResolver.Core;
 
 namespace NuGet.DependencyResolver
 {
@@ -101,6 +103,8 @@ namespace NuGet.DependencyResolver
             // which paths are accepted or rejected, based on conflicts occuring
             // between cousin packages
 
+            var acceptedLibraries = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
+
             var patience = 1000;
             var incomplete = true;
             while (incomplete && --patience != 0)
@@ -179,11 +183,36 @@ namespace NuGet.DependencyResolver
 
                         if (node.Disposition == Disposition.Acceptable)
                         {
-                            node.Disposition = tracker.IsBestVersion(node.Item) ? Disposition.Accepted : Disposition.Rejected;
+                            if (tracker.IsBestVersion(node.Item))
+                            {
+                                node.Disposition = Disposition.Accepted;
+                                acceptedLibraries[node.Key.Name] = node.Item.Key;
+                            }
+                            else
+                            {
+                                node.Disposition = Disposition.Rejected;
+                            }
                         }
 
                         return node.Disposition == Disposition.Accepted;
                     });
+
+                // Locate nodes that were formerly disputed that do not have resolutions
+                root.ForEach(true, (node, state) =>
+                {
+                    if (node.Disposition == Disposition.Rejected)
+                    {
+                        LibraryIdentity resolvedLibrary;
+                        if (!acceptedLibraries.TryGetValue(node.Key.Name, out resolvedLibrary) ||
+                            !node.Key.VersionRange.Satisfies(resolvedLibrary.Version))
+                        {
+                            throw new InvalidOperationException(
+                                Strings.FormatError_FailedToResolveConflicts(node.Key.Name, node.Key.VersionRange));
+                        }
+                    }
+
+                    return true;
+                });
 
                 incomplete = false;
 
