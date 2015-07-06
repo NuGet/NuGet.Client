@@ -145,16 +145,23 @@ function Test-BuildIntegratedInstallPackageWithWPA81 {
     Assert-ProjectJsonLockFileRuntimeAssembly $project lib/wpa81/Kinnara.Toolkit.dll
 }
 
-function Test-BuildIntegratedPackageOverrideDependencyRequirement {
+function Test-BuildIntegratedPackageFailsIfDowngradeWasDetected {
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
 
     # Act
     Install-Package Newtonsoft.Json -ProjectName $project.Name -version 6.0.4
-    Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533
+
+	# Assert
+    # DotNetRDF requires json.net >= 6.0.8, but the direct dependency attempts to downgrade it.
+	$expectedMessage = @'
+Detected package downgrade: Newtonsoft.Json from 6.0.8 to 6.0.4 
+ Project/UAPApp [1.0.0, ) -> Package/DotNetRDF [1.0.8.3533, ) -> Newtonsoft.Json [6.0.8, ) 
+ Project/UAPApp [1.0.0, ) -> Package/Newtonsoft.Json [6.0.4, )
+'@
+	Assert-Throws { Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533 } $expectedMessage
 
     # Assert
-    # DotNetRDF requires json.net >= 6.0.8, but the direct dependency overrides it
     Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 6.0.4
 }
 
