@@ -33,7 +33,7 @@ namespace NuGet.Client
             parser: o => o); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
             parser: o => o.Equals("_._", StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
-            fileExtensions: new[] { ".dll" });
+            fileExtensions: new[] { ".dll", ".winmd" });
         private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
         private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly, fileExtensions: new[] { ".resources.dll" });
 
