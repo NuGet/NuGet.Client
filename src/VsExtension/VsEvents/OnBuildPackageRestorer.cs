@@ -715,8 +715,9 @@ namespace NuGetVSExtension
                 // Switch to main thread to update the progress dialog, output window or error list window
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // Only show messages with VerbosityLevel.Normal, VerbosityLevel.Minimal or VerbosityLevel.Quiet
-                if (verbosityLevel <= VerbosityLevel.Normal)
+                // Only show messages with VerbosityLevel.Normal. That is, info messages only.
+                // Do not show errors, warnings, verbose or debug messages on the progress dialog
+                if (verbosityLevel == VerbosityLevel.Normal)
                 {
                     // When both currentStep and totalSteps are 0, we get a marquee on the dialog
                     var progressData = new ThreadedWaitDialogProgressData(message,
