@@ -93,9 +93,13 @@ namespace NuGet.TeamFoundationServer
             {
                 // TODO: Should one also add the Directory under which the file is present since it is TFS?
                 // It would be consistent across Source Control providers to only add files to Source Control
-
                 filesToAdd.Add(fullPath);
-                filesToAdd.Add(Path.GetDirectoryName(fullPath));
+
+                var directoryName = Path.GetDirectoryName(fullPath);
+                if (!String.IsNullOrEmpty(directoryName))
+                {
+                    filesToAdd.Add(directoryName);
+                }
             }
 
             ProcessAddFiles(filesToAdd, root);
