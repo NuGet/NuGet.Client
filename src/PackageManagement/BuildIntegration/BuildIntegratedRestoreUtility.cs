@@ -1,10 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -97,7 +96,10 @@ namespace NuGet.PackageManagement
 
             // Find the full closure of project.json files and referenced projects
             var projectReferences = await project.GetProjectReferenceClosureAsync();
-            request.ExternalProjects = projectReferences.Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference)).ToList();
+            request.ExternalProjects = projectReferences
+                .Where(reference => !string.IsNullOrEmpty(reference.PackageSpecPath))
+                .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))
+                .ToList();
 
             token.ThrowIfCancellationRequested();
 
@@ -151,7 +153,7 @@ namespace NuGet.PackageManagement
         /// Creates an index of the project unique name to the cache entry. 
         /// The cache entry contains the project and the closure of project.json files.
         /// </summary>
-        public static async Task<IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry>> 
+        public static async Task<IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry>>
             CreateBuildIntegratedProjectStateCache(IReadOnlyList<BuildIntegratedNuGetProject> projects)
         {
             var cache = new Dictionary<string, BuildIntegratedProjectCacheEntry>();
