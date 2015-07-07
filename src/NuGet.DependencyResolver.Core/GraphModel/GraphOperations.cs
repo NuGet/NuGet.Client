@@ -45,6 +45,11 @@ namespace NuGet.DependencyResolver
                 if (node.Disposition == Disposition.Cycle)
                 {
                     cycles.Add(node);
+
+                    // Remove this node from the tree so the nothing else evaluates this.
+                    // This is ok since we have a parent pointer and we can still print the path
+                    node.OuterNode.InnerNodes.Remove(node);
+
                     return;
                 }
 
@@ -76,7 +81,7 @@ namespace NuGet.DependencyResolver
 
                 if (node.Disposition == Disposition.PotentiallyDowngraded)
                 {
-                    // Remove this node from the tree so the nothing else explodes
+                    // Remove this node from the tree so the nothing else evaluates this.
                     // This is ok since we have a parent pointer and we can still print the path
                     node.OuterNode.InnerNodes.Remove(node);
                 }
