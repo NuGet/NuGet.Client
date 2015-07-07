@@ -27,7 +27,7 @@ namespace NuGet.CommandLine
             get { return _sources; }
         }
 
-        [Option(typeof(NuGetCommand), "CommandSourceDescription")]
+        [Option(typeof(NuGetCommand), "CommandFallbackSourceDescription")]
         public ICollection<string> FallbackSource { get; } = new List<string>();
 
         [Option(typeof(NuGetCommand), "CommandNoCache")]

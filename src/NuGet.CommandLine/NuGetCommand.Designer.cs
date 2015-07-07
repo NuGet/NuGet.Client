@@ -313,6 +313,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A list of packages sources to use as fallbacks for this command..
+        /// </summary>
+        internal static string CommandFallbackSourceDescription {
+            get {
+                return ResourceManager.GetString("CommandFallbackSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable using the machine cache as the first package source..
         /// </summary>
         internal static string CommandNoCache {

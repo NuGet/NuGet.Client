@@ -5236,4 +5236,7 @@ nuget update -Self</value>
   <data name="PushCommandDisableBufferingDescription" xml:space="preserve">
     <value>Disable buffering when pushing to an HTTP(S) server to decrease memory usage. Note that when this option is enabled, integrated windows authentication might not work.</value>
   </data>
+  <data name="CommandFallbackSourceDescription" xml:space="preserve">
+    <value>A list of packages sources to use as fallbacks for this command.</value>
+  </data>
 </root>
