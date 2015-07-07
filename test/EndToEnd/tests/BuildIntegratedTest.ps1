@@ -275,3 +275,28 @@ function Test-BuildIntegratedMixedLegacyProjects {
     Assert-Package $project1 Newtonsoft.Json
     Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
 }
+
+# Verifies that project.json that specified in project.json referenced transitively through a non-project.json project
+# are correctly pulled in.
+function Test-BuildIntegratedTransitiveProjectJsonRestores {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-Project BuildIntegratedClassLibrary
+    $project2 = New-ClassLibrary
+    $project3 = New-Project BuildIntegratedClassLibrary
+
+    Add-ProjectReference $project2 $project1
+    Add-ProjectReference $project3 $project2
+
+    # Act
+    $project1 | Install-Package NuGet.Versioning -Version 1.0.7
+    Build-Solution
+
+    # Assert
+    Assert-NoPackage $project2 NuGet.Versioning 1.0.7
+    Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
+    Assert-ProjectJsonLockFilePackage $project3 NuGet.Versioning 1.0.7
+}
