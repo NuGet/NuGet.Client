@@ -20,7 +20,6 @@ using NuGet.Logging;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -167,8 +166,7 @@ namespace NuGetVSExtension
                         // Call DNU to restore for BuildIntegratedProjectSystem projects
                         var buildEnabledProjects = projects.OfType<BuildIntegratedProjectSystem>();
 
-                        var forceRestore = Action == vsBuildAction.vsBuildActionRebuildAll
-                                            || Action == vsBuildAction.vsBuildActionDeploy;
+                        var forceRestore = Action == vsBuildAction.vsBuildActionRebuildAll;
 
                         await RestoreBuildIntegratedProjectsAsync(buildEnabledProjects.ToList(), forceRestore);
                     }, JoinableTaskCreationOptions.LongRunning);
@@ -270,7 +268,7 @@ namespace NuGetVSExtension
             {
                 // Swap caches 
                 var oldCache = _buildIntegratedCache;
-                _buildIntegratedCache 
+                _buildIntegratedCache
                     = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
 
                 if (forceRestore)
