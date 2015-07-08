@@ -98,7 +98,7 @@ namespace NuGet.Commands
                     var downgraded = downgrade.DowngradedTo;
                     var downgradedBy = downgrade.DowngradedFrom;
 
-                    _log.LogError($"Detected package downgrade: {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion} {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                    _log.LogWarning($"Detected package downgrade: {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion} {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
                 }
             }
 
