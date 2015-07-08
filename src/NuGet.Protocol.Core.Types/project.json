@@ -1,5 +1,5 @@
 ﻿{
-    "version": "3.1.0-*",
+    "version": "3.1.0",
     "authors": [ "NuGet" ],
     "description": "NuGet's protocol-level base types used for connecting to API v2 and API v3 repositories.",
     "copyright": "Copyright .NET Foundation. All rights reserved.",

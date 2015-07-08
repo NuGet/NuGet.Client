@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.1.0-*",
+  "version": "3.1.0",
   "dependencies": {
     "NuGet.LibraryModel": "3.1.0-*",
     "NuGet.Frameworks": "3.1.0-*",
