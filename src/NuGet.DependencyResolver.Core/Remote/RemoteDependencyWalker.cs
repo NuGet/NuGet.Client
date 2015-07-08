@@ -151,7 +151,7 @@ namespace NuGet.DependencyResolver
                     {
                         if (d.LibraryRange.VersionRange != null &&
                             library.VersionRange != null &&
-                            IsPotentialDowngrade(d.LibraryRange.VersionRange, library.VersionRange))
+                            !IsGreaterThanOrEqualTo(d.LibraryRange.VersionRange, library.VersionRange))
                         {
                             return DependencyResult.PotentiallyDowngraded;
                         }
@@ -164,81 +164,121 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        public static bool IsPotentialDowngrade(VersionRange leftVersion, VersionRange rightVersion)
+        // Verifies if minimum version specification for nearVersion is greater than the
+        // minimum version specification for farVersion
+        public static bool IsGreaterThanOrEqualTo(VersionRange nearVersion, VersionRange farVersion)
         {
-            if (!leftVersion.HasLowerBound)
-            {
-                return false;
-            }
-            else if (!rightVersion.HasLowerBound)
+            if (!nearVersion.HasLowerBound)
             {
                 return true;
             }
-            else if (leftVersion.IsFloating)
+            else if (!farVersion.HasLowerBound)
             {
-                if (rightVersion.IsFloating)
-                {
-                    var leftMinVersion = leftVersion.Float.MinVersion;
-                    var rightMinVersion = rightVersion.Float.MinVersion;
+                return false;
+            }
+            else if (nearVersion.IsFloating || farVersion.IsFloating)
+            {
+                NuGetVersion nearMinVersion;
+                NuGetVersion farMinVersion;
 
-                    if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
+                string nearRelease;
+                string farRelease;
+
+                if (nearVersion.IsFloating)
+                {
+                    if (nearVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
                     {
-                        return false;
-                    }
-                    else if (rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
-                    {
+                        // nearVersion: "*"
                         return true;
                     }
-                    else if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Minor ||
-                        rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Minor)
-                    {
-                        return leftMinVersion.Major < rightMinVersion.Major;
-                    }
-                    else if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Patch ||
-                             rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Patch)
-                    {
-                        return leftMinVersion.Major <= rightMinVersion.Major &&
-                            leftMinVersion.Minor < rightMinVersion.Minor;
-                    }
-                    else if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Revision ||
-                             rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Revision)
-                    {
-                        return leftMinVersion.Major <= rightMinVersion.Major &&
-                            leftMinVersion.Minor <= rightMinVersion.Minor &&
-                            leftMinVersion.Patch < rightMinVersion.Patch;
-                    }
-                    else
-                    {
-                        var isLesser = leftMinVersion.Major < rightMinVersion.Major &&
-                            leftMinVersion.Minor < rightMinVersion.Minor &&
-                            leftMinVersion.Patch < rightMinVersion.Patch &&
-                            leftMinVersion.Revision < rightMinVersion.Revision;
 
-                        if (!isLesser)
-                        {
-                            // When a float version is specified without an actual prerelease tag, FloatRange appends a '-' to the end.
-                            var leftRelease = leftMinVersion.Release?.TrimEnd('-');
-                            var rightRelease = rightMinVersion.Release?.TrimEnd('-');
-                            if (!string.IsNullOrEmpty(leftRelease) && !string.IsNullOrEmpty(rightRelease))
-                            {
-                                var lengthToCompare = Math.Min(leftRelease.Length, rightRelease.Length);
-
-                                return StringComparer.OrdinalIgnoreCase.Compare(
-                                    leftRelease.Substring(0, lengthToCompare),
-                                    rightRelease.Substring(0, lengthToCompare)) < 0;
-                            }
-                        }
-
-                        return isLesser;
-                    }
+                    nearMinVersion = GetReleaseLabelFreeVersion(nearVersion);
+                    nearRelease = nearVersion.Float.MinVersion.Release;
                 }
                 else
                 {
-                    return !leftVersion.Float.Satisfies(rightVersion.MinVersion);
+                    nearMinVersion = nearVersion.MinVersion;
+                    nearRelease = nearVersion.MinVersion.Release;
+                }
+
+                if (farVersion.IsFloating)
+                {
+                    if (farVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
+                    {
+                        // farVersion: "*"
+                        return false;
+                    }
+
+                    farMinVersion = GetReleaseLabelFreeVersion(farVersion);
+                    farRelease = farVersion.Float.MinVersion.Release;
+                }
+                else
+                {
+                    farMinVersion = farVersion.MinVersion;
+                    farRelease = farVersion.MinVersion.Release;
+                }
+
+                var result = nearMinVersion.CompareTo(farMinVersion, VersionComparison.Version);
+                if (result != 0)
+                {
+                    return result > 0;
+                }
+
+                nearRelease = nearRelease?.Trim('-');
+                farRelease = farRelease?.Trim('-');
+                if (string.IsNullOrEmpty(nearRelease))
+                {
+                    // near is 1.0.0-*
+                    return true;
+                }
+                else if (string.IsNullOrEmpty(farRelease))
+                {
+                    // near is 1.0.0-alpha-* and far is 1.0.0-*
+                    return false;
+                }
+                else
+                {
+                    var lengthToCompare = Math.Min(nearRelease.Length, farRelease.Length);
+
+                    return StringComparer.OrdinalIgnoreCase.Compare(
+                        nearRelease.Substring(0, lengthToCompare),
+                        farRelease.Substring(0, lengthToCompare)) >= 0;
                 }
             }
 
-            return leftVersion.MinVersion < rightVersion.MinVersion;
+            return nearVersion.MinVersion >= farVersion.MinVersion;
+        }
+
+        private static NuGetVersion GetReleaseLabelFreeVersion(VersionRange versionRange)
+        {
+            if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
+            {
+                return new NuGetVersion(int.MaxValue, int.MaxValue, int.MaxValue);
+            }
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Minor)
+            {
+                return new NuGetVersion(versionRange.MinVersion.Major, int.MaxValue, int.MaxValue, int.MaxValue);
+            }
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Patch)
+            {
+                return new NuGetVersion(versionRange.MinVersion.Major, versionRange.MinVersion.Minor, int.MaxValue, int.MaxValue);
+            }
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Revision)
+            {
+                return new NuGetVersion(
+                    versionRange.MinVersion.Major,
+                    versionRange.MinVersion.Minor,
+                    versionRange.MinVersion.Patch,
+                    int.MaxValue);
+            }
+            else
+            {
+                return new NuGetVersion(
+                    versionRange.MinVersion.Major,
+                    versionRange.MinVersion.Minor,
+                    versionRange.MinVersion.Patch,
+                    versionRange.MinVersion.Revision);
+            }
         }
 
         public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
