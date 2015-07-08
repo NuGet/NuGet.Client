@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
-using NuGet.LibraryModel;
-using NuGet.Logging;
 using NuGet.DependencyResolver.Core;
+using NuGet.LibraryModel;
 
 namespace NuGet.DependencyResolver
 {
@@ -21,15 +19,15 @@ namespace NuGet.DependencyResolver
         }
 
         public static void CheckCycleAndNearestWins<TItem>(this GraphNode<TItem> root,
-                                                           List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> downgrades, 
+                                                           List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> downgrades,
                                                            List<GraphNode<TItem>> cycles)
         {
             // Cycle
-            
+
             // A -> B -> A (cycle)
 
             // Downgrade
-            
+
             // A -> B -> C -> D 2.0 (downgrage)
             //        -> D 1.0
 
@@ -210,7 +208,8 @@ namespace NuGet.DependencyResolver
                     if (node.Disposition == Disposition.Rejected)
                     {
                         LibraryIdentity resolvedLibrary;
-                        if (acceptedLibraries.TryGetValue(node.Key.Name, out resolvedLibrary) &&
+                        if (node.Key.VersionRange != null &&
+                            acceptedLibraries.TryGetValue(node.Key.Name, out resolvedLibrary) &&
                             !node.Key.VersionRange.Satisfies(resolvedLibrary.Version))
                         {
                             unresolvableVersionSpecifications.Add(

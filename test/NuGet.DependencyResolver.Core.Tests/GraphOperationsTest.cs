@@ -54,6 +54,40 @@ namespace NuGet.DependencyResolver
         }
 
         [Fact]
+        public void TryResolveConflicts_WorksWhenVersionRangeIsNotSpecified()
+        {
+            // Arrange
+            var root = CreateNode("Root", "1.0.0");
+            var nodeA = CreateNode("A", "1.0.0");
+            var nodeCWithEmptyVersionRange = new GraphNode<RemoteResolveResult>(new LibraryRange
+            {
+                Name = "C"
+            });
+            nodeCWithEmptyVersionRange.Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity
+            {
+                Name = "C",
+                Version = new NuGetVersion("2.0.0")
+            });
+
+            nodeA.InnerNodes.Add(nodeCWithEmptyVersionRange);
+            root.InnerNodes.Add(nodeA);
+
+            var nodeB = CreateNode("B", "2.0.0");
+            var nodeC180 = CreateNode("C", "1.8.0");
+            nodeB.InnerNodes.Add(nodeC180);
+            root.InnerNodes.Add(nodeB);
+
+            // Act
+            var result = root.TryResolveConflicts();
+
+            // Assert
+            Assert.True(result);
+
+            Assert.Equal(Disposition.Accepted, nodeCWithEmptyVersionRange.Disposition);
+            Assert.Equal(Disposition.Rejected, nodeC180.Disposition);
+        }
+
+        [Fact]
         public void TryResolveConflicts_ThrowsErrorsForAllUnresolvableConflicts()
         {
             // Arrange
