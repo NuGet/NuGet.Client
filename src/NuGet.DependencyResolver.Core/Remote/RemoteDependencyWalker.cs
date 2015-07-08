@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
 {
@@ -150,7 +151,7 @@ namespace NuGet.DependencyResolver
                     {
                         if (d.LibraryRange.VersionRange != null &&
                             library.VersionRange != null &&
-                            d.LibraryRange.VersionRange.MinVersion < library.VersionRange.MinVersion)
+                            IsPotentialDowngrade(d.LibraryRange.VersionRange, library.VersionRange))
                         {
                             return DependencyResult.PotentiallyDowngraded;
                         }
@@ -161,6 +162,83 @@ namespace NuGet.DependencyResolver
 
                 return predicate(library);
             };
+        }
+
+        public static bool IsPotentialDowngrade(VersionRange leftVersion, VersionRange rightVersion)
+        {
+            if (!leftVersion.HasLowerBound)
+            {
+                return false;
+            }
+            else if (!rightVersion.HasLowerBound)
+            {
+                return true;
+            }
+            else if (leftVersion.IsFloating)
+            {
+                if (rightVersion.IsFloating)
+                {
+                    var leftMinVersion = leftVersion.Float.MinVersion;
+                    var rightMinVersion = rightVersion.Float.MinVersion;
+
+                    if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
+                    {
+                        return false;
+                    }
+                    else if (rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
+                    {
+                        return true;
+                    }
+                    else if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Minor ||
+                        rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Minor)
+                    {
+                        return leftMinVersion.Major < rightMinVersion.Major;
+                    }
+                    else if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Patch ||
+                             rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Patch)
+                    {
+                        return leftMinVersion.Major <= rightMinVersion.Major &&
+                            leftMinVersion.Minor < rightMinVersion.Minor;
+                    }
+                    else if (leftVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Revision ||
+                             rightVersion.Float.FloatBehavior == NuGetVersionFloatBehavior.Revision)
+                    {
+                        return leftMinVersion.Major <= rightMinVersion.Major &&
+                            leftMinVersion.Minor <= rightMinVersion.Minor &&
+                            leftMinVersion.Patch < rightMinVersion.Patch;
+                    }
+                    else
+                    {
+                        var isLesser = leftMinVersion.Major < rightMinVersion.Major &&
+                            leftMinVersion.Minor < rightMinVersion.Minor &&
+                            leftMinVersion.Patch < rightMinVersion.Patch &&
+                            leftMinVersion.Revision < rightMinVersion.Revision;
+
+                        if (!isLesser)
+                        {
+                            // When a float version is specified without an actual prerelease tag, FloatRange appends a '-' to the end.
+                            var leftRelease = leftMinVersion.Release?.TrimEnd('-');
+                            var rightRelease = rightMinVersion.Release?.TrimEnd('-');
+                            if (!string.IsNullOrEmpty(leftRelease) && !string.IsNullOrEmpty(rightRelease))
+                            {
+                                var lengthToCompare = Math.Min(leftRelease.Length, rightRelease.Length);
+
+                                return StringComparer.OrdinalIgnoreCase.Compare(
+                                    leftRelease.Substring(0, lengthToCompare),
+                                    rightRelease.Substring(0, lengthToCompare)) < 0;
+                            }
+                        }
+
+                        return isLesser;
+                    }
+                }
+                else
+                {
+                    return !leftVersion.Float.Satisfies(rightVersion.MinVersion);
+                }
+            }
+
+            return leftVersion.MinVersion < rightVersion.MinVersion;
         }
 
         public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
