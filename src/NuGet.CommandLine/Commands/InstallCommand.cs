@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -42,8 +43,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
-        private Configuration.ISettings EffectiveSettings { get; set; }
-
         private bool AllowMultipleVersions
         {
             get { return !ExcludeVersion; }
@@ -66,6 +65,7 @@ namespace NuGet.CommandLine
         public override Task ExecuteCommandAsync()
         {
             CalculateEffectivePackageSaveMode();
+            CalculateEffectiveSettings();
             string installPath = ResolveInstallPath();
 
             string configFilePath = Path.GetFullPath(Arguments.Count == 0 ? Constants.PackageReferenceFile : Arguments[0]);
@@ -76,6 +76,18 @@ namespace NuGet.CommandLine
             if (PackageReferenceFile.IsValidConfigFileName(configFileName))
             {
                 Prerelease = true;
+
+                // display opt-out message if needed
+                if (Console != null && RequireConsent && 
+                    new PackageRestoreConsent(new SettingsToLegacySettings(Settings)).IsGranted)
+                {
+                    string message = String.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
+                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                    Console.WriteLine(message);
+                }
+
                 return PerformV2Restore(configFilePath, installPath);
             }
             else
@@ -86,6 +98,24 @@ namespace NuGet.CommandLine
             }
         }
 
+        private void CalculateEffectiveSettings()
+        {
+            // If the SolutionDir is specified, use the .nuget directory under it to determine the solution-level settings
+            if (!String.IsNullOrEmpty(SolutionDirectory))
+            {
+                var solutionSettingsFile = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
+
+                Settings = Configuration.Settings.LoadDefaultSettings(
+                    solutionSettingsFile,
+                    configFileName: null,
+                    machineWideSettings: MachineWideSettings);
+
+                // Recreate the source provider and credential provider
+                SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
+                SetDefaultCredentialProvider();
+            }
+        }
+
         internal string ResolveInstallPath()
         {
             if (!String.IsNullOrEmpty(OutputDirectory))
@@ -93,25 +123,8 @@ namespace NuGet.CommandLine
                 // Use the OutputDirectory if specified.
                 return OutputDirectory;
             }
-
-            EffectiveSettings = Settings;
-            // If the SolutionDir is specified, use the .nuget directory under it to determine the solution-level settings
-            if (!String.IsNullOrEmpty(SolutionDirectory))
-            {
-                var solutionSettingsFile = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
-
-                EffectiveSettings = Configuration.Settings.LoadDefaultSettings(
-                    solutionSettingsFile,
-                    configFileName: null,
-                    machineWideSettings: MachineWideSettings);
-
-                // Recreate the source provider and credential provider
-                SourceProvider = PackageSourceBuilder.CreateSourceProvider(EffectiveSettings);
-                // TODO: Revive this
-                // HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(new ConsoleCredentialProvider(Console), SourceProvider, Console);
-            }
-
-            string installPath = SettingsUtility.GetRepositoryPath(EffectiveSettings);
+            
+            string installPath = SettingsUtility.GetRepositoryPath(Settings);
             if (!String.IsNullOrEmpty(installPath))
             {
                 // If a value is specified in config, use that. 
@@ -130,10 +143,8 @@ namespace NuGet.CommandLine
 
         private Task PerformV2Restore(string packagesConfigFilePath, string installPath)
         {
-            Debug.Assert(EffectiveSettings != null);
-
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, EffectiveSettings, installPath);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
             var installedPackageReferences = GetInstalledPackageReferences(packagesConfigFilePath);
             var packageRestoreData = installedPackageReferences.Select(reference =>
                 new PackageRestoreData(
@@ -146,14 +157,14 @@ namespace NuGet.CommandLine
                 CancellationToken.None,
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: null,
-                sourceRepositories: GetPackageSources(EffectiveSettings).Select(sourceRepositoryProvider.CreateRepository),
+                sourceRepositories: GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
             return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Logger));
         }
 
         private SourceRepositoryProvider GetSourceRepositoryProvider()
         {
-            var packageSourceProvider = new Configuration.PackageSourceProvider(EffectiveSettings);
+            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider,
                 Enumerable.Concat(
                     Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
@@ -176,22 +187,41 @@ namespace NuGet.CommandLine
                 new Packaging.PackagePathResolver(installPath, !ExcludeVersion));
 
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
-            var packageManager = new NuGetPackageManager(sourceRepositoryProvider, EffectiveSettings, installPath);
+            var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
 
-            var primaryRepositories = GetPackageSources(EffectiveSettings).Select(sourceRepositoryProvider.CreateRepository);
+            var primaryRepositories = GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository);
 
-            return packageManager.InstallPackageAsync(
-                folderProject,
-                new PackageIdentity(packageId, version),
-                new ResolutionContext(
-                    DependencyBehavior.Lowest,
-                    includePrelease: Prerelease,
-                    includeUnlisted: true,
-                    versionConstraints: VersionConstraints.None),
-                new ConsoleProjectContext(Logger),
-                primaryRepositories,
-                Enumerable.Empty<SourceRepository>(),
-                CancellationToken.None);
+            if (version == null)
+            {
+                // let package manager locates the latest version to install
+                return packageManager.InstallPackageAsync(
+                    folderProject,
+                    packageId,
+                    new ResolutionContext(
+                        DependencyBehavior.Lowest,
+                        includePrelease: Prerelease,
+                        includeUnlisted: true,
+                        versionConstraints: VersionConstraints.None),
+                    new ConsoleProjectContext(Logger),
+                    primaryRepositories,
+                    Enumerable.Empty<SourceRepository>(),
+                    CancellationToken.None);
+            }
+            else
+            {
+                return packageManager.InstallPackageAsync(
+                    folderProject,
+                    new PackageIdentity(packageId, version),
+                    new ResolutionContext(
+                        DependencyBehavior.Lowest,
+                        includePrelease: Prerelease,
+                        includeUnlisted: true,
+                        versionConstraints: VersionConstraints.None),
+                    new ConsoleProjectContext(Logger),
+                    primaryRepositories,
+                    Enumerable.Empty<SourceRepository>(),
+                    CancellationToken.None);
+            }
         }
     }
 }

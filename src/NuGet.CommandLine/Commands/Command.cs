@@ -101,11 +101,11 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    var directory = Path.GetDirectoryName(Path.GetFullPath(ConfigFile));
-                    var configFileName = Path.GetFileName(ConfigFile);
-                    var configFileSystem = new PhysicalFileSystem(directory);
+                    var configFileFullPath = Path.GetFullPath(ConfigFile);
+                    var directory = Path.GetDirectoryName(configFileFullPath);
+                    var configFileName = Path.GetFileName(configFileFullPath);
                     Settings = Configuration.Settings.LoadDefaultSettings(
-                        CurrentDirectory,
+                        directory,
                         configFileName,
                         MachineWideSettings);
                 }
@@ -122,7 +122,7 @@ namespace NuGet.CommandLine
         /// Set default credential provider for the HttpClient, which is used by V2 sources.
         /// Also set up authenticated proxy handling for V3 sources.
         /// </summary>
-        private void SetDefaultCredentialProvider()
+        protected void SetDefaultCredentialProvider()
         {
             // Register an additional provider for the console specific application so that the user
             // will be prompted if a proxy is set and credentials are required

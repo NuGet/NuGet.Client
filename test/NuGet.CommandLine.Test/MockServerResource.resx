@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NuGetV2APIMetadata" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx"&gt;
+    &lt;edmx:DataServices m:DataServiceVersion="2.0" m:MaxDataServiceVersion="2.0" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"&gt;
+        &lt;Schema Namespace="NuGetGallery" xmlns="http://schemas.microsoft.com/ado/2006/04/edm"&gt;
+            &lt;EntityType Name="V2FeedPackage" m:HasStream="true"&gt;
+                &lt;Key&gt;
+                    &lt;PropertyRef Name="Id" /&gt;
+                    &lt;PropertyRef Name="Version" /&gt;
+                &lt;/Key&gt;
+                &lt;Property Name="Id" Type="Edm.String" Nullable="false" m:FC_TargetPath="SyndicationTitle" m:FC_ContentKind="text" m:FC_KeepInContent="false" /&gt;
+                &lt;Property Name="Version" Type="Edm.String" Nullable="false" /&gt;
+                &lt;Property Name="NormalizedVersion" Type="Edm.String" /&gt;
+                &lt;Property Name="Authors" Type="Edm.String" m:FC_TargetPath="SyndicationAuthorName" m:FC_ContentKind="text" m:FC_KeepInContent="false" /&gt;
+                &lt;Property Name="Copyright" Type="Edm.String" /&gt;
+                &lt;Property Name="Created" Type="Edm.DateTime" Nullable="false" /&gt;
+                &lt;Property Name="Dependencies" Type="Edm.String" /&gt;
+                &lt;Property Name="Description" Type="Edm.String" /&gt;
+                &lt;Property Name="DownloadCount" Type="Edm.Int32" Nullable="false" /&gt;
+                &lt;Property Name="GalleryDetailsUrl" Type="Edm.String" /&gt;
+                &lt;Property Name="IconUrl" Type="Edm.String" /&gt;
+                &lt;Property Name="IsLatestVersion" Type="Edm.Boolean" Nullable="false" /&gt;
+                &lt;Property Name="IsAbsoluteLatestVersion" Type="Edm.Boolean" Nullable="false" /&gt;
+                &lt;Property Name="IsPrerelease" Type="Edm.Boolean" Nullable="false" /&gt;
+                &lt;Property Name="Language" Type="Edm.String" /&gt;
+                &lt;Property Name="LastUpdated" Type="Edm.DateTime" Nullable="false" m:FC_TargetPath="SyndicationUpdated" m:FC_ContentKind="text" m:FC_KeepInContent="false" /&gt;
+                &lt;Property Name="Published" Type="Edm.DateTime" Nullable="false" /&gt;
+                &lt;Property Name="PackageHash" Type="Edm.String" /&gt;
+                &lt;Property Name="PackageHashAlgorithm" Type="Edm.String" /&gt;
+                &lt;Property Name="PackageSize" Type="Edm.Int64" Nullable="false" /&gt;
+                &lt;Property Name="ProjectUrl" Type="Edm.String" /&gt;
+                &lt;Property Name="ReportAbuseUrl" Type="Edm.String" /&gt;
+                &lt;Property Name="ReleaseNotes" Type="Edm.String" /&gt;
+                &lt;Property Name="RequireLicenseAcceptance" Type="Edm.Boolean" Nullable="false" /&gt;
+                &lt;Property Name="Summary" Type="Edm.String" m:FC_TargetPath="SyndicationSummary" m:FC_ContentKind="text" m:FC_KeepInContent="false" /&gt;
+                &lt;Property Name="Tags" Type="Edm.String" /&gt;
+                &lt;Property Name="Title" Type="Edm.String" /&gt;
+                &lt;Property Name="VersionDownloadCount" Type="Edm.Int32" Nullable="false" /&gt;
+                &lt;Property Name="MinClientVersion" Type="Edm.String" /&gt;
+                &lt;Property Name="LastEdited" Type="Edm.DateTime" /&gt;
+                &lt;Property Name="LicenseUrl" Type="Edm.String" /&gt;
+                &lt;Property Name="LicenseNames" Type="Edm.String" /&gt;
+                &lt;Property Name="LicenseReportUrl" Type="Edm.String" /&gt;
+            &lt;/EntityType&gt;
+            &lt;EntityContainer Name="V2FeedContext" m:IsDefaultEntityContainer="true"&gt;
+                &lt;EntitySet Name="Packages" EntityType="NuGetGallery.V2FeedPackage" /&gt;
+                &lt;FunctionImport Name="Search" ReturnType="Collection(NuGetGallery.V2FeedPackage)" EntitySet="Packages" m:HttpMethod="GET"&gt;
+                    &lt;Parameter Name="searchTerm" Type="Edm.String" /&gt;
+                    &lt;Parameter Name="targetFramework" Type="Edm.String" /&gt;
+                    &lt;Parameter Name="includePrerelease" Type="Edm.Boolean" /&gt;
+                &lt;/FunctionImport&gt;
+                &lt;FunctionImport Name="FindPackagesById" ReturnType="Collection(NuGetGallery.V2FeedPackage)" EntitySet="Packages" m:HttpMethod="GET"&gt;
+                    &lt;Parameter Name="id" Type="Edm.String" /&gt;
+                &lt;/FunctionImport&gt;
+                &lt;FunctionImport Name="GetUpdates" ReturnType="Collection(NuGetGallery.V2FeedPackage)" EntitySet="Packages" m:HttpMethod="GET"&gt;
+                    &lt;Parameter Name="packageIds" Type="Edm.String" /&gt;
+                    &lt;Parameter Name="versions" Type="Edm.String" /&gt;
+                    &lt;Parameter Name="includePrerelease" Type="Edm.Boolean" /&gt;
+                    &lt;Parameter Name="includeAllVersions" Type="Edm.Boolean" /&gt;
+                    &lt;Parameter Name="targetFrameworks" Type="Edm.String" /&gt;
+                    &lt;Parameter Name="versionConstraints" Type="Edm.String" /&gt;
+                &lt;/FunctionImport&gt;
+            &lt;/EntityContainer&gt;
+        &lt;/Schema&gt;
+    &lt;/edmx:DataServices&gt;
+&lt;/edmx:Edmx&gt;</value>
+  </data>
+</root>
