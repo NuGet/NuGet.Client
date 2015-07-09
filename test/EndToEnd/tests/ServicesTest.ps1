@@ -26,11 +26,13 @@ function Test-VsPackageInstallerServices {
     # Act
     $p | Install-Package jquery -Version 1.5 -Source $context.RepositoryPath
     $packages = @($installerServices.GetInstalledPackages())
+    $package = $packages |  where Id -eq jquery
 
     # Assert
     Assert-NotNull $packages
     Assert-AreEqual 1 $packages.Count
     Assert-AreEqual jQuery $packages[0].Id
+    Assert-NotNull $package.InstallPath
 }
 
 function Test-GetInstalledPackagesMultipleProjectsSameVersion {
