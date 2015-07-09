@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
@@ -55,11 +57,20 @@ namespace NuGet.VisualStudio
                         foreach (var project in _solutionManager.GetNuGetProjects())
                         {
                             var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                            var buildIntegratedProject = project as BuildIntegratedNuGetProject;
 
                             foreach (var package in installedPackages)
                             {
                                 // find packages using the solution level packages folder
-                                string installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
+                                string installPath;
+                                if (buildIntegratedProject != null)
+                                {
+                                    installPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(package.PackageIdentity, _settings);
+                                }
+                                else
+                                {
+                                    installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(package.PackageIdentity);
+                                }
 
                                 var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
                                 packages.Add(metadata);
