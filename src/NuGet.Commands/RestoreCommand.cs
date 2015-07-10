@@ -86,10 +86,9 @@ namespace NuGet.Commands
 
             foreach (var g in graphs.Where(g => g.Cycles.Any() || g.Downgrades.Any()))
             {
-                _success = false;
-
                 foreach (var cycle in g.Cycles)
                 {
+                    _success = false;
                     _log.LogError($"Cycle detected {Environment.NewLine} {cycle.GetPath()}");
                 }
 
