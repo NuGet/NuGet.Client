@@ -154,14 +154,7 @@ function Test-BuildIntegratedPackageFailsIfDowngradeWasDetected {
 
 	# Assert
     # DotNetRDF requires json.net >= 6.0.8, but the direct dependency attempts to downgrade it.
-	$expectedMessage = @'
-Detected package downgrade: Newtonsoft.Json from 6.0.8 to 6.0.4 
- Project/UAPApp [1.0.0, ) -> Package/DotNetRDF [1.0.8.3533, ) -> Newtonsoft.Json [6.0.8, ) 
- Project/UAPApp [1.0.0, ) -> Package/Newtonsoft.Json [6.0.4, )
-'@
-	Assert-Throws { Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533 } $expectedMessage
-
-    # Assert
+	Install-Package DotNetRDF  -ProjectName $project.Name -version 1.0.8.3533
     Assert-ProjectJsonLockFilePackage $project Newtonsoft.Json 6.0.4
 }
 
