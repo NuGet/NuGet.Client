@@ -17,20 +17,11 @@ namespace NuGet.CommandLine
         UsageExampleResourceName = "UpdateCommandUsageExamples")]
     public class UpdateCommand : Command
     {
-        private readonly List<string> _sources = new List<string>();
-        private readonly List<string> _ids = new List<string>();
-
         [Option(typeof(NuGetCommand), "UpdateCommandSourceDescription")]
-        public ICollection<string> Source
-        {
-            get { return _sources; }
-        }
+        public ICollection<string> Source { get; } = new List<string>();
 
         [Option(typeof(NuGetCommand), "UpdateCommandIdDescription")]
-        public ICollection<string> Id
-        {
-            get { return _ids; }
-        }
+        public ICollection<string> Id { get; } = new List<string>();
 
         [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
         public string RepositoryPath { get; set; }
@@ -48,7 +39,7 @@ namespace NuGet.CommandLine
         public bool Prerelease { get; set; }
 
         [Option(typeof(NuGetCommand), "UpdateCommandFileConflictAction")]
-        public FileConflictAction FileConflictAction { get; set; }
+        public ProjectManagement.FileConflictAction FileConflictAction { get; set; }
 
         public override async Task ExecuteCommandAsync()
         {
@@ -67,7 +58,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(NuGetResources.InvalidFile);
             }
 
-            var context = new ConsoleProjectContext(Logger);
+            var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             string inputFileName = Path.GetFileName(inputFile);
             // update with packages.config as parameter
@@ -85,7 +76,8 @@ namespace NuGet.CommandLine
                     throw new CommandLineException(NuGetResources.UnableToFindProject, inputFile);
                 }
 
-                await UpdatePackagesAsync(new MSBuildProjectSystem(inputFile, context));
+                var projectSystem = new MSBuildProjectSystem(inputFile, context);
+                await UpdatePackagesAsync(projectSystem, GetRepositoryPath(projectSystem.ProjectFullPath));
                 return;
             }
 
@@ -96,66 +88,65 @@ namespace NuGet.CommandLine
 
             // update with solution as parameter
             string solutionDir = Path.GetDirectoryName(inputFile);
-            //UpdateAllPackages(solutionDir);
+            await UpdateAllPackages(solutionDir, context);
             throw new NotImplementedException();
         }
 
-        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        //private void UpdateAllPackages(string solutionDir, INuGetProjectContext projectContext)
-        //{
-        //    Console.WriteLine(LocalizedResourceManager.GetString("ScanningForProjects"));
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        private async Task UpdateAllPackages(string solutionDir, INuGetProjectContext projectContext)
+        {
+            Console.WriteLine(LocalizedResourceManager.GetString("ScanningForProjects"));
 
-        //    // Search recursively for all packages.xxx.config files
-        //    string[] packagesConfigFiles = Directory.GetFiles(
-        //        solutionDir, "*.config", SearchOption.AllDirectories);
+            // Search recursively for all packages.xxx.config files
+            string[] packagesConfigFiles = Directory.GetFiles(
+                solutionDir, "*.config", SearchOption.AllDirectories);
 
-        //    var projects = packagesConfigFiles.Where(s => Path.GetFileName(s).StartsWith("packages.", StringComparison.OrdinalIgnoreCase))
-        //                                      .Select(s => GetProject(s, projectContext))
-        //                                      .Where(p => p != null)
-        //                                      .Distinct()
-        //                                      .ToList();
+            var projects = packagesConfigFiles.Where(s => Path.GetFileName(s).StartsWith("packages.", StringComparison.OrdinalIgnoreCase))
+                                              .Select(s => GetProject(s, projectContext))
+                                              .Where(p => p != null)
+                                              .Distinct()
+                                              .ToList();
 
-        //    if (projects.Count == 0)
-        //    {
-        //        Console.WriteLine(LocalizedResourceManager.GetString("NoProjectsFound"));
-        //        return;
-        //    }
+            if (projects.Count == 0)
+            {
+                Console.WriteLine(LocalizedResourceManager.GetString("NoProjectsFound"));
+                return;
+            }
 
-        //    if (projects.Count == 1)
-        //    {
-        //        Console.WriteLine(LocalizedResourceManager.GetString("FoundProject"), projects.Single().ProjectName);
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine(LocalizedResourceManager.GetString("FoundProjects"), projects.Count, String.Join(", ", projects.Select(p => p.ProjectName)));
-        //    }
+            if (projects.Count == 1)
+            {
+                Console.WriteLine(LocalizedResourceManager.GetString("FoundProject"), projects.Single().ProjectName);
+            }
+            else
+            {
+                Console.WriteLine(LocalizedResourceManager.GetString("FoundProjects"), projects.Count, String.Join(", ", projects.Select(p => p.ProjectName)));
+            }
 
-        //    string repositoryPath = GetRepositoryPathFromSolution(solutionDir);
-        //    IPackageRepository sourceRepository = AggregateRepositoryHelper.CreateAggregateRepositoryFromSources(RepositoryFactory, SourceProvider, Source);
+            string repositoryPath = GetRepositoryPathFromSolution(solutionDir);
 
-        //    foreach (var project in projects)
-        //    {
-        //        try
-        //        {
-        //            UpdatePackages(project, repositoryPath, sourceRepository);
-        //            if (Verbose)
-        //            {
-        //                Console.WriteLine();
-        //            }
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            if (Console.Verbosity == NuGet.Verbosity.Detailed)
-        //            {
-        //                Console.WriteWarning(e.ToString());
-        //            }
-        //            else
-        //            {
-        //                Console.WriteWarning(e.Message);
-        //            }
-        //        }
-        //    }
-        //}
+            foreach (var project in projects)
+            {
+                try
+                {
+                    await UpdatePackagesAsync(project, repositoryPath);
+                    if (Verbose)
+                    {
+                        Console.WriteLine();
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (Console.Verbosity == NuGet.Verbosity.Detailed)
+                    {
+                        Console.WriteWarning(e.ToString());
+                    }
+                    else
+                    {
+                        Console.WriteWarning(e.Message);
+                    }
+                }
+            }
+        }
 
         private static MSBuildProjectSystem GetProject(string path, INuGetProjectContext projectContext)
         {
@@ -228,14 +219,14 @@ namespace NuGet.CommandLine
         private Task UpdatePackagesAsync(string packagesConfigPath, INuGetProjectContext projectContext)
         {
             var project = GetMSBuildProject(packagesConfigPath, projectContext);
-            return UpdatePackagesAsync(project);
+            var packagesDirectory = GetRepositoryPath(project.ProjectFullPath);
+            return UpdatePackagesAsync(project, packagesDirectory);
         }
 
-        private async Task UpdatePackagesAsync(MSBuildProjectSystem project)
+        private async Task UpdatePackagesAsync(MSBuildProjectSystem project, string packagesDirectory)
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var projectDirectory = Path.GetDirectoryName(project.ProjectFullPath);
-            var packagesDirectory = GetRepositoryPath(projectDirectory);
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesDirectory);
             var nugetProject = new MSBuildNuGetProject(project, projectDirectory, packagesDirectory);
 
@@ -281,7 +272,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            return GetPackagesDir(packagesDir, Logger);
+            return GetPackagesDirectory(packagesDir);
         }
 
         private string GetRepositoryPathFromSolution(string solutionDir)
@@ -294,10 +285,10 @@ namespace NuGet.CommandLine
                 packagesDir = Path.Combine(solutionDir, CommandLineConstants.PackagesDirectoryName);
             }
 
-            return GetPackagesDir(packagesDir, Logger);
+            return GetPackagesDirectory(packagesDir);
         }
 
-        private static string GetPackagesDir(string packagesDir, Logging.ILogger logger)
+        private string GetPackagesDirectory(string packagesDir)
         {
             if (!String.IsNullOrEmpty(packagesDir))
             {
@@ -309,7 +300,7 @@ namespace NuGet.CommandLine
                 {
                     string currentDirectory = Directory.GetCurrentDirectory();
                     string relativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(currentDirectory), packagesDir);
-                    logger.LogVerbose(
+                    Logger.LogVerbose(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("LookingForInstalledPackages"),
@@ -341,49 +332,80 @@ namespace NuGet.CommandLine
         }
 
 
-        //private class UpdateConsoleProjectContext : ConsoleProjectContext
-        //{
-        //    private readonly IConsole _console;
-        //    private readonly ProjectManagement.FileConflictAction FileConflictAction;
-        //    private bool _overwriteAll;
-        //    private bool _ignoreAll;
+        private class UpdateConsoleProjectContext : ConsoleProjectContext
+        {
+            private readonly IConsole _console;
+            private readonly ProjectManagement.FileConflictAction FileConflictAction;
+            private bool _overwriteAll;
+            private bool _ignoreAll;
 
-        //    public UpdateConsoleProjectContext(
-        //        IConsole console, 
-        //        Logging.ILogger logger,
-        //        ProjectManagement.FileConflictAction conflictAction)
-        //        : base(logger)
-        //    {
-        //        _console = console;
-        //        FileConflictAction = conflictAction;
-        //    }
+            public UpdateConsoleProjectContext(
+                IConsole console,
+                ProjectManagement.FileConflictAction conflictAction)
+                : base(console)
+            {
+                _console = console;
+                FileConflictAction = conflictAction;
+            }
 
-        //    //public override ProjectManagement.FileConflictAction ResolveFileConflict(string message)
-        //    //{
-        //    //    // the -FileConflictAction is set to Overwrite or user has chosen Overwrite All previously
-        //    //    if (FileConflictAction == ProjectManagement.FileConflictAction.Overwrite || _overwriteAll)
-        //    //    {
-        //    //        return ProjectManagement.FileConflictAction.Overwrite;
-        //    //    }
+            public override ProjectManagement.FileConflictAction ResolveFileConflict(string message)
+            {
+                // the -FileConflictAction is set to Overwrite or user has chosen Overwrite All previously
+                if (FileConflictAction == ProjectManagement.FileConflictAction.Overwrite || _overwriteAll)
+                {
+                    return ProjectManagement.FileConflictAction.Overwrite;
+                }
 
-        //    //    // the -FileConflictAction is set to Ignore or user has chosen Ignore All previously
-        //    //    if (FileConflictAction == ProjectManagement.FileConflictAction.Ignore || _ignoreAll)
-        //    //    {
-        //    //        return ProjectManagement.FileConflictAction.Ignore;
-        //    //    }
+                // the -FileConflictAction is set to Ignore or user has chosen Ignore All previously
+                if (FileConflictAction == ProjectManagement.FileConflictAction.Ignore || _ignoreAll)
+                {
+                    return ProjectManagement.FileConflictAction.Ignore;
+                }
 
-        //    //    // otherwise, prompt user for choice, unless we're in non-interactive mode
-        //    //    if (_console != null && !_console.IsNonInteractive)
-        //    //    {
-        //    //        var resolution = _console.ResolveFileConflict(message);
-        //    //        _overwriteAll = resolution == ProjectManagement.FileConflictAction.OverwriteAll;
-        //    //        _ignoreAll = resolution == ProjectManagement.FileConflictAction.IgnoreAll;
-        //    //        return resolution;
-        //    //    }
+                // otherwise, prompt user for choice, unless we're in non-interactive mode
+                if (_console != null && !_console.IsNonInteractive)
+                {
+                    var resolution = GetUserInput(message);
+                    _overwriteAll = resolution == ProjectManagement.FileConflictAction.OverwriteAll;
+                    _ignoreAll = resolution == ProjectManagement.FileConflictAction.IgnoreAll;
+                    return resolution;
+                }
 
-        //    //    return FileConflictResolution.Ignore;
-        //    //    //}
-        //    //}
-        //}
+                return ProjectManagement.FileConflictAction.Ignore;
+            }
+
+            private ProjectManagement.FileConflictAction GetUserInput(string message)
+            {
+                // make the question stand out from previous text
+                _console.WriteLine();
+
+                _console.WriteLine(ConsoleColor.Yellow, "File Conflict.");
+                _console.WriteLine(message);
+
+                // Yes - Yes To All - No - No To All
+                var acceptedAnswers = new List<string> { "Y", "A", "N", "L" };
+                var choices = new[]
+                {
+                    ProjectManagement.FileConflictAction.Overwrite,
+                    ProjectManagement.FileConflictAction.OverwriteAll,
+                    ProjectManagement.FileConflictAction.Ignore,
+                    ProjectManagement.FileConflictAction.IgnoreAll
+                };
+
+                while (true)
+                {
+                    _console.Write(LocalizedResourceManager.GetString("FileConflictChoiceText"));
+                    string answer = _console.ReadLine();
+                    if (!String.IsNullOrEmpty(answer))
+                    {
+                        int index = acceptedAnswers.FindIndex(a => a.Equals(answer, StringComparison.OrdinalIgnoreCase));
+                        if (index > -1)
+                        {
+                            return choices[index];
+                        }
+                    }
+                }
+            }
+        }
     }
 }

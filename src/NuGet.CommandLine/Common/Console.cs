@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
-using NuGet;
 
 namespace NuGet.Common
 {
@@ -316,53 +314,29 @@ namespace NuGet.Common
             }
         }
 
-        public void Log(MessageLevel level, string message, params object[] args)
+        public void LogDebug(string data)
         {
-            switch (level)
-            {
-                case MessageLevel.Info:
-                    WriteLine(message, args);
-                    break;
-                case MessageLevel.Warning:
-                    WriteWarning(message, args);
-                    break;
-                case MessageLevel.Debug:
-                    WriteColor(Out, ConsoleColor.Gray, message, args);
-                    break;
-            }
+            WriteColor(Out, ConsoleColor.Gray, data);
         }
 
-        public FileConflictResolution ResolveFileConflict(string message)
+        public void LogVerbose(string data)
         {
-            // make the question stand out from previous text
-            WriteLine();
+            WriteLine(data);
+        }
 
-            WriteLine(ConsoleColor.Yellow, "File Conflict.");
-            WriteLine(message);
+        public void LogInformation(string data)
+        {
+            WriteLine(data);
+        }
 
-            // Yes - Yes To All - No - No To All
-            var acceptedAnswers = new List<string> { "Y", "A", "N", "L" };
-            var choices = new[]
-            {
-                FileConflictResolution.Overwrite,
-                FileConflictResolution.OverwriteAll,
-                FileConflictResolution.Ignore,
-                FileConflictResolution.IgnoreAll
-            };
+        public void LogWarning(string data)
+        {
+            WriteWarning(data);
+        }
 
-            while (true)
-            {
-                Write(LocalizedResourceManager.GetString("FileConflictChoiceText"));
-                string answer = ReadLine();                
-                if (!String.IsNullOrEmpty(answer)) 
-                {
-                    int index = acceptedAnswers.FindIndex(a => a.Equals(answer, StringComparison.OrdinalIgnoreCase));
-                    if (index > -1)
-                    {
-                        return choices[index];
-                    }
-                }
-            }
+        public void LogError(string data)
+        {
+            WriteError(data);
         }
     }
 }

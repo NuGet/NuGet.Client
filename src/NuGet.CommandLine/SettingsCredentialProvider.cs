@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 
@@ -7,15 +8,15 @@ namespace NuGet.CommandLine
     public class SettingsCredentialProvider : ICredentialProvider
     {
         private readonly ICredentialProvider _credentialProvider;
-        private readonly NuGet.Configuration.IPackageSourceProvider _packageSourceProvider;
-        private readonly ILogger _logger;
+        private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
+        private readonly Logging.ILogger _logger;
 
-        public SettingsCredentialProvider(ICredentialProvider credentialProvider, NuGet.Configuration.IPackageSourceProvider packageSourceProvider)
-            : this(credentialProvider, packageSourceProvider, NullLogger.Instance)
+        public SettingsCredentialProvider(ICredentialProvider credentialProvider, Configuration.IPackageSourceProvider packageSourceProvider)
+            : this(credentialProvider, packageSourceProvider, Logging.NullLogger.Instance)
         {
         }
 
-        public SettingsCredentialProvider(ICredentialProvider credentialProvider, NuGet.Configuration.IPackageSourceProvider packageSourceProvider, ILogger logger)
+        public SettingsCredentialProvider(ICredentialProvider credentialProvider, Configuration.IPackageSourceProvider packageSourceProvider, Logging.ILogger logger)
         {
             if (credentialProvider == null)
             {
@@ -38,10 +39,11 @@ namespace NuGet.CommandLine
             // If we are retrying, the stored credentials must be invalid.
             if (!retrying && (credentialType == CredentialType.RequestCredentials) && TryGetCredentials(uri, out credentials))
             {
-                _logger.Log(
-                    MessageLevel.Info,
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.SettingsCredentials_UsingSavedCredentials)),
-                    credentials.UserName);
+                _logger.LogInformation(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.SettingsCredentials_UsingSavedCredentials)),
+                        credentials.UserName));
                 return credentials;
             }
             return _credentialProvider.GetCredentials(uri, proxy, credentialType, retrying);

@@ -3,7 +3,7 @@ using System.Security;
 
 namespace NuGet.Common
 {
-    public interface IConsole : ILogger
+    public interface IConsole : Logging.ILogger
     {
         int CursorLeft { get; set; }
         int WindowWidth { get; set; }
