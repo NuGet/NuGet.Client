@@ -207,7 +207,7 @@ namespace NuGet.CommandLine
             return builder;
         }
 
-        internal string InitializeProperties(IPackageMetadata metadata)
+        public string InitializeProperties(IPackageMetadata metadata)
         {
             // Set the properties that were resolved from the assembly/project so they can be
             // resolved by name if the nuspec contains tokens
@@ -980,7 +980,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        internal static bool ContentEquals(IPackageFile targetFile, string fullPath)
+        public static bool ContentEquals(IPackageFile targetFile, string fullPath)
         {
             bool isEqual;
             using (var dependencyFileStream = targetFile.GetStream())

@@ -41,7 +41,7 @@ namespace NuGet.CommandLine
             return MainCore(Directory.GetCurrentDirectory(), args);
         }
 
-        internal static int MainCore(string workingDirectory, string[] args)
+        public static int MainCore(string workingDirectory, string[] args)
         {
 
             // This is to avoid applying weak event pattern usage, which breaks under Mono or restricted environments, e.g. Windows Azure Web Sites.
