@@ -6,6 +6,8 @@ namespace NuGet
     [InheritedExport]
     public interface ICommand
     {
+        string CurrentDirectory { get; set; }
+
         CommandAttribute CommandAttribute { get; }
 
         IList<string> Arguments { get; }

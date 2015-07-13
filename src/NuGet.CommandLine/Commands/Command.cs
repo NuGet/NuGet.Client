@@ -13,6 +13,7 @@ namespace NuGet.CommandLine
     {
         private const string CommandSuffix = "Command";
         private CommandAttribute _commandAttribute;
+        private string _currentDirectory;
 
         protected Command()
         {
@@ -48,6 +49,18 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "Option_ConfigFile")]
         public string ConfigFile { get; set; }
 
+        public string CurrentDirectory
+        {
+            get
+            {
+                return _currentDirectory ?? Directory.GetCurrentDirectory();
+            }
+            set
+            {
+                _currentDirectory = value;
+            }
+        }
+
         protected internal Configuration.ISettings Settings { get; set; }
 
         protected internal Configuration.IPackageSourceProvider SourceProvider { get; set; }
@@ -82,7 +95,7 @@ namespace NuGet.CommandLine
                 if (String.IsNullOrEmpty(ConfigFile))
                 {
                     Settings = Configuration.Settings.LoadDefaultSettings(
-                        Directory.GetCurrentDirectory(),
+                        CurrentDirectory,
                         configFileName: null,
                         machineWideSettings: MachineWideSettings);
                 }
@@ -92,7 +105,7 @@ namespace NuGet.CommandLine
                     var configFileName = Path.GetFileName(ConfigFile);
                     var configFileSystem = new PhysicalFileSystem(directory);
                     Settings = Configuration.Settings.LoadDefaultSettings(
-                        Directory.GetCurrentDirectory(),
+                        CurrentDirectory,
                         configFileName,
                         MachineWideSettings);
                 }

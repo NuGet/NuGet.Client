@@ -1,9 +1,15 @@
 {
     "dependencies": {
+        "Moq": "4.2.1507.118",
+        "xunit": "2.0.0",
         "xunit.runner.visualstudio": "2.0.0"
     },
     "frameworks": {
-        "net45": {}
+        "net45": {
+            "frameworkAssemblies": {
+                "System.ComponentModel.DataAnnotations": "4.0.0.0"
+            }
+        }
     },
     "runtimes": {
         "win-anycpu": {}

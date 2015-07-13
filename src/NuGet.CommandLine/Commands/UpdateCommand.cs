@@ -298,8 +298,7 @@ namespace NuGet.CommandLine
                 // REVIEW: Do we need to check for existence?
                 if (Directory.Exists(packagesDir))
                 {
-                    string currentDirectory = Directory.GetCurrentDirectory();
-                    string relativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(currentDirectory), packagesDir);
+                    string relativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
                     Logger.LogVerbose(
                         string.Format(
                             CultureInfo.CurrentCulture,

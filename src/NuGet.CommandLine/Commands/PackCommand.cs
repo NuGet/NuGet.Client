@@ -130,7 +130,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            IPackage package = BuildPackage(path);
+            IPackage package = BuildPackage(Path.GetFullPath(Path.Combine(CurrentDirectory, path)));
             if (package != null && !NoPackageAnalysis)
             {
                 AnalyzePackage(package);
@@ -271,7 +271,7 @@ namespace NuGet.CommandLine
                 outputFile += Constants.PackageExtension;
             }
 
-            string outputDirectory = OutputDirectory ?? Directory.GetCurrentDirectory();
+            string outputDirectory = OutputDirectory ?? CurrentDirectory;
             return Path.Combine(outputDirectory, outputFile);
         }
 
@@ -452,31 +452,34 @@ namespace NuGet.CommandLine
 
         private string GetInputFile()
         {
-            IEnumerable<string> files = Arguments.Any() ? Arguments : Directory.GetFiles(Directory.GetCurrentDirectory());
+            IEnumerable<string> files = Arguments.Any() ? Arguments : Directory.GetFiles(CurrentDirectory);
 
             return GetInputFile(files);
         }
 
-        internal static string GetInputFile(IEnumerable<string> files)
+        internal string GetInputFile(IEnumerable<string> files)
         {
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file)))
                                   .ToList();
-
+            string result;
             switch (candidates.Count)
             {
                 case 1:
-                    return candidates.Single();
+                    result = candidates[0];
+                    break;
                 case 2:
                     // Remove all nuspec files
                     candidates.RemoveAll(file => Path.GetExtension(file).Equals(Constants.ManifestExtension, StringComparison.OrdinalIgnoreCase));
                     if (candidates.Count == 1)
                     {
-                        return candidates.Single();
+                        result = candidates[0];
                     }
                     goto default;
                 default:
                     throw new CommandLineException(LocalizedResourceManager.GetString("PackageCommandSpecifyInputFileError"));
             }
+
+            return Path.GetFullPath(Path.Combine(CurrentDirectory, result));
         }
 
         private class DictionaryPropertyProvider : IPropertyProvider

@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Resources;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // Project-specific attributes
@@ -21,3 +22,5 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: AssemblyVersion("3.1.0.0")]
 [assembly: AssemblyInformationalVersion("3.1.0")]
+
+[assembly: InternalsVisibleTo("NuGet.CommandLine.Test")]

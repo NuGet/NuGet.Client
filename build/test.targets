@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<UsingTask AssemblyFile="$(MSBuildStartupDirectory)\tools\xunit\xunit.runner.msbuild.dll" TaskName="Xunit.Runner.MSBuild.xunit" />
+<UsingTask AssemblyFile="$(MsBuildThisFileDirectory)..\tools\xunit\xunit.runner.msbuild.dll" TaskName="Xunit.Runner.MSBuild.xunit" />
 <Target Name="RunTests">
 	<ItemGroup>
 		<Line Include="&lt;configuration&gt;&lt;appSettings&gt;

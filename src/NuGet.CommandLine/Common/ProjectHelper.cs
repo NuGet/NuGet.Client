@@ -25,11 +25,6 @@ namespace NuGet.Common
             }
         }
 
-        public static bool TryGetProjectFile(out string projectFile)
-        {
-            return TryGetProjectFile(Directory.GetCurrentDirectory(), out projectFile);
-        }
-
         public static bool TryGetProjectFile(string directory, out string projectFile)
         {
             projectFile = null;

@@ -125,7 +125,7 @@ namespace NuGet.CommandLine
             }
 
             // Use the current directory as output.
-            return Directory.GetCurrentDirectory();
+            return CurrentDirectory;
         }
 
         private Task PerformV2Restore(string packagesConfigFilePath, string installPath)

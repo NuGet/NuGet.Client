@@ -5,10 +5,9 @@ using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using NuGet.CommandLine;
 using NuGet.Common;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     public class Program
     {
@@ -39,19 +38,25 @@ namespace NuGet
             }
 #endif
 
+            return MainCore(Directory.GetCurrentDirectory(), args);
+        }
+
+        internal static int MainCore(string workingDirectory, string[] args)
+        {
+
             // This is to avoid applying weak event pattern usage, which breaks under Mono or restricted environments, e.g. Windows Azure Web Sites.
             EnvironmentUtility.SetRunningFromCommandLine();
 
             // set output encoding to UTF8 if -utf8 is specified
             var oldOutputEncoding = System.Console.OutputEncoding;
             if (args.Any(arg => String.Equals(arg, "-utf8", StringComparison.OrdinalIgnoreCase)))
-            {   
+            {
                 args = args.Where(arg => !String.Equals(arg, "-utf8", StringComparison.OrdinalIgnoreCase)).ToArray();
                 SetConsoleOutputEncoding(System.Text.Encoding.UTF8);
             }
 
             var console = new Common.Console();
-            var fileSystem = new PhysicalFileSystem(Directory.GetCurrentDirectory());
+            var fileSystem = new PhysicalFileSystem(workingDirectory);
 
             Func<Exception, string> getErrorMessage = e => e.Message;
 
@@ -74,6 +79,7 @@ namespace NuGet
 
                 // Parse the command
                 ICommand command = parser.ParseCommandLine(args) ?? p.HelpCommand;
+                command.CurrentDirectory = workingDirectory;
 
                 // Fallback on the help command if we failed to parse a valid command
                 if (!ArgumentCountValid(command))

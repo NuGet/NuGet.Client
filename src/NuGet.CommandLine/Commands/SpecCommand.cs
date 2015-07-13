@@ -42,7 +42,7 @@ namespace NuGet.CommandLine
             if (!String.IsNullOrEmpty(AssemblyPath))
             {
                 // Extract metadata from the assembly
-                string path = Path.Combine(Directory.GetCurrentDirectory(), AssemblyPath);
+                string path = Path.Combine(CurrentDirectory, AssemblyPath);
                 AssemblyMetadata metadata = AssemblyMetadataExtractor.GetMetadata(path);
                 manifest.Metadata.Id = metadata.Name;
                 manifest.Metadata.Version = metadata.Version.ToString();
@@ -51,7 +51,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                if (!ProjectHelper.TryGetProjectFile(out projectFile))
+                if (!ProjectHelper.TryGetProjectFile(CurrentDirectory, out projectFile))
                 {
                     manifest.Metadata.Id = Arguments.Any() ? Arguments[0] : "Package";
                     manifest.Metadata.Version = "1.0.0";
